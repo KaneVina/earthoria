@@ -1,0 +1,38 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+     "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "db:generate": "prisma generate"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "description": "",
+  "dependencies": {
+    "@prisma/client": "^7.8.0",
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.10.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "express-validator": "^7.3.2",
+    "helmet": "^8.2.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.11.0",
+    "multer": "^2.1.1",
+    "nodemailer": "^8.0.11",
+    "stripe": "^22.2.1",
+    "winston": "^3.19.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14",
+    "prisma": "^7.8.0"
+  }
+}
