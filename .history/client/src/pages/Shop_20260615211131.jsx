@@ -267,8 +267,6 @@ function ProductCard({ book, onAddToCart, delay }) {
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
-            height: '64px',
-            flex: '0 0 64px',
           }}
         >
           {book.title}

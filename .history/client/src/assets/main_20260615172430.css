@@ -3949,5 +3949,3 @@ body.dark-mode .promo-strip { background: #0a1510; border-color: rgba(74,158,63,
   .featured-cta { flex-direction: column; }
   .featured-product-body { padding: 32px 28px; }
 }
-
-@keyframes spin { to { transform: rotate(360deg); } }

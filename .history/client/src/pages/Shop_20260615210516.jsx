@@ -267,8 +267,6 @@ function ProductCard({ book, onAddToCart, delay }) {
             WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
-            height: '64px',
-            flex: '0 0 64px',
           }}
         >
           {book.title}
@@ -279,11 +277,10 @@ function ProductCard({ book, onAddToCart, delay }) {
           className="product-desc"
           style={{
             display: '-webkit-box',
-            WebkitLineClamp: 3,
+            WebkitLineClamp: 2,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
-            height: '72px',
-            flex: '0 0 72px',
+            flex: '1 0 auto',
           }}
         >
           {desc}

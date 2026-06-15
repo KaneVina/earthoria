@@ -43,9 +43,15 @@ export default function Navbar() {
 
  const isActive = (to) => {
   const [path, query] = to.split('?')
+
+  // Nếu link có query (vd: /shop?hasAR=true)
+  // thì phải match cả pathname lẫn search
   if (query) {
     return location.pathname === path && location.search === `?${query}`
   }
+
+  // Link không có query (vd: /shop)
+  // chỉ active khi KHÔNG có search params
   return location.pathname === path && location.search === ''
 }
 

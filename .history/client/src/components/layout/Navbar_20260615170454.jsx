@@ -41,13 +41,10 @@ export default function Navbar() {
     navigate("/");
   };
 
- const isActive = (to) => {
-  const [path, query] = to.split('?')
-  if (query) {
-    return location.pathname === path && location.search === `?${query}`
-  }
-  return location.pathname === path && location.search === ''
-}
+  const isActive = (to) => {
+    const path = to.split("?")[0];
+    return location.pathname === path;
+  };
 
   const navLinks = [
     { to: "/shop", label: "Cửa hàng" },

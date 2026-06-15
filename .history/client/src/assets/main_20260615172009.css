@@ -585,13 +585,18 @@ nav {
 }
 .product-title {
   font-family: 'Playfair Display', serif;
-  font-size: 26px; font-weight: 700;
-  color: var(--forest);
+  font-size: 26px; font-weight: 700; color: var(--forest);
   margin-bottom: 10px; line-height: 1.2;
-  transition: color 0.4s ease;
+  background: var(--forest);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transition: background 0.4s ease;
 }
 .product-card:hover .product-title {
-  color: var(--forest-mid);
+  background: linear-gradient(135deg, #0d3330 0%, #1a5c52 50%, #4a9e3f 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 .product-desc {
   font-size: 13px; line-height: 1.7; color: var(--text-muted);
@@ -3721,21 +3726,7 @@ body.dark-mode .social-card-handle { color: rgba(180,200,188,0.4); }
   color: var(--gold); background: transparent;
 }
 
-.product-price-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.product-price-old-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.product-price-old-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
+.product-price-wrap { display: flex; flex-direction: column; gap: 2px; }
 .product-price-old {
   font-size: 13px; color: var(--text-muted);
   text-decoration: line-through; font-weight: 300;
@@ -3949,5 +3940,3 @@ body.dark-mode .promo-strip { background: #0a1510; border-color: rgba(74,158,63,
   .featured-cta { flex-direction: column; }
   .featured-product-body { padding: 32px 28px; }
 }
-
-@keyframes spin { to { transform: rotate(360deg); } }

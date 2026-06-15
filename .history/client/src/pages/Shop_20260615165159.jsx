@@ -173,6 +173,14 @@ function HeartIcon({ filled }) {
   )
 }
 
+function ArrowIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M5 12h14M12 5l7 7-7 7"/>
+    </svg>
+  )
+}
+
 function StarRating({ rating, count }) {
   return (
     <div className="product-rating">
@@ -207,30 +215,8 @@ function AddToCartBtn({ onAdd }) {
   )
 }
 
-// Hiển thị tối đa maxVisible tags, phần còn lại hiện "..."
-function TagList({ tags, maxVisible = 2 }) {
-  if (!tags || tags.length === 0) return null
-  const visible = tags.slice(0, maxVisible)
-  const hidden = tags.length - maxVisible
-  return (
-    <div className="product-tags">
-      {visible.map(tag => (
-        <span key={tag} className="product-tag">{tag}</span>
-      ))}
-      {hidden > 0 && (
-        <span className="product-tag product-tag-more" title={tags.slice(maxVisible).join(', ')}>
-          +{hidden}
-        </span>
-      )}
-    </div>
-  )
-}
-
 function ProductCard({ book, onAddToCart, delay }) {
   const [wishlisted, setWishlisted] = useState(book.wishlisted || false)
-
-  // Truncate description to ~80 chars for consistency
-  const desc = book.desc || (book.description ? book.description.slice(0, 100) + '…' : '')
 
   return (
     <div className={`product-card reveal${delay ? ` reveal-delay-${delay}` : ''}`}>
@@ -254,52 +240,23 @@ function ProductCard({ book, onAddToCart, delay }) {
           <HeartIcon filled={wishlisted} />
         </button>
       </div>
-
-      {/* product-body dùng flex column + flex-grow để footer luôn dính đáy */}
-      <div className="product-body" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+      <div className="product-body">
         <StarRating rating={book.rating} count={book.reviewCount} />
-
-        {/* Title cố định 2 dòng */}
-        <div
-          className="product-title"
-          style={{
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            height: '64px',
-            flex: '0 0 64px',
-          }}
-        >
-          {book.title}
-        </div>
-
-        {/* Mô tả cố định 2 dòng, không xuống hàng thêm */}
-        <p
-          className="product-desc"
-          style={{
-            display: '-webkit-box',
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            height: '72px',
-            flex: '0 0 72px',
-          }}
-        >
-          {desc}
-        </p>
-
-        {/* Tags chuyển xuống dưới mô tả, tối đa 2 tag + "+n" */}
-        <TagList tags={book.tags} maxVisible={2} />
-
-        <div className="product-footer" style={{ marginTop: 'auto' }}>
+        {book.tags && (
+          <div className="product-tags">
+            {book.tags.map(tag => (
+              <span key={tag} className="product-tag">{tag}</span>
+            ))}
+          </div>
+        )}
+        <div className="product-title">{book.title}</div>
+        <p className="product-desc">{book.desc || book.description?.slice(0,100) + '...'}</p>
+        <div className="product-footer">
           {book.oldPrice ? (
             <div className="product-price-wrap">
-              <div className="product-price-old-row">
-                <span className="product-price-old">{book.oldPrice}</span>
-                <span className="product-price-discount">{book.discount}</span>
-              </div>
+              <span className="product-price-old">{book.oldPrice}</span>
               <span className="product-price">{book.price || formatPrice(book.salePrice || book.basePrice)}</span>
+              {book.discount && <span className="product-price-discount">{book.discount}</span>}
             </div>
           ) : (
             <span className="product-price">{book.price || formatPrice(book.salePrice || book.basePrice)}</span>
