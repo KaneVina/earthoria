@@ -1,0 +1,77 @@
+import { Link } from 'react-router-dom'
+
+export default function Footer() {
+  return (
+    <footer>
+      <div className="footer-inner">
+        <div className="footer-top">
+          <div>
+            <div className="footer-brand-mark">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ transform: 'rotate(-45deg)' }}>
+                <path d="M8 2L14 8L8 14L2 8L8 2Z" stroke="#4a9e3f" strokeWidth="1" fill="none"/>
+              </svg>
+            </div>
+            <div className="footer-brand-name">The Earthoria Ecosystem</div>
+            <p className="footer-brand-desc">Mở sách, mở ra thế giới qua lăng kính AR & AI.</p>
+            <div className="footer-social">
+              <a href="https://facebook.com/Earthoriavn" target="_blank" rel="noreferrer" className="social-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+                </svg>
+              </a>
+            </div>
+            <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
+              <div style={{ fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', marginBottom: '12px' }}>
+                Nhận thông báo mới
+              </div>
+              <div style={{ display: 'flex' }}>
+                <input type="email" placeholder="Email của bạn" style={{
+                  flex: 1, background: 'rgba(255,255,255,0.05)',
+                  border: '0.5px solid rgba(255,255,255,0.1)', borderRight: 'none',
+                  padding: '10px 14px', fontSize: '12px',
+                  color: 'rgba(255,255,255,0.6)', outline: 'none'
+                }}/>
+                <button style={{
+                  background: 'var(--gold)', border: 'none',
+                  padding: '10px 16px', cursor: 'pointer',
+                  color: 'var(--ink)', fontSize: '13px'
+                }}>→</button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="footer-col-title">Sản Phẩm</h4>
+            <ul className="footer-links">
+              <li><Link to="/shop">Sách AR Thiên Nhiên</Link></li>
+              <li><Link to="/shop">Sách AR Khoa Học</Link></li>
+              <li><Link to="/shop">Hướng dẫn AR</Link></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="footer-col-title">Công Ty</h4>
+            <ul className="footer-links">
+              <li><Link to="/about">Về chúng tôi</Link></li>
+              <li><a href="mailto:earthoriavn@gmail.com">Liên hệ</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="footer-col-title">Pháp Lý</h4>
+            <ul className="footer-links">
+              <li><a href="#">Chính sách giao hàng</a></li>
+              <li><a href="#">Bảo mật</a></li>
+              <li><a href="#">Điều khoản</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="footer-bottom">
+          <span className="footer-copy">© 2026 Earthoria. All rights reserved.</span>
+          <span className="footer-tagline">Mở sách — Mở ra thế giới</span>
+        </div>
+      </div>
+    </footer>
+  )
+}
