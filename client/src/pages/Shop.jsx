@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { bookService } from '../services/bookService'
 import { useCartStore } from '../store/cartStore'
@@ -89,6 +89,8 @@ const CAT_BANNERS = [
 const STATIC_PRODUCTS = [
   {
     id: 'dai-duong',
+    slug: 'dai-duong-huyen-bi',
+    hashId: 'dai-duong',
     title: 'Đại Dương Huyền Bí',
     desc: '80 loài sinh vật biển sâu hiện ra sinh động. Khám phá rạn san hô, đáy đại dương và dòng hải lưu.',
     price: '350.000đ', oldPrice: '380.000đ', discount: '-8%',
@@ -99,6 +101,8 @@ const STATIC_PRODUCTS = [
   },
   {
     id: 'hanh-trinh-vu-tru',
+    slug: 'hanh-trinh-vu-tru',
+    hashId: 'hanh-trinh-vu-tru',
     title: 'Hành Trình Vũ Trụ',
     desc: 'Du hành qua 8 hành tinh, hàng trăm ngôi sao và dải Ngân Hà với mô hình không gian 3D có âm thanh vòm.',
     price: '420.000đ',
@@ -109,6 +113,8 @@ const STATIC_PRODUCTS = [
   },
   {
     id: 'con-trung',
+    slug: 'con-trung-ky-dieu',
+    hashId: 'con-trung',
     title: 'Côn Trùng Kỳ Diệu',
     desc: 'Phóng to 50 loài côn trùng tới kích thước khổng lồ, quan sát từng chi tiết cánh, xúc tu và chu kỳ sống.',
     price: '290.000đ', category: 'Thiên Nhiên',
@@ -118,6 +124,8 @@ const STATIC_PRODUCTS = [
   },
   {
     id: 'co-the-con-nguoi',
+    slug: 'co-the-con-nguoi',
+    hashId: 'co-the-con-nguoi',
     title: 'Cơ Thể Con Người',
     desc: 'Bóc tách từng lớp của cơ thể người — xương, cơ, nội tạng — với mô hình AR tương tác độ nét cao.',
     price: '390.000đ', oldPrice: '450.000đ', discount: '-13%',
@@ -128,6 +136,8 @@ const STATIC_PRODUCTS = [
   },
   {
     id: 'khung-long',
+    slug: 'khung-long-troi-day',
+    hashId: 'khung-long',
     title: 'Khủng Long Trỗi Dậy',
     desc: 'Hồi sinh 30 loài khủng long theo tỉ lệ thực. Cảm nhận tiếng gầm rú và chuyển động ngay trong phòng khách.',
     price: '460.000đ',
@@ -139,6 +149,8 @@ const STATIC_PRODUCTS = [
   },
   {
     id: 'thuc-vat',
+    slug: 'thuc-vat-ky-bi',
+    hashId: 'thuc-vat',
     title: 'Thực Vật Kỳ Bí',
     desc: 'Quan sát quá trình thụ phấn, nảy mầm và phát triển của 60 loài thực vật bằng hoạt hình AR thời gian thực.',
     price: '310.000đ', category: 'Thiên Nhiên',
@@ -227,18 +239,34 @@ function TagList({ tags, maxVisible = 2 }) {
 }
 
 function ProductCard({ book, onAddToCart, delay }) {
+  const navigate = useNavigate()
   const [wishlisted, setWishlisted] = useState(book.wishlisted || false)
 
   // Truncate description to ~80 chars for consistency
   const desc = book.desc || (book.description ? book.description.slice(0, 100) + '…' : '')
 
+  const handleCardClick = () => {
+    const slug = book.slug || book.id
+    const hashId = book.hashId || book.id
+    navigate(`/books/${slug}/${hashId}`)
+  }
+
   return (
-    <div className={`product-card reveal${delay ? ` reveal-delay-${delay}` : ''}`}>
+    <div
+      className={`product-card reveal${delay ? ` reveal-delay-${delay}` : ''}`}
+      onClick={handleCardClick}
+      style={{ cursor: 'pointer' }}
+    >
       <div className="product-img-wrap">
         <img src={book.img || book.coverImage} alt={book.title} />
         <div className="product-img-overlay">
-          <button className="overlay-btn primary">Xem chi tiết</button>
-          <button className="overlay-btn">Demo AR</button>
+          <button
+            className="overlay-btn primary"
+            onClick={(e) => { e.stopPropagation(); handleCardClick() }}
+          >
+            Xem chi tiết
+          </button>
+          <button className="overlay-btn" onClick={(e) => e.stopPropagation()}>Demo AR</button>
         </div>
         {book.badge && (
           <span className={`product-badge${book.badgeGold ? ' gold' : ''}`}>{book.badge}</span>

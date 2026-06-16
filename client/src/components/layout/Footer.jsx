@@ -54,24 +54,71 @@ export default function Footer() {
             <ul className="footer-links">
               <li><Link to="/about">Về chúng tôi</Link></li>
               <li><a href="mailto:earthoriavn@gmail.com">Liên hệ</a></li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="footer-col-title">Pháp Lý</h4>
-            <ul className="footer-links">
               <li><a href="#">Chính sách giao hàng</a></li>
               <li><a href="#">Bảo mật</a></li>
               <li><a href="#">Điều khoản</a></li>
             </ul>
           </div>
+
+          <div>
+            <h4 className="footer-col-title">Tải Ứng Dụng</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '4px' }}>
+              <a href="#" className="footer-app-btn">
+                <img src="/ios-vn.png" alt="Tải trên App Store" />
+              </a>
+              <a href="#" className="footer-app-btn">
+                <img src="/androi-vn.png" alt="Tải trên Google Play" />
+              </a>
+            </div>
+          </div>
         </div>
 
         <div className="footer-bottom">
-          <span className="footer-copy">© 2026 Earthoria. All rights reserved.</span>
+          <span className="footer-copy">&copy; 2026 Earthoria. All rights reserved.</span>
           <span className="footer-tagline">Mở sách — Mở ra thế giới</span>
         </div>
       </div>
+
+      <style>{`
+        .footer-links li a {
+          position: relative;
+          transition: all 0.25s ease;
+          display: inline-block;
+          text-decoration: none;
+        }
+        .footer-links li a::after {
+          content: '';
+          position: absolute;
+          left: 0;
+          bottom: -2px;
+          width: 0;
+          height: 1px;
+          background: linear-gradient(90deg, #4a9e3f, #a8d96f);
+          transition: width 0.3s ease;
+        }
+        .footer-links li a:hover {
+          background: linear-gradient(90deg, #4a9e3f, #a8d96f);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        .footer-links li a:hover::after {
+          width: 100%;
+        }
+        .footer-app-btn {
+          display: block;
+          transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .footer-app-btn:hover {
+          opacity: 0.85;
+          transform: translateY(-2px);
+        }
+        .footer-app-btn img {
+          height: 40px;
+          width: auto;
+          display: block;
+        }
+      `}</style>
     </footer>
   )
 }

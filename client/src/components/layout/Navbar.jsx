@@ -5,7 +5,7 @@ import { useAuthStore } from "../../store/authStore";
 import { useCartStore } from "../../store/cartStore";
 import { useTheme } from "../../hooks/useTheme";
 import toast from "react-hot-toast";
-import logoImg from "../../assets/img/logo-ngang.png";
+import logoImg from "../../assets/img/logoBT-ngangtext.png";
 
 export default function Navbar() {
   const location = useLocation();
@@ -73,7 +73,7 @@ export default function Navbar() {
             <img
               src={logoImg}
               alt="EARTHORIA Logo"
-              style={{ height: "48px", width: "auto", display: "block" }}
+              style={{ height: "32px", width: "auto", display: "block" }}
             />
           </Link>
 
@@ -103,18 +103,6 @@ export default function Navbar() {
 
           {/* Actions */}
           <div className="nav-actions">
-            <span
-              style={{
-                fontSize: "10px",
-                letterSpacing: "0.12em",
-                color: "var(--text-muted)",
-                cursor: "pointer",
-              }}
-            >
-              VI / EN
-            </span>
-
-            {/* Theme toggle */}
             <button
               className="nav-icon"
               onClick={toggleTheme}
