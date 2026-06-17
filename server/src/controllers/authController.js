@@ -138,7 +138,7 @@ const googleCallback = (req, res) => {
   try {
     const user = req.user
     const token = generateToken(user.id)
-    const redirectUrl = `${process.env.CLIENT_URL}/auth/google/success?token=${token}&name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}&avatar=${encodeURIComponent(user.avatar || '')}&role=${user.role}`
+    const redirectUrl = `${process.env.CLIENT_URL}/auth/google/success?token=${token}&id=${user.id}&name=${encodeURIComponent(user.name)}&email=${encodeURIComponent(user.email)}&avatar=${encodeURIComponent(user.avatar || '')}&role=${user.role}`
     res.redirect(redirectUrl)
   } catch (error) {
     res.redirect(`${process.env.CLIENT_URL}/login?error=google_failed`)

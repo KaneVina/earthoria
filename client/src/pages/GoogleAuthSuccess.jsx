@@ -4,12 +4,13 @@ import { useAuthStore } from '../store/authStore'
 import toast from 'react-hot-toast'
 
 export default function GoogleAuthSuccess() {
-  const navigate       = useNavigate()
-  const [params]       = useSearchParams()
-  const { setAuth }    = useAuthStore()
+  const navigate    = useNavigate()
+  const [params]    = useSearchParams()
+  const { setAuth } = useAuthStore()
 
   useEffect(() => {
     const token  = params.get('token')
+    const id     = params.get('id')
     const name   = params.get('name')
     const email  = params.get('email')
     const avatar = params.get('avatar')
@@ -21,7 +22,7 @@ export default function GoogleAuthSuccess() {
       return
     }
 
-    setAuth({ name, email, avatar, role }, token)
+    setAuth({ id, name, email, avatar, role }, token)
     toast.success(`Chào mừng, ${name}!`)
     navigate('/')
   }, [])
