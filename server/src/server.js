@@ -1,4 +1,4 @@
-require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') })
+require('dotenv').config({ override: true })
 const app = require('./app')
 const prisma = require('./config/db')
 
