@@ -1056,8 +1056,11 @@ footer {
   display: flex; justify-content: space-between; align-items: center;
 }
 .footer-copy {
-  font-size: 11px; color: rgba(255,255,255,0.2);
-  letter-spacing: 0.08em;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.16em;
+  color: rgba(255,255,255,0.32);
 }
 .footer-tagline {
   font-family: 'Playfair Display', serif;
@@ -4613,4 +4616,212 @@ body.dark-mode .chapter-title { color: #c8d4cc; }
   .related-grid { grid-template-columns: 1fr; }
   .purchase-row { flex-wrap: wrap; }
   .btn-add-main { min-width: 160px; }
+}
+
+
+/* ── Hover màu, không gạch chân ── */
+.nav-links a:hover:not(.active) {
+  color: var(--forest);
+}
+
+/* ── Badge số lượng (giỏ hàng / wishlist) ── */
+.nav-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 15px;
+  height: 15px;
+  background: var(--gold);
+  border-radius: 50%;
+  font-size: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ivory);
+  font-weight: 500;
+  line-height: 1;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+/* ── Menu người dùng: "Xin chào, {tên}" + avatar ── */
+.user-menu {
+  position: relative;
+}
+.user-menu-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: 0.5px solid transparent;
+  padding: 6px 10px 6px 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.user-menu-trigger:hover {
+  border-color: var(--border-gold);
+  background: var(--gold-pale);
+}
+.user-avatar {
+  width: 30px;
+  height: 30px;
+  border: 0.5px solid var(--border-gold);
+  background: var(--forest);
+  color: var(--gold);
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.user-greet {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 300;
+  white-space: nowrap;
+}
+.user-greet strong {
+  color: var(--forest);
+  font-weight: 500;
+}
+.user-caret {
+  color: var(--text-muted);
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+.user-menu:hover .user-caret {
+  transform: rotate(180deg);
+}
+
+/* Dropdown — xuất hiện khi rê chuột vào .user-menu */
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  min-width: 220px;
+  background: var(--ivory);
+  border: 0.5px solid var(--border-gold);
+  box-shadow: 0 24px 48px rgba(13,43,30,0.14);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: all 0.25s ease;
+  z-index: 950;
+  padding: 6px;
+}
+.user-menu:hover .user-dropdown,
+.user-menu:focus-within .user-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.user-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--text-body);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  text-align: left;
+}
+.user-dropdown-item svg { color: var(--gold); flex-shrink: 0; }
+.user-dropdown-item:hover {
+  background: var(--gold-pale);
+  color: var(--forest);
+}
+.user-dropdown-item.logout {
+  color: #c0392b;
+  border-top: 0.5px solid var(--border);
+  margin-top: 4px;
+}
+.user-dropdown-item.logout svg { color: #c0392b; }
+.user-dropdown-item.logout:hover { background: rgba(192,57,43,0.06); }
+
+/* ── Hamburger + panel menu mobile ── */
+.nav-hamburger {
+  display: none;
+  width: 38px; height: 38px;
+  align-items: center; justify-content: center;
+  background: transparent; border: none; cursor: pointer;
+  color: var(--forest);
+}
+.nav-mobile-panel {
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 24px 28px;
+  background: var(--ivory);
+  border-top: 0.5px solid var(--border-gold);
+}
+.nav-mobile-panel.open { display: flex; }
+.nav-mobile-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 6px;
+  font-size: 13px; letter-spacing: 0.04em;
+  color: var(--text-body); text-decoration: none;
+  border-bottom: 0.5px solid var(--border);
+  background: none; border-left: none; border-right: none; border-top: none;
+  cursor: pointer; width: 100%; text-align: left;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+.nav-mobile-link.active { color: var(--gold); font-weight: 400; }
+.nav-mobile-link.logout { color: #c0392b; }
+.nav-mobile-divider {
+  height: 0.5px; background: var(--border);
+  margin: 10px 0;
+}
+.nav-mobile-auth {
+  display: flex; flex-direction: column; gap: 10px;
+  margin-top: 16px;
+}
+
+@media (max-width: 900px) {
+  nav .nav-links { display: none; }
+  .nav-hamburger { display: flex; }
+  .nav-auth-buttons { display: none; }
+  .user-menu { display: none; } /* thay bằng các mục trong nav-mobile-panel */
+}
+@media (min-width: 901px) {
+  .nav-hamburger { display: none; }
+  .nav-mobile-panel { display: none !important; }
+}
+
+/* ── Dark mode ── */
+body.dark-mode .user-avatar { background: #222e28; border-color: rgba(74,158,63,0.3); }
+body.dark-mode .user-greet { color: rgba(180,200,188,0.6); }
+body.dark-mode .user-greet strong { color: #c8d4cc; }
+body.dark-mode .user-menu-trigger:hover { background: rgba(74,158,63,0.1); }
+body.dark-mode .user-dropdown { background: #1c2822; border-color: rgba(74,158,63,0.25); }
+body.dark-mode .user-dropdown-item { color: #c8d4cc; }
+body.dark-mode .user-dropdown-item:hover { background: rgba(74,158,63,0.1); }
+body.dark-mode .nav-mobile-panel { background: #121a16; border-top-color: rgba(74,158,63,0.2); }
+body.dark-mode .nav-mobile-link { color: #c8d4cc; border-color: rgba(255,255,255,0.07); }
+body.dark-mode .nav-hamburger { color: #c8d4cc; }
+
+.nav-auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav-auth-buttons .btn-ghost,
+.nav-auth-buttons .btn-primary {
+  height: 38px;
+  padding-top: 0;
+  padding-bottom: 0;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.nav-auth-buttons a,
+.nav-mobile-auth a {
+  text-decoration: none;
+  color: inherit;
 }
