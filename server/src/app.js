@@ -3,7 +3,7 @@ const cors = require('cors')
 const helmet = require('helmet')
 const morgan = require('morgan')
 const rateLimit = require('express-rate-limit')
-
+const passport = require('./config/passport')
 const app = express()
 
 app.use(helmet())
@@ -20,7 +20,7 @@ app.use(rateLimit({
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
-
+app.use(passport.initialize())
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'))
 }
