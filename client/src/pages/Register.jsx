@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
-import { Eye, EyeOff, Shield } from 'lucide-react'
+import { Eye, EyeOff, Shield, HelpCircle } from 'lucide-react'
 import { authService } from '../services/authService'
 import { useAuthStore } from '../store/authStore'
 import toast from 'react-hot-toast'
@@ -13,15 +13,16 @@ export default function Register() {
   const [showPw2, setShowPw2] = useState(false)
   const [loading, setLoading] = useState(false)
   const [strength, setStrength] = useState(0)
+  const [showPwHint, setShowPwHint] = useState(false)
 
   const { register, handleSubmit, watch, formState: { errors } } = useForm()
   const password = watch('password', '')
 
   const checkStrength = (val) => {
     let s = 0
-    if (val.length >= 8) s++
+    if (val.length >= 8 && val.length <= 16) s++
     if (/[A-Z]/.test(val)) s++
-    if (/[0-9]/.test(val)) s++
+    if (/[a-z]/.test(val)) s++
     if (/[^A-Za-z0-9]/.test(val)) s++
     setStrength(s)
   }
@@ -47,6 +48,15 @@ export default function Register() {
       setLoading(false)
     }
   }
+
+  // Kiểm tra từng tiêu chí để tô màu trong tooltip
+  const pwChecks = (val) => ({
+    length:  val.length >= 8 && val.length <= 16,
+    upper:   /[A-Z]/.test(val),
+    lower:   /[a-z]/.test(val),
+    special: /[^A-Za-z0-9]/.test(val),
+  })
+  const checks = pwChecks(password)
 
   return (
     <main className="auth-page">
@@ -168,16 +178,83 @@ export default function Register() {
                 {errors.email && <p className="field-error">{errors.email.message}</p>}
               </div>
 
+              {/* MẬT KHẨU */}
               <div className="form-group">
-                <label>Mật khẩu</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                  <label style={{ margin: 0 }}>Mật khẩu</label>
+                  {/* Icon dấu hỏi + tooltip */}
+                  <div style={{ position: 'relative', display: 'inline-flex' }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowPwHint(v => !v)}
+                      style={{
+                        background: 'none', border: 'none', padding: 0,
+                        cursor: 'pointer', display: 'flex', alignItems: 'center',
+                        color: showPwHint ? 'var(--forest)' : 'var(--text-muted)',
+                        transition: 'color .2s'
+                      }}
+                    >
+                      <HelpCircle size={15}/>
+                    </button>
+
+                    {showPwHint && (
+                      <div style={{
+                        position: 'absolute', top: 'calc(100% + 8px)', left: '50%',
+                        transform: 'translateX(-50%)', zIndex: 99,
+                        background: 'var(--surface, #fff)',
+                        border: '0.5px solid var(--border)',
+                        borderRadius: '10px',
+                        padding: '12px 14px',
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.10)',
+                        minWidth: '220px',
+                        fontSize: '12px',
+                        lineHeight: '1.7',
+                      }}>
+                        {/* Mũi tên nhỏ */}
+                        <div style={{
+                          position: 'absolute', top: '-5px', left: '50%',
+                          transform: 'translateX(-50%) rotate(45deg)',
+                          width: '9px', height: '9px',
+                          background: 'var(--surface, #fff)',
+                          borderTop: '0.5px solid var(--border)',
+                          borderLeft: '0.5px solid var(--border)',
+                        }}/>
+                        <p style={{ fontWeight: 600, marginBottom: '8px', color: 'var(--text)', fontSize: '11px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                          Yêu cầu mật khẩu
+                        </p>
+                        {[
+                          { key: 'length',  label: '8 – 16 ký tự',           ok: checks.length  },
+                          { key: 'upper',   label: 'Ít nhất 1 chữ HOA (A-Z)', ok: checks.upper   },
+                          { key: 'lower',   label: 'Ít nhất 1 chữ thường (a-z)', ok: checks.lower },
+                          { key: 'special', label: 'Ít nhất 1 ký tự đặc biệt (!@#…)', ok: checks.special },
+                        ].map(c => (
+                          <div key={c.key} style={{ display: 'flex', alignItems: 'center', gap: '7px', color: c.ok ? 'var(--forest, #2d7a3a)' : 'var(--text-muted)' }}>
+                            {c.ok
+                              ? <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                              : <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/></svg>
+                            }
+                            <span>{c.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <div className="auth-password-wrap">
                   <input
                     type={showPw ? 'text' : 'password'}
-                    placeholder="Tối thiểu 8 ký tự"
+                    placeholder="8–16 ký tự, chữ hoa, ký tự đặc biệt"
                     className={errors.password ? 'error' : ''}
                     {...register('password', {
                       required: 'Vui lòng nhập mật khẩu',
-                      minLength: { value: 8, message: 'Mật khẩu tối thiểu 8 ký tự' },
+                      minLength: { value: 8,  message: 'Mật khẩu tối thiểu 8 ký tự'  },
+                      maxLength: { value: 16, message: 'Mật khẩu tối đa 16 ký tự'     },
+                      validate: {
+                        hasUpper:   v => /[A-Z]/.test(v)        || 'Cần ít nhất 1 chữ hoa (A-Z)',
+                        hasLower:   v => /[a-z]/.test(v)        || 'Cần ít nhất 1 chữ thường (a-z)',
+                        hasSpecial: v => /[^A-Za-z0-9]/.test(v) || 'Cần ít nhất 1 ký tự đặc biệt (!@#...)',
+                      },
                       onChange: (e) => checkStrength(e.target.value)
                     })}
                   />
@@ -185,6 +262,7 @@ export default function Register() {
                     {showPw ? <EyeOff size={16}/> : <Eye size={16}/>}
                   </button>
                 </div>
+
                 {password && (
                   <>
                     <div className="auth-strength-bar">
@@ -203,6 +281,7 @@ export default function Register() {
                 {errors.password && <p className="field-error">{errors.password.message}</p>}
               </div>
 
+              {/* XÁC NHẬN MẬT KHẨU */}
               <div className="form-group">
                 <label>Xác nhận mật khẩu</label>
                 <div className="auth-password-wrap">

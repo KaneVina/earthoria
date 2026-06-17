@@ -7,6 +7,49 @@ import { formatPrice, getBookUrl } from '../utils/helpers'
 import toast from 'react-hot-toast'
 
 export default function Home() {
+// Thêm useRef cho cta section
+const ctaRef = useRef(null)
+
+// Thêm useEffect firefly SAU các useEffect hiện có
+useEffect(() => {
+  const section = ctaRef.current
+  if (!section) return
+
+  const configs = [
+    { x:'8%',  y:'20%', dx1:'40px',  dy1:'-30px', dx2:'20px',  dy2:'60px',  dx3:'-30px', dy3:'20px',  dur:'7s',  opacity:'0.9' },
+    { x:'15%', y:'70%', dx1:'-20px', dy1:'-50px', dx2:'50px',  dy2:'-20px', dx3:'10px',  dy3:'40px',  dur:'9s',  opacity:'0.7' },
+    { x:'25%', y:'40%', dx1:'30px',  dy1:'40px',  dx2:'-40px', dy2:'20px',  dx3:'20px',  dy3:'-50px', dur:'11s', opacity:'0.85'},
+    { x:'40%', y:'15%', dx1:'-50px', dy1:'30px',  dx2:'30px',  dy2:'50px',  dx3:'-20px', dy3:'-30px', dur:'8s',  opacity:'0.6' },
+    { x:'55%', y:'80%', dx1:'20px',  dy1:'-60px', dx2:'-30px', dy2:'-20px', dx3:'50px',  dy3:'30px',  dur:'13s', opacity:'0.8' },
+    { x:'65%', y:'30%', dx1:'-40px', dy1:'50px',  dx2:'60px',  dy2:'-30px', dx3:'-20px', dy3:'40px',  dur:'10s', opacity:'0.75'},
+    { x:'75%', y:'60%', dx1:'50px',  dy1:'-40px', dx2:'-20px', dy2:'50px',  dx3:'30px',  dy3:'-20px', dur:'12s', opacity:'0.9' },
+    { x:'85%', y:'25%', dx1:'-30px', dy1:'-20px', dx2:'20px',  dy2:'-50px', dx3:'-50px', dy3:'30px',  dur:'9s',  opacity:'0.65'},
+    { x:'90%', y:'75%', dx1:'20px',  dy1:'30px',  dx2:'-50px', dy2:'20px',  dx3:'30px',  dy3:'-40px', dur:'14s', opacity:'0.8' },
+    { x:'50%', y:'50%', dx1:'-60px', dy1:'-40px', dx2:'40px',  dy2:'-60px', dx3:'60px',  dy3:'40px',  dur:'16s', opacity:'0.5' },
+    { x:'33%', y:'85%', dx1:'40px',  dy1:'-20px', dx2:'-20px', dy2:'-40px', dx3:'10px',  dy3:'30px',  dur:'11s', opacity:'0.7' },
+    { x:'70%', y:'10%', dx1:'-20px', dy1:'60px',  dx2:'40px',  dy2:'20px',  dx3:'-30px', dy3:'-40px', dur:'8s',  opacity:'0.85'},
+  ]
+
+  const fireflies = configs.map((c, i) => {
+    const el = document.createElement('div')
+    el.className = 'firefly'
+    el.style.cssText = `
+      --x:${c.x}; --y:${c.y};
+      --dx1:${c.dx1}; --dy1:${c.dy1};
+      --dx2:${c.dx2}; --dy2:${c.dy2};
+      --dx3:${c.dx3}; --dy3:${c.dy3};
+      --dur:${c.dur};
+      --max-opacity:${c.opacity};
+      animation-delay:${(i * 1.3).toFixed(1)}s;
+    `
+    section.appendChild(el)
+    return el
+  })
+
+  return () => fireflies.forEach(el => el.remove())
+}, []) // chạy 1 lần sau khi render
+
+
   const { addToCart } = useCartStore()
 
   const { data: featuredBooks = [] } = useQuery({
@@ -294,7 +337,7 @@ export default function Home() {
       </section>
 
       {/* CTA */}
-      <section className="cta-section" id="cta-section">
+      <section className="cta-section" id="cta-section" ref={ctaRef}>
         <div className="cta-bg-text">Earthoria</div>
         <span className="cta-eyebrow reveal">Bắt Đầu Hành Trình</span>
         <h2 className="cta-headline reveal">
