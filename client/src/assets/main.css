@@ -222,9 +222,12 @@ nav {
   color: var(--gold); margin-bottom: 8px;
 }
 .floatcard-value {
-  font-family: 'Playfair Display', serif;
-  font-size: 36px; font-weight: 300; color: var(--forest);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--forest);
   line-height: 1;
+  letter-spacing: -0.02em;
 }
 .floatcard-desc {
   font-size: 11px; color: var(--text-muted);
@@ -604,8 +607,11 @@ nav {
   border-top: 0.5px solid var(--border);
 }
 .product-price {
-  font-family: 'Playfair Display', serif;
-  font-size: 22px; font-weight: 400; color: var(--forest);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 22px;
+  font-weight: 700;       /* tăng từ 400 lên 700 cho nổi */
+  color: var(--forest);
+  letter-spacing: -0.01em;
 }
 .add-cart {
   width: 40px; height: 40px;
@@ -4166,12 +4172,18 @@ body.dark-mode .promo-strip { background: #0a1510; border-color: rgba(74,158,63,
   margin-bottom: 28px; flex-wrap: wrap;
 }
 .price-main {
-  font-family: 'Playfair Display', serif;
-  font-size: 42px; font-weight: 300; color: var(--forest); line-height: 1;
+  font-family: 'Montserrat', sans-serif  !important;
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--forest);
+  line-height: 1;
+  letter-spacing: -0.02em;
 }
-.price-old {
-  font-size: 16px; color: var(--text-muted);
-  text-decoration: line-through; font-weight: 300; padding-bottom: 6px;
+
+.price-old,
+.product-price-old {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 400;
 }
 .price-save {
   font-size: 10px; letter-spacing: 0.1em;
@@ -4513,10 +4525,7 @@ body.dark-mode .promo-strip { background: #0a1510; border-color: rgba(74,158,63,
   display: flex; justify-content: space-between; align-items: center;
   padding-top: 14px; border-top: 0.5px solid var(--border);
 }
-.product-price {
-  font-family: 'Playfair Display', serif;
-  font-size: 20px; font-weight: 400; color: var(--forest);
-}
+
 .add-cart-mini {
   width: 36px; height: 36px;
   border: 0.5px solid var(--border-gold);
@@ -4551,8 +4560,11 @@ body.dark-mode .promo-strip { background: #0a1510; border-color: rgba(74,158,63,
 .sticky-stars .star { font-size: 11px; color: var(--gold); }
 .sticky-stars span { font-size: 11px; color: rgba(255,255,255,0.4); margin-left: 6px; }
 .sticky-price {
-  font-family: 'Playfair Display', serif;
-  font-size: 26px; font-weight: 300; color: var(--ivory); margin-left: auto;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--ivory);
+  letter-spacing: -0.01em;
 }
 .sticky-btn {
   font-family: 'Be Vietnam Pro', sans-serif;
@@ -4825,3 +4837,270 @@ body.dark-mode .nav-hamburger { color: #c8d4cc; }
   text-decoration: none;
   color: inherit;
 }
+
+* ── Hover màu, không gạch chân ── */
+.nav-links a:hover:not(.active) {
+  color: var(--forest);
+}
+
+/* ── Badge số lượng (giỏ hàng / wishlist) ── */
+.nav-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 15px;
+  height: 15px;
+  background: var(--gold);
+  border-radius: 50%;
+  font-size: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ivory);
+  font-weight: 500;
+  line-height: 1;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+/* ── Nút Đăng nhập / Đăng ký: thêm khoảng cách, đều chiều cao ── */
+.nav-auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav-auth-buttons .btn-ghost,
+.nav-auth-buttons .btn-primary {
+  height: 38px;
+  padding-top: 0;
+  padding-bottom: 0;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* ── Menu người dùng: "Xin chào, {tên}" + avatar ── */
+.user-menu {
+  position: relative;
+}
+.user-menu-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: 0.5px solid transparent;
+  padding: 6px 12px 6px 6px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.user-menu-trigger:hover {
+  border-color: var(--border-gold);
+  background: rgba(74,158,63,0.05);
+}
+.user-avatar {
+  width: 30px;
+  height: 30px;
+  border: 0.5px solid var(--border-gold);
+  background: linear-gradient(135deg, var(--forest) 0%, var(--forest-mid) 100%);
+  color: var(--gold);
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.user-greet {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 300;
+  white-space: nowrap;
+}
+.user-greet strong {
+  color: var(--forest);
+  font-weight: 500;
+}
+.user-caret {
+  color: var(--text-muted);
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+.user-menu:hover .user-caret {
+  transform: rotate(180deg);
+}
+
+/* Dropdown — xuất hiện khi rê chuột vào .user-menu */
+.user-dropdown {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: 0;
+  min-width: 240px;
+  max-width: 300px;
+  background: var(--ivory);
+  border: 0.5px solid var(--border-gold);
+  box-shadow: 0 28px 56px rgba(13,43,30,0.16);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: all 0.25s ease;
+  z-index: 950;
+  padding: 8px;
+}
+.user-menu:hover .user-dropdown,
+.user-menu:focus-within .user-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Header trong dropdown: avatar + tên + email */
+.user-dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 10px 16px;
+  margin-bottom: 6px;
+  border-bottom: 0.5px solid var(--border);
+}
+.user-dropdown-avatar {
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, var(--forest) 0%, var(--forest-mid) 100%);
+  border: 0.5px solid var(--border-gold);
+  color: var(--gold);
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.user-dropdown-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--forest);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.user-dropdown-email {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 300;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  padding: 11px 12px;
+  font-size: 13px;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  color: var(--text-body);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  text-align: left;
+}
+.user-dropdown-item svg {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+}
+.user-dropdown-item:hover {
+  background: rgba(74,158,63,0.06);
+  border-left-color: var(--gold);
+  color: var(--forest);
+}
+.user-dropdown-item:hover svg {
+  color: var(--gold);
+}
+.user-dropdown-item.logout {
+  color: #c0392b;
+  border-top: 0.5px solid var(--border);
+  margin-top: 4px;
+  padding-top: 14px;
+}
+.user-dropdown-item.logout svg { color: #c0392b; }
+.user-dropdown-item.logout:hover {
+  background: rgba(192,57,43,0.05);
+  border-left-color: #c0392b;
+  color: #c0392b;
+}
+
+/* ── Hamburger + panel menu mobile ── */
+.nav-hamburger {
+  display: none;
+  width: 38px; height: 38px;
+  align-items: center; justify-content: center;
+  background: transparent; border: none; cursor: pointer;
+  color: var(--forest);
+}
+.nav-mobile-panel {
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 24px 28px;
+  background: var(--ivory);
+  border-top: 0.5px solid var(--border-gold);
+}
+.nav-mobile-panel.open { display: flex; }
+.nav-mobile-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 6px;
+  font-size: 13px; letter-spacing: 0.04em;
+  color: var(--text-body); text-decoration: none;
+  border-bottom: 0.5px solid var(--border);
+  background: none; border-left: none; border-right: none; border-top: none;
+  cursor: pointer; width: 100%; text-align: left;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+.nav-mobile-link.active { color: var(--gold); font-weight: 400; }
+.nav-mobile-link.logout { color: #c0392b; }
+.nav-mobile-divider {
+  height: 0.5px; background: var(--border);
+  margin: 10px 0;
+}
+.nav-mobile-auth {
+  display: flex; flex-direction: column; gap: 10px;
+  margin-top: 16px;
+}
+
+@media (max-width: 900px) {
+  nav .nav-links { display: none; }
+  .nav-hamburger { display: flex; }
+  .nav-auth-buttons { display: none; }
+  .user-menu { display: none; } /* thay bằng các mục trong nav-mobile-panel */
+}
+@media (min-width: 901px) {
+  .nav-hamburger { display: none; }
+  .nav-mobile-panel { display: none !important; }
+}
+
+/* ── Dark mode ── */
+body.dark-mode .user-avatar { background: linear-gradient(135deg, #1a5c52 0%, #2d7a6e 100%); border-color: rgba(74,158,63,0.3); }
+body.dark-mode .user-greet { color: rgba(180,200,188,0.6); }
+body.dark-mode .user-greet strong { color: #c8d4cc; }
+body.dark-mode .user-menu-trigger:hover { background: rgba(74,158,63,0.08); }
+body.dark-mode .user-dropdown { background: #1c2822; border-color: rgba(74,158,63,0.25); }
+body.dark-mode .user-dropdown-header { border-color: rgba(255,255,255,0.07); }
+body.dark-mode .user-dropdown-avatar { background: linear-gradient(135deg, #1a5c52 0%, #2d7a6e 100%); }
+body.dark-mode .user-dropdown-name { color: #c8d4cc; }
+body.dark-mode .user-dropdown-email { color: rgba(180,200,188,0.45); }
+body.dark-mode .user-dropdown-item { color: #c8d4cc; }
+body.dark-mode .user-dropdown-item:hover { background: rgba(74,158,63,0.1); }
+body.dark-mode .nav-mobile-panel { background: #121a16; border-top-color: rgba(74,158,63,0.2); }
+body.dark-mode .nav-mobile-link { color: #c8d4cc; border-color: rgba(255,255,255,0.07); }
+body.dark-mode .nav-hamburger { color: #c8d4cc; }

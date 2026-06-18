@@ -337,11 +337,10 @@ function ProductCard({ book, onAddToCart, delay }) {
   const desc =
     book.desc || (book.description ? book.description.slice(0, 100) + "…" : "");
 
-  const handleCardClick = () => {
-    const slug = book.slug || book.id;
-    const hashId = book.hashId || book.id;
-    navigate(`/books/${slug}/${hashId}`);
-  };
+const handleCardClick = () => {
+  if (!book.slug || !book.hashId) return;
+  navigate(`/books/${book.slug}/${book.hashId}`);
+};
 
   return (
     <div
@@ -427,26 +426,24 @@ function ProductCard({ book, onAddToCart, delay }) {
         {/* Tags chuyển xuống dưới mô tả, tối đa 2 tag + "+n" */}
         <TagList tags={book.tags} maxVisible={2} />
 
-        <div className="product-footer" style={{ marginTop: "auto" }}>
-          {book.oldPrice ? (
-            <div className="product-price-wrap">
-              <div className="product-price-old-row">
-                <span className="product-price-old">{book.oldPrice}</span>
-                <span className="product-price-discount">{book.discount}</span>
-              </div>
-              <span className="product-price">
-                {book.price || formatPrice(book.salePrice || book.basePrice)}
-              </span>
-            </div>
-          ) : (
-            <span className="product-price">
-              {book.price || formatPrice(book.salePrice || book.basePrice)}
-            </span>
-          )}
-          <AddToCartBtn
-            onAdd={() => onAddToCart && onAddToCart(book.hashId || book.id)}
-          />
-        </div>
+       <div className="product-footer" style={{ marginTop: "auto" }}>
+  {book.salePrice && book.salePrice < book.price ? (
+    <div className="product-price-wrap">
+      <div className="product-price-old-row">
+        <span className="product-price-old">{formatPrice(book.price)}</span>
+        <span className="product-price-discount">
+          -{Math.round((1 - book.salePrice / book.price) * 100)}%
+        </span>
+      </div>
+      <span className="product-price">{formatPrice(book.salePrice)}</span>
+    </div>
+  ) : (
+    <span className="product-price">{formatPrice(book.price)}</span>
+  )}
+  <AddToCartBtn
+    onAdd={() => onAddToCart && onAddToCart(book.hashId)}
+  />
+</div>
       </div>
     </div>
   );
@@ -476,13 +473,17 @@ export default function Shop() {
       toast.error("Có lỗi xảy ra, vui lòng thử lại");
     }
   };
-  const { data: books = [] } = useQuery({
-    queryKey: ["shop-books", activeCategory, sortValue],
-    queryFn: () =>
-      bookService
-        .getAll({ category: activeCategory, sort: sortValue })
-        .then((r) => r.data.data),
-  });
+  const { data: books = [], isLoading } = useQuery({
+  queryKey: ["shop-books", activeCategory, sortValue],
+  queryFn: () =>
+    bookService
+      .getBooks({
+        category: activeCategory !== "all" ? activeCategory : undefined,
+        sort: sortValue === "Giá tăng dần" || sortValue === "Giá giảm dần" ? "price" : "createdAt",
+        order: sortValue === "Giá tăng dần" ? "asc" : "desc",
+      })
+      .then((r) => r.data.data.books || []),
+});
 
   // Reveal on scroll
   useEffect(() => {

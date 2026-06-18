@@ -97,7 +97,7 @@ export default function Navbar() {
             <img
               src={logoImg}
               alt="EARTHORIA Logo"
-              style={{ height: "28px", width: "auto", display: "block" }}
+              style={{ height: "32px", width: "auto", display: "block" }}
             />
           </Link>
 
@@ -183,18 +183,27 @@ export default function Navbar() {
                 </button>
 
                 <div className="user-dropdown">
+                  <div className="user-dropdown-header">
+                    <span className="user-dropdown-avatar">{firstLetter}</span>
+                    <div>
+                      <div className="user-dropdown-name">{user?.name}</div>
+                      {user?.email && (
+                        <div className="user-dropdown-email">{user.email}</div>
+                      )}
+                    </div>
+                  </div>
                   <Link to="/profile" className="user-dropdown-item">
-                    <User size={15} /> Hồ sơ của tôi
+                    <User size={16} /> Hồ sơ của tôi
                   </Link>
                   <Link to="/orders" className="user-dropdown-item">
-                    <Package size={15} /> Đơn hàng
+                    <Package size={16} /> Đơn hàng
                   </Link>
                   <button
                     type="button"
                     className="user-dropdown-item logout"
                     onClick={handleLogout}
                   >
-                    <LogOut size={15} /> Đăng xuất
+                    <LogOut size={16} /> Đăng xuất
                   </button>
                 </div>
               </div>

@@ -15,6 +15,8 @@ import Orders from "./pages/admin/Orders";
 import Users from "./pages/admin/Users";
 import Coupons from "./pages/admin/Coupons";
 import GoogleAuthSuccess from "./pages/GoogleAuthSuccess";
+import CustomCursor from "./components/CustomCursor";
+import ARGuide from "./pages/ARGuide";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -36,12 +38,15 @@ const GuestRoute = ({ children }) => {
 export default function App() {
   return (
     <BrowserRouter>
+      <CustomCursor />
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/books/:slug/:hashId" element={<BookDetail />} />
+          <Route path="/ar" element={<ARGuide />} />
           <Route path="/about" element={<AboutUs />} />
+
           <Route
             path="/cart"
             element={
