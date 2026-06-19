@@ -4,8 +4,8 @@ import toast from 'react-hot-toast'
 import {
   Download, Smartphone, Apple, Bot, BookOpen, Camera, Box, Mic,
   Sparkles, QrCode, MousePointerClick, RotateCcw, Plus, Minus,
-  X, ArrowLeft, ArrowRight, ChevronDown, Info, CheckCircle2, Loader2,
-  Volume2, Leaf, CircleDot, ShieldCheck, PlayCircle, Globe, WifiOff,
+  X, ArrowLeft, ArrowRight, Info, CheckCircle2, Loader2,
+  Volume2, Leaf, CircleDot, ShieldCheck, PlayCircle, Globe, WifiOff, PawPrint,
 } from 'lucide-react'
 
 const STEPS = [
@@ -840,6 +840,10 @@ export default function ARGuide() {
         @keyframes progressShine { from{left:-100%} to{left:200%} }
         @keyframes sparkleFloat { 0%{opacity:0;transform:scale(0.3) translateY(0)} 30%{opacity:1} 100%{opacity:0;transform:scale(1) translateY(-30px)} }
         @keyframes waveBar { 0%,100%{height:4px} 50%{height:22px} }
+        @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        .spin-icon { animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes btnGlow { 0%,100%{opacity:0.45;transform:scale(1)} 50%{opacity:0.15;transform:scale(1.06)} }
+        @keyframes bounceHint { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(-4px)} }
 
         .step-nav-label { display: none; }
         @media (min-width: 900px) { .step-nav-label { display: inline; } }
@@ -975,7 +979,9 @@ function LiveDemoModal({ open, onClose }) {
             )}
             {(phase === 'reveal' || phase === 'ai') && (
               <div style={{ textAlign: 'center', animation: 'fadeInUp 0.5s ease' }}>
-                <div style={{ fontSize: '46px', animation: 'modelFloat 3s ease-in-out infinite' }}>🐘</div>
+                <div style={{ width: '64px', height: '64px', margin: '0 auto', borderRadius: '50%', background: 'rgba(74,158,63,0.12)', border: '0.5px solid rgba(74,158,63,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', animation: 'modelFloat 3s ease-in-out infinite' }}>
+                  <PawPrint size={26} strokeWidth={1.5} color="#4a9e3f" />
+                </div>
                 <div style={{ fontSize: '10px', color: '#4a9e3f', marginTop: '6px' }}>Loxodonta africana</div>
               </div>
             )}
@@ -1337,16 +1343,22 @@ function ModelDemo({ color, modelVisible }) {
           onTouchEnd={endDrag}
           onWheel={e => setZoom(z => Math.max(0.5, Math.min(2.5, z - e.deltaY * 0.001)))}
         >
-          <div style={{ transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) scale(${zoom})`, fontSize: `${100 * zoom}px`, filter: 'drop-shadow(0 20px 40px rgba(74,158,63,0.3))', animation: !dragging ? 'modelFloat 4s ease-in-out infinite' : 'none', transition: dragging ? 'none' : 'filter 0.3s' }}>
-            {modelVisible ? '🦁' : '⬡'}
+          <div style={{ width: '100%', height: '100%', filter: 'drop-shadow(0 20px 40px rgba(74,158,63,0.3))' }}>
+            {modelVisible ? (
+              <Lion3D color={color} interactive rotation={rotation} zoom={zoom} height="100%" />
+            ) : (
+              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', transform: `rotateX(${rotation.x}deg) rotateY(${rotation.y}deg) scale(${zoom})`, animation: !dragging ? 'modelFloat 4s ease-in-out infinite' : 'none' }}>
+                <Box size={72 * zoom} strokeWidth={1} color="rgba(255,255,255,0.2)" />
+              </div>
+            )}
           </div>
           {/* Hotspots */}
           {modelVisible && HOTSPOTS.map((h, i) => (
             <div key={i} style={{ position: 'absolute', left: h.x, top: h.y }}>
               <button
                 onClick={() => setInfo(info === i ? null : i)}
-                style={{ width: '20px', height: '20px', borderRadius: '50%', background: color, border: '2px solid rgba(255,255,255,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', color: '#fff', fontWeight: 700, animation: 'pulse 2s ease-in-out infinite', animationDelay: `${i * 0.5}s` }}
-              >+</button>
+                style={{ width: '20px', height: '20px', borderRadius: '50%', background: color, border: '2px solid rgba(255,255,255,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', animation: 'pulse 2s ease-in-out infinite', animationDelay: `${i * 0.5}s` }}
+              ><Plus size={11} strokeWidth={2.5} /></button>
               {info === i && (
                 <div style={{ position: 'absolute', left: '24px', top: '-8px', background: 'rgba(13,51,48,0.95)', border: `0.5px solid ${color}`, padding: '8px 12px', whiteSpace: 'nowrap', zIndex: 10, animation: 'fadeInUp 0.3s ease', pointerEvents: 'none' }}>
                   <div style={{ fontSize: '11px', color: '#faf8f3', fontWeight: 500 }}>{h.label}</div>
@@ -1363,10 +1375,10 @@ function ModelDemo({ color, modelVisible }) {
         <div style={{ padding: '12px 16px', borderTop: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Zoom: {Math.round(zoom * 100)}%</span>
           <div style={{ display: 'flex', gap: '8px' }}>
-            {['−', '⟳', '+'].map((btn, i) => (
+            {[Minus, RotateCcw, Plus].map((Icon, i) => (
               <button key={i} onClick={() => { stopInertia(); if (i === 0) setZoom(z => Math.max(0.5, z - 0.2)); if (i === 1) { setZoom(1); setRotation({ x: 0, y: 0 }) } if (i === 2) setZoom(z => Math.min(2.5, z + 0.2)) }}
-                style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.12)', color: '#faf8f3', cursor: 'pointer', fontSize: '14px', borderRadius: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              >{btn}</button>
+                style={{ width: '28px', height: '28px', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.12)', color: '#faf8f3', cursor: 'pointer', borderRadius: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              ><Icon size={13} strokeWidth={1.5} /></button>
             ))}
           </div>
         </div>
@@ -1383,16 +1395,28 @@ function ModelDemo({ color, modelVisible }) {
 // ── AI Demo ──
 function AIDemo({ color, onAsk, typing, text }) {
   const [listening, setListening] = useState(false)
+  const [speaking, setSpeaking] = useState(false)
   const handleMic = () => {
     setListening(true)
     setTimeout(() => { setListening(false); onAsk() }, 1500)
   }
+  const handleListen = () => {
+    if (speaking) return
+    setSpeaking(true)
+    setTimeout(() => setSpeaking(false), 1800)
+  }
+  const thinking = typing && !text
   return (
     <div style={{ width: '340px' }}>
-      <div style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', padding: '28px' }}>
+      <div style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', padding: '28px', boxShadow: '0 24px 60px rgba(0,0,0,0.25)' }}>
         {/* AI header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px', paddingBottom: '16px', borderBottom: '0.5px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: `linear-gradient(135deg, ${color}, #5cb84f)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>🌿</div>
+          <div style={{ position: 'relative', width: '40px', height: '40px' }}>
+            <div style={{ position: 'absolute', inset: '-3px', borderRadius: '50%', background: color, opacity: 0.25, animation: 'pulse 2.4s ease-in-out infinite' }} />
+            <div style={{ position: 'relative', width: '40px', height: '40px', borderRadius: '50%', background: `linear-gradient(135deg, ${color}, #5cb84f)`, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 4px 16px ${color}55` }}>
+              <Leaf size={18} strokeWidth={1.5} color="#0a0e0c" />
+            </div>
+          </div>
           <div>
             <div style={{ fontSize: '13px', color: '#faf8f3', fontWeight: 400 }}>Nhà Tự Nhiên Học AI</div>
             <div style={{ fontSize: '10px', color: color, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -1403,13 +1427,28 @@ function AIDemo({ color, onAsk, typing, text }) {
         </div>
         {/* Messages */}
         <div style={{ minHeight: '180px', marginBottom: '20px' }}>
-          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '2px 12px 12px 12px', padding: '12px 16px', marginBottom: '12px', fontSize: '13px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, fontWeight: 300 }}>
+          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '2px 12px 12px 12px', padding: '12px 16px', marginBottom: '12px', fontSize: '13px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, fontWeight: 300, boxShadow: '0 6px 18px rgba(0,0,0,0.18)' }}>
             Xin chào! Tôi là trợ lý tự nhiên học của Earthoria. Bạn muốn biết điều gì về <span style={{ color: color }}>Sư tử châu Phi</span>?
           </div>
+          {thinking && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '20px', padding: '10px 16px', animation: 'fadeInUp 0.3s ease' }}>
+              <Sparkles size={13} strokeWidth={1.5} color={color} style={{ animation: 'pulse 1.2s ease-in-out infinite' }} />
+              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' }}>Đang suy nghĩ...</span>
+            </div>
+          )}
           {text && (
-            <div style={{ background: `rgba(74,158,63,0.1)`, border: `0.5px solid rgba(74,158,63,0.2)`, borderRadius: '12px 2px 12px 12px', padding: '12px 16px', marginLeft: '20px', fontSize: '13px', color: 'rgba(255,255,255,0.8)', lineHeight: 1.7, fontWeight: 300, animation: 'fadeInUp 0.3s ease' }}>
+            <div style={{ background: `rgba(74,158,63,0.1)`, border: `0.5px solid rgba(74,158,63,0.2)`, borderRadius: '12px 2px 12px 12px', padding: '12px 16px', marginLeft: '20px', fontSize: '13px', color: 'rgba(255,255,255,0.8)', lineHeight: 1.7, fontWeight: 300, animation: 'fadeInUp 0.3s ease', boxShadow: '0 6px 18px rgba(0,0,0,0.18)' }}>
               {text}
               {typing && <span style={{ animation: 'blink 1s step-end infinite', marginLeft: '2px', color: color }}>|</span>}
+              {!typing && (
+                <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
+                  <button onClick={handleListen} disabled={speaking}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'transparent', border: 'none', cursor: speaking ? 'default' : 'pointer', fontSize: '11px', color: speaking ? color : 'rgba(255,255,255,0.4)', fontFamily: "'Be Vietnam Pro', sans-serif", padding: 0 }}>
+                    <Volume2 size={13} strokeWidth={1.5} style={{ animation: speaking ? 'pulse 0.7s ease-in-out infinite' : 'none' }} />
+                    {speaking ? 'Đang đọc...' : 'Nghe'}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -1435,9 +1474,10 @@ function AIDemo({ color, onAsk, typing, text }) {
         <button
           onClick={handleMic}
           disabled={listening || typing}
-          style={{ width: '100%', height: '52px', background: listening ? 'rgba(74,158,63,0.2)' : color, border: `0.5px solid ${listening ? color : 'transparent'}`, cursor: listening || typing ? 'wait' : 'pointer', fontSize: '13px', color: listening ? color : '#0a0e0c', fontFamily: "'Be Vietnam Pro', sans-serif", letterSpacing: '0.1em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', transition: 'all 0.3s', animation: listening ? 'pulse 0.8s infinite' : 'none' }}
+          style={{ width: '100%', height: '52px', background: listening ? 'rgba(74,158,63,0.2)' : color, border: `0.5px solid ${listening ? color : 'transparent'}`, cursor: listening || typing ? 'wait' : 'pointer', fontSize: '13px', color: listening ? color : '#0a0e0c', fontFamily: "'Be Vietnam Pro', sans-serif", letterSpacing: '0.1em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', transition: 'all 0.3s', animation: listening ? 'pulse 0.8s infinite' : 'none', boxShadow: !listening && !typing ? `0 6px 20px ${color}40` : 'none' }}
         >
-          🎙️ {listening ? 'Đang nghe...' : typing ? 'Đang trả lời...' : 'Hỏi AI Tutor'}
+          <Mic size={15} strokeWidth={1.5} />
+          {listening ? 'Đang nghe...' : typing ? 'Đang trả lời...' : 'Hỏi AI Tutor'}
         </button>
       </div>
     </div>
@@ -1487,7 +1527,7 @@ function FAQItem({ q, a, color }) {
       <button onClick={() => setOpen(!open)}
         style={{ width: '100%', textAlign: 'left', background: 'transparent', border: 'none', padding: '24px 0', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px' }}>
         <span style={{ fontFamily: "'Playfair Display', serif", fontSize: '18px', fontWeight: 400, color: '#faf8f3', lineHeight: 1.3 }}>{q}</span>
-        <span style={{ color, fontSize: '22px', flexShrink: 0, transition: 'transform 0.3s', transform: open ? 'rotate(45deg)' : 'none' }}>+</span>
+        <Plus size={18} strokeWidth={1.5} color={color} style={{ flexShrink: 0, transition: 'transform 0.3s', transform: open ? 'rotate(45deg)' : 'none' }} />
       </button>
       <div style={{ maxHeight: open ? '200px' : '0', overflow: 'hidden', transition: 'max-height 0.4s cubic-bezier(0.16,1,0.3,1)' }}>
         <p style={{ fontSize: '14px', lineHeight: 1.85, color: 'rgba(255,255,255,0.45)', paddingBottom: '24px', fontWeight: 300, margin: 0 }}>{a}</p>
