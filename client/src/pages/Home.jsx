@@ -1211,6 +1211,565 @@ const REVIEWS = [
 ];
 
 /* ─────────────────────────────────────────────────────────────
+   FLASH DEAL — TRI ÂM NGƯỜI DÙNG (countdown + single book)
+───────────────────────────────────────────────────────────── */
+function FlashDealSection({ books, onAddCart }) {
+  const book = books[0];
+  const [timeLeft, setTimeLeft] = useState({ h: 5, m: 59, s: 47 });
+  const [claimed, setClaimed] = useState(false);
+  const [stock] = useState(17);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        let { h, m, s } = prev;
+        s--;
+        if (s < 0) { s = 59; m--; }
+        if (m < 0) { m = 59; h--; }
+        if (h < 0) { h = 0; m = 0; s = 0; clearInterval(timer); }
+        return { h, m, s };
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  if (!book) return null;
+  const pad = (n) => String(n).padStart(2, "0");
+  const discountedPrice = Math.round((book.salePrice || book.price) * 0.72);
+
+  return (
+    <section
+      style={{
+        background: "linear-gradient(135deg, #0a0f0c 0%, #0d3330 40%, #1a5c52 80%, #0d3330 100%)",
+        padding: "100px 100px",
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      {/* bg text */}
+      <div style={{
+        position: "absolute", top: "50%", left: "50%",
+        transform: "translate(-50%,-50%)",
+        fontFamily: "Playfair Display,serif",
+        fontSize: "clamp(60px,10vw,140px)", fontWeight: 300,
+        color: "rgba(255,255,255,0.02)", whiteSpace: "nowrap",
+        pointerEvents: "none", letterSpacing: "-0.02em",
+      }}>FLASH DEAL</div>
+
+      {/* radial glow */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "radial-gradient(ellipse at 30% 50%, rgba(74,158,63,0.12) 0%, transparent 60%)",
+        pointerEvents: "none",
+      }} />
+
+      <div style={{ maxWidth: "1400px", margin: "0 auto", position: "relative", zIndex: 1 }}>
+        {/* header */}
+        <div className="reveal" style={{ textAlign: "center", marginBottom: "64px" }}>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: "12px",
+            background: "rgba(74,158,63,0.12)",
+            border: "0.5px solid rgba(74,158,63,0.35)",
+            padding: "8px 24px", marginBottom: "24px",
+          }}>
+            <span style={{
+              width: "6px", height: "6px", borderRadius: "50%",
+              background: "var(--gold)", animation: "pulse 1.5s ease-in-out infinite",
+              display: "inline-block",
+            }} />
+            <span style={{
+              fontSize: "10px", letterSpacing: "0.26em", textTransform: "uppercase",
+              color: "var(--gold)", fontFamily: "Be Vietnam Pro,sans-serif",
+            }}>Tri Ân Người Dùng · Flash Deal</span>
+          </div>
+          <h2 style={{
+            fontFamily: "Playfair Display,serif",
+            fontSize: "clamp(32px,4vw,56px)", fontWeight: 300,
+            color: "var(--ivory)", lineHeight: 1.12, letterSpacing: "-0.01em",
+          }}>
+            Ưu Đãi Đặc Biệt —{" "}
+            <em style={{ fontStyle: "italic", color: "var(--gold)" }}>Có Giới Hạn</em>
+          </h2>
+          <p style={{
+            fontSize: "14px", color: "rgba(250,248,243,0.5)",
+            marginTop: "14px", fontWeight: 300,
+          }}>
+            Chỉ dành cho {stock} khách hàng đầu tiên trong hôm nay
+          </p>
+        </div>
+
+        {/* main card */}
+        <div className="reveal" style={{
+          display: "grid", gridTemplateColumns: "1fr 1fr",
+          gap: "0", border: "0.5px solid rgba(74,158,63,0.25)",
+          overflow: "hidden",
+          boxShadow: "0 40px 80px rgba(0,0,0,0.4)",
+        }}>
+          {/* left — book visual */}
+          <div style={{
+            position: "relative", overflow: "hidden", minHeight: "460px",
+            background: "rgba(255,255,255,0.03)",
+          }}>
+            <img
+              src={book.coverImage || "https://via.placeholder.com/600x460"}
+              alt={book.title}
+              style={{
+                width: "100%", height: "100%", objectFit: "cover",
+                filter: "saturate(0.7) brightness(0.6)",
+                position: "absolute", inset: 0,
+              }}
+            />
+            <div style={{
+              position: "absolute", inset: 0,
+              background: "linear-gradient(to right, rgba(13,43,30,0.3) 0%, rgba(13,43,30,0.6) 100%)",
+            }} />
+            {/* discount badge */}
+            <div style={{
+              position: "absolute", top: "28px", left: "28px",
+              background: "var(--gold)", color: "var(--ink)",
+              fontFamily: "Playfair Display,serif",
+              fontSize: "36px", fontWeight: 300, lineHeight: 1,
+              padding: "16px 20px",
+              display: "flex", flexDirection: "column", alignItems: "center",
+            }}>
+              <span>-28%</span>
+              <span style={{ fontSize: "10px", letterSpacing: "0.14em", fontFamily: "Be Vietnam Pro,sans-serif", marginTop: "4px" }}>
+                GIẢM GIÁ
+              </span>
+            </div>
+            {/* stock bar */}
+            <div style={{
+              position: "absolute", bottom: "28px", left: "28px", right: "28px",
+            }}>
+              <div style={{
+                display: "flex", justifyContent: "space-between",
+                fontSize: "10px", letterSpacing: "0.14em",
+                color: "rgba(255,255,255,0.5)", marginBottom: "8px",
+                fontFamily: "Be Vietnam Pro,sans-serif", textTransform: "uppercase",
+              }}>
+                <span>Còn lại</span>
+                <span style={{ color: "var(--gold)" }}>{stock} cuốn</span>
+              </div>
+              <div style={{ height: "3px", background: "rgba(255,255,255,0.1)", borderRadius: "2px" }}>
+                <div style={{
+                  width: `${(stock / 50) * 100}%`, height: "100%",
+                  background: "linear-gradient(90deg, var(--gold), var(--gold-light))",
+                  borderRadius: "2px", transition: "width 1s ease",
+                }} />
+              </div>
+            </div>
+          </div>
+
+          {/* right — info */}
+          <div style={{
+            background: "rgba(13,43,30,0.7)", backdropFilter: "blur(12px)",
+            padding: "52px 48px",
+            display: "flex", flexDirection: "column", justifyContent: "center", gap: "24px",
+          }}>
+            {/* eyebrow */}
+            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{ width: "28px", height: "0.5px", background: "var(--gold)" }} />
+              <span style={{
+                fontSize: "9px", letterSpacing: "0.24em", textTransform: "uppercase",
+                color: "var(--gold)", fontFamily: "Be Vietnam Pro,sans-serif",
+              }}>
+                {book.category?.name || "Khám Phá Thiên Nhiên"}
+              </span>
+            </div>
+
+            {/* title */}
+            <h3 style={{
+              fontFamily: "Playfair Display,serif",
+              fontSize: "clamp(24px,2.5vw,36px)", fontWeight: 300,
+              color: "var(--ivory)", lineHeight: 1.15, letterSpacing: "-0.01em",
+            }}>
+              {book.title}
+            </h3>
+
+            {/* desc */}
+            <p style={{
+              fontSize: "13px", lineHeight: 1.8,
+              color: "rgba(250,248,243,0.55)", fontWeight: 300,
+              borderLeft: "2px solid rgba(74,158,63,0.4)",
+              paddingLeft: "16px",
+            }}>
+              {book.description?.slice(0, 120) || "Hành trình khám phá thiên nhiên qua lăng kính AR & AI — trải nghiệm hoàn toàn mới."}...
+            </p>
+
+            {/* countdown */}
+            <div>
+              <div style={{
+                fontSize: "9px", letterSpacing: "0.22em", textTransform: "uppercase",
+                color: "rgba(255,255,255,0.4)", marginBottom: "12px",
+                fontFamily: "Be Vietnam Pro,sans-serif",
+              }}>
+                Ưu đãi kết thúc sau
+              </div>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                {[
+                  { val: pad(timeLeft.h), label: "Giờ" },
+                  { val: pad(timeLeft.m), label: "Phút" },
+                  { val: pad(timeLeft.s), label: "Giây" },
+                ].map(({ val, label }, idx) => (
+                  <div key={label} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <div style={{
+                      background: "rgba(255,255,255,0.06)",
+                      border: "0.5px solid rgba(74,158,63,0.3)",
+                      padding: "10px 14px",
+                      textAlign: "center", minWidth: "60px",
+                    }}>
+                      <div style={{
+                        fontFamily: "Montserrat,sans-serif",
+                        fontSize: "28px", fontWeight: 600,
+                        color: "var(--ivory)", lineHeight: 1, letterSpacing: "-0.02em",
+                      }}>{val}</div>
+                      <div style={{
+                        fontSize: "8px", letterSpacing: "0.18em", textTransform: "uppercase",
+                        color: "rgba(255,255,255,0.35)", marginTop: "4px",
+                        fontFamily: "Be Vietnam Pro,sans-serif",
+                      }}>{label}</div>
+                    </div>
+                    {idx < 2 && (
+                      <span style={{
+                        fontFamily: "Playfair Display,serif",
+                        fontSize: "24px", color: "var(--gold)",
+                        lineHeight: 1, animation: "pulse 1s ease-in-out infinite",
+                      }}>:</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* price */}
+            <div style={{ display: "flex", alignItems: "flex-end", gap: "16px" }}>
+              <div style={{
+                fontFamily: "Montserrat,sans-serif",
+                fontSize: "38px", fontWeight: 700,
+                color: "var(--gold)", letterSpacing: "-0.02em", lineHeight: 1,
+              }}>
+                {formatPrice(discountedPrice)}
+              </div>
+              <div style={{
+                fontFamily: "Montserrat,sans-serif",
+                fontSize: "18px", fontWeight: 300,
+                color: "rgba(255,255,255,0.3)",
+                textDecoration: "line-through", paddingBottom: "4px",
+              }}>
+                {formatPrice(book.salePrice || book.price)}
+              </div>
+            </div>
+
+            {/* CTA */}
+            {claimed ? (
+              <div style={{
+                display: "flex", alignItems: "center", justifyContent: "center",
+                gap: "10px", padding: "16px 32px",
+                background: "rgba(74,158,63,0.15)",
+                border: "0.5px solid rgba(74,158,63,0.4)",
+                color: "var(--gold)", fontSize: "11px",
+                letterSpacing: "0.16em", textTransform: "uppercase",
+                fontFamily: "Be Vietnam Pro,sans-serif",
+              }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                Đã thêm vào giỏ hàng!
+              </div>
+            ) : (
+              <button
+                onClick={() => { onAddCart(book.hashId); setClaimed(true); setTimeout(() => setClaimed(false), 3000); }}
+                style={{
+                  background: "var(--gold)", color: "var(--ink)",
+                  border: "none", padding: "17px 32px",
+                  cursor: "pointer", fontFamily: "Be Vietnam Pro,sans-serif",
+                  fontSize: "11px", letterSpacing: "0.18em", textTransform: "uppercase",
+                  transition: "all 0.3s",
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: "12px",
+                  width: "100%",
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.background = "var(--gold-light)")}
+                onMouseOut={(e) => (e.currentTarget.style.background = "var(--gold)")}
+              >
+                Nhận Ưu Đãi Ngay
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
+              </button>
+            )}
+
+            {/* trust micro */}
+            <div style={{
+              display: "flex", gap: "20px", flexWrap: "wrap",
+              paddingTop: "16px", borderTop: "0.5px solid rgba(255,255,255,0.08)",
+            }}>
+              {[
+                "🔒 Bảo mật thanh toán",
+                "📦 Giao hàng miễn phí",
+                "↩️ Đổi trả 30 ngày",
+              ].map((t) => (
+                <span key={t} style={{
+                  fontSize: "11px", color: "rgba(255,255,255,0.35)",
+                  fontWeight: 300,
+                }}>{t}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   TOP RATED — sách được vote / đánh giá cao nhất
+───────────────────────────────────────────────────────────── */
+function TopRatedSection({ books, onAddCart }) {
+  const TOP_RATINGS = [4.9, 4.8, 4.8, 4.7, 4.7, 4.6];
+  const TOP_VOTES   = [1240, 987, 856, 743, 698, 521];
+  const [voted, setVoted] = useState({});
+  const [localVotes, setLocalVotes] = useState({});
+
+  const handleVote = (id) => {
+    if (voted[id]) return;
+    setVoted((v) => ({ ...v, [id]: true }));
+    setLocalVotes((v) => ({ ...v, [id]: (v[id] || 0) + 1 }));
+  };
+
+  if (!books || books.length === 0) return null;
+  const displayBooks = books.slice(0, 6);
+
+  return (
+    <section style={{ padding: "120px 100px", background: "var(--white)" }}>
+      <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
+        {/* header */}
+        <div className="section-header reveal">
+          <div className="section-eyebrow">
+            <div className="section-eyebrow-line" />
+            <span className="section-eyebrow-text">Cộng Đồng Bình Chọn</span>
+            <div className="section-eyebrow-line" />
+          </div>
+          <h2 className="section-title">
+            Được Đánh Giá <em>Cao Nhất</em>
+          </h2>
+          <p className="section-subtitle">
+            Những cuốn sách được cộng đồng Earthoria yêu thích và bình chọn nhiều nhất
+          </p>
+        </div>
+
+        {/* grid */}
+        <div style={{
+          display: "grid", gridTemplateColumns: "repeat(3, 1fr)",
+          gap: "0", border: "0.5px solid var(--border)",
+        }}>
+          {displayBooks.map((book, i) => {
+            const rating = TOP_RATINGS[i] || 4.5;
+            const baseVotes = TOP_VOTES[i] || 300;
+            const totalVotes = baseVotes + (localVotes[book.id] || 0);
+            const hasVoted = !!voted[book.id];
+            const filledStars = Math.round(rating);
+
+            return (
+              <div
+                key={book.id}
+                className={`reveal reveal-delay-${(i % 3) + 1}`}
+                style={{
+                  padding: "36px 32px",
+                  borderRight: (i + 1) % 3 !== 0 ? "0.5px solid var(--border)" : "none",
+                  borderBottom: i < 3 ? "0.5px solid var(--border)" : "none",
+                  background: "var(--white)",
+                  position: "relative", overflow: "hidden",
+                  transition: "all 0.4s ease",
+                  cursor: "default",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "var(--ivory)";
+                  e.currentTarget.style.transform = "translateY(-3px)";
+                  e.currentTarget.style.boxShadow = "0 16px 40px rgba(13,43,30,0.08)";
+                  e.currentTarget.style.zIndex = "2";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "var(--white)";
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "none";
+                  e.currentTarget.style.zIndex = "1";
+                }}
+              >
+                {/* rank ribbon */}
+                {i < 3 && (
+                  <div style={{
+                    position: "absolute", top: "0", right: "0",
+                    width: "0", height: "0",
+                    borderStyle: "solid",
+                    borderWidth: `0 52px 52px 0`,
+                    borderColor: `transparent ${i === 0 ? "var(--gold)" : i === 1 ? "#8a9490" : "#b07830"} transparent transparent`,
+                  }}>
+                    <span style={{
+                      position: "absolute", top: "6px", right: "-46px",
+                      fontFamily: "Playfair Display,serif",
+                      fontSize: "11px", fontWeight: 500, color: "var(--ivory)",
+                    }}>#{i + 1}</span>
+                  </div>
+                )}
+
+                <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
+                  {/* cover */}
+                  <div style={{
+                    width: "72px", height: "88px",
+                    overflow: "hidden", flexShrink: 0,
+                    border: "0.5px solid var(--border)",
+                  }}>
+                    <img
+                      src={book.coverImage || "https://via.placeholder.com/72x88"}
+                      alt={book.title}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  </div>
+
+                  {/* info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase",
+                      color: "var(--gold)", marginBottom: "6px",
+                      fontFamily: "Be Vietnam Pro,sans-serif",
+                    }}>
+                      {book.category?.name || "Thiên Nhiên"}
+                    </div>
+                    <div style={{
+                      fontFamily: "Playfair Display,serif",
+                      fontSize: "17px", fontWeight: 400,
+                      color: "var(--forest)", lineHeight: 1.25,
+                      marginBottom: "8px",
+                      overflow: "hidden", textOverflow: "ellipsis",
+                      display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+                    }}>
+                      {book.title}
+                    </div>
+
+                    {/* stars */}
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
+                      <div style={{ display: "flex", gap: "2px" }}>
+                        {[...Array(5)].map((_, s) => (
+                          <span key={s} style={{
+                            fontSize: "12px",
+                            color: s < filledStars ? "var(--gold)" : "var(--pale)",
+                          }}>★</span>
+                        ))}
+                      </div>
+                      <span style={{
+                        fontFamily: "Montserrat,sans-serif",
+                        fontSize: "13px", fontWeight: 600, color: "var(--forest)",
+                      }}>{rating}</span>
+                    </div>
+
+                    {/* vote count */}
+                    <div style={{
+                      fontSize: "11px", color: "var(--text-muted)", fontWeight: 300,
+                    }}>
+                      {totalVotes.toLocaleString("vi-VN")} lượt đánh giá
+                    </div>
+                  </div>
+                </div>
+
+                {/* vote bar */}
+                <div style={{ marginTop: "20px" }}>
+                  <div style={{
+                    display: "flex", justifyContent: "space-between",
+                    fontSize: "10px", color: "var(--text-muted)",
+                    marginBottom: "6px", fontFamily: "Be Vietnam Pro,sans-serif",
+                  }}>
+                    <span>Điểm tin cậy</span>
+                    <span style={{ color: "var(--gold)", fontWeight: 500 }}>
+                      {Math.round((rating / 5) * 100)}%
+                    </span>
+                  </div>
+                  <div style={{
+                    height: "3px", background: "var(--pale)", borderRadius: "2px", overflow: "hidden",
+                  }}>
+                    <div style={{
+                      width: `${(rating / 5) * 100}%`, height: "100%",
+                      background: "linear-gradient(90deg, var(--gold), var(--gold-light))",
+                      borderRadius: "2px",
+                    }} />
+                  </div>
+                </div>
+
+                {/* actions */}
+                <div style={{
+                  display: "flex", gap: "8px", marginTop: "20px",
+                  paddingTop: "20px", borderTop: "0.5px solid var(--border)",
+                  alignItems: "center",
+                }}>
+                  {/* vote button */}
+                  <button
+                    onClick={() => handleVote(book.id)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: "6px",
+                      padding: "8px 14px",
+                      background: hasVoted ? "var(--gold-pale)" : "transparent",
+                      border: `0.5px solid ${hasVoted ? "var(--gold)" : "var(--border)"}`,
+                      color: hasVoted ? "var(--gold)" : "var(--text-muted)",
+                      cursor: hasVoted ? "default" : "pointer",
+                      fontFamily: "Be Vietnam Pro,sans-serif",
+                      fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase",
+                      transition: "all 0.3s", flexShrink: 0,
+                    }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill={hasVoted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5">
+                      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
+                      <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                    </svg>
+                    {hasVoted ? "Đã vote" : "Vote"}
+                  </button>
+
+                  {/* price */}
+                  <div style={{
+                    fontFamily: "Montserrat,sans-serif",
+                    fontSize: "16px", fontWeight: 600,
+                    color: "var(--forest)", flex: 1, textAlign: "center",
+                  }}>
+                    {formatPrice(book.salePrice || book.price)}
+                  </div>
+
+                  {/* add to cart */}
+                  <button
+                    onClick={() => onAddCart(book.hashId)}
+                    style={{
+                      width: "36px", height: "36px",
+                      background: "var(--forest)", color: "var(--ivory)",
+                      border: "none", cursor: "pointer",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      transition: "all 0.3s", flexShrink: 0,
+                    }}
+                    onMouseOver={(e) => (e.currentTarget.style.background = "var(--forest-mid)")}
+                    onMouseOut={(e) => (e.currentTarget.style.background = "var(--forest)")}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                      <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* bottom CTA */}
+        <div className="reveal" style={{ textAlign: "center", marginTop: "48px" }}>
+          <Link to="/shop" className="view-all" style={{ justifyContent: "center" }}>
+            Xem tất cả đánh giá
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
    MAIN HOME COMPONENT
 ───────────────────────────────────────────────────────────── */
 export default function Home() {
@@ -1965,15 +2524,16 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Bestseller rank podium */}
+          {/* Bestseller rank podium — fixed */}
           {displayBest.length > 0 && (
             <div
               className="reveal"
               style={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1.1fr 1fr",
+                gridTemplateColumns: "1fr 1fr 1fr",
                 gap: "16px",
                 marginBottom: "48px",
+                alignItems: "end",
               }}
             >
               {[displayBest[1], displayBest[0], displayBest[2]]
@@ -1981,122 +2541,109 @@ export default function Home() {
                 .map((book, i) => {
                   const ranks = [2, 1, 3];
                   const rank = ranks[i];
-                  const sizes = ["normal", "large", "normal"];
+                  const isFirst = rank === 1;
                   return (
                     <div
                       key={book.id}
                       style={{
-                        background:
-                          rank === 1
-                            ? "linear-gradient(135deg, #0d3330 0%, #1a5c52 50%, #4a9e3f 100%)"
-                            : "var(--white)",
-                        border:
-                          rank === 1 ? "none" : "0.5px solid var(--border)",
-                        padding: "28px 24px",
+                        background: isFirst
+                          ? "linear-gradient(135deg, #0d3330 0%, #1a5c52 50%, #4a9e3f 100%)"
+                          : "var(--white)",
+                        border: isFirst ? "none" : "0.5px solid var(--border)",
+                        padding: isFirst ? "36px 24px 28px" : "28px 24px 24px",
                         textAlign: "center",
-                        transform: rank === 1 ? "none" : "none",
                         position: "relative",
                         overflow: "hidden",
                         display: "flex",
                         flexDirection: "column",
                         alignItems: "center",
-                        gap: "12px",
+                        gap: "10px",
+                        minHeight: isFirst ? "340px" : "300px",
+                        justifyContent: "center",
                       }}
                     >
+                      {/* rank badge */}
                       <div
                         style={{
                           position: "absolute",
-                          top: "-8px",
+                          top: "0",
                           left: "50%",
                           transform: "translateX(-50%)",
                           background:
-                            rank === 1
-                              ? "var(--gold)"
-                              : rank === 2
-                                ? "#a0a8a4"
-                                : "#c08840",
+                            rank === 1 ? "var(--gold)" : rank === 2 ? "#8a9490" : "#b07830",
                           color: "var(--ivory)",
                           fontFamily: "Playfair Display,serif",
-                          fontSize: "11px",
+                          fontSize: "10px",
                           fontWeight: 500,
-                          padding: "4px 16px",
-                          letterSpacing: "0.1em",
+                          padding: "5px 20px",
+                          letterSpacing: "0.12em",
+                          whiteSpace: "nowrap",
                         }}
                       >
                         #{rank}
                       </div>
+                      {/* cover */}
                       <div
                         style={{
-                          marginTop: "12px",
-                          width: "80px",
-                          height: "100px",
+                          marginTop: "16px",
+                          width: isFirst ? "90px" : "72px",
+                          height: isFirst ? "112px" : "90px",
                           overflow: "hidden",
-                          border:
-                            "2px solid " +
-                            (rank === 1
-                              ? "rgba(255,255,255,0.2)"
-                              : "var(--border)"),
+                          border: `1.5px solid ${isFirst ? "rgba(255,255,255,0.25)" : "var(--border)"}`,
+                          flexShrink: 0,
                         }}
                       >
                         <img
-                          src={
-                            book.coverImage ||
-                            "https://via.placeholder.com/80x100"
-                          }
+                          src={book.coverImage || "https://via.placeholder.com/90x112"}
                           alt={book.title}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                          }}
+                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
                         />
                       </div>
+                      {/* title */}
                       <div
                         style={{
                           fontFamily: "Playfair Display,serif",
-                          fontSize: rank === 1 ? "18px" : "15px",
+                          fontSize: isFirst ? "17px" : "14px",
                           fontWeight: 400,
-                          color: rank === 1 ? "var(--ivory)" : "var(--forest)",
+                          color: isFirst ? "var(--ivory)" : "var(--forest)",
                           lineHeight: 1.3,
+                          maxWidth: "180px",
                         }}
                       >
                         {book.title}
                       </div>
-                      <div
-                        style={{
-                          fontSize: "11px",
-                          color:
-                            rank === 1
-                              ? "rgba(255,255,255,0.6)"
-                              : "var(--text-muted)",
-                        }}
-                      >
+                      {/* category */}
+                      <div style={{ fontSize: "11px", color: isFirst ? "rgba(255,255,255,0.55)" : "var(--text-muted)" }}>
                         {book.category?.name}
                       </div>
+                      {/* price */}
                       <div
                         style={{
-                          fontFamily: "Playfair Display,serif",
-                          fontSize: "20px",
-                          color: rank === 1 ? "var(--gold)" : "var(--forest)",
+                          fontFamily: "Montserrat,sans-serif",
+                          fontSize: isFirst ? "20px" : "16px",
+                          fontWeight: 600,
+                          color: isFirst ? "var(--gold)" : "var(--forest)",
+                          letterSpacing: "-0.01em",
                         }}
                       >
                         {formatPrice(book.salePrice || book.price)}
                       </div>
+                      {/* CTA */}
                       <button
                         onClick={() => handleAddToCart(book.hashId)}
                         style={{
-                          background:
-                            rank === 1 ? "var(--gold)" : "var(--forest)",
-                          color: rank === 1 ? "var(--ink)" : "var(--ivory)",
+                          background: isFirst ? "var(--gold)" : "var(--forest)",
+                          color: isFirst ? "var(--ink)" : "var(--ivory)",
                           border: "none",
-                          padding: "10px 24px",
+                          padding: "10px 20px",
                           cursor: "pointer",
                           fontFamily: "Be Vietnam Pro,sans-serif",
-                          fontSize: "10px",
+                          fontSize: "9px",
                           letterSpacing: "0.14em",
                           textTransform: "uppercase",
                           transition: "all 0.3s",
                           width: "100%",
+                          marginTop: "4px",
                         }}
                       >
                         Thêm Vào Giỏ
@@ -2116,8 +2663,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ APP SHOWCASE (TECH SECTION) ═══ */}
+      {/* ═══ TRI ÂM NGƯỜI DÙNG — FLASH DEAL COUNTDOWN ═══ */}
+      <FlashDealSection books={displayFeatured} onAddCart={handleAddToCart} />
+
+  {/* ═══ APP SHOWCASE (TECH SECTION) ═══ */}
       <AppShowcase />
+
+      {/* ═══ TOP RATED — sách được vote cao nhất ═══ */}
+      <TopRatedSection books={displayBest} onAddCart={handleAddToCart} />
 
       {/* ═══ VALUES ═══ */}
       <section className="values-section">
