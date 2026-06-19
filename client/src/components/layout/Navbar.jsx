@@ -74,7 +74,7 @@ export default function Navbar() {
   const navLinks = [
     { to: "/shop", label: "Cửa hàng" },
     { to: "/shop?hasAR=true", label: "Sách AR" },
-    { to: "/technology", label: "Công nghệ" },
+    { to: "/ar", label: "Công nghệ" },
     { to: "/about", label: "Về chúng tôi" },
   ];
 

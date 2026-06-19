@@ -1062,10 +1062,10 @@ footer {
   display: flex; justify-content: space-between; align-items: center;
 }
 .footer-copy {
-  font-family: 'Be Vietnam Pro', sans-serif;
-  font-size: 10px;
+  font-family: 'Be Vietnam Pro', sans-serif !important;
+  font-size: 12px;
   font-weight: 300;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.10em;
   color: rgba(255,255,255,0.32);
 }
 .footer-tagline {
@@ -4365,7 +4365,8 @@ body.dark-mode .promo-strip { background: #0a1510; border-color: rgba(74,158,63,
    TABS
 ══════════════════════════════ */
 .tabs-section {
-  max-width: 1400px; margin: 0 auto;
+  max-width: 1400px;
+  margin: 40px auto 0;
   padding: 0 100px 100px;
 }
 .tabs-nav {

@@ -17,6 +17,7 @@ import Coupons from "./pages/admin/Coupons";
 import GoogleAuthSuccess from "./pages/GoogleAuthSuccess";
 import CustomCursor from "./components/CustomCursor";
 import ARGuide from "./pages/ARGuide";
+import Checkout from "./pages/Checkout";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -56,6 +57,15 @@ export default function App() {
             }
           />
         </Route>
+
+             <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute>
+                <Checkout />
+              </ProtectedRoute>
+            }
+          />
 
         <Route
           path="/login"
