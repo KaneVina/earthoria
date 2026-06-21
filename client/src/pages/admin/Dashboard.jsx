@@ -1,120 +1,120 @@
+// Dashboard.jsx
 import { useQuery } from '@tanstack/react-query'
-import { Users, BookOpen, ShoppingBag, DollarSign, TrendingUp, Package } from 'lucide-react'
+import { Users, BookOpen, ShoppingBag, TrendingUp, ArrowUpRight } from 'lucide-react'
 import api from '../../services/api'
 import { formatPrice, formatDate } from '../../utils/helpers'
 import { ORDER_STATUS } from '../../utils/constants'
+import AdminLayout from './AdminLayout'
+
+const statusStyle = {
+  PENDING:   { bg: 'rgba(201,168,76,0.12)',  color: '#A07828' },
+  CONFIRMED: { bg: 'rgba(13,51,48,0.10)',    color: '#0D3330' },
+  SHIPPING:  { bg: 'rgba(74,124,95,0.12)',   color: '#3A7A5A' },
+  DELIVERED: { bg: 'rgba(50,160,100,0.12)',  color: '#288A55' },
+  CANCELLED: { bg: 'rgba(192,80,80,0.10)',   color: '#B84040' },
+  REFUNDED:  { bg: 'rgba(192,80,80,0.07)',   color: '#B84040' },
+}
 
 export default function Dashboard() {
   const { data, isLoading } = useQuery({
     queryKey: ['admin-dashboard'],
     queryFn: () => api.get('/admin/dashboard').then(r => r.data.data)
   })
-
   const stats = data?.stats
 
   const statCards = [
-    { label: 'Tổng người dùng', value: stats?.totalUsers || 0, icon: <Users size={20}/>, color: 'var(--forest)' },
-    { label: 'Tổng sách', value: stats?.totalBooks || 0, icon: <BookOpen size={20}/>, color: 'var(--gold)' },
-    { label: 'Tổng đơn hàng', value: stats?.totalOrders || 0, icon: <ShoppingBag size={20}/>, color: 'var(--forest-mid)' },
-    { label: 'Doanh thu', value: formatPrice(stats?.revenue || 0), icon: <DollarSign size={20}/>, color: 'var(--sage)' },
+    { label: 'Tổng người dùng', value: stats?.totalUsers ?? '—',     icon: Users,       delta: '+12%', accent: '#3B82F6' },
+    { label: 'Đầu sách',        value: stats?.totalBooks ?? '—',     icon: BookOpen,    delta: '+4%',  accent: '#C9A84C' },
+    { label: 'Đơn hàng',        value: stats?.totalOrders ?? '—',    icon: ShoppingBag, delta: '+18%', accent: '#10B981' },
+    { label: 'Doanh thu',       value: isLoading ? '—' : formatPrice(stats?.revenue || 0), icon: TrendingUp, delta: '+9%', accent: '#8B5CF6' },
   ]
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--cream)', paddingTop: '80px' }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '60px 100px' }}>
+    <AdminLayout currentPath="/admin">
+      {/* Page header */}
+      <div style={{ marginBottom: 32 }}>
+        <p style={{ fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(13,51,48,0.4)', marginBottom: 6 }}>Tổng quan</p>
+        <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(26px,3vw,38px)', fontWeight: 300, color: '#0D3330', lineHeight: 1.15 }}>
+          Dashboard <em style={{ fontStyle: 'italic', color: '#C9A84C' }}>Earthoria</em>
+        </h1>
+      </div>
 
-        {/* Header */}
-        <div style={{ marginBottom: '48px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '16px' }}>
-            <div className="eyebrow-line"></div>
-            <span className="eyebrow-text">Admin Panel</span>
-          </div>
-          <h1 style={{ fontFamily: 'Playfair Display,serif', fontSize: 'clamp(32px,4vw,56px)', fontWeight: 300, color: 'var(--forest)' }}>
-            Dashboard <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>Earthoria</em>
-          </h1>
-        </div>
-
-        {/* Nav tabs */}
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '48px', flexWrap: 'wrap' }}>
-          {[
-            { label: 'Dashboard', href: '/admin' },
-            { label: 'Sản phẩm', href: '/admin/products' },
-            { label: 'Đơn hàng', href: '/admin/orders' },
-            { label: 'Người dùng', href: '/admin/users' },
-            { label: 'Mã giảm giá', href: '/admin/coupons' },
-          ].map(tab => (
-            <a key={tab.href} href={tab.href} style={{ textDecoration: 'none' }}>
-              <button className={`pill ${tab.href === '/admin' ? 'active' : ''}`}>{tab.label}</button>
-            </a>
-          ))}
-        </div>
-
-        {/* Stat cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '24px', marginBottom: '48px' }}>
-          {statCards.map((card, i) => (
+      {/* Stat cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px,1fr))', gap: 20, marginBottom: 36 }}>
+        {statCards.map((card, i) => {
+          const Icon = card.icon
+          return (
             <div key={i} style={{
-              background: 'var(--white)', border: '0.5px solid var(--border)',
-              padding: '32px 28px'
+              background: '#fff', borderRadius: 10,
+              border: '1px solid rgba(13,51,48,0.08)',
+              padding: '24px 22px',
+              position: 'relative', overflow: 'hidden',
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-                <span style={{ fontSize: '9px', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>{card.label}</span>
-                <div style={{ width: '36px', height: '36px', border: '0.5px solid var(--border-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)' }}>
-                  {card.icon}
+              {/* accent bar */}
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: card.accent, borderRadius: '10px 10px 0 0' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                <span style={{ fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(13,51,48,0.45)', fontWeight: 500 }}>{card.label}</span>
+                <div style={{ width: 34, height: 34, background: card.accent + '1A', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: card.accent }}>
+                  <Icon size={16} strokeWidth={1.8} />
                 </div>
               </div>
-              <div style={{ fontFamily: 'Playfair Display,serif', fontSize: '36px', fontWeight: 300, color: 'var(--forest)', lineHeight: 1 }}>
+              <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 32, fontWeight: 300, color: '#0D3330', lineHeight: 1, marginBottom: 8 }}>
                 {isLoading ? '—' : card.value}
               </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#288A55' }}>
+                <ArrowUpRight size={12} />
+                <span>{card.delta} so với tháng trước</span>
+              </div>
             </div>
-          ))}
-        </div>
+          )
+        })}
+      </div>
 
-        {/* Recent orders */}
-        <div style={{ background: 'var(--white)', border: '0.5px solid var(--border)' }}>
-          <div style={{ padding: '24px 32px', borderBottom: '0.5px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ fontFamily: 'Playfair Display,serif', fontSize: '22px', fontWeight: 400, color: 'var(--forest)' }}>
-              Đơn hàng <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>gần đây</em>
-            </h3>
-            <a href="/admin/orders" style={{ fontSize: '11px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--gold)', textDecoration: 'none' }}>Xem tất cả →</a>
-          </div>
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '0.5px solid var(--border)' }}>
-                  {['Mã đơn', 'Khách hàng', 'Sản phẩm', 'Tổng tiền', 'Trạng thái', 'Ngày đặt'].map(h => (
-                    <th key={h} style={{ padding: '12px 24px', textAlign: 'left', fontSize: '9px', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 400 }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {isLoading ? (
-                  <tr><td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>Đang tải...</td></tr>
-                ) : data?.recentOrders?.length === 0 ? (
-                  <tr><td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>Chưa có đơn hàng</td></tr>
-                ) : data?.recentOrders?.map(order => (
-                  <tr key={order.id} style={{ borderBottom: '0.5px solid var(--border)' }}>
-                    <td style={{ padding: '16px 24px', fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{order.id.slice(0,8)}...</td>
-                    <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--forest)' }}>{order.user?.name}</td>
-                    <td style={{ padding: '16px 24px', fontSize: '13px', color: 'var(--text-muted)' }}>{order.items?.length} sản phẩm</td>
-                    <td style={{ padding: '16px 24px', fontFamily: 'Playfair Display,serif', fontSize: '16px', color: 'var(--forest)' }}>{formatPrice(order.total)}</td>
-                    <td style={{ padding: '16px 24px' }}>
-                      <span style={{
-                        fontSize: '9px', letterSpacing: '0.14em', textTransform: 'uppercase',
-                        padding: '4px 10px',
-                        background: order.status === 'DELIVERED' ? 'var(--gold-pale)' : order.status === 'CANCELLED' ? 'rgba(192,80,80,0.08)' : 'var(--pale)',
-                        color: order.status === 'DELIVERED' ? 'var(--gold)' : order.status === 'CANCELLED' ? '#c05050' : 'var(--text-muted)'
-                      }}>
-                        {ORDER_STATUS[order.status]}
-                      </span>
-                    </td>
-                    <td style={{ padding: '16px 24px', fontSize: '12px', color: 'var(--text-muted)' }}>{formatDate(order.createdAt)}</td>
-                  </tr>
+      {/* Recent orders */}
+      <div style={{ background: '#fff', borderRadius: 10, border: '1px solid rgba(13,51,48,0.08)', overflow: 'hidden' }}>
+        <div style={{ padding: '20px 28px', borderBottom: '1px solid rgba(13,51,48,0.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: 18, fontWeight: 400, color: '#0D3330' }}>
+            Đơn hàng <em style={{ fontStyle: 'italic', color: '#C9A84C' }}>gần đây</em>
+          </h3>
+          <a href="/admin/orders" style={{ fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#C9A84C', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+            Xem tất cả <ArrowUpRight size={12} />
+          </a>
+        </div>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ background: '#FAFAF8' }}>
+                {['Mã đơn', 'Khách hàng', 'Sản phẩm', 'Tổng tiền', 'Trạng thái', 'Ngày đặt'].map(h => (
+                  <th key={h} style={{ padding: '10px 20px', textAlign: 'left', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(13,51,48,0.4)', fontWeight: 500, whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: 'rgba(13,51,48,0.3)', fontSize: 13 }}>Đang tải...</td></tr>
+              ) : data?.recentOrders?.length === 0 ? (
+                <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: 'rgba(13,51,48,0.3)', fontSize: 13 }}>Chưa có đơn hàng nào</td></tr>
+              ) : data?.recentOrders?.map(order => (
+                <tr key={order.id} style={{ borderTop: '1px solid rgba(13,51,48,0.06)' }}
+                  onMouseEnter={e => e.currentTarget.style.background = '#FAFAF8'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <td style={{ padding: '14px 20px', fontSize: 11, color: 'rgba(13,51,48,0.4)', fontFamily: 'monospace' }}>{order.id.slice(0, 8)}...</td>
+                  <td style={{ padding: '14px 20px', fontSize: 13, color: '#0D3330', fontWeight: 400 }}>{order.user?.name}</td>
+                  <td style={{ padding: '14px 20px', fontSize: 12, color: 'rgba(13,51,48,0.5)' }}>{order.items?.length} sản phẩm</td>
+                  <td style={{ padding: '14px 20px', fontFamily: 'Playfair Display, serif', fontSize: 15, color: '#0D3330' }}>{formatPrice(order.total)}</td>
+                  <td style={{ padding: '14px 20px' }}>
+                    <span style={{ fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', padding: '4px 10px', borderRadius: 20, fontWeight: 500, ...(statusStyle[order.status] || statusStyle.PENDING) }}>
+                      {ORDER_STATUS[order.status]}
+                    </span>
+                  </td>
+                  <td style={{ padding: '14px 20px', fontSize: 12, color: 'rgba(13,51,48,0.4)' }}>{formatDate(order.createdAt)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
+    </AdminLayout>
   )
 }
