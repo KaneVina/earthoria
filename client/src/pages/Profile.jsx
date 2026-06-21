@@ -145,7 +145,7 @@ function CopyButton({ text, label = 'Sao Chép', compact = false }) {
 
 // ─── Inline-editable field ───
 // Click pencil → field becomes an input; Enter/blur-check saves, Esc cancels.
-function EditableField({ label, value, icon, onSave, placeholder = 'Chưa cập nhật', type = 'text', validate, locked = false, lockedHint }) {
+function EditableField({ label, value, icon, onSave, placeholder = 'Không có thông tin. Bấm vào đây để cập nhật', type = 'text', validate, locked = false, lockedHint }) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState(value || '')
   const [error, setError] = useState('')
@@ -296,7 +296,7 @@ export default function Profile() {
   if (!profile) return <GuestState />
 
   const initials = `${profile.firstName?.[0] || ''}${profile.lastName?.[0] || ''}`.toUpperCase() || 'U'
-  const memberTier = totalSpent > 3000000 ? 'Bạch Kim' : totalSpent > 1000000 ? 'Vàng' : 'Thành Viên'
+  const memberTier = totalSpent > 3000000 ? 'Thành Viên Bạch Kim' : totalSpent > 1000000 ? 'Thành Viên Vàng' : 'Thành Viên Mới'
   const accountCode = (profile.memberCode || profile.id || '').toString()
   const formattedCode = formatAccountCode(accountCode)
   const recentOrders = orders.slice(0, 3)
@@ -406,7 +406,7 @@ function PassportHero({ profile, initials, memberTier, formattedCode, animatedOr
               <div className="pf-passport-id">
                 <div className="pf-passport-tier">
                   <span className="pf-tier-dot" />
-                  Thành Viên {memberTier}
+                  {memberTier}
                 </div>
                 <h1 className="pf-passport-name">{profile.firstName} {profile.lastName}</h1>
                 <div className="pf-passport-email">
@@ -707,7 +707,7 @@ function OrderDetailTab({ order, loading, onBack }) {
   const shippingName = order.shippingName || order.address?.name || 'Chưa cập nhật'
   const shippingPhone = order.shippingPhone || order.address?.phone || 'Chưa cập nhật'
   const shippingAddress = order.shippingAddress
-    || [order.address?.street, order.address?.ward, order.address?.district, order.address?.city].filter(Boolean).join(', ')
+    || [order.address?.street, order.address?.wardName || order.address?.ward, order.address?.provinceName || order.address?.district, order.address?.city].filter(Boolean).join(', ')
     || 'Chưa cập nhật'
 
   return (
@@ -815,30 +815,26 @@ function OrderDetailTab({ order, loading, onBack }) {
 
 // ════════════════════════ SECURITY TAB ════════════════════════
 const PASSWORD_CHECKS = [
-  { key: 'len', label: 'Tối thiểu 8 ký tự', test: v => v.length >= 8 },
-  { key: 'upper', label: 'Có ít nhất 1 chữ in hoa (A-Z)', test: v => /[A-Z]/.test(v) },
-  { key: 'num', label: 'Có ít nhất 1 chữ số (0-9)', test: v => /[0-9]/.test(v) },
-  { key: 'special', label: 'Có ít nhất 1 ký tự đặc biệt', test: v => /[^A-Za-z0-9]/.test(v) },
+  { key: 'len', label: '8 – 16 ký tự', test: v => v.length >= 8 && v.length <= 16 },
+  { key: 'upper', label: 'Ít nhất 1 chữ HOA (A-Z)', test: v => /[A-Z]/.test(v) },
+  { key: 'lower', label: 'Ít nhất 1 chữ thường (a-z)', test: v => /[a-z]/.test(v) },
+  { key: 'special', label: 'Ít nhất 1 ký tự đặc biệt (!@#…)', test: v => /[^A-Za-z0-9]/.test(v) },
 ]
 
 function SecurityTab() {
   const [showPw, setShowPw] = useState({ old: false, new: false, confirm: false })
   const [form, setForm] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' })
-  const [strength, setStrength] = useState(0)
+  const [touched, setTouched] = useState(false)
   const [errors, setErrors] = useState({})
 
-  const checkStrength = (val) => {
-    let score = 0
-    if (val.length >= 8) score++
-    if (/[A-Z]/.test(val)) score++
-    if (/[0-9]/.test(val)) score++
-    if (/[^A-Za-z0-9]/.test(val)) score++
-    return score
-  }
+  const checksResult = PASSWORD_CHECKS.map(c => ({ ...c, ok: c.test(form.newPassword) }))
+  const strength = checksResult.filter(c => c.ok).length
+  const isStrongEnough = form.newPassword.length > 0 && checksResult.every(c => c.ok)
+  const confirmMatches = form.confirmPassword.length > 0 && form.confirmPassword === form.newPassword
 
   const handleChange = (field, val) => {
     setForm(f => ({ ...f, [field]: val }))
-    if (field === 'newPassword') setStrength(checkStrength(val))
+    if (field === 'newPassword') setTouched(true)
     setErrors(e => ({ ...e, [field]: null }))
   }
 
@@ -847,7 +843,7 @@ function SecurityTab() {
     onSuccess: () => {
       toast.success('Đổi mật khẩu thành công!')
       setForm({ oldPassword: '', newPassword: '', confirmPassword: '' })
-      setStrength(0)
+      setTouched(false)
     },
     onError: (err) => {
       const msg = err.response?.data?.message || 'Đổi mật khẩu thất bại!'
@@ -860,19 +856,21 @@ function SecurityTab() {
     e.preventDefault()
     const newErrors = {}
     if (!form.oldPassword) newErrors.oldPassword = 'Vui lòng nhập mật khẩu hiện tại'
-    if (form.newPassword.length < 8) newErrors.newPassword = 'Mật khẩu mới tối thiểu 8 ký tự'
+    if (!isStrongEnough) newErrors.newPassword = 'Mật khẩu mới chưa đạt đủ các tiêu chí bên dưới'
     if (form.newPassword !== form.confirmPassword) newErrors.confirmPassword = 'Mật khẩu xác nhận không khớp'
-    if (Object.keys(newErrors).length) { setErrors(newErrors); return }
+    if (Object.keys(newErrors).length) { setErrors(newErrors); setTouched(true); return }
     mutation.mutate({ oldPassword: form.oldPassword, newPassword: form.newPassword })
   }
 
   const strengthMeta = [
     { label: '', color: 'var(--border)' },
-    { label: 'Yếu', color: '#c97a6e' },
-    { label: 'Trung Bình', color: '#b8862e' },
+    { label: 'Yếu', color: '#e05c5c' },
+    { label: 'Trung Bình', color: '#e0a840' },
     { label: 'Tốt', color: 'var(--sage)' },
     { label: 'Mạnh', color: 'var(--gold)' },
   ][strength]
+
+  const canSubmit = !mutation.isPending && form.oldPassword.length > 0 && isStrongEnough && confirmMatches
 
   return (
     <div>
@@ -890,8 +888,8 @@ function SecurityTab() {
             <PasswordField label="Mật Khẩu Hiện Tại" value={form.oldPassword} onChange={v => handleChange('oldPassword', v)} show={showPw.old} toggle={() => setShowPw(s => ({ ...s, old: !s.old }))} error={errors.oldPassword} placeholder="Nhập mật khẩu hiện tại" />
 
             <div>
-              <PasswordField label="Mật Khẩu Mới" value={form.newPassword} onChange={v => handleChange('newPassword', v)} show={showPw.new} toggle={() => setShowPw(s => ({ ...s, new: !s.new }))} error={errors.newPassword} placeholder="Tối thiểu 8 ký tự" />
-              {form.newPassword && (
+              <PasswordField label="Mật Khẩu Mới" value={form.newPassword} onChange={v => handleChange('newPassword', v)} show={showPw.new} toggle={() => setShowPw(s => ({ ...s, new: !s.new }))} error={errors.newPassword} placeholder="8–16 ký tự, chữ hoa, ký tự đặc biệt" />
+              {touched && form.newPassword && (
                 <div className="pf-strength-zone">
                   <div className="pf-strength-bar">
                     {[0, 1, 2, 3].map(i => (
@@ -899,25 +897,29 @@ function SecurityTab() {
                     ))}
                   </div>
                   <div className="pf-strength-label" style={{ color: strengthMeta.color }}>{strengthMeta.label}</div>
-
-                  <div className="pf-pw-checklist">
-                    {PASSWORD_CHECKS.map(c => {
-                      const met = c.test(form.newPassword)
-                      return (
-                        <div key={c.key} className={`pf-pw-check-item ${met ? 'met' : ''}`}>
-                          <span className="pf-pw-dot">{met ? Icon.checkSm : ''}</span>
-                          {c.label}
-                        </div>
-                      )
-                    })}
+                </div>
+              )}
+              <div className="pf-pw-checklist">
+                {checksResult.map(c => (
+                  <div key={c.key} className={`pf-pw-check-item ${c.ok ? 'met' : ''}`}>
+                    <span className="pf-pw-dot">{c.ok ? Icon.checkSm : ''}</span>
+                    {c.label}
                   </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <PasswordField label="Xác Nhận Mật Khẩu Mới" value={form.confirmPassword} onChange={v => handleChange('confirmPassword', v)} show={showPw.confirm} toggle={() => setShowPw(s => ({ ...s, confirm: !s.confirm }))} error={errors.confirmPassword} placeholder="Nhập lại mật khẩu mới" />
+              {form.confirmPassword && (
+                <div className={`pf-pw-check-item ${confirmMatches ? 'met' : ''}`} style={{ marginTop: '8px' }}>
+                  <span className="pf-pw-dot">{confirmMatches ? Icon.checkSm : ''}</span>
+                  Khớp với mật khẩu mới
                 </div>
               )}
             </div>
 
-            <PasswordField label="Xác Nhận Mật Khẩu Mới" value={form.confirmPassword} onChange={v => handleChange('confirmPassword', v)} show={showPw.confirm} toggle={() => setShowPw(s => ({ ...s, confirm: !s.confirm }))} error={errors.confirmPassword} placeholder="Nhập lại mật khẩu mới" />
-
-            <button type="submit" disabled={mutation.isPending} className="pf-btn-tactile pf-pw-submit">
+            <button type="submit" disabled={!canSubmit} className="pf-btn-tactile pf-pw-submit">
               {mutation.isPending ? 'Đang Xử Lý...' : <>Cập Nhật Mật Khẩu {Icon.arrowRight}</>}
             </button>
           </form>
@@ -931,7 +933,7 @@ function SecurityTab() {
               <span className="pf-tips-eyebrow">Mẹo Bảo Mật</span>
             </div>
             {[
-              'Dùng tối thiểu 8 ký tự, kết hợp chữ hoa, số và ký tự đặc biệt.',
+              'Dùng 8–16 ký tự, kết hợp chữ hoa, chữ thường và ký tự đặc biệt.',
               'Không sử dụng lại mật khẩu đã dùng ở trang web khác.',
               'Không chia sẻ mật khẩu qua email hoặc tin nhắn.',
               'Đổi mật khẩu định kỳ mỗi 3–6 tháng để bảo mật tối ưu.',
@@ -970,7 +972,132 @@ function PasswordField({ label, value, onChange, show, toggle, error, placeholde
 }
 
 // ════════════════════════ ADDRESSES TAB ════════════════════════
-const EMPTY_ADDR_FORM = { name: '', phone: '', street: '', ward: '', district: '', city: '', isDefault: false }
+const EMPTY_ADDR_FORM = { name: '', phone: '', street: '', provinceCode: '', provinceName: '', wardCode: '', wardName: '', isDefault: false }
+
+// ─── Autocomplete combobox for Province / Ward (step-by-step) ───
+// Type to filter, click or arrow+Enter to select. `disabled` locks the field
+// until its prerequisite (province) is chosen — enforces the step order.
+function LocationCombobox({ label, placeholder, value, options, loading, disabled, disabledHint, onSelect }) {
+  const [query, setQuery] = useState(value || '')
+  const [open, setOpen] = useState(false)
+  const [highlight, setHighlight] = useState(0)
+  const wrapRef = useRef(null)
+
+  useEffect(() => { setQuery(value || '') }, [value])
+
+  useEffect(() => {
+    const onClickOutside = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [])
+
+  const filtered = query.trim()
+    ? options.filter(o => stripDiacritics(o.name).includes(stripDiacritics(query)))
+    : options
+
+  const handleSelect = (opt) => {
+    onSelect(opt)
+    setQuery(opt.name)
+    setOpen(false)
+  }
+
+  const handleKeyDown = (e) => {
+    if (!open && (e.key === 'ArrowDown' || e.key === 'Enter')) { setOpen(true); return }
+    if (e.key === 'ArrowDown') { e.preventDefault(); setHighlight(h => Math.min(h + 1, filtered.length - 1)) }
+    if (e.key === 'ArrowUp') { e.preventDefault(); setHighlight(h => Math.max(h - 1, 0)) }
+    if (e.key === 'Enter') { e.preventDefault(); if (filtered[highlight]) handleSelect(filtered[highlight]) }
+    if (e.key === 'Escape') setOpen(false)
+  }
+
+  return (
+    <div className="pf-form-input-wrap pf-combobox" ref={wrapRef}>
+      <label>{label}</label>
+      <div className="pf-combobox-inner">
+        <input
+          type="text"
+          value={query}
+          disabled={disabled}
+          placeholder={disabled ? disabledHint : placeholder}
+          onFocus={() => !disabled && setOpen(true)}
+          onChange={e => { setQuery(e.target.value); setOpen(true); setHighlight(0); if (value) onSelect(null) }}
+          onKeyDown={handleKeyDown}
+          autoComplete="off"
+        />
+        {loading && <span className="pf-combobox-spinner" />}
+        {!loading && value && <span className="pf-combobox-check">{Icon.checkSm}</span>}
+      </div>
+      {open && !disabled && (
+        <div className="pf-combobox-dropdown">
+          {filtered.length === 0 ? (
+            <div className="pf-combobox-empty">Không tìm thấy kết quả</div>
+          ) : (
+            filtered.slice(0, 60).map((opt, i) => (
+              <div
+                key={opt.code}
+                className={`pf-combobox-option ${i === highlight ? 'is-highlight' : ''} ${opt.name === value ? 'is-selected' : ''}`}
+                onMouseDown={() => handleSelect(opt)}
+                onMouseEnter={() => setHighlight(i)}
+              >
+                {opt.name}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function stripDiacritics(str) {
+  return (str || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/gi, 'd')
+    .toLowerCase()
+}
+
+// ─── Hook: fetch + cache the 34-province list (new 2-tier model) ───
+function useProvinces() {
+  const [provinces, setProvinces] = useState([])
+  const [loading, setLoading] = useState(true)
+  useEffect(() => {
+    let cancelled = false
+    fetch('https://provinces.open-api.vn/api/v2/p/')
+      .then(r => r.json())
+      .then(data => {
+        if (cancelled) return
+        setProvinces((data || []).map(p => ({ code: p.code, name: p.name })))
+      })
+      .catch(() => { if (!cancelled) toast.error('Không tải được danh sách tỉnh/thành, vui lòng thử lại') })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [])
+  return { provinces, loading }
+}
+
+// ─── Hook: fetch wards for a given province code ───
+function useWards(provinceCode) {
+  const [wards, setWards] = useState([])
+  const [loading, setLoading] = useState(false)
+  useEffect(() => {
+    if (!provinceCode) { setWards([]); return }
+    let cancelled = false
+    setLoading(true)
+    fetch(`https://provinces.open-api.vn/api/v2/p/${provinceCode}?depth=2`)
+      .then(r => r.json())
+      .then(data => {
+        if (cancelled) return
+        const list = (data?.wards || []).map(w => ({ code: w.code, name: w.name }))
+        setWards(list)
+      })
+      .catch(() => { if (!cancelled) toast.error('Không tải được danh sách phường/xã, vui lòng thử lại') })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [provinceCode])
+  return { wards, loading }
+}
 
 function AddressesTab({ profile, confirm }) {
   const storageKey = `earthoria_addresses_${profile.id || profile.email || 'guest'}`
@@ -986,6 +1113,9 @@ function AddressesTab({ profile, confirm }) {
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState(EMPTY_ADDR_FORM)
 
+  const { provinces, loading: provincesLoading } = useProvinces()
+  const { wards, loading: wardsLoading } = useWards(form.provinceCode)
+
   useEffect(() => {
     try { window.localStorage.setItem(storageKey, JSON.stringify(addresses)) } catch { /* storage unavailable */ }
   }, [addresses, storageKey])
@@ -994,12 +1124,35 @@ function AddressesTab({ profile, confirm }) {
   const closeForm = () => { setShowForm(false); setEditingId(null); setForm(EMPTY_ADDR_FORM) }
   const openEditForm = (addr) => {
     setEditingId(addr.id)
-    setForm({ name: addr.name, phone: addr.phone, street: addr.street, ward: addr.ward, district: addr.district, city: addr.city, isDefault: !!addr.isDefault })
+    setForm({
+      name: addr.name, phone: addr.phone, street: addr.street,
+      provinceCode: addr.provinceCode || '', provinceName: addr.provinceName || addr.city || '',
+      wardCode: addr.wardCode || '', wardName: addr.wardName || addr.ward || '',
+      isDefault: !!addr.isDefault,
+    })
     setShowForm(true)
+  }
+
+  const selectProvince = (opt) => {
+    setForm(f => ({
+      ...f,
+      provinceCode: opt ? opt.code : '',
+      provinceName: opt ? opt.name : '',
+      // Changing province invalidates whatever ward was chosen for the old province.
+      wardCode: '',
+      wardName: '',
+    }))
+  }
+  const selectWard = (opt) => {
+    setForm(f => ({ ...f, wardCode: opt ? opt.code : '', wardName: opt ? opt.name : '' }))
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    if (!form.provinceCode || !form.wardCode) {
+      toast.error('Vui lòng chọn đầy đủ Tỉnh/Thành và Phường/Xã')
+      return
+    }
     if (editingId) {
       setAddresses(a => a.map(x => {
         if (x.id === editingId) return { ...x, ...form }
@@ -1034,7 +1187,7 @@ function AddressesTab({ profile, confirm }) {
 
   return (
     <div>
-      <SectionHeader chapter="IV" eyebrow="Quản Lý Giao Hàng" title="Sổ Địa Chỉ" emphasis="Giao Hàng" sub="Quản lý các địa chỉ nhận hàng của bạn" />
+      <SectionHeader chapter="IV" eyebrow="Quản Lý Giao Hàng" title="Sổ Địa Chỉ" emphasis="Giao Hàng" sub="Quản lý các địa chỉ nhận hàng của bạn — theo đơn vị hành chính 2 cấp mới nhất" />
 
       <button onClick={() => (showForm ? closeForm() : openAddForm())} className={`pf-btn-tactile pf-add-addr-btn ${showForm ? 'is-cancel' : ''}`}>
         {showForm ? 'Hủy' : <>{Icon.plus} Thêm Địa Chỉ Mới</>}
@@ -1048,11 +1201,33 @@ function AddressesTab({ profile, confirm }) {
             <FormInput label="Số điện thoại" value={form.phone} onChange={v => setForm(f => ({ ...f, phone: v }))} required />
           </div>
           <FormInput label="Địa chỉ cụ thể (số nhà, đường)" value={form.street} onChange={v => setForm(f => ({ ...f, street: v }))} required style={{ marginBottom: '18px' }} />
-          <div className="pf-form-row-3">
-            <FormInput label="Phường/Xã" value={form.ward} onChange={v => setForm(f => ({ ...f, ward: v }))} required />
-            <FormInput label="Quận/Huyện" value={form.district} onChange={v => setForm(f => ({ ...f, district: v }))} required />
-            <FormInput label="Tỉnh/Thành phố" value={form.city} onChange={v => setForm(f => ({ ...f, city: v }))} required />
+
+          <div className="pf-step-hint">
+            <span className="pf-step-num">1</span> Chọn Tỉnh/Thành phố trước
+            <span className="pf-step-arrow">{Icon.arrowRight}</span>
+            <span className="pf-step-num">2</span> rồi chọn Phường/Xã
           </div>
+          <div className="pf-form-row-2" style={{ marginBottom: '22px' }}>
+            <LocationCombobox
+              label="Tỉnh/Thành phố"
+              placeholder="Gõ để tìm, ví dụ: Cần Thơ"
+              value={form.provinceName}
+              options={provinces}
+              loading={provincesLoading}
+              onSelect={selectProvince}
+            />
+            <LocationCombobox
+              label="Phường/Xã"
+              placeholder="Gõ để tìm phường/xã"
+              disabledHint="Chọn Tỉnh/Thành phố trước"
+              value={form.wardName}
+              options={wards}
+              loading={wardsLoading}
+              disabled={!form.provinceCode}
+              onSelect={selectWard}
+            />
+          </div>
+
           <label className="pf-addr-default-check">
             <input type="checkbox" checked={form.isDefault} onChange={e => setForm(f => ({ ...f, isDefault: e.target.checked }))} />
             Đặt làm địa chỉ mặc định
@@ -1073,7 +1248,7 @@ function AddressesTab({ profile, confirm }) {
               {addr.isDefault && <span className="pf-addr-default-badge">Mặc Định</span>}
               <div className="pf-addr-name">{addr.name}</div>
               <div className="pf-addr-phone">{addr.phone}</div>
-              <div className="pf-addr-text">{addr.street}, {addr.ward}, {addr.district}, {addr.city}</div>
+              <div className="pf-addr-text">{addr.street}, {addr.wardName || addr.ward}, {addr.provinceName || addr.city}</div>
               <div className="pf-addr-actions">
                 {!addr.isDefault && (
                   <button onClick={() => setDefault(addr.id)} className="pf-btn-tactile pf-addr-action-gold">Đặt Mặc Định</button>
@@ -1553,6 +1728,48 @@ const PROFILE_CSS = `
   width: 100%; padding: 12px 16px; border: 0.5px solid var(--border); background: var(--ivory);
   font-family: ${F.sans}; font-size: 13px; outline: none; transition: border-color 0.25s;
 }
+
+/* ── Step hint (Province → Ward) ── */
+.pf-step-hint {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-size: 10px; letter-spacing: 0.06em; color: var(--text-muted);
+  margin-bottom: 14px; font-family: ${F.sans};
+}
+.pf-step-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--gold-pale); color: var(--forest);
+  font-size: 9px; font-weight: 600; flex-shrink: 0;
+}
+.pf-step-arrow { color: var(--gold); display: flex; }
+
+/* ── Location Combobox (Tỉnh/Phường autocomplete) ── */
+.pf-combobox { position: relative; }
+.pf-combobox-inner { position: relative; display: flex; align-items: center; }
+.pf-combobox-inner input { padding-right: 40px; }
+.pf-combobox-inner input:disabled { background: var(--cream); color: var(--mist); cursor: not-allowed; }
+.pf-combobox-inner input:focus:not(:disabled) { border-color: var(--gold); }
+.pf-combobox-check { position: absolute; right: 13px; color: var(--gold); display: flex; pointer-events: none; }
+.pf-combobox-spinner {
+  position: absolute; right: 13px; width: 13px; height: 13px;
+  border: 1.5px solid var(--gold-pale); border-top-color: var(--gold); border-radius: 50%;
+  animation: pfSpin 0.7s linear infinite;
+}
+.pf-combobox-dropdown {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 60;
+  background: var(--white); border: 0.5px solid var(--border-gold);
+  box-shadow: 0 20px 44px rgba(13,43,30,0.14);
+  max-height: 260px; overflow-y: auto;
+}
+.pf-combobox-option {
+  padding: 10px 16px; font-size: 13px; color: var(--text-body); cursor: pointer;
+  border-bottom: 0.5px solid var(--border); transition: background 0.15s;
+}
+.pf-combobox-option:last-child { border-bottom: none; }
+.pf-combobox-option.is-highlight { background: var(--gold-pale); color: var(--forest); }
+.pf-combobox-option.is-selected { color: var(--gold); font-weight: 500; }
+.pf-combobox-empty { padding: 14px 16px; font-size: 12px; color: var(--text-muted); text-align: center; }
+
 .pf-form-input-wrap input:focus { border-color: var(--gold); }
 .pf-addr-default-check { display: flex; align-items: center; gap: 11px; margin-bottom: 24px; cursor: pointer; font-size: 13px; color: var(--text-muted); }
 .pf-addr-save-btn {
