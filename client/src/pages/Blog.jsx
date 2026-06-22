@@ -510,7 +510,7 @@ function FacebookSection(){
               Earthoria trên <em style={{fontStyle:"italic",color:"#1877F2"}}>Facebook</em>
             </h2>
           </div>
-          <a href="https://facebook.com" target="_blank" rel="noreferrer" style={{display:"flex",alignItems:"center",gap:9,fontSize:10.5,letterSpacing:".14em",textTransform:"uppercase",color:"#1877F2",textDecoration:"none",border:".5px solid rgba(24,119,242,.3)",padding:"9px 18px",transition:"all .3s",fontFamily:"'DM Sans',sans-serif"}}
+          <a href="https://www.facebook.com/Earthoriavn" target="_blank" rel="noreferrer" style={{display:"flex",alignItems:"center",gap:9,fontSize:10.5,letterSpacing:".14em",textTransform:"uppercase",color:"#1877F2",textDecoration:"none",border:".5px solid rgba(24,119,242,.3)",padding:"9px 18px",transition:"all .3s",fontFamily:"'DM Sans',sans-serif"}}
             onMouseEnter={e=>{e.currentTarget.style.background="rgba(24,119,242,.06)";}}
             onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}
           >
