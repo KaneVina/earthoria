@@ -1,7 +1,17 @@
 import { create } from 'zustand'
 
+const getStoredUser = () => {
+  try {
+    const stored = localStorage.getItem('user')
+    return stored ? JSON.parse(stored) : null
+  } catch {
+    localStorage.removeItem('user') // dọn data hỏng
+    return null
+  }
+}
+
 export const useAuthStore = create((set) => ({
-  user: JSON.parse(localStorage.getItem('user')) || null,
+  user: getStoredUser(),
   token: localStorage.getItem('token') || null,
   isAuthenticated: !!localStorage.getItem('token'),
 

@@ -2,9 +2,9 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff, Sun, Moon } from "lucide-react";
-import { authService } from "../services/authService";
-import { useAuthStore } from "../store/authStore";
-import { useTheme } from "../hooks/useTheme";
+import { authService } from "../../services/authService";
+import { useAuthStore } from "../../store/authStore";
+import { useTheme } from "../../hooks/useTheme";
 import toast from "react-hot-toast";
 
 export default function Login() {
@@ -257,8 +257,8 @@ export default function Login() {
                   Ghi nhớ đăng nhập
                 </span>
               </label>
-              <a
-                href="#"
+              <Link
+                to="/forgot-password"
                 style={{
                   fontSize: "12px",
                   color: "var(--gold)",
@@ -266,7 +266,7 @@ export default function Login() {
                 }}
               >
                 Quên mật khẩu?
-              </a>
+              </Link>
             </div>
 
             <button type="submit" className="auth-submit" disabled={loading}>

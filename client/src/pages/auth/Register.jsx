@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff, Shield, HelpCircle } from "lucide-react";
-import { authService } from "../services/authService";
-import { useAuthStore } from "../store/authStore";
+import { authService } from "../../services/authService";
+import { useAuthStore } from "../../store/authStore";
 import toast from "react-hot-toast";
 
 export default function Register() {

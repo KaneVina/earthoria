@@ -10,6 +10,7 @@ import {
   Package,
   LogOut,
   ChevronDown,
+  Search,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../../store/authStore";
@@ -18,6 +19,7 @@ import { useWishlistStore } from "../../store/wishlistStore";
 import { useTheme } from "../../hooks/useTheme";
 import toast from "react-hot-toast";
 import logoImg from "../../assets/img/logoBT-ngangtext.png";
+import SearchOverlay from "./SearchOverlay";
 
 export default function Navbar() {
   const location = useLocation();
@@ -29,6 +31,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [progress, setProgress] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -52,9 +55,10 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  // Đóng menu mobile mỗi khi chuyển trang
+  // Đóng menu mobile / search mỗi khi chuyển trang
   useEffect(() => {
     setMobileOpen(false);
+    setSearchOpen(false);
   }, [location.pathname, location.search]);
 
   const handleLogout = () => {
@@ -72,13 +76,14 @@ export default function Navbar() {
   };
 
   const navLinks = [
+    { to: "/home", label: "Trang chủ" },
     { to: "/shop", label: "Cửa hàng" },
-    { to: "/shop?hasAR=true", label: "Sách AR" },
     { to: "/ar", label: "Công nghệ" },
     { to: "/about", label: "Về chúng tôi" },
   ];
 
   const firstLetter = user?.name?.trim()?.charAt(0)?.toUpperCase() || "?";
+  const isAdmin = user?.role === "ADMIN";
 
   return (
     <>
@@ -113,7 +118,7 @@ export default function Navbar() {
                 </Link>
               </li>
             ))}
-            {user?.role === "ADMIN" && (
+            {isAdmin && (
               <li>
                 <Link
                   to="/admin"
@@ -127,48 +132,74 @@ export default function Navbar() {
 
           {/* Actions */}
           <div className="nav-actions">
+            {/* Search */}
             <button
-              className="nav-icon"
+              className="nav-icon icon-search"
+              onClick={() => setSearchOpen((v) => !v)}
+              title="Tìm kiếm (nhấn / hoặc Ctrl+K)"
+              aria-label="Mở ô tìm kiếm"
+            >
+              <Search size={16} strokeWidth={1.8} />
+            </button>
+
+            {/* Theme toggle */}
+            <button
+              className="nav-icon icon-theme"
               onClick={toggleTheme}
               title="Chế độ sáng/tối"
+              aria-label="Chuyển chế độ sáng/tối"
             >
-              {isDark ? <Sun size={16} /> : <Moon size={16} />}
+              {isDark ? (
+                <Sun size={16} strokeWidth={1.8} />
+              ) : (
+                <Moon size={16} strokeWidth={1.8} />
+              )}
             </button>
 
             {/* Wishlist */}
             <Link
               to="/wishlist"
-              className="nav-icon"
+              className="nav-icon icon-wishlist"
               style={{
                 position: "relative",
                 textDecoration: "none",
                 color: "inherit",
               }}
               title="Sản phẩm yêu thích"
+              aria-label="Sản phẩm yêu thích"
             >
               <Heart
                 size={16}
+                strokeWidth={1.8}
                 fill={wishlistCount > 0 ? "var(--gold)" : "none"}
                 color={wishlistCount > 0 ? "var(--gold)" : "currentColor"}
+                style={{ transition: "fill 0.3s ease, color 0.3s ease" }}
               />
               {wishlistCount > 0 && (
-                <span className="nav-badge">{wishlistCount}</span>
+                <span key={wishlistCount} className="nav-badge">
+                  {wishlistCount > 99 ? "99+" : wishlistCount}
+                </span>
               )}
             </Link>
 
             {/* Cart */}
             <Link
               to="/cart"
-              className="nav-icon"
+              className="nav-icon icon-cart"
               style={{
                 position: "relative",
                 textDecoration: "none",
                 color: "inherit",
               }}
               title="Giỏ hàng"
+              aria-label="Giỏ hàng"
             >
-              <ShoppingCart size={16} />
-              {itemCount > 0 && <span className="nav-badge">{itemCount}</span>}
+              <ShoppingCart size={16} strokeWidth={1.8} />
+              {itemCount > 0 && (
+                <span key={itemCount} className="nav-badge">
+                  {itemCount > 99 ? "99+" : itemCount}
+                </span>
+              )}
             </Link>
 
             {/* Auth */}
@@ -241,7 +272,7 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          {user?.role === "ADMIN" && (
+          {isAdmin && (
             <Link
               to="/admin"
               className={`nav-mobile-link ${isActive("/admin") ? "active" : ""}`}
@@ -284,6 +315,18 @@ export default function Navbar() {
           )}
         </div>
       </nav>
+
+      {/* Search overlay — đặt ngoài <nav> để position:fixed không bị
+          giới hạn bởi backdrop-filter của navbar. Truyền trạng thái đăng
+          nhập để khung search biết có hiện Hồ sơ/Đơn hàng/Đăng xuất không. */}
+      <SearchOverlay
+        isOpen={searchOpen}
+        onOpen={() => setSearchOpen(true)}
+        onClose={() => setSearchOpen(false)}
+        isAuthenticated={isAuthenticated}
+        isAdmin={isAdmin}
+        onLogout={handleLogout}
+      />
     </>
   );
 }

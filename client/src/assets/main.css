@@ -5105,3 +5105,397 @@ body.dark-mode .user-dropdown-item:hover { background: rgba(74,158,63,0.1); }
 body.dark-mode .nav-mobile-panel { background: #121a16; border-top-color: rgba(74,158,63,0.2); }
 body.dark-mode .nav-mobile-link { color: #c8d4cc; border-color: rgba(255,255,255,0.07); }
 body.dark-mode .nav-hamburger { color: #c8d4cc; }
+
+
+/* ─── BACKDROP ─── */
+.search-overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(13, 43, 30, 0.55);
+  backdrop-filter: blur(6px) saturate(1.1);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+  display: flex;
+  justify-content: center;
+  padding: 100px 24px 40px;
+  overflow-y: auto;
+}
+.search-overlay-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* ─── PANEL ─── */
+.search-panel {
+  width: 100%;
+  max-width: 760px;
+  height: fit-content;
+  max-height: calc(100vh - 140px);
+  background: var(--ivory);
+  border: 0.5px solid var(--border-gold);
+  box-shadow: 0 48px 96px rgba(13, 43, 30, 0.28);
+  display: flex;
+  flex-direction: column;
+  transform: translateY(-18px) scale(0.97);
+  opacity: 0;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+}
+.search-overlay-backdrop.open .search-panel {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+/* ─── HEADER ─── */
+.search-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 28px 0;
+  flex-shrink: 0;
+}
+.search-input-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 1px solid var(--border-gold);
+  background: var(--white);
+  padding: 0 18px;
+  height: 56px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.search-input-wrap:focus-within {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 4px rgba(74, 158, 63, 0.1);
+}
+.search-input-icon { color: var(--gold); flex-shrink: 0; }
+.search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--forest);
+  height: 100%;
+}
+.search-input::placeholder { color: var(--mist); font-weight: 300; }
+.search-clear-btn {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border: none; background: var(--pale);
+  color: var(--forest); cursor: pointer;
+  flex-shrink: 0; border-radius: 50%;
+  transition: all 0.25s;
+}
+.search-clear-btn:hover { background: var(--gold); color: var(--ivory); }
+
+.search-close-btn {
+  display: flex; align-items: center; gap: 8px;
+  height: 56px; padding: 0 18px;
+  border: 0.5px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  cursor: pointer; transition: all 0.3s;
+  flex-shrink: 0;
+}
+.search-close-btn:hover {
+  border-color: var(--gold);
+  color: var(--forest);
+  background: var(--gold-pale);
+}
+.search-close-label { white-space: nowrap; }
+
+.search-panel-hint {
+  padding: 12px 28px 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  font-weight: 300;
+  flex-shrink: 0;
+}
+.search-panel-hint em { font-style: italic; color: var(--gold); font-weight: 400; }
+
+/* ─── CATEGORY TABS ─── */
+.search-category-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 18px 28px;
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.search-category-tabs::-webkit-scrollbar { display: none; }
+.search-cat-pill {
+  flex-shrink: 0;
+  height: 36px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+}
+
+/* ─── BODY ─── */
+.search-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 28px 24px;
+  min-height: 180px;
+}
+
+/* Default state sections */
+.search-default-state { display: flex; flex-direction: column; gap: 32px; }
+.search-section-title {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: 16px;
+}
+.search-section-title svg { color: var(--gold); }
+
+.search-chip-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.search-chip-row-center { justify-content: center; }
+.search-chip {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 13px; font-weight: 300;
+  color: var(--text-body);
+  background: var(--cream);
+  border: 0.5px solid var(--border);
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.search-chip:hover {
+  border-color: var(--gold);
+  background: var(--gold-pale);
+  color: var(--forest);
+}
+.search-chip-remove {
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+.search-chip-remove:hover { color: #c0392b; }
+
+/* Quick category cards */
+.search-quick-cats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.search-quick-cat-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 18px;
+  border: 0.5px solid var(--border);
+  background: var(--white);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.3s;
+}
+.search-quick-cat-card:hover {
+  border-color: var(--border-gold);
+  background: var(--gold-pale);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgba(13, 43, 30, 0.08);
+}
+.search-quick-cat-icon {
+  width: 42px; height: 42px;
+  flex-shrink: 0;
+  border: 0.5px solid var(--border-gold);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold);
+  background: var(--cream);
+}
+.search-quick-cat-text { flex: 1; min-width: 0; }
+.search-quick-cat-label {
+  display: block;
+  font-family: 'Playfair Display', serif;
+  font-size: 16px; font-weight: 400;
+  color: var(--forest);
+  margin-bottom: 2px;
+}
+.search-quick-cat-desc {
+  display: block;
+  font-size: 11px; color: var(--text-muted); font-weight: 300;
+}
+.search-quick-cat-arrow {
+  color: var(--gold);
+  flex-shrink: 0;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all 0.3s;
+}
+.search-quick-cat-card:hover .search-quick-cat-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Loading state */
+.search-loading-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 16px; padding: 56px 20px;
+  color: var(--text-muted);
+  font-size: 13px; font-weight: 300;
+}
+.search-spinner { color: var(--gold); animation: spin 0.9s linear infinite; }
+
+/* Empty state */
+.search-empty-state {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 8px; padding: 48px 20px 24px;
+}
+.search-empty-icon { color: var(--pale); margin-bottom: 8px; }
+.search-empty-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px; font-weight: 400; color: var(--forest);
+}
+.search-empty-sub {
+  font-size: 13px; color: var(--text-muted); font-weight: 300;
+  margin-bottom: 20px;
+}
+
+/* Results list */
+.search-results-list { display: flex; flex-direction: column; gap: 2px; }
+.search-result-row {
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 14px;
+  border: none;
+  border-left: 2px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: all 0.2s;
+}
+.search-result-row:hover,
+.search-result-row.active {
+  background: var(--gold-pale);
+  border-left-color: var(--gold);
+}
+.search-result-thumb {
+  width: 44px; height: 44px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--forest);
+  color: var(--gold);
+  font-family: 'Playfair Display', serif;
+  font-size: 17px; font-weight: 400;
+  border: 0.5px solid var(--border-gold);
+}
+.search-result-info { flex: 1; min-width: 0; }
+.search-result-name {
+  display: block;
+  font-size: 14px; font-weight: 400; color: var(--forest);
+  margin-bottom: 4px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.search-highlight {
+  background: var(--gold-pale);
+  color: var(--forest);
+  font-weight: 600;
+  padding: 0 1px;
+}
+.search-result-meta { display: flex; align-items: center; gap: 8px; }
+.search-result-cat-tag {
+  font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--gold);
+}
+.search-result-age {
+  font-size: 11px; color: var(--text-muted); font-weight: 300;
+  padding-left: 8px; border-left: 0.5px solid var(--border);
+}
+.search-result-price {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px; font-weight: 600;
+  color: var(--forest);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ─── FOOTER ─── */
+.search-panel-footer {
+  flex-shrink: 0;
+  padding: 18px 28px;
+  border-top: 0.5px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap;
+}
+.search-view-all-btn {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ivory); background: var(--forest);
+  border: none; padding: 13px 22px;
+  cursor: pointer; transition: all 0.3s;
+  max-width: 100%;
+}
+.search-view-all-btn:hover { background: var(--forest-mid); gap: 16px; }
+.search-footer-hint {
+  font-size: 11px; color: var(--text-muted); font-weight: 300;
+  display: flex; align-items: center; gap: 6px;
+}
+.search-kbd {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 10px;
+  border: 0.5px solid var(--border);
+  background: var(--cream);
+  padding: 2px 7px;
+  color: var(--forest);
+}
+
+/* ─── DARK MODE ─── */
+body.dark-mode .search-overlay-backdrop { background: rgba(5, 10, 7, 0.7); }
+body.dark-mode .search-panel { background: #121a16; border-color: rgba(74, 158, 63, 0.25); }
+body.dark-mode .search-input-wrap { background: #1c2822; border-color: rgba(74, 158, 63, 0.2); }
+body.dark-mode .search-input { color: #c8d4cc; }
+body.dark-mode .search-close-btn { color: rgba(180, 200, 188, 0.5); border-color: rgba(255, 255, 255, 0.08); }
+body.dark-mode .search-close-btn:hover { background: rgba(74, 158, 63, 0.1); color: #c8d4cc; }
+body.dark-mode .search-panel-hint { color: rgba(180, 200, 188, 0.45); }
+body.dark-mode .search-panel-footer { border-color: rgba(255, 255, 255, 0.07); }
+body.dark-mode .search-chip { background: #1c2822; border-color: rgba(255, 255, 255, 0.07); color: rgba(180, 200, 188, 0.7); }
+body.dark-mode .search-chip:hover { background: rgba(74, 158, 63, 0.12); color: #c8d4cc; }
+body.dark-mode .search-quick-cat-card { background: #1c2822; border-color: rgba(255, 255, 255, 0.07); }
+body.dark-mode .search-quick-cat-card:hover { background: rgba(74, 158, 63, 0.1); }
+body.dark-mode .search-quick-cat-label { color: #c8d4cc; }
+body.dark-mode .search-quick-cat-icon { background: #0f1510; }
+body.dark-mode .search-result-row:hover,
+body.dark-mode .search-result-row.active { background: rgba(74, 158, 63, 0.1); }
+body.dark-mode .search-result-name { color: #c8d4cc; }
+body.dark-mode .search-result-price { color: #c8d4cc; }
+body.dark-mode .search-empty-title { color: #c8d4cc; }
+body.dark-mode .search-kbd { background: #1c2822; border-color: rgba(255, 255, 255, 0.1); color: #c8d4cc; }
+body.dark-mode .search-result-age { border-color: rgba(255, 255, 255, 0.1); }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 720px) {
+  .search-overlay-backdrop { padding: 84px 12px 24px; }
+  .search-panel { max-height: calc(100vh - 96px); }
+  .search-panel-header { padding: 18px 18px 0; gap: 10px; }
+  .search-close-label { display: none; }
+  .search-close-btn { padding: 0 14px; }
+  .search-panel-hint { padding: 10px 18px 0; }
+  .search-category-tabs { padding: 14px 18px; }
+  .search-panel-body { padding: 4px 18px 18px; }
+  .search-quick-cats { grid-template-columns: 1fr; }
+  .search-panel-footer { padding: 14px 18px; flex-direction: column; align-items: stretch; }
+  .search-view-all-btn { justify-content: center; }
+}
+
+/* ─── REDUCED MOTION ─── */
+@media (prefers-reduced-motion: reduce) {
+  .search-overlay-backdrop,
+  .search-panel,
+  .search-quick-cat-card,
+  .search-result-row,
+  .search-clear-btn,
+  .search-chip {
+    transition: none !important;
+    animation: none !important;
+  }
+}

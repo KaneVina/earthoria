@@ -5,8 +5,8 @@ import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import BookDetail from "./pages/BookDetail";
 import Cart from "./pages/Cart";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
 import AboutUs from "./pages/AboutUs";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/admin/Dashboard";
@@ -14,10 +14,15 @@ import Products from "./pages/admin/Products";
 import Orders from "./pages/admin/Orders";
 import Users from "./pages/admin/Users";
 import Coupons from "./pages/admin/Coupons";
-import GoogleAuthSuccess from "./pages/GoogleAuthSuccess";
+import GoogleAuthSuccess from "./pages/auth/GoogleAuthSuccess";
 import CustomCursor from "./components/CustomCursor";
 import ARGuide from "./pages/ARGuide";
 import Checkout from "./pages/Checkout";
+import Profile from "./pages/Profile";
+import ScrollToTop from "./components/ScrollToTop";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import TermsOfService from "./pages/legal/TermsOfService";
+import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -39,15 +44,34 @@ const GuestRoute = ({ children }) => {
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <CustomCursor />
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/books/:slug/:hashId" element={<BookDetail />} />
           <Route path="/ar" element={<ARGuide />} />
           <Route path="/about" element={<AboutUs />} />
-
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route
+            path="/checkout"
+            element={
+              <ProtectedRoute>
+                <Checkout />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/cart"
             element={
@@ -58,15 +82,6 @@ export default function App() {
           />
         </Route>
 
-             <Route
-            path="/checkout"
-            element={
-              <ProtectedRoute>
-                <Checkout />
-              </ProtectedRoute>
-            }
-          />
-
         <Route
           path="/login"
           element={
@@ -75,6 +90,7 @@ export default function App() {
             </GuestRoute>
           }
         />
+
         <Route
           path="/register"
           element={
@@ -83,6 +99,14 @@ export default function App() {
             </GuestRoute>
           }
         />
+ <Route
+            path="/forgot-password"
+            element={
+              <GuestRoute>
+                <ForgotPassword />
+              </GuestRoute>
+            }
+          />
 
         <Route
           path="/admin"
