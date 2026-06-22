@@ -1,0 +1,367 @@
+nav {
+  transition: background 0.45s ease, backdrop-filter 0.45s ease,
+              border-color 0.45s ease, box-shadow 0.4s ease !important;
+}
+
+nav.is-scrolled {
+  background: rgba(250, 248, 243, 0.6) !important;
+  backdrop-filter: blur(26px) saturate(1.6) !important;
+}
+
+body.dark-mode nav.is-scrolled {
+  background: rgba(18, 26, 22, 0.68) !important;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   LOGO — mặc định: logo nhỏ; khi cuộn: logo ngang
+   ────────────────────────────────────────────────────────────── */
+.nav-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  height: 80px;
+  flex-shrink: 0;
+  gap: 0;
+}
+
+.nav-logo-swap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 38px;
+  width: 168px;
+  max-width: 44vw;
+}
+
+.nav-logo-full,
+.nav-logo-compact {
+  display: block;
+  object-fit: contain;
+  will-change: opacity, transform;
+}
+
+/* Logo nhỏ — MẶC ĐỊNH */
+.nav-logo-compact {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 38px;
+  width: 38px;
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) scale(1) rotate(0deg);
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.45s;
+}
+
+/* Logo ngang — ẨN ban đầu */
+.nav-logo-full {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 30px;
+  width: auto;
+  max-width: 168px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-50%) translateY(-8px) scale(0.92);
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.5s;
+}
+
+/* Khi cuộn: logo ngang hiện, logo nhỏ ẩn */
+nav.is-scrolled .nav-logo-full {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) scale(1);
+}
+nav.is-scrolled .nav-logo-compact {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-50%) scale(0.8) rotate(-8deg);
+  pointer-events: none;
+}
+
+.nav-logo:hover .nav-logo-full,
+.nav-logo:hover .nav-logo-compact {
+  filter: brightness(1.06);
+}
+
+@media (max-width: 900px) {
+  .nav-logo-swap { width: 120px; height: 32px; }
+  .nav-logo-full { height: 24px; }
+  .nav-logo-compact { height: 32px; width: 32px; }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   NAV LINKS — gradient lấy từ màu logo
+   Logo: #1a4a35 (F đậm) → #2d7a4f (thân lá) → #6ab84a (đầu lá sáng)
+
+   ACTIVE  : gradient đậm full + gạch chân
+   HOVER   : cùng gradient, opacity 0.52 — nhạt hơn rõ, không gạch chân
+   ────────────────────────────────────────────────────────────── */
+.nav-links a {
+  position: relative;
+  text-decoration: none !important;
+  transition: opacity 0.28s ease !important;
+}
+
+.nav-links a::after {
+  content: none !important;
+}
+
+/* ACTIVE */
+.nav-links a.active {
+  background: linear-gradient(135deg, #1a4a35 0%, #2d7a4f 52%, #6ab84a 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  color: transparent !important;
+  text-decoration: underline !important;
+  text-decoration-color: #2d7a4f !important;
+  text-underline-offset: 5px !important;
+  text-decoration-thickness: 1.5px !important;
+  opacity: 1 !important;
+}
+
+/* ACTIVE dark mode — đẩy sáng hơn để đọc được trên nền tối */
+body.dark-mode .nav-links a.active {
+  background: linear-gradient(135deg, #2d7a4f 0%, #4fa86e 48%, #6ab84a 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  text-decoration-color: #4fa86e !important;
+}
+
+/* HOVER non-active */
+.nav-links a:hover:not(.active) {
+  background: linear-gradient(135deg, #1a4a35 0%, #2d7a4f 52%, #6ab84a 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  color: transparent !important;
+  opacity: 0.52 !important;
+  text-decoration: none !important;
+}
+
+/* HOVER dark mode */
+body.dark-mode .nav-links a:hover:not(.active) {
+  background: linear-gradient(135deg, #2d7a4f 0%, #4fa86e 48%, #6ab84a 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  opacity: 0.58 !important;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   ICON GROUP
+   - Mặc định (logo nhỏ): gap rộng
+   - Khi cuộn (logo to): gap thu lại
+   ────────────────────────────────────────────────────────────── */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-icon-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 14px;
+  margin-right: 4px;
+  border-right: 0.5px solid var(--border);
+  transition: gap 0.4s ease;
+}
+
+nav.is-scrolled .nav-icon-group {
+  gap: 2px;
+}
+
+.nav-icon {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0.5px solid transparent;
+  border-radius: 0;
+  text-decoration: none;
+  transition: color 0.25s ease, background 0.25s ease,
+              border-color 0.25s ease, transform 0.2s ease,
+              opacity 0.35s ease, width 0.35s ease, padding 0.35s ease;
+}
+
+.nav-icon:hover,
+.nav-icon:focus-visible {
+  color: var(--gold);
+  background: var(--gold-pale);
+  border-color: var(--border-gold);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.nav-icon:active {
+  transform: translateY(0) scale(0.93);
+}
+
+.nav-icon svg {
+  transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.nav-icon:hover svg {
+  transform: scale(1.14);
+}
+.nav-icon:active svg {
+  transform: scale(0.96);
+}
+
+body.dark-mode .nav-icon:hover,
+body.dark-mode .nav-icon:focus-visible {
+  background: rgba(74, 158, 63, 0.12);
+  border-color: rgba(74, 158, 63, 0.32);
+}
+
+body.dark-mode .nav-icon-group {
+  border-right-color: rgba(255, 255, 255, 0.08);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   ẨN ICON DARK/LIGHT KHI CUỘN
+   ────────────────────────────────────────────────────────────── */
+nav.is-scrolled .icon-theme {
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  padding: 0;
+  overflow: hidden;
+  border: none;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   BADGE
+   ────────────────────────────────────────────────────────────── */
+.nav-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 55%, var(--forest-mid) 100%);
+  box-shadow: 0 2px 6px rgba(13, 43, 30, 0.35), 0 0 0 2px var(--ivory);
+  border-radius: 999px;
+  font-size: 9.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ivory);
+  line-height: 1;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  letter-spacing: 0;
+  pointer-events: none;
+}
+
+@keyframes badgePop {
+  0%   { transform: scale(0.35); opacity: 0; }
+  55%  { transform: scale(1.28); opacity: 1; }
+  75%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+@keyframes badgeRing {
+  0%   { box-shadow: 0 2px 6px rgba(13,43,30,0.35), 0 0 0 2px var(--ivory), 0 0 0 0 rgba(106,184,74,0.55); }
+  70%  { box-shadow: 0 2px 6px rgba(13,43,30,0.35), 0 0 0 2px var(--ivory), 0 0 0 8px rgba(106,184,74,0); }
+  100% { box-shadow: 0 2px 6px rgba(13,43,30,0.35), 0 0 0 2px var(--ivory), 0 0 0 0 rgba(106,184,74,0); }
+}
+
+.nav-badge-pop {
+  animation: badgePop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+             badgeRing 0.9s ease-out 0.08s;
+}
+
+body.dark-mode .nav-badge {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45), 0 0 0 2px #121a16;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   TOOLTIP
+   ────────────────────────────────────────────────────────────── */
+.nav-icon[data-tooltip]::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  white-space: nowrap;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  font-weight: 400;
+  color: var(--ivory);
+  background: var(--forest);
+  padding: 6px 12px;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+  z-index: 960;
+}
+
+.nav-icon[data-tooltip]::after {
+  content: '';
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 6px;
+  height: 6px;
+  background: var(--forest);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s;
+  z-index: 959;
+}
+
+.nav-icon[data-tooltip]:hover::before,
+.nav-icon[data-tooltip]:hover::after,
+.nav-icon[data-tooltip]:focus-visible::before,
+.nav-icon[data-tooltip]:focus-visible::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+.nav-icon[data-tooltip]:hover::after,
+.nav-icon[data-tooltip]:focus-visible::after {
+  transform: translateX(-50%) rotate(45deg);
+}
+
+body.dark-mode .nav-icon[data-tooltip]::before,
+body.dark-mode .nav-icon[data-tooltip]::after {
+  background: #1c2822;
+  color: #c8d4cc;
+}
+
+.nav-inner,
+.nav-actions,
+.nav-icon-group {
+  overflow: visible;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Responsive
+   ────────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .nav-icon-group {
+    border-right: none;
+    padding-right: 0;
+    margin-right: 0;
+  }
+}
