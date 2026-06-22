@@ -87,6 +87,7 @@ export default function Navbar() {
     { to: "/home", label: "Trang chủ" },
     { to: "/shop", label: "Cửa hàng" },
     { to: "/ar", label: "Công nghệ" },
+    { to: "/blog", label: "Tin tức" },
     { to: "/about", label: "Về chúng tôi" },
   ];
 
