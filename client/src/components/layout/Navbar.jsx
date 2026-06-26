@@ -19,6 +19,8 @@ import { useWishlistStore } from "../../store/wishlistStore";
 import { useTheme } from "../../hooks/useTheme";
 import toast from "react-hot-toast";
 import logoImg from "../../assets/img/logoBT-ngangtext.png";
+// import {toggleCursorEffect} from "./CustomCursor";
+
 const logoCompactImg = "/logo-nho.png";
 import SearchOverlay from "./SearchOverlay";
 // import '../../assets/navbar.css'
@@ -86,7 +88,6 @@ export default function Navbar() {
   const navLinks = [
     { to: "/home", label: "Trang chủ" },
     { to: "/shop", label: "Cửa hàng" },
-    { to: "/ar", label: "Công nghệ" },
     { to: "/blog", label: "Tin tức" },
     { to: "/about", label: "Về chúng tôi" },
   ];

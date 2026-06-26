@@ -524,8 +524,8 @@ export default function Register() {
                   </svg>
                 </div>
                 <span className="auth-check-label">
-                  Tôi đồng ý với <a href="#">Điều khoản dịch vụ</a> và{" "}
-                  <a href="#">Chính sách bảo mật</a> của Earthoria.
+                  Tôi đồng ý với <a href="/terms">Điều khoản dịch vụ</a> và{" "}
+                  <a href="privacy">Chính sách bảo mật</a> của Earthoria.
                 </span>
               </label>
 

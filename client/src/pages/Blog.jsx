@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import FacebookSection from "./FacebookSection";
 
 /* ─── TOKENS ─── */
 const T = {
@@ -10,7 +11,7 @@ const T = {
 };
 
 /* ─── NAV HEIGHT — chỉnh con số này nếu nav project khác ─── */
-const NAV_H = 110;
+const NAV_H = 70;
 
 const globalCSS = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap');
@@ -72,17 +73,17 @@ const globalCSS = `
   .bp-ei:hover .ei-arr { transform:translateX(5px); }
 
   /* cat pills */
-  .bp-pill { font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:rgba(255,255,255,.4); background:transparent; border:none; border-bottom:2px solid transparent; padding:0 18px; cursor:pointer; font-family:'DM Sans',sans-serif; height:100%; display:flex; align-items:center; gap:7px; transition:color .25s,border-color .25s; }
+  .bp-pill { font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:rgba(255,255,255,.4); background:transparent; border:none; border-bottom:2px solid transparent; padding:0 18px; cursor:pointer; font-family:'Be Vietnam Pro',sans-serif; height:100%; display:flex; align-items:center; gap:7px; transition:color .25s,border-color .25s; }
   .bp-pill:hover { color:rgba(255,255,255,.8); }
   .bp-pill.act { color:${T.gold}; border-bottom-color:${T.gold}; }
 
   /* tags */
-  .bp-tag { font-size:10px; letter-spacing:.1em; padding:5px 12px; border:.5px solid ${T.border}; color:${T.textMuted}; cursor:pointer; transition:all .3s; background:transparent; font-family:'DM Sans',sans-serif; }
+  .bp-tag { font-size:10px; letter-spacing:.1em; padding:5px 12px; border:.5px solid ${T.border}; color:${T.textMuted}; cursor:pointer; transition:all .3s; background:transparent; font-family:'Be Vietnam Pro',sans-serif; }
   .bp-tag:hover { background:${T.forest}; color:${T.ivory}; border-color:${T.forest}; }
   .bp-tag.act { background:${T.goldPale}; color:${T.gold}; border-color:${T.borderGold}; }
 
   /* interest */
-  .bp-int { font-size:9.5px; letter-spacing:.1em; padding:5px 13px; border:.5px solid ${T.border}; color:${T.textMuted}; cursor:pointer; transition:all .3s; background:transparent; font-family:'DM Sans',sans-serif; }
+  .bp-int { font-size:9.5px; letter-spacing:.1em; padding:5px 13px; border:.5px solid ${T.border}; color:${T.textMuted}; cursor:pointer; transition:all .3s; background:transparent; font-family:'Be Vietnam Pro',sans-serif; }
   .bp-int.act { background:${T.goldPale}; color:${T.gold}; border-color:${T.borderGold}; }
 
   /* social small */
@@ -260,7 +261,7 @@ function CatStrip(){
         </div>
         <div style={{display:"flex",alignItems:"center",gap:9,border:".5px solid rgba(255,255,255,.09)",background:"rgba(255,255,255,.04)",padding:"0 13px",height:35}}>
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.3)" strokeWidth="1.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input style={{background:"transparent",border:"none",outline:"none",fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:300,color:"rgba(255,255,255,.65)",width:155}} placeholder="Tìm kiếm..."/>
+          <input style={{background:"transparent",border:"none",outline:"none",fontFamily:"'Be Vietnam Pro',sans-serif",fontSize:12,fontWeight:300,color:"rgba(255,255,255,.65)",width:155}} placeholder="Tìm kiếm..."/>
         </div>
       </div>
     </div>
@@ -360,8 +361,8 @@ function Articles(){
             </div>
             <p style={{fontSize:11.5,lineHeight:1.72,color:"rgba(250,247,241,.44)",fontWeight:300,marginBottom:18}}>Câu chuyện từ thế giới tự nhiên — ngay hộp thư bạn.</p>
             <div style={{display:"flex",flexDirection:"column",gap:7}}>
-              <input style={{fontFamily:"'DM Sans',sans-serif",fontSize:12,fontWeight:300,background:"rgba(255,255,255,.06)",border:".5px solid rgba(255,255,255,.10)",color:"rgba(250,247,241,.8)",padding:"10px 13px",outline:"none"}} placeholder="email@example.com"/>
-              <button style={{fontFamily:"'DM Sans',sans-serif",fontSize:9.5,letterSpacing:".18em",textTransform:"uppercase",color:T.ink,background:T.gold,border:"none",padding:"10px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:7,transition:"background .3s"}}
+              <input style={{fontFamily:"'Be Vietnam Pro',sans-serif",fontSize:12,fontWeight:300,background:"rgba(255,255,255,.06)",border:".5px solid rgba(255,255,255,.10)",color:"rgba(250,247,241,.8)",padding:"10px 13px",outline:"none"}} placeholder="email@example.com"/>
+              <button style={{fontFamily:"'Be Vietnam Pro',sans-serif",fontSize:9.5,letterSpacing:".18em",textTransform:"uppercase",color:T.ink,background:T.gold,border:"none",padding:"10px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:7,transition:"background .3s"}}
                 onMouseEnter={e=>e.currentTarget.style.background=T.goldLight}
                 onMouseLeave={e=>e.currentTarget.style.background=T.gold}
               >Đăng ký ngay <Arr size={12}/></button>
@@ -468,114 +469,6 @@ function Editorial(){
   );
 }
 
-/* ══════════════════════════════════════════
-   FACEBOOK POSTS SECTION
-══════════════════════════════════════════ */
-function FacebookSection(){
-  const posts=[
-    {
-      img:"https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?w=600&q=80&auto=format&fit=crop",
-      date:"18 tháng 6, 2026",
-      text:"🌿 Sáng nay trong rừng Trường Sơn — mỗi tia sáng len lỏi qua tán lá là một lời nhắc nhở rằng thiên nhiên vẫn đang thở, vẫn đang chờ chúng ta lắng nghe.",
-      likes:1420, shares:284, link:"https://facebook.com",
-    },
-    {
-      img:"https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&q=80&auto=format&fit=crop",
-      date:"15 tháng 6, 2026",
-      text:"🌾 Ruộng lúa hữu cơ mùa này đẹp lắm. Không cần hóa chất, không cần thuốc trừ sâu — chỉ cần tin tưởng vào đất và những sinh vật nhỏ bé đang làm việc bên dưới.",
-      likes:2103, shares:517, link:"https://facebook.com",
-    },
-    {
-      img:"https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80&auto=format&fit=crop",
-      date:"11 tháng 6, 2026",
-      text:"🍄 Wood Wide Web — mạng internet của rừng. Các cây cổ thụ đang chia sẻ chất dinh dưỡng cho những cây con qua mạng lưới nấm rễ. Tự nhiên dạy chúng ta về sự chia sẻ.",
-      likes:3870, shares:942, link:"https://facebook.com",
-    },
-    {
-      img:"https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=600&q=80&auto=format&fit=crop",
-      date:"7 tháng 6, 2026",
-      text:"🌺 Vườn cộng đồng mới khai trương tại Q.7 hôm nay. 200 hộ dân cùng nhau trồng rau sạch, chia sẻ hạt giống và kết nối với thiên nhiên ngay giữa lòng thành phố.",
-      likes:986, shares:213, link:"https://facebook.com",
-    },
-  ];
-
-  return(
-    <section style={{background:T.ivory,padding:"72px 80px",borderTop:`.5px solid ${T.border}`}}>
-      <div style={{maxWidth:1360,margin:"0 auto"}}>
-        {/* Header */}
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:48}}>
-          <div>
-            <Ey>Mạng xã hội</Ey>
-            <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(22px,2.4vw,36px)",fontWeight:300,color:T.forest,letterSpacing:"-.01em"}}>
-              Earthoria trên <em style={{fontStyle:"italic",color:"#1877F2"}}>Facebook</em>
-            </h2>
-          </div>
-          <a href="https://www.facebook.com/Earthoriavn" target="_blank" rel="noreferrer" style={{display:"flex",alignItems:"center",gap:9,fontSize:10.5,letterSpacing:".14em",textTransform:"uppercase",color:"#1877F2",textDecoration:"none",border:".5px solid rgba(24,119,242,.3)",padding:"9px 18px",transition:"all .3s",fontFamily:"'DM Sans',sans-serif"}}
-            onMouseEnter={e=>{e.currentTarget.style.background="rgba(24,119,242,.06)";}}
-            onMouseLeave={e=>{e.currentTarget.style.background="transparent";}}
-          >
-            <FbIco/>Theo dõi trang
-          </a>
-        </div>
-
-        {/* Cards */}
-        <div className="bp-fb-grid er" style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:20}}>
-          {posts.map((p,i)=>(
-            <a key={i} href={p.link} target="_blank" rel="noreferrer" className="bp-fb">
-              {/* Image */}
-              <div className="bp-fb-img"><img src={p.img} alt=""/></div>
-
-              {/* Body */}
-              <div style={{padding:"18px 20px 16px",display:"flex",flexDirection:"column",flex:1}}>
-                {/* FB header */}
-                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
-                  <div style={{width:34,height:34,background:"#1877F2",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
-                  </div>
-                  <div>
-                    <div style={{fontSize:12,fontWeight:500,color:T.forest,lineHeight:1}}>Earthoria</div>
-                    <div style={{fontSize:10,color:T.textMuted,marginTop:2}}>{p.date}</div>
-                  </div>
-                  <div style={{marginLeft:"auto"}}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#1877F2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
-                  </div>
-                </div>
-
-                {/* Text */}
-                <p style={{fontSize:12.5,lineHeight:1.75,color:T.textBody,fontWeight:300,flex:1,marginBottom:14,display:"-webkit-box",WebkitLineClamp:4,WebkitBoxOrient:"vertical",overflow:"hidden"}}>
-                  {p.text}
-                </p>
-
-                {/* Footer */}
-                <div style={{display:"flex",alignItems:"center",gap:14,paddingTop:12,borderTop:`.5px solid ${T.border}`,fontSize:11,color:T.textMuted}}>
-                  <span style={{display:"flex",alignItems:"center",gap:5}}>
-                    <span style={{width:18,height:18,background:"linear-gradient(135deg,#1877F2,#42A5F5)",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="white"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>
-                    </span>
-                    {p.likes.toLocaleString()}
-                  </span>
-                  <span style={{display:"flex",alignItems:"center",gap:5}}>
-                    <ShareIco/>{p.shares.toLocaleString()} chia sẻ
-                  </span>
-                </div>
-              </div>
-            </a>
-          ))}
-        </div>
-
-        {/* Bottom CTA */}
-        <div style={{marginTop:36,textAlign:"center"}}>
-          <a href="https://facebook.com" target="_blank" rel="noreferrer" style={{display:"inline-flex",alignItems:"center",gap:10,fontSize:10.5,letterSpacing:".16em",textTransform:"uppercase",color:T.white,background:"#1877F2",textDecoration:"none",padding:"13px 28px",fontFamily:"'DM Sans',sans-serif",transition:"opacity .3s"}}
-            onMouseEnter={e=>e.currentTarget.style.opacity=".85"}
-            onMouseLeave={e=>e.currentTarget.style.opacity="1"}
-          >
-            <FbIco/>Xem thêm trên Facebook
-          </a>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 /* ══════════════════════════════════════════
    QUOTE
@@ -636,7 +529,7 @@ function CTA(){
           <div style={{display:"flex",flexDirection:"column",gap:12}}>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:9}}>
               {["Họ và tên","Email của bạn"].map((ph,i)=>(
-                <input key={i} type={i===1?"email":"text"} style={{fontFamily:"'DM Sans',sans-serif",fontSize:12.5,fontWeight:300,background:T.ivory,border:`.5px solid ${T.border}`,color:T.textBody,padding:"10px 13px",outline:"none",transition:"border-color .3s"}}
+                <input key={i} type={i===1?"email":"text"} style={{fontFamily:"'Be Vietnam Pro',sans-serif",fontSize:12.5,fontWeight:300,background:T.ivory,border:`.5px solid ${T.border}`,color:T.textBody,padding:"10px 13px",outline:"none",transition:"border-color .3s"}}
                   placeholder={ph}
                   onFocus={e=>e.target.style.borderColor=T.gold}
                   onBlur={e=>e.target.style.borderColor=T.border}
@@ -649,7 +542,7 @@ function CTA(){
                 {all.map(t=><button key={t} className={`bp-int${ints.includes(t)?" act":""}`} onClick={()=>tog(t)}>{t}</button>)}
               </div>
             </div>
-            <button style={{fontFamily:"'DM Sans',sans-serif",fontSize:10,letterSpacing:".18em",textTransform:"uppercase",color:T.ivory,background:T.forest,border:"none",padding:"13px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:10,transition:"background .35s"}}
+            <button style={{fontFamily:"'Be Vietnam Pro',sans-serif",fontSize:10,letterSpacing:".18em",textTransform:"uppercase",color:T.ivory,background:T.forest,border:"none",padding:"13px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:10,transition:"background .35s"}}
               onMouseEnter={e=>e.currentTarget.style.background=T.forestMid}
               onMouseLeave={e=>e.currentTarget.style.background=T.forest}
             >Đăng ký ngay <Arr size={14}/></button>
@@ -679,7 +572,7 @@ export default function Blog(){
   },[]);
 
   return(
-    <div className="bp" style={{fontFamily:"'DM Sans',sans-serif",fontWeight:300,background:T.ivory,color:T.textBody,overflowX:"hidden"}}>
+    <div className="bp" style={{fontFamily:"'Be Vietnam Pro',sans-serif",fontWeight:300,background:T.ivory,color:T.textBody,overflowX:"hidden",paddingTop:`${NAV_H}px`}}>
       <Hero/>
       <CatStrip/>
       <Articles/>

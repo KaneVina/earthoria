@@ -1,64 +1,57 @@
 const prisma = require('../config/db')
 const { formatResponse } = require('../utils/helpers')
+const { getShippingFee } = require('../utils/shipping')
 
-// Create order
+const FREE_SHIP_THRESHOLD = 300_000
+const { calcShippingFee: calcFee, WAREHOUSE } = require('../utils/shipping')
+
 const createOrder = async (req, res) => {
   try {
-    const { addressId, paymentMethod, note, couponCode } = req.body
+    const userId = req.user.id
+    const { shipping, paymentMethod, couponCode, note } = req.body
+    // shipping: { fullName, phone, email, province, district, ward, street }
+    // district là tên (ví dụ "Ninh Kiều") từ form frontend
 
-    // Validate address
-    const address = await prisma.address.findFirst({
-      where: { id: addressId, userId: req.user.id }
-    })
-    if (!address) return formatResponse(res, 404, 'Không tìm thấy địa chỉ')
-
-    // Get cart
+    // 1. Lấy cart
     const cart = await prisma.cart.findUnique({
-      where: { userId: req.user.id },
+      where: { userId },
       include: {
         items: {
-          include: { book: true }
+          include: {
+            book: { select: { id: true, price: true, salePrice: true, stock: true, title: true } }
+          }
         }
       }
     })
-
     if (!cart || cart.items.length === 0) {
       return formatResponse(res, 400, 'Giỏ hàng trống')
     }
 
-    // Check stock
+    // 2. Kiểm tra stock
     for (const item of cart.items) {
       if (item.book.stock < item.quantity) {
         return formatResponse(res, 400, `Sách "${item.book.title}" không đủ hàng`)
       }
     }
 
-    // Calculate
+    // 3. Tính subtotal
     const subtotal = cart.items.reduce((sum, item) => {
-      return sum + (item.book.salePrice || item.book.price) * item.quantity
+      const price = item.book.salePrice || item.book.price
+      return sum + price * item.quantity
     }, 0)
 
-    const shippingFee = subtotal >= 300000 ? 0 : 30000
+    // 4. Tính discount từ coupon (tra DB)
     let discount = 0
-
-    // Apply coupon
     if (couponCode) {
       const coupon = await prisma.coupon.findFirst({
-        where: {
-          code: couponCode,
-          isActive: true,
-          OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }]
-        }
+        where: { code: couponCode, isActive: true }
       })
-
       if (coupon && subtotal >= coupon.minOrder) {
-        if (coupon.type === 'PERCENTAGE') {
-          discount = subtotal * (coupon.value / 100)
-          if (coupon.maxDiscount) discount = Math.min(discount, coupon.maxDiscount)
-        } else {
-          discount = coupon.value
-        }
-
+        discount = coupon.type === 'PERCENTAGE'
+          ? Math.round(subtotal * coupon.value / 100)
+          : coupon.value
+        if (coupon.maxDiscount) discount = Math.min(discount, coupon.maxDiscount)
+        // Tăng usedCount
         await prisma.coupon.update({
           where: { id: coupon.id },
           data: { usedCount: { increment: 1 } }
@@ -66,149 +59,128 @@ const createOrder = async (req, res) => {
       }
     }
 
-    const total = subtotal + shippingFee - discount
+    const afterDiscount = subtotal - discount
 
-    // Create order
-    const order = await prisma.order.create({
+    // 5. Tính phí ship theo km
+    let shippingFee
+    if (afterDiscount >= FREE_SHIP_THRESHOLD) {
+      shippingFee = 0
+      } else {
+      const result = getShippingFee(shipping.ward)
+      shippingFee = result.fee
+    }
+
+    const total = afterDiscount + shippingFee
+
+    // 6. Map paymentMethod
+    const methodMap = { cod: 'COD', vnpay: 'VNPAY', momo: 'VNPAY', card: 'STRIPE' }
+    const prismaMethod = methodMap[paymentMethod] || 'COD'
+
+    // 7. Tạo Address snapshot (lưu vào bảng Address)
+    const address = await prisma.address.create({
       data: {
-        userId: req.user.id,
-        addressId,
-        paymentMethod,
-        note,
-        couponCode,
-        subtotal,
-        shippingFee,
-        discount,
-        total,
-        items: {
-          create: cart.items.map(item => ({
-            bookId: item.bookId,
-            quantity: item.quantity,
-            price: item.book.salePrice || item.book.price
-          }))
-        }
-      },
-      include: { items: true }
+        userId,
+        fullName: shipping.fullName,
+        phone: shipping.phone,
+        province: shipping.province,
+        district: '',
+        ward: shipping.ward,
+        street: shipping.street,
+      }
     })
 
-    // Update stock + sold
-    await Promise.all(cart.items.map(item =>
-      prisma.book.update({
-        where: { id: item.bookId },
+    // 8. Tạo Order + OrderItems trong transaction
+    const order = await prisma.$transaction(async (tx) => {
+      const newOrder = await tx.order.create({
         data: {
-          stock: { decrement: item.quantity },
-          sold: { increment: item.quantity }
-        }
+          userId,
+          addressId: address.id,
+          paymentMethod: prismaMethod,
+          subtotal,
+          discount,
+          shippingFee,
+          total,
+          couponCode: couponCode || null,
+          note: note || null,
+          items: {
+            create: cart.items.map(item => ({
+              bookId: item.book.id,
+              quantity: item.quantity,
+              price: item.book.salePrice || item.book.price,
+            }))
+          }
+        },
+        include: { items: true }
       })
-    ))
 
-    // Clear cart
-    await prisma.cartItem.deleteMany({ where: { cartId: cart.id } })
+      // Giảm stock
+      for (const item of cart.items) {
+        await tx.book.update({
+          where: { id: item.book.id },
+          data: {
+            stock: { decrement: item.quantity },
+            sold:  { increment: item.quantity },
+          }
+        })
+      }
 
-    return formatResponse(res, 201, 'Đặt hàng thành công', order)
+      // Xóa cart
+      await tx.cartItem.deleteMany({ where: { cartId: cart.id } })
+
+      return newOrder
+    })
+
+    return formatResponse(res, 201, 'Đặt hàng thành công', { orderId: order.id, total })
   } catch (error) {
     console.error(error)
     return formatResponse(res, 500, 'Lỗi server')
   }
 }
 
-// Get my orders
 const getMyOrders = async (req, res) => {
   try {
-    const { page = 1, limit = 10, status } = req.query
-    const skip = (parseInt(page) - 1) * parseInt(limit)
-
-    const where = {
-      userId: req.user.id,
-      ...(status && { status })
-    }
-
-    const [orders, total] = await Promise.all([
-      prisma.order.findMany({
-        where, skip,
-        take: parseInt(limit),
-        orderBy: { createdAt: 'desc' },
-        include: {
-          items: {
-            include: {
-              book: {
-                select: { title: true, coverImage: true, slug: true }
-              }
-            }
-          },
-          address: true
-        }
-      }),
-      prisma.order.count({ where })
-    ])
-
-    return formatResponse(res, 200, 'OK', {
-      orders,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        totalPages: Math.ceil(total / parseInt(limit))
-      }
-    })
-  } catch (error) {
-    return formatResponse(res, 500, 'Lỗi server')
-  }
-}
-
-// Get single order
-const getOrder = async (req, res) => {
-  try {
-    const order = await prisma.order.findFirst({
-      where: { id: req.params.id, userId: req.user.id },
+    const orders = await prisma.order.findMany({
+      where: { userId: req.user.id },
       include: {
-        items: {
-          include: { book: true }
-        },
-        address: true
-      }
+        items: { include: { book: { select: { title: true, coverImage: true } } } },
+        address: true,
+      },
+      orderBy: { createdAt: 'desc' }
     })
-
-    if (!order) return formatResponse(res, 404, 'Không tìm thấy đơn hàng')
-    return formatResponse(res, 200, 'OK', order)
+    return formatResponse(res, 200, 'OK', orders)
   } catch (error) {
     return formatResponse(res, 500, 'Lỗi server')
   }
 }
 
-// Cancel order
-const cancelOrder = async (req, res) => {
+const calcShippingFee = async (req, res) => {
   try {
-    const order = await prisma.order.findFirst({
-      where: { id: req.params.id, userId: req.user.id },
-      include: { items: true }
-    })
+    const { lat, lng, subtotal = 0 } = req.body
 
-    if (!order) return formatResponse(res, 404, 'Không tìm thấy đơn hàng')
-    if (!['PENDING', 'CONFIRMED'].includes(order.status)) {
-      return formatResponse(res, 400, 'Không thể hủy đơn hàng này')
+    if (!lat || !lng) return formatResponse(res, 400, 'Thiếu tọa độ lat/lng')
+
+    if (subtotal >= FREE_SHIP_THRESHOLD) {
+      return formatResponse(res, 200, 'OK', { km: null, fee: 0, free: true, isNoiO: false })
     }
 
-    await prisma.order.update({
-      where: { id: order.id },
-      data: { status: 'CANCELLED' }
-    })
+    // Gọi OSRM để lấy km đường thực tế
+    let kmFromOSRM = null
+    try {
+      const osrmUrl = `http://router.project-osrm.org/route/v1/driving/${WAREHOUSE.lng},${WAREHOUSE.lat};${lng},${lat}?overview=false`
+      const osrmRes = await fetch(osrmUrl, { signal: AbortSignal.timeout(4000) })
+      const osrmData = await osrmRes.json()
+      if (osrmData.routes?.[0]?.distance) {
+        kmFromOSRM = parseFloat((osrmData.routes[0].distance / 1000).toFixed(1))
+      }
+    } catch {
+      // OSRM timeout → fallback haversine, không cần báo lỗi
+    }
 
-    // Restore stock
-    await Promise.all(order.items.map(item =>
-      prisma.book.update({
-        where: { id: item.bookId },
-        data: {
-          stock: { increment: item.quantity },
-          sold: { decrement: item.quantity }
-        }
-      })
-    ))
-
-    return formatResponse(res, 200, 'Đã hủy đơn hàng')
+    const result = calcFee(lat, lng, kmFromOSRM)
+    return formatResponse(res, 200, 'OK', { ...result })
   } catch (error) {
     return formatResponse(res, 500, 'Lỗi server')
   }
 }
 
-module.exports = { createOrder, getMyOrders, getOrder, cancelOrder }
+module.exports = { createOrder, getMyOrders, calcShippingFee }

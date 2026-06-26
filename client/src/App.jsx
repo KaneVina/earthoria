@@ -19,10 +19,16 @@ import CustomCursor from "./components/CustomCursor";
 import ARGuide from "./pages/ARGuide";
 import Checkout from "./pages/Checkout";
 import Profile from "./pages/Profile";
+import Blog from "./pages/Blog";
 import ScrollToTop from "./components/ScrollToTop";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import TermsOfService from "./pages/legal/TermsOfService";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
+import ShippingPolicy from "./pages/legal/ShippingPolicy";
+import LegalHub from "./pages/legal/LegalHub";
+import Sitemap from "./pages/Sitemap";
+import EiraChatbox from "./components/EiraChatbox";
+import Wishlist from "./pages/Wishlist";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -46,16 +52,21 @@ export default function App() {
     <BrowserRouter>
       <ScrollToTop />
       <CustomCursor />
+      <EiraChatbox />
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/books/:slug/:hashId" element={<BookDetail />} />
-          <Route path="/ar" element={<ARGuide />} />
+          <Route path="/technology" element={<ARGuide />} />
+          <Route path="/blog" element={<Blog />} />
           <Route path="/about" element={<AboutUs />} />
-          <Route path="/terms" element={<TermsOfService />} />
-          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/legal" element={<LegalHub />} />
+          <Route path="/legal/terms" element={<TermsOfService />} />
+          <Route path="/legal/privacy" element={<PrivacyPolicy />} />
+          <Route path="/legal/shipping" element={<ShippingPolicy />} />
+          <Route path="/sitemap" element={<Sitemap />} />
           <Route
             path="/checkout"
             element={
@@ -80,6 +91,14 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+             <Route
+            path="/wishlist"
+            element={
+              <ProtectedRoute>
+                <Wishlist />
+              </ProtectedRoute>
+            }
+          />
         </Route>
 
         <Route
@@ -90,7 +109,6 @@ export default function App() {
             </GuestRoute>
           }
         />
-
         <Route
           path="/register"
           element={
@@ -99,14 +117,14 @@ export default function App() {
             </GuestRoute>
           }
         />
- <Route
-            path="/forgot-password"
-            element={
-              <GuestRoute>
-                <ForgotPassword />
-              </GuestRoute>
-            }
-          />
+        <Route
+          path="/forgot-password"
+          element={
+            <GuestRoute>
+              <ForgotPassword />
+            </GuestRoute>
+          }
+        />
 
         <Route
           path="/admin"

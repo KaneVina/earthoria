@@ -5,611 +5,31 @@ import { bookService } from "../services/bookService";
 import { useCartStore } from "../store/cartStore";
 import { formatPrice, getBookUrl } from "../utils/helpers";
 import toast from "react-hot-toast";
-import { Truck, Gift, BookOpen, Star } from 'lucide-react';
-/* ─────────────────────────────────────────────────────────────
-   HERO BANNER DATA
-───────────────────────────────────────────────────────────── */
-const HERO_SLIDES = [
-  {
-    id: 1,
-    eyebrow: "Sách Giáo Dục Tương Tác AR × AI",
-    headline: [
-      "Mở Sách —",
-      <em key="em1">Mở Ra</em>,
-      <br key="br1" />,
-      "Thế Giới",
-    ],
-    sub: "Hành trình khám phá thiên nhiên qua lăng kính công nghệ thực tế tăng cường và trí tuệ nhân tạo.",
-    img: "https://lh3.googleusercontent.com/aida-public/AB6AXuBqQsaKpsl853jkb7LVw_tM_N8sMdr2NavI4-ZchB0m3ruBxPqPN9Nn1PjntGV8mbHhTCbatFXPkgD9K2O337Rz8tyz54di0oxbMeLKFo9EKZpeTCdJSA9WaYDYPY48Qyuj4ia-Qyx2BSlkrdByVMyYwY45va3kPZc_VLc3XAV5cTeIrzFVJefKSJq-LlyJKf2Hkxp5_ggisUBAX7ScOO6BIoEeLX_PYCXzQsMXIHjj5TOJSHtXbyrwJHYS68H_vFC9uwDrV6Vbqik",
-    badge: "Bestseller",
-    accent: "var(--gold)",
-    ctaLabel: "Khám phá bộ sưu tập",
-    ctaLink: "/shop",
-  },
-  {
-    id: 2,
-    eyebrow: "Bộ Sưu Tập Mới 2025",
-    headline: [
-      "Đại Dương —",
-      <br key="br2" />,
-      <em key="em2">Huyền Bí</em>,
-      " & ",
-      <br key="br2b" />,
-      "Kỳ Diệu",
-    ],
-    sub: "Khám phá đáy đại dương qua 120 loài sinh vật biển được tái hiện hoàn toàn bằng công nghệ AR 3D.",
-    img: "https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=1200&q=80&fit=crop",
-    badge: "Mới Ra Mắt",
-    accent: "#2d9ec0",
-    ctaLabel: "Xem bộ Đại Dương",
-    ctaLink: "/shop?cat=ocean",
-  },
-  {
-    id: 3,
-    eyebrow: "Bộ Sưu Tập Rừng Nhiệt Đới",
-    headline: [
-      "Rừng Xanh —",
-      <br key="br3" />,
-      <em key="em3">Ngàn Tiếng</em>,
-      <br key="br3b" />,
-      "Muông Thú",
-    ],
-    sub: "Hơn 80 loài động vật rừng nhiệt đới bước ra từ trang sách, kể chuyện bằng giọng AI thân thiện.",
-    img: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80&fit=crop",
-    badge: "Yêu Thích",
-    accent: "var(--gold)",
-    ctaLabel: "Khám phá Rừng Xanh",
-    ctaLink: "/shop?cat=forest",
-  },
-];
-
-/* ─────────────────────────────────────────────────────────────
-   HERO BANNER SLIDER  — full-bleed redesign
-───────────────────────────────────────────────────────────── */
-function HeroBanner() {
-  const [current, setCurrent] = useState(0);
-  const [prev, setPrev] = useState(null);
-  const [animating, setAnimating] = useState(false);
-  const [paused, setPaused] = useState(false);
-  const timerRef = useRef(null);
-  const total = HERO_SLIDES.length;
-
-  const goTo = useCallback(
-    (idx) => {
-      if (animating || idx === current) return;
-      setAnimating(true);
-      setPrev(current);
-      setCurrent(idx);
-      setTimeout(() => {
-        setPrev(null);
-        setAnimating(false);
-      }, 1000);
-    },
-    [animating, current],
-  );
-
-  const next = useCallback(
-    () => goTo((current + 1) % total),
-    [goTo, current, total],
-  );
-  const prev_ = useCallback(
-    () => goTo((current - 1 + total) % total),
-    [goTo, current, total],
-  );
-
-  useEffect(() => {
-    if (paused) return;
-    timerRef.current = setInterval(next, 6000);
-    return () => clearInterval(timerRef.current);
-  }, [next, paused]);
-
-  return (
-    <>
-      {/* ── INLINE STYLES (hoisted once) ── */}
-      <style>{`
-        /* ── keyframes ── */
-        @keyframes heroBgZoom {
-          from { transform: scale(1.08); }
-          to   { transform: scale(1); }
-        }
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(28px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes sliderProgress {
-          from { width: 0%; }
-          to   { width: 100%; }
-        }
-        @keyframes marqueeScroll {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-
-        /* ── wrapper ── */
-        .hb-wrap {
-          position: relative;
-          width: 100%;
-          height: 100vh;
-          min-height: 600px;
-          overflow: hidden;
-          background: #0a0f0c;
-        }
-
-        /* ── background image layer ── */
-        .hb-bg {
-          position: absolute; inset: 0; z-index: 0;
-          overflow: hidden;
-        }
-        .hb-bg img {
-          width: 100%; height: 100%;
-          object-fit: cover;
-          object-position: center 30%;
-          filter: saturate(0.7) brightness(0.55);
-          transition: opacity 1s ease;
-        }
-        .hb-bg img.hb-bg-enter  { animation: heroBgZoom 7s ease-out forwards; }
-        .hb-bg img.hb-bg-active { opacity: 1; }
-        .hb-bg img.hb-bg-exit   { opacity: 0; }
-
-        /* ── overlays ── */
-        /* left vignette — màu sắc đậm hơn để chữ dễ đọc */
-        .hb-overlay-left {
-          position: absolute; inset: 0; z-index: 1;
-          background: linear-gradient(
-            105deg,
-            rgba(8,18,12,0.88) 0%,
-            rgba(8,18,12,0.70) 38%,
-            rgba(8,18,12,0.28) 65%,
-            transparent 100%
-          );
-        }
-        /* bottom gradient chạy liền vào marquee bar */
-        .hb-overlay-bottom {
-          position: absolute; bottom: 0; left: 0; right: 0; z-index: 2;
-          height: 220px;
-          background: linear-gradient(
-            to bottom,
-            transparent 0%,
-            rgba(8,18,12,0.55) 40%,
-            rgba(8,18,12,0.82) 70%,
-            #0d3330 100%
-          );
-          pointer-events: none;
-        }
-
-        /* ── content ── */
-        .hb-content {
-          position: absolute; inset: 0; z-index: 3;
-          display: flex; flex-direction: column; justify-content: center;
-          padding: 120px 100px 160px;
-          max-width: 820px;
-        }
-
-        /* eyebrow */
-        .hb-eyebrow {
-          display: flex; align-items: center; gap: 16px;
-          margin-bottom: 28px;
-        }
-        .hb-eyebrow-line {
-          width: 36px; height: 0.5px;
-          background: var(--gold);
-          flex-shrink: 0;
-        }
-        .hb-eyebrow-text {
-          font-family: 'Be Vietnam Pro', sans-serif;
-          font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase;
-          color: var(--gold); font-weight: 400;
-        }
-        .hb-badge {
-          font-family: 'Be Vietnam Pro', sans-serif;
-          font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
-          color: var(--ivory); background: var(--gold);
-          padding: 5px 14px; margin-left: 8px;
-        }
-
-        /* headline */
-        .hb-headline {
-          font-family: 'Playfair Display', serif;
-          font-size: clamp(52px, 6.5vw, 96px);
-          font-weight: 300; line-height: 1.04;
-          color: var(--ivory); letter-spacing: -0.015em;
-          margin-bottom: 24px;
-          text-shadow: 0 2px 40px rgba(0,0,0,0.4);
-        }
-        .hb-headline em {
-          font-style: italic; color: var(--gold);
-        }
-
-        /* sub */
-        .hb-sub {
-          font-size: 15px; line-height: 1.8;
-          color: rgba(250,248,243,0.72);
-          font-weight: 300;
-          max-width: 480px;
-          margin-bottom: 44px;
-          text-shadow: 0 1px 12px rgba(0,0,0,0.5);
-        }
-
-        /* CTA row */
-        .hb-cta-row {
-          display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
-        }
-        .hb-btn-main {
-          font-family: 'Be Vietnam Pro', sans-serif;
-          font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
-          color: var(--ivory); background: var(--gold);
-          border: none; padding: 16px 36px; cursor: pointer;
-          transition: all 0.35s ease;
-          display: inline-flex; align-items: center; gap: 12px;
-          font-weight: 400;
-          box-shadow: 0 8px 32px rgba(74,158,63,0.35);
-        }
-        .hb-btn-main:hover {
-          background: var(--gold-light);
-          gap: 20px;
-          box-shadow: 0 12px 40px rgba(74,158,63,0.5);
-        }
-        .hb-btn-ghost {
-          font-family: 'Be Vietnam Pro', sans-serif;
-          font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
-          color: rgba(255,255,255,0.85);
-          background: rgba(255,255,255,0.07);
-          border: 0.5px solid rgba(255,255,255,0.28);
-          backdrop-filter: blur(12px);
-          padding: 15px 28px; cursor: pointer;
-          transition: all 0.3s ease;
-          display: inline-flex; align-items: center; gap: 10px;
-        }
-        .hb-btn-ghost:hover {
-          background: rgba(255,255,255,0.13);
-          border-color: rgba(255,255,255,0.5);
-          color: #fff;
-        }
-
-        /* ── slide content fade animations ── */
-        .hb-slide-active .hb-eyebrow   { animation: fadeUp 0.75s 0.05s both cubic-bezier(0.16,1,0.3,1); }
-        .hb-slide-active .hb-headline  { animation: fadeUp 0.75s 0.18s both cubic-bezier(0.16,1,0.3,1); }
-        .hb-slide-active .hb-sub       { animation: fadeUp 0.75s 0.30s both cubic-bezier(0.16,1,0.3,1); }
-        .hb-slide-active .hb-cta-row   { animation: fadeUp 0.75s 0.42s both cubic-bezier(0.16,1,0.3,1); }
-
-        /* ── Controls bar (bottom-left) ── */
-        .hb-controls {
-          position: absolute;
-          bottom: 52px; left: 100px;
-          z-index: 4;
-          display: flex; align-items: center; gap: 20px;
-        }
-
-        /* dots */
-        .hb-dots { display: flex; align-items: center; gap: 8px; }
-        .hb-dot {
-          height: 3px; border: none; padding: 0;
-          cursor: pointer; border-radius: 2px;
-          transition: all 0.5s cubic-bezier(0.16,1,0.3,1);
-          background: rgba(255,255,255,0.25);
-          width: 8px;
-        }
-        .hb-dot.active {
-          width: 40px;
-          background: var(--gold);
-        }
-
-        /* counter */
-        .hb-counter {
-          font-family: 'Playfair Display', serif;
-          font-size: 13px; letter-spacing: 0.12em;
-          color: rgba(255,255,255,0.35);
-          user-select: none;
-        }
-
-        /* arrow buttons */
-        .hb-arrows { display: flex; gap: 6px; }
-        .hb-arrow {
-          width: 40px; height: 40px;
-          border: 0.5px solid rgba(255,255,255,0.18);
-          background: rgba(255,255,255,0.05);
-          backdrop-filter: blur(10px);
-          color: rgba(255,255,255,0.65);
-          cursor: pointer;
-          display: flex; align-items: center; justify-content: center;
-          transition: all 0.3s ease;
-        }
-        .hb-arrow:hover {
-          border-color: var(--gold);
-          background: rgba(74,158,63,0.18);
-          color: var(--gold);
-        }
-
-        /* ── Thumbnail strip (right side) ── */
-        .hb-thumbs {
-          position: absolute;
-          right: 52px; top: 50%;
-          transform: translateY(-50%);
-          z-index: 4;
-          display: flex; flex-direction: column; gap: 10px;
-        }
-        .hb-thumb {
-          width: 72px; height: 52px;
-          overflow: hidden; cursor: pointer;
-          border: 1.5px solid transparent;
-          opacity: 0.4; filter: saturate(0.4) brightness(0.8);
-          transition: all 0.35s ease;
-          flex-shrink: 0;
-        }
-        .hb-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .hb-thumb.active, .hb-thumb:hover {
-          border-color: var(--gold);
-          opacity: 1; filter: saturate(1) brightness(1);
-        }
-        /* thumb label */
-        .hb-thumb-label {
-          position: absolute; bottom: -18px; left: 0; right: 0;
-          font-family: 'Be Vietnam Pro', sans-serif;
-          font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase;
-          color: var(--gold); text-align: center;
-          opacity: 0; transition: opacity 0.3s;
-        }
-        .hb-thumb.active .hb-thumb-label { opacity: 1; }
-
-        /* ── Progress bar (top of section, thin) ── */
-        .hb-progress-rail {
-          position: absolute; top: 0; left: 0; right: 0;
-          height: 1.5px; background: rgba(255,255,255,0.08); z-index: 5;
-        }
-        .hb-progress-fill {
-          height: 100%;
-          background: linear-gradient(90deg, var(--gold), var(--gold-light));
-        }
-
-        /* ── Vertical slide label (right edge) ── */
-        .hb-slide-label {
-          position: absolute;
-          right: 148px; bottom: 56px;
-          z-index: 4;
-          writing-mode: vertical-rl;
-          font-family: 'Be Vietnam Pro', sans-serif;
-          font-size: 9px; letter-spacing: 0.28em; text-transform: uppercase;
-          color: rgba(255,255,255,0.22);
-          user-select: none;
-          transition: color 0.4s;
-        }
-
-        /* ── Scroll hint ── */
-        .hb-scroll {
-          position: absolute; bottom: 56px;
-          left: 50%; transform: translateX(-50%);
-          z-index: 4;
-          display: flex; flex-direction: column; align-items: center; gap: 10px;
-        }
-        .hb-scroll-line {
-          width: 1px; height: 48px;
-          background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
-          animation: scrollPulse 2s ease-in-out infinite;
-        }
-        @keyframes scrollPulse {
-          0%,100% { opacity: 0.3; transform: scaleY(1); }
-          50%      { opacity: 1;   transform: scaleY(1.1); }
-        }
-        .hb-scroll-text {
-          font-family: 'Be Vietnam Pro', sans-serif;
-          font-size: 9px; letter-spacing: 0.24em; text-transform: uppercase;
-          color: rgba(255,255,255,0.3);
-        }
-
-        /* ── seamless bottom-to-marquee connector ── */
-        .hb-bottom-connector {
-          height: 0;   /* zero height — just the gradient overlapping below */
-          position: relative; z-index: 20;
-          margin-top: -56px; /* pull marquee up to blend */
-          pointer-events: none;
-        }
-
-        /* responsive */
-        @media (max-width: 900px) {
-          .hb-content { padding: 100px 36px 140px; }
-          .hb-controls { left: 36px; bottom: 36px; }
-          .hb-thumbs   { display: none; }
-          .hb-slide-label { display: none; }
-          .hb-scroll  { display: none; }
-        }
-        @media (max-width: 600px) {
-          .hb-headline { font-size: clamp(38px, 10vw, 60px); }
-          .hb-cta-row  { flex-direction: column; align-items: flex-start; }
-        }
-      `}</style>
-
-      {/* ══════════════════ SECTION ══════════════════ */}
-      <section
-        className="hb-wrap"
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-      >
-        {/* Progress rail */}
-        <div className="hb-progress-rail">
-          <div
-            key={current}
-            className="hb-progress-fill"
-            style={{
-              animation: paused ? "none" : "sliderProgress 6s linear forwards",
-            }}
-          />
-        </div>
-
-        {/* BG images — Ken Burns on active */}
-        {HERO_SLIDES.map((s, i) => (
-          <div
-            key={s.id}
-            className="hb-bg"
-            style={{
-              opacity: i === current ? 1 : i === prev ? 1 : 0,
-              transition: "opacity 1s ease",
-              zIndex: i === current ? 0 : i === prev ? 0 : -1,
-            }}
-          >
-            <img
-              src={s.img}
-              alt=""
-              className={
-                i === current ? "hb-bg-enter hb-bg-active" : "hb-bg-exit"
-              }
-              key={`img-${i}-${i === current}`}
-            />
-          </div>
-        ))}
-
-        {/* Left vignette */}
-        <div className="hb-overlay-left" />
-
-        {/* Bottom gradient → seamless into marquee */}
-        <div className="hb-overlay-bottom" />
-
-        {/* ── SLIDE CONTENT ── */}
-        {HERO_SLIDES.map((s, i) => (
-          <div
-            key={s.id}
-            className={`hb-content ${i === current ? "hb-slide-active" : ""}`}
-            style={{
-              opacity: i === current ? 1 : 0,
-              pointerEvents: i === current ? "auto" : "none",
-              transition: "opacity 0.6s ease",
-            }}
-          >
-            {/* eyebrow */}
-            <div className="hb-eyebrow">
-              <div className="hb-eyebrow-line" />
-              <span className="hb-eyebrow-text">{s.eyebrow}</span>
-              {s.badge && <span className="hb-badge">{s.badge}</span>}
-            </div>
-
-            {/* headline */}
-            <h1 className="hb-headline">{s.headline}</h1>
-
-            {/* sub */}
-            <p className="hb-sub">{s.sub}</p>
-
-            {/* CTAs */}
-            <div className="hb-cta-row">
-              <Link to={s.ctaLink}>
-                <button className="hb-btn-main">
-                  {s.ctaLabel}
-                  <svg
-                    width="15"
-                    height="15"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  >
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </Link>
-              <button className="hb-btn-ghost">
-                <svg
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <polygon points="5 3 19 12 5 21 5 3" />
-                </svg>
-                Xem demo AR
-              </button>
-            </div>
-          </div>
-        ))}
-
-        {/* ── CONTROLS BAR (bottom-left) ── */}
-        <div className="hb-controls">
-          {/* dots */}
-          <div className="hb-dots">
-            {HERO_SLIDES.map((_, i) => (
-              <button
-                key={i}
-                className={`hb-dot ${i === current ? "active" : ""}`}
-                onClick={() => goTo(i)}
-                aria-label={`Slide ${i + 1}`}
-              />
-            ))}
-          </div>
-
-          {/* counter */}
-          <span className="hb-counter">
-            {String(current + 1).padStart(2, "0")}{" "}
-            <span style={{ color: "rgba(255,255,255,0.18)", margin: "0 4px" }}>
-              /
-            </span>{" "}
-            {String(total).padStart(2, "0")}
-          </span>
-
-          {/* arrows */}
-          <div className="hb-arrows">
-            <button className="hb-arrow" onClick={prev_} aria-label="Previous">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              >
-                <path d="M19 12H5M12 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <button className="hb-arrow" onClick={next} aria-label="Next">
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              >
-                <path d="M5 12h14M12 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* ── Vertical current slide name ── */}
-        <div className="hb-slide-label">{HERO_SLIDES[current].eyebrow}</div>
-
-        {/* ── Thumbnails (right side) ── */}
-        <div className="hb-thumbs">
-          {HERO_SLIDES.map((s, i) => (
-            <div
-              key={s.id}
-              className={`hb-thumb ${i === current ? "active" : ""}`}
-              onClick={() => goTo(i)}
-              style={{ position: "relative" }}
-            >
-              <img src={s.img} alt={`Slide ${i + 1}`} />
-              <div className="hb-thumb-label">
-                {String(i + 1).padStart(2, "0")}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* ── Scroll hint ── */}
-        <div className="hb-scroll">
-          <div className="hb-scroll-line" />
-          <span className="hb-scroll-text">Scroll</span>
-        </div>
-      </section>
-    </>
-  );
-}
+import { Truck, Gift, BookOpen, Star, ShieldCheck } from "lucide-react";
+import StickyScrollTransition from "./StickyScrollTransition";
+import HeroBanner from "../components/HeroBanner";
 
 /* ─────────────────────────────────────────────────────────────
    PRODUCT CARD COMPONENT
 ───────────────────────────────────────────────────────────── */
 function BookCard({ book, onAddCart, badge, badgeType = "forest" }) {
   const [wishlisted, setWishlisted] = useState(false);
+  const DEMO_TAGS = [
+    "Khám phá",
+    "Thiên nhiên",
+    "AR 3D",
+    "Động vật",
+    "Giáo dục",
+  ];
+  const tags =
+    book.tags || DEMO_TAGS.slice(0, Math.floor(Math.random() * 3) + 2);
+  const ageLabel = book.ageRange || "4 – 10 tuổi";
+  const langLabel = book.language || "Tiếng Việt";
   return (
-    <div className="product-card reveal">
+    <div
+      className="product-card reveal"
+      style={{ display: "flex", flexDirection: "column" }}
+    >
       <div className="product-img-wrap">
         <img
           src={book.coverImage || "https://via.placeholder.com/400x320"}
@@ -634,26 +54,50 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest" }) {
           </span>
         )}
         <span className="product-category">{book.category?.name}</span>
-        <button
-          className={`card-wishlist ${wishlisted ? "active" : ""}`}
-          onClick={() => setWishlisted((w) => !w)}
-          style={{ opacity: 1, transform: "translateY(0)" }}
-        >
-          <svg
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill={wishlisted ? "currentColor" : "none"}
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-          </svg>
-        </button>
-      </div>
-      <div className="product-body">
+        {/* Wishlist */}
         <div
-          className="product-rating"
+          style={{ position: "relative", display: "inline-block" }}
+          className="card-wishlist-wrap"
+        >
+          <button
+            className={`card-wishlist ${wishlisted ? "active" : ""}`}
+            onClick={() => setWishlisted((w) => !w)}
+            style={{
+              opacity: 1,
+              transform: "translateY(0)",
+              position: "absolute",
+              top: 0,
+              right: 0,
+            }}
+            aria-label="Yêu thích"
+          >
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill={wishlisted ? "currentColor" : "none"}
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+          </button>
+          <span
+            className="card-action-tooltip"
+            style={{ right: "44px", top: "20px" }}
+          >
+            {wishlisted ? "Bỏ yêu thích" : "Thêm yêu thích"}
+          </span>
+        </div>
+      </div>
+
+      {/* Body — flex grow để đẩy footer xuống đáy */}
+      <div
+        className="product-body"
+        style={{ display: "flex", flexDirection: "column", flex: 1 }}
+      >
+        {/* Rating */}
+        <div
           style={{
             display: "flex",
             alignItems: "center",
@@ -677,40 +121,206 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest" }) {
             ({book.reviewCount || Math.floor(Math.random() * 200) + 50})
           </span>
         </div>
-        <h3 className="product-title">{book.title}</h3>
-        <p className="product-desc">{book.description?.slice(0, 90)}...</p>
-        <div className="product-footer">
-          <div>
-            {book.originalPrice && book.originalPrice > book.salePrice && (
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "var(--text-muted)",
-                  textDecoration: "line-through",
-                  lineHeight: 1,
-                }}
-              >
-                {formatPrice(book.originalPrice)}
-              </div>
-            )}
-            <span className="product-price">
-              {formatPrice(book.salePrice || book.price)}
-            </span>
-          </div>
-          <button className="add-cart" onClick={() => onAddCart(book.hashId)}>
+
+        {/* Title — fixed height 2 lines */}
+        <h3
+          className="product-title"
+          style={{
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            minHeight: "2.4em",
+            lineHeight: "1.2em",
+          }}
+        >
+          {book.title}
+        </h3>
+
+        {/* Desc */}
+        <p
+          className="product-desc"
+          style={{
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            minHeight: "calc(1.7em * 2)",
+          }}
+        >
+          {book.description?.slice(0, 90)}...
+        </p>
+
+        {/* Age + Language */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            marginBottom: "10px",
+            flexWrap: "wrap",
+          }}
+        >
+          <span
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+              fontSize: "11px",
+              color: "var(--text-muted)",
+              fontWeight: 300,
+            }}
+          >
             <svg
-              width="16"
-              height="16"
+              width="12"
+              height="12"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="1.5"
             >
-              <circle cx="9" cy="21" r="1" />
-              <circle cx="20" cy="21" r="1" />
-              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
-          </button>
+            {ageLabel}
+          </span>
+          <span
+            style={{
+              width: "1px",
+              height: "12px",
+              background: "var(--border)",
+              flexShrink: 0,
+            }}
+          />
+          <span
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+              fontSize: "11px",
+              color: "var(--text-muted)",
+              fontWeight: 300,
+            }}
+          >
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+            {langLabel}
+          </span>
+        </div>
+
+        {/* Tags — max 2 hàng, overflow dấu ... */}
+        <div
+          style={{
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            marginBottom: "12px",
+            lineHeight: "26px",
+            minHeight: "52px",
+          }}
+        >
+          {tags.map((tag, idx) => (
+            <span
+              key={idx}
+              style={{
+                display: "inline-block",
+                fontSize: "9px",
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                padding: "4px 10px",
+                marginRight: "5px",
+                marginBottom: "5px",
+                border: "0.5px solid var(--border-gold)",
+                color: "var(--gold)",
+                background: "transparent",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        {/* Spacer đẩy footer xuống */}
+        <div style={{ flex: 1 }} />
+
+        {/* Footer — giá + giỏ hàng */}
+        <div className="product-footer" style={{ alignItems: "center" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+            {book.originalPrice && book.originalPrice > book.salePrice ? (
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "var(--text-muted)",
+                    textDecoration: "line-through",
+                    lineHeight: 1,
+                  }}
+                >
+                  {formatPrice(book.originalPrice)}
+                </span>
+                <span
+                  style={{
+                    fontSize: "9px",
+                    letterSpacing: "0.1em",
+                    color: "#c05050",
+                    background: "rgba(192,80,80,0.08)",
+                    padding: "2px 6px",
+                  }}
+                >
+                  -{Math.round((1 - book.salePrice / book.originalPrice) * 100)}
+                  %
+                </span>
+              </div>
+            ) : (
+              <div style={{ height: "16px" }} />
+            )}
+            <span className="product-price">
+              {formatPrice(book.salePrice || book.price)}
+            </span>
+          </div>
+
+          {/* Cart button + tooltip */}
+          <div style={{ position: "relative" }} className="card-action-wrap">
+            <button
+              className="add-cart"
+              onClick={() => onAddCart(book.hashId)}
+              aria-label="Thêm vào giỏ hàng"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
+                <circle cx="9" cy="21" r="1" />
+                <circle cx="20" cy="21" r="1" />
+                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+              </svg>
+            </button>
+            <span
+              className="card-action-tooltip"
+              style={{ right: "44px", bottom: "0" }}
+            >
+              Thêm vào giỏ hàng
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -1061,10 +671,16 @@ function NewsletterSection() {
                   color: "var(--text-muted)",
                   marginTop: "12px",
                   fontWeight: 300,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
                 }}
               >
-                🔒 Chúng tôi cam kết bảo mật thông tin của bạn. Hủy bất cứ lúc
-                nào.
+                <ShieldCheck size={12} strokeWidth={2} />
+                <span>
+                  Chúng tôi cam kết bảo mật thông tin của bạn. Hủy bất cứ lúc
+                  nào.
+                </span>
               </div>
             </div>
           )}
@@ -1224,9 +840,20 @@ function FlashDealSection({ books, onAddCart }) {
       setTimeLeft((prev) => {
         let { h, m, s } = prev;
         s--;
-        if (s < 0) { s = 59; m--; }
-        if (m < 0) { m = 59; h--; }
-        if (h < 0) { h = 0; m = 0; s = 0; clearInterval(timer); }
+        if (s < 0) {
+          s = 59;
+          m--;
+        }
+        if (m < 0) {
+          m = 59;
+          h--;
+        }
+        if (h < 0) {
+          h = 0;
+          m = 0;
+          s = 0;
+          clearInterval(timer);
+        }
         return { h, m, s };
       });
     }, 1000);
@@ -1240,201 +867,372 @@ function FlashDealSection({ books, onAddCart }) {
   return (
     <section
       style={{
-        background: "linear-gradient(135deg, #0a0f0c 0%, #0d3330 40%, #1a5c52 80%, #0d3330 100%)",
+        background:
+          "linear-gradient(135deg, #0a0f0c 0%, #0d3330 40%, #1a5c52 80%, #0d3330 100%)",
         padding: "100px 100px",
         position: "relative",
         overflow: "hidden",
       }}
     >
       {/* bg text */}
-      <div style={{
-        position: "absolute", top: "50%", left: "50%",
-        transform: "translate(-50%,-50%)",
-        fontFamily: "Playfair Display,serif",
-        fontSize: "clamp(60px,10vw,140px)", fontWeight: 300,
-        color: "rgba(255,255,255,0.02)", whiteSpace: "nowrap",
-        pointerEvents: "none", letterSpacing: "-0.02em",
-      }}>FLASH DEAL</div>
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%,-50%)",
+          fontFamily: "Playfair Display,serif",
+          fontSize: "clamp(60px,10vw,140px)",
+          fontWeight: 300,
+          color: "rgba(255,255,255,0.02)",
+          whiteSpace: "nowrap",
+          pointerEvents: "none",
+          letterSpacing: "-0.02em",
+        }}
+      >
+        FLASH DEAL
+      </div>
 
       {/* radial glow */}
-      <div style={{
-        position: "absolute", inset: 0,
-        background: "radial-gradient(ellipse at 30% 50%, rgba(74,158,63,0.12) 0%, transparent 60%)",
-        pointerEvents: "none",
-      }} />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "radial-gradient(ellipse at 30% 50%, rgba(74,158,63,0.12) 0%, transparent 60%)",
+          pointerEvents: "none",
+        }}
+      />
 
-      <div style={{ maxWidth: "1400px", margin: "0 auto", position: "relative", zIndex: 1 }}>
+      <div
+        style={{
+          maxWidth: "1400px",
+          margin: "0 auto",
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
         {/* header */}
-        <div className="reveal" style={{ textAlign: "center", marginBottom: "64px" }}>
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: "12px",
-            background: "rgba(74,158,63,0.12)",
-            border: "0.5px solid rgba(74,158,63,0.35)",
-            padding: "8px 24px", marginBottom: "24px",
-          }}>
-            <span style={{
-              width: "6px", height: "6px", borderRadius: "50%",
-              background: "var(--gold)", animation: "pulse 1.5s ease-in-out infinite",
-              display: "inline-block",
-            }} />
-            <span style={{
-              fontSize: "10px", letterSpacing: "0.26em", textTransform: "uppercase",
-              color: "var(--gold)", fontFamily: "Be Vietnam Pro,sans-serif",
-            }}>Tri Ân Người Dùng · Flash Deal</span>
+        <div
+          className="reveal"
+          style={{ textAlign: "center", marginBottom: "64px" }}
+        >
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "12px",
+              background: "rgba(74,158,63,0.12)",
+              border: "0.5px solid rgba(74,158,63,0.35)",
+              padding: "8px 24px",
+              marginBottom: "24px",
+            }}
+          >
+            <span
+              style={{
+                width: "6px",
+                height: "6px",
+                borderRadius: "50%",
+                background: "var(--gold)",
+                animation: "pulse 1.5s ease-in-out infinite",
+                display: "inline-block",
+              }}
+            />
+            <span
+              style={{
+                fontSize: "10px",
+                letterSpacing: "0.26em",
+                textTransform: "uppercase",
+                color: "var(--gold)",
+                fontFamily: "Be Vietnam Pro,sans-serif",
+              }}
+            >
+              Tri Ân Người Dùng · Flash Deal
+            </span>
           </div>
-          <h2 style={{
-            fontFamily: "Playfair Display,serif",
-            fontSize: "clamp(32px,4vw,56px)", fontWeight: 300,
-            color: "var(--ivory)", lineHeight: 1.12, letterSpacing: "-0.01em",
-          }}>
+          <h2
+            style={{
+              fontFamily: "Playfair Display,serif",
+              fontSize: "clamp(32px,4vw,56px)",
+              fontWeight: 300,
+              color: "var(--ivory)",
+              lineHeight: 1.12,
+              letterSpacing: "-0.01em",
+            }}
+          >
             Ưu Đãi Đặc Biệt —{" "}
-            <em style={{ fontStyle: "italic", color: "var(--gold)" }}>Có Giới Hạn</em>
+            <em style={{ fontStyle: "italic", color: "var(--gold)" }}>
+              Có Giới Hạn
+            </em>
           </h2>
-          <p style={{
-            fontSize: "14px", color: "rgba(250,248,243,0.5)",
-            marginTop: "14px", fontWeight: 300,
-          }}>
+          <p
+            style={{
+              fontSize: "14px",
+              color: "rgba(250,248,243,0.5)",
+              marginTop: "14px",
+              fontWeight: 300,
+            }}
+          >
             Chỉ dành cho {stock} khách hàng đầu tiên trong hôm nay
           </p>
         </div>
 
         {/* main card */}
-        <div className="reveal" style={{
-          display: "grid", gridTemplateColumns: "1fr 1fr",
-          gap: "0", border: "0.5px solid rgba(74,158,63,0.25)",
-          overflow: "hidden",
-          boxShadow: "0 40px 80px rgba(0,0,0,0.4)",
-        }}>
+        <div
+          className="reveal"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "0",
+            border: "0.5px solid rgba(74,158,63,0.25)",
+            overflow: "hidden",
+            boxShadow: "0 40px 80px rgba(0,0,0,0.4)",
+          }}
+        >
           {/* left — book visual */}
-          <div style={{
-            position: "relative", overflow: "hidden", minHeight: "460px",
-            background: "rgba(255,255,255,0.03)",
-          }}>
+          <div
+            style={{
+              position: "relative",
+              overflow: "hidden",
+              minHeight: "460px",
+              background: "rgba(255,255,255,0.03)",
+            }}
+          >
             <img
               src={book.coverImage || "https://via.placeholder.com/600x460"}
               alt={book.title}
               style={{
-                width: "100%", height: "100%", objectFit: "cover",
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
                 filter: "saturate(0.7) brightness(0.6)",
-                position: "absolute", inset: 0,
+                position: "absolute",
+                inset: 0,
               }}
             />
-            <div style={{
-              position: "absolute", inset: 0,
-              background: "linear-gradient(to right, rgba(13,43,30,0.3) 0%, rgba(13,43,30,0.6) 100%)",
-            }} />
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background:
+                  "linear-gradient(to right, rgba(13,43,30,0.3) 0%, rgba(13,43,30,0.6) 100%)",
+              }}
+            />
             {/* discount badge */}
-            <div style={{
-              position: "absolute", top: "28px", left: "28px",
-              background: "var(--gold)", color: "var(--ink)",
-              fontFamily: "Playfair Display,serif",
-              fontSize: "36px", fontWeight: 300, lineHeight: 1,
-              padding: "16px 20px",
-              display: "flex", flexDirection: "column", alignItems: "center",
-            }}>
+            <div
+              style={{
+                position: "absolute",
+                top: "28px",
+                left: "28px",
+                background: "var(--gold)",
+                color: "var(--ink)",
+                fontFamily: "Playfair Display,serif",
+                fontSize: "36px",
+                fontWeight: 300,
+                lineHeight: 1,
+                padding: "16px 20px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
               <span>-28%</span>
-              <span style={{ fontSize: "10px", letterSpacing: "0.14em", fontFamily: "Be Vietnam Pro,sans-serif", marginTop: "4px" }}>
+              <span
+                style={{
+                  fontSize: "10px",
+                  letterSpacing: "0.14em",
+                  fontFamily: "Be Vietnam Pro,sans-serif",
+                  marginTop: "4px",
+                }}
+              >
                 GIẢM GIÁ
               </span>
             </div>
             {/* stock bar */}
-            <div style={{
-              position: "absolute", bottom: "28px", left: "28px", right: "28px",
-            }}>
-              <div style={{
-                display: "flex", justifyContent: "space-between",
-                fontSize: "10px", letterSpacing: "0.14em",
-                color: "rgba(255,255,255,0.5)", marginBottom: "8px",
-                fontFamily: "Be Vietnam Pro,sans-serif", textTransform: "uppercase",
-              }}>
+            <div
+              style={{
+                position: "absolute",
+                bottom: "28px",
+                left: "28px",
+                right: "28px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: "10px",
+                  letterSpacing: "0.14em",
+                  color: "rgba(255,255,255,0.5)",
+                  marginBottom: "8px",
+                  fontFamily: "Be Vietnam Pro,sans-serif",
+                  textTransform: "uppercase",
+                }}
+              >
                 <span>Còn lại</span>
                 <span style={{ color: "var(--gold)" }}>{stock} cuốn</span>
               </div>
-              <div style={{ height: "3px", background: "rgba(255,255,255,0.1)", borderRadius: "2px" }}>
-                <div style={{
-                  width: `${(stock / 50) * 100}%`, height: "100%",
-                  background: "linear-gradient(90deg, var(--gold), var(--gold-light))",
-                  borderRadius: "2px", transition: "width 1s ease",
-                }} />
+              <div
+                style={{
+                  height: "3px",
+                  background: "rgba(255,255,255,0.1)",
+                  borderRadius: "2px",
+                }}
+              >
+                <div
+                  style={{
+                    width: `${(stock / 50) * 100}%`,
+                    height: "100%",
+                    background:
+                      "linear-gradient(90deg, var(--gold), var(--gold-light))",
+                    borderRadius: "2px",
+                    transition: "width 1s ease",
+                  }}
+                />
               </div>
             </div>
           </div>
 
           {/* right — info */}
-          <div style={{
-            background: "rgba(13,43,30,0.7)", backdropFilter: "blur(12px)",
-            padding: "52px 48px",
-            display: "flex", flexDirection: "column", justifyContent: "center", gap: "24px",
-          }}>
+          <div
+            style={{
+              background: "rgba(13,43,30,0.7)",
+              backdropFilter: "blur(12px)",
+              padding: "52px 48px",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              gap: "24px",
+            }}
+          >
             {/* eyebrow */}
             <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{ width: "28px", height: "0.5px", background: "var(--gold)" }} />
-              <span style={{
-                fontSize: "9px", letterSpacing: "0.24em", textTransform: "uppercase",
-                color: "var(--gold)", fontFamily: "Be Vietnam Pro,sans-serif",
-              }}>
+              <div
+                style={{
+                  width: "28px",
+                  height: "0.5px",
+                  background: "var(--gold)",
+                }}
+              />
+              <span
+                style={{
+                  fontSize: "9px",
+                  letterSpacing: "0.24em",
+                  textTransform: "uppercase",
+                  color: "var(--gold)",
+                  fontFamily: "Be Vietnam Pro,sans-serif",
+                }}
+              >
                 {book.category?.name || "Khám Phá Thiên Nhiên"}
               </span>
             </div>
 
             {/* title */}
-            <h3 style={{
-              fontFamily: "Playfair Display,serif",
-              fontSize: "clamp(24px,2.5vw,36px)", fontWeight: 300,
-              color: "var(--ivory)", lineHeight: 1.15, letterSpacing: "-0.01em",
-            }}>
+            <h3
+              style={{
+                fontFamily: "Playfair Display,serif",
+                fontSize: "clamp(24px,2.5vw,36px)",
+                fontWeight: 300,
+                color: "var(--ivory)",
+                lineHeight: 1.15,
+                letterSpacing: "-0.01em",
+              }}
+            >
               {book.title}
             </h3>
 
             {/* desc */}
-            <p style={{
-              fontSize: "13px", lineHeight: 1.8,
-              color: "rgba(250,248,243,0.55)", fontWeight: 300,
-              borderLeft: "2px solid rgba(74,158,63,0.4)",
-              paddingLeft: "16px",
-            }}>
-              {book.description?.slice(0, 120) || "Hành trình khám phá thiên nhiên qua lăng kính AR & AI — trải nghiệm hoàn toàn mới."}...
+            <p
+              style={{
+                fontSize: "13px",
+                lineHeight: 1.8,
+                color: "rgba(250,248,243,0.55)",
+                fontWeight: 300,
+                borderLeft: "2px solid rgba(74,158,63,0.4)",
+                paddingLeft: "16px",
+              }}
+            >
+              {book.description?.slice(0, 120) ||
+                "Hành trình khám phá thiên nhiên qua lăng kính AR & AI — trải nghiệm hoàn toàn mới."}
+              ...
             </p>
 
             {/* countdown */}
             <div>
-              <div style={{
-                fontSize: "9px", letterSpacing: "0.22em", textTransform: "uppercase",
-                color: "rgba(255,255,255,0.4)", marginBottom: "12px",
-                fontFamily: "Be Vietnam Pro,sans-serif",
-              }}>
+              <div
+                style={{
+                  fontSize: "9px",
+                  letterSpacing: "0.22em",
+                  textTransform: "uppercase",
+                  color: "rgba(255,255,255,0.4)",
+                  marginBottom: "12px",
+                  fontFamily: "Be Vietnam Pro,sans-serif",
+                }}
+              >
                 Ưu đãi kết thúc sau
               </div>
-              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <div
+                style={{ display: "flex", gap: "8px", alignItems: "center" }}
+              >
                 {[
                   { val: pad(timeLeft.h), label: "Giờ" },
                   { val: pad(timeLeft.m), label: "Phút" },
                   { val: pad(timeLeft.s), label: "Giây" },
                 ].map(({ val, label }, idx) => (
-                  <div key={label} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <div style={{
-                      background: "rgba(255,255,255,0.06)",
-                      border: "0.5px solid rgba(74,158,63,0.3)",
-                      padding: "10px 14px",
-                      textAlign: "center", minWidth: "60px",
-                    }}>
-                      <div style={{
-                        fontFamily: "Montserrat,sans-serif",
-                        fontSize: "28px", fontWeight: 600,
-                        color: "var(--ivory)", lineHeight: 1, letterSpacing: "-0.02em",
-                      }}>{val}</div>
-                      <div style={{
-                        fontSize: "8px", letterSpacing: "0.18em", textTransform: "uppercase",
-                        color: "rgba(255,255,255,0.35)", marginTop: "4px",
-                        fontFamily: "Be Vietnam Pro,sans-serif",
-                      }}>{label}</div>
+                  <div
+                    key={label}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        background: "rgba(255,255,255,0.06)",
+                        border: "0.5px solid rgba(74,158,63,0.3)",
+                        padding: "10px 14px",
+                        textAlign: "center",
+                        minWidth: "60px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontFamily: "Montserrat,sans-serif",
+                          fontSize: "28px",
+                          fontWeight: 600,
+                          color: "var(--ivory)",
+                          lineHeight: 1,
+                          letterSpacing: "-0.02em",
+                        }}
+                      >
+                        {val}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: "8px",
+                          letterSpacing: "0.18em",
+                          textTransform: "uppercase",
+                          color: "rgba(255,255,255,0.35)",
+                          marginTop: "4px",
+                          fontFamily: "Be Vietnam Pro,sans-serif",
+                        }}
+                      >
+                        {label}
+                      </div>
                     </div>
                     {idx < 2 && (
-                      <span style={{
-                        fontFamily: "Playfair Display,serif",
-                        fontSize: "24px", color: "var(--gold)",
-                        lineHeight: 1, animation: "pulse 1s ease-in-out infinite",
-                      }}>:</span>
+                      <span
+                        style={{
+                          fontFamily: "Playfair Display,serif",
+                          fontSize: "24px",
+                          color: "var(--gold)",
+                          lineHeight: 1,
+                          animation: "pulse 1s ease-in-out infinite",
+                        }}
+                      >
+                        :
+                      </span>
                     )}
                   </div>
                 ))}
@@ -1442,76 +1240,135 @@ function FlashDealSection({ books, onAddCart }) {
             </div>
 
             {/* price */}
-            <div style={{ display: "flex", alignItems: "flex-end", gap: "16px" }}>
-              <div style={{
-                fontFamily: "Montserrat,sans-serif",
-                fontSize: "38px", fontWeight: 700,
-                color: "var(--gold)", letterSpacing: "-0.02em", lineHeight: 1,
-              }}>
+            <div
+              style={{ display: "flex", alignItems: "flex-end", gap: "16px" }}
+            >
+              <div
+                style={{
+                  fontFamily: "Montserrat,sans-serif",
+                  fontSize: "38px",
+                  fontWeight: 700,
+                  color: "var(--gold)",
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1,
+                }}
+              >
                 {formatPrice(discountedPrice)}
               </div>
-              <div style={{
-                fontFamily: "Montserrat,sans-serif",
-                fontSize: "18px", fontWeight: 300,
-                color: "rgba(255,255,255,0.3)",
-                textDecoration: "line-through", paddingBottom: "4px",
-              }}>
+              <div
+                style={{
+                  fontFamily: "Montserrat,sans-serif",
+                  fontSize: "18px",
+                  fontWeight: 300,
+                  color: "rgba(255,255,255,0.3)",
+                  textDecoration: "line-through",
+                  paddingBottom: "4px",
+                }}
+              >
                 {formatPrice(book.salePrice || book.price)}
               </div>
             </div>
 
             {/* CTA */}
             {claimed ? (
-              <div style={{
-                display: "flex", alignItems: "center", justifyContent: "center",
-                gap: "10px", padding: "16px 32px",
-                background: "rgba(74,158,63,0.15)",
-                border: "0.5px solid rgba(74,158,63,0.4)",
-                color: "var(--gold)", fontSize: "11px",
-                letterSpacing: "0.16em", textTransform: "uppercase",
-                fontFamily: "Be Vietnam Pro,sans-serif",
-              }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "10px",
+                  padding: "16px 32px",
+                  background: "rgba(74,158,63,0.15)",
+                  border: "0.5px solid rgba(74,158,63,0.4)",
+                  color: "var(--gold)",
+                  fontSize: "11px",
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  fontFamily: "Be Vietnam Pro,sans-serif",
+                }}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
                 Đã thêm vào giỏ hàng!
               </div>
             ) : (
               <button
-                onClick={() => { onAddCart(book.hashId); setClaimed(true); setTimeout(() => setClaimed(false), 3000); }}
+                onClick={() => {
+                  onAddCart(book.hashId);
+                  setClaimed(true);
+                  setTimeout(() => setClaimed(false), 3000);
+                }}
                 style={{
-                  background: "var(--gold)", color: "var(--ink)",
-                  border: "none", padding: "17px 32px",
-                  cursor: "pointer", fontFamily: "Be Vietnam Pro,sans-serif",
-                  fontSize: "11px", letterSpacing: "0.18em", textTransform: "uppercase",
+                  background: "var(--gold)",
+                  color: "var(--ink)",
+                  border: "none",
+                  padding: "17px 32px",
+                  cursor: "pointer",
+                  fontFamily: "Be Vietnam Pro,sans-serif",
+                  fontSize: "11px",
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
                   transition: "all 0.3s",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "12px",
                   width: "100%",
                 }}
-                onMouseOver={(e) => (e.currentTarget.style.background = "var(--gold-light)")}
-                onMouseOut={(e) => (e.currentTarget.style.background = "var(--gold)")}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.background = "var(--gold-light)")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.background = "var(--gold)")
+                }
               >
                 Nhận Ưu Đãi Ngay
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
                   <path d="M5 12h14M12 5l7 7-7 7" />
                 </svg>
               </button>
             )}
 
             {/* trust micro */}
-            <div style={{
-              display: "flex", gap: "20px", flexWrap: "wrap",
-              paddingTop: "16px", borderTop: "0.5px solid rgba(255,255,255,0.08)",
-            }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "20px",
+                flexWrap: "wrap",
+                paddingTop: "16px",
+                borderTop: "0.5px solid rgba(255,255,255,0.08)",
+              }}
+            >
               {[
                 "🔒 Bảo mật thanh toán",
                 "📦 Giao hàng miễn phí",
                 "↩️ Đổi trả 30 ngày",
               ].map((t) => (
-                <span key={t} style={{
-                  fontSize: "11px", color: "rgba(255,255,255,0.35)",
-                  fontWeight: 300,
-                }}>{t}</span>
+                <span
+                  key={t}
+                  style={{
+                    fontSize: "11px",
+                    color: "rgba(255,255,255,0.35)",
+                    fontWeight: 300,
+                  }}
+                >
+                  {t}
+                </span>
               ))}
             </div>
           </div>
@@ -1526,7 +1383,7 @@ function FlashDealSection({ books, onAddCart }) {
 ───────────────────────────────────────────────────────────── */
 function TopRatedSection({ books, onAddCart }) {
   const TOP_RATINGS = [4.9, 4.8, 4.8, 4.7, 4.7, 4.6];
-  const TOP_VOTES   = [1240, 987, 856, 743, 698, 521];
+  const TOP_VOTES = [1240, 987, 856, 743, 698, 521];
   const [voted, setVoted] = useState({});
   const [localVotes, setLocalVotes] = useState({});
 
@@ -1553,15 +1410,20 @@ function TopRatedSection({ books, onAddCart }) {
             Được Đánh Giá <em>Cao Nhất</em>
           </h2>
           <p className="section-subtitle">
-            Những cuốn sách được cộng đồng Earthoria yêu thích và bình chọn nhiều nhất
+            Những cuốn sách được cộng đồng Earthoria yêu thích và bình chọn
+            nhiều nhất
           </p>
         </div>
 
         {/* grid */}
-        <div style={{
-          display: "grid", gridTemplateColumns: "repeat(3, 1fr)",
-          gap: "0", border: "0.5px solid var(--border)",
-        }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: "0",
+            border: "0.5px solid var(--border)",
+          }}
+        >
           {displayBooks.map((book, i) => {
             const rating = TOP_RATINGS[i] || 4.5;
             const baseVotes = TOP_VOTES[i] || 300;
@@ -1575,17 +1437,20 @@ function TopRatedSection({ books, onAddCart }) {
                 className={`reveal reveal-delay-${(i % 3) + 1}`}
                 style={{
                   padding: "36px 32px",
-                  borderRight: (i + 1) % 3 !== 0 ? "0.5px solid var(--border)" : "none",
+                  borderRight:
+                    (i + 1) % 3 !== 0 ? "0.5px solid var(--border)" : "none",
                   borderBottom: i < 3 ? "0.5px solid var(--border)" : "none",
                   background: "var(--white)",
-                  position: "relative", overflow: "hidden",
+                  position: "relative",
+                  overflow: "hidden",
                   transition: "all 0.4s ease",
                   cursor: "default",
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = "var(--ivory)";
                   e.currentTarget.style.transform = "translateY(-3px)";
-                  e.currentTarget.style.boxShadow = "0 16px 40px rgba(13,43,30,0.08)";
+                  e.currentTarget.style.boxShadow =
+                    "0 16px 40px rgba(13,43,30,0.08)";
                   e.currentTarget.style.zIndex = "2";
                 }}
                 onMouseLeave={(e) => {
@@ -1597,75 +1462,139 @@ function TopRatedSection({ books, onAddCart }) {
               >
                 {/* rank ribbon */}
                 {i < 3 && (
-                  <div style={{
-                    position: "absolute", top: "0", right: "0",
-                    width: "0", height: "0",
-                    borderStyle: "solid",
-                    borderWidth: `0 52px 52px 0`,
-                    borderColor: `transparent ${i === 0 ? "var(--gold)" : i === 1 ? "#8a9490" : "#b07830"} transparent transparent`,
-                  }}>
-                    <span style={{
-                      position: "absolute", top: "6px", right: "-46px",
-                      fontFamily: "Playfair Display,serif",
-                      fontSize: "11px", fontWeight: 500, color: "var(--ivory)",
-                    }}>#{i + 1}</span>
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: "0",
+                      right: "0",
+                      width: "0",
+                      height: "0",
+                      borderStyle: "solid",
+                      borderWidth: `0 52px 52px 0`,
+                      borderColor: `transparent ${i === 0 ? "var(--gold)" : i === 1 ? "#8a9490" : "#b07830"} transparent transparent`,
+                    }}
+                  >
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: "6px",
+                        right: "-46px",
+                        fontFamily: "Playfair Display,serif",
+                        fontSize: "11px",
+                        fontWeight: 500,
+                        color: "var(--ivory)",
+                      }}
+                    >
+                      #{i + 1}
+                    </span>
                   </div>
                 )}
 
-                <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "20px",
+                    alignItems: "flex-start",
+                  }}
+                >
                   {/* cover */}
-                  <div style={{
-                    width: "72px", height: "88px",
-                    overflow: "hidden", flexShrink: 0,
-                    border: "0.5px solid var(--border)",
-                  }}>
+                  <div
+                    style={{
+                      width: "72px",
+                      height: "88px",
+                      overflow: "hidden",
+                      flexShrink: 0,
+                      border: "0.5px solid var(--border)",
+                    }}
+                  >
                     <img
-                      src={book.coverImage || "https://via.placeholder.com/72x88"}
+                      src={
+                        book.coverImage || "https://via.placeholder.com/72x88"
+                      }
                       alt={book.title}
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
                     />
                   </div>
 
                   {/* info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
-                      fontSize: "9px", letterSpacing: "0.18em", textTransform: "uppercase",
-                      color: "var(--gold)", marginBottom: "6px",
-                      fontFamily: "Be Vietnam Pro,sans-serif",
-                    }}>
+                    <div
+                      style={{
+                        fontSize: "9px",
+                        letterSpacing: "0.18em",
+                        textTransform: "uppercase",
+                        color: "var(--gold)",
+                        marginBottom: "6px",
+                        fontFamily: "Be Vietnam Pro,sans-serif",
+                      }}
+                    >
                       {book.category?.name || "Thiên Nhiên"}
                     </div>
-                    <div style={{
-                      fontFamily: "Playfair Display,serif",
-                      fontSize: "17px", fontWeight: 400,
-                      color: "var(--forest)", lineHeight: 1.25,
-                      marginBottom: "8px",
-                      overflow: "hidden", textOverflow: "ellipsis",
-                      display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
-                    }}>
+                    <div
+                      style={{
+                        fontFamily: "Playfair Display,serif",
+                        fontSize: "17px",
+                        fontWeight: 400,
+                        color: "var(--forest)",
+                        lineHeight: 1.25,
+                        marginBottom: "8px",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                      }}
+                    >
                       {book.title}
                     </div>
 
                     {/* stars */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        marginBottom: "6px",
+                      }}
+                    >
                       <div style={{ display: "flex", gap: "2px" }}>
                         {[...Array(5)].map((_, s) => (
-                          <span key={s} style={{
-                            fontSize: "12px",
-                            color: s < filledStars ? "var(--gold)" : "var(--pale)",
-                          }}>★</span>
+                          <span
+                            key={s}
+                            style={{
+                              fontSize: "12px",
+                              color:
+                                s < filledStars ? "var(--gold)" : "var(--pale)",
+                            }}
+                          >
+                            ★
+                          </span>
                         ))}
                       </div>
-                      <span style={{
-                        fontFamily: "Montserrat,sans-serif",
-                        fontSize: "13px", fontWeight: 600, color: "var(--forest)",
-                      }}>{rating}</span>
+                      <span
+                        style={{
+                          fontFamily: "Montserrat,sans-serif",
+                          fontSize: "13px",
+                          fontWeight: 600,
+                          color: "var(--forest)",
+                        }}
+                      >
+                        {rating}
+                      </span>
                     </div>
 
                     {/* vote count */}
-                    <div style={{
-                      fontSize: "11px", color: "var(--text-muted)", fontWeight: 300,
-                    }}>
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        color: "var(--text-muted)",
+                        fontWeight: 300,
+                      }}
+                    >
                       {totalVotes.toLocaleString("vi-VN")} lượt đánh giá
                     </div>
                   </div>
@@ -1673,61 +1602,97 @@ function TopRatedSection({ books, onAddCart }) {
 
                 {/* vote bar */}
                 <div style={{ marginTop: "20px" }}>
-                  <div style={{
-                    display: "flex", justifyContent: "space-between",
-                    fontSize: "10px", color: "var(--text-muted)",
-                    marginBottom: "6px", fontFamily: "Be Vietnam Pro,sans-serif",
-                  }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      fontSize: "10px",
+                      color: "var(--text-muted)",
+                      marginBottom: "6px",
+                      fontFamily: "Be Vietnam Pro,sans-serif",
+                    }}
+                  >
                     <span>Điểm tin cậy</span>
                     <span style={{ color: "var(--gold)", fontWeight: 500 }}>
                       {Math.round((rating / 5) * 100)}%
                     </span>
                   </div>
-                  <div style={{
-                    height: "3px", background: "var(--pale)", borderRadius: "2px", overflow: "hidden",
-                  }}>
-                    <div style={{
-                      width: `${(rating / 5) * 100}%`, height: "100%",
-                      background: "linear-gradient(90deg, var(--gold), var(--gold-light))",
+                  <div
+                    style={{
+                      height: "3px",
+                      background: "var(--pale)",
                       borderRadius: "2px",
-                    }} />
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: `${(rating / 5) * 100}%`,
+                        height: "100%",
+                        background:
+                          "linear-gradient(90deg, var(--gold), var(--gold-light))",
+                        borderRadius: "2px",
+                      }}
+                    />
                   </div>
                 </div>
 
                 {/* actions */}
-                <div style={{
-                  display: "flex", gap: "8px", marginTop: "20px",
-                  paddingTop: "20px", borderTop: "0.5px solid var(--border)",
-                  alignItems: "center",
-                }}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "8px",
+                    marginTop: "20px",
+                    paddingTop: "20px",
+                    borderTop: "0.5px solid var(--border)",
+                    alignItems: "center",
+                  }}
+                >
                   {/* vote button */}
                   <button
                     onClick={() => handleVote(book.id)}
                     style={{
-                      display: "flex", alignItems: "center", gap: "6px",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
                       padding: "8px 14px",
                       background: hasVoted ? "var(--gold-pale)" : "transparent",
                       border: `0.5px solid ${hasVoted ? "var(--gold)" : "var(--border)"}`,
                       color: hasVoted ? "var(--gold)" : "var(--text-muted)",
                       cursor: hasVoted ? "default" : "pointer",
                       fontFamily: "Be Vietnam Pro,sans-serif",
-                      fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase",
-                      transition: "all 0.3s", flexShrink: 0,
+                      fontSize: "10px",
+                      letterSpacing: "0.12em",
+                      textTransform: "uppercase",
+                      transition: "all 0.3s",
+                      flexShrink: 0,
                     }}
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill={hasVoted ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.5">
-                      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
-                      <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill={hasVoted ? "currentColor" : "none"}
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                    >
+                      <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z" />
+                      <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
                     </svg>
                     {hasVoted ? "Đã vote" : "Vote"}
                   </button>
 
                   {/* price */}
-                  <div style={{
-                    fontFamily: "Montserrat,sans-serif",
-                    fontSize: "16px", fontWeight: 600,
-                    color: "var(--forest)", flex: 1, textAlign: "center",
-                  }}>
+                  <div
+                    style={{
+                      fontFamily: "Montserrat,sans-serif",
+                      fontSize: "16px",
+                      fontWeight: 600,
+                      color: "var(--forest)",
+                      flex: 1,
+                      textAlign: "center",
+                    }}
+                  >
                     {formatPrice(book.salePrice || book.price)}
                   </div>
 
@@ -1735,18 +1700,36 @@ function TopRatedSection({ books, onAddCart }) {
                   <button
                     onClick={() => onAddCart(book.hashId)}
                     style={{
-                      width: "36px", height: "36px",
-                      background: "var(--forest)", color: "var(--ivory)",
-                      border: "none", cursor: "pointer",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      transition: "all 0.3s", flexShrink: 0,
+                      width: "36px",
+                      height: "36px",
+                      background: "var(--forest)",
+                      color: "var(--ivory)",
+                      border: "none",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      transition: "all 0.3s",
+                      flexShrink: 0,
                     }}
-                    onMouseOver={(e) => (e.currentTarget.style.background = "var(--forest-mid)")}
-                    onMouseOut={(e) => (e.currentTarget.style.background = "var(--forest)")}
+                    onMouseOver={(e) =>
+                      (e.currentTarget.style.background = "var(--forest-mid)")
+                    }
+                    onMouseOut={(e) =>
+                      (e.currentTarget.style.background = "var(--forest)")
+                    }
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
-                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                    >
+                      <circle cx="9" cy="21" r="1" />
+                      <circle cx="20" cy="21" r="1" />
+                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
                     </svg>
                   </button>
                 </div>
@@ -1756,10 +1739,24 @@ function TopRatedSection({ books, onAddCart }) {
         </div>
 
         {/* bottom CTA */}
-        <div className="reveal" style={{ textAlign: "center", marginTop: "48px" }}>
-          <Link to="/shop" className="view-all" style={{ justifyContent: "center" }}>
+        <div
+          className="reveal"
+          style={{ textAlign: "center", marginTop: "48px" }}
+        >
+          <Link
+            to="/shop"
+            className="view-all"
+            style={{ justifyContent: "center" }}
+          >
             Xem tất cả đánh giá
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>
           </Link>
@@ -2381,20 +2378,25 @@ export default function Home() {
                 marginTop: "12px",
               }}
             >
-             {[
-  [<Truck size={16} />, 'Miễn phí ship'],
-  [<Gift size={16} />, 'Poster AR'],
-  [<Star size={16} />, 'Ưu tiên hỗ trợ'],
-].map(
-                (item) => (
-                  <span
-                    key={item}
-                    style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)" }}
-                  >
-                    {item}
-                  </span>
-                ),
-              )}
+              {[
+                { Icon: Truck, label: "Miễn phí ship" },
+                { Icon: Gift, label: "Poster AR" },
+                { Icon: Star, label: "Ưu tiên hỗ trợ" },
+              ].map(({ Icon, label }) => (
+                <span
+                  key={label}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "6px",
+                    fontSize: "12px",
+                    color: "rgba(255,255,255,0.5)",
+                  }}
+                >
+                  <Icon size={16} />
+                  {label}
+                </span>
+              ))}
             </div>
           </div>
           <div
@@ -2570,7 +2572,11 @@ export default function Home() {
                           left: "50%",
                           transform: "translateX(-50%)",
                           background:
-                            rank === 1 ? "var(--gold)" : rank === 2 ? "#8a9490" : "#b07830",
+                            rank === 1
+                              ? "var(--gold)"
+                              : rank === 2
+                                ? "#8a9490"
+                                : "#b07830",
                           color: "var(--ivory)",
                           fontFamily: "Playfair Display,serif",
                           fontSize: "10px",
@@ -2594,9 +2600,16 @@ export default function Home() {
                         }}
                       >
                         <img
-                          src={book.coverImage || "https://via.placeholder.com/90x112"}
+                          src={
+                            book.coverImage ||
+                            "https://via.placeholder.com/90x112"
+                          }
                           alt={book.title}
-                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
                         />
                       </div>
                       {/* title */}
@@ -2613,7 +2626,14 @@ export default function Home() {
                         {book.title}
                       </div>
                       {/* category */}
-                      <div style={{ fontSize: "11px", color: isFirst ? "rgba(255,255,255,0.55)" : "var(--text-muted)" }}>
+                      <div
+                        style={{
+                          fontSize: "11px",
+                          color: isFirst
+                            ? "rgba(255,255,255,0.55)"
+                            : "var(--text-muted)",
+                        }}
+                      >
                         {book.category?.name}
                       </div>
                       {/* price */}
@@ -2663,11 +2683,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ TRI ÂM NGƯỜI DÙNG — FLASH DEAL COUNTDOWN ═══ */}
-      <FlashDealSection books={displayFeatured} onAddCart={handleAddToCart} />
-
-  {/* ═══ APP SHOWCASE (TECH SECTION) ═══ */}
-      <AppShowcase />
+      <StickyScrollTransition />
 
       {/* ═══ TOP RATED — sách được vote cao nhất ═══ */}
       <TopRatedSection books={displayBest} onAddCart={handleAddToCart} />
@@ -2732,8 +2748,7 @@ export default function Home() {
               Hành Trình <em>Tri Thức</em>
             </h2>
             <p className="section-subtitle">
-              Từ những bước đầu tiên đến khi thành thạo — Earthoria đồng hành
-              mỗi chặng đường.
+              Từ những bước đầu tiên đến khi thành thạo với Earthoria.
             </p>
           </div>
           <div className="journey-steps">
@@ -2741,31 +2756,87 @@ export default function Home() {
               {
                 num: "01",
                 title: "Khám Phá",
+                img: "kham-pha.png",
                 desc: "Mở cuốn sách đầu tiên và để trí tò mò dẫn lối.",
+                detail:
+                  "Hơn 80 loài sinh vật được minh họa chi tiết, mỗi trang là một cánh cửa dẫn vào thế giới tự nhiên kỳ diệu.",
               },
               {
                 num: "02",
                 title: "Tương Tác",
+                img: "tuong-tac.png",
                 desc: "Trò chuyện với 3D, hỏi đáp cùng AI thông minh.",
+                detail:
+                  "Đặt câu hỏi cho bất kỳ sinh vật nào — AI sẽ trả lời bằng giọng nói tự nhiên, thân thiện với trẻ em.",
               },
               {
                 num: "03",
                 title: "Ghi Nhớ",
+                img: "ghi-nho.png",
                 desc: "Kiến thức hình ảnh đọng lại sâu hơn 5 lần so với đọc thông thường.",
+                detail:
+                  "Phương pháp học qua hình ảnh 3D và tương tác thực tế giúp não bộ ghi nhớ lâu dài và hiệu quả hơn.",
               },
               {
                 num: "04",
                 title: "Tiến Bộ",
+                img: "tien-bo.png",
                 desc: "AI theo dõi và điều chỉnh lộ trình học theo nhịp độ của từng bé.",
+                detail:
+                  "Hệ thống AI cá nhân hóa nội dung, ghi nhớ tiến trình và đề xuất bài học phù hợp với từng độ tuổi.",
               },
             ].map((step, i) => (
               <div
                 className={`journey-step reveal reveal-delay-${i + 1}`}
                 key={i}
+                style={{ position: "relative", overflow: "hidden" }}
               >
-                <div className="journey-step-num">{step.num}</div>
-                <h3 className="journey-step-title">{step.title}</h3>
-                <p className="journey-step-desc">{step.desc}</p>
+                <div
+                  className="journey-step-bg"
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    backgroundImage: `url('/${step.img}')`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    opacity: 0,
+                    transition: "opacity 0.5s ease",
+                    zIndex: 0,
+                  }}
+                />
+                <div
+                  className="journey-step-gradient"
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    background:
+                      "linear-gradient(135deg, rgba(13,51,48,0.82) 0%, rgba(26,92,82,0.75) 50%, rgba(74,158,63,0.65) 100%)",
+                    opacity: 0,
+                    transition: "opacity 0.5s ease",
+                    zIndex: 1,
+                  }}
+                />
+                <div style={{ position: "relative", zIndex: 2 }}>
+                  <div className="journey-step-num">{step.num}</div>
+                  <h3 className="journey-step-title">{step.title}</h3>
+                  <p className="journey-step-desc">{step.desc}</p>
+                  <p
+                    className="journey-step-detail"
+                    style={{
+                      fontSize: "12px",
+                      lineHeight: 1.8,
+                      color: "rgba(250,248,243,0.75)",
+                      fontWeight: 300,
+                      marginTop: "14px",
+                      fontStyle: "italic",
+                      opacity: 0,
+                      transform: "translateY(8px)",
+                      transition: "all 0.4s ease 0.1s",
+                    }}
+                  >
+                    {step.detail}
+                  </p>
+                </div>
               </div>
             ))}
           </div>

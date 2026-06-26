@@ -222,7 +222,7 @@ const FAQS = [
   },
   {
     q: "Làm sao tôi xóa dữ liệu tài khoản của con mình?",
-    a: 'Vào "Bảng điều khiển gia đình" trong ứng dụng, chọn Cài đặt → Quyền riêng tư → Xóa dữ liệu, hoặc gửi yêu cầu trực tiếp đến địa chỉ legal@earthoria.vn để được hỗ trợ.',
+    a: 'Vào "Bảng điều khiển gia đình" trong ứng dụng, chọn Cài đặt → Quyền riêng tư → Xóa dữ liệu, hoặc gửi yêu cầu trực tiếp đến địa chỉ helpdesk.earthoria@gmail.com để được hỗ trợ.',
   },
   {
     q: "Earthoria có chia sẻ dữ liệu camera không?",
@@ -903,8 +903,8 @@ export default function PrivacyPolicy() {
                 Có câu hỏi về cách dữ liệu của bạn được xử lý? Liên hệ trực
                 tiếp với DPO của chúng tôi.
               </p>
-              <a href="mailto:legal@earthoria.vn" className="legal-sidebar-card-link">
-                legal@earthoria.vn
+              <a href="mailto:helpdesk.earthoria@gmail.com" className="legal-sidebar-card-link">
+                helpdesk.earthoria@gmail.com
               </a>
             </div>
           </div>
@@ -1045,9 +1045,9 @@ export default function PrivacyPolicy() {
             <em>luôn sẵn sàng lắng nghe</em>
           </h2>
           <div className="legal-contact-grid reveal">
-            <a href="mailto:legal@earthoria.vn" className="legal-contact-item">
+            <a href="mailto:helpdesk.earthoria@gmail.com" className="legal-contact-item">
               <Mail size={15} />
-              legal@earthoria.vn
+              helpdesk.earthoria@gmail.com
             </a>
             <a href="tel:19006868" className="legal-contact-item">
               <Phone size={15} />

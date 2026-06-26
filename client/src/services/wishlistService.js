@@ -1,7 +1,10 @@
 import api from './api'
 
 export const wishlistService = {
-  getWishlist: () => api.get('/wishlist'),
-  toggleWishlist: (hashId) => api.post(`/wishlist/${hashId}`),
-  removeFromWishlist: (hashId) => api.delete(`/wishlist/${hashId}`)
+  // GET /api/v1/books/wishlist — trả về array book đã encode hashId
+  getWishlist: () => api.get('/books/wishlist'),
+
+  // POST /api/v1/books/:slug/:hashId/wishlist — toggle
+  toggleWishlist: (slug, hashId) =>
+    api.post(`/books/${slug}/${hashId}/wishlist`),
 }

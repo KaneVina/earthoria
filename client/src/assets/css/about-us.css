@@ -1,0 +1,856 @@
+/* Team 6-grid */
+.team-members-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 0.5px solid rgba(255,255,255,0.08);
+}
+
+.member-card {
+  position: relative;
+  height: 340px;
+  overflow: hidden;
+  border: 0.5px solid rgba(255,255,255,0.08);
+  cursor: default;
+}
+
+.member-card-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center 20%;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: 0;
+}
+
+.member-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(5,25,20,0.95) 0%, rgba(5,25,20,0.55) 55%, rgba(5,25,20,0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: 1;
+}
+
+.member-card:hover .member-card-bg { opacity: 1; }
+.member-card:hover .member-card-overlay { opacity: 1; }
+
+/* Default state — tên + mssv góc dưới trái */
+.member-default {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 22px 24px;
+  z-index: 2;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.member-card:hover .member-default {
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+}
+
+.member-name-default {
+  font-family: var(--serif, 'Playfair Display', serif);
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--ivory, #faf8f3);
+  line-height: 1.25;
+  margin-bottom: 4px;
+}
+
+.member-code-default {
+  font-size: 11px;
+  color: rgba(250,248,243,0.4);
+  letter-spacing: 0.06em;
+}
+
+/* Hover state — full info */
+.member-hover-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px;
+  z-index: 3;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.35s ease 0.05s, transform 0.35s ease 0.05s;
+}
+
+.member-card:hover .member-hover-info {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.member-role-label {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--forest-mid, #4a9e3f);
+  margin-bottom: 5px;
+  font-weight: 400;
+}
+
+.member-name-hover {
+  font-family: var(--serif, 'Playfair Display', serif);
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--ivory, #faf8f3);
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.member-code-hover {
+  font-size: 10px;
+  color: rgba(250,248,243,0.4);
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.member-divider {
+  width: 28px;
+  height: 0.5px;
+  background: rgba(74,158,63,0.5);
+  margin-bottom: 10px;
+}
+
+.member-desc-hover {
+  font-size: 12px;
+  color: rgba(250,248,243,0.68);
+  line-height: 1.65;
+  font-weight: 300;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .team-members-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .member-card { height: 280px; }
+}
+
+@media (max-width: 480px) {
+  .team-members-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.team-section {
+  padding: 120px 100px;
+  background: var(--cream);
+  position: relative;
+}
+.team-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.team-intro {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 100px;
+  align-items: end;
+  margin-bottom: 80px;
+}
+.team-intro-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 20px;
+}
+.team-intro-stat {
+  text-align: right;
+}
+.team-intro-stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 48px;
+  font-weight: 300;
+  color: var(--forest);
+  line-height: 1;
+}
+.team-intro-stat-num span {
+  color: var(--gold);
+}
+.team-intro-stat-label {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.team-divider-v {
+  width: 0.5px;
+  height: 80px;
+  background: var(--border-gold);
+  margin: 0 auto;
+}
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+}
+.team-card {
+  padding: 48px 40px;
+  border: 0.5px solid var(--border);
+  background: var(--white);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s ease;
+  cursor: default;
+}
+.team-card:not(:last-child) {
+  border-right: none;
+}
+.team-card:nth-child(n+4) {
+  border-top: none;
+}
+.team-card-row2-1 { border-right: none; }
+.team-card-row2-2 { border-right: none; }
+
+.team-card::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.team-card:hover::before {
+  opacity: 1;
+}
+.team-card:hover {
+  background: var(--parchment);
+  transform: translateY(-4px);
+  box-shadow: 0 24px 48px rgba(13,51,48,0.08);
+  z-index: 2;
+}
+.team-card-role {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.team-card-role::before {
+  content: '';
+  width: 16px;
+  height: 0.5px;
+  background: var(--gold);
+}
+.team-avatar {
+  width: 64px;
+  height: 64px;
+  background: var(--forest);
+  border: 0.5px solid var(--border-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s;
+}
+.team-card:hover .team-avatar {
+  background: linear-gradient(135deg, var(--forest) 0%, var(--forest-mid) 100%);
+}
+.team-avatar-letter {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 300;
+  color: var(--gold);
+  line-height: 1;
+}
+.team-avatar-ring {
+  position: absolute;
+  inset: 4px;
+  border: 0.5px solid rgba(74,158,63,0.3);
+  pointer-events: none;
+}
+.team-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--forest);
+  margin-bottom: 4px;
+}
+.team-code {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+.team-card-desc {
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--text-muted);
+  font-weight: 300;
+  padding-top: 20px;
+  border-top: 0.5px solid var(--border);
+}
+.team-card-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 16px;
+}
+.skill-tag {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border: 0.5px solid var(--border-gold);
+  color: var(--gold);
+  font-family: 'Be Vietnam Pro', sans-serif;
+  transition: all 0.3s;
+}
+.team-card:hover .skill-tag {
+  background: var(--gold-pale);
+}
+
+/* CEO card — special */
+.team-card-ceo {
+  grid-column: span 3;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 48px;
+  align-items: center;
+  border-bottom: none;
+  background: linear-gradient(135deg, #0d3330 0%, #1a5c52 50%, #2d7a6e 100%);
+  border-color: transparent;
+  cursor: default;
+}
+.team-card-ceo:hover {
+  background: linear-gradient(135deg, #0d3330 0%, #1a5c52 50%, #2d7a6e 100%);
+  transform: none;
+  box-shadow: none;
+}
+.team-card-ceo .team-card-role {
+  color: rgba(212,232,220,0.7);
+}
+.team-card-ceo .team-card-role::before {
+  background: rgba(212,232,220,0.4);
+}
+.team-card-ceo .team-avatar {
+  width: 100px;
+  height: 100px;
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(212,232,220,0.3);
+}
+.team-card-ceo .team-avatar-letter {
+  font-size: 36px;
+  color: var(--ivory);
+}
+.team-card-ceo .team-name {
+  font-size: 32px;
+  color: var(--ivory);
+}
+.team-card-ceo .team-code {
+  color: rgba(250,248,243,0.45);
+}
+.team-card-ceo .team-card-desc {
+  color: rgba(250,248,243,0.6);
+  border-top-color: rgba(255,255,255,0.1);
+}
+.team-card-ceo .skill-tag {
+  border-color: rgba(212,232,220,0.3);
+  color: rgba(212,232,220,0.8);
+}
+.team-card-ceo .team-avatar-ring {
+  border-color: rgba(212,232,220,0.2);
+}
+.team-card-ceo::before { display: none; }
+
+/* Row 2 fix border */
+.team-row-2 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: none;
+}
+.team-row-2 .team-card {
+  border-top: none;
+}
+
+/* Dark Mode */
+body.dark-mode .team-section { background: #161e1a; }
+body.dark-mode .team-card { background: #1c2822; border-color: rgba(255,255,255,0.06); }
+body.dark-mode .team-card:hover { background: #222e28; }
+body.dark-mode .team-name { color: #c8d4cc; }
+body.dark-mode .team-code { color: rgba(180,200,188,0.4); }
+body.dark-mode .team-card-desc { color: rgba(180,200,188,0.5); border-color: rgba(255,255,255,0.07); }
+body.dark-mode .skill-tag { border-color: rgba(74,158,63,0.25); color: rgba(180,200,188,0.6); }
+body.dark-mode .team-card:hover .skill-tag { background: rgba(74,158,63,0.1); }
+body.dark-mode .team-avatar { background: #222e28; border-color: rgba(74,158,63,0.3); }
+
+/* ===== TEAM NEW GRID ===== */
+.tm-section { }
+
+.tm-grid {
+  display: flex;
+  width: 100%;
+  height: 620px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.tm-card {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  cursor: pointer;
+
+  background: #0d2e2a;
+  border-right: 1px solid rgba(255,255,255,.08);
+
+  transition:
+    flex 0.7s cubic-bezier(.22,.61,.36,1),
+    transform 0.7s cubic-bezier(.22,.61,.36,1);
+}
+
+.tm-card:last-child {
+  border-right: none;
+}
+
+.tm-grid:hover .tm-card {
+  flex: 0.7;
+}
+
+.tm-card {
+  transition:
+    flex 1s cubic-bezier(.22,.61,.36,1) .3s;
+}
+
+.tm-bg {
+  position: absolute;
+  inset: 0;
+
+  background-size: cover;
+  background-position: center 20%;
+
+  opacity: 1;
+  transform: scale(1);
+
+  transition:
+    transform .8s ease,
+    filter .5s ease;
+
+  z-index: 0;
+}
+.tm-grid .tm-card:hover {
+  flex: 4;
+}
+.tm-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(5, 25, 20, 0.96) 0%,
+    rgba(5, 25, 20, 0.6) 55%,
+    rgba(5, 25, 20, 0.15) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: 1;
+}
+
+.tm-card:hover .tm-bg    { opacity: 1; }
+.tm-card:hover .tm-overlay { opacity: 1; }
+
+/* Default: tên + mssv góc dưới trái */
+.tm-default {
+  position: absolute;
+  bottom: 24px;
+  left: 24px;
+  right: 24px;
+
+  z-index: 2;
+
+  transition:
+    opacity .3s ease,
+    transform .3s ease;
+}
+
+.tm-card:hover .tm-default {
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+}
+
+.tm-name-d {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: #faf8f3;
+  line-height: 1.25;
+  margin-bottom: 4px;
+}
+
+.tm-code-d {
+  font-size: 11px;
+  color: rgba(250, 248, 243, 0.38);
+  letter-spacing: 0.06em;
+}
+
+/* Hover: full info */
+.tm-hover {
+  position: absolute;
+
+  left: 32px;
+  right: 32px;
+  bottom: 32px;
+
+  z-index: 3;
+
+  opacity: 0;
+  transform: translateY(20px);
+
+  transition:
+    opacity .45s ease,
+    transform .45s ease;
+}
+
+.tm-grid .tm-card:hover .tm-hover {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.tm-role {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #4a9e3f;
+  margin-bottom: 5px;
+}
+
+.tm-name-h {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 400;
+  color: #faf8f3;
+  line-height: 1.2;
+  margin-bottom: 3px;
+}
+
+.tm-code-h {
+  font-size: 10px;
+  color: rgba(250, 248, 243, 0.38);
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+}
+
+.tm-divider {
+  width: 28px;
+  height: 0.5px;
+  background: rgba(74, 158, 63, 0.5);
+  margin-bottom: 10px;
+}
+
+.tm-desc {
+  font-size: 12px;
+  color: rgba(250, 248, 243, 0.65);
+  line-height: 1.65;
+  font-weight: 300;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .tm-grid { grid-template-columns: repeat(2, 1fr); }
+  .tm-card { height: 280px; }
+}
+
+@media (max-width: 480px) {
+  .tm-grid { grid-template-columns: 1fr; }
+}
+.about-hero {
+  min-height: 100vh;
+  background: var(--forest);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  position: relative;
+  overflow: hidden;
+}
+.about-hero-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 140px 80px 80px 100px;
+  position: relative;
+  z-index: 2;
+}
+.about-hero-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+.about-hero-eyebrow-line {
+  width: 40px;
+  height: 0.5px;
+  background: var(--gold);
+}
+.about-hero-eyebrow-text {
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-weight: 400;
+}
+.about-hero-headline {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(44px, 4.5vw, 72px);
+  font-weight: 300;
+  line-height: 1.08;
+  color: var(--ivory);
+  letter-spacing: -0.01em;
+  margin-bottom: 32px;
+}
+.about-hero-headline em {
+  font-style: italic;
+  color: var(--gold);
+}
+.about-hero-sub {
+  font-size: 15px;
+  line-height: 1.85;
+  color: rgba(250,248,243,0.6);
+  max-width: 440px;
+  margin-bottom: 56px;
+  font-weight: 300;
+}
+.about-hero-meta {
+  display: flex;
+  gap: 40px;
+  padding-top: 40px;
+  border-top: 0.5px solid rgba(255,255,255,0.1);
+}
+.about-meta-item {}
+.about-meta-label {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 6px;
+}
+.about-meta-value {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--ivory);
+}
+.about-meta-value span {
+  color: var(--gold);
+}
+
+/* Right column */
+.about-hero-right {
+  position: relative;
+  overflow: hidden;
+}
+.about-hero-right img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.45;
+  mix-blend-mode: luminosity;
+  filter: contrast(1.05);
+}
+
+.about-hero-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.55;
+  mix-blend-mode: luminosity;
+  filter: contrast(1.08) saturate(1.1);
+  transition: all 0.6s ease;
+}
+
+.about-hero-right:hover .about-hero-video {
+  opacity: 1;
+  mix-blend-mode: normal;
+  filter: none;
+}
+.about-hero-right-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, var(--forest) 0%, rgba(13,51,48,0.4) 50%, transparent 100%);
+}
+/* Floating tag */
+.about-hero-tag {
+  position: absolute;
+  top: 60px;
+  right: 48px;
+  background: rgba(250,248,243,0.06);
+  border: 0.5px solid rgba(74,158,63,0.3);
+  backdrop-filter: blur(12px);
+  padding: 20px 28px;
+  z-index: 4;
+}
+.about-hero-tag-label {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+.about-hero-tag-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+.about-hero-tag-dot {
+  width: 5px;
+  height: 5px;
+  background: var(--gold);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.about-hero-tag-text {
+  font-size: 12px;
+  color: rgba(250,248,243,0.7);
+  font-family: 'Be Vietnam Pro', sans-serif;
+  letter-spacing: 0.04em;
+}
+/* Vertical text */
+.about-hero-vertical-text {
+  position: absolute;
+  left: -40px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-90deg);
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.18);
+  white-space: nowrap;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  z-index: 3;
+}
+.about-hero-logo {
+  position: absolute;
+  z-index: 1;
+  width: 220px;
+  opacity: 0.15;
+  top: 80px;
+  left: 100px;
+}
+/* ─── LOGO ANALYSIS SECTION ─── */
+.logo-section {
+  padding: 120px 100px;
+  background: var(--forest);
+  position: relative;
+  overflow: hidden;
+}
+.logo-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.logo-analysis-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 100px;
+  align-items: center;
+  margin-top: 80px;
+}
+.logo-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.logo-display-inner {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.logo-display-img {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  position: relative;
+  z-index: 2;
+  filter: brightness(1.1);
+}
+.logo-display-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 0.5px solid rgba(74,158,63,0.25);
+  animation: logoRingPulse 4s ease-in-out infinite;
+}
+.logo-ring-1 {
+  width: 260px;
+  height: 260px;
+  animation-delay: 0s;
+}
+.logo-ring-2 {
+  width: 320px;
+  height: 320px;
+  animation-delay: -2s;
+}
+@keyframes logoRingPulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.03); }
+}
+.logo-analysis-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.logo-analysis-item {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 24px;
+  padding: 32px 0;
+  border-bottom: 0.5px solid rgba(255,255,255,0.08);
+  transition: all 0.3s;
+  cursor: default;
+}
+.logo-analysis-item:first-child {
+  border-top: 0.5px solid rgba(255,255,255,0.08);
+}
+.logo-analysis-item:hover .logo-analysis-body {
+  transform: translateX(8px);
+}
+.logo-analysis-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  color: var(--gold);
+  letter-spacing: 0.1em;
+  padding-top: 4px;
+}
+.logo-analysis-body {
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+.logo-analysis-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--ivory);
+  margin-bottom: 10px;
+}
+.logo-analysis-desc {
+  font-size: 13px;
+  line-height: 1.85;
+  color: rgba(250,248,243,0.55);
+  font-weight: 300;
+}
+
+@media (max-width: 900px) {
+  .logo-analysis-grid { grid-template-columns: 1fr; gap: 48px; }
+  .logo-display-inner { width: 240px; height: 240px; }
+  .logo-display-img { width: 150px; height: 150px; }
+  .logo-ring-1 { width: 200px; height: 200px; }
+  .logo-ring-2 { width: 240px; height: 240px; }
+}

@@ -22,17 +22,25 @@ export default function Login() {
 
   const onSubmit = async (data) => {
     try {
-      setLoading(true);
-      const res = await authService.login(data);
-      setAuth(res.data.data.user, res.data.data.token);
-      toast.success("Đăng nhập thành công!");
-      navigate("/");
+      setLoading(true)
+      const res  = await authService.login(data)
+      const { user, token, isNew } = res.data.data
+
+      setAuth(user, token)
+
+      if (isNew) {
+        toast.success(`Chào mừng đến với Earthoria, ${user.name}! 🌿`, { duration: 4000 })
+      } else {
+        toast.success(`Chào mừng trở lại, ${user.name}!`)
+      }
+
+      navigate('/')
     } catch (err) {
-      toast.error(err.response?.data?.message || "Đăng nhập thất bại");
+      toast.error(err.response?.data?.message || 'Đăng nhập thất bại')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <main className="auth-page">

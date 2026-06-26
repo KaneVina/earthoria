@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import toast from 'react-hot-toast'
@@ -7,14 +7,20 @@ export default function GoogleAuthSuccess() {
   const navigate    = useNavigate()
   const [params]    = useSearchParams()
   const { setAuth } = useAuthStore()
+  const handled     = useRef(false) // chặn StrictMode chạy 2 lần
 
   useEffect(() => {
-    const token  = params.get('token')
-    const id     = params.get('id')
-    const name   = params.get('name')
-    const email  = params.get('email')
-    const avatar = params.get('avatar')
-    const role   = params.get('role')
+    if (handled.current) return
+    handled.current = true
+
+    const token    = params.get('token')
+    const id       = params.get('id')
+    const name     = params.get('name')
+    const email    = params.get('email')
+    const avatar   = params.get('avatar')
+    const role     = params.get('role')
+    // Backend trả về isNew=true nếu vừa tạo tài khoản lần đầu
+    const isNew    = params.get('isNew') === 'true'
 
     if (!token) {
       toast.error('Đăng nhập Google thất bại')
@@ -23,7 +29,13 @@ export default function GoogleAuthSuccess() {
     }
 
     setAuth({ id, name, email, avatar, role }, token)
-    toast.success(`Chào mừng, ${name}!`)
+
+    if (isNew) {
+      toast.success(`Chào mừng đến với Earthoria, ${name}! 🌿`, { duration: 4000 })
+    } else {
+      toast.success(`Chào mừng trở lại, ${name}!`)
+    }
+
     navigate('/')
   }, [])
 

@@ -5,6 +5,7 @@ import { bookService } from "../services/bookService";
 import { useCartStore } from "../store/cartStore";
 import { formatPrice, getBookUrl } from "../utils/helpers";
 import { useAuthStore } from "../store/authStore";
+import { useWishlistStore } from "../store/wishlistStore";
 import toast from "react-hot-toast";
 
 const CATEGORIES = [
@@ -331,22 +332,36 @@ function TagList({ tags, maxVisible = 2 }) {
 
 function ProductCard({ book, onAddToCart, delay }) {
   const navigate = useNavigate();
-  const [wishlisted, setWishlisted] = useState(book.wishlisted || false);
+  const { isAuthenticated } = useAuthStore();
+  const { isInWishlist, toggleWishlist } = useWishlistStore();
+  const wishlisted = isInWishlist(book.hashId);
 
-  // Truncate description to ~80 chars for consistency
+  const handleWishlist = async (e) => {
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      toast.error("Vui lòng đăng nhập để lưu yêu thích");
+      return;
+    }
+    if (!book.slug || !book.hashId) return;
+    await toggleWishlist(book.slug, book.hashId);
+  };
+
   const desc =
     book.desc || (book.description ? book.description.slice(0, 100) + "…" : "");
+  const ageLabel = book.ageRange || "4 – 10 tuổi";
+  const langLabel = book.language || "Tiếng Việt";
+  const tags = book.tags || [];
 
-const handleCardClick = () => {
-  if (!book.slug || !book.hashId) return;
-  navigate(`/books/${book.slug}/${book.hashId}`);
-};
+  const handleCardClick = () => {
+    if (!book.slug || !book.hashId) return;
+    navigate(`/books/${book.slug}/${book.hashId}`);
+  };
 
   return (
     <div
       className={`product-card reveal${delay ? ` reveal-delay-${delay}` : ""}`}
       onClick={handleCardClick}
-      style={{ cursor: "pointer" }}
+      style={{ cursor: "pointer", display: "flex", flexDirection: "column" }}
     >
       <div className="product-img-wrap">
         <img src={book.img || book.coverImage} alt={book.title} />
@@ -374,26 +389,47 @@ const handleCardClick = () => {
             {book.category?.name || book.category}
           </span>
         )}
-        <button
-          className={`card-wishlist${wishlisted ? " active" : ""}`}
-          onClick={(e) => {
-            e.stopPropagation();
-            setWishlisted((w) => !w);
+        {/* Wishlist + tooltip */}
+        <div
+          className="card-wishlist-wrap"
+          style={{
+            position: "absolute",
+            top: "16px",
+            right: "16px",
+            zIndex: 5,
           }}
-          style={wishlisted ? { opacity: 1, transform: "translateY(0)" } : {}}
+          onClick={(e) => e.stopPropagation()}
         >
-          <HeartIcon filled={wishlisted} />
-        </button>
+          <button
+            className={`card-wishlist${wishlisted ? " active" : ""}`}
+            onClick={handleWishlist}
+            style={{
+              opacity: 1,
+              transform: "translateY(0)",
+              position: "relative",
+            }}
+            aria-label="Yêu thích"
+          >
+            <HeartIcon filled={wishlisted} />
+          </button>
+          <span
+            className="card-action-tooltip"
+            style={{ right: "44px", top: "0", bottom: "auto" }}
+          >
+            {wishlisted ? "Bỏ yêu thích" : "Thêm yêu thích"}
+          </span>
+        </div>
       </div>
 
-      {/* product-body dùng flex column + flex-grow để footer luôn dính đáy */}
+      {/* Body */}
       <div
         className="product-body"
         style={{ display: "flex", flexDirection: "column", flex: 1 }}
       >
+        {/* Rating */}
         <StarRating rating={book.rating} count={book.reviewCount} />
 
-        {/* Title cố định 2 dòng */}
+        {/* Title — cố định 2 dòng */}
         <div
           className="product-title"
           style={{
@@ -401,49 +437,206 @@ const handleCardClick = () => {
             WebkitLineClamp: 2,
             WebkitBoxOrient: "vertical",
             overflow: "hidden",
-            height: "64px",
-            flex: "0 0 64px",
+            minHeight: "2.4em",
+            lineHeight: "1.2em",
+            flex: "0 0 auto",
           }}
         >
           {book.title}
         </div>
 
-        {/* Mô tả cố định 2 dòng, không xuống hàng thêm */}
+        {/* Desc — cố định 2 dòng */}
         <p
           className="product-desc"
           style={{
             display: "-webkit-box",
-            WebkitLineClamp: 3,
+            WebkitLineClamp: 2,
             WebkitBoxOrient: "vertical",
             overflow: "hidden",
-            height: "72px",
-            flex: "0 0 72px",
+            minHeight: "calc(1.7em * 2)",
+            flex: "0 0 auto",
           }}
         >
           {desc}
         </p>
 
-        {/* Tags chuyển xuống dưới mô tả, tối đa 2 tag + "+n" */}
-        <TagList tags={book.tags} maxVisible={2} />
+        {/* Age + Language */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            marginBottom: "10px",
+            flexWrap: "wrap",
+            flex: "0 0 auto",
+          }}
+        >
+          <span
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+              fontSize: "11px",
+              color: "var(--text-muted)",
+              fontWeight: 300,
+            }}
+          >
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            {ageLabel}
+          </span>
+          <span
+            style={{
+              width: "1px",
+              height: "12px",
+              background: "var(--border)",
+              flexShrink: 0,
+            }}
+          />
+          <span
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+              fontSize: "11px",
+              color: "var(--text-muted)",
+              fontWeight: 300,
+            }}
+          >
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+            {langLabel}
+          </span>
+        </div>
 
-       <div className="product-footer" style={{ marginTop: "auto" }}>
-  {book.salePrice && book.salePrice < book.price ? (
-    <div className="product-price-wrap">
-      <div className="product-price-old-row">
-        <span className="product-price-old">{formatPrice(book.price)}</span>
-        <span className="product-price-discount">
-          -{Math.round((1 - book.salePrice / book.price) * 100)}%
-        </span>
-      </div>
-      <span className="product-price">{formatPrice(book.salePrice)}</span>
-    </div>
-  ) : (
-    <span className="product-price">{formatPrice(book.price)}</span>
-  )}
-  <AddToCartBtn
-    onAdd={() => onAddToCart && onAddToCart(book.hashId)}
-  />
-</div>
+        {/* Tags — tối đa 2 hàng, overflow "..." */}
+        <div
+          style={{
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            marginBottom: "12px",
+            lineHeight: "26px",
+            minHeight: "52px",
+            flex: "0 0 auto",
+          }}
+        >
+          {tags.map((tag, idx) => (
+            <span
+              key={idx}
+              style={{
+                display: "inline-block",
+                fontSize: "9px",
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                padding: "4px 10px",
+                marginRight: "5px",
+                marginBottom: "5px",
+                border: "0.5px solid var(--border-gold)",
+                color: "var(--gold)",
+                background: "transparent",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        {/* Spacer */}
+        <div style={{ flex: 1 }} />
+
+        {/* Footer — giá + giỏ hàng */}
+        <div className="product-footer" style={{ alignItems: "center" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+            {book.oldPrice ||
+            (book.salePrice && book.salePrice < book.price) ? (
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "6px" }}
+              >
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "var(--text-muted)",
+                    textDecoration: "line-through",
+                    lineHeight: 1,
+                  }}
+                >
+                  {book.oldPrice || formatPrice(book.price)}
+                </span>
+                {book.discount && (
+                  <span
+                    style={{
+                      fontSize: "9px",
+                      letterSpacing: "0.1em",
+                      color: "#c05050",
+                      background: "rgba(192,80,80,0.08)",
+                      padding: "2px 6px",
+                    }}
+                  >
+                    {book.discount}
+                  </span>
+                )}
+                {!book.discount && book.salePrice && book.price && (
+                  <span
+                    style={{
+                      fontSize: "9px",
+                      letterSpacing: "0.1em",
+                      color: "#c05050",
+                      background: "rgba(192,80,80,0.08)",
+                      padding: "2px 6px",
+                    }}
+                  >
+                    -{Math.round((1 - book.salePrice / book.price) * 100)}%
+                  </span>
+                )}
+              </div>
+            ) : (
+              <div style={{ height: "16px" }} />
+            )}
+            <span className="product-price">
+              {book.price || formatPrice(book.salePrice)}
+            </span>
+          </div>
+
+          {/* Cart + tooltip */}
+          <div
+            className="card-action-wrap"
+            style={{ position: "relative" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <AddToCartBtn
+              onAdd={() => onAddToCart && onAddToCart(book.hashId)}
+            />
+            <span
+              className="card-action-tooltip"
+              style={{ right: "44px", bottom: "0", top: "auto" }}
+            >
+              Thêm vào giỏ hàng
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -474,16 +667,19 @@ export default function Shop() {
     }
   };
   const { data: books = [], isLoading } = useQuery({
-  queryKey: ["shop-books", activeCategory, sortValue],
-  queryFn: () =>
-    bookService
-      .getBooks({
-        category: activeCategory !== "all" ? activeCategory : undefined,
-        sort: sortValue === "Giá tăng dần" || sortValue === "Giá giảm dần" ? "price" : "createdAt",
-        order: sortValue === "Giá tăng dần" ? "asc" : "desc",
-      })
-      .then((r) => r.data.data.books || []),
-});
+    queryKey: ["shop-books", activeCategory, sortValue],
+    queryFn: () =>
+      bookService
+        .getBooks({
+          category: activeCategory !== "all" ? activeCategory : undefined,
+          sort:
+            sortValue === "Giá tăng dần" || sortValue === "Giá giảm dần"
+              ? "price"
+              : "createdAt",
+          order: sortValue === "Giá tăng dần" ? "asc" : "desc",
+        })
+        .then((r) => r.data.data.books || []),
+  });
 
   // Reveal on scroll
   useEffect(() => {
@@ -505,56 +701,90 @@ export default function Shop() {
       {/* SHOP HERO */}
       <div
         style={{
-          background: "var(--ivory)",
+          background: "var(--forest)",
           position: "relative",
           overflow: "hidden",
         }}
       >
+        {/* Video background — full opacity */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center right",
+            opacity: 1,
+            zIndex: 0,
+          }}
+        >
+          <source
+            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260402_054547_9875cfc5-155a-4229-8ec8-b7ba7125cbf8.mp4 "
+            type="video/mp4"
+          />
+        </video>
+
+        {/* Gradient overlay để chữ nổi bật */}
         <div
           style={{
             position: "absolute",
             inset: 0,
-            backgroundImage: "url('/asset/img/image.png')",
-            backgroundSize: "cover",
-            backgroundPosition: "center right",
-            opacity: 0.35,
-            zIndex: 0,
+            background:
+              "linear-gradient(90deg, rgba(13,43,30,0.95) 0%, rgba(13,43,30,0.75) 35%, rgba(13,43,30,0.18) 58%, transparent 100%)",
+            zIndex: 1,
           }}
         />
-        <div className="shop-hero" style={{ position: "relative", zIndex: 1 }}>
+
+        <div className="shop-hero" style={{ position: "relative", zIndex: 2 }}>
           <div className="shop-hero-left">
             <div className="page-eyebrow">
               <div className="page-eyebrow-line" />
-              <span className="page-eyebrow-text">Bộ Sưu Tập Earthoria</span>
+              <span
+                className="page-eyebrow-text"
+                style={{ color: "var(--gold)" }}
+              >
+                Bộ Sưu Tập Earthoria
+              </span>
             </div>
-            <h1 className="shop-hero-title reveal">
+            <h1
+              className="shop-hero-title reveal"
+              style={{ color: "var(--ivory)" }}
+            >
               Khám Phá
               <br />
               <em>Thư Viện</em>
               <br />
               Sách AR
             </h1>
-            <p className="shop-hero-sub reveal reveal-delay-1">
+            <p
+              className="shop-hero-sub reveal reveal-delay-1"
+              style={{ color: "rgba(250,248,243,0.75)" }}
+            >
               Mỗi cuốn sách là một cổng thông tin sống động — nơi thiên nhiên
               hiện ra qua lăng kính công nghệ tăng cường và trí tuệ nhân tạo.
             </p>
           </div>
           <div className="shop-hero-right reveal">
-            <div className="shop-result-count">18</div>
-            <div className="shop-result-label">Sản phẩm</div>
+            <div
+              className="shop-result-count"
+              style={{ color: "rgba(250,248,243,0.15)" }}
+            >
+              18
+            </div>
+            <div
+              className="shop-result-label"
+              style={{ color: "rgba(250,248,243,0.5)" }}
+            >
+              Sản phẩm
+            </div>
           </div>
         </div>
       </div>
-
-      {/* BREADCRUMB */}
-      <div className="breadcrumb">
-        <Link to="/" className="breadcrumb-item">
-          Trang chủ
-        </Link>
-        <span className="breadcrumb-sep">›</span>
-        <span className="breadcrumb-current">Cửa hàng</span>
-      </div>
-
       {/* MARQUEE */}
       <div className="marquee-section">
         <div className="marquee-track">

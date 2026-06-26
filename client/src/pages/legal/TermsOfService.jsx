@@ -920,8 +920,8 @@ export default function TermsOfService() {
                 Đội ngũ pháp lý của Earthoria luôn sẵn sàng giải đáp mọi thắc
                 mắc của bạn.
               </p>
-              <a href="mailto:legal@earthoria.vn" className="legal-sidebar-card-link">
-                legal@earthoria.vn
+              <a href="mailto:helpdesk.earthoria@gmail.com" className="legal-sidebar-card-link">
+                helpdesk.earthoria@gmail.com
               </a>
             </div>
           </div>
@@ -1015,9 +1015,9 @@ export default function TermsOfService() {
             <em>luôn sẵn sàng lắng nghe</em>
           </h2>
           <div className="legal-contact-grid reveal">
-            <a href="mailto:legal@earthoria.vn" className="legal-contact-item">
+            <a href="mailto:helpdesk.earthoria@gmail.com" className="legal-contact-item">
               <Mail size={15} />
-              legal@earthoria.vn
+              helpdesk.earthoria@gmail.com
             </a>
             <a href="tel:19006868" className="legal-contact-item">
               <Phone size={15} />

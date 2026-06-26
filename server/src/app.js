@@ -34,6 +34,7 @@ v1.use('/categories', require('./routes/categoryRoutes'))
 v1.use('/cart',       require('./routes/cartRoutes'))
 v1.use('/orders',     require('./routes/orderRoutes'))
 v1.use('/admin',      require('./routes/adminRoutes'))
+v1.use('/addresses', require('./routes/addressRoutes'))
 
 app.use('/api/v1', v1)
 

@@ -48,6 +48,8 @@ model Address {
   ward      String
   street    String
   isDefault Boolean @default(false)
+  lat       Float?
+  lng       Float?
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   orders Order[]
