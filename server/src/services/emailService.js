@@ -1,22 +1,8 @@
-const nodemailer = require('nodemailer')
-
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  port: Number(process.env.EMAIL_PORT) || 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-})
+const { Resend } = require('resend')
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 async function verifyEmailTransport() {
-  try {
-    await transporter.verify()
-    console.log('✓ Email transporter ready')
-  } catch (err) {
-    console.error('✗ Email transporter failed:', err.message)
-  }
+  console.log('✓ Resend email service ready')
 }
 
 function wrapEmailTemplate({ preheader, bodyHtml, ctaUrl }) {
@@ -71,7 +57,6 @@ function wrapEmailTemplate({ preheader, bodyHtml, ctaUrl }) {
   <!-- FOOTER -->
   <tr>
     <td style="background:#0b2e2b;border-radius:0 0 12px 12px;overflow:hidden;">
-
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
         <tr>
           <td style="padding:32px 40px 24px;">
@@ -106,7 +91,6 @@ function wrapEmailTemplate({ preheader, bodyHtml, ctaUrl }) {
           </td>
         </tr>
       </table>
-
     </td>
   </tr>
 
@@ -153,14 +137,14 @@ async function sendOtpEmail({ to, name, otp }) {
     <div style="background:rgba(74,158,63,0.04);border:1px solid rgba(74,158,63,0.14);border-radius:8px;padding:16px 20px;margin-bottom:32px;">
       <p style="font-size:12px;color:#5a6b60;line-height:1.85;font-weight:300;margin:0;font-family:'Be Vietnam Pro',Arial,sans-serif;">
         <strong style="color:#0b2e2b;font-weight:500;">Lưu ý bảo mật:</strong>
-        Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email này và tài khoản của bạn được an toàn. Chúng tôi gửi email này để thông báo cho bạn biết về Tài khoản Earthoria và dịch vụ của bạn.
+        Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email này và tài khoản của bạn được an toàn.
         Không chia sẻ mã này với bất kỳ ai và không chuyển tiếp email này, kể cả nhân viên Earthoria.
       </p>
     </div>
   `
 
-  return transporter.sendMail({
-    from: `"${process.env.EMAIL_FROM_NAME || 'Earthoria'}" <${process.env.EMAIL_USER}>`,
+  return resend.emails.send({
+    from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <onboarding@resend.dev>`,
     to,
     subject: `${otp} — Mã xác thực Earthoria của bạn`,
     html: wrapEmailTemplate({
@@ -206,8 +190,8 @@ async function sendPasswordChangedEmail({ to, name }) {
     </div>
   `
 
-  return transporter.sendMail({
-    from: `"${process.env.EMAIL_FROM_NAME || 'Earthoria'}" <${process.env.EMAIL_USER}>`,
+  return resend.emails.send({
+    from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <onboarding@resend.dev>`,
     to,
     subject: 'Mật khẩu Earthoria của bạn đã được thay đổi',
     html: wrapEmailTemplate({
@@ -218,7 +202,6 @@ async function sendPasswordChangedEmail({ to, name }) {
 }
 
 module.exports = {
-  transporter,
   verifyEmailTransport,
   sendOtpEmail,
   sendPasswordChangedEmail,

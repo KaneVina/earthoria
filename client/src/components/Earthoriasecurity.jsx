@@ -240,12 +240,10 @@ function checkWindowSize() {
 }
 
 function checkConsole() {
-  // ❌ Disabled — React DevTools extension triggers false positives
   return false;
 }
 
 function checkToString() {
-  // ❌ Disabled — React DevTools extension triggers false positives
   return false;
 }
 

@@ -39,7 +39,6 @@ const ProtectedRoute = ({ children }) => {
 
 const AdminRoute = ({ children }) => {
   const { user, isAuthenticated } = useAuthStore();
-  console.log('AdminRoute check:', { isAuthenticated, role: user?.role });
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (user?.role !== "ADMIN") return <Navigate to="/" replace />;
   return children;
@@ -47,7 +46,6 @@ const AdminRoute = ({ children }) => {
 
 const GuestRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
-  console.log('GuestRoute check:', { isAuthenticated });
   return !isAuthenticated ? children : <Navigate to="/" replace />;
 };
 
