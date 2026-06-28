@@ -19,24 +19,27 @@ import { useWishlistStore } from "../../store/wishlistStore";
 import { useTheme } from "../../hooks/useTheme";
 import toast from "react-hot-toast";
 import logoImg from "../assets/img/logoBT-ngangtext.png";
-// import {toggleCursorEffect} from "./CustomCursor";
+import SearchOverlay from "./SearchOverlay";
 
 const logoCompactImg = "/logo-nho.png";
-import SearchOverlay from "./SearchOverlay";
-// import '../../assets/navbar.css'
 
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
+
+  // ── Stores ──────────────────────────────────────────
   const { user, isAuthenticated, logout } = useAuthStore();
   const { itemCount, fetchCart } = useCartStore();
   const { wishlistCount, fetchWishlist } = useWishlistStore();
   const { isDark, toggleTheme } = useTheme();
+
+  // ── State ────────────────────────────────────────────
   const [scrolled, setScrolled] = useState(false);
   const [progress, setProgress] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
+  // ── Effects ──────────────────────────────────────────
   useEffect(() => {
     if (isAuthenticated) {
       fetchCart();
@@ -48,8 +51,6 @@ export default function Navbar() {
     const handler = () => {
       const scrollY = window.scrollY;
       setScrolled(scrollY > 60);
-
-      // Progress bar
       const height =
         document.documentElement.scrollHeight -
         document.documentElement.clientHeight;
@@ -65,19 +66,17 @@ export default function Navbar() {
     setSearchOpen(false);
   }, [location.pathname, location.search]);
 
+  // ── Helpers ───────────────────────────────────────────
   const handleLogout = () => {
     logout();
     toast.success("Đã đăng xuất");
     navigate("/");
   };
 
-  // Trang chủ active cho cả "/" và "/home"
   const isHome = location.pathname === "/" || location.pathname === "/home";
 
   const isActive = (to) => {
-    if (to === "/home") {
-      return isHome;
-    }
+    if (to === "/home") return isHome;
     const [path, query] = to.split("?");
     if (query) {
       return location.pathname === path && location.search === `?${query}`;
@@ -86,20 +85,20 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { to: "/home", label: "Trang chủ" },
-    { to: "/shop", label: "Cửa hàng" },
-    { to: "/blog", label: "Tin tức" },
-    { to: "/about", label: "Về chúng tôi" },
+    { to: "/home",    label: "Trang chủ" },
+    { to: "/shop",    label: "Cửa hàng" },
+    { to: "/blog",    label: "Tin tức" },
+    { to: "/about",   label: "Về chúng tôi" },
     { to: "/contact", label: "Liên hệ" },
-
   ];
 
   const firstLetter = user?.name?.trim()?.charAt(0)?.toUpperCase() || "?";
   const isAdmin = user?.role === "ADMIN";
   const roleMeta = isAdmin
-    ? { label: "Quản Trị Viên", color: "#b8862e", bg: "rgba(184,134,46,0.08)", border: "rgba(184,134,46,0.25)", dot: "#b8862e" }
-    : { label: "Thành Viên",    color: "#4a9e3f", bg: "rgba(74,158,63,0.08)",  border: "rgba(74,158,63,0.22)",  dot: "#4a9e3f" };
+    ? { label: "Quản Trị Viên", color: "#b8862e", bg: "rgba(184,134,46,0.08)", border: "rgba(184,134,46,0.25)" }
+    : { label: "Thành Viên",    color: "#4a9e3f", bg: "rgba(74,158,63,0.08)",  border: "rgba(74,158,63,0.22)"  };
 
+  // ── Render ────────────────────────────────────────────
   return (
     <>
       {/* Progress bar */}
@@ -108,24 +107,14 @@ export default function Navbar() {
       <nav
         id="navbar"
         className={scrolled ? "is-scrolled" : ""}
-        style={{
-          boxShadow: scrolled ? "0 8px 32px rgba(13,43,30,0.06)" : "none",
-        }}
+        style={{ boxShadow: scrolled ? "0 8px 32px rgba(13,43,30,0.06)" : "none" }}
       >
         <div className="nav-inner">
-          {/* Logo — chuyển mượt từ logo ngang sang logo nhỏ khi cuộn */}
+          {/* Logo */}
           <Link to="/" className="nav-logo">
             <span className="nav-logo-swap">
-              <img
-                src={logoImg}
-                alt="EARTHORIA"
-                className="nav-logo-full"
-              />
-              <img
-                src={logoCompactImg}
-                alt="EARTHORIA"
-                className="nav-logo-compact"
-              />
+              <img src={logoImg}        alt="EARTHORIA" className="nav-logo-full" />
+              <img src={logoCompactImg} alt="EARTHORIA" className="nav-logo-compact" />
             </span>
           </Link>
 
@@ -133,10 +122,7 @@ export default function Navbar() {
           <ul className="nav-links">
             {navLinks.map((link) => (
               <li key={link.to}>
-                <Link
-                  to={link.to}
-                  className={isActive(link.to) ? "active" : ""}
-                >
+                <Link to={link.to} className={isActive(link.to) ? "active" : ""}>
                   {link.label}
                 </Link>
               </li>
@@ -145,7 +131,6 @@ export default function Navbar() {
 
           {/* Actions */}
           <div className="nav-actions">
-            {/* Cụm 4 icon: search / theme / wishlist / cart */}
             <div className="nav-icon-group">
               {/* Search */}
               <button
@@ -164,11 +149,7 @@ export default function Navbar() {
                 aria-label="Chuyển chế độ sáng/tối"
                 data-tooltip={isDark ? "Chế độ sáng" : "Chế độ tối"}
               >
-                {isDark ? (
-                  <Sun size={16} strokeWidth={1.8} />
-                ) : (
-                  <Moon size={16} strokeWidth={1.8} />
-                )}
+                {isDark ? <Sun size={16} strokeWidth={1.8} /> : <Moon size={16} strokeWidth={1.8} />}
               </button>
 
               {/* Wishlist */}
@@ -221,7 +202,14 @@ export default function Navbar() {
 
                 <div className="user-dropdown" style={{ minWidth: "100%", width: "max-content" }}>
                   <div className="user-dropdown-header">
-                    <span className="user-dropdown-avatar" style={{ background: isAdmin ? "linear-gradient(135deg,#b8862e,#d4a843)" : undefined }}>
+                    <span
+                      className="user-dropdown-avatar"
+                      style={{
+                        background: isAdmin
+                          ? "linear-gradient(135deg,#b8862e,#d4a843)"
+                          : undefined,
+                      }}
+                    >
                       {firstLetter}
                     </span>
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -229,29 +217,45 @@ export default function Navbar() {
                       {user?.email && (
                         <div className="user-dropdown-email">{user.email}</div>
                       )}
-                      <div style={{
-                        display: "inline-flex", alignItems: "center", gap: "5px",
-                        marginTop: "6px", padding: "3px 8px",
-                        background: roleMeta.bg,
-                        border: `0.5px solid ${roleMeta.border}`,
-                        borderRadius: "2px",
-                      }}>
-                        <span style={{
-                          fontSize: "9px", letterSpacing: "0.16em",
-                          textTransform: "uppercase", color: roleMeta.color,
-                          fontWeight: 500, fontFamily: "'Be Vietnam Pro', sans-serif",
-                        }}>
+                      <div
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "5px",
+                          marginTop: "6px",
+                          padding: "3px 8px",
+                          background: roleMeta.bg,
+                          border: `0.5px solid ${roleMeta.border}`,
+                          borderRadius: "2px",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: "9px",
+                            letterSpacing: "0.16em",
+                            textTransform: "uppercase",
+                            color: roleMeta.color,
+                            fontWeight: 500,
+                            fontFamily: "'Be Vietnam Pro', sans-serif",
+                          }}
+                        >
                           {roleMeta.label}
                         </span>
                       </div>
                     </div>
                   </div>
+
                   <Link to="/profile" className="user-dropdown-item">
                     <User size={16} /> Hồ sơ của tôi
                   </Link>
-                  <Link to="/orders" className="user-dropdown-item">
+                  <Link to="/profile" className="user-dropdown-item">
                     <Package size={16} /> Đơn hàng
                   </Link>
+                  {isAdmin && (
+                    <Link to="/dashboard" className="user-dropdown-item">
+                      <User size={16} /> Quản trị
+                    </Link>
+                  )}
                   <button
                     type="button"
                     className="user-dropdown-item logout"
@@ -297,10 +301,10 @@ export default function Navbar() {
           ))}
           {isAdmin && (
             <Link
-              to="/admin"
-              className={`nav-mobile-link ${isActive("/admin") ? "active" : ""}`}
+              to="/dashboard"
+              className={`nav-mobile-link ${isActive("/dashboard") ? "active" : ""}`}
             >
-              Admin
+              Quản trị
             </Link>
           )}
 
@@ -311,7 +315,7 @@ export default function Navbar() {
               <Link to="/profile" className="nav-mobile-link">
                 <User size={15} /> Hồ sơ của tôi
               </Link>
-              <Link to="/orders" className="nav-mobile-link">
+              <Link to="/profile" className="nav-mobile-link">
                 <Package size={15} /> Đơn hàng
               </Link>
               <button
@@ -325,27 +329,25 @@ export default function Navbar() {
           ) : (
             <div className="nav-mobile-auth">
               <Link to="/login" style={{ width: "100%" }}>
-                <button className="btn-ghost" style={{ width: "100%" }}>
-                  Đăng nhập
-                </button>
+                <button className="btn-ghost" style={{ width: "100%" }}>Đăng nhập</button>
               </Link>
               <Link to="/register" style={{ width: "100%" }}>
-                <button className="btn-primary" style={{ width: "100%" }}>
-                  Đăng ký
-                </button>
+                <button className="btn-primary" style={{ width: "100%" }}>Đăng ký</button>
               </Link>
             </div>
           )}
         </div>
       </nav>
 
+      {/* Search Overlay */}
       <SearchOverlay
         isOpen={searchOpen}
-        onOpen={() => setSearchOpen(true)}
         onClose={() => setSearchOpen(false)}
+        onOpen={() => setSearchOpen(true)}
         isAuthenticated={isAuthenticated}
         isAdmin={isAdmin}
         onLogout={handleLogout}
+        getProductLink={(b) => `/books/${b.slug}/${b.hashId}`}
       />
     </>
   );
