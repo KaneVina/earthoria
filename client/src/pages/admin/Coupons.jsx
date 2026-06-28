@@ -1,205 +1,332 @@
-// Coupons.jsx
+// Coupons.jsx — Admin coupon management
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Plus, ToggleLeft, ToggleRight, X } from 'lucide-react'
 import api from '../../services/api'
 import { formatDate, formatPrice } from '../../utils/helpers'
 import toast from 'react-hot-toast'
 import AdminLayout from './AdminLayout'
 
-const inputStyle = {
-  background: '#F7F6F2', border: '1px solid rgba(13,51,48,0.12)',
-  borderRadius: 6, padding: '9px 13px', fontSize: 13, color: '#0D3330',
-  outline: 'none', width: '100%', fontFamily: 'Be Vietnam Pro, sans-serif',
-  transition: 'border-color 0.15s',
-}
-const labelStyle = {
-  fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase',
-  color: 'rgba(13,51,48,0.45)', marginBottom: 6, display: 'block', fontWeight: 500,
+const EMPTY_FORM = {
+  code: '', type: 'PERCENTAGE', value: '',
+  minOrder: '', maxDiscount: '', usageLimit: '', expiresAt: '',
 }
 
 export default function Coupons() {
   const qc = useQueryClient()
-  const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ code: '', type: 'PERCENTAGE', value: '', minOrder: '', maxDiscount: '', usageLimit: '', expiresAt: '' })
 
+  const [showForm, setShowForm] = useState(false)
+  const [form, setForm]         = useState(EMPTY_FORM)
+
+  /* ── Queries ── */
   const { data: coupons = [], isLoading } = useQuery({
     queryKey: ['admin-coupons'],
-    queryFn: () => api.get('/admin/coupons').then(r => r.data.data)
-  })
-  const createMutation = useMutation({
-    mutationFn: (data) => api.post('/admin/coupons', data),
-    onSuccess: () => {
-      toast.success('Tạo mã thành công!')
-      qc.invalidateQueries(['admin-coupons'])
-      setShowForm(false)
-      setForm({ code: '', type: 'PERCENTAGE', value: '', minOrder: '', maxDiscount: '', usageLimit: '', expiresAt: '' })
-    },
-    onError: (e) => toast.error(e.response?.data?.message || 'Lỗi!')
-  })
-  const toggleMutation = useMutation({
-    mutationFn: (id) => api.put(`/admin/coupons/${id}/toggle`),
-    onSuccess: () => { toast.success('Cập nhật!'); qc.invalidateQueries(['admin-coupons']) }
+    queryFn:  () => api.get('/admin/coupons').then(r => r.data.data),
   })
 
+  /* ── Mutations ── */
+  const createMutation = useMutation({
+    mutationFn: (payload) => api.post('/admin/coupons', payload),
+    onSuccess: () => {
+      toast.success('Tạo mã giảm giá thành công!')
+      qc.invalidateQueries(['admin-coupons'])
+      closeForm()
+    },
+    onError: (e) => toast.error(e.response?.data?.message || 'Tạo mã thất bại!'),
+  })
+
+  const toggleMutation = useMutation({
+    mutationFn: (id) => api.put(`/admin/coupons/${id}/toggle`),
+    onSuccess: () => {
+      toast.success('Cập nhật trạng thái mã!')
+      qc.invalidateQueries(['admin-coupons'])
+    },
+    onError: () => toast.error('Cập nhật thất bại!'),
+  })
+
+  /* ── Helpers ── */
+  const closeForm = () => {
+    setShowForm(false)
+    setForm(EMPTY_FORM)
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    const payload = {
+      ...form,
+      value:        Number(form.value)       || 0,
+      minOrder:     Number(form.minOrder)    || undefined,
+      maxDiscount:  Number(form.maxDiscount) || undefined,
+      usageLimit:   Number(form.usageLimit)  || undefined,
+      expiresAt:    form.expiresAt || undefined,
+    }
+    createMutation.mutate(payload)
+  }
+
+  const f = (key) => (e) => setForm(prev => ({
+    ...prev,
+    [key]: key === 'code' ? e.target.value.toUpperCase() : e.target.value,
+  }))
+
+  /* ── Derived counts ── */
   const activeCount = coupons.filter(c => c.isActive).length
 
   return (
-    <AdminLayout currentPath="/admin/coupons">
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 28 }}>
+    <AdminLayout>
+
+      {/* ── Header ── */}
+      <div className="a-page-header">
         <div>
-          <p style={{ fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(13,51,48,0.4)', marginBottom: 6 }}>Quản lý</p>
-          <h1 style={{ fontFamily: 'Playfair Display, serif', fontSize: 'clamp(24px,2.5vw,34px)', fontWeight: 300, color: '#0D3330' }}>
-            Mã Giảm <em style={{ fontStyle: 'italic', color: '#C9A84C' }}>Giá</em>
-          </h1>
+          <p className="a-page-eyebrow">Quản lý</p>
+          <h1 className="a-page-title">Mã Giảm <em>Giá</em></h1>
         </div>
-        <button onClick={() => setShowForm(true)} style={primaryBtnStyle}>
-          <Plus size={13} /> Tạo mã mới
+        <button className="a-btn-primary" onClick={() => setShowForm(true)}>
+          <Plus size={13} />
+          Tạo mã mới
         </button>
       </div>
 
-      {/* Summary row */}
-      <div style={{ display: 'flex', gap: 14, marginBottom: 22 }}>
-        {[
-          { label: 'Tổng mã', value: coupons.length },
-          { label: 'Đang hoạt động', value: activeCount, highlight: true },
-          { label: 'Đã tắt', value: coupons.length - activeCount },
-        ].map((s, i) => (
-          <div key={i} style={{ background: '#fff', borderRadius: 8, border: '1px solid rgba(13,51,48,0.08)', padding: '14px 20px', minWidth: 120 }}>
-            <div style={{ fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(13,51,48,0.4)', marginBottom: 6 }}>{s.label}</div>
-            <div style={{ fontFamily: 'Playfair Display, serif', fontSize: 28, fontWeight: 300, color: s.highlight ? '#C9A84C' : '#0D3330', lineHeight: 1 }}>{isLoading ? '—' : s.value}</div>
-          </div>
-        ))}
+      {/* ── Mini stats ── */}
+      <div className="a-mini-stats">
+        <div className="a-mini-stat">
+          <div className="a-mini-stat-label">Tổng mã</div>
+          <div className="a-mini-stat-value">{isLoading ? '—' : coupons.length}</div>
+        </div>
+        <div className="a-mini-stat">
+          <div className="a-mini-stat-label">Đang hoạt động</div>
+          <div className="a-mini-stat-value accent">{isLoading ? '—' : activeCount}</div>
+        </div>
+        <div className="a-mini-stat">
+          <div className="a-mini-stat-label">Đã tắt</div>
+          <div className="a-mini-stat-value">{isLoading ? '—' : coupons.length - activeCount}</div>
+        </div>
       </div>
 
-      {/* Modal */}
+      {/* ── Table ── */}
+      <div className="a-table-card">
+        <div className="a-table-wrap">
+          <table className="a-table">
+            <thead>
+              <tr>
+                {['Mã code', 'Loại', 'Giá trị', 'Đơn tối thiểu', 'Giảm tối đa', 'Đã dùng', 'Hết hạn', 'Trạng thái', ''].map(h => (
+                  <th key={h}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={9} style={{ padding: 48, textAlign: 'center', color: 'rgba(13,51,48,0.3)' }}>
+                    Đang tải...
+                  </td>
+                </tr>
+              ) : !coupons.length ? (
+                <tr>
+                  <td colSpan={9} style={{ padding: 48, textAlign: 'center', color: 'rgba(13,51,48,0.3)' }}>
+                    Chưa có mã giảm giá nào
+                  </td>
+                </tr>
+              ) : coupons.map(coupon => (
+                <tr key={coupon.id}>
+                  {/* Code */}
+                  <td>
+                    <span className="a-code-badge">{coupon.code}</span>
+                  </td>
+
+                  {/* Type */}
+                  <td>
+                    <span className="a-badge neutral">
+                      {coupon.type === 'PERCENTAGE' ? 'Phần trăm' : 'Cố định'}
+                    </span>
+                  </td>
+
+                  {/* Value */}
+                  <td style={{ fontFamily: 'var(--a-font-serif)', fontSize: 15, color: 'var(--a-green)', fontWeight: 600 }}>
+                    {coupon.type === 'PERCENTAGE'
+                      ? `${coupon.value}%`
+                      : formatPrice(coupon.value)
+                    }
+                  </td>
+
+                  {/* Min order */}
+                  <td className="a-td-muted">
+                    {coupon.minOrder > 0 ? formatPrice(coupon.minOrder) : '—'}
+                  </td>
+
+                  {/* Max discount */}
+                  <td className="a-td-muted">
+                    {coupon.maxDiscount > 0 ? formatPrice(coupon.maxDiscount) : '—'}
+                  </td>
+
+                  {/* Usage */}
+                  <td style={{ fontSize: 12 }}>
+                    {coupon.usedCount ?? 0}
+                    {coupon.usageLimit
+                      ? <span className="a-td-muted">/{coupon.usageLimit}</span>
+                      : <span className="a-td-muted">/∞</span>
+                    }
+                  </td>
+
+                  {/* Expires */}
+                  <td className="a-td-muted">
+                    {coupon.expiresAt ? formatDate(coupon.expiresAt) : 'Không giới hạn'}
+                  </td>
+
+                  {/* Status */}
+                  <td>
+                    <span className={`a-badge ${coupon.isActive ? 'success' : 'danger'}`}>
+                      {coupon.isActive ? 'Hoạt động' : 'Tắt'}
+                    </span>
+                  </td>
+
+                  {/* Toggle */}
+                  <td>
+                    <button
+                      className={`a-btn-icon ${coupon.isActive ? 'toggle-on' : 'toggle-off'}`}
+                      onClick={() => toggleMutation.mutate(coupon.id)}
+                      aria-label={coupon.isActive ? 'Tắt mã' : 'Bật mã'}
+                      title={coupon.isActive ? 'Tắt mã' : 'Bật mã'}
+                    >
+                      {coupon.isActive
+                        ? <ToggleRight size={14} />
+                        : <ToggleLeft  size={14} />
+                      }
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ══ CREATE MODAL ══ */}
       {showForm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div style={{ background: '#fff', width: '100%', maxWidth: 540, borderRadius: 12, boxShadow: '0 24px 80px rgba(0,0,0,0.18)' }}>
-            <div style={{ padding: '22px 28px', borderBottom: '1px solid rgba(13,51,48,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: 20, fontWeight: 400, color: '#0D3330' }}>Tạo mã giảm giá</h3>
-              <button onClick={() => setShowForm(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 20, color: 'rgba(13,51,48,0.35)' }}>×</button>
+        <div
+          className="a-modal-overlay"
+          onClick={e => e.target === e.currentTarget && closeForm()}
+        >
+          <div className="a-modal">
+            <div className="a-modal-header">
+              <h3 className="a-modal-title">Tạo mã giảm giá</h3>
+              <button className="a-modal-close" onClick={closeForm} aria-label="Đóng">
+                <X size={16} />
+              </button>
             </div>
-            <form onSubmit={e => { e.preventDefault(); createMutation.mutate(form) }} style={{ padding: 28 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                <div style={{ gridColumn: 'span 2' }}>
-                  <label style={labelStyle}>Mã code *</label>
-                  <input style={{ ...inputStyle, textTransform: 'uppercase', fontFamily: 'monospace', fontSize: 14, letterSpacing: '0.06em' }}
-                    value={form.code} onChange={e => setForm({ ...form, code: e.target.value.toUpperCase() })} required placeholder="VD: EARTH15"
-                    onFocus={e => e.target.style.borderColor = '#C9A84C'} onBlur={e => e.target.style.borderColor = 'rgba(13,51,48,0.12)'} />
-                </div>
-                <div>
-                  <label style={labelStyle}>Loại giảm giá *</label>
-                  <select style={{ ...inputStyle, appearance: 'none', cursor: 'pointer' }} value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
-                    <option value="PERCENTAGE">Phần trăm (%)</option>
-                    <option value="FIXED">Cố định (VNĐ)</option>
-                  </select>
-                </div>
-                <div>
-                  <label style={labelStyle}>Giá trị *</label>
-                  <input style={inputStyle} type="number" value={form.value} onChange={e => setForm({ ...form, value: e.target.value })} required
-                    placeholder={form.type === 'PERCENTAGE' ? '15' : '50000'}
-                    onFocus={e => e.target.style.borderColor = '#C9A84C'} onBlur={e => e.target.style.borderColor = 'rgba(13,51,48,0.12)'} />
-                </div>
-                <div>
-                  <label style={labelStyle}>Đơn tối thiểu</label>
-                  <input style={inputStyle} type="number" value={form.minOrder} onChange={e => setForm({ ...form, minOrder: e.target.value })} placeholder="200000"
-                    onFocus={e => e.target.style.borderColor = '#C9A84C'} onBlur={e => e.target.style.borderColor = 'rgba(13,51,48,0.12)'} />
-                </div>
-                <div>
-                  <label style={labelStyle}>Giảm tối đa</label>
-                  <input style={inputStyle} type="number" value={form.maxDiscount} onChange={e => setForm({ ...form, maxDiscount: e.target.value })} placeholder="100000"
-                    onFocus={e => e.target.style.borderColor = '#C9A84C'} onBlur={e => e.target.style.borderColor = 'rgba(13,51,48,0.12)'} />
-                </div>
-                <div>
-                  <label style={labelStyle}>Giới hạn dùng</label>
-                  <input style={inputStyle} type="number" value={form.usageLimit} onChange={e => setForm({ ...form, usageLimit: e.target.value })} placeholder="100"
-                    onFocus={e => e.target.style.borderColor = '#C9A84C'} onBlur={e => e.target.style.borderColor = 'rgba(13,51,48,0.12)'} />
-                </div>
-                <div>
-                  <label style={labelStyle}>Hết hạn</label>
-                  <input style={inputStyle} type="date" value={form.expiresAt} onChange={e => setForm({ ...form, expiresAt: e.target.value })}
-                    onFocus={e => e.target.style.borderColor = '#C9A84C'} onBlur={e => e.target.style.borderColor = 'rgba(13,51,48,0.12)'} />
+
+            <form onSubmit={handleSubmit}>
+              <div className="a-modal-body">
+                <div className="a-form-grid">
+
+                  {/* Code */}
+                  <div className="a-form-group span-2">
+                    <label className="a-form-label">Mã code *</label>
+                    <input
+                      className="a-input code"
+                      value={form.code}
+                      onChange={f('code')}
+                      required
+                      placeholder="VD: EARTH20"
+                      autoComplete="off"
+                    />
+                  </div>
+
+                  {/* Type */}
+                  <div className="a-form-group">
+                    <label className="a-form-label">Loại giảm giá *</label>
+                    <select className="a-input a-select" value={form.type} onChange={f('type')}>
+                      <option value="PERCENTAGE">Phần trăm (%)</option>
+                      <option value="FIXED">Cố định (VNĐ)</option>
+                    </select>
+                  </div>
+
+                  {/* Value */}
+                  <div className="a-form-group">
+                    <label className="a-form-label">Giá trị *</label>
+                    <input
+                      className="a-input"
+                      type="number"
+                      value={form.value}
+                      onChange={f('value')}
+                      required
+                      min={1}
+                      max={form.type === 'PERCENTAGE' ? 100 : undefined}
+                      placeholder={form.type === 'PERCENTAGE' ? '20' : '50000'}
+                    />
+                  </div>
+
+                  {/* Min order */}
+                  <div className="a-form-group">
+                    <label className="a-form-label">Đơn tối thiểu</label>
+                    <input
+                      className="a-input"
+                      type="number"
+                      value={form.minOrder}
+                      onChange={f('minOrder')}
+                      placeholder="200000"
+                      min={0}
+                    />
+                  </div>
+
+                  {/* Max discount — only for PERCENTAGE */}
+                  <div className="a-form-group">
+                    <label className="a-form-label">Giảm tối đa</label>
+                    <input
+                      className="a-input"
+                      type="number"
+                      value={form.maxDiscount}
+                      onChange={f('maxDiscount')}
+                      placeholder="100000"
+                      min={0}
+                      disabled={form.type === 'FIXED'}
+                      style={form.type === 'FIXED' ? { opacity: 0.4 } : {}}
+                    />
+                  </div>
+
+                  {/* Usage limit */}
+                  <div className="a-form-group">
+                    <label className="a-form-label">Giới hạn lượt dùng</label>
+                    <input
+                      className="a-input"
+                      type="number"
+                      value={form.usageLimit}
+                      onChange={f('usageLimit')}
+                      placeholder="100 (để trống = không giới hạn)"
+                      min={1}
+                    />
+                  </div>
+
+                  {/* Expiry date */}
+                  <div className="a-form-group">
+                    <label className="a-form-label">Ngày hết hạn</label>
+                    <input
+                      className="a-input"
+                      type="date"
+                      value={form.expiresAt}
+                      onChange={f('expiresAt')}
+                    />
+                  </div>
+
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: 10, marginTop: 24 }}>
-                <button type="submit" style={primaryBtnStyle} disabled={createMutation.isPending}>Tạo mã</button>
-                <button type="button" onClick={() => setShowForm(false)} style={ghostBtnStyle}>Hủy</button>
+
+              <div className="a-modal-footer">
+                <button
+                  type="submit"
+                  className="a-btn-primary"
+                  disabled={createMutation.isPending}
+                >
+                  {createMutation.isPending ? 'Đang tạo...' : 'Tạo mã'}
+                </button>
+                <button type="button" className="a-btn-ghost" onClick={closeForm}>
+                  Hủy
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Table */}
-      <div style={{ background: '#fff', borderRadius: 10, border: '1px solid rgba(13,51,48,0.08)', overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ background: '#FAFAF8' }}>
-              {['Mã', 'Loại', 'Giá trị', 'Đơn tối thiểu', 'Đã dùng', 'Hết hạn', 'Trạng thái', ''].map(h => (
-                <th key={h} style={{ padding: '11px 18px', textAlign: 'left', fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'rgba(13,51,48,0.4)', fontWeight: 500 }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr><td colSpan={8} style={{ padding: 48, textAlign: 'center', color: 'rgba(13,51,48,0.3)', fontSize: 13 }}>Đang tải...</td></tr>
-            ) : coupons.map(coupon => (
-              <tr key={coupon.id} style={{ borderTop: '1px solid rgba(13,51,48,0.06)' }}
-                onMouseEnter={e => e.currentTarget.style.background = '#FAFAF8'}
-                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-              >
-                <td style={{ padding: '14px 18px' }}>
-                  <span style={{ fontFamily: 'monospace', fontSize: 13, color: '#0D3330', fontWeight: 600, letterSpacing: '0.04em', background: 'rgba(13,51,48,0.05)', padding: '3px 8px', borderRadius: 4 }}>{coupon.code}</span>
-                </td>
-                <td style={{ padding: '14px 18px' }}>
-                  <span style={{ fontSize: 10, padding: '3px 9px', borderRadius: 20, fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', background: 'rgba(13,51,48,0.06)', color: 'rgba(13,51,48,0.5)' }}>
-                    {coupon.type === 'PERCENTAGE' ? 'Phần trăm' : 'Cố định'}
-                  </span>
-                </td>
-                <td style={{ padding: '14px 18px', fontFamily: 'Playfair Display, serif', fontSize: 16, color: '#C9A84C', fontWeight: 600 }}>
-                  {coupon.type === 'PERCENTAGE' ? `${coupon.value}%` : formatPrice(coupon.value)}
-                </td>
-                <td style={{ padding: '14px 18px', fontSize: 12, color: 'rgba(13,51,48,0.5)' }}>{coupon.minOrder > 0 ? formatPrice(coupon.minOrder) : '—'}</td>
-                <td style={{ padding: '14px 18px', fontSize: 13, color: '#0D3330' }}>
-                  {coupon.usedCount}
-                  {coupon.usageLimit ? <span style={{ color: 'rgba(13,51,48,0.35)' }}>/{coupon.usageLimit}</span> : ''}
-                </td>
-                <td style={{ padding: '14px 18px', fontSize: 12, color: 'rgba(13,51,48,0.4)' }}>
-                  {coupon.expiresAt ? formatDate(coupon.expiresAt) : 'Không giới hạn'}
-                </td>
-                <td style={{ padding: '14px 18px' }}>
-                  <span style={{ fontSize: 10, padding: '3px 9px', borderRadius: 20, fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', background: coupon.isActive ? 'rgba(50,160,100,0.12)' : 'rgba(192,80,80,0.1)', color: coupon.isActive ? '#288A55' : '#B84040' }}>
-                    {coupon.isActive ? 'Hoạt động' : 'Tắt'}
-                  </span>
-                </td>
-                <td style={{ padding: '14px 18px' }}>
-                  <button onClick={() => toggleMutation.mutate(coupon.id)} title={coupon.isActive ? 'Tắt mã' : 'Bật mã'}
-                    style={{ width: 30, height: 30, borderRadius: 6, border: `1px solid ${coupon.isActive ? 'rgba(50,160,100,0.3)' : 'rgba(13,51,48,0.15)'}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: coupon.isActive ? '#288A55' : 'rgba(13,51,48,0.35)', transition: 'all 0.15s' }}>
-                    {coupon.isActive ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
     </AdminLayout>
   )
-}
-
-const primaryBtnStyle = {
-  display: 'inline-flex', alignItems: 'center', gap: 7,
-  padding: '9px 20px', borderRadius: 7,
-  background: '#0D3330', color: '#F0EDE6',
-  border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 500,
-  fontFamily: 'Be Vietnam Pro, sans-serif', letterSpacing: '0.01em',
-}
-const ghostBtnStyle = {
-  display: 'inline-flex', alignItems: 'center',
-  padding: '9px 18px', borderRadius: 7,
-  background: 'transparent', color: 'rgba(13,51,48,0.6)',
-  border: '1px solid rgba(13,51,48,0.15)', cursor: 'pointer', fontSize: 13,
-  fontFamily: 'Be Vietnam Pro, sans-serif',
 }

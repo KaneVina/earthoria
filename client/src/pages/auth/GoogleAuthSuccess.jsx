@@ -36,7 +36,11 @@ export default function GoogleAuthSuccess() {
       toast.success(`Chào mừng trở lại, ${name}!`)
     }
 
-    navigate('/')
+       if (role === 'ADMIN') {
+      navigate('/dashboard', { replace: true })
+    } else {
+      navigate('/', { replace: true })
+    }
   }, [])
 
   return (

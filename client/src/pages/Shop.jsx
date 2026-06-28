@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { bookService } from "../services/bookService";
@@ -285,6 +286,9 @@ function StarRating({ rating, count }) {
 
 function AddToCartBtn({ onAdd }) {
   const [added, setAdded] = useState(false);
+  const btnRef = useRef(null);
+  const [hovered, setHovered] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
 
   const handleClick = (e) => {
     e.stopPropagation();
@@ -293,16 +297,60 @@ function AddToCartBtn({ onAdd }) {
     setTimeout(() => setAdded(false), 1400);
   };
 
+  const handleMouseEnter = () => {
+    if (btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      setPos({
+        top: r.bottom + window.scrollY + 8,
+        left: r.left + window.scrollX + r.width / 2,
+      });
+    }
+    setHovered(true);
+  };
+
   return (
-    <button
-      className="add-cart"
-      onClick={handleClick}
-      style={
-        added ? { background: "var(--forest)", color: "var(--ivory)" } : {}
-      }
-    >
-      {added ? <CheckIcon /> : <CartIcon />}
-    </button>
+    <>
+      <button
+        ref={btnRef}
+        className="add-cart"
+        onClick={handleClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={() => setHovered(false)}
+        style={added ? { background: "var(--forest)", color: "var(--ivory)" } : {}}
+      >
+        {added ? <CheckIcon /> : <CartIcon />}
+      </button>
+      {hovered && !added && createPortal(
+        <span style={{
+          position: "absolute",
+          top: pos.top,
+          left: pos.left,
+          transform: "translateX(-50%)",
+          background: "var(--forest, #0d2b1e)",
+          color: "var(--ivory, #faf8f3)",
+          fontFamily: "'Be Vietnam Pro', sans-serif",
+          fontSize: "11px",
+          fontWeight: 300,
+          letterSpacing: "0.06em",
+          padding: "6px 12px",
+          border: "0.5px solid rgba(180,150,80,0.3)",
+          pointerEvents: "none",
+          zIndex: 99999,
+          whiteSpace: "nowrap",
+        }}>
+          <span style={{
+            position: "absolute",
+            bottom: "100%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            border: "5px solid transparent",
+            borderBottomColor: "var(--forest, #0d2b1e)",
+          }} />
+          Thêm vào giỏ hàng
+        </span>,
+        document.body
+      )}
+    </>
   );
 }
 
@@ -327,6 +375,69 @@ function TagList({ tags, maxVisible = 2 }) {
         </span>
       )}
     </div>
+  );
+}
+
+function WishlistBtn({ wishlisted, onToggle }) {
+  const btnRef = useRef(null);
+  const [hovered, setHovered] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+
+  const handleMouseEnter = () => {
+    if (btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      setPos({
+        top: r.bottom + window.scrollY + 8,
+        left: r.left + window.scrollX + r.width / 2,
+      });
+    }
+    setHovered(true);
+  };
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        className={`card-wishlist${wishlisted ? " active" : ""}`}
+        onClick={onToggle}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={() => setHovered(false)}
+        style={{ opacity: 1, transform: "translateY(0)", position: "relative" }}
+        aria-label="Yêu thích"
+      >
+        <HeartIcon filled={wishlisted} />
+      </button>
+      {hovered && createPortal(
+        <span style={{
+          position: "absolute",
+          top: pos.top,
+          left: pos.left,
+          transform: "translateX(-50%)",
+          background: "var(--forest, #0d2b1e)",
+          color: "var(--ivory, #faf8f3)",
+          fontFamily: "'Be Vietnam Pro', sans-serif",
+          fontSize: "11px",
+          fontWeight: 300,
+          letterSpacing: "0.06em",
+          padding: "6px 12px",
+          border: "0.5px solid rgba(180,150,80,0.3)",
+          pointerEvents: "none",
+          zIndex: 99999,
+          whiteSpace: "nowrap",
+        }}>
+          <span style={{
+            position: "absolute",
+            bottom: "100%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            border: "5px solid transparent",
+            borderBottomColor: "var(--forest, #0d2b1e)",
+          }} />
+          {wishlisted ? "Bỏ yêu thích" : "Thêm yêu thích"}
+        </span>,
+        document.body
+      )}
+    </>
   );
 }
 
@@ -361,7 +472,7 @@ function ProductCard({ book, onAddToCart, delay }) {
     <div
       className={`product-card reveal${delay ? ` reveal-delay-${delay}` : ""}`}
       onClick={handleCardClick}
-      style={{ cursor: "pointer", display: "flex", flexDirection: "column" }}
+      style={{ cursor: "pointer", display: "flex", flexDirection: "column", position: "relative" }}
     >
       <div className="product-img-wrap">
         <img src={book.img || book.coverImage} alt={book.title} />
@@ -389,35 +500,13 @@ function ProductCard({ book, onAddToCart, delay }) {
             {book.category?.name || book.category}
           </span>
         )}
-        {/* Wishlist + tooltip */}
+        {/* Wishlist + tooltip portal */}
         <div
           className="card-wishlist-wrap"
-          style={{
-            position: "absolute",
-            top: "16px",
-            right: "16px",
-            zIndex: 5,
-          }}
+          style={{ position: "absolute", top: "16px", right: "16px", zIndex: 10 }}
           onClick={(e) => e.stopPropagation()}
         >
-          <button
-            className={`card-wishlist${wishlisted ? " active" : ""}`}
-            onClick={handleWishlist}
-            style={{
-              opacity: 1,
-              transform: "translateY(0)",
-              position: "relative",
-            }}
-            aria-label="Yêu thích"
-          >
-            <HeartIcon filled={wishlisted} />
-          </button>
-          <span
-            className="card-action-tooltip"
-            style={{ right: "44px", top: "0", bottom: "auto" }}
-          >
-            {wishlisted ? "Bỏ yêu thích" : "Thêm yêu thích"}
-          </span>
+          <WishlistBtn wishlisted={wishlisted} onToggle={handleWishlist} />
         </div>
       </div>
 
@@ -629,12 +718,6 @@ function ProductCard({ book, onAddToCart, delay }) {
             <AddToCartBtn
               onAdd={() => onAddToCart && onAddToCart(book.hashId)}
             />
-            <span
-              className="card-action-tooltip"
-              style={{ right: "44px", bottom: "0", top: "auto" }}
-            >
-              Thêm vào giỏ hàng
-            </span>
           </div>
         </div>
       </div>
@@ -653,6 +736,8 @@ export default function Shop() {
   const [sortValue, setSortValue] = useState("Nổi bật");
   const [activePage, setActivePage] = useState(1);
   const { isAuthenticated } = useAuthStore();
+
+  const ctaVideoRef = useRef(null);
 
   const handleAddToCart = async (id) => {
     if (!isAuthenticated) {
@@ -680,6 +765,28 @@ export default function Shop() {
         })
         .then((r) => r.data.data.books || []),
   });
+
+  // CTA video: chỉ load khi gần viewport, phát chậm 0.4x
+  useEffect(() => {
+    const video = ctaVideoRef.current;
+    if (!video) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          video.src =
+            "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260511_131941_d136af49-e243-493a-be14-6ff3f24e09e6.mp4";
+          video.load();
+          video.play().then(() => {
+            video.playbackRate = 0.4;
+          }).catch(() => {});
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, []);
 
   // Reveal on scroll
   useEffect(() => {
@@ -712,6 +819,7 @@ export default function Shop() {
           muted
           loop
           playsInline
+          preload="metadata"
           style={{
             position: "absolute",
             inset: 0,
@@ -724,7 +832,7 @@ export default function Shop() {
           }}
         >
           <source
-            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260402_054547_9875cfc5-155a-4229-8ec8-b7ba7125cbf8.mp4 "
+            src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260402_054547_9875cfc5-155a-4229-8ec8-b7ba7125cbf8.mp4"
             type="video/mp4"
           />
         </video>
@@ -1242,8 +1350,37 @@ export default function Shop() {
       <section
         className="cta-section"
         id="cta-section"
-        style={{ padding: "100px" }}
+        style={{ padding: "100px", position: "relative", overflow: "hidden" }}
       >
+        {/* Video background cho CTA — lazy load, phát chậm */}
+        <video
+          ref={ctaVideoRef}
+          muted
+          loop
+          playsInline
+          preload="none"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center",
+            opacity: 0.35,
+            zIndex: 0,
+          }}
+        />
+        {/* Overlay tối để chữ nổi */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(to top, rgba(13,43,30,0.92) 0%, rgba(13,43,30,0.55) 20%, rgba(13,43,30,0.15) 33%, transparent 50%)",
+            zIndex: 1,
+          }}
+        />
+        <div style={{ position: "relative", zIndex: 2 }}>
         <div
           style={{
             position: "absolute",
@@ -1312,6 +1449,7 @@ export default function Shop() {
           <Link to="/">
             <button className="cta-btn-out">Về trang chủ</button>
           </Link>
+        </div>
         </div>
       </section>
     </>

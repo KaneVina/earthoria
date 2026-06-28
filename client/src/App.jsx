@@ -29,6 +29,8 @@ import LegalHub from "./pages/legal/LegalHub";
 import Sitemap from "./pages/Sitemap";
 import EiraChatbox from "./components/EiraChatbox";
 import Wishlist from "./pages/Wishlist";
+import EarthoriaSecurity from "./components/Earthoriasecurity";
+import ContactPage from "./pages/ContactPage";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -37,6 +39,7 @@ const ProtectedRoute = ({ children }) => {
 
 const AdminRoute = ({ children }) => {
   const { user, isAuthenticated } = useAuthStore();
+  console.log('AdminRoute check:', { isAuthenticated, role: user?.role });
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (user?.role !== "ADMIN") return <Navigate to="/" replace />;
   return children;
@@ -44,12 +47,14 @@ const AdminRoute = ({ children }) => {
 
 const GuestRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
+  console.log('GuestRoute check:', { isAuthenticated });
   return !isAuthenticated ? children : <Navigate to="/" replace />;
 };
 
 export default function App() {
   return (
     <BrowserRouter>
+      {/* <EarthoriaSecurity /> */}
       <ScrollToTop />
       <CustomCursor />
       <EiraChatbox />
@@ -62,6 +67,7 @@ export default function App() {
           <Route path="/technology" element={<ARGuide />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/about" element={<AboutUs />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="/legal" element={<LegalHub />} />
           <Route path="/legal/terms" element={<TermsOfService />} />
           <Route path="/legal/privacy" element={<PrivacyPolicy />} />
@@ -91,7 +97,7 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-             <Route
+          <Route
             path="/wishlist"
             element={
               <ProtectedRoute>
@@ -127,7 +133,7 @@ export default function App() {
         />
 
         <Route
-          path="/admin"
+          path="/dashboard"
           element={
             <AdminRoute>
               <Dashboard />
@@ -135,7 +141,7 @@ export default function App() {
           }
         />
         <Route
-          path="/admin/products"
+          path="/dashboard/products"
           element={
             <AdminRoute>
               <Products />
@@ -143,7 +149,7 @@ export default function App() {
           }
         />
         <Route
-          path="/admin/orders"
+          path="/dashboard/orders"
           element={
             <AdminRoute>
               <Orders />
@@ -151,7 +157,7 @@ export default function App() {
           }
         />
         <Route
-          path="/admin/users"
+          path="/dashboard/users"
           element={
             <AdminRoute>
               <Users />
@@ -159,7 +165,7 @@ export default function App() {
           }
         />
         <Route
-          path="/admin/coupons"
+          path="/dashboard/coupons"
           element={
             <AdminRoute>
               <Coupons />

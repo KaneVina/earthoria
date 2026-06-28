@@ -138,7 +138,14 @@
   }
 }
 .team-section {
-  padding: 120px 100px;
+  padding: 160px 100px 120px !important;
+  background: var(--cream);
+  position: relative;
+  margin-top: 80px;
+}
+
+.tm-section {
+  padding: 160px 100px 120px;
   background: var(--cream);
   position: relative;
 }
@@ -392,6 +399,28 @@ body.dark-mode .team-avatar { background: #222e28; border-color: rgba(74,158,63,
 /* ===== TEAM NEW GRID ===== */
 .tm-section { }
 
+/* ─── ADVISOR SECTION ─── */
+.advisor-section {
+  padding: 120px 100px;
+  background: var(--cream);
+  position: relative;
+}
+.advisor-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.advisor-logo-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 60px;
+}
+.advisor-logo {
+  height: 72px;
+  width: auto;
+  object-fit: contain;
+  opacity: 0.85;
+}
+
 .tm-grid {
   display: flex;
   width: 100%;
@@ -486,11 +515,14 @@ body.dark-mode .team-avatar { background: #222e28; border-color: rgba(74,158,63,
 
 .tm-name-d {
   font-family: 'Playfair Display', serif;
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 400;
   color: #faf8f3;
   line-height: 1.25;
   margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tm-code-d {
@@ -853,4 +885,34 @@ body.dark-mode .team-avatar { background: #222e28; border-color: rgba(74,158,63,
   .logo-display-img { width: 150px; height: 150px; }
   .logo-ring-1 { width: 200px; height: 200px; }
   .logo-ring-2 { width: 240px; height: 240px; }
+}
+
+/* ─── MISSION PARALLAX BANNER ─── */
+.mission-parallax-banner {
+  position: relative;
+  height: 420px;
+  background-image: url('/fptu-ct.png');
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+
+.mission-parallax-glass {
+  position: absolute;
+  inset: 60px 80px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 0.5px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+}
+
+@media (max-width: 768px) {
+  .mission-parallax-banner {
+    height: 280px;
+    background-attachment: scroll;
+  }
+  .mission-parallax-glass {
+    inset: 32px 24px;
+  }
 }

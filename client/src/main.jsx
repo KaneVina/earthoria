@@ -5,7 +5,7 @@ import { Toaster } from 'react-hot-toast'
 import App from './App.jsx'
 import './assets/css/main.css'
 import './assets/css/navbar.css'
-import './assets/js/main.js'
+// import './assets/js/main.js'
 
 
 const queryClient = new QueryClient({

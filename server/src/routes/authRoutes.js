@@ -11,6 +11,10 @@ const {
   resetPassword,
 } = require('../controllers/passwordResetController')
 const {
+  sendRegisterOtp,
+  verifyRegisterOtp,
+} = require('../controllers/registerOtpController')
+const {
   forgotPasswordLimiter,
   verifyOtpLimiter,
   resetPasswordLimiter,
@@ -18,6 +22,8 @@ const {
 const { protect } = require('../middlewares/authMiddleware')
 
 router.post('/register',        register)
+router.post('/send-register-otp',    sendRegisterOtp)
+router.post('/verify-register-otp',  verifyRegisterOtp)
 router.post('/login',           login)
 router.post('/forgot-password', forgotPasswordLimiter, forgotPassword)
 router.post('/verify-otp',      verifyOtpLimiter,      verifyOtp)

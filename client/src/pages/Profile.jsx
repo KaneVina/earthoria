@@ -388,6 +388,10 @@ function GuestState() {
 // monospace), and two key stats. Email is intentionally NOT shown as editable
 // here (handled in Overview's field list) — this strip is identity-first.
 function PassportHero({ profile, initials, memberTier, formattedCode, animatedOrderCount, animatedSpent, onLogout }) {
+  const isAdmin = profile?.role === 'ADMIN'
+  const roleMeta = isAdmin
+    ? { label: 'Quản Trị Viên', color: '#b8862e', bg: 'rgba(184,134,46,0.09)', border: 'rgba(184,134,46,0.28)', dot: '#b8862e', sealBg: 'linear-gradient(135deg,#b8862e 0%,#d4a843 100%)' }
+    : { label: 'Thành Viên',    color: '#4a9e3f', bg: 'rgba(74,158,63,0.09)',   border: 'rgba(74,158,63,0.25)',   dot: '#4a9e3f', sealBg: undefined }
   return (
     <div className="pf-passport-zone">
       <div className="pf-passport-watermark">EARTHORIA</div>
@@ -399,8 +403,8 @@ function PassportHero({ profile, initials, memberTier, formattedCode, animatedOr
         <div className="pf-passport-card pf-reveal">
           <div className="pf-passport-card-top">
             <div className="pf-passport-left">
-              <div className="pf-passport-seal">
-                <div className="pf-passport-seal-ring" />
+              <div className="pf-passport-seal" style={isAdmin ? { background: roleMeta.sealBg, borderColor: 'rgba(184,134,46,0.4)' } : undefined}>
+                <div className="pf-passport-seal-ring" style={isAdmin ? { borderColor: 'rgba(184,134,46,0.35)' } : undefined} />
                 {initials}
               </div>
               <div className="pf-passport-id">

@@ -90,10 +90,15 @@ export default function Navbar() {
     { to: "/shop", label: "Cửa hàng" },
     { to: "/blog", label: "Tin tức" },
     { to: "/about", label: "Về chúng tôi" },
+    { to: "/contact", label: "Liên hệ" },
+
   ];
 
   const firstLetter = user?.name?.trim()?.charAt(0)?.toUpperCase() || "?";
   const isAdmin = user?.role === "ADMIN";
+  const roleMeta = isAdmin
+    ? { label: "Quản Trị Viên", color: "#b8862e", bg: "rgba(184,134,46,0.08)", border: "rgba(184,134,46,0.25)", dot: "#b8862e" }
+    : { label: "Thành Viên",    color: "#4a9e3f", bg: "rgba(74,158,63,0.08)",  border: "rgba(74,158,63,0.22)",  dot: "#4a9e3f" };
 
   return (
     <>
@@ -136,16 +141,6 @@ export default function Navbar() {
                 </Link>
               </li>
             ))}
-            {isAdmin && (
-              <li>
-                <Link
-                  to="/admin"
-                  className={isActive("/admin") ? "active" : ""}
-                >
-                  Admin
-                </Link>
-              </li>
-            )}
           </ul>
 
           {/* Actions */}
@@ -224,14 +219,31 @@ export default function Navbar() {
                   <ChevronDown size={14} className="user-caret" />
                 </button>
 
-                <div className="user-dropdown">
+                <div className="user-dropdown" style={{ minWidth: "100%", width: "max-content" }}>
                   <div className="user-dropdown-header">
-                    <span className="user-dropdown-avatar">{firstLetter}</span>
-                    <div>
+                    <span className="user-dropdown-avatar" style={{ background: isAdmin ? "linear-gradient(135deg,#b8862e,#d4a843)" : undefined }}>
+                      {firstLetter}
+                    </span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
                       <div className="user-dropdown-name">{user?.name}</div>
                       {user?.email && (
                         <div className="user-dropdown-email">{user.email}</div>
                       )}
+                      <div style={{
+                        display: "inline-flex", alignItems: "center", gap: "5px",
+                        marginTop: "6px", padding: "3px 8px",
+                        background: roleMeta.bg,
+                        border: `0.5px solid ${roleMeta.border}`,
+                        borderRadius: "2px",
+                      }}>
+                        <span style={{
+                          fontSize: "9px", letterSpacing: "0.16em",
+                          textTransform: "uppercase", color: roleMeta.color,
+                          fontWeight: 500, fontFamily: "'Be Vietnam Pro', sans-serif",
+                        }}>
+                          {roleMeta.label}
+                        </span>
+                      </div>
                     </div>
                   </div>
                   <Link to="/profile" className="user-dropdown-item">
@@ -327,9 +339,6 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Search overlay — đặt ngoài <nav> để position:fixed không bị
-          giới hạn bởi backdrop-filter của navbar. Truyền trạng thái đăng
-          nhập để khung search biết có hiện Hồ sơ/Đơn hàng/Đăng xuất không. */}
       <SearchOverlay
         isOpen={searchOpen}
         onOpen={() => setSearchOpen(true)}

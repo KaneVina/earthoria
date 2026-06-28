@@ -37,6 +37,19 @@ enum Role {
   ADMIN
 }
 
+// ─── PENDING USER (chờ xác thực OTP khi đăng ký) ───
+model PendingUser {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  name        String
+  password    String
+  phone       String?
+  otpHash     String
+  otpExpires  DateTime
+  otpAttempts Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
 // ─── ADDRESS ───
 model Address {
   id        String  @id @default(uuid())

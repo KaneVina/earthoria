@@ -54,7 +54,6 @@ body {
   border-radius: 2px;
 }
 
-
 /* ─── PROGRESS ─── */
 #progress {
   position: fixed;
@@ -768,6 +767,8 @@ nav {
   color: var(--text-muted);
   background: transparent;
   font-family: "Be Vietnam Pro", sans-serif;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .pill:hover,
 .pill.active {
@@ -1726,7 +1727,6 @@ footer {
   font-style: italic;
   color: rgba(255, 255, 255, 0.2);
 }
-
 
 #back-top.visible {
   opacity: 1;
@@ -4908,9 +4908,9 @@ body.dark-mode .social-card-handle {
 }
 
 .card-wishlist {
-  position: absolute;
-  top: 20px;
-  right: 20px;
+  position: relative;
+  top: auto;
+  right: auto;
   width: 36px;
   height: 36px;
   background: rgba(250, 248, 243, 0.9);
@@ -7981,8 +7981,9 @@ body.dark-mode .search-result-age {
 
 .card-action-tooltip {
   position: absolute;
-  bottom: calc(100% + 8px);
-  right: 0;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
   white-space: nowrap;
   background: var(--forest);
   color: var(--ivory);
@@ -7993,23 +7994,23 @@ body.dark-mode .search-result-age {
   padding: 6px 12px;
   pointer-events: none;
   opacity: 0;
-  transform: translateY(4px);
-  transition: all 0.25s ease;
+  transition: opacity 0.25s ease, transform 0.25s ease;
   z-index: 20;
   border: 0.5px solid var(--border-gold);
 }
 .card-action-tooltip::after {
   content: "";
   position: absolute;
-  top: 100%;
-  right: 14px;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
   border: 5px solid transparent;
-  border-top-color: var(--forest);
+  border-bottom-color: var(--forest);
 }
 .card-action-wrap:hover .card-action-tooltip,
 .card-wishlist-wrap:hover .card-action-tooltip {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateX(-50%) translateY(0);
 }
 
 /* ─── PRODUCT CARD equal height ─── */
@@ -8365,4 +8366,141 @@ body.dark-mode .skeleton {
   .back-top-btn.chat-open {
     right: 18px;
   } /* mobile chatbox full-width, giữ nguyên */
+}
+.pw-requirements {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.pw-req {
+  display: flex;
+  align-items: center;
+  font-family: "Be Vietnam Pro", sans-serif;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.pw-req.ok {
+  color: var(--forest, #2d7a3a);
+}
+
+/* ═══════════════════════════════════════════
+   OTP — Register flow
+   ═══════════════════════════════════════════ */
+
+.auth-otp-step {
+  animation: stepFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes stepFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Email mask badge */
+.otp-email-mask {
+  font-size: 13px;
+  color: var(--forest);
+  font-weight: 500;
+  background: var(--gold-pale);
+  border: 0.5px solid var(--border-gold);
+  padding: 10px 16px;
+  text-align: center;
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+
+/* 6 ô nhập OTP */
+.otp-inputs {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 28px 0 20px;
+}
+
+.otp-input {
+  width: 100%;
+  height: 58px;
+  text-align: center;
+  font-size: 24px;
+  font-family: "Playfair Display", serif;
+  border: 0.5px solid var(--border);
+  background: var(--white);
+  color: var(--forest);
+  outline: none;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  -moz-appearance: textfield;
+}
+
+.otp-input::-webkit-outer-spin-button,
+.otp-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+.otp-input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(74, 158, 63, 0.08);
+}
+
+.otp-input.filled {
+  border-color: var(--forest);
+}
+
+.otp-input.error {
+  border-color: #c0392b;
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.06);
+}
+
+.otp-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Resend row */
+.otp-resend {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 18px;
+  font-weight: 300;
+}
+
+.otp-resend button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--gold);
+  font-size: 12px;
+  font-family: inherit;
+  font-weight: 500;
+  padding: 0;
+  margin-left: 4px;
+  transition: opacity 0.2s;
+}
+
+.otp-resend button:disabled {
+  color: var(--mist);
+  cursor: default;
+  opacity: 0.7;
+}
+
+/* Dark mode */
+body.dark-mode .otp-email-mask {
+  background: var(--gold-pale);
+  border-color: var(--border-gold);
+  color: var(--ivory);
+}
+
+body.dark-mode .otp-input {
+  background: var(--white);
+  color: var(--ivory);
+  border-color: var(--border);
+}
+
+body.dark-mode .otp-input.filled {
+  border-color: var(--gold);
 }

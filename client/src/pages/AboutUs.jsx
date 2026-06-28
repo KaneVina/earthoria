@@ -52,7 +52,7 @@ export default function AboutUs() {
     <>
       {/* ABOUT HERO */}
       <section className="about-hero">
-         <div className="about-hero-left">
+        <div className="about-hero-left">
           <img
             src="/logo-nho2.png"
             alt="Earthoria Logo"
@@ -212,14 +212,15 @@ export default function AboutUs() {
         </div>
       </section>
 
-
-{/* LOGO ANALYSIS */}
+      {/* LOGO ANALYSIS */}
       <section className="logo-section">
         <div className="logo-inner">
           <div className="section-header reveal">
             <div className="section-eyebrow">
               <div className="section-eyebrow-line"></div>
-              <span className="section-eyebrow-text">Nhận Diện Thương Hiệu</span>
+              <span className="section-eyebrow-text">
+                Nhận Diện Thương Hiệu
+              </span>
               <div className="section-eyebrow-line"></div>
             </div>
             <h2 className="section-title">
@@ -235,7 +236,11 @@ export default function AboutUs() {
             {/* Logo display */}
             <div className="logo-display reveal">
               <div className="logo-display-inner">
-                <img src="/logo-nho2.png" alt="Earthoria Logo" className="logo-display-img" />
+                <img
+                  src="/logo-nho2.png"
+                  alt="Earthoria Logo"
+                  className="logo-display-img"
+                />
                 <div className="logo-display-ring logo-ring-1"></div>
                 <div className="logo-display-ring logo-ring-2"></div>
               </div>
@@ -278,7 +283,7 @@ export default function AboutUs() {
         </div>
       </section>
 
-  {/* TEAM */}
+      {/* TEAM */}
       <section className="tm-section">
         <div className="team-inner">
           <div className="team-intro">
@@ -290,7 +295,13 @@ export default function AboutUs() {
                 <div className="section-eyebrow-line"></div>
                 <span className="section-eyebrow-text">Đội Ngũ</span>
               </div>
-              <h2 className="section-title" style={{ textAlign: "left" }}>
+              <h2
+                className="section-title"
+                style={{
+                  textAlign: "left",
+                  fontSize: "clamp(36px, 3.5vw, 56px)",
+                }}
+              >
                 Những Người <em>Kiến Tạo</em>
                 <br />
                 Earthoria
@@ -312,7 +323,7 @@ export default function AboutUs() {
                   suffix: " tháng",
                   label: "Thời gian phát triển MVP",
                 },
-                { num: "1", suffix: "st", label: "Dự án startup AI+AR" },
+                { num: "To", suffix: "pic", label: "Dự án startup AI+AR" },
               ].map((s, i) => (
                 <div className="team-intro-stat" key={i}>
                   <div className="team-intro-stat-num">
@@ -621,11 +632,17 @@ export default function AboutUs() {
           </div>
         </div>
       </section>
-
+      {/* PARALLAX BANNER */}
+      <div className="mission-parallax-banner">
+        <div className="mission-parallax-glass"></div>
+      </div>
       {/* ADVISOR */}
       <section className="advisor-section">
         <div className="advisor-inner">
           <div className="section-header reveal">
+            <div className="advisor-logo-wrap">
+              <img src="/logo-hoptac.png" alt="Logo hợp tác" className="advisor-logo" />
+            </div>
             <div className="section-eyebrow">
               <div className="section-eyebrow-line"></div>
               <span className="section-eyebrow-text">
@@ -634,7 +651,7 @@ export default function AboutUs() {
               <div className="section-eyebrow-line"></div>
             </div>
             <h2 className="section-title">
-              Những Người <em>Đồng Hành</em>
+              Tri Ân Những Người <em>Dẫn Đường</em>
             </h2>
             <p className="section-subtitle">
               Earthoria được dẫn dắt bởi những người thầy tâm huyết tại FPT
@@ -676,272 +693,6 @@ export default function AboutUs() {
                   <blockquote className="advisor-quote">{a.quote}</blockquote>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CONTACT */}
-      <section className="contact-section">
-        <div className="contact-inner">
-          <div className="contact-grid">
-            <div className="contact-left">
-              <div
-                className="section-eyebrow"
-                style={{ justifyContent: "flex-start", marginBottom: "20px" }}
-              >
-                <div className="section-eyebrow-line"></div>
-                <span className="section-eyebrow-text">Liên Hệ</span>
-              </div>
-              <h2
-                className="section-title reveal"
-                style={{ textAlign: "left" }}
-              >
-                Kết Nối Với <em>Chúng Tôi</em>
-              </h2>
-              <div className="contact-info-list">
-                {[
-                  {
-                    label: "Địa chỉ",
-                    value: "600 Nguyễn Văn Cừ, Phường Ninh Kiều, Cần Thơ",
-                    delay: "reveal-delay-1",
-                  },
-                  {
-                    label: "Email",
-                    value: "earthoriavn@gmail.com",
-                    href: "mailto:earthoriavn@gmail.com",
-                    delay: "reveal-delay-2",
-                  },
-                  {
-                    label: "Website",
-                    value: "http://earthoria.id.vn/",
-                    href: "http://earthoria.id.vn/",
-                    delay: "reveal-delay-3",
-                  },
-                  {
-                    label: "Fanpage",
-                    value: "facebook.com/Earthoriavn",
-                    href: "https://www.facebook.com/Earthoriavn",
-                    delay: "reveal-delay-1",
-                  },
-                  {
-                    label: "Thành lập",
-                    value: "25 tháng 5, 2026 · Cần Thơ",
-                    delay: "reveal-delay-2",
-                  },
-                ].map((item, i) => (
-                  <div
-                    className={`contact-info-item reveal ${item.delay}`}
-                    key={i}
-                  >
-                    <div className="contact-info-icon">
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                      >
-                        <circle cx="12" cy="12" r="10" />
-                      </svg>
-                    </div>
-                    <div>
-                      <div className="contact-info-label">{item.label}</div>
-                      {item.href ? (
-                        <a
-                          className="contact-info-value"
-                          href={item.href}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{ textDecoration: "none" }}
-                        >
-                          {item.value}
-                        </a>
-                      ) : (
-                        <div className="contact-info-value">{item.value}</div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="contact-map-placeholder reveal">
-                <div className="contact-map-grid"></div>
-                <div className="contact-map-pin">
-                  <svg width="32" height="40" viewBox="0 0 24 30" fill="none">
-                    <path
-                      d="M12 0C5.373 0 0 5.373 0 12c0 9 12 18 12 18s12-9 12-18c0-6.627-5.373-12-12-12z"
-                      fill="var(--gold)"
-                      opacity="0.9"
-                    />
-                    <circle cx="12" cy="12" r="4" fill="white" />
-                  </svg>
-                </div>
-                <div
-                  className="contact-map-label"
-                  style={{ marginTop: "60px" }}
-                >
-                  <div className="contact-map-label-main">
-                    FPT University Cần Thơ
-                  </div>
-                  <div className="contact-map-label-sub">
-                    600 Nguyễn Văn Cừ · Ninh Kiều · Cần Thơ
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="contact-right reveal reveal-delay-1">
-              <div
-                className="section-eyebrow"
-                style={{ justifyContent: "flex-start", marginBottom: "20px" }}
-              >
-                <div className="section-eyebrow-line"></div>
-                <span className="section-eyebrow-text">Gửi Tin Nhắn</span>
-              </div>
-              <h3
-                className="section-title"
-                style={{
-                  textAlign: "left",
-                  fontSize: "clamp(28px,2.5vw,40px)",
-                }}
-              >
-                Hãy <em>Nói Chuyện</em>
-              </h3>
-              <p
-                className="section-subtitle"
-                style={{
-                  textAlign: "left",
-                  marginLeft: 0,
-                  marginTop: "16px",
-                  maxWidth: "100%",
-                }}
-              >
-                Bạn là phụ huynh, giáo viên, hay nhà đầu tư? Chúng tôi luôn sẵn
-                sàng lắng nghe.
-              </p>
-              <form className="contact-form" onSubmit={handleFormSubmit}>
-                <div className="form-row">
-                  <div className="form-group">
-                    <label>Họ và tên</label>
-                    <input type="text" placeholder="Nguyễn Văn A" required />
-                  </div>
-                  <div className="form-group">
-                    <label>Email</label>
-                    <input type="email" placeholder="ban@email.com" required />
-                  </div>
-                </div>
-                <div className="form-group">
-                  <label>Bạn là</label>
-                  <select>
-                    <option value="" disabled defaultValue="">
-                      Chọn vai trò của bạn
-                    </option>
-                    <option>Phụ huynh</option>
-                    <option>Giáo viên / Nhà giáo dục</option>
-                    <option>Nhà đầu tư / Đối tác</option>
-                    <option>Báo chí / Truyền thông</option>
-                    <option>Khác</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>Chủ đề</label>
-                  <input type="text" placeholder="Tôi muốn tìm hiểu về..." />
-                </div>
-                <div className="form-group">
-                  <label>Tin nhắn</label>
-                  <textarea placeholder="Chia sẻ suy nghĩ của bạn về Earthoria, hỏi về sản phẩm, hoặc đề xuất hợp tác..."></textarea>
-                </div>
-                <p className="form-note">
-                  Chúng tôi sẽ phản hồi trong vòng 24 giờ làm việc.
-                </p>
-                <button className="form-submit" type="submit">
-                  Gửi tin nhắn
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  >
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* COMMUNITY */}
-      <section className="community-section">
-        <div className="community-inner">
-          <div className="community-left reveal">
-            <div className="tech-eyebrow" style={{ marginBottom: "32px" }}>
-              <div className="eyebrow-line"></div>
-              <span className="tech-eyebrow-text">Cộng Đồng</span>
-            </div>
-            <h2 className="community-title">
-              Theo Dõi Hành Trình
-              <br />
-              Của <em>Earthoria</em>
-            </h2>
-            <p className="community-sub">
-              Cập nhật mới nhất về sản phẩm, sự kiện ra mắt, nội dung AR miễn
-              phí và cộng đồng các gia đình yêu thiên nhiên.
-            </p>
-          </div>
-          <div className="community-right reveal reveal-delay-1">
-            {[
-              {
-                platform: "Facebook",
-                name: "Earthoria VN",
-                handle: "@Earthoriavn",
-                href: "https://www.facebook.com/Earthoriavn/",
-              },
-              {
-                platform: "Website",
-                name: "earthoria.id.vn",
-                handle: "Khám phá ngay",
-                href: "http://earthoria.id.vn/",
-              },
-              {
-                platform: "Email",
-                name: "Liên hệ trực tiếp",
-                handle: "earthoriavn@gmail.com",
-                href: "mailto:earthoriavn@gmail.com",
-              },
-              {
-                platform: "Liên hệ đối tác",
-                name: "Hợp tác B2B",
-                handle: "Trường học · Nhà xuất bản",
-                href: "#",
-              },
-            ].map((s, i) => (
-              <a
-                className="social-card"
-                href={s.href}
-                target="_blank"
-                rel="noreferrer"
-                key={i}
-              >
-                <div className="social-card-platform">{s.platform}</div>
-                <div className="social-card-name">{s.name}</div>
-                <div className="social-card-handle">{s.handle}</div>
-                <div className="social-card-arrow">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                  >
-                    <path d="M7 17L17 7M7 7h10v10" />
-                  </svg>
-                </div>
-              </a>
             ))}
           </div>
         </div>

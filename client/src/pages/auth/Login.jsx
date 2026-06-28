@@ -24,17 +24,21 @@ export default function Login() {
     try {
       setLoading(true)
       const res  = await authService.login(data)
+      console.log('res.data:', res.data)
       const { user, token, isNew } = res.data.data
-
+      console.log('user.role:', user.role)
       setAuth(user, token)
+      console.log('store sau setAuth:', useAuthStore.getState())
 
-      if (isNew) {
-        toast.success(`Chào mừng đến với Earthoria, ${user.name}! 🌿`, { duration: 4000 })
+     setAuth(user, token)
+
+      if (user.role === 'ADMIN') {
+        window.location.href = '/dashboard'
       } else {
-        toast.success(`Chào mừng trở lại, ${user.name}!`)
+        window.location.href = '/'
       }
 
-      navigate('/')
+      toast.success(`Chào mừng trở lại, ${user.name}!`)
     } catch (err) {
       toast.error(err.response?.data?.message || 'Đăng nhập thất bại')
     } finally {
