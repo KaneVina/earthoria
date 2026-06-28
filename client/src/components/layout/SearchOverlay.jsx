@@ -137,8 +137,20 @@ function formatPrice(price) {
   return price.toLocaleString("vi-VN") + "đ";
 }
 
-function categoryLabel(id) {
-  return CATEGORIES.find(c => c.id === id)?.label || id;
+/** book.category từ API là object { name, slug } */
+function categoryLabel(cat) {
+  if (!cat) return "";
+  if (typeof cat === "string") return CATEGORIES.find(c => c.id === cat)?.label || cat;
+  return cat.name || cat.slug || "";
+}
+
+/** Build chuỗi độ tuổi từ ageMin / ageMax */
+function buildAgeRange(book) {
+  const { ageMin, ageMax } = book;
+  if (ageMin && ageMax) return `${ageMin}–${ageMax} tuổi`;
+  if (ageMin) return `${ageMin}+ tuổi`;
+  if (ageMax) return `đến ${ageMax} tuổi`;
+  return null;
 }
 
 /** Highlight phần khớp trong text — hỗ trợ tiếng Việt có dấu */
@@ -275,8 +287,8 @@ export default function SearchOverlay({
           ...(activeCategory !== "all" && { category: activeCategory }),
         };
         const res = await bookService.getBooks(params);
-        // Tuỳ backend trả về res.data.data hoặc res.data.books — điều chỉnh nếu cần
-        const books = res.data?.data?.books ?? res.data?.data ?? res.data?.books ?? [];
+        // bookController trả về: { success, data: { books: [], pagination: {} } }
+        const books = res.data?.data?.books ?? [];
         setResults(books);
       } catch (err) {
         if (err?.name !== "CanceledError" && err?.code !== "ERR_CANCELED") {
@@ -607,11 +619,14 @@ export default function SearchOverlay({
                       {results.map((book, i) => {
                         const flatIdx = matchedPages.length + i;
                         const isActive = flatIdx === activeIndex;
-                        const title = book.title ?? book.name ?? "";
-                        const cover = book.coverImage ?? book.cover ?? null;
+                        const title    = String(book.title ?? "");
+                        const cover    = book.coverImage ?? null;
+                        const ageRange = buildAgeRange(book);
+                        const catLabel = categoryLabel(book.category);
+                        const price    = book.salePrice ?? book.price ?? 0;
                         return (
                           <button
-                            key={book.id ?? book.hashId}
+                            key={book.hashId ?? book.id}
                             type="button"
                             role="option"
                             aria-selected={isActive}
@@ -628,11 +643,11 @@ export default function SearchOverlay({
                             <span className="so-product-info">
                               <span className="so-product-name"><Highlight text={title} query={query} /></span>
                               <span className="so-product-meta">
-                                {book.category && <span className="so-tag">{categoryLabel(book.category)}</span>}
-                                {book.ageRange && <span className="so-age">{book.ageRange}</span>}
+                                {catLabel && <span className="so-tag">{catLabel}</span>}
+                                {ageRange && <span className="so-age">{ageRange}</span>}
                               </span>
                             </span>
-                            <span className="so-product-price">{formatPrice(book.price)}</span>
+                            <span className="so-product-price">{formatPrice(price)}</span>
                           </button>
                         );
                       })}
