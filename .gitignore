@@ -1,2 +1,5 @@
 node_modules/
 .env
+.VSCodeCounter/
+package.json
+package-lock.json
