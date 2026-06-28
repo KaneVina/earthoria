@@ -447,7 +447,7 @@ export default function Register() {
                   type="button"
                   onClick={() =>
                     (window.location.href =
-                      "http://localhost:5000/api/v1/auth/google")
+                      "https://earthoria-server.onrender.com/api/v1/auth/google")
                   }
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
