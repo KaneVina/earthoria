@@ -144,7 +144,7 @@ async function sendOtpEmail({ to, name, otp }) {
   `
 
   return resend.emails.send({
-    from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <onboarding@resend.dev>`,
+    from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
     to,
     subject: `${otp} — Mã xác thực Earthoria của bạn`,
     html: wrapEmailTemplate({
@@ -191,7 +191,7 @@ async function sendPasswordChangedEmail({ to, name }) {
   `
 
   return resend.emails.send({
-    from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <onboarding@resend.dev>`,
+    from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
     to,
     subject: 'Mật khẩu Earthoria của bạn đã được thay đổi',
     html: wrapEmailTemplate({
