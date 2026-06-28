@@ -15,9 +15,9 @@ import {
 import "../assets/css/EiraChatbox.css";
 
 /* ─── CONFIG ─── */
-const GROQ_KEY = "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";
-const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_MODEL = "llama-3.1-8b-instant";
+const GROQ_KEY = import.meta.env.VITE_GROQ_KEY;
+const GROQ_URL = import.meta.env.VITE_GROQ_URL;
+const GROQ_MODEL = import.meta.env.VITE_GROQ_MODEL;
 
 const SYSTEM_PROMPT = `Bạn là Eira — trợ lý AI thân thiện của Earthoria.
 
