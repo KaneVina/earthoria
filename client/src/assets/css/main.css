@@ -6977,12 +6977,10 @@ body.dark-mode .nav-hamburger {
   color: inherit;
 }
 
-* ── Hover màu,
-không gạch chân ── */ .nav-links a:hover:not(.active) {
+.nav-links a:hover:not(.active) {
   color: var(--forest);
 }
 
-/* ── Badge số lượng (giỏ hàng / wishlist) ── */
 .nav-badge {
   position: absolute;
   top: 6px;
