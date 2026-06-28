@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import "../assets/css/about-us.css";
+import "../components/assets/css/about-us.css";
 
 export default function AboutUs() {
   useEffect(() => {

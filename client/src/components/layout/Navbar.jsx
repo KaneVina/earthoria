@@ -18,7 +18,7 @@ import { useCartStore } from "../../store/cartStore";
 import { useWishlistStore } from "../../store/wishlistStore";
 import { useTheme } from "../../hooks/useTheme";
 import toast from "react-hot-toast";
-import logoImg from "../../assets/img/logoBT-ngangtext.png";
+import logoImg from "../assets/img/logoBT-ngangtext.png";
 // import {toggleCursorEffect} from "./CustomCursor";
 
 const logoCompactImg = "/logo-nho.png";

@@ -1,5 +1,5 @@
 // AdminLayout.jsx — Shared sidebar layout for all admin pages
-import '../../assets/css/admin.css'
+import '../../components/assets/css/admin.css'
 import { useState, useEffect } from 'react'
 import { useLocation, Link } from 'react-router-dom'
 import {

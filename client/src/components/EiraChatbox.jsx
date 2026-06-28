@@ -12,7 +12,7 @@ import {
   RotateCcw,
   Check,
 } from "lucide-react";
-import "../assets/css/EiraChatbox.css";
+import "./assets/css/EiraChatbox.css";
 
 /* ─── CONFIG ─── */
 const GROQ_KEY = import.meta.env.VITE_GROQ_KEY;

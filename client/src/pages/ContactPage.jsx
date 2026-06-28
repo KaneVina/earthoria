@@ -5,7 +5,7 @@ import {
   Headphones, FileText, Link2, Zap,
   PhoneCall, MessageSquare, AtSign, Globe,
 } from "lucide-react";
-import "../assets/css/contactpage.css";
+import "../components/assets/css/contactpage.css";
 
 /* ─── Thông tin thực Earthoria ─── */
 const CONTACT_CARDS = [
