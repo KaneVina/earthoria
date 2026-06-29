@@ -1,11 +1,11 @@
+// ServerStatus.jsx — Hiển thị trạng thái server từ UptimeRobot
 import { useQuery } from '@tanstack/react-query'
 import { Activity, CheckCircle, XCircle, Clock } from 'lucide-react'
+import api from '../../services/api'
 
 async function fetchStatus() {
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/admin/server-status`, {
-    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-  })
-  const data = await res.json()
+  const res  = await api.get('/admin/server-status')
+  const data = res.data
   if (data.stat !== 'ok') throw new Error('UptimeRobot error')
   return data.monitors[0]
 }
@@ -14,30 +14,32 @@ export default function ServerStatus() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['server-status'],
     queryFn:  fetchStatus,
-    refetchInterval: 5 * 60 * 1000, // refetch mỗi 5 phút
+    refetchInterval: 5 * 60 * 1000,
     staleTime:       4 * 60 * 1000,
   })
 
-  const isUp      = data?.status === 2
-  const isDown    = data?.status === 9
-  const uptime    = data?.custom_uptime_ratio ?? '—'
-  const avgMs     = data?.response_times?.length
+  const isUp   = data?.status === 2
+  const isDown = data?.status === 9
+  const uptime = data?.custom_uptime_ratio ?? '—'
+  const avgMs  = data?.response_times?.length
     ? Math.round(data.response_times.reduce((s, r) => s + r.value, 0) / data.response_times.length)
     : null
 
   const statusColor = isLoading ? '#8a9990'
-    : isUp   ? '#4a9e3f'
+    : isError ? '#eda100'
+    : isUp    ? '#4a9e3f'
     : isDown  ? '#e34948'
     : '#eda100'
 
   const statusLabel = isLoading ? 'Đang kiểm tra...'
-    : isError         ? 'Không thể kết nối'
-    : isUp            ? 'Hoạt động tốt'
-    : isDown          ? 'Đang ngừng hoạt động'
+    : isError ? 'Không thể kết nối'
+    : isUp    ? 'Hoạt động tốt'
+    : isDown  ? 'Đang ngừng hoạt động'
     : 'Đang kiểm tra...'
 
   const StatusIcon = isLoading ? Activity
-    : isUp   ? CheckCircle
+    : isError ? Clock
+    : isUp    ? CheckCircle
     : isDown  ? XCircle
     : Clock
 
@@ -74,8 +76,7 @@ export default function ServerStatus() {
       </div>
 
       {/* Right: stats */}
-      <div style={{ display: 'flex', gap: 24 }}>
-        {/* Uptime */}
+      <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 11, color: '#8a9990', marginBottom: 2 }}>Uptime 30 ngày</div>
           <div style={{ fontSize: 15, fontWeight: 700, color: '#0D3330' }}>
@@ -83,7 +84,6 @@ export default function ServerStatus() {
           </div>
         </div>
 
-        {/* Response time */}
         <div style={{ textAlign: 'center' }}>
           <div style={{ fontSize: 11, color: '#8a9990', marginBottom: 2 }}>Thời gian phản hồi</div>
           <div style={{ fontSize: 15, fontWeight: 700, color: '#0D3330' }}>
@@ -91,28 +91,17 @@ export default function ServerStatus() {
           </div>
         </div>
 
-        {/* Pulse indicator */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{
             width: 8, height: 8, borderRadius: '50%',
             background: statusColor,
-            boxShadow: isUp ? `0 0 0 3px ${statusColor}30` : 'none',
-            animation: isUp ? 'pulse 2s infinite' : 'none',
             display: 'inline-block',
           }} />
           <span style={{ fontSize: 11, color: '#8a9990' }}>
-            {isUp ? 'Live' : isDown ? 'Down' : '...'}
+            {isLoading ? '...' : isUp ? 'Live' : isDown ? 'Down' : '...'}
           </span>
         </div>
       </div>
-
-      <style>{`
-        @keyframes pulse {
-          0%   { box-shadow: 0 0 0 0 ${statusColor}60; }
-          70%  { box-shadow: 0 0 0 6px ${statusColor}00; }
-          100% { box-shadow: 0 0 0 0 ${statusColor}00; }
-        }
-      `}</style>
     </div>
   )
 }
