@@ -310,16 +310,18 @@ export default function Analytics() {
     setError(null)
     try {
       const { startAt, endAt } = getRange(period)
-      const params = { startAt, endAt, unit: periodOpt.unit, timezone: 'Asia/Ho_Chi_Minh' }
+      // /pageviews cần unit + timezone; /metrics chỉ cần startAt + endAt + type
+      const pvParams      = { startAt, endAt, unit: periodOpt.unit, timezone: 'Asia/Ho_Chi_Minh' }
+      const metricsParams = { startAt, endAt }
 
       const [sumData, pvData, pagesData, countriesData, citiesData, devData, refData] = await Promise.all([
-        umamiGet('/stats',        { startAt, endAt }),
-        umamiGet('/pageviews',    params),
-        umamiGet('/metrics',      { ...params, type: 'url' }),
-        umamiGet('/metrics',      { ...params, type: 'country' }),
-        umamiGet('/metrics',      { ...params, type: 'city' }),
-        umamiGet('/metrics',      { ...params, type: 'device' }),
-        umamiGet('/metrics',      { ...params, type: 'referrer' }),
+        umamiGet('/stats',     { startAt, endAt }),
+        umamiGet('/pageviews', pvParams),
+        umamiGet('/metrics',   { ...metricsParams, type: 'url' }),
+        umamiGet('/metrics',   { ...metricsParams, type: 'country' }),
+        umamiGet('/metrics',   { ...metricsParams, type: 'city' }),
+        umamiGet('/metrics',   { ...metricsParams, type: 'device' }),
+        umamiGet('/metrics',   { ...metricsParams, type: 'referrer' }),
       ])
 
       setSummary(sumData)
