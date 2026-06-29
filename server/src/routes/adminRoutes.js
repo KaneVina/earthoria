@@ -32,5 +32,25 @@ router.put('/users/:id/toggle',  adminToggleUser)
 router.get('/coupons',           adminGetCoupons)
 router.post('/coupons',          adminCreateCoupon)
 router.put('/coupons/:id/toggle',adminToggleCoupon)
+// ── UptimeRobot proxy ──
+router.get('/server-status', async (req, res) => {
+  try {
+    const response = await fetch('https://api.uptimerobot.com/v2/getMonitors', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        api_key:              process.env.UPTIMEROBOT_API_KEY,
+        monitors:             process.env.UPTIMEROBOT_MONITOR_ID,
+        response_times:       '1',
+        response_times_limit: '10',
+      }),
+    })
+    const data = await response.json()
+    res.json(data)
+  } catch (err) {
+    res.status(500).json({ stat: 'fail', message: err.message })
+  }
+})
 
+module.exports = router
 module.exports = router
