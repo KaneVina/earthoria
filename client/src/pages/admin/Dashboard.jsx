@@ -18,35 +18,33 @@ import {
   PieChart,
   Pie,
   Cell,
-  Legend,
 } from "recharts";
 import api from "../../services/api";
 import { formatPrice, formatDate } from "../../utils/helpers";
-import { ORDER_STATUS } from "../../utils/constants";
 import AdminLayout from "./AdminLayout";
 import ServerStatus from "./ServerStatus";
 
 /* ── Design tokens (mirror admin.css vars) ── */
 const T = {
   forest: "#0D3330",
-  green: "#4a9e3f",
-  blue: "#2a78d6",
-  amber: "#eda100",
+  green:  "#4a9e3f",
+  blue:   "#2a78d6",
+  amber:  "#eda100",
   purple: "#4a3aa7",
-  red: "#e34948",
-  grid: "#e8e5de",
-  tick: "#8a9990",
-  surface: "#FAFAF7",
+  red:    "#e34948",
+  grid:   "#e8e5de",
+  tick:   "#8a9990",
+  surface:"#FAFAF7",
 };
 
 /* ── Order status display config ── */
 const ORDER_META = {
-  PENDING: { label: "Chờ xử lý", cls: "warning" },
-  CONFIRMED: { label: "Đã xác nhận", cls: "info" },
-  SHIPPING: { label: "Vận chuyển", cls: "info" },
-  DELIVERED: { label: "Đã giao", cls: "success" },
-  CANCELLED: { label: "Hủy đơn", cls: "danger" },
-  REFUNDED: { label: "Hoàn tiền", cls: "danger" },
+  PENDING:   { label: "Chờ xử lý",   cls: "warning" },
+  CONFIRMED: { label: "Đã xác nhận", cls: "info"    },
+  SHIPPING:  { label: "Vận chuyển",  cls: "info"    },
+  DELIVERED: { label: "Đã giao",     cls: "success" },
+  CANCELLED: { label: "Hủy đơn",    cls: "danger"  },
+  REFUNDED:  { label: "Hoàn tiền",   cls: "danger"  },
 };
 
 /* ── Custom Tooltip for BarChart ── */
@@ -69,20 +67,12 @@ const RevenueTooltip = ({ active, payload, label }) => {
       {payload.map((p, i) => (
         <div
           key={i}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 7,
-            marginBottom: 3,
-          }}
+          style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}
         >
           <span
             style={{
-              width: 8,
-              height: 8,
-              borderRadius: 2,
-              background: p.fill,
-              display: "inline-block",
+              width: 8, height: 8, borderRadius: 2,
+              background: p.fill, display: "inline-block",
             }}
           />
           <span style={{ color: "#666" }}>{p.name}:</span>
@@ -96,14 +86,7 @@ const RevenueTooltip = ({ active, payload, label }) => {
 };
 
 /* ── Custom label for Pie ── */
-const renderPieLabel = ({
-  cx,
-  cy,
-  midAngle,
-  innerRadius,
-  outerRadius,
-  percent,
-}) => {
+const renderPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
   if (percent < 0.06) return null;
   const RADIAN = Math.PI / 180;
   const r = innerRadius + (outerRadius - innerRadius) * 0.5;
@@ -111,8 +94,7 @@ const renderPieLabel = ({
   const y = cy + r * Math.sin(-midAngle * RADIAN);
   return (
     <text
-      x={x}
-      y={y}
+      x={x} y={y}
       fill="#fff"
       textAnchor="middle"
       dominantBaseline="central"
@@ -126,98 +108,60 @@ const renderPieLabel = ({
 export default function Dashboard() {
   const { data, isLoading } = useQuery({
     queryKey: ["admin-dashboard"],
-    queryFn: () => api.get("/admin/dashboard").then((r) => r.data.data),
+    queryFn:  () => api.get("/admin/dashboard").then((r) => r.data.data),
     staleTime: 60_000,
   });
 
   const stats = data?.stats;
 
-  /* ── Static sample data (replace with API when ready) ── */
+  /* ── Fallback data khi chưa có API hoặc đang tải ── */
   const revenueData = data?.revenueChart ?? [
-    { month: "T1", revenue: 18, orders: 96 },
-    { month: "T2", revenue: 22, orders: 118 },
-    { month: "T3", revenue: 19, orders: 104 },
-    { month: "T4", revenue: 28, orders: 149 },
-    { month: "T5", revenue: 24, orders: 131 },
-    { month: "T6", revenue: 31, orders: 168 },
+    { month: "T1", revenue: 0, orders: 0 },
+    { month: "T2", revenue: 0, orders: 0 },
+    { month: "T3", revenue: 0, orders: 0 },
+    { month: "T4", revenue: 0, orders: 0 },
+    { month: "T5", revenue: 0, orders: 0 },
+    { month: "T6", revenue: 0, orders: 0 },
   ];
 
-  const orderPieData = data?.orderStatusChart ?? [
-    { name: "Chờ xử lý", value: 18, color: T.amber },
-    { name: "Đã xác nhận", value: 25, color: T.blue },
-    { name: "Vận chuyển", value: 22, color: T.purple },
-    { name: "Đã giao", value: 30, color: T.green },
-    { name: "Hủy đơn", value: 5, color: T.red },
-  ];
+  const orderPieData = data?.orderStatusChart ?? [];
 
-  const topBooksData = data?.topBooks ?? [
-    { title: "Đất Rừng Phương Nam", sold: 87 },
-    { title: "Cố Hương", sold: 74 },
-    { title: "Nhà Giả Kim", sold: 68 },
-    { title: "Tôi Thấy Hoa Vàng", sold: 55 },
-    { title: "Mắt Biếc", sold: 49 },
-  ];
+  const topBooksData = data?.topBooks ?? [];
 
-  const activityFeed = data?.activity ?? [
-    {
-      type: "green",
-      text: "Đơn hàng #a3f91b đã giao thành công",
-      time: "5 phút trước",
-    },
-    {
-      type: "amber",
-      text: "Người dùng mới đăng ký: nguyenthao@gmail.com",
-      time: "18 phút trước",
-    },
-    {
-      type: "blue",
-      text: 'Sách "Thiền Định & Tâm Thức" cập nhật tồn kho',
-      time: "1 giờ trước",
-    },
-    {
-      type: "red",
-      text: "Đơn hàng #c72da0 bị hủy bởi khách hàng",
-      time: "2 giờ trước",
-    },
-    {
-      type: "green",
-      text: "Thanh toán #b91ee3 xác nhận thành công — 498.000đ",
-      time: "3 giờ trước",
-    },
-  ];
+  const activityFeed = data?.activity ?? [];
 
   const kpiCards = [
     {
       label: "Người dùng",
       value: stats?.totalUsers ?? "—",
-      icon: Users,
-      accent: "blue",
-      delta: "+12%",
-      sub: "so với tháng trước",
+      icon:  Users,
+      accent:"blue",
+      delta: null,
+      sub:   "khách hàng đã đăng ký",
     },
     {
       label: "Đầu sách",
       value: stats?.totalBooks ?? "—",
-      icon: BookOpen,
-      accent: "green",
-      delta: "+4",
-      sub: "đầu sách mới",
+      icon:  BookOpen,
+      accent:"green",
+      delta: null,
+      sub:   "đầu sách đang hiển thị",
     },
     {
       label: "Đơn hàng",
       value: stats?.totalOrders ?? "—",
-      icon: ShoppingBag,
-      accent: "amber",
-      delta: "+18%",
-      sub: "so với tháng trước",
+      icon:  ShoppingBag,
+      accent:"amber",
+      delta: null,
+      sub:   "tổng đơn hàng",
     },
     {
       label: "Doanh thu",
       value: isLoading ? "—" : formatPrice(stats?.revenue ?? 0),
-      icon: TrendingUp,
-      accent: "purple",
-      delta: "+9%",
-      sub: "so với tháng trước",
+      icon:  TrendingUp,
+      accent:"purple",
+      delta: null,
+      sub:   "từ đơn đã thanh toán",
     },
   ];
 
@@ -247,12 +191,7 @@ export default function Dashboard() {
                 {isLoading ? (
                   <span
                     className="a-skeleton"
-                    style={{
-                      display: "inline-block",
-                      width: 80,
-                      height: 28,
-                      borderRadius: 4,
-                    }}
+                    style={{ display: "inline-block", width: 80, height: 28, borderRadius: 4 }}
                   />
                 ) : (
                   card.value
@@ -260,15 +199,15 @@ export default function Dashboard() {
               </div>
               <div className="a-kpi-delta">
                 <ArrowUpRight size={12} />
-                <span>
-                  {card.delta} {card.sub}
-                </span>
+                <span>{card.sub}</span>
               </div>
             </div>
           );
         })}
       </div>
+
       <ServerStatus />
+
       {/* ── Charts row 1: Revenue + Donut ── */}
       <div className="a-chart-grid-2">
         {/* Revenue Bar Chart */}
@@ -308,18 +247,8 @@ export default function Dashboard() {
                 content={<RevenueTooltip />}
                 cursor={{ fill: "rgba(13,51,48,0.04)" }}
               />
-              <Bar
-                dataKey="revenue"
-                name="Doanh thu"
-                fill={T.forest}
-                radius={[4, 4, 0, 0]}
-              />
-              <Bar
-                dataKey="orders"
-                name="Đơn hàng"
-                fill={T.green}
-                radius={[4, 4, 0, 0]}
-              />
+              <Bar dataKey="revenue" name="Doanh thu" fill={T.forest} radius={[4, 4, 0, 0]} />
+              <Bar dataKey="orders"  name="Đơn hàng"  fill={T.green}  radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -332,73 +261,60 @@ export default function Dashboard() {
             </h3>
             <p className="a-chart-sub">Trạng thái hiện tại</p>
           </div>
-          <ResponsiveContainer width="100%" height={160}>
-            <PieChart>
-              <Pie
-                data={orderPieData}
-                cx="50%"
-                cy="50%"
-                innerRadius={46}
-                outerRadius={72}
-                paddingAngle={2}
-                dataKey="value"
-                labelLine={false}
-                label={renderPieLabel}
-              >
-                {orderPieData.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip
-                formatter={(val, name) => [`${val}%`, name]}
-                contentStyle={{
-                  fontSize: 12,
-                  borderRadius: 8,
-                  border: "1px solid #e8e5de",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: 5,
-              marginTop: 4,
-            }}
-          >
-            {orderPieData.map((item, i) => (
-              <div
-                key={i}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  fontSize: 11,
-                }}
-              >
-                <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <span
-                    style={{
-                      width: 8,
-                      height: 8,
-                      borderRadius: 2,
-                      background: item.color,
-                      flexShrink: 0,
-                      display: "inline-block",
+          {orderPieData.length > 0 ? (
+            <>
+              <ResponsiveContainer width="100%" height={160}>
+                <PieChart>
+                  <Pie
+                    data={orderPieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={46}
+                    outerRadius={72}
+                    paddingAngle={2}
+                    dataKey="value"
+                    labelLine={false}
+                    label={renderPieLabel}
+                  >
+                    {orderPieData.map((entry, i) => (
+                      <Cell key={i} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(val, name) => [`${val}%`, name]}
+                    contentStyle={{
+                      fontSize: 12, borderRadius: 8,
+                      border: "1px solid #e8e5de",
+                      boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
                     }}
                   />
-                  <span style={{ color: "rgba(13,51,48,0.6)" }}>
-                    {item.name}
-                  </span>
-                </span>
-                <span style={{ fontWeight: 500, color: T.forest }}>
-                  {item.value}%
-                </span>
+                </PieChart>
+              </ResponsiveContainer>
+              <div style={{ display: "flex", flexDirection: "column", gap: 5, marginTop: 4 }}>
+                {orderPieData.map((item, i) => (
+                  <div
+                    key={i}
+                    style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11 }}
+                  >
+                    <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <span
+                        style={{
+                          width: 8, height: 8, borderRadius: 2,
+                          background: item.color, flexShrink: 0, display: "inline-block",
+                        }}
+                      />
+                      <span style={{ color: "rgba(13,51,48,0.6)" }}>{item.name}</span>
+                    </span>
+                    <span style={{ fontWeight: 500, color: T.forest }}>{item.value}%</span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </>
+          ) : (
+            <div style={{ padding: "40px 0", textAlign: "center", color: "rgba(13,51,48,0.3)", fontSize: 12 }}>
+              {isLoading ? "Đang tải..." : "Chưa có dữ liệu đơn hàng"}
+            </div>
+          )}
         </div>
       </div>
 
@@ -412,44 +328,41 @@ export default function Dashboard() {
             </h3>
             <p className="a-chart-sub">Tháng này</p>
           </div>
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart
-              data={topBooksData}
-              layout="vertical"
-              margin={{ top: 0, right: 16, bottom: 0, left: 8 }}
-            >
-              <CartesianGrid horizontal={false} stroke={T.grid} />
-              <XAxis
-                type="number"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: T.tick, fontSize: 11 }}
-              />
-              <YAxis
-                type="category"
-                dataKey="title"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fill: T.tick, fontSize: 11 }}
-                width={130}
-              />
-              <Tooltip
-                formatter={(val) => [`${val} cuốn`, "Đã bán"]}
-                contentStyle={{
-                  fontSize: 12,
-                  borderRadius: 8,
-                  border: "1px solid #e8e5de",
-                }}
-                cursor={{ fill: "rgba(13,51,48,0.03)" }}
-              />
-              <Bar
-                dataKey="sold"
-                fill={T.forest}
-                radius={[0, 4, 4, 0]}
-                barSize={16}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          {topBooksData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={180}>
+              <BarChart
+                data={topBooksData}
+                layout="vertical"
+                margin={{ top: 0, right: 16, bottom: 0, left: 8 }}
+              >
+                <CartesianGrid horizontal={false} stroke={T.grid} />
+                <XAxis
+                  type="number"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: T.tick, fontSize: 11 }}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="title"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: T.tick, fontSize: 11 }}
+                  width={130}
+                />
+                <Tooltip
+                  formatter={(val) => [`${val} cuốn`, "Đã bán"]}
+                  contentStyle={{ fontSize: 12, borderRadius: 8, border: "1px solid #e8e5de" }}
+                  cursor={{ fill: "rgba(13,51,48,0.03)" }}
+                />
+                <Bar dataKey="sold" fill={T.forest} radius={[0, 4, 4, 0]} barSize={16} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div style={{ padding: "40px 0", textAlign: "center", color: "rgba(13,51,48,0.3)", fontSize: 12 }}>
+              {isLoading ? "Đang tải..." : "Chưa có đơn hàng tháng này"}
+            </div>
+          )}
         </div>
 
         {/* Activity feed */}
@@ -461,15 +374,25 @@ export default function Dashboard() {
             <p className="a-chart-sub">Cập nhật gần nhất</p>
           </div>
           <div className="a-activity">
-            {activityFeed.map((item, i) => (
-              <div key={i} className="a-activity-item">
-                <div className={`a-activity-dot ${item.type}`} />
-                <div>
-                  <div className="a-activity-text">{item.text}</div>
-                  <div className="a-activity-time">{item.time}</div>
-                </div>
+            {isLoading ? (
+              <div style={{ padding: "24px 0", textAlign: "center", color: "rgba(13,51,48,0.3)", fontSize: 12 }}>
+                Đang tải...
               </div>
-            ))}
+            ) : activityFeed.length > 0 ? (
+              activityFeed.map((item, i) => (
+                <div key={i} className="a-activity-item">
+                  <div className={`a-activity-dot ${item.type}`} />
+                  <div>
+                    <div className="a-activity-text">{item.text}</div>
+                    <div className="a-activity-time">{item.time}</div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{ padding: "24px 0", textAlign: "center", color: "rgba(13,51,48,0.3)", fontSize: 12 }}>
+                Chưa có hoạt động nào
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -480,26 +403,16 @@ export default function Dashboard() {
           <h3 className="a-table-title">
             Đơn hàng <em>gần đây</em>
           </h3>
-          <a href="/admin/orders" className="a-table-link">
+          <a href="/dashboard/orders" className="a-table-link">
             Xem tất cả{" "}
-            <ArrowUpRight
-              size={11}
-              style={{ display: "inline", verticalAlign: "middle" }}
-            />
+            <ArrowUpRight size={11} style={{ display: "inline", verticalAlign: "middle" }} />
           </a>
         </div>
         <div className="a-table-wrap">
           <table className="a-table">
             <thead>
               <tr>
-                {[
-                  "Mã đơn",
-                  "Khách hàng",
-                  "Sản phẩm",
-                  "Tổng tiền",
-                  "Trạng thái",
-                  "Ngày đặt",
-                ].map((h) => (
+                {["Mã đơn", "Khách hàng", "Sản phẩm", "Tổng tiền", "Trạng thái", "Ngày đặt"].map((h) => (
                   <th key={h}>{h}</th>
                 ))}
               </tr>
@@ -507,27 +420,13 @@ export default function Dashboard() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td
-                    colSpan={6}
-                    style={{
-                      padding: 40,
-                      textAlign: "center",
-                      color: "rgba(13,51,48,0.3)",
-                    }}
-                  >
+                  <td colSpan={6} style={{ padding: 40, textAlign: "center", color: "rgba(13,51,48,0.3)" }}>
                     Đang tải...
                   </td>
                 </tr>
               ) : !data?.recentOrders?.length ? (
                 <tr>
-                  <td
-                    colSpan={6}
-                    style={{
-                      padding: 40,
-                      textAlign: "center",
-                      color: "rgba(13,51,48,0.3)",
-                    }}
-                  >
+                  <td colSpan={6} style={{ padding: 40, textAlign: "center", color: "rgba(13,51,48,0.3)" }}>
                     Chưa có đơn hàng nào
                   </td>
                 </tr>
@@ -538,23 +437,15 @@ export default function Dashboard() {
                     <tr key={order.id}>
                       <td className="a-td-mono">{order.id.slice(0, 8)}...</td>
                       <td>
-                        <div style={{ fontWeight: 500, fontSize: 12 }}>
-                          {order.user?.name}
-                        </div>
+                        <div style={{ fontWeight: 500, fontSize: 12 }}>{order.user?.name}</div>
                         <div className="a-td-muted">{order.user?.email}</div>
                       </td>
-                      <td className="a-td-muted">
-                        {order.items?.length} sản phẩm
-                      </td>
+                      <td className="a-td-muted">{order.items?.length ?? 0} sản phẩm</td>
                       <td className="a-td-serif">{formatPrice(order.total)}</td>
                       <td>
-                        <span className={`a-badge ${meta.cls}`}>
-                          {meta.label}
-                        </span>
+                        <span className={`a-badge ${meta.cls}`}>{meta.label}</span>
                       </td>
-                      <td className="a-td-muted">
-                        {formatDate(order.createdAt)}
-                      </td>
+                      <td className="a-td-muted">{formatDate(order.createdAt)}</td>
                     </tr>
                   );
                 })

@@ -2,36 +2,50 @@ const express = require('express')
 const router = express.Router()
 const {
   getDashboard,
-  adminGetBooks, adminCreateBook, adminUpdateBook, adminDeleteBook,
-  adminGetCategories, adminCreateCategory, adminUpdateCategory,
-  adminGetOrders, adminUpdateOrder,
-  adminGetUsers, adminToggleUser,
-  adminGetCoupons, adminCreateCoupon, adminToggleCoupon
+  // Products (books)
+  getProducts, createProduct, updateProduct, deleteProduct,
+  // Categories
+  getCategories, createCategory, updateCategory,
+  // Orders
+  getOrders, updateOrderStatus,
+  // Users
+  getUsers, toggleUser, backfillUserCodes,
+  // Coupons
+  getCoupons, createCoupon, toggleCoupon,
 } = require('../controllers/adminController')
 const { protect, adminOnly } = require('../middlewares/authMiddleware')
 
 router.use(protect, adminOnly)
 
+// ── Dashboard ──
 router.get('/dashboard', getDashboard)
 
-router.get('/books',         adminGetBooks)
-router.post('/books',        adminCreateBook)
-router.put('/books/:id',     adminUpdateBook)
-router.delete('/books/:id',  adminDeleteBook)
+// ── Products (/admin/products) ──
+router.get('/products',        getProducts)
+router.post('/products',       createProduct)
+router.put('/products/:id',    updateProduct)
+router.delete('/products/:id', deleteProduct)
 
-router.get('/categories',        adminGetCategories)
-router.post('/categories',       adminCreateCategory)
-router.put('/categories/:id',    adminUpdateCategory)
+// ── Categories ──
+router.get('/categories',        getCategories)
+router.post('/categories',       createCategory)
+router.put('/categories/:id',    updateCategory)
 
-router.get('/orders',            adminGetOrders)
-router.put('/orders/:id',        adminUpdateOrder)
+// ── Orders ──
+router.get('/orders',      getOrders)
+router.put('/orders/:id',  updateOrderStatus)
 
-router.get('/users',             adminGetUsers)
-router.put('/users/:id/toggle',  adminToggleUser)
+// ── Users ──
+router.get('/users',                  getUsers)
+router.put('/users/:id/toggle',       toggleUser)
+// Chạy 1 lần sau migration để gắn mã cho user cũ
+router.post('/users/backfill-codes',  backfillUserCodes)
 
-router.get('/coupons',           adminGetCoupons)
-router.post('/coupons',          adminCreateCoupon)
-router.put('/coupons/:id/toggle',adminToggleCoupon)
+// ── Coupons ──
+router.get('/coupons',            getCoupons)
+router.post('/coupons',           createCoupon)
+router.put('/coupons/:id/toggle', toggleCoupon)
+
 // ── UptimeRobot proxy ──
 router.get('/server-status', async (req, res) => {
   try {
