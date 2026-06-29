@@ -673,7 +673,9 @@ nav {
 .how-step {
   padding: 48px;
   border: 0.5px solid var(--border);
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transition: all 0.4s ease;
@@ -7992,7 +7994,9 @@ body.dark-mode .search-result-age {
   padding: 6px 12px;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
   z-index: 20;
   border: 0.5px solid var(--border-gold);
 }
@@ -8395,8 +8399,14 @@ body.dark-mode .skeleton {
 }
 
 @keyframes stepFadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Email mask badge */
@@ -8430,7 +8440,9 @@ body.dark-mode .skeleton {
   background: var(--white);
   color: var(--forest);
   outline: none;
-  transition: border-color 0.25s, box-shadow 0.25s;
+  transition:
+    border-color 0.25s,
+    box-shadow 0.25s;
   -moz-appearance: textfield;
 }
 
