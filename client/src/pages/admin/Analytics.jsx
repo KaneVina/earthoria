@@ -86,6 +86,8 @@ async function umamiGet(path, params = {}) {
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
   })
+  // 400 = không có data (chưa có traffic), trả rỗng thay vì crash
+  if (res.status === 400) return []
   if (!res.ok) throw new Error(`Umami API lỗi: ${res.status}`)
   return res.json()
 }
