@@ -1,12 +1,14 @@
 // AdminLayout.jsx — Shared sidebar layout for all admin pages
 import '../../components/assets/css/admin.css'
 import { useState, useEffect } from 'react'
-import { useLocation, Link } from 'react-router-dom'
+import { useLocation, Link, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Package, ShoppingBag, Users, Tag,
   ChevronRight, ChevronLeft, LogOut, Bell, Menu, X,
   Settings, Search, BarChart2,
 } from 'lucide-react'
+import { useAuthStore } from '../../store/authStore'
+import toast from 'react-hot-toast'
 
 const NAV_ITEMS = [
   { label: 'Dashboard',    href: '/dashboard',             icon: LayoutDashboard },
@@ -18,8 +20,17 @@ const NAV_ITEMS = [
 ]
 
 export default function AdminLayout({ children }) {
-  const location = useLocation()
+  const location    = useLocation()
+  const navigate    = useNavigate()
   const currentPath = location.pathname
+
+  const { logout } = useAuthStore()
+
+  const handleLogout = () => {
+    logout()
+    toast.success('Đã đăng xuất')
+    navigate('/')
+  }
 
   const [collapsed, setCollapsed]     = useState(false)
   const [mobileOpen, setMobileOpen]   = useState(false)
@@ -140,7 +151,7 @@ export default function AdminLayout({ children }) {
             {!collapsed && (
               <button
                 className="a-collapse-btn"
-                onClick={() => { /* logout handler */ }}
+                onClick={handleLogout}
                 aria-label="Đăng xuất"
               >
                 <LogOut size={12} />
