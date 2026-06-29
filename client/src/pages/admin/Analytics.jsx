@@ -319,7 +319,7 @@ export default function Analytics() {
       const [sumData, pvData, pagesData, countriesData, citiesData, devData, refData] = await Promise.all([
         umamiGet('/stats',     { startAt, endAt }),
         umamiGet('/pageviews', pvParams),
-        umamiGet('/metrics',   { ...metricsParams, type: 'url' }),
+        umamiGet('/metrics',   { ...metricsParams, type: 'page' }),
         umamiGet('/metrics',   { ...metricsParams, type: 'country' }),
         umamiGet('/metrics',   { ...metricsParams, type: 'city' }),
         umamiGet('/metrics',   { ...metricsParams, type: 'device' }),
