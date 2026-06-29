@@ -65,7 +65,13 @@ export default function Register() {
   };
 
   const strengthLabels = ["", "Yếu", "Trung bình", "Tốt", "Mạnh"];
-  const strengthColors = ["", "#e05c5c", "#e0a840", "var(--sage)", "var(--gold)"];
+  const strengthColors = [
+    "",
+    "#e05c5c",
+    "#e0a840",
+    "var(--sage)",
+    "var(--gold)",
+  ];
   const strengthClasses = ["", "weak", "fair", "good", "strong"];
 
   const pwChecks = (val) => ({
@@ -89,7 +95,11 @@ export default function Register() {
       setPendingData({ email, name, password: data.password });
 
       // Gửi OTP — user chưa được tạo trong DB
-      await authService.sendRegisterOtp({ name, email, password: data.password });
+      await authService.sendRegisterOtp({
+        name,
+        email,
+        password: data.password,
+      });
 
       toast.success(`Mã OTP đã gửi về ${maskEmail(email)}`);
       setResendCooldown(60);
@@ -125,7 +135,10 @@ export default function Register() {
 
   const handleOtpPaste = (e) => {
     e.preventDefault();
-    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    const pasted = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, 6);
     if (!pasted) return;
     const next = pasted.split("").concat(Array(6).fill("")).slice(0, 6);
     setOtp(next);
@@ -149,7 +162,8 @@ export default function Register() {
       toast.success(`Chào mừng đến với Earthoria, ${user.name}! 🌿`);
       navigate("/");
     } catch (err) {
-      const msg = err.response?.data?.message || "OTP không đúng hoặc đã hết hạn";
+      const msg =
+        err.response?.data?.message || "OTP không đúng hoặc đã hết hạn";
       setOtpError(msg);
       toast.error(msg);
       setOtp(["", "", "", "", "", ""]);
@@ -197,23 +211,20 @@ export default function Register() {
         <div className="auth-visual-grid"></div>
         <div className="auth-orb auth-orb-1"></div>
         <div className="auth-orb auth-orb-2"></div>
-
-        <Link to="/" className="auth-visual-logo">
-          <div className="auth-visual-mark">
-            <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M8 2L14 8L8 14L2 8L8 2Z"
-                stroke="#4a9e3f"
-                strokeWidth="1"
-                fill="none"
-              />
-              <path d="M8 5L11 8L8 11L5 8L8 5Z" fill="#4a9e3f" />
-            </svg>
-          </div>
-          <span className="auth-visual-wordmark">EARTHORIA</span>
-        </Link>
-
         <div className="auth-visual-content">
+          <Link to="/" className="auth-visual-logo">
+            <img
+              src="/logo-dai-trang.png"
+              alt="Earthoria"
+              style={{
+                height: "36px",
+                width: "auto",
+                objectFit: "contain",
+                marginBottom: "8px",
+              }}
+            />
+          </Link>
+
           <p className="auth-visual-tagline">Hành trình tri thức</p>
           <h2 className="auth-visual-headline">
             Mở ra
@@ -288,7 +299,6 @@ export default function Register() {
       {/* RIGHT */}
       <div className="auth-form-panel">
         <div className="auth-form-wrap">
-
           {/* ══════════ BƯỚC OTP ══════════ */}
           {step === "otp" ? (
             <div className="auth-otp-step">
@@ -335,7 +345,14 @@ export default function Register() {
 
               {/* Lỗi OTP */}
               {otpError && (
-                <p className="field-error" style={{ textAlign: "center", marginTop: "-16px", marginBottom: "12px" }}>
+                <p
+                  className="field-error"
+                  style={{
+                    textAlign: "center",
+                    marginTop: "-16px",
+                    marginBottom: "12px",
+                  }}
+                >
                   {otpError}
                 </p>
               )}
@@ -414,14 +431,15 @@ export default function Register() {
                 </button>
               </p>
             </div>
-
           ) : (
             /* ══════════ BƯỚC ĐĂNG KÝ (giữ nguyên) ══════════ */
             <>
               <div className="auth-form-header">
                 <div className="auth-form-eyebrow">
                   <div className="auth-form-eyebrow-line"></div>
-                  <span className="auth-form-eyebrow-text">Đăng ký miễn phí</span>
+                  <span className="auth-form-eyebrow-text">
+                    Đăng ký miễn phí
+                  </span>
                 </div>
                 <h1 className="auth-form-title">
                   Tạo tài khoản
@@ -474,12 +492,20 @@ export default function Register() {
 
               <div className="auth-divider">
                 <div className="auth-divider-line"></div>
-                <span className="auth-divider-text">hoặc đăng ký bằng email</span>
+                <span className="auth-divider-text">
+                  hoặc đăng ký bằng email
+                </span>
                 <div className="auth-divider-line"></div>
               </div>
 
               <form onSubmit={handleSubmit(onSubmit)}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "18px",
+                  }}
+                >
                   <div className="auth-field-row">
                     <div className="form-group">
                       <label>Họ</label>
@@ -487,10 +513,14 @@ export default function Register() {
                         type="text"
                         placeholder="Nguyễn"
                         className={errors.firstname ? "error" : ""}
-                        {...register("firstname", { required: "Vui lòng nhập họ" })}
+                        {...register("firstname", {
+                          required: "Vui lòng nhập họ",
+                        })}
                       />
                       {errors.firstname && (
-                        <p className="field-error">{errors.firstname.message}</p>
+                        <p className="field-error">
+                          {errors.firstname.message}
+                        </p>
                       )}
                     </div>
                     <div className="form-group">
@@ -499,7 +529,9 @@ export default function Register() {
                         type="text"
                         placeholder="An"
                         className={errors.lastname ? "error" : ""}
-                        {...register("lastname", { required: "Vui lòng nhập tên" })}
+                        {...register("lastname", {
+                          required: "Vui lòng nhập tên",
+                        })}
                       />
                       {errors.lastname && (
                         <p className="field-error">{errors.lastname.message}</p>
@@ -536,12 +568,23 @@ export default function Register() {
                         className={errors.password ? "error" : ""}
                         {...register("password", {
                           required: "Vui lòng nhập mật khẩu",
-                          minLength: { value: 8, message: "Mật khẩu tối thiểu 8 ký tự" },
-                          maxLength: { value: 16, message: "Mật khẩu tối đa 16 ký tự" },
+                          minLength: {
+                            value: 8,
+                            message: "Mật khẩu tối thiểu 8 ký tự",
+                          },
+                          maxLength: {
+                            value: 16,
+                            message: "Mật khẩu tối đa 16 ký tự",
+                          },
                           validate: {
-                            hasUpper: (v) => /[A-Z]/.test(v) || "Cần ít nhất 1 chữ hoa (A-Z)",
-                            hasLower: (v) => /[a-z]/.test(v) || "Cần ít nhất 1 chữ thường (a-z)",
-                            hasSpecial: (v) => /[^A-Za-z0-9]/.test(v) || "Cần ít nhất 1 ký tự đặc biệt (!@#...)",
+                            hasUpper: (v) =>
+                              /[A-Z]/.test(v) || "Cần ít nhất 1 chữ hoa (A-Z)",
+                            hasLower: (v) =>
+                              /[a-z]/.test(v) ||
+                              "Cần ít nhất 1 chữ thường (a-z)",
+                            hasSpecial: (v) =>
+                              /[^A-Za-z0-9]/.test(v) ||
+                              "Cần ít nhất 1 ký tự đặc biệt (!@#...)",
                           },
                           onChange: (e) => checkStrength(e.target.value),
                         })}
@@ -565,7 +608,10 @@ export default function Register() {
                             />
                           ))}
                         </div>
-                        <p className="auth-strength-label" style={{ color: strengthColors[strength] }}>
+                        <p
+                          className="auth-strength-label"
+                          style={{ color: strengthColors[strength] }}
+                        >
                           {strengthLabels[strength]}
                         </p>
                       </>
@@ -576,20 +622,51 @@ export default function Register() {
 
                     <div className="pw-requirements">
                       {[
-                        { key: "length",  label: "8 – 16 ký tự",                    ok: checks.length  },
-                        { key: "upper",   label: "Ít nhất 1 chữ HOA (A-Z)",         ok: checks.upper   },
-                        { key: "lower",   label: "Ít nhất 1 chữ thường (a-z)",      ok: checks.lower   },
-                        { key: "special", label: "Ít nhất 1 ký tự đặc biệt (!@#…)", ok: checks.special },
+                        {
+                          key: "length",
+                          label: "8 – 16 ký tự",
+                          ok: checks.length,
+                        },
+                        {
+                          key: "upper",
+                          label: "Ít nhất 1 chữ HOA (A-Z)",
+                          ok: checks.upper,
+                        },
+                        {
+                          key: "lower",
+                          label: "Ít nhất 1 chữ thường (a-z)",
+                          ok: checks.lower,
+                        },
+                        {
+                          key: "special",
+                          label: "Ít nhất 1 ký tự đặc biệt (!@#…)",
+                          ok: checks.special,
+                        },
                       ].map((c) => (
-                        <div key={c.key} className={`pw-req ${c.ok ? "ok" : ""}`}>
+                        <div
+                          key={c.key}
+                          className={`pw-req ${c.ok ? "ok" : ""}`}
+                        >
                           {c.ok ? (
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                              stroke="currentColor" strokeWidth="2.5">
+                            <svg
+                              width="12"
+                              height="12"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                            >
                               <polyline points="20 6 9 17 4 12" />
                             </svg>
                           ) : (
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                              stroke="currentColor" strokeWidth="2">
+                            <svg
+                              width="12"
+                              height="12"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
                               <circle cx="12" cy="12" r="10" />
                             </svg>
                           )}
@@ -609,7 +686,8 @@ export default function Register() {
                         className={errors.password2 ? "error" : ""}
                         {...register("password2", {
                           required: "Vui lòng xác nhận mật khẩu",
-                          validate: (v) => v === password || "Mật khẩu không khớp",
+                          validate: (v) =>
+                            v === password || "Mật khẩu không khớp",
                         })}
                       />
                       <button
@@ -632,7 +710,9 @@ export default function Register() {
                     />
                     <div
                       className="auth-checkbox"
-                      style={{ borderColor: errors.terms ? "#c0392b" : undefined }}
+                      style={{
+                        borderColor: errors.terms ? "#c0392b" : undefined,
+                      }}
                     >
                       <svg
                         width="10"
@@ -651,7 +731,11 @@ export default function Register() {
                     </span>
                   </label>
 
-                  <button type="submit" className="auth-submit" disabled={loading}>
+                  <button
+                    type="submit"
+                    className="auth-submit"
+                    disabled={loading}
+                  >
                     {loading ? (
                       <svg
                         width="16"

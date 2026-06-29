@@ -22,29 +22,29 @@ export default function Login() {
 
   const onSubmit = async (data) => {
     try {
-      setLoading(true)
-      const res  = await authService.login(data)
-      console.log('res.data:', res.data)
-      const { user, token, isNew } = res.data.data
-      console.log('user.role:', user.role)
-      setAuth(user, token)
-      console.log('store sau setAuth:', useAuthStore.getState())
+      setLoading(true);
+      const res = await authService.login(data);
+      console.log("res.data:", res.data);
+      const { user, token, isNew } = res.data.data;
+      console.log("user.role:", user.role);
+      setAuth(user, token);
+      console.log("store sau setAuth:", useAuthStore.getState());
 
-     setAuth(user, token)
+      setAuth(user, token);
 
-      if (user.role === 'ADMIN') {
-        window.location.href = '/dashboard'
+      if (user.role === "ADMIN") {
+        window.location.href = "/dashboard";
       } else {
-        window.location.href = '/'
+        window.location.href = "/";
       }
 
-      toast.success(`Chào mừng trở lại, ${user.name}!`)
+      toast.success(`Chào mừng trở lại, ${user.name}!`);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Đăng nhập thất bại')
+      toast.error(err.response?.data?.message || "Đăng nhập thất bại");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <main className="auth-page">
@@ -56,18 +56,11 @@ export default function Login() {
         <div className="auth-orb auth-orb-2"></div>
 
         <Link to="/" className="auth-visual-logo">
-          <div className="auth-visual-mark">
-            <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M8 2L14 8L8 14L2 8L8 2Z"
-                stroke="#4a9e3f"
-                strokeWidth="1"
-                fill="none"
-              />
-              <path d="M8 5L11 8L8 11L5 8L8 5Z" fill="#4a9e3f" />
-            </svg>
-          </div>
-          <span className="auth-visual-wordmark">EARTHORIA</span>
+          <img
+            src="/logo-dai-trang.png"
+            alt="Earthoria"
+            style={{ height: "36px", width: "auto", objectFit: "contain" }}
+          />
         </Link>
 
         <div className="auth-visual-content">
