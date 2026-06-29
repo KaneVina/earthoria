@@ -5,7 +5,9 @@
 //   1. Tạo file .env trong thư mục client:
 //      VITE_UMAMI_URL=https://your-umami.onrender.com
 //      VITE_UMAMI_SITE_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-//      VITE_UMAMI_TOKEN=your_api_token   (lấy từ Umami → Settings → API Keys)
+//      VITE_UMAMI_USER=admin
+//      VITE_UMAMI_PASS=your_password
+//      (Token được tự động lấy qua POST /api/auth/login, cache 23 giờ)
 //
 //   2. Thêm tracking script vào index.html:
 //      <script defer src="${VITE_UMAMI_URL}/script.js" data-website-id="${VITE_UMAMI_SITE_ID}"></script>
@@ -23,9 +25,10 @@ import {
 import AdminLayout from './AdminLayout'
 
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
-const UMAMI_URL    = import.meta.env.VITE_UMAMI_URL    || ''
-const SITE_ID      = import.meta.env.VITE_UMAMI_SITE_ID || ''
-const UMAMI_TOKEN  = import.meta.env.VITE_UMAMI_TOKEN  || ''
+const UMAMI_URL  = import.meta.env.VITE_UMAMI_URL    || ''
+const SITE_ID    = import.meta.env.VITE_UMAMI_SITE_ID || ''
+const UMAMI_USER = import.meta.env.VITE_UMAMI_USER   || 'admin'
+const UMAMI_PASS = import.meta.env.VITE_UMAMI_PASS   || ''
 
 const PERIOD_OPTIONS = [
   { label: '7 ngày',  value: '7d',  unit: 'day'   },
@@ -54,15 +57,36 @@ function fmtDur(ms) {
   return m > 0 ? `${m}p ${s % 60}s` : `${s}s`
 }
 
+// ─── TOKEN MANAGER ────────────────────────────────────────────────────────────
+// Token được lấy tự động qua POST /api/auth/login và cache 23 giờ.
+// Không cần VITE_UMAMI_TOKEN trong .env nữa.
+let _token       = null
+let _tokenExpiry = 0
+
+async function getToken() {
+  if (_token && Date.now() < _tokenExpiry) return _token
+  const res = await fetch(`${UMAMI_URL}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: UMAMI_USER, password: UMAMI_PASS }),
+  })
+  if (!res.ok) throw new Error(`Đăng nhập Umami thất bại (${res.status})`)
+  const data = await res.json()
+  _token = data.token
+  _tokenExpiry = Date.now() + 23 * 60 * 60 * 1000   // cache 23 giờ
+  return _token
+}
+
 // ─── API FETCH ────────────────────────────────────────────────────────────────
 async function umamiGet(path, params = {}) {
-  if (!UMAMI_URL || !UMAMI_TOKEN || !SITE_ID) return null
+  if (!UMAMI_URL || !SITE_ID || !UMAMI_PASS) return null
+  const token = await getToken()
   const url = new URL(`${UMAMI_URL}/api/websites/${SITE_ID}${path}`)
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v))
   const res = await fetch(url, {
-    headers: { Authorization: `Bearer ${UMAMI_TOKEN}` },
+    headers: { Authorization: `Bearer ${token}` },
   })
-  if (!res.ok) throw new Error(`Umami API error: ${res.status}`)
+  if (!res.ok) throw new Error(`Umami API lỗi: ${res.status}`)
   return res.json()
 }
 
@@ -241,19 +265,20 @@ function NotConfigured() {
         Chưa cấu hình Umami
       </h2>
       <p style={{ fontSize: 13, color: 'rgba(13,51,48,0.45)', maxWidth: 420, lineHeight: 1.7, marginBottom: 28 }}>
-        Thêm 3 biến sau vào file <code style={{ background: 'rgba(13,51,48,0.07)', padding: '2px 6px', borderRadius: 4, fontFamily: 'monospace' }}>.env</code> của frontend:
+        Thêm các biến sau vào file <code style={{ background: 'rgba(13,51,48,0.07)', padding: '2px 6px', borderRadius: 4, fontFamily: 'monospace' }}>client/.env</code>:
       </p>
       <div style={{
         background: '#0d3330', borderRadius: 10, padding: '16px 24px',
         textAlign: 'left', fontFamily: 'monospace', fontSize: 12,
-        color: '#c8d4cc', lineHeight: 2, width: '100%', maxWidth: 480,
+        color: '#c8d4cc', lineHeight: 2, width: '100%', maxWidth: 500,
       }}>
         <span style={{ color: '#4a9e3f' }}>VITE_UMAMI_URL</span>=https://your-umami.onrender.com<br />
         <span style={{ color: '#4a9e3f' }}>VITE_UMAMI_SITE_ID</span>=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx<br />
-        <span style={{ color: '#4a9e3f' }}>VITE_UMAMI_TOKEN</span>=your_api_token
+        <span style={{ color: '#4a9e3f' }}>VITE_UMAMI_USER</span>=admin<br />
+        <span style={{ color: '#4a9e3f' }}>VITE_UMAMI_PASS</span>=mật_khẩu_của_bạn
       </div>
       <p style={{ fontSize: 12, color: 'rgba(13,51,48,0.35)', marginTop: 20 }}>
-        Token lấy tại: Umami → Settings → API Keys → Add API Key
+        Token sẽ được tự động lấy qua API — không cần tạo API Key thủ công.
       </p>
     </div>
   )
@@ -275,7 +300,7 @@ export default function Analytics() {
   const [devices,   setDevices]   = useState({})
   const [referrers, setReferrers] = useState([])
 
-  const isConfigured = !!(UMAMI_URL && SITE_ID && UMAMI_TOKEN)
+  const isConfigured = !!(UMAMI_URL && SITE_ID && UMAMI_PASS)
   const periodOpt    = PERIOD_OPTIONS.find(p => p.value === period)
 
   // Fetch all data
