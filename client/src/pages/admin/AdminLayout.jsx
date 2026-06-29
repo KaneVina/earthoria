@@ -5,15 +5,16 @@ import { useLocation, Link } from 'react-router-dom'
 import {
   LayoutDashboard, Package, ShoppingBag, Users, Tag,
   ChevronRight, ChevronLeft, LogOut, Bell, Menu, X,
-  Settings, Search,
+  Settings, Search, BarChart2,
 } from 'lucide-react'
 
 const NAV_ITEMS = [
-  { label: 'Dashboard',    href: '/dashboard',          icon: LayoutDashboard },
-  { label: 'Sản phẩm',    href: '/dashboard/products', icon: Package          },
-  { label: 'Đơn hàng',    href: '/dashboard/orders',   icon: ShoppingBag      },
-  { label: 'Người dùng',  href: '/dashboard/users',    icon: Users            },
-  { label: 'Mã giảm giá', href: '/dashboard/coupons',  icon: Tag              },
+  { label: 'Dashboard',    href: '/dashboard',             icon: LayoutDashboard },
+  { label: 'Sản phẩm',    href: '/dashboard/products',    icon: Package          },
+  { label: 'Đơn hàng',    href: '/dashboard/orders',      icon: ShoppingBag      },
+  { label: 'Người dùng',  href: '/dashboard/users',       icon: Users            },
+  { label: 'Mã giảm giá', href: '/dashboard/coupons',     icon: Tag              },
+  { label: 'Analytics',   href: '/dashboard/analytics',   icon: BarChart2        },
 ]
 
 export default function AdminLayout({ children }) {

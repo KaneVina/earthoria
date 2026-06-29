@@ -31,6 +31,7 @@ import EiraChatbox from "./components/EiraChatbox";
 import Wishlist from "./pages/Wishlist";
 import EarthoriaSecurity from "./components/Earthoriasecurity";
 import ContactPage from "./pages/ContactPage";
+import Analytics from "./pages/admin/Analytics";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -143,6 +144,14 @@ export default function App() {
           element={
             <AdminRoute>
               <Products />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/analytics"
+          element={
+            <AdminRoute>
+              <Analytics />
             </AdminRoute>
           }
         />
