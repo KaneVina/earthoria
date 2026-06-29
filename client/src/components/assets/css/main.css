@@ -673,7 +673,7 @@ nav {
 .how-step {
   padding: 48px;
   border: 0.5px solid var(--border);
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(10px);
