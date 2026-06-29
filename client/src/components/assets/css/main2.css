@@ -2737,3 +2737,2023 @@ body.dark-mode .contact-section-sub {
     padding: 32px 16px;
   }
 }
+/*
+ * main2.css — Bổ sung cho main.css
+ * Chỉ load SAU main.css: <link rel="stylesheet" href="main2.css">
+ *
+ * Nội dung:
+ *  1. Dark mode — các component còn thiếu
+ *  2. Mobile responsive — các breakpoint còn thiếu
+ */
+
+/* ═══════════════════════════════════════════════════════════════
+   1. DARK MODE — BỔ SUNG
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Nav chung ── */
+body.dark-mode .nav-links a {
+  color: rgba(180, 200, 188, 0.6);
+}
+body.dark-mode .nav-links a:hover:not(.active) {
+  color: #c8d4cc;
+}
+body.dark-mode .nav-links a.active {
+  background: linear-gradient(135deg, #a8d4bc 0%, #5cb84f 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+body.dark-mode .nav-icon {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .nav-icon:hover {
+  color: var(--gold);
+}
+body.dark-mode .nav-logo-mark {
+  border-color: rgba(74, 158, 63, 0.5);
+}
+body.dark-mode .nav-badge {
+  background: var(--gold);
+  color: #121a16;
+}
+
+/* ── Hero ── */
+body.dark-mode .hero-sub {
+  color: rgba(180, 200, 188, 0.55);
+}
+body.dark-mode .eyebrow-text {
+  color: var(--gold);
+}
+body.dark-mode .hero-floatcard {
+  background: #1c2822;
+  border-color: rgba(74, 158, 63, 0.25);
+}
+body.dark-mode .floatcard-value {
+  color: #c8d4cc;
+}
+body.dark-mode .floatcard-desc {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .cta-secondary {
+  color: #c8d4cc;
+  border-color: rgba(180, 200, 188, 0.3);
+}
+body.dark-mode .cta-secondary:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+body.dark-mode .scroll-hint {
+  color: rgba(180, 200, 188, 0.35);
+}
+
+/* ── Stats ── */
+body.dark-mode .stat-label {
+  color: rgba(180, 200, 188, 0.35);
+}
+body.dark-mode .stat-icon {
+  border-color: rgba(74, 158, 63, 0.25);
+  opacity: 0.8;
+}
+
+/* ── Section headers ── */
+body.dark-mode .section-subtitle {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .section-eyebrow-text {
+  color: var(--gold);
+}
+body.dark-mode .ornament-divider-line {
+  background: rgba(74, 158, 63, 0.2);
+}
+body.dark-mode .ornament-divider-mark {
+  border-color: rgba(74, 158, 63, 0.4);
+}
+
+/* ── Trusted ── */
+body.dark-mode .trusted-label {
+  color: rgba(180, 200, 188, 0.35);
+}
+body.dark-mode .trusted-logo {
+  color: #3a5a45;
+}
+body.dark-mode .trusted-logo:hover {
+  color: #c8d4cc;
+}
+
+/* ── How It Works ── */
+body.dark-mode .how-step {
+  background: #1a2420;
+  border-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .step-desc {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .step-num {
+  color: var(--gold);
+}
+body.dark-mode .step-icon {
+  border-color: rgba(74, 158, 63, 0.25);
+}
+
+/* ── Products section ── */
+body.dark-mode .products-section .section-title {
+  color: #d0ccc4;
+}
+body.dark-mode .product-desc {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .product-price {
+  color: #c8d4cc;
+}
+body.dark-mode .product-footer {
+  border-top-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .pill {
+  color: rgba(180, 200, 188, 0.5);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+body.dark-mode .pill:hover,
+body.dark-mode .pill.active {
+  background: #2a5c3a;
+  color: var(--ivory);
+  border-color: #2a5c3a;
+}
+
+/* ── Reviews ── */
+body.dark-mode .review-text {
+  color: rgba(180, 200, 188, 0.55);
+}
+body.dark-mode .review-author {
+  color: rgba(180, 200, 188, 0.35);
+}
+body.dark-mode .review-name {
+  color: #c8d4cc;
+}
+body.dark-mode .review-role {
+  color: rgba(180, 200, 188, 0.4);
+}
+body.dark-mode .review-quote-mark {
+  color: rgba(74, 158, 63, 0.25);
+}
+
+/* ── Values section ── */
+body.dark-mode .value-num {
+  color: rgba(74, 158, 63, 0.3);
+}
+body.dark-mode .value-desc {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .value-item {
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+/* ── Journey / Timeline ── */
+body.dark-mode .journey-step {
+  border-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .journey-step-desc {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .journey-step-num {
+  color: rgba(74, 158, 63, 0.35);
+}
+
+/* ── CTA Section ── */
+body.dark-mode .cta-sub {
+  color: rgba(250, 248, 243, 0.5);
+}
+body.dark-mode .cta-btn-out {
+  border-color: rgba(255, 255, 255, 0.25);
+  color: rgba(250, 248, 243, 0.7);
+}
+body.dark-mode .cta-btn-out:hover {
+  border-color: rgba(255, 255, 255, 0.6);
+  color: #faf8f3;
+}
+
+/* ── About: Mission ── */
+body.dark-mode .mission-desc {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .mission-sig-text {
+  color: rgba(180, 200, 188, 0.4);
+}
+body.dark-mode .mission-pillar-title {
+  color: #c8d4cc;
+}
+body.dark-mode .mission-pillar-text {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .mission-pillar-icon {
+  border-color: rgba(74, 158, 63, 0.25);
+}
+body.dark-mode .mission-pillar:hover {
+  background: #222e28;
+}
+
+/* ── About: Story / Timeline ── */
+body.dark-mode .story-event {
+  border-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .story-event-title {
+  color: #c8d4cc;
+}
+body.dark-mode .story-event-desc {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .story-event-date {
+  color: rgba(180, 200, 188, 0.35);
+}
+body.dark-mode .story-event-date span {
+  color: var(--gold);
+}
+
+/* ── About: Values sticky ── */
+body.dark-mode .about-values-sticky-num {
+  color: rgba(74, 158, 63, 0.25);
+}
+body.dark-mode .about-values-sticky-title {
+  color: #c8d4cc;
+}
+body.dark-mode .about-values-sticky-desc {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .about-value-row-desc {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .about-value-row-icon {
+  border-color: rgba(74, 158, 63, 0.25);
+  color: var(--gold);
+}
+body.dark-mode .about-value-row:hover .about-value-row-icon {
+  background: rgba(74, 158, 63, 0.1);
+}
+
+/* ── About: Advisors ── */
+body.dark-mode .advisor-desc {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .advisor-title {
+  color: rgba(180, 200, 188, 0.35);
+}
+body.dark-mode .advisor-card::after {
+  background: linear-gradient(to bottom, var(--gold), rgba(74, 158, 63, 0.2));
+}
+
+/* ── Contact ── */
+body.dark-mode .contact-info-label {
+  color: rgba(180, 200, 188, 0.35);
+}
+body.dark-mode .contact-info-item {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+body.dark-mode .contact-map-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+}
+body.dark-mode .contact-map-placeholder {
+  background: #1c2822;
+  border-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .contact-map-label-main {
+  color: #c8d4cc;
+}
+body.dark-mode .form-note {
+  color: rgba(180, 200, 188, 0.4);
+}
+body.dark-mode .form-submit {
+  background: #2a5c3a;
+}
+body.dark-mode .form-submit:hover {
+  background: #336644;
+}
+body.dark-mode .form-group input::placeholder,
+body.dark-mode .form-group textarea::placeholder {
+  color: rgba(180, 200, 188, 0.25);
+}
+
+/* ── Social cards ── */
+body.dark-mode .social-card {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+body.dark-mode .social-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(74, 158, 63, 0.25);
+}
+body.dark-mode .social-card-name {
+  color: #c8d4cc;
+}
+body.dark-mode .social-card-handle {
+  color: rgba(180, 200, 188, 0.35);
+}
+
+/* ── Auth page ── */
+body.dark-mode .auth-form-panel {
+  background: #121a16;
+}
+body.dark-mode .auth-form-panel::before {
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(74, 158, 63, 0.15),
+    transparent
+  );
+}
+body.dark-mode .auth-form-title {
+  color: #c8d4cc;
+}
+body.dark-mode .auth-social-btn {
+  background: #1c2822;
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(180, 200, 188, 0.7);
+}
+body.dark-mode .auth-social-btn:hover {
+  border-color: rgba(74, 158, 63, 0.4);
+  background: rgba(74, 158, 63, 0.1);
+  color: #c8d4cc;
+}
+body.dark-mode .auth-form-subtitle {
+  color: rgba(180, 200, 188, 0.45);
+}
+body.dark-mode .auth-divider-line {
+  background: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .auth-divider-text {
+  color: rgba(180, 200, 188, 0.35);
+}
+body.dark-mode .auth-check-label {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .auth-checkbox {
+  background: #1c2822;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+body.dark-mode .auth-strength-seg {
+  background: rgba(255, 255, 255, 0.08);
+}
+body.dark-mode .auth-strength-label {
+  color: rgba(180, 200, 188, 0.4);
+}
+body.dark-mode .auth-login-link {
+  color: rgba(180, 200, 188, 0.45);
+}
+body.dark-mode .auth-trust-badge {
+  background: rgba(74, 158, 63, 0.06);
+  border-color: rgba(74, 158, 63, 0.15);
+}
+body.dark-mode .auth-trust-badge strong {
+  color: #c8d4cc;
+}
+body.dark-mode .pw-req {
+  color: rgba(180, 200, 188, 0.4);
+}
+body.dark-mode .pw-req.ok {
+  color: var(--gold);
+}
+
+/* ── Shop page ── */
+body.dark-mode .shop-hero-title,
+body.dark-mode .featured-title {
+  color: #c8d4cc;
+}
+body.dark-mode .shop-result-count {
+  color: #253028;
+}
+body.dark-mode .trust-strip {
+  background: #161e1a;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+body.dark-mode .trust-title {
+  color: #c8d4cc;
+}
+body.dark-mode .trust-icon {
+  border-color: rgba(74, 158, 63, 0.2);
+}
+body.dark-mode .sidebar-pill {
+  color: rgba(180, 200, 188, 0.6);
+}
+body.dark-mode .sidebar-pill.active,
+body.dark-mode .sidebar-pill:hover {
+  color: #c8d4cc;
+  background: rgba(74, 158, 63, 0.1);
+}
+body.dark-mode .sidebar-pill-count {
+  background: #253028;
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .sidebar-title {
+  color: rgba(180, 200, 188, 0.3);
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .age-tag {
+  color: rgba(180, 200, 188, 0.5);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+body.dark-mode .age-tag.active,
+body.dark-mode .age-tag:hover {
+  background: #2a5c3a;
+  color: var(--ivory);
+  border-color: #2a5c3a;
+}
+body.dark-mode .sort-select {
+  color: #c8d4cc;
+  background-color: transparent;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+body.dark-mode .featured-product-card {
+  background: #1c2822;
+  border-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .featured-specs {
+  background: #0f1510;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+body.dark-mode .featured-desc {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .featured-spec-val {
+  color: #c8d4cc;
+}
+body.dark-mode .btn-ar-preview {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(180, 200, 188, 0.6);
+}
+body.dark-mode .btn-ar-preview:hover {
+  border-color: rgba(74, 158, 63, 0.4);
+  color: var(--gold);
+}
+body.dark-mode .product-tag {
+  border-color: rgba(74, 158, 63, 0.2);
+}
+body.dark-mode .product-price-old {
+  color: rgba(180, 200, 188, 0.35);
+}
+body.dark-mode .card-wishlist {
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(180, 200, 188, 0.4);
+}
+body.dark-mode .card-wishlist.active {
+  color: var(--gold);
+  border-color: rgba(74, 158, 63, 0.4);
+}
+body.dark-mode .promo-strip {
+  background: #0e1612;
+  border-color: rgba(74, 158, 63, 0.2);
+}
+body.dark-mode .view-btn {
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(180, 200, 188, 0.4);
+}
+body.dark-mode .view-btn.active,
+body.dark-mode .view-btn:hover {
+  background: #2a5c3a;
+  color: var(--ivory);
+  border-color: #2a5c3a;
+}
+body.dark-mode .breadcrumb-item {
+  color: rgba(180, 200, 188, 0.4);
+}
+body.dark-mode .breadcrumb-current {
+  color: #c8d4cc;
+}
+body.dark-mode .breadcrumb-sep {
+  color: rgba(180, 200, 188, 0.25);
+}
+
+/* ── Product detail page ── */
+body.dark-mode .product-hero,
+body.dark-mode .tabs-section {
+  background: transparent;
+}
+body.dark-mode .spec-cell,
+body.dark-mode .trust-micro,
+body.dark-mode .gallery-main {
+  background: #1c2822;
+  border-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .ar-features {
+  background: #1c2822;
+  border-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .product-card {
+  background: #1c2822;
+  border-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .sticky-bar {
+  background: rgba(10, 15, 12, 0.97);
+}
+body.dark-mode .quick-specs {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .related-section {
+  background: #0f1510;
+  border-color: rgba(255, 255, 255, 0.05);
+}
+body.dark-mode .chapter-item:hover {
+  background: rgba(74, 158, 63, 0.1);
+  border-color: rgba(74, 158, 63, 0.25);
+}
+body.dark-mode .product-title-main {
+  color: #c8d4cc;
+}
+body.dark-mode .product-subtitle {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .spec-val {
+  color: #c8d4cc;
+}
+body.dark-mode .price-main {
+  color: #c8d4cc;
+}
+body.dark-mode .ar-feature-title {
+  color: #c8d4cc;
+}
+body.dark-mode .reviewer-name,
+body.dark-mode .review-title,
+body.dark-mode .details-val,
+body.dark-mode .product-name,
+body.dark-mode .chapter-title {
+  color: #c8d4cc;
+}
+body.dark-mode .tab-btn {
+  color: rgba(180, 200, 188, 0.45);
+}
+body.dark-mode .tab-btn:hover {
+  color: #c8d4cc;
+}
+body.dark-mode .tab-btn.active {
+  color: #c8d4cc;
+  border-bottom-color: var(--gold);
+}
+body.dark-mode .tabs-nav {
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .details-row {
+  border-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .details-col-title {
+  color: #c8d4cc;
+}
+body.dark-mode .review-item {
+  border-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .reviewer-avatar {
+  background: #253028;
+  border-color: rgba(74, 158, 63, 0.2);
+  color: var(--gold);
+}
+body.dark-mode .rating-bar-track {
+  background: #253028;
+}
+body.dark-mode .reviews-big-num {
+  color: #c8d4cc;
+}
+body.dark-mode .helpful-btn {
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(180, 200, 188, 0.4);
+}
+body.dark-mode .helpful-btn:hover {
+  border-color: rgba(74, 158, 63, 0.4);
+  color: #c8d4cc;
+}
+body.dark-mode .verified-badge {
+  background: rgba(74, 158, 63, 0.12);
+  color: var(--gold);
+}
+body.dark-mode .chapter-count {
+  background: #253028;
+  color: rgba(180, 200, 188, 0.4);
+}
+body.dark-mode .product-desc-main {
+  border-left-color: rgba(74, 158, 63, 0.2);
+}
+body.dark-mode .qty-wrap {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+body.dark-mode .qty-num {
+  color: #c8d4cc;
+}
+body.dark-mode .qty-btn {
+  color: rgba(180, 200, 188, 0.45);
+}
+body.dark-mode .qty-btn:hover {
+  background: rgba(74, 158, 63, 0.1);
+  color: var(--gold);
+}
+body.dark-mode .btn-secondary {
+  color: rgba(180, 200, 188, 0.6);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+body.dark-mode .btn-secondary:hover {
+  border-color: rgba(74, 158, 63, 0.4);
+  color: var(--gold);
+}
+body.dark-mode .btn-wishlist-main {
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(180, 200, 188, 0.4);
+}
+body.dark-mode .gallery-thumb {
+  border-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .gallery-thumb.active {
+  border-color: var(--gold);
+}
+body.dark-mode .rating-num {
+  color: #c8d4cc;
+}
+body.dark-mode .rating-bar-row {
+  color: rgba(180, 200, 188, 0.4);
+}
+
+/* ── OTP dark mode (fix lỗi màu sai) ── */
+body.dark-mode .otp-email-mask {
+  background: rgba(74, 158, 63, 0.1);
+  border-color: rgba(74, 158, 63, 0.25);
+  color: #c8d4cc;
+}
+body.dark-mode .otp-input {
+  background: #1c2822;
+  color: #c8d4cc;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+body.dark-mode .otp-input.filled {
+  border-color: var(--gold);
+}
+body.dark-mode .otp-resend {
+  color: rgba(180, 200, 188, 0.4);
+}
+
+/* ── Cart / Skeleton ── */
+body.dark-mode .skeleton-summary {
+  background: #1c2822;
+  border-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .skeleton-cart-item {
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .skeleton-product-card {
+  background: #1c2822;
+  border-color: rgba(255, 255, 255, 0.07);
+}
+
+/* ── Back-to-top ── */
+body.dark-mode .back-top-btn {
+  background: #1c2822;
+  border-color: rgba(74, 158, 63, 0.25);
+}
+body.dark-mode .back-top-btn:hover {
+  background: #253028;
+}
+body.dark-mode .btt-tooltip {
+  background: #1c2822;
+  border-color: rgba(74, 158, 63, 0.25);
+}
+body.dark-mode .btt-tooltip::after {
+  border-left-color: #1c2822;
+}
+
+/* ── Search panel (bổ sung) ── */
+body.dark-mode .search-section-title {
+  color: rgba(180, 200, 188, 0.35);
+}
+body.dark-mode .search-chip-remove:hover {
+  color: #e05c5c;
+}
+body.dark-mode .search-loading-state {
+  color: rgba(180, 200, 188, 0.4);
+}
+body.dark-mode .search-empty-sub {
+  color: rgba(180, 200, 188, 0.4);
+}
+body.dark-mode .search-empty-icon {
+  color: #253028;
+}
+body.dark-mode .search-input-icon {
+  color: var(--gold);
+}
+body.dark-mode .search-highlight {
+  background: rgba(74, 158, 63, 0.2);
+  color: #c8d4cc;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   2. MOBILE RESPONSIVE — BỔ SUNG
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Tablet: ≤ 768px ─── */
+@media (max-width: 768px) {
+  /* Nav */
+  nav {
+    padding: 0 20px;
+  }
+  .nav-inner {
+    height: 64px;
+  }
+
+  /* Hero */
+  .hero-left {
+    padding: 100px 24px 48px;
+  }
+  .hero-headline {
+    font-size: clamp(36px, 8vw, 52px);
+  }
+  .hero-cta-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .cta-main,
+  .cta-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Stats */
+  .stats-section {
+    padding: 48px 24px;
+  }
+  .stats-inner {
+    grid-template-columns: 1fr 1fr;
+  }
+  .stat-item {
+    padding: 32px 24px;
+  }
+  .stat-number {
+    font-size: 40px;
+  }
+
+  /* How */
+  .how-section {
+    padding: 80px 24px;
+  }
+  .how-grid {
+    grid-template-columns: 1fr;
+  }
+  .how-step {
+    padding: 32px 24px;
+  }
+  .how-connectors {
+    display: none;
+  }
+
+  /* Products */
+  .products-section {
+    padding: 80px 24px;
+  }
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* Tech */
+  .tech-left {
+    padding: 64px 24px;
+  }
+
+  /* Values */
+  .values-section {
+    padding: 80px 24px;
+  }
+  .values-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Journey */
+  .journey-section {
+    padding: 80px 24px;
+  }
+  .journey-steps {
+    flex-direction: column;
+  }
+
+  /* Reviews */
+  .reviews-section {
+    padding: 80px 24px;
+  }
+  .reviews-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* CTA */
+  .cta-section {
+    padding: 80px 24px;
+  }
+  .cta-btns {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .cta-btn-main,
+  .cta-btn-out {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  /* Footer */
+  footer {
+    padding: 60px 24px 40px;
+  }
+  .footer-top {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .footer-bottom {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+  }
+  .footer-social {
+    justify-content: center;
+  }
+  .trusted-section {
+    padding: 40px 24px;
+  }
+  .trusted-logos {
+    gap: 32px;
+  }
+
+  /* Ornament divider */
+  .ornament-divider {
+    padding: 24px 0;
+  }
+  .ornament-divider-line {
+    max-width: 80px;
+  }
+
+  /* About: Mission */
+  .mission-section {
+    padding: 80px 24px;
+  }
+  .mission-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .mission-quote {
+    font-size: clamp(22px, 5vw, 32px);
+  }
+
+  /* About: Story */
+  .story-section {
+    padding: 80px 24px;
+  }
+  .story-timeline {
+    padding-left: 20px;
+  }
+  .story-event {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* About: Values sticky */
+  .about-values-section {
+    padding: 80px 24px;
+  }
+  .about-values-layout {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .about-values-sticky {
+    position: relative;
+    top: auto;
+  }
+
+  /* About: Advisor */
+  .advisor-section {
+    padding: 80px 24px;
+  }
+  .advisor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Contact */
+  .contact-section {
+    padding: 80px 24px;
+  }
+  .contact-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  .form-submit {
+    width: 100%;
+    justify-content: center;
+  }
+  .contact-map-placeholder {
+    height: 220px;
+  }
+
+  /* Community */
+  .community-section {
+    padding: 80px 24px;
+  }
+  .community-inner {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .community-right {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Shop */
+  .shop-hero {
+    padding: 120px 24px 48px;
+    grid-template-columns: 1fr;
+  }
+  .shop-hero-title {
+    font-size: clamp(32px, 7vw, 52px);
+  }
+  .breadcrumb {
+    padding: 80px 24px 0;
+  }
+  .trust-strip {
+    padding: 32px 24px;
+  }
+  .trust-strip-inner {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .trust-item {
+    padding: 0;
+    border-right: none;
+  }
+  .cat-banner-section {
+    padding: 40px 24px;
+  }
+  .cat-banner-grid {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .cat-banner-card {
+    height: 180px;
+  }
+  .shop-layout {
+    padding: 0 24px 80px;
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .shop-sidebar {
+    position: relative;
+    top: auto;
+  }
+  .shop-toolbar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .toolbar-pills {
+    flex-wrap: wrap;
+  }
+  .products-grid.grid-3,
+  .products-grid.grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  /* Product detail */
+  .product-hero {
+    padding: 80px 24px 48px;
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .gallery-wrap {
+    position: relative;
+    top: auto;
+  }
+  .ar-section {
+    padding: 60px 24px;
+  }
+  .ar-showcase {
+    grid-template-columns: 1fr;
+  }
+  .ar-visual {
+    min-height: 260px;
+  }
+  .ar-features {
+    padding: 40px 24px;
+  }
+  .tabs-section {
+    padding: 0 24px 60px;
+  }
+  .tabs-nav {
+    overflow-x: auto;
+    gap: 0;
+  }
+  .tab-btn {
+    padding: 14px 18px;
+    flex-shrink: 0;
+  }
+  .details-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .reviews-layout {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .related-inner {
+    padding: 0 24px;
+  }
+  .related-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+  .sticky-bar {
+    padding: 0 16px;
+  }
+  .sticky-bar-inner {
+    gap: 16px;
+    height: 64px;
+  }
+  .sticky-product-name {
+    font-size: 15px;
+  }
+  .sticky-price {
+    font-size: 20px;
+  }
+  .sticky-btn {
+    padding: 0 20px;
+    font-size: 10px;
+  }
+  .purchase-row {
+    flex-wrap: wrap;
+  }
+  .secondary-cta {
+    flex-wrap: wrap;
+  }
+
+  /* Auth */
+  .auth-form-panel {
+    padding: 80px 24px 48px;
+  }
+  .auth-field-row {
+    grid-template-columns: 1fr;
+  }
+
+  /* Cart skeleton */
+  .skeleton-cart-item {
+    grid-template-columns: 1fr 80px;
+    gap: 12px;
+  }
+}
+
+/* ─── Mobile nhỏ: ≤ 480px ─── */
+@media (max-width: 480px) {
+  /* Nav */
+  nav {
+    padding: 0 16px;
+  }
+  .nav-inner {
+    height: 56px;
+  }
+  .nav-wordmark {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+  }
+
+  /* Hero */
+  .hero-left {
+    padding: 84px 16px 40px;
+  }
+  .hero-headline {
+    font-size: clamp(30px, 9vw, 42px);
+  }
+  .hero-sub {
+    font-size: 13px;
+  }
+
+  /* Stats */
+  .stats-inner {
+    grid-template-columns: 1fr;
+  }
+  .stat-item {
+    border-right: none;
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.06);
+    padding: 28px 20px;
+  }
+  .stat-item:last-child {
+    border-bottom: none;
+  }
+  .stat-number {
+    font-size: 48px;
+  }
+
+  /* Section title */
+  .section-title {
+    font-size: clamp(28px, 7vw, 40px);
+  }
+
+  /* Products grid */
+  .products-grid,
+  .products-grid.grid-2,
+  .products-grid.grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  /* Filter pills scroll */
+  .filter-pills {
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .filter-pills::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Footer */
+  footer {
+    padding: 48px 16px 32px;
+  }
+  .footer-top {
+    gap: 24px;
+  }
+
+  /* Trust strip: 1 cột */
+  .trust-strip-inner {
+    grid-template-columns: 1fr;
+  }
+
+  /* Auth */
+  .auth-form-panel {
+    padding: 72px 16px 40px;
+  }
+  .auth-social {
+    flex-direction: column;
+  }
+
+  /* Category banner */
+  .cat-banner-card {
+    height: 160px;
+  }
+
+  /* Shop layout */
+  .shop-layout {
+    padding: 0 16px 60px;
+  }
+  .shop-hero {
+    padding: 100px 16px 40px;
+  }
+  .breadcrumb {
+    padding: 70px 16px 0;
+  }
+  .shop-hero-title {
+    font-size: clamp(28px, 8vw, 40px);
+  }
+
+  /* Product detail */
+  .related-grid {
+    grid-template-columns: 1fr;
+  }
+  .price-main {
+    font-size: 34px;
+  }
+  .secondary-cta {
+    flex-direction: column;
+  }
+  .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* About */
+  .mission-section,
+  .story-section,
+  .about-values-section,
+  .advisor-section,
+  .contact-section,
+  .community-section {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .community-right {
+    grid-template-columns: 1fr;
+  }
+  .social-card {
+    padding: 24px 20px;
+  }
+  .contact-map-placeholder {
+    height: 180px;
+  }
+
+  /* OTP inputs chật hơn */
+  .otp-inputs {
+    gap: 6px;
+  }
+  .otp-input {
+    height: 48px;
+    font-size: 20px;
+  }
+
+  /* Back-to-top position (safe area) */
+  .back-top-btn {
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    right: 16px;
+  }
+
+  /* Sticky bar mobile nhỏ */
+  .sticky-product-name {
+    display: none;
+  }
+  .sticky-stars {
+    display: none;
+  }
+  .sticky-bar-inner {
+    justify-content: space-between;
+  }
+}
+
+/* ─── Landscape mobile (chiều ngang) ─── */
+@media (max-width: 768px) and (orientation: landscape) {
+  .hero {
+    min-height: auto;
+  }
+  .hero-left {
+    padding-top: 80px;
+    padding-bottom: 40px;
+  }
+  .hero-headline {
+    font-size: clamp(28px, 5vw, 44px);
+  }
+  .auth-form-panel {
+    padding-top: 70px;
+  }
+}
+
+/* ─── Reduced motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .firefly,
+  .marquee-track,
+  .hud-ring,
+  .hud-scanline,
+  .reveal,
+  .reveal-left,
+  .reveal-right,
+  .auth-orb {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   PATCH 2 — navbar.css / about-us.css / EiraChatbox.css
+   (Thêm vào cuối main2.css)
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────
+   navbar.css — dark mode bổ sung
+   (navbar.css đã có dark-mode nav, active, hover, badge)
+   Chỉ bổ sung các trạng thái còn thiếu
+   ───────────────────────────────────────────────────────────── */
+body.dark-mode nav {
+  background: rgba(18, 26, 22, 0.88);
+}
+body.dark-mode nav.is-scrolled {
+  background: rgba(18, 26, 22, 0.68) !important;
+  border-bottom-color: rgba(74, 158, 63, 0.12);
+}
+body.dark-mode .nav-logo-full {
+  filter: brightness(1.1);
+}
+body.dark-mode .nav-icon-group {
+  border-right-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .nav-icon[data-tooltip]::before,
+body.dark-mode .nav-icon[data-tooltip]::after {
+  background: #1c2822;
+  color: #c8d4cc;
+}
+
+/* navbar mobile ≤ 768px */
+@media (max-width: 768px) {
+  .nav-inner { height: 60px; }
+  nav { padding: 0 20px; }
+  .nav-icon-group { gap: 4px; }
+}
+@media (max-width: 480px) {
+  .nav-inner { height: 56px; }
+  nav { padding: 0 14px; }
+  .nav-logo-swap { width: 100px; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   about-us.css — dark mode còn thiếu
+   (file đã có: team-section, team-card, team-name, team-code,
+    team-card-desc, skill-tag, team-avatar)
+   Cần thêm: tm-grid, advisor-section, about-hero,
+             logo-section, team-intro stats, parallax banner
+   ───────────────────────────────────────────────────────────── */
+body.dark-mode .tm-section,
+body.dark-mode .advisor-section {
+  background: #161e1a;
+}
+body.dark-mode .advisor-logo {
+  filter: brightness(0.85) grayscale(0.2);
+}
+body.dark-mode .tm-card {
+  background: #0d2018;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+body.dark-mode .team-intro-stat-num {
+  color: #c8d4cc;
+}
+body.dark-mode .team-intro-stat-label {
+  color: rgba(180, 200, 188, 0.35);
+}
+body.dark-mode .team-divider-v {
+  background: rgba(74, 158, 63, 0.2);
+}
+body.dark-mode .logo-section {
+  background: #0a0f0c;
+}
+body.dark-mode .logo-analysis-title {
+  color: #c8d4cc;
+}
+body.dark-mode .logo-analysis-desc {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .logo-analysis-item {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+body.dark-mode .mission-parallax-glass {
+  background: rgba(10, 20, 15, 0.55);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* about-us mobile ≤ 768px — bổ sung */
+@media (max-width: 768px) {
+  .team-section,
+  .tm-section {
+    padding: 80px 24px 60px !important;
+  }
+  .team-intro {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .team-intro-right {
+    align-items: flex-start;
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
+  .team-card-ceo {
+    grid-column: span 1;
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  .team-row-2 {
+    grid-template-columns: 1fr;
+  }
+  .advisor-section {
+    padding: 60px 24px;
+  }
+  .logo-section {
+    padding: 60px 24px;
+  }
+  .logo-analysis-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .tm-grid {
+    flex-direction: column;
+    height: auto;
+  }
+  .tm-card {
+    height: 240px;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  }
+  .about-hero {
+    grid-template-columns: 1fr;
+  }
+  .about-hero-left {
+    padding: 100px 24px 56px;
+  }
+  .about-hero-right {
+    height: 50vw;
+    min-height: 200px;
+  }
+  .about-hero-tag {
+    display: none;
+  }
+}
+@media (max-width: 480px) {
+  .team-section,
+  .tm-section {
+    padding: 60px 16px 48px !important;
+  }
+  .about-hero-left {
+    padding: 84px 16px 40px;
+  }
+  .about-hero-headline {
+    font-size: clamp(32px, 8vw, 44px);
+  }
+  .about-hero-meta {
+    flex-direction: column;
+    gap: 20px;
+  }
+  .team-intro-right {
+    flex-direction: column;
+  }
+  .advisor-section {
+    padding: 48px 16px;
+  }
+  .logo-section {
+    padding: 48px 16px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   EiraChatbox.css — dark mode
+   Chatbox dùng design tokens riêng trong #eira-root.
+   Override tokens khi body.dark-mode:
+   ───────────────────────────────────────────────────────────── */
+body.dark-mode #eira-root {
+  --c-bg:      #161e1a;
+  --c-surface: #1c2822;
+  --c-border:  rgba(255, 255, 255, 0.07);
+  --c-border2: rgba(255, 255, 255, 0.11);
+  --c-text:    #c8d4cc;
+  --c-hint:    #5a7a65;
+  --sh0: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --sh1: 0 2px 6px rgba(0, 0, 0, 0.28), 0 1px 2px rgba(0, 0, 0, 0.18);
+  --sh2: 0 8px 24px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.2);
+  --sh3: 0 12px 40px rgba(0, 0, 0, 0.45), 0 4px 12px rgba(0, 0, 0, 0.25);
+  --sh-fab: 0 4px 20px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   admin.css — dark mode
+   admin.css có token riêng (--a-*) và dùng .admin-root scope.
+   Chỉ override token, không đụng class cụ thể.
+   ───────────────────────────────────────────────────────────── */
+body.dark-mode .admin-root {
+  --a-bg:           #0f1510;
+  --a-surface:      #161e1a;
+  --a-white:        #1c2822;
+  --a-ink:          #c8d4cc;
+  --a-ink-60:       rgba(180, 200, 188, 0.60);
+  --a-ink-40:       rgba(180, 200, 188, 0.40);
+  --a-ink-20:       rgba(180, 200, 188, 0.20);
+  --a-ink-08:       rgba(180, 200, 188, 0.08);
+  --a-ink-05:       rgba(180, 200, 188, 0.05);
+  --a-chart-grid:   #253028;
+  --a-chart-tick:   #4a6a55;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   contactpage.css — bổ sung dark mode còn thiếu
+   (file đã có: panel-form, info-title, f-group inputs,
+    contact-card, map-section, form-title-h, ci-social-btn,
+    extra-fields, method-card)
+   Còn thiếu:
+   ───────────────────────────────────────────────────────────── */
+body.dark-mode .contact-hero {
+  background: #0a0f0c;
+}
+body.dark-mode .contact-hero-title {
+  color: #c8d4cc;
+}
+body.dark-mode .contact-hero-sub {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .card-label {
+  color: rgba(180, 200, 188, 0.35);
+}
+body.dark-mode .form-label,
+body.dark-mode .f-label {
+  color: rgba(180, 200, 188, 0.35);
+}
+body.dark-mode .f-group input::placeholder,
+body.dark-mode .f-group textarea::placeholder {
+  color: rgba(180, 200, 188, 0.2);
+}
+body.dark-mode .contact-section-title {
+  color: #c8d4cc;
+}
+body.dark-mode .contact-section-sub {
+  color: rgba(180, 200, 188, 0.45);
+}
+
+/* contactpage mobile ≤ 480px */
+@media (max-width: 480px) {
+  .panel-form,
+  .contact-panel {
+    padding: 32px 16px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Blog.jsx — dùng inline style + token T hardcoded
+   Không thể override bằng CSS class, KHÔNG cần thêm vào main2.
+   → Ghi chú để dev biết: Blog cần truyền isDark vào T object
+     nếu muốn dark mode.
+   ───────────────────────────────────────────────────────────── */
+/* BLOG: no CSS patch needed — uses hardcoded JS token object T */
+
+/* ─────────────────────────────────────────────────────────────
+   Profile.jsx — kiểm tra không có dark-mode inline.
+   Dùng className từ main.css → đã được patch trong main2.css.
+   ───────────────────────────────────────────────────────────── */
+/* PROFILE: covered by main2.css existing rules */
+
+/* ─────────────────────────────────────────────────────────────
+   Home.jsx / Shop.jsx — dùng className từ main.css.
+   Các class như .product-card, .product-title, v.v.
+   đã được patch trong main2.css.
+   Các inline style có màu cố định (rgba(255,...) trên nền tối)
+   đều nằm trong các section forest/dark nên không cần patch.
+   ───────────────────────────────────────────────────────────── */
+/* HOME + SHOP: covered by main2.css existing rules */
+
+
+/* ═══════════════════════════════════════════════════════════════
+   PATCH 3 — Navbar / Footer / ForgotPassword / BookDetail /
+             Cart / Checkout / Wishlist / GoogleAuthSuccess
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────
+   NAVBAR — mobile panel + user dropdown dark mode
+   (Navbar.jsx dùng className từ main.css + navbar.css)
+   ───────────────────────────────────────────────────────────── */
+body.dark-mode .nav-mobile-panel {
+  background: #0f1510;
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+body.dark-mode .nav-mobile-link {
+  color: rgba(180, 200, 188, 0.6);
+  border-bottom-color: rgba(255, 255, 255, 0.05);
+}
+body.dark-mode .nav-mobile-link:hover,
+body.dark-mode .nav-mobile-link.active {
+  color: #c8d4cc;
+  background: rgba(74, 158, 63, 0.08);
+}
+body.dark-mode .nav-mobile-link.logout {
+  color: rgba(192, 80, 80, 0.7);
+}
+body.dark-mode .nav-mobile-divider {
+  background: rgba(255, 255, 255, 0.06);
+}
+body.dark-mode .nav-mobile-auth {
+  gap: 10px;
+}
+body.dark-mode .user-menu-trigger {
+  color: rgba(180, 200, 188, 0.7);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+body.dark-mode .user-menu-trigger:hover {
+  background: rgba(74, 158, 63, 0.08);
+  border-color: rgba(74, 158, 63, 0.2);
+}
+body.dark-mode .user-avatar {
+  background: #253028;
+  border-color: rgba(74, 158, 63, 0.3);
+  color: var(--gold);
+}
+body.dark-mode .user-greet {
+  color: rgba(180, 200, 188, 0.6);
+}
+body.dark-mode .user-greet strong {
+  color: #c8d4cc;
+}
+body.dark-mode .user-caret {
+  color: rgba(180, 200, 188, 0.4);
+}
+body.dark-mode .user-dropdown {
+  background: #1a2420;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+body.dark-mode .user-dropdown-header {
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .user-dropdown-avatar {
+  background: #253028;
+  border-color: rgba(74, 158, 63, 0.3);
+  color: var(--gold);
+}
+body.dark-mode .user-dropdown-name {
+  color: #c8d4cc;
+}
+body.dark-mode .user-dropdown-email {
+  color: rgba(180, 200, 188, 0.4);
+}
+body.dark-mode .user-dropdown-item {
+  color: rgba(180, 200, 188, 0.6);
+}
+body.dark-mode .user-dropdown-item:hover {
+  background: rgba(74, 158, 63, 0.08);
+  color: #c8d4cc;
+}
+body.dark-mode .user-dropdown-item.logout {
+  color: rgba(192, 80, 80, 0.6);
+}
+body.dark-mode .user-dropdown-item.logout:hover {
+  background: rgba(192, 80, 80, 0.08);
+  color: #c05050;
+}
+body.dark-mode .btn-ghost {
+  color: rgba(180, 200, 188, 0.7);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+body.dark-mode .btn-ghost:hover {
+  border-color: rgba(74, 158, 63, 0.35);
+  color: var(--gold);
+}
+body.dark-mode .nav-hamburger {
+  color: rgba(180, 200, 188, 0.6);
+}
+body.dark-mode .nav-hamburger:hover {
+  color: var(--gold);
+}
+
+/* Navbar mobile responsive */
+@media (max-width: 900px) {
+  .nav-links { display: none; }
+  .nav-hamburger { display: flex; }
+  .nav-mobile-panel { display: flex; }
+}
+@media (min-width: 901px) {
+  .nav-hamburger { display: none; }
+  .nav-mobile-panel { display: none !important; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FOOTER — dark mode
+   Footer.jsx dùng className + injected <style>.
+   Background footer là var(--forest) → OK cả 2 mode.
+   Bổ sung các class chưa có dark override.
+   ───────────────────────────────────────────────────────────── */
+body.dark-mode .footer-brand-name {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .footer-brand-desc {
+  color: rgba(180, 200, 188, 0.38);
+}
+body.dark-mode .footer-col-title {
+  color: rgba(180, 200, 188, 0.35);
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+body.dark-mode .footer-links li a {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .footer-social-icon {
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(180, 200, 188, 0.45);
+}
+body.dark-mode .footer-social-icon:hover {
+  background: rgba(74, 158, 63, 0.12);
+  border-color: rgba(74, 158, 63, 0.3);
+  color: var(--gold);
+}
+body.dark-mode .footer-tagline {
+  color: rgba(180, 200, 188, 0.25);
+  border-top-color: rgba(255, 255, 255, 0.05);
+}
+body.dark-mode .footer-bottom {
+  border-top-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Footer mobile */
+@media (max-width: 768px) {
+  .footer-top {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .footer-bottom {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+}
+@media (max-width: 480px) {
+  .footer-inner {
+    padding: 48px 16px 32px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   FORGOTPASSWORD — dark mode
+   Dùng JS style object S. Panel trái (visual) = var(--forest) → OK.
+   Panel phải (formPanel) = var(--ivory) → cần override.
+   ───────────────────────────────────────────────────────────── */
+
+/* ForgotPassword không có className riêng → override qua selector cha */
+body.dark-mode .fp-visual {
+  background: var(--forest);
+}
+
+/* Form panel phải — override background qua JS không được,
+   dùng trick: target container chứa form */
+body.dark-mode [class*="fp-form"],
+body.dark-mode .fp-form-panel {
+  background: #121a16 !important;
+}
+
+/* Input/OTP trong ForgotPassword dùng class co-input/otp-input đã patch trên.
+   Style object S dùng var(--*) tokens → tự thích nghi dark mode nếu
+   CSS vars được override đúng ở :root body.dark-mode. */
+body.dark-mode input[style*="var(--white)"],
+body.dark-mode input[style*="var(--ivory)"] {
+  background: #1c2822 !important;
+  color: #c8d4cc !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .fp-page,
+  [style*="gridTemplateColumns: '1fr 1fr'"] {
+    grid-template-columns: 1fr !important;
+  }
+  .fp-visual {
+    display: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BOOKDETAIL — dark mode bổ sung
+   Dùng className từ main.css — phần lớn đã được patch.
+   Bổ sung các class riêng của BookDetail chưa có.
+   ───────────────────────────────────────────────────────────── */
+body.dark-mode .add-cart-mini {
+  background: #2a5c3a;
+  color: var(--ivory);
+}
+body.dark-mode .add-cart-mini:hover {
+  background: #336644;
+}
+body.dark-mode .btn-add-main {
+  background: #2a5c3a;
+}
+body.dark-mode .btn-add-main:hover {
+  background: #336644;
+}
+body.dark-mode .product-overlay {
+  background: rgba(10, 15, 12, 0.92);
+}
+body.dark-mode .overlay-btn {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(250, 248, 243, 0.7);
+}
+body.dark-mode .overlay-btn.primary {
+  background: #2a5c3a;
+  border-color: #2a5c3a;
+  color: var(--ivory);
+}
+body.dark-mode .g-badge.forest {
+  background: rgba(74, 158, 63, 0.15);
+  color: var(--gold);
+  border-color: rgba(74, 158, 63, 0.25);
+}
+body.dark-mode .g-badge.gold {
+  background: rgba(184, 134, 46, 0.12);
+  color: #d4a843;
+  border-color: rgba(184, 134, 46, 0.25);
+}
+body.dark-mode .gallery-ar-btn {
+  background: rgba(74, 158, 63, 0.12);
+  border-color: rgba(74, 158, 63, 0.25);
+  color: var(--gold);
+}
+body.dark-mode .gallery-ar-pulse {
+  background: rgba(74, 158, 63, 0.2);
+}
+body.dark-mode .product-short {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .product-rating-mini {
+  color: rgba(180, 200, 188, 0.4);
+}
+body.dark-mode .price-old {
+  color: rgba(180, 200, 188, 0.3);
+}
+body.dark-mode .price-save {
+  background: rgba(74, 158, 63, 0.12);
+  color: var(--gold);
+}
+body.dark-mode .info-eyebrow-text {
+  color: var(--gold);
+}
+body.dark-mode .product-card-footer {
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+body.dark-mode .trust-micro {
+  background: #1c2822;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+body.dark-mode .trust-micro-item {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .quick-specs {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .spec-label {
+  color: rgba(180, 200, 188, 0.35);
+}
+body.dark-mode .sticky-bar {
+  background: rgba(10, 15, 12, 0.97);
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+body.dark-mode .sticky-btn {
+  background: #2a5c3a;
+  color: var(--ivory);
+}
+body.dark-mode .sticky-btn:hover {
+  background: #336644;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   CART — dark mode
+   Cart.jsx dùng 100% inline style với var(--*).
+   var(--forest), var(--ivory), var(--gold), var(--border),
+   var(--text-muted) — tất cả tự thích nghi nếu ta override
+   CSS vars trong dark mode.
+   Bổ sung override CSS vars cho dark mode:
+   ───────────────────────────────────────────────────────────── */
+body.dark-mode {
+  --ivory:       #121a16;
+  --white:       #1c2822;
+  --cream:       #161e1a;
+  --parchment:   #1a2420;
+  --text-body:   #c8d4cc;
+  --text-muted:  rgba(180, 200, 188, 0.45);
+  --border:      rgba(255, 255, 255, 0.08);
+  --border-gold: rgba(74, 158, 63, 0.28);
+  --gold-pale:   rgba(74, 158, 63, 0.1);
+}
+
+/* Cart inline: promo banner nền forest → đã OK
+   Summary panel — dùng var(--white) → tự thích nghi
+   Coupon applied — dùng var(--gold-pale), var(--border-gold) → OK */
+
+/* Cart responsive */
+@media (max-width: 900px) {
+  div[style*="gridTemplateColumns: \"1fr 400px\""] {
+    grid-template-columns: 1fr !important;
+  }
+}
+@media (max-width: 600px) {
+  div[style*="gridTemplateColumns: \"1fr 100px 140px 44px\""] {
+    grid-template-columns: 1fr 80px !important;
+    gap: 12px !important;
+  }
+  div[style*="padding: \"48px 100px\""],
+  div[style*="padding: \"40px 100px\""],
+  div[style*="padding: \"80px 100px\""] {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   CHECKOUT — dark mode
+   Checkout.jsx dùng inline style var(--*) + injected <style>
+   cho .co-input, .pay-tile.
+   CSS vars override ở trên đã cover phần lớn.
+   Bổ sung .co-input và .pay-tile dark mode:
+   ───────────────────────────────────────────────────────────── */
+body.dark-mode .co-input {
+  background: #1c2822 !important;
+  color: #c8d4cc !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+body.dark-mode .co-input:focus {
+  border-color: var(--gold) !important;
+  box-shadow: 0 0 0 3px rgba(74, 158, 63, 0.12) !important;
+}
+body.dark-mode .co-input::placeholder {
+  color: rgba(180, 200, 188, 0.25) !important;
+}
+body.dark-mode .co-input.error {
+  border-color: #c05050 !important;
+}
+body.dark-mode .pay-tile {
+  background: #1c2822 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(180, 200, 188, 0.6) !important;
+}
+body.dark-mode .pay-tile:hover {
+  border-color: rgba(74, 158, 63, 0.35) !important;
+  background: rgba(74, 158, 63, 0.08) !important;
+}
+body.dark-mode .pay-tile.active {
+  border-color: var(--gold) !important;
+  background: rgba(74, 158, 63, 0.1) !important;
+}
+body.dark-mode .co-step select {
+  background: #1c2822;
+  color: #c8d4cc;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Checkout responsive */
+@media (max-width: 900px) {
+  div[style*="gridTemplateColumns: 1fr 400px"],
+  div[style*="gridTemplateColumns: \"1fr 400px\""] {
+    grid-template-columns: 1fr !important;
+  }
+  div[style*="padding: \"8px 100px\""],
+  div[style*="padding: \"32px 100px\""] {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+}
+@media (max-width: 600px) {
+  div[style*="gridTemplateColumns: '1fr 1fr'"],
+  div[style*="gridTemplateColumns: \"1fr 1fr\""] {
+    grid-template-columns: 1fr !important;
+  }
+  div[style*="padding: \"8px 100px\""] {
+    padding: 8px 16px 80px !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   WISHLIST — dark mode bổ sung
+   (Wishlist.jsx đã có injected dark mode khá đủ)
+   Bổ sung các selector còn thiếu:
+   ───────────────────────────────────────────────────────────── */
+body.dark-mode .wl-page {
+  background: var(--ivory);
+}
+body.dark-mode .wl-eyebrow-text {
+  color: var(--gold);
+}
+body.dark-mode .wl-divider {
+  background: rgba(255, 255, 255, 0.06);
+}
+body.dark-mode .wl-summary-label {
+  color: rgba(180, 200, 188, 0.35);
+}
+body.dark-mode .wl-summary-sep {
+  background: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .wl-card-cat {
+  color: var(--gold);
+}
+body.dark-mode .wl-card-desc {
+  color: rgba(180, 200, 188, 0.45);
+}
+body.dark-mode .wl-card-price-old {
+  color: rgba(180, 200, 188, 0.3);
+}
+body.dark-mode .wl-card-tags {
+  border-top-color: rgba(255, 255, 255, 0.06);
+}
+body.dark-mode .wl-tag {
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(180, 200, 188, 0.4);
+}
+body.dark-mode .wl-badge--discount {
+  background: rgba(74, 158, 63, 0.15);
+  color: var(--gold);
+}
+body.dark-mode .wl-badge--out {
+  background: rgba(192, 80, 80, 0.12);
+  color: rgba(192, 80, 80, 0.7);
+}
+body.dark-mode .wl-badge--low {
+  background: rgba(184, 134, 46, 0.12);
+  color: #d4a843;
+}
+body.dark-mode .wl-btn-cart {
+  background: #2a5c3a;
+  color: var(--ivory);
+}
+body.dark-mode .wl-btn-cart:hover:not(:disabled) {
+  background: #336644;
+}
+body.dark-mode .wl-btn-move-all {
+  background: #2a5c3a;
+  color: var(--ivory);
+  border-color: #2a5c3a;
+}
+body.dark-mode .wl-btn-move-all:hover:not(:disabled) {
+  background: #336644;
+}
+body.dark-mode .wl-result-count {
+  color: rgba(180, 200, 188, 0.4);
+}
+body.dark-mode .wl-count-badge {
+  color: rgba(180, 200, 188, 0.35);
+}
+body.dark-mode .wl-empty-sub {
+  color: rgba(180, 200, 188, 0.45);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   GOOGLE AUTH SUCCESS — không cần patch
+   Chỉ render spinner + text trong giây lát rồi redirect.
+   Text dùng var(--text-muted) và var(--forest) → tự thích nghi.
+   ───────────────────────────────────────────────────────────── */
+/* GoogleAuthSuccess: covered by CSS vars */

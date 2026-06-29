@@ -52,7 +52,7 @@ const GuestRoute = ({ children }) => {
 export default function App() {
   return (
     <BrowserRouter>
-      {/* <EarthoriaSecurity /> */}
+      <EarthoriaSecurity />
       <ScrollToTop />
       <CustomCursor />
       <EiraChatbox />
