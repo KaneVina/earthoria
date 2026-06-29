@@ -314,7 +314,7 @@ export default function Analytics() {
       const { startAt, endAt } = getRange(period)
       // /pageviews cần unit + timezone; /metrics chỉ cần startAt + endAt + type
       const pvParams      = { startAt, endAt, unit: periodOpt.unit, timezone: 'Asia/Ho_Chi_Minh' }
-      const metricsParams = { startAt, endAt }
+      const metricsParams = { startAt, endAt, unit: periodOpt.unit, timezone: 'Asia/Ho_Chi_Minh' }
 
       const [sumData, pvData, pagesData, countriesData, citiesData, devData, refData] = await Promise.all([
         umamiGet('/stats',     { startAt, endAt }),
