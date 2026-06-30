@@ -1,12 +1,6 @@
 import { useState, useEffect } from "react";
 
-/* ─────────────────────────────────────────
-   EARTHORIA — MAINTENANCE PAGE v3
-   Fits exactly 100vh on desktop.
-   Stacks to single-column on mobile.
-───────────────────────────────────────── */
-
-const TARGET_DATE = new Date("2026-06-30T17:00:00+07:00");
+const TARGET_DATE = new Date("2026-06-30T18:00:00+07:00");
 
 function useCountdown(target) {
   const [time, setTime] = useState(() => calc());
@@ -73,7 +67,7 @@ export default function Maintenance() {
 
           <div className="em-rise-2" style={styles.vEyebrow}>
             <span style={styles.vEyebrowLine} />
-            <span style={styles.vEyebrowText}>Earthoria Library</span>
+            <span style={styles.vEyebrowText}>Earthoria Website</span>
           </div>
 
           <h2 className="em-rise-3" style={styles.vHeadline}>
@@ -84,7 +78,7 @@ export default function Maintenance() {
 
           <p className="em-rise-4" style={styles.vSub}>
             Đằng sau cánh cửa khép, đội ngũ của chúng tôi đang sắp xếp lại
-            từng giá sách số để hành trình tiếp theo của bạn mượt mà hơn.
+            từng trang sách số để hành trình tiếp theo của bạn mượt mà hơn.
           </p>
         </div>
 
@@ -117,7 +111,7 @@ export default function Maintenance() {
           </h1>
 
           <p style={styles.desc}>
-            Earthoria tạm ngưng phục vụ trong thời gian ngắn để hoàn thiện hệ
+            Earthoria tạm ngưng phục vụ trong thời gian ngắn để nâng cấp hệ
             thống. Xin lỗi vì sự bất tiện này — mọi dữ liệu, đơn hàng và tủ
             sách của bạn đều được giữ nguyên vẹn.
           </p>
@@ -168,7 +162,7 @@ export default function Maintenance() {
               <path d="M12 7v5l3 3" />
             </svg>
             <span>
-              Trở lại lúc <strong style={styles.timePillStrong}>17:00 · 30/06/2026</strong>
+              Dự kiến hoàn thành lúc <strong style={styles.timePillStrong}>18:00 · 30/06/2026</strong>
             </span>
           </div>
 
