@@ -59,9 +59,48 @@ export default function HeroBanner() {
   const [prev, setPrev] = useState(null);
   const [animating, setAnimating] = useState(false);
   const [paused, setPaused] = useState(false);
+  const [inView, setInView] = useState(false);
+  const [thumbsLoaded, setThumbsLoaded] = useState(false);
   const timerRef = useRef(null);
   const videoRefs = useRef([]);
+  const wrapRef = useRef(null);
+  const thumbsRef = useRef(null);
   const total = HERO_SLIDES.length;
+
+  /* Chỉ tải/phát video chính khi banner thực sự hiện trên màn hình */
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.15 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  /* Thumbnail bên phải: chỉ bắt đầu tải video khi người dùng cuộn gần tới (tránh tải ngầm lúc trang vừa mở) */
+  useEffect(() => {
+    const el = thumbsRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setThumbsLoaded(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setThumbsLoaded(true);
+          io.disconnect();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const goTo = useCallback(
     (idx) => {
@@ -88,23 +127,23 @@ export default function HeroBanner() {
 
   /* Auto-advance */
   useEffect(() => {
-    if (paused) return;
+    if (paused || !inView) return;
     timerRef.current = setInterval(next, 7000);
     return () => clearInterval(timerRef.current);
-  }, [next, paused]);
+  }, [next, paused, inView]);
 
-  /* Play / pause video on slide change */
+  /* Play / pause video on slide change — chỉ phát khi banner đang hiển thị */
   useEffect(() => {
     videoRefs.current.forEach((v, i) => {
       if (!v) return;
-      if (i === current) {
-        v.currentTime = 0;
+      if (i === current && inView) {
+        if (v.currentTime > 0.05) v.currentTime = 0;
         v.play().catch(() => {});
       } else {
         v.pause();
       }
     });
-  }, [current]);
+  }, [current, inView]);
 
   return (
     <>
@@ -124,7 +163,7 @@ export default function HeroBanner() {
           position: relative;
           width: 100%;
           height: 100vh;
-          min-height: 600px;
+          min-height: 720px;
           overflow: hidden;
           background: #0d2b1e;
         }
@@ -133,6 +172,7 @@ export default function HeroBanner() {
         .hb-bg {
           position: absolute; inset: 0; z-index: 0;
           overflow: hidden;
+          background: #0d2b1e;
         }
         .hb-bg video {
           width: 100%; height: 100%;
@@ -171,8 +211,8 @@ export default function HeroBanner() {
         /* ── content ── */
         .hb-content {
           position: absolute; inset: 0; z-index: 3;
-          display: flex; flex-direction: column; justify-content: center;
-          padding: 120px 100px 160px;
+          display: flex; flex-direction: column; justify-content: flex-start;
+          padding: 120px 100px 220px;
           max-width: 820px;
         }
 
@@ -200,10 +240,10 @@ export default function HeroBanner() {
         /* headline */
         .hb-headline {
           font-family: 'Playfair Display', serif;
-          font-size: clamp(52px, 6.5vw, 96px);
+          font-size: clamp(44px, 5.5vw, 82px);
           font-weight: 300; line-height: 1.04;
           color: var(--ivory); letter-spacing: -0.015em;
-          margin-bottom: 24px;
+          margin-bottom: 18px;
           text-shadow: 0 2px 40px rgba(0,0,0,0.4);
         }
         .hb-headline em { font-style: italic; color: var(--gold); }
@@ -214,7 +254,7 @@ export default function HeroBanner() {
           color: rgba(250,248,243,0.72);
           font-weight: 300;
           max-width: 480px;
-          margin-bottom: 44px;
+          margin-bottom: 28px;
           text-shadow: 0 1px 12px rgba(0,0,0,0.5);
         }
 
@@ -262,7 +302,7 @@ export default function HeroBanner() {
         /* ── Controls bar (bottom-left) ── */
         .hb-controls {
           position: absolute;
-          bottom: 52px; left: 100px;
+          bottom: 110px; left: 100px;
           z-index: 4;
           display: flex; align-items: center; gap: 20px;
         }
@@ -413,13 +453,14 @@ export default function HeroBanner() {
           .hb-mute-btn { right: 16px; top: 90px; }
         }
         @media (max-width: 600px) {
-          .hb-headline { font-size: clamp(38px, 10vw, 60px); }
+          .hb-headline { font-size: clamp(32px, 8.5vw, 51px); }
           .hb-cta-row  { flex-direction: column; align-items: flex-start; }
         }
       `}</style>
 
       <section
         className="hb-wrap"
+        ref={wrapRef}
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
@@ -434,28 +475,36 @@ export default function HeroBanner() {
           />
         </div>
 
-        {/* VIDEO backgrounds */}
-        {HERO_SLIDES.map((s, i) => (
-          <div
-            key={s.id}
-            className="hb-bg"
-            style={{
-              opacity: i === current ? 1 : i === prev ? 1 : 0,
-              transition: "opacity 0.9s ease",
-              zIndex: i === current ? 0 : i === prev ? 0 : -1,
-            }}
-          >
-            <video
-              ref={(el) => (videoRefs.current[i] = el)}
-              className={i === current ? "hb-bg-active" : "hb-bg-exit"}
-              src={s.video}
-              loop
-              muted
-              playsInline
-               preload={i === 0 ? "auto" : "none"}
-            />
-          </div>
-        ))}
+        {/* VIDEO backgrounds — chỉ mount video thật cho slide đang chạy / vừa rời đi / sắp tới, tránh tải+giải mã đồng thời cả 3 */}
+        {HERO_SLIDES.map((s, i) => {
+          const isCurrent = i === current;
+          const isPrev = i === prev;
+          const isNext = i === (current + 1) % total;
+          const shouldMount = isCurrent || isPrev || isNext;
+          return (
+            <div
+              key={s.id}
+              className="hb-bg"
+              style={{
+                opacity: isCurrent ? 1 : isPrev ? 1 : 0,
+                transition: "opacity 0.9s ease",
+                zIndex: isCurrent ? 0 : isPrev ? 0 : -1,
+              }}
+            >
+              {shouldMount && (
+                <video
+                  ref={(el) => (videoRefs.current[i] = el)}
+                  className={isCurrent ? "hb-bg-active" : "hb-bg-exit"}
+                  src={s.video}
+                  loop
+                  muted
+                  playsInline
+                  preload={isCurrent ? "auto" : "metadata"}
+                />
+              )}
+            </div>
+          );
+        })}
 
         {/* Left vignette */}
         <div className="hb-overlay-left" />
@@ -540,20 +589,29 @@ export default function HeroBanner() {
         <div className="hb-slide-label">{HERO_SLIDES[current].eyebrow}</div>
 
         {/* Thumbnails (right side) — hiển thị poster frame đầu video */}
-        <div className="hb-thumbs">
+        <div className="hb-thumbs" ref={thumbsRef}>
           {HERO_SLIDES.map((s, i) => (
             <div
               key={s.id}
               className={`hb-thumb ${i === current ? "active" : ""}`}
               onClick={() => goTo(i)}
             >
-              <video
-                src={s.video}
-                muted
-                playsInline
-                preload="none"
-                style={{ pointerEvents: "none" }}
-              />
+              {thumbsLoaded && (
+                <video
+                  src={s.video}
+                  muted
+                  playsInline
+                  loop
+                  preload="metadata"
+                  autoPlay={i === current}
+                  style={{ pointerEvents: "none" }}
+                  ref={(el) => {
+                    if (!el) return;
+                    if (i === current) el.play().catch(() => {});
+                    else el.pause();
+                  }}
+                />
+              )}
               <div className="hb-thumb-label">{String(i + 1).padStart(2, "0")}</div>
             </div>
           ))}

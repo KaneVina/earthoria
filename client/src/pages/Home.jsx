@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { Truck, Gift, BookOpen, Star, ShieldCheck } from "lucide-react";
 import StickyScrollTransition from "./StickyScrollTransition";
 import HeroBanner from "../components/HeroBanner";
+import SproutModel from "../components/SproutModel";
 
 /* ─────────────────────────────────────────────────────────────
    PRODUCT CARD COMPONENT
@@ -2690,6 +2691,7 @@ export default function Home() {
 
       {/* ═══ VALUES ═══ */}
       <section className="values-section">
+        <SproutModel className="values-3d-bg" />
         <div className="values-inner">
           <div className="section-header reveal">
             <div className="section-eyebrow">

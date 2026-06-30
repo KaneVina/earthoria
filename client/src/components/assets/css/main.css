@@ -1255,10 +1255,17 @@ nav {
 .values-section {
   padding: 120px 100px;
   background: var(--ivory);
+  position: relative;
+  overflow: hidden;
+}
+.values-3d-bg {
+  opacity: 0.9;
 }
 .values-inner {
   max-width: 1400px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 .values-grid {
   display: grid;
@@ -1269,6 +1276,9 @@ nav {
   padding: 56px 48px;
   border-right: 0.5px solid var(--border);
   border-bottom: 0.5px solid var(--border);
+  background: rgba(250, 248, 243, 0.78);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   transition: all 0.4s;
   cursor: default;
 }
@@ -3833,9 +3843,8 @@ body.dark-mode .value-desc {
 }
 body.dark-mode .value-item {
   border-color: rgba(255, 255, 255, 0.07);
+  background: rgba(18, 26, 22, 0.78);
 }
-
-/* Journey */
 body.dark-mode .journey-step {
   border-color: rgba(255, 255, 255, 0.06);
 }
