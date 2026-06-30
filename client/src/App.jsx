@@ -33,6 +33,7 @@ import EarthoriaSecurity from "./components/Earthoriasecurity";
 import ContactPage from "./pages/ContactPage";
 import Analytics from "./pages/admin/Analytics";
 import Maintenance from "./pages/Maintenance";
+import Logo3D from "./components/Logo3D";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -51,7 +52,9 @@ const GuestRoute = ({ children }) => {
   return !isAuthenticated ? children : <Navigate to="/" replace />;
 };
 // Khởi động trang bảo trì
-const MAINTENANCE_MODE = true;
+const MAINTENANCE_MODE = false;
+// const MAINTENANCE_MODE = true;
+
 
 export default function App() {
   if (MAINTENANCE_MODE) {
@@ -66,7 +69,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      {/* <EarthoriaSecurity /> */}
+      <EarthoriaSecurity />
       <ScrollToTop />
       <CustomCursor />
       <EiraChatbox />
@@ -85,6 +88,8 @@ export default function App() {
           <Route path="/legal/privacy" element={<PrivacyPolicy />} />
           <Route path="/legal/shipping" element={<ShippingPolicy />} />
           <Route path="/sitemap" element={<Sitemap />} />
+
+
           <Route
             path="/checkout"
             element={
@@ -127,6 +132,7 @@ export default function App() {
             </GuestRoute>
           }
         />
+          <Route path="/3d" element={<Logo3D />} />
         <Route
           path="/register"
           element={
