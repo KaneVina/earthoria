@@ -32,6 +32,7 @@ import Wishlist from "./pages/Wishlist";
 import EarthoriaSecurity from "./components/Earthoriasecurity";
 import ContactPage from "./pages/ContactPage";
 import Analytics from "./pages/admin/Analytics";
+import Maintenance from "./pages/Maintenance";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -49,8 +50,20 @@ const GuestRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
   return !isAuthenticated ? children : <Navigate to="/" replace />;
 };
+// Khởi động trang bảo trì
+const MAINTENANCE_MODE = true;
 
 export default function App() {
+  if (MAINTENANCE_MODE) {
+    return (
+      <BrowserRouter>
+        <Routes>
+          <Route path="*" element={<Maintenance />} />
+        </Routes>
+      </BrowserRouter>
+    );
+  }
+
   return (
     <BrowserRouter>
       {/* <EarthoriaSecurity /> */}

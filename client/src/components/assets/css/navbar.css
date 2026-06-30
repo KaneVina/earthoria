@@ -3,6 +3,19 @@ nav {
               border-color 0.45s ease, box-shadow 0.4s ease !important;
 }
 
+/* ──────────────────────────────────────────────────────────────
+   CHIỀU CAO HEADER — thu nhỏ lại
+   Mặc định height: 80px (trong main.css) → giảm xuống 64px
+   Khi cuộn: thu thêm chút nữa cho gọn (60px)
+   ────────────────────────────────────────────────────────────── */
+.nav-inner {
+  height: 64px;
+  transition: height 0.35s ease;
+}
+nav.is-scrolled .nav-inner {
+  height: 60px;
+}
+
 nav.is-scrolled {
   background: rgba(250, 248, 243, 0.6) !important;
   backdrop-filter: blur(26px) saturate(1.6) !important;
@@ -19,9 +32,13 @@ body.dark-mode nav.is-scrolled {
   display: flex;
   align-items: center;
   text-decoration: none;
-  height: 80px;
+  height: 64px;
   flex-shrink: 0;
   gap: 0;
+  transition: height 0.35s ease;
+}
+nav.is-scrolled .nav-logo {
+  height: 60px;
 }
 
 .nav-logo-swap {
@@ -358,6 +375,14 @@ body.dark-mode .nav-icon[data-tooltip]::after {
 /* ──────────────────────────────────────────────────────────────
    Responsive
    ────────────────────────────────────────────────────────────── */
+/* ──────────────────────────────────────────────────────────────
+   HAMBURGER — luôn nằm trên cùng, không bao giờ bị che khi panel mở
+   ────────────────────────────────────────────────────────────── */
+.nav-hamburger {
+  position: relative;
+  z-index: 950;
+}
+
 @media (max-width: 900px) {
   .nav-icon-group {
     border-right: none;
