@@ -34,6 +34,7 @@ import ContactPage from "./pages/ContactPage";
 import Analytics from "./pages/admin/Analytics";
 import Maintenance from "./pages/Maintenance";
 import Logo3D from "./components/Logo3D";
+import ArView from "./pages/ArView";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -69,7 +70,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <EarthoriaSecurity />
+      {/* <EarthoriaSecurity /> */}
       <ScrollToTop />
       <CustomCursor />
       <EiraChatbox />
@@ -199,6 +200,8 @@ export default function App() {
           }
         />
         <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
+        {/* Public AR route — quét QR trong sách, KHÔNG cần đăng nhập */}
+        <Route path="/ar/:slug/:code" element={<ArView />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

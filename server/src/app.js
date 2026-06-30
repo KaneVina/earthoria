@@ -40,6 +40,8 @@ v1.use('/cart',       require('./routes/cartRoutes'))
 v1.use('/orders',     require('./routes/orderRoutes'))
 v1.use('/admin',      require('./routes/adminRoutes'))
 v1.use('/addresses', require('./routes/addressRoutes'))
+// Public route — không cần đăng nhập, dùng cho quét QR trong sách giấy
+v1.use('/ar',          require('./routes/arRoutes'))
 
 app.use('/api/v1', v1)
 
@@ -52,10 +54,6 @@ app.get('/api/health', (req, res) => {
   })
 })
 
-// 404
-app.use((req, res) => {
-  res.status(404).json({ success: false, message: 'Route not found' })
-})
 
 // Error handler
 app.use((err, req, res, next) => {
@@ -64,6 +62,12 @@ app.use((err, req, res, next) => {
     success: false,
     message: err.message || 'Internal Server Error'
   })
+
+  // 404
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: 'Route not found' })
+})
+
 })
 
 module.exports = app

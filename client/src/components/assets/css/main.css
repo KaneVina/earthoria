@@ -142,6 +142,7 @@ nav {
   background: var(--gold);
   transition: width 0.3s ease;
 }
+
 .nav-links a.active {
   background: linear-gradient(135deg, #0d3330 0%, #1a5c52 50%, #4a9e3f 100%);
   -webkit-background-clip: text;

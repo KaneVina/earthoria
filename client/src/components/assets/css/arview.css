@@ -1,0 +1,329 @@
+/* ═══════════════════════════════════════════
+   AR VIEW — full-screen 3D stage + info overlays
+   Dùng chung biến màu/--forest/--gold/--ivory với main.css.
+   Nếu :root chưa có các biến này (trang AR đứng độc lập),
+   fallback bên dưới sẽ tự áp dụng.
+   ═══════════════════════════════════════════ */
+
+.ar-view {
+  --av-forest: var(--forest, #0d3330);
+  --av-forest-mid: var(--forest-mid, #1a5c52);
+  --av-gold: var(--gold, #4a9e3f);
+  --av-gold-pale: var(--gold-pale, #d4edcf);
+  --av-ivory: var(--ivory, #faf8f3);
+  --av-text-muted: var(--text-muted, #5a6b60);
+  --av-border-gold: var(--border-gold, rgba(74, 158, 63, 0.3));
+
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 100vh;
+  background: #0a0e0c;
+  color: var(--av-ivory);
+  overflow: hidden;
+  font-family: "Be Vietnam Pro", sans-serif;
+}
+
+.ar-view--center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+}
+
+/* ─── 3D STAGE (nền, full màn hình) ─── */
+.ar-view__stage {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.ar-view__stage .model3d-viewer canvas {
+  cursor: grab;
+}
+.ar-view__stage .model3d-viewer canvas:active {
+  cursor: grabbing;
+}
+
+/* Vignette nhẹ để chữ overlay luôn đọc rõ trên mọi model */
+.ar-view__vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(10, 14, 12, 0.55) 0%, rgba(10, 14, 12, 0) 30%, rgba(10, 14, 12, 0) 70%, rgba(10, 14, 12, 0.55) 100%),
+    linear-gradient(180deg, rgba(10, 14, 12, 0.35) 0%, rgba(10, 14, 12, 0) 18%, rgba(10, 14, 12, 0) 75%, rgba(10, 14, 12, 0.4) 100%);
+}
+
+/* ─── PANEL chung (trái/phải) ─── */
+.ar-panel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  width: min(360px, 86vw);
+  padding: 56px 36px;
+  pointer-events: none; /* chỉ nội dung bên trong mới bắt sự kiện, để kéo xoay model xuyên qua khoảng trống panel */
+}
+
+.ar-panel > * {
+  pointer-events: auto;
+}
+
+/* ─── PANEL TRÁI: tên sách / tên nhân vật / hướng dẫn ─── */
+.ar-panel--left {
+  left: 0;
+  justify-content: flex-end;
+  align-items: flex-start;
+}
+
+.ar-panel__book {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--av-gold);
+  margin-bottom: 14px;
+  font-weight: 400;
+}
+
+.ar-panel__name {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(32px, 4.2vw, 50px);
+  font-weight: 500;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  margin: 0 0 28px;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+}
+
+.ar-hint {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ar-hint__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+  color: rgba(244, 241, 234, 0.72);
+  font-weight: 300;
+}
+
+.ar-hint__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--av-gold);
+  opacity: 0.9;
+}
+
+/* ─── PANEL PHẢI: Đặc điểm / bảng thông số / mô tả ─── */
+.ar-panel--right {
+  right: 0;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.ar-panel--right > * {
+  width: 100%;
+}
+
+.ar-panel__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--av-gold);
+  margin-bottom: 20px;
+  font-weight: 400;
+}
+
+.ar-panel__eyebrow::after {
+  content: "";
+  flex: 1;
+  height: 0.5px;
+  background: var(--av-border-gold);
+}
+
+.ar-specs {
+  background: rgba(10, 14, 12, 0.55);
+  backdrop-filter: blur(18px) saturate(1.3);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  border: 0.5px solid var(--av-border-gold);
+  padding: 22px 24px;
+  margin: 0 0 22px;
+}
+
+.ar-specs__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+}
+
+.ar-specs__row + .ar-specs__row {
+  border-top: 0.5px solid rgba(244, 241, 234, 0.1);
+}
+
+.ar-specs__row dt {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(244, 241, 234, 0.5);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.ar-specs__row dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--av-ivory);
+  text-align: right;
+}
+
+.ar-panel__desc {
+  font-size: 13px;
+  line-height: 1.75;
+  color: rgba(244, 241, 234, 0.68);
+  font-weight: 300;
+  margin: 0;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* ─── LOADING / EMPTY STATE ─── */
+.ar-view__spinner {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid rgba(244, 241, 234, 0.2);
+  border-top-color: var(--av-gold, #4a9e3f);
+  animation: ar-view-spin 0.8s linear infinite;
+}
+
+@keyframes ar-view-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.ar-view__empty {
+  max-width: 420px;
+}
+
+.ar-view__empty .ar-view__eyebrow {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--av-gold, #4a9e3f);
+  margin-bottom: 12px;
+}
+
+.ar-view__empty h1 {
+  font-family: "Playfair Display", serif;
+  font-size: 26px;
+  font-weight: 500;
+  margin: 8px 0 14px;
+}
+
+.ar-view__empty p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(244, 241, 234, 0.6);
+  margin: 0;
+  font-weight: 300;
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE — tablet
+   ═══════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .ar-panel {
+    width: min(320px, 80vw);
+    padding: 40px 28px;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE — mobile: xếp dọc, panel co lại
+   thành dải overlay trên/dưới thay vì 2 cột
+   ═══════════════════════════════════════════ */
+@media (max-width: 720px) {
+  .ar-panel {
+    position: absolute;
+    width: 100%;
+    left: 0;
+    right: 0;
+    padding: 22px 20px;
+  }
+
+  .ar-panel--left {
+    top: 0;
+    bottom: auto;
+    justify-content: flex-start;
+    background: linear-gradient(180deg, rgba(10, 14, 12, 0.75) 0%, rgba(10, 14, 12, 0) 100%);
+    padding-top: max(22px, env(safe-area-inset-top, 0px));
+  }
+
+  .ar-panel__name {
+    font-size: clamp(26px, 7vw, 34px);
+    margin-bottom: 16px;
+  }
+
+  .ar-hint {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 14px 18px;
+  }
+
+  .ar-hint__row span {
+    display: none; /* mobile: chỉ icon, đỡ chiếm chỗ */
+  }
+  .ar-hint__row {
+    gap: 0;
+  }
+
+  .ar-panel--right {
+    top: auto;
+    bottom: 0;
+    justify-content: flex-end;
+    padding-bottom: max(22px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .ar-specs {
+    padding: 16px 18px;
+    margin-bottom: 14px;
+  }
+
+  .ar-specs__row {
+    padding: 7px 0;
+  }
+
+  .ar-panel__desc {
+    font-size: 12.5px;
+    line-height: 1.65;
+    /* giới hạn dòng để không che hết model trên màn hình nhỏ */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+@media (max-width: 380px) {
+  .ar-panel__book {
+    font-size: 10px;
+  }
+}
