@@ -3262,7 +3262,7 @@ body.dark-mode .community-section {
 }
 .auth-perk {
   display: flex;
-  align-items: flex-start;
+  align-items: center;   /* đổi từ flex-start → center */
   gap: 16px;
 }
 .auth-perk-icon {
@@ -3274,7 +3274,6 @@ body.dark-mode .community-section {
   justify-content: center;
   color: var(--gold);
   flex-shrink: 0;
-  margin-top: 2px;
 }
 .auth-perk-text {
   font-size: 13px;

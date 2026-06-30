@@ -5,8 +5,8 @@ import { Eye, EyeOff, Shield } from "lucide-react";
 import { authService } from "../../services/authService";
 import { useAuthStore } from "../../store/authStore";
 import toast from "react-hot-toast";
+import ThreeBookModel from "./ThreeBookModel";
 
-// Che email: nguyen***@gmail.com
 const maskEmail = (email) => {
   const [local, domain] = email.split("@");
   if (!domain) return email;
@@ -286,6 +286,9 @@ export default function Register() {
             ))}
           </div>
         </div>
+
+        {/* ── 3D Book Model ── lấp khoảng trống giữa perks và quote */}
+        <ThreeBookModel />
 
         <div className="auth-visual-quote">
           <p className="auth-quote-text">

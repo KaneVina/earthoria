@@ -29,6 +29,7 @@
     "react-router-dom": "^7.17.0",
     "recharts": "^3.9.0",
     "swiper": "^12.2.0",
+    "three": "^0.185.0",
     "zod": "^4.4.3",
     "zustand": "^5.0.14"
   },
