@@ -468,7 +468,7 @@ export default function Register() {
                   type="button"
                   onClick={() =>
                 (window.location.href =
-                  `${import.meta.env.VITE_API_URL || "https://earthoria.onrender.com"}/api/v1/auth/google`)
+                  `${import.meta.env.VITE_API_URL || "https://earthoria.onrender.com/api/v1"}/auth/google`)
               }
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
