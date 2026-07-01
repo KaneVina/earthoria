@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { authService } from '../services/authService'
 import { orderService } from '../services/orderService'
+import { arService } from '../services/arService'
 import { useAuthStore } from '../store/authStore'
 import { formatPrice, formatDate } from '../utils/helpers'
 import toast from 'react-hot-toast'
@@ -14,6 +15,7 @@ const CHAPTERS = [
   { id: 'orders',    label: 'Đơn Hàng',  roman: 'II' },
   { id: 'security',  label: 'Bảo Mật',   roman: 'III' },
   { id: 'addresses', label: 'Địa Chỉ',   roman: 'IV' },
+  { id: 'ar',        label: 'Sách AR',   roman: 'V' },
 ]
 
 const ORDER_STATUS_MAP = {
@@ -260,6 +262,12 @@ export default function Profile() {
     enabled: !!selectedOrderId,
   })
 
+  const { data: arCodes = [], isLoading: arLoading } = useQuery({
+    queryKey: ['my-ar-codes'],
+    queryFn: () => arService.getMyArBooks().then(r => r.data.data),
+    enabled: activeTab === 'ar',
+  })
+
   const updateProfileMutation = useMutation({
     mutationFn: (patch) => authService.updateProfile(patch),
     onSuccess: (res, patch) => {
@@ -348,6 +356,7 @@ export default function Profile() {
         )}
         {activeTab === 'security' && <SecurityTab />}
         {activeTab === 'addresses' && <AddressesTab profile={profile} confirm={confirm} />}
+        {activeTab === 'ar' && <ArTab arCodes={arCodes} loading={arLoading} />}
       </div>
 
       <FooterHelp />
@@ -1268,6 +1277,91 @@ function AddressesTab({ profile, confirm }) {
           ))}
         </div>
       )}
+    </div>
+  )
+}
+
+/* ══════════════════════════════════════════════
+   TAB: SÁCH AR CỦA TÔI
+   Chỉ liệt kê ArCode thuộc sách đã mua + đơn DELIVERED (backend đã lọc
+   sẵn qua endpoint /ar/my-books) — không cần lọc lại ở frontend.
+   Bấm vào 1 mục sẽ đi thẳng tới /ar/:slug/:code để xem mô hình 3D,
+   không cần quét lại QR giấy.
+══════════════════════════════════════════════ */
+function ArTab({ arCodes, loading }) {
+  if (loading) {
+    return (
+      <div>
+        <SectionHeader
+          chapter="V" eyebrow="Trải Nghiệm AR" title="Sách" emphasis="AR Của Tôi"
+          sub="Toàn bộ mô hình 3D thuộc các cuốn sách bạn đã mua và nhận hàng"
+        />
+        <div style={{ padding: 48, textAlign: 'center', color: 'var(--text-muted)' }}>Đang tải...</div>
+      </div>
+    )
+  }
+
+  if (!arCodes.length) {
+    return (
+      <div>
+        <SectionHeader
+          chapter="V" eyebrow="Trải Nghiệm AR" title="Sách" emphasis="AR Của Tôi"
+          sub="Toàn bộ mô hình 3D thuộc các cuốn sách bạn đã mua và nhận hàng"
+        />
+        <EmptyState
+          icon={Icon.compass}
+          text="Chưa có sách AR nào"
+          sub="Mua sách có AR và chờ giao hàng thành công để mở khoá mô hình 3D tại đây"
+        />
+      </div>
+    )
+  }
+
+  // Gom các mã AR theo từng cuốn sách để hiển thị thành từng nhóm,
+  // tránh trộn lẫn khi khách sở hữu nhiều sách AR cùng lúc.
+  const grouped = arCodes.reduce((acc, item) => {
+    const key = item.book?.id || item.bookId
+    if (!acc[key]) acc[key] = { book: item.book, items: [] }
+    acc[key].items.push(item)
+    return acc
+  }, {})
+
+  return (
+    <div>
+      <SectionHeader
+        chapter="V" eyebrow="Trải Nghiệm AR" title="Sách" emphasis="AR Của Tôi"
+        sub="Toàn bộ mô hình 3D thuộc các cuốn sách bạn đã mua và nhận hàng"
+      />
+
+      {Object.values(grouped).map(group => (
+        <div key={group.book?.id} style={{ marginBottom: 36 }}>
+          <div className="pf-addr-name" style={{ marginBottom: 14, fontSize: 15 }}>
+            {group.book?.title}
+          </div>
+          <div className="pf-addr-grid">
+            {group.items.map(item => (
+              <Link
+                key={item.id}
+                to={`/ar/${group.book?.slug}/${item.code}`}
+                className="pf-addr-card"
+                style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 14 }}
+              >
+                <div style={{
+                  width: 40, height: 40, borderRadius: '50%',
+                  border: '0.5px solid var(--border-gold)', color: 'var(--gold)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                }}>
+                  {Icon.compass}
+                </div>
+                <div>
+                  <div className="pf-addr-name" style={{ marginBottom: 3 }}>{item.label}</div>
+                  <div className="pf-addr-phone">Bấm để xem mô hình 3D</div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }

@@ -99,6 +99,7 @@ model Book {
   description   String?
   price         Float
   salePrice     Float?
+  dealerPrice   Float?
   stock         Int      @default(0)
   sold          Int      @default(0)
   ageMin        Int?
@@ -106,6 +107,11 @@ model Book {
   language      String   @default("VI")
   pages         Int?
   publisher     String?
+  publishYear   Int?
+  dimensions    String?  // chuỗi tự do, vd "21 x 28 x 1.2 cm"
+  weightGrams   Int?
+  coverType     String?  // vd "Cứng, chống nước"
+  paperType     String?  // vd "FSC Certified 150gsm"
   coverImage    String?
   images        String[]
   arModelUrl    String?
@@ -126,6 +132,10 @@ model Book {
   wishlist   Wishlist[]
   arCodes    ArCode[]
   authors    BookAuthor[]
+
+  @@index([categoryId])
+  @@index([language])
+  @@index([isActive])
 }
 
 // ─── AUTHOR ───

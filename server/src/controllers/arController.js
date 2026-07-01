@@ -1,64 +1,90 @@
 const prisma = require('../config/db')
 
 /**
- * GET /api/v1/ar/:code
+ * GET /api/v1/ar/:code — BẮT BUỘC đăng nhập (middleware `protect` áp ở
+ * route). Chưa login → 401 do chính `protect` trả về, không cần xử lý
+ * thêm ở đây.
  *
- * Endpoint CÔNG KHAI — không cần đăng nhập, để người quét QR trong sách
- * giấy xem được model 3D ngay lập tức.
- *
- * Lưu ý bảo mật quan trọng:
- *  - Chỉ tra cứu bằng `code` (chuỗi ngẫu nhiên không đoán được), KHÔNG
- *    bao giờ dùng `slug` trên URL để tra cứu hay xác thực. `slug` trên
- *    URL chỉ để hiển thị đẹp; nếu client gửi slug sai/khác, ta vẫn trả
- *    đúng dữ liệu của `code` và để frontend tự điều hướng lại URL chuẩn.
- *  - Không trả lỗi 404 mơ hồ khác nhau giữa "mã không tồn tại" và
- *    "mã bị vô hiệu hoá" theo cách dễ bị dò quét hàng loạt — cùng một
- *    dạng response để tránh lộ thông tin.
+ * Sau khi xác thực token, còn phải kiểm tra thêm: user này CÓ sở hữu
+ * cuốn sách chứa mã AR này không (đơn hàng DELIVERED). Đây là lớp
+ * kiểm soát chính chống chia sẻ link — không dựa vào việc "biết code"
+ * nữa mà dựa vào "có mua sách + đăng nhập đúng tài khoản đó".
  */
-async function getArCode(req, res) {
-  const { code } = req.params
+exports.getArCode = async (req, res) => {
+  try {
+    const { code } = req.params
 
-  if (!code || code.length < 16) {
-    return res.status(404).json({ success: false, message: 'Mã AR không hợp lệ' })
-  }
-
-  const arCode = await prisma.arCode.findUnique({
-    where: { code },
-    include: {
-      book: {
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          coverImage: true,
-        },
+    const arCode = await prisma.arCode.findUnique({
+      where: { code },
+      include: {
+        book: { select: { id: true, title: true, slug: true } },
       },
-    },
-  })
+    })
 
-  if (!arCode || !arCode.isActive) {
-    return res.status(404).json({ success: false, message: 'Không tìm thấy mã AR này' })
-  }
+    if (!arCode || !arCode.isActive) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy mã này' })
+    }
 
-  // Tăng đếm lượt quét không đồng bộ, không chặn response (best-effort).
-  prisma.arCode
-    .update({ where: { code }, data: { scanCount: { increment: 1 } } })
-    .catch((err) => console.error('Lỗi khi tăng scanCount:', err))
-
-  return res.json({
-    success: true,
-    data: {
-      code: arCode.code,
-      label: arCode.label,
-      modelUrl: arCode.modelUrl,
-      posterUrl: arCode.posterUrl,
-      book: {
-        title: arCode.book.title,
-        slug: arCode.book.slug,
-        coverImage: arCode.book.coverImage,
+    const owns = await prisma.orderItem.findFirst({
+      where: {
+        bookId: arCode.bookId,
+        order: { userId: req.user.id, status: 'DELIVERED' },
       },
-    },
-  })
+      select: { id: true },
+    })
+
+    if (!owns) {
+      return res.status(403).json({
+        success: false,
+        message: 'Bạn cần sở hữu cuốn sách này (đơn hàng đã giao) để xem mô hình AR',
+      })
+    }
+
+    // Đếm lượt quét — dùng để phát hiện bất thường (mục 4 trong yêu cầu)
+    await prisma.arCode.update({
+      where: { id: arCode.id },
+      data: { scanCount: { increment: 1 } },
+    })
+
+    return res.json({
+      success: true,
+      data: {
+        label: arCode.label,
+        modelUrl: arCode.modelUrl,
+        posterUrl: arCode.posterUrl,
+        book: arCode.book,
+      },
+    })
+  } catch (err) {
+    console.error('[getArCode]', err)
+    return res.status(500).json({ success: false, message: 'Lỗi server' })
+  }
 }
 
-module.exports = { getArCode }
+/**
+ * GET /api/v1/ar/my-books — danh sách toàn bộ ArCode thuộc các sách mà
+ * user đã mua và đã được giao, để hiển thị trong "Sách AR của tôi".
+ */
+exports.getMyArCodes = async (req, res) => {
+  try {
+    const arCodes = await prisma.arCode.findMany({
+      where: {
+        isActive: true,
+        book: {
+          orderItems: {
+            some: { order: { userId: req.user.id, status: 'DELIVERED' } },
+          },
+        },
+      },
+      include: {
+        book: { select: { id: true, title: true, slug: true, coverImage: true } },
+      },
+      orderBy: [{ bookId: 'asc' }, { createdAt: 'asc' }],
+    })
+
+    return res.json({ success: true, data: arCodes })
+  } catch (err) {
+    console.error('[getMyArCodes]', err)
+    return res.status(500).json({ success: false, message: 'Lỗi server' })
+  }
+}

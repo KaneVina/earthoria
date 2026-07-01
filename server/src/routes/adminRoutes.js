@@ -1,5 +1,6 @@
 const express = require('express')
 const router = express.Router()
+const uploadGlb = require('../middlewares/uploadGlb')
 const {
   getDashboard,
   // Products (books)
@@ -12,6 +13,8 @@ const {
   getUsers, toggleUser, backfillUserCodes,
   // Coupons
   getCoupons, createCoupon, toggleCoupon,
+  // Ar
+   getArCodes, createArCode, updateArCode, toggleArCode,
 } = require('../controllers/adminController')
 const { protect, adminOnly } = require('../middlewares/authMiddleware')
 
@@ -45,6 +48,12 @@ router.post('/users/backfill-codes',  backfillUserCodes)
 router.get('/coupons',            getCoupons)
 router.post('/coupons',           createCoupon)
 router.put('/coupons/:id/toggle', toggleCoupon)
+
+// ── AR Codes ──
+router.get('/products/:bookId/ar-codes',  getArCodes)
+router.post('/products/:bookId/ar-codes', uploadGlb.single('model'), createArCode)
+router.put('/ar-codes/:id',               uploadGlb.single('model'), updateArCode)
+router.put('/ar-codes/:id/toggle',        toggleArCode)
 
 // ── UptimeRobot proxy ──
 router.get('/server-status', async (req, res) => {

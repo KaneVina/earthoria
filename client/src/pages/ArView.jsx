@@ -1,13 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../services/api";
+import { arService } from "../services/arService";
 import Model3D from "../components/3d/Model3D";
 import "../components/assets/css/arview.css";
 
-const API_BASE = import.meta.env.VITE_API_URL || "/api/v1";
-
 /**
- * Trang public cho người quét QR trong sách — KHÔNG cần đăng nhập.
+ * Trang xem AR khi khách quét QR trong sách — BẮT BUỘC đăng nhập.
  * Route: /ar/:slug/:code
  *
  * Lưu ý quan trọng: chỉ `code` được dùng để gọi API và tra cứu dữ liệu.
@@ -16,11 +15,20 @@ const API_BASE = import.meta.env.VITE_API_URL || "/api/v1";
  * sẽ tự điều hướng lại đúng URL chuẩn — không vì vậy mà lộ sách khác,
  * vì dữ liệu trả về luôn được tra theo `code`, không theo `slug`.
  *
+ * QUYỀN TRUY CẬP (đã đổi so với bản cũ):
+ *   - Chưa đăng nhập (401 từ backend)  -> chuyển sang /login kèm
+ *     ?redirect=<url hiện tại> để sau khi login xong tự quay lại đúng
+ *     trang AR đang xem, KHÔNG bắt khách quét lại QR.
+ *   - Đã đăng nhập nhưng chưa mua sách / đơn chưa giao (403)  -> hiển
+ *     thị màn "không có quyền xem", không lộ modelUrl.
+ *   - Mã không tồn tại hoặc đã bị vô hiệu hoá (404)  -> hiển thị màn
+ *     "không tìm thấy mã".
+ *
  * NOTE: phần `specs` / `description` hiện đang HARDCODE dữ liệu mẫu vì
  * API /ar/:code chưa trả về các field này. Khi backend bổ sung, chỉ cần
  * thay khối FALLBACK_DATA bên dưới bằng field thật từ `res.data.data`.
  *
- * UX flow (mới):
+ * UX flow:
  *   1. "scanning"  — hiệu ứng quét công nghệ chạy qua model vài giây
  *   2. "preview"   — model thu nhỏ ở giữa, 2 panel thông tin hiện đầy
  *                    đủ 2 bên, có 1 nút nổi để phóng to
@@ -58,7 +66,7 @@ export default function ArView() {
   const navigate = useNavigate();
 
   const [state, setState] = useState({
-    status: "loading", // loading | ready | not-found
+    status: "loading", // loading | ready | not-found | forbidden
     data: null,
   });
 
@@ -71,7 +79,7 @@ export default function ArView() {
 
     async function fetchArCode() {
       try {
-        const res = await axios.get(`${API_BASE}/ar/${code}`);
+        const res = await arService.getArCode(code);
         if (cancelled) return;
 
         const data = res.data?.data;
@@ -97,8 +105,32 @@ export default function ArView() {
             description: data.description || FALLBACK_DATA.description,
           },
         });
-      } catch {
-        if (!cancelled) setState({ status: "not-found", data: null });
+      } catch (err) {
+        if (cancelled) return;
+
+        const httpStatus = err.response?.status;
+
+        if (httpStatus === 401) {
+          // Chưa đăng nhập — không tự động thử quét lại, dẫn thẳng sang
+          // trang login kèm redirect để quay lại đúng URL này (bao gồm
+          // cả /slug/code) ngay sau khi đăng nhập thành công.
+          const currentUrl = `${window.location.pathname}${window.location.search}`;
+          navigate(`/login?redirect=${encodeURIComponent(currentUrl)}`, {
+            replace: true,
+          });
+          return;
+        }
+
+        if (httpStatus === 403) {
+          // Đã đăng nhập nhưng không sở hữu sách này (chưa mua / đơn
+          // chưa giao) — không tiết lộ modelUrl, hiển thị màn riêng.
+          setState({ status: "forbidden", data: null });
+          return;
+        }
+
+        // 404 hoặc lỗi khác đều coi như "không tìm thấy mã" để không
+        // lộ chi tiết lỗi hệ thống ra ngoài.
+        setState({ status: "not-found", data: null });
       }
     }
 
@@ -122,6 +154,23 @@ export default function ArView() {
     return (
       <main className="ar-view ar-view--center">
         <div className="ar-view__spinner" aria-label="Đang tải" />
+      </main>
+    );
+  }
+
+  if (state.status === "forbidden") {
+    return (
+      <main className="ar-view ar-view--center">
+        <div className="ar-view__empty">
+          <span className="ar-view__eyebrow">Earthoria AR</span>
+          <h1>Bạn chưa có quyền xem mô hình này</h1>
+          <p>
+            Mô hình 3D này chỉ hiển thị cho khách hàng đã mua và nhận được
+            cuốn sách tương ứng. Nếu bạn đã mua sách này, vui lòng kiểm tra
+            lại tài khoản đang đăng nhập hoặc liên hệ với chúng tôi để được
+            hỗ trợ.
+          </p>
+        </div>
       </main>
     );
   }

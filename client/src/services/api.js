@@ -14,7 +14,13 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (error) => {
-    if (error.response?.status === 401) {
+    // Request tới /ar/:code tự xử lý 401 riêng (điều hướng kèm
+    // ?redirect= để quay lại đúng trang AR sau khi login, thay vì bị
+    // logout cứng như các API khác) — bỏ qua auto-redirect ở đây để
+    // logic trong ArView.jsx được chạy.
+    const isArRequest = error.config?.url?.includes('/ar/')
+
+    if (error.response?.status === 401 && !isArRequest) {
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       window.location.href = '/login'

@@ -60,7 +60,6 @@ app.use((req, res) => {
 })
 
 // ─── Error handler ───
-// Luôn đặt CUỐI CÙNG, có đủ 4 tham số (err, req, res, next) để Express nhận diện là error handler
 app.use((err, req, res, next) => {
   console.error(err.stack)
   res.status(err.status || 500).json({

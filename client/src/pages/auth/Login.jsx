@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { Eye, EyeOff, Sun, Moon } from "lucide-react";
 import { authService } from "../../services/authService";
@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 
 export default function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { setAuth } = useAuthStore();
   const { isDark, toggleTheme } = useTheme();
   const [showPw, setShowPw] = useState(false);
@@ -30,9 +31,17 @@ export default function Login() {
       setAuth(user, token);
       console.log("store sau setAuth:", useAuthStore.getState());
 
-      setAuth(user, token);
+      // Nếu người dùng bị dẫn tới trang login từ 1 trang cần đăng nhập
+      // (vd quét QR AR), quay lại đúng trang đó thay vì luôn về trang
+      // chủ / dashboard. Chỉ chấp nhận đường dẫn nội bộ bắt đầu bằng
+      // "/" và không phải "//" (chặn open-redirect ra domain khác).
+      const redirect = searchParams.get("redirect");
+      const isSafeRedirect =
+        redirect && redirect.startsWith("/") && !redirect.startsWith("//");
 
-      if (user.role === "ADMIN") {
+      if (isSafeRedirect) {
+        window.location.href = redirect;
+      } else if (user.role === "ADMIN") {
         window.location.href = "/dashboard";
       } else {
         window.location.href = "/";

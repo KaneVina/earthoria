@@ -283,16 +283,45 @@ exports.getProducts = async (req, res) => {
     const page   = Math.max(1, parseInt(req.query.page)  || 1)
     const limit  = Math.max(1, parseInt(req.query.limit) || 12)
     const search = req.query.search?.trim() ?? ''
-    const skip   = (page - 1) * limit
 
-    const where = search
-      ? {
-          OR: [
-            { title:     { contains: search, mode: 'insensitive' } },
-            { publisher: { contains: search, mode: 'insensitive' } },
-          ],
-        }
-      : {}
+    const id         = req.query.id?.trim()         ?? ''
+    const categoryId = req.query.categoryId?.trim() ?? ''
+    const language   = req.query.language?.trim()   ?? ''
+    const status     = req.query.status?.trim()     ?? '' // 'active' | 'inactive'
+    const ageMin     = req.query.ageMin !== undefined && req.query.ageMin !== '' ? parseInt(req.query.ageMin) : null
+    const ageMax     = req.query.ageMax !== undefined && req.query.ageMax !== '' ? parseInt(req.query.ageMax) : null
+
+    const skip = (page - 1) * limit
+
+    // ── Build where clause ──
+    const conditions = []
+
+    // Tìm theo ID — cho phép nhập ID đầy đủ hoặc chỉ vài ký tự đầu
+    // (bảng admin chỉ hiển thị 8 ký tự đầu của ID nên filter phải khớp kiểu "bắt đầu bằng")
+    if (id) conditions.push({ id: { startsWith: id, mode: 'insensitive' } })
+
+    // Tìm theo tên sách / nhà xuất bản
+    if (search) {
+      conditions.push({
+        OR: [
+          { title:     { contains: search, mode: 'insensitive' } },
+          { publisher: { contains: search, mode: 'insensitive' } },
+        ],
+      })
+    }
+
+    if (categoryId) conditions.push({ categoryId })
+    if (language)   conditions.push({ language })
+
+    if (status === 'active')   conditions.push({ isActive: true })
+    if (status === 'inactive') conditions.push({ isActive: false })
+
+    // Lọc theo độ tuổi: sách "phù hợp" nếu khoảng tuổi sách giao với khoảng tuổi lọc
+    // (sách không set ageMin/ageMax được coi là phù hợp mọi lứa tuổi -> không loại)
+    if (ageMin !== null) conditions.push({ OR: [{ ageMax: null }, { ageMax: { gte: ageMin } }] })
+    if (ageMax !== null) conditions.push({ OR: [{ ageMin: null }, { ageMin: { lte: ageMax } }] })
+
+    const where = conditions.length ? { AND: conditions } : {}
 
     const [products, total] = await Promise.all([
       prisma.book.findMany({
@@ -329,8 +358,10 @@ exports.getProducts = async (req, res) => {
 exports.createProduct = async (req, res) => {
   try {
     const {
-      title, description, price, salePrice, stock,
+      title, description, price, salePrice, dealerPrice, stock,
       categoryId, isVisible, publisher, pages, language, authors,
+      publishYear, dimensions, weightGrams, coverType, paperType,
+      ageMin, ageMax,
     } = req.body
 
     if (!title || !price || !categoryId) {
@@ -350,13 +381,21 @@ exports.createProduct = async (req, res) => {
         slug:        finalSlug,
         description: description ?? null,
         price:       Number(price),
-        salePrice:   salePrice ? Number(salePrice) : null,
+        salePrice:   salePrice   ? Number(salePrice)   : null,
+        dealerPrice: dealerPrice ? Number(dealerPrice) : null,
         stock:       Number(stock) || 0,
         categoryId,
         isActive:    isVisible !== false,
         publisher:   publisher ?? null,
         pages:       pages ? Number(pages) : null,
         language:    language ?? 'VI',
+        publishYear: publishYear ? Number(publishYear) : null,
+        dimensions:  dimensions ?? null,
+        weightGrams: weightGrams ? Number(weightGrams) : null,
+        coverType:   coverType ?? null,
+        paperType:   paperType ?? null,
+        ageMin:      ageMin !== undefined && ageMin !== '' ? Number(ageMin) : null,
+        ageMax:      ageMax !== undefined && ageMax !== '' ? Number(ageMax) : null,
         authors: {
           create: authorIds.map((authorId, i) => ({ authorId, order: i })),
         },
@@ -378,8 +417,10 @@ exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params
     const {
-      title, description, price, salePrice, stock,
-      categoryId, isVisible, publisher, pages, authors,
+      title, description, price, salePrice, dealerPrice, stock,
+      categoryId, isVisible, publisher, pages, authors, language,
+      publishYear, dimensions, weightGrams, coverType, paperType,
+      ageMin, ageMax,
     } = req.body
 
     // Nếu có gửi authors -> resolve trước, rồi xóa hết liên kết cũ và tạo lại theo thứ tự mới
@@ -399,11 +440,20 @@ exports.updateProduct = async (req, res) => {
         ...(description !== undefined && { description }),
         ...(price       !== undefined && { price: Number(price) }),
         ...(salePrice   !== undefined && { salePrice: salePrice ? Number(salePrice) : null }),
+        ...(dealerPrice !== undefined && { dealerPrice: dealerPrice ? Number(dealerPrice) : null }),
         ...(stock       !== undefined && { stock: Number(stock) }),
         ...(categoryId  !== undefined && { categoryId }),
         ...(isVisible   !== undefined && { isActive: isVisible }),
         ...(publisher   !== undefined && { publisher }),
         ...(pages       !== undefined && { pages: pages ? Number(pages) : null }),
+        ...(language    !== undefined && { language }),
+        ...(publishYear !== undefined && { publishYear: publishYear ? Number(publishYear) : null }),
+        ...(dimensions  !== undefined && { dimensions }),
+        ...(weightGrams !== undefined && { weightGrams: weightGrams ? Number(weightGrams) : null }),
+        ...(coverType   !== undefined && { coverType }),
+        ...(paperType   !== undefined && { paperType }),
+        ...(ageMin      !== undefined && { ageMin: ageMin !== '' ? Number(ageMin) : null }),
+        ...(ageMax      !== undefined && { ageMax: ageMax !== '' ? Number(ageMax) : null }),
         ...(authorsUpdate && { authors: authorsUpdate }),
       },
       include: {
@@ -820,5 +870,120 @@ exports.toggleCoupon = async (req, res) => {
   } catch (err) {
     console.error('[toggleCoupon]', err)
     return res.status(500).json({ success: false, message: 'Lỗi server' })
+  }
+}
+
+/* ══════════════════════════════════════════════
+   AR CODE MANAGEMENT (staff)
+══════════════════════════════════════════════ */
+const crypto = require('crypto')
+const { uploadGlbBuffer } = require('../services/cloudinaryUploadService')
+
+// Chỉ trả chi tiết lỗi thật ra response khi đang chạy dev, tránh lộ
+// thông tin nội bộ (đường dẫn, config, stack) khi đã lên production.
+const isDev = process.env.NODE_ENV !== 'production'
+function serverError(res, err, tag) {
+  console.error(`[${tag}]`, err)
+  return res.status(500).json({
+    success: false,
+    message: 'Lỗi server',
+    // Field này CHỈ xuất hiện ở môi trường dev — dùng để debug nhanh
+    // ngay trên Network tab thay vì phải mở terminal backend.
+    ...(isDev ? { debug: err.message } : {}),
+  })
+}
+
+function generateArCode() {
+  return crypto.randomBytes(24).toString('base64url')
+}
+
+exports.getArCodes = async (req, res) => {
+  try {
+    const { bookId } = req.params
+    const arCodes = await prisma.arCode.findMany({
+      where: { bookId },
+      orderBy: { createdAt: 'asc' },
+    })
+    return res.json({ success: true, data: arCodes })
+  } catch (err) {
+    return serverError(res, err, 'getArCodes')
+  }
+}
+
+exports.createArCode = async (req, res) => {
+  try {
+    const { bookId } = req.params
+    const { label } = req.body
+
+    if (!label) {
+      return res.status(400).json({ success: false, message: 'Thiếu label' })
+    }
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'Thiếu file .glb' })
+    }
+
+    const book = await prisma.book.findUnique({ where: { id: bookId } })
+    if (!book) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy sách' })
+    }
+
+    const code = generateArCode()
+    const uploadResult = await uploadGlbBuffer(req.file.buffer, code)
+
+    const arCode = await prisma.arCode.create({
+      data: {
+        code,
+        label,
+        modelUrl: uploadResult.secure_url,
+        bookId,
+      },
+    })
+
+    return res.status(201).json({ success: true, data: arCode })
+  } catch (err) {
+    return serverError(res, err, 'createArCode')
+  }
+}
+
+exports.updateArCode = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { label } = req.body
+
+    const existing = await prisma.arCode.findUnique({ where: { id } })
+    if (!existing) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy mã AR' })
+    }
+
+    const data = {}
+    if (label) data.label = label
+
+    if (req.file) {
+      const uploadResult = await uploadGlbBuffer(req.file.buffer, existing.code)
+      data.modelUrl = uploadResult.secure_url
+    }
+
+    const arCode = await prisma.arCode.update({ where: { id }, data })
+    return res.json({ success: true, data: arCode })
+  } catch (err) {
+    return serverError(res, err, 'updateArCode')
+  }
+}
+
+exports.toggleArCode = async (req, res) => {
+  try {
+    const { id } = req.params
+    const existing = await prisma.arCode.findUnique({ where: { id } })
+    if (!existing) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy mã AR' })
+    }
+
+    const arCode = await prisma.arCode.update({
+      where: { id },
+      data: { isActive: !existing.isActive },
+    })
+    return res.json({ success: true, data: arCode })
+  } catch (err) {
+    return serverError(res, err, 'toggleArCode')
   }
 }
