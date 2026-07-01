@@ -176,6 +176,8 @@ body.dark-mode .nav-links a:hover:not(.active) {
    ICON GROUP
    - Mặc định (logo nhỏ): gap rộng
    - Khi cuộn (logo to): gap thu lại
+   - Trên mobile: ẩn cả cụm, dồn hết vào nav-mobile-panel để nhường
+     chỗ tuyệt đối cho hamburger (đây là phần fix chính)
    ────────────────────────────────────────────────────────────── */
 .nav-actions {
   display: flex;
@@ -373,20 +375,110 @@ body.dark-mode .nav-icon[data-tooltip]::after {
 }
 
 /* ──────────────────────────────────────────────────────────────
-   Responsive
-   ────────────────────────────────────────────────────────────── */
-/* ──────────────────────────────────────────────────────────────
-   HAMBURGER — luôn nằm trên cùng, không bao giờ bị che khi panel mở
+   HAMBURGER
+   Gộp toàn bộ rule của hamburger vào 1 chỗ duy nhất (trước bị rải
+   rác 3 nơi khác nhau → dễ đè nhầm nhau). Luôn ghim bên phải,
+   không co lại, luôn nằm trên cùng để chắc chắn bấm trúng, kể cả
+   khi panel mobile đang mở.
    ────────────────────────────────────────────────────────────── */
 .nav-hamburger {
+  display: none;
   position: relative;
-  z-index: 950;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--forest);
+  z-index: 970;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
+body.dark-mode .nav-hamburger {
+  color: #c8d4cc;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   MOBILE FIX (nguyên nhân chính khiến bấm X không trúng)
+   1) Ẩn cụm icon phụ (search/theme/wishlist/cart) trên mobile —
+      trước đây các icon này + hamburger cùng chen chỗ trong
+      nav-actions, tràn ra ngoài / đẩy lệch hamburger.
+   2) Hamburger luôn hiện, luôn ghim đúng vị trí (khai báo ở trên).
+   3) Panel mobile giới hạn chiều cao + cuộn được thay vì tràn
+      khỏi màn hình khiến không thấy/không bấm được nút đóng.
+   4) Toàn bộ chuyển động mở/đóng mượt bằng max-height.
+   ────────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
+  nav {
+    padding: 0 20px;
+  }
+  nav .nav-links {
+    display: none;
+  }
   .nav-icon-group {
-    border-right: none;
-    padding-right: 0;
-    margin-right: 0;
+    display: none;
+  }
+  .nav-actions {
+    gap: 0;
+  }
+  .nav-auth-buttons {
+    display: none;
+  }
+  .user-menu {
+    display: none; /* thay bằng các mục trong nav-mobile-panel */
+  }
+  .nav-hamburger {
+    display: flex;
+  }
+}
+
+@media (max-width: 480px) {
+  nav {
+    padding: 0 16px;
+  }
+}
+
+@media (min-width: 901px) {
+  .nav-hamburger {
+    display: none;
+  }
+  .nav-mobile-panel {
+    display: none !important;
+  }
+}
+
+/* Panel trượt mở/đóng mượt bằng max-height, luôn giới hạn chiều
+   cao trong viewport + tự cuộn nếu danh sách dài, không bao giờ
+   tràn khỏi màn hình khiến bấm không tới nút đóng */
+.nav-mobile-panel {
+  display: flex;
+  flex-direction: column;
+  max-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  opacity: 0;
+  visibility: hidden;
+  transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.3s ease,
+              visibility 0.4s;
+  padding: 0 24px;
+}
+
+.nav-mobile-panel.open {
+  max-height: calc(100vh - 64px);
+  opacity: 1;
+  visibility: visible;
+  padding: 12px 24px 28px;
+}
+
+@supports (height: 100dvh) {
+  .nav-mobile-panel.open {
+    max-height: calc(100dvh - 64px);
   }
 }
