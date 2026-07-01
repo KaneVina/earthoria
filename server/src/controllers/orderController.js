@@ -1,14 +1,14 @@
-const prisma = require('../config/db')
-const { formatResponse } = require('../utils/helpers')
-const { getShippingFee } = require('../utils/shipping')
+const prisma = require("../config/db");
+const { formatResponse } = require("../utils/helpers");
+const { getShippingFee } = require("../utils/shipping");
 
-const FREE_SHIP_THRESHOLD = 300_000
-const { calcShippingFee: calcFee, WAREHOUSE } = require('../utils/shipping')
+const FREE_SHIP_THRESHOLD = 300_000;
+const { calcShippingFee: calcFee, WAREHOUSE } = require("../utils/shipping");
 
 const createOrder = async (req, res) => {
   try {
-    const userId = req.user.id
-    const { shipping, paymentMethod, couponCode, note } = req.body
+    const userId = req.user.id;
+    const { shipping, paymentMethod, couponCode, note } = req.body;
     // shipping: { fullName, phone, email, province, district, ward, street }
     // district là tên (ví dụ "Ninh Kiều") từ form frontend
 
@@ -18,63 +18,82 @@ const createOrder = async (req, res) => {
       include: {
         items: {
           include: {
-            book: { select: { id: true, price: true, salePrice: true, stock: true, title: true } }
-          }
-        }
-      }
-    })
+            book: {
+              select: {
+                id: true,
+                price: true,
+                salePrice: true,
+                stock: true,
+                title: true,
+              },
+            },
+          },
+        },
+      },
+    });
     if (!cart || cart.items.length === 0) {
-      return formatResponse(res, 400, 'Giỏ hàng trống')
+      return formatResponse(res, 400, "Giỏ hàng trống");
     }
 
     // 2. Kiểm tra stock
     for (const item of cart.items) {
       if (item.book.stock < item.quantity) {
-        return formatResponse(res, 400, `Sách "${item.book.title}" không đủ hàng`)
+        return formatResponse(
+          res,
+          400,
+          `Sách "${item.book.title}" không đủ hàng`,
+        );
       }
     }
 
     // 3. Tính subtotal
     const subtotal = cart.items.reduce((sum, item) => {
-      const price = item.book.salePrice || item.book.price
-      return sum + price * item.quantity
-    }, 0)
+      const price = item.book.salePrice || item.book.price;
+      return sum + price * item.quantity;
+    }, 0);
 
     // 4. Tính discount từ coupon (tra DB)
-    let discount = 0
+    let discount = 0;
     if (couponCode) {
       const coupon = await prisma.coupon.findFirst({
-        where: { code: couponCode, isActive: true }
-      })
+        where: { code: couponCode, isActive: true },
+      });
       if (coupon && subtotal >= coupon.minOrder) {
-        discount = coupon.type === 'PERCENTAGE'
-          ? Math.round(subtotal * coupon.value / 100)
-          : coupon.value
-        if (coupon.maxDiscount) discount = Math.min(discount, coupon.maxDiscount)
+        discount =
+          coupon.type === "PERCENTAGE"
+            ? Math.round((subtotal * coupon.value) / 100)
+            : coupon.value;
+        if (coupon.maxDiscount)
+          discount = Math.min(discount, coupon.maxDiscount);
         // Tăng usedCount
         await prisma.coupon.update({
           where: { id: coupon.id },
-          data: { usedCount: { increment: 1 } }
-        })
+          data: { usedCount: { increment: 1 } },
+        });
       }
     }
 
-    const afterDiscount = subtotal - discount
+    const afterDiscount = subtotal - discount;
 
     // 5. Tính phí ship theo km
-    let shippingFee
+    let shippingFee;
     if (afterDiscount >= FREE_SHIP_THRESHOLD) {
-      shippingFee = 0
-      } else {
-      const result = getShippingFee(shipping.ward)
-      shippingFee = result.fee
+      shippingFee = 0;
+    } else {
+      const result = getShippingFee(shipping.ward);
+      shippingFee = result.fee;
     }
 
-    const total = afterDiscount + shippingFee
+    const total = afterDiscount + shippingFee;
 
     // 6. Map paymentMethod
-    const methodMap = { cod: 'COD', vnpay: 'VNPAY', momo: 'VNPAY', card: 'STRIPE' }
-    const prismaMethod = methodMap[paymentMethod] || 'COD'
+    const methodMap = {
+      cod: "COD",
+      vnpay: "VNPAY",
+      momo: "VNPAY",
+      card: "STRIPE",
+    };
+    const prismaMethod = methodMap[paymentMethod] || "COD";
 
     // 7. Tạo Address snapshot (lưu vào bảng Address)
     const address = await prisma.address.create({
@@ -83,11 +102,11 @@ const createOrder = async (req, res) => {
         fullName: shipping.fullName,
         phone: shipping.phone,
         province: shipping.province,
-        district: '',
+        district: "",
         ward: shipping.ward,
         street: shipping.street,
-      }
-    })
+      },
+    });
 
     // 8. Tạo Order + OrderItems trong transaction
     const order = await prisma.$transaction(async (tx) => {
@@ -103,15 +122,15 @@ const createOrder = async (req, res) => {
           couponCode: couponCode || null,
           note: note || null,
           items: {
-            create: cart.items.map(item => ({
+            create: cart.items.map((item) => ({
               bookId: item.book.id,
               quantity: item.quantity,
               price: item.book.salePrice || item.book.price,
-            }))
-          }
+            })),
+          },
         },
-        include: { items: true }
-      })
+        include: { items: true },
+      });
 
       // Giảm stock
       for (const item of cart.items) {
@@ -119,68 +138,155 @@ const createOrder = async (req, res) => {
           where: { id: item.book.id },
           data: {
             stock: { decrement: item.quantity },
-            sold:  { increment: item.quantity },
-          }
-        })
+            sold: { increment: item.quantity },
+          },
+        });
       }
 
       // Xóa cart
-      await tx.cartItem.deleteMany({ where: { cartId: cart.id } })
+      await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
 
-      return newOrder
-    })
+      return newOrder;
+    });
 
-    return formatResponse(res, 201, 'Đặt hàng thành công', { orderId: order.id, total })
+    return formatResponse(res, 201, "Đặt hàng thành công", {
+      orderId: order.id,
+      total,
+    });
   } catch (error) {
-    console.error(error)
-    return formatResponse(res, 500, 'Lỗi server')
+    console.error(error);
+    return formatResponse(res, 500, "Lỗi server");
   }
-}
+};
 
 const getMyOrders = async (req, res) => {
   try {
     const orders = await prisma.order.findMany({
       where: { userId: req.user.id },
       include: {
-        items: { include: { book: { select: { title: true, coverImage: true } } } },
+        items: {
+          include: { book: { select: { title: true, coverImage: true } } },
+        },
         address: true,
       },
-      orderBy: { createdAt: 'desc' }
-    })
-    return formatResponse(res, 200, 'OK', orders)
+      orderBy: { createdAt: "desc" },
+    });
+    return formatResponse(res, 200, "OK", orders);
   } catch (error) {
-    return formatResponse(res, 500, 'Lỗi server')
+    return formatResponse(res, 500, "Lỗi server");
   }
-}
+};
 
 const calcShippingFee = async (req, res) => {
   try {
-    const { lat, lng, subtotal = 0 } = req.body
+    const { lat, lng, subtotal = 0 } = req.body;
 
-    if (!lat || !lng) return formatResponse(res, 400, 'Thiếu tọa độ lat/lng')
+    if (!lat || !lng) return formatResponse(res, 400, "Thiếu tọa độ lat/lng");
 
     if (subtotal >= FREE_SHIP_THRESHOLD) {
-      return formatResponse(res, 200, 'OK', { km: null, fee: 0, free: true, isNoiO: false })
+      return formatResponse(res, 200, "OK", {
+        km: null,
+        fee: 0,
+        free: true,
+        isNoiO: false,
+      });
     }
 
     // Gọi OSRM để lấy km đường thực tế
-    let kmFromOSRM = null
+    let kmFromOSRM = null;
     try {
-      const osrmUrl = `http://router.project-osrm.org/route/v1/driving/${WAREHOUSE.lng},${WAREHOUSE.lat};${lng},${lat}?overview=false`
-      const osrmRes = await fetch(osrmUrl, { signal: AbortSignal.timeout(4000) })
-      const osrmData = await osrmRes.json()
+      const osrmUrl = `http://router.project-osrm.org/route/v1/driving/${WAREHOUSE.lng},${WAREHOUSE.lat};${lng},${lat}?overview=false`;
+      const osrmRes = await fetch(osrmUrl, {
+        signal: AbortSignal.timeout(4000),
+      });
+      const osrmData = await osrmRes.json();
       if (osrmData.routes?.[0]?.distance) {
-        kmFromOSRM = parseFloat((osrmData.routes[0].distance / 1000).toFixed(1))
+        kmFromOSRM = parseFloat(
+          (osrmData.routes[0].distance / 1000).toFixed(1),
+        );
       }
     } catch {
       // OSRM timeout → fallback haversine, không cần báo lỗi
     }
 
-    const result = calcFee(lat, lng, kmFromOSRM)
-    return formatResponse(res, 200, 'OK', { ...result })
+    const result = calcFee(lat, lng, kmFromOSRM);
+    return formatResponse(res, 200, "OK", { ...result });
   } catch (error) {
-    return formatResponse(res, 500, 'Lỗi server')
+    return formatResponse(res, 500, "Lỗi server");
   }
-}
+};
+const getOrderById = async (req, res) => {
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.id },
+      include: {
+        items: {
+          include: { book: { select: { title: true, coverImage: true } } },
+        },
+        address: true,
+      },
+    });
 
-module.exports = { createOrder, getMyOrders, calcShippingFee }
+    if (!order) return formatResponse(res, 404, "Không tìm thấy đơn hàng");
+    if (order.userId !== req.user.id)
+      return formatResponse(res, 403, "Không có quyền xem đơn hàng này");
+
+    return formatResponse(res, 200, "OK", order);
+  } catch (error) {
+    console.error(error);
+    return formatResponse(res, 500, "Lỗi server");
+  }
+};
+
+const CANCELLABLE_STATUSES = ["PENDING", "CONFIRMED"];
+
+const cancelOrder = async (req, res) => {
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.id },
+      include: { items: true },
+    });
+
+    if (!order) return formatResponse(res, 404, "Không tìm thấy đơn hàng");
+    if (order.userId !== req.user.id)
+      return formatResponse(res, 403, "Không có quyền huỷ đơn hàng này");
+    if (!CANCELLABLE_STATUSES.includes(order.status)) {
+      return formatResponse(
+        res,
+        400,
+        "Đơn hàng đang ở trạng thái không thể huỷ",
+      );
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      // Hoàn lại stock đã trừ lúc đặt hàng
+      for (const item of order.items) {
+        await tx.book.update({
+          where: { id: item.bookId },
+          data: {
+            stock: { increment: item.quantity },
+            sold: { decrement: item.quantity },
+          },
+        });
+      }
+
+      return tx.order.update({
+        where: { id: order.id },
+        data: { status: "CANCELLED" },
+      });
+    });
+
+    return formatResponse(res, 200, "Đã huỷ đơn hàng", updated);
+  } catch (error) {
+    console.error(error);
+    return formatResponse(res, 500, "Lỗi server");
+  }
+};
+
+module.exports = {
+  createOrder,
+  getMyOrders,
+  calcShippingFee,
+  getOrderById,
+  cancelOrder,
+};

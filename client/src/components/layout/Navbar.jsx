@@ -20,10 +20,11 @@ import { useTheme } from "../../hooks/useTheme";
 import toast from "react-hot-toast";
 import logoImg from "../assets/img/logoBT-ngangtext.png";
 import SearchOverlay from "./SearchOverlay";
+import { useQueryClient } from '@tanstack/react-query'
 
 const logoCompactImg = "/logo-nho.png";
-
 export default function Navbar() {
+const queryClient = useQueryClient()
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -69,6 +70,7 @@ export default function Navbar() {
   // ── Helpers ───────────────────────────────────────────
   const handleLogout = () => {
     logout();
+     queryClient.clear()
     toast.success("Đã đăng xuất");
     navigate("/");
   };

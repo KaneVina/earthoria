@@ -11,11 +11,11 @@ import toast from 'react-hot-toast'
 const F = { serif: "'Playfair Display', serif", sans: "'Be Vietnam Pro', sans-serif" }
 
 const CHAPTERS = [
-  { id: 'overview',  label: 'Hồ Sơ',     roman: 'I' },
-  { id: 'orders',    label: 'Đơn Hàng',  roman: 'II' },
-  { id: 'security',  label: 'Bảo Mật',   roman: 'III' },
-  { id: 'addresses', label: 'Địa Chỉ',   roman: 'IV' },
-  { id: 'ar',        label: 'Sách AR',   roman: 'V' },
+  { id: 'overview',  label: 'Hồ Sơ',     roman: 'I',   icon: 'user' },
+  { id: 'orders',    label: 'Đơn Hàng',  roman: 'II',  icon: 'package' },
+  { id: 'security',  label: 'Bảo Mật',   roman: 'III', icon: 'lock' },
+  { id: 'addresses', label: 'Địa Chỉ',   roman: 'IV',  icon: 'map' },
+  { id: 'ar',        label: 'Sách AR',   roman: 'V',   icon: 'compass' },
 ]
 
 const ORDER_STATUS_MAP = {
@@ -246,7 +246,7 @@ export default function Profile() {
 
   const { data: profile } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => authService.me().then(r => r.data.data),
+    queryFn: () => authService.getMe().then(r => r.data.data),
     initialData: user,
   })
 
@@ -297,6 +297,7 @@ export default function Profile() {
     })
     if (!ok) return
     logout()
+     queryClient.clear()
     toast.success('Đã đăng xuất')
     navigate('/')
   }

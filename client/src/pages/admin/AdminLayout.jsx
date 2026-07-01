@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 import toast from 'react-hot-toast'
+import { QueryClient } from '@tanstack/react-query'
 
 const NAV_ITEMS = [
   { label: 'Dashboard',    href: '/dashboard',             icon: LayoutDashboard },
@@ -28,6 +29,7 @@ export default function AdminLayout({ children }) {
 
   const handleLogout = () => {
     logout()
+     QueryClient.clear()
     toast.success('Đã đăng xuất')
     navigate('/')
   }
