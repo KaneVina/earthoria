@@ -153,7 +153,12 @@ export default function ArView() {
   if (state.status === "loading") {
     return (
       <main className="ar-view ar-view--center">
-        <div className="ar-view__spinner" aria-label="Đang tải" />
+        <div className="ar-view__loading" role="status" aria-live="polite">
+          <div className="ar-view__spinner" aria-hidden="true" />
+          <span className="ar-view__loading-text">
+            Đang chuẩn bị mô hình AR…
+          </span>
+        </div>
       </main>
     );
   }
@@ -162,6 +167,26 @@ export default function ArView() {
     return (
       <main className="ar-view ar-view--center">
         <div className="ar-view__empty">
+          <div className="ar-view__badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect
+                x="5"
+                y="11"
+                width="14"
+                height="9"
+                rx="2"
+                stroke="currentColor"
+                strokeWidth="1.4"
+              />
+              <path
+                d="M8 11V7.5a4 4 0 0 1 8 0V11"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+              />
+              <circle cx="12" cy="15.3" r="1.3" fill="currentColor" />
+            </svg>
+          </div>
           <span className="ar-view__eyebrow">Earthoria AR</span>
           <h1>Bạn chưa có quyền xem mô hình này</h1>
           <p>
@@ -179,6 +204,24 @@ export default function ArView() {
     return (
       <main className="ar-view ar-view--center">
         <div className="ar-view__empty">
+          <div className="ar-view__badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle
+                cx="12"
+                cy="12"
+                r="8.2"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeDasharray="2.4 3.2"
+              />
+              <path
+                d="M14.6 9.4 12.9 13l-3.6 1.7 1.7-3.6 3.6-1.7Z"
+                stroke="currentColor"
+                strokeWidth="1.2"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
           <span className="ar-view__eyebrow">Earthoria AR</span>
           <h1>Không tìm thấy mã này</h1>
           <p>
@@ -296,6 +339,7 @@ export default function ArView() {
           {specs.map((item) => (
             <div className="ar-specs__row" key={item.label}>
               <dt>{item.label}</dt>
+              <span className="ar-specs__leader" aria-hidden="true" />
               <dd>{item.value}</dd>
             </div>
           ))}

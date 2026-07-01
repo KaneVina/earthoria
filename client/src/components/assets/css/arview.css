@@ -23,14 +23,45 @@
   --av-glow-a: rgba(74, 158, 63, 0.45);
   --av-glow-b: rgba(26, 92, 82, 0.5);
 
+  /* "Foil" accent — một màu vàng ấm thật sự, cố tình tách biệt khỏi
+     --av-gold (thực chất là xanh lá). CHỈ dùng cho chi tiết trang trí
+     tĩnh trên 2 panel thông tin sau khi model đã được "xác nhận" bởi
+     hiệu ứng quét (góc thẻ, chấm dẫn, viền mảnh) — KHÔNG dùng cho hover/
+     tương tác, để nút bấm vẫn đồng bộ màu với phần còn lại của sản phẩm.
+     Ý tưởng: quét công nghệ (xanh) dựng model, rồi thông tin hiện ra như
+     một tấm thẻ bảo tàng dát vàng. */
+  --av-foil: #cda86a;
+  --av-foil-soft: rgba(205, 168, 106, 0.32);
+  --av-foil-bright: #ecd19d;
+
   position: relative;
   width: 100%;
   height: 100vh;
   min-height: 100vh;
-  background: #0a0e0c;
+  background: radial-gradient(120% 90% at 50% 8%, rgba(26, 92, 82, 0.22) 0%, transparent 55%),
+    radial-gradient(100% 80% at 50% 100%, rgba(13, 51, 48, 0.32) 0%, transparent 60%),
+    #060907;
   color: var(--av-ivory);
   overflow: hidden;
   font-family: "Be Vietnam Pro", sans-serif;
+  /* Khung viền chỉ vàng rất mảnh, bao trọn viewport — cảm giác như một
+     khung trưng bày bảo tàng, tinh tế, không lấn át nội dung. */
+  box-shadow: inset 0 0 0 1px rgba(205, 168, 106, 0.13);
+}
+
+/* ─── GRAIN — lớp nhiễu hạt phim rất mảnh phủ toàn bộ trải nghiệm, giúp
+   nền tối đỡ "phẳng" và có cảm giác cao cấp, điện ảnh hơn. Cường độ cực
+   thấp (~4.5%) nên không ảnh hưởng độ rõ của chữ/nút bên dưới, và luôn
+   pointer-events: none để không cản thao tác. ─── */
+.ar-view::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+  opacity: 0.045;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 .ar-view--center {
@@ -64,6 +95,9 @@
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
+  /* Quầng sáng tĩnh, rất nhẹ ở chính giữa — như ánh đèn sân khấu rọi vào
+     bệ trưng bày, tạo chiều sâu ngay cả trước khi 2 khối glow trôi tới. */
+  background: radial-gradient(52% 46% at 50% 45%, rgba(250, 248, 243, 0.055), transparent 72%);
 }
 
 .ar-view__glow::before,
@@ -485,6 +519,18 @@
   font-weight: 400;
 }
 
+.ar-panel__book::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 9px;
+  transform: rotate(45deg);
+  background: var(--av-foil);
+  box-shadow: 0 0 6px var(--av-foil-soft);
+  vertical-align: middle;
+}
+
 .ar-panel__name {
   font-family: "Playfair Display", serif;
   font-size: clamp(32px, 4.2vw, 50px);
@@ -493,6 +539,40 @@
   letter-spacing: -0.01em;
   margin: 0 0 28px;
   text-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* Gạch chân vàng mảnh, "vẽ" dần từ trái sang sau khi tên hiện ra — điểm
+   nhấn sang trọng, chỉ một lần, không lặp lại để tránh rối mắt. */
+.ar-panel__name::after {
+  content: "";
+  display: block;
+  width: 46px;
+  height: 2px;
+  margin-top: 6px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--av-foil-bright), var(--av-foil) 70%, transparent);
+  transform-origin: left center;
+  transform: scaleX(0);
+}
+
+.ar-panel--left:not(.is-hidden):not(.is-collapsed) .ar-panel__name::after {
+  animation: ar-name-underline-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.32s both;
+}
+
+@keyframes ar-name-underline-in {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ar-panel__name::after {
+    transform: scaleX(1);
+    animation: none;
+  }
 }
 
 .ar-hint {
@@ -512,11 +592,18 @@
 }
 
 .ar-hint__icon {
-  width: 18px;
-  height: 18px;
+  box-sizing: border-box;
+  width: 34px;
+  height: 34px;
+  padding: 8px;
   flex-shrink: 0;
   color: var(--av-gold);
-  opacity: 0.9;
+  opacity: 0.95;
+  border-radius: 50%;
+  background: rgba(250, 248, 243, 0.045);
+  border: 0.5px solid var(--av-foil-soft);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 /* ─── PANEL PHẢI: Đặc điểm / bảng thông số / mô tả ─── */
@@ -540,6 +627,16 @@
   color: var(--av-gold);
   margin-bottom: 20px;
   font-weight: 400;
+}
+
+.ar-panel__eyebrow::before {
+  content: "";
+  flex-shrink: 0;
+  width: 5px;
+  height: 5px;
+  transform: rotate(45deg);
+  background: var(--av-foil);
+  box-shadow: 0 0 6px var(--av-foil-soft);
 }
 
 .ar-panel__eyebrow::after {
@@ -621,11 +718,55 @@
   }
 }
 
+/* 4 nét góc vàng mảnh — gợi nhắc khung 4 góc của hiệu ứng quét AR, nhưng
+   bằng tông vàng "foil" thay vì xanh tech, như dấu xác nhận: model này
+   đã được dựng xong và giờ là một tấm thẻ thông tin đáng tin cậy. */
+.ar-specs::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background-repeat: no-repeat;
+  background-image: linear-gradient(var(--av-foil-soft), var(--av-foil-soft)),
+    linear-gradient(var(--av-foil-soft), var(--av-foil-soft)),
+    linear-gradient(var(--av-foil-soft), var(--av-foil-soft)),
+    linear-gradient(var(--av-foil-soft), var(--av-foil-soft)),
+    linear-gradient(var(--av-foil-soft), var(--av-foil-soft)),
+    linear-gradient(var(--av-foil-soft), var(--av-foil-soft)),
+    linear-gradient(var(--av-foil-soft), var(--av-foil-soft)),
+    linear-gradient(var(--av-foil-soft), var(--av-foil-soft));
+  background-position: top 10px left 10px, top 10px left 10px, top 10px right 10px,
+    top 10px right 10px, bottom 10px left 10px, bottom 10px left 10px,
+    bottom 10px right 10px, bottom 10px right 10px;
+  background-size: 13px 1.4px, 1.4px 13px, 13px 1.4px, 1.4px 13px, 13px 1.4px, 1.4px 13px,
+    13px 1.4px, 1.4px 13px;
+}
+
+.ar-panel--right:not(.is-hidden):not(.is-collapsed) .ar-specs::after {
+  animation: ar-specs-corners-in 0.5s ease-out 0.36s both;
+}
+
+@keyframes ar-specs-corners-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ar-specs::after {
+    animation: none;
+    opacity: 1;
+  }
+}
+
 .ar-specs__row {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 10px;
   padding: 10px 0;
   opacity: 0;
 }
@@ -664,6 +805,7 @@
 }
 
 .ar-specs__row dt {
+  flex: 0 0 auto;
   font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -672,31 +814,84 @@
   white-space: nowrap;
 }
 
+/* Chấm dẫn mảnh giữa nhãn và giá trị — như thực đơn nhà hàng cao cấp,
+   giúp mắt "kéo" thẳng từ label sang value dù độ dài chữ khác nhau. */
+.ar-specs__leader {
+  flex: 1 1 auto;
+  min-width: 10px;
+  height: 0;
+  margin-bottom: 3px;
+  border-bottom: 1px dotted var(--av-foil-soft);
+}
+
 .ar-specs__row dd {
+  flex: 0 0 auto;
+  max-width: 55%;
   margin: 0;
   font-size: 14px;
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
   color: var(--av-ivory);
   text-align: right;
 }
 
 .ar-panel__desc {
+  position: relative;
   font-size: 13px;
   line-height: 1.75;
   color: rgba(244, 241, 234, 0.68);
   font-weight: 300;
   margin: 0;
+  padding-left: 16px;
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
+.ar-panel__desc::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 3px;
+  bottom: 3px;
+  width: 1.5px;
+  background: linear-gradient(180deg, var(--av-foil), transparent 88%);
+  opacity: 0.75;
+}
+
 /* ─── LOADING / EMPTY STATE ─── */
+.ar-view__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
 .ar-view__spinner {
-  width: 28px;
-  height: 28px;
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+
+.ar-view__spinner::before,
+.ar-view__spinner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
   border-radius: 50%;
-  border: 2px solid rgba(244, 241, 234, 0.2);
+  border: 2px solid transparent;
+}
+
+.ar-view__spinner::before {
   border-top-color: var(--av-gold, #4a9e3f);
-  animation: ar-view-spin 0.8s linear infinite;
+  border-right-color: var(--av-gold, #4a9e3f);
+  animation: ar-view-spin 1s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+}
+
+.ar-view__spinner::after {
+  inset: 8px;
+  border-bottom-color: var(--av-foil, #cda86a);
+  border-left-color: var(--av-foil, #cda86a);
+  opacity: 0.85;
+  animation: ar-view-spin-reverse 1.3s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
 }
 
 @keyframes ar-view-spin {
@@ -705,8 +900,81 @@
   }
 }
 
+@keyframes ar-view-spin-reverse {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.ar-view__loading-text {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: rgba(244, 241, 234, 0.55);
+  animation: ar-loading-text-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes ar-loading-text-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ar-view__spinner::before,
+  .ar-view__spinner::after,
+  .ar-view__loading-text {
+    animation: none;
+  }
+}
+
 .ar-view__empty {
   max-width: 420px;
+}
+
+/* Huy hiệu tròn chứa icon (khoá / la bàn) phía trên nhãn — cùng ngôn ngữ
+   kính mờ + viền vàng mảnh với phần còn lại của trải nghiệm, để 2 màn
+   "không có quyền" / "không tìm thấy" vẫn sang trọng chứ không trơ trọi. */
+.ar-view__badge {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: var(--av-foil, #cda86a);
+  background: radial-gradient(circle at 34% 30%, rgba(205, 168, 106, 0.16), rgba(10, 14, 12, 0.45));
+  border: 0.5px solid var(--av-foil-soft, rgba(205, 168, 106, 0.35));
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.25), 0 18px 40px -18px rgba(0, 0, 0, 0.7);
+  animation: ar-badge-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.ar-view__badge svg {
+  width: 26px;
+  height: 26px;
+}
+
+@keyframes ar-badge-in {
+  from {
+    opacity: 0;
+    transform: scale(0.82) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ar-view__badge {
+    animation: none;
+  }
 }
 
 .ar-view__empty .ar-view__eyebrow {
@@ -716,6 +984,17 @@
   text-transform: uppercase;
   color: var(--av-gold, #4a9e3f);
   margin-bottom: 12px;
+}
+
+.ar-view__empty .ar-view__eyebrow::before {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-right: 8px;
+  transform: rotate(45deg);
+  background: var(--av-foil, #cda86a);
+  vertical-align: middle;
 }
 
 .ar-view__empty h1 {
@@ -754,10 +1033,31 @@
   font-weight: 500;
   letter-spacing: 0.04em;
   cursor: pointer;
+  overflow: hidden;
   transform: translate(-50%, 0);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3), 0 16px 34px -16px rgba(0, 0, 0, 0.7);
   animation: ar-expand-btn-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
   transition: background 0.25s ease, border-color 0.25s ease,
     box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+/* Vệt sáng vàng lướt qua khi hover — như ánh phản chiếu trên bề mặt dát
+   vàng, chỉ chạy một lần mỗi lần hover, không lặp lại liên tục. */
+.ar-expand-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 35%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, var(--av-foil-soft), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.7s ease;
+  pointer-events: none;
+}
+
+.ar-expand-btn:hover::before {
+  left: 130%;
 }
 
 .ar-expand-btn svg {
@@ -769,7 +1069,8 @@
 .ar-expand-btn:hover {
   background: rgba(13, 51, 48, 0.7);
   border-color: var(--av-gold);
-  box-shadow: 0 0 0 1px var(--av-border-gold), 0 8px 28px rgba(74, 158, 63, 0.18);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3), 0 16px 34px -16px rgba(0, 0, 0, 0.7),
+    0 0 0 1px var(--av-border-gold), 0 8px 28px rgba(74, 158, 63, 0.18);
   transform: translate(-50%, -2px);
 }
 
@@ -806,6 +1107,7 @@
   border-radius: 50%;
   color: var(--av-ivory);
   cursor: pointer;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3), 0 14px 30px -16px rgba(0, 0, 0, 0.7);
   transform: translateY(-50%) scale(1);
   animation: ar-mini-btn-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: 0.15s;
@@ -850,6 +1152,10 @@
   .ar-expand-btn,
   .ar-mini-btn {
     animation: none;
+  }
+
+  .ar-expand-btn::before {
+    transition: none;
   }
 }
 
