@@ -119,12 +119,35 @@ model Book {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  category   Category    @relation(fields: [categoryId], references: [id])
+  category   Category     @relation(fields: [categoryId], references: [id])
   cartItems  CartItem[]
   orderItems OrderItem[]
   reviews    Review[]
   wishlist   Wishlist[]
   arCodes    ArCode[]
+  authors    BookAuthor[]
+}
+
+// ─── AUTHOR ───
+// 1 sách có thể có nhiều tác giả, 1 tác giả có thể viết nhiều sách -> quan hệ n-n qua BookAuthor
+model Author {
+  id    String       @id @default(uuid())
+  name  String       @unique
+  books BookAuthor[]
+}
+
+// Bảng nối Book <-> Author, có `order` để giữ đúng thứ tự tác giả khi hiển thị
+// (vd: "Tác giả chính, Đồng tác giả" thay vì bị xáo trộn)
+model BookAuthor {
+  bookId   String
+  authorId String
+  order    Int    @default(0)
+
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  author Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@id([bookId, authorId])
+  @@index([authorId])
 }
 
 // ─── AR CODE ───

@@ -245,6 +245,39 @@ exports.getDashboard = async (req, res) => {
 /* ══════════════════════════════════════════════
    PRODUCTS (books)
 ══════════════════════════════════════════════ */
+
+/**
+ * Nhận `authors` từ body (chuỗi "Nguyễn Nhật Ánh, Tô Hoài" hoặc mảng tên),
+ * tìm-hoặc-tạo từng Author theo tên (unique), trả về mảng authorId
+ * đúng theo thứ tự nhập (dùng để set field `order` trong BookAuthor).
+ */
+async function resolveAuthorIds(authorsInput) {
+  if (!authorsInput) return []
+  const names = Array.isArray(authorsInput)
+    ? authorsInput
+    : String(authorsInput).split(',')
+  const cleanNames = [...new Set(names.map(n => n.trim()).filter(Boolean))]
+
+  const authorIds = []
+  for (const name of cleanNames) {
+    const author = await prisma.author.upsert({
+      where:  { name },
+      update: {},
+      create: { name },
+    })
+    authorIds.push(author.id)
+  }
+  return authorIds
+}
+
+/** Helper: gắn danh sách tên author vào 1 book (đã include authors.author) */
+function withAuthorNames(book) {
+  return {
+    ...book,
+    authors: (book.authors ?? []).map(ba => ba.author.name),
+  }
+}
+
 exports.getProducts = async (req, res) => {
   try {
     const page   = Math.max(1, parseInt(req.query.page)  || 1)
@@ -270,12 +303,13 @@ exports.getProducts = async (req, res) => {
         include: {
           category: { select: { id: true, name: true } },
           _count:   { select: { orderItems: true } },
+          authors:  { include: { author: true }, orderBy: { order: 'asc' } },
         },
       }),
       prisma.book.count({ where }),
     ])
 
-    const mapped = products.map(p => ({ ...p, isVisible: p.isActive }))
+    const mapped = products.map(p => ({ ...withAuthorNames(p), isVisible: p.isActive }))
 
     return res.json({
       success: true,
@@ -296,7 +330,7 @@ exports.createProduct = async (req, res) => {
   try {
     const {
       title, description, price, salePrice, stock,
-      categoryId, isVisible, publisher, pages, language,
+      categoryId, isVisible, publisher, pages, language, authors,
     } = req.body
 
     if (!title || !price || !categoryId) {
@@ -307,6 +341,8 @@ exports.createProduct = async (req, res) => {
     const slug = slugify(title, { lower: true, locale: 'vi', strict: true })
     const existing = await prisma.book.findUnique({ where: { slug } })
     const finalSlug = existing ? `${slug}-${Date.now()}` : slug
+
+    const authorIds = await resolveAuthorIds(authors)
 
     const book = await prisma.book.create({
       data: {
@@ -321,11 +357,17 @@ exports.createProduct = async (req, res) => {
         publisher:   publisher ?? null,
         pages:       pages ? Number(pages) : null,
         language:    language ?? 'VI',
+        authors: {
+          create: authorIds.map((authorId, i) => ({ authorId, order: i })),
+        },
       },
-      include: { category: { select: { id: true, name: true } } },
+      include: {
+        category: { select: { id: true, name: true } },
+        authors:  { include: { author: true }, orderBy: { order: 'asc' } },
+      },
     })
 
-    return res.status(201).json({ success: true, data: book })
+    return res.status(201).json({ success: true, data: withAuthorNames(book) })
   } catch (err) {
     console.error('[createProduct]', err)
     return res.status(500).json({ success: false, message: 'Lỗi server' })
@@ -337,8 +379,18 @@ exports.updateProduct = async (req, res) => {
     const { id } = req.params
     const {
       title, description, price, salePrice, stock,
-      categoryId, isVisible, publisher, pages,
+      categoryId, isVisible, publisher, pages, authors,
     } = req.body
+
+    // Nếu có gửi authors -> resolve trước, rồi xóa hết liên kết cũ và tạo lại theo thứ tự mới
+    let authorsUpdate
+    if (authors !== undefined) {
+      const authorIds = await resolveAuthorIds(authors)
+      authorsUpdate = {
+        deleteMany: {},
+        create: authorIds.map((authorId, i) => ({ authorId, order: i })),
+      }
+    }
 
     const book = await prisma.book.update({
       where: { id },
@@ -352,11 +404,15 @@ exports.updateProduct = async (req, res) => {
         ...(isVisible   !== undefined && { isActive: isVisible }),
         ...(publisher   !== undefined && { publisher }),
         ...(pages       !== undefined && { pages: pages ? Number(pages) : null }),
+        ...(authorsUpdate && { authors: authorsUpdate }),
       },
-      include: { category: { select: { id: true, name: true } } },
+      include: {
+        category: { select: { id: true, name: true } },
+        authors:  { include: { author: true }, orderBy: { order: 'asc' } },
+      },
     })
 
-    return res.json({ success: true, data: book })
+    return res.json({ success: true, data: withAuthorNames(book) })
   } catch (err) {
     if (err.code === 'P2025') {
       return res.status(404).json({ success: false, message: 'Không tìm thấy sách' })

@@ -234,4 +234,4 @@ export default function Model3D({
 }
 
 // Preload so the file starts fetching as soon as the module is imported.
-useGLTF.preload("/models/Untitled.glb");
+useGLTF.preload("/models/PolarBear.glb");

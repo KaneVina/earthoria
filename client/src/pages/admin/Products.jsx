@@ -8,7 +8,7 @@ import toast from 'react-hot-toast'
 import AdminLayout from './AdminLayout'
 
 const EMPTY_FORM = {
-  title: '', author: '', price: '', salePrice: '',
+  title: '', authors: '', price: '', salePrice: '',
   stock: '', categoryId: '', description: '', isVisible: true,
 }
 
@@ -76,7 +76,7 @@ export default function Products() {
     setEditTarget(product.id)
     setForm({
       title:      product.title      ?? '',
-      author:     product.author     ?? '',
+      authors:    (product.authors ?? []).join(', '),
       price:      product.price      ?? '',
       salePrice:  product.salePrice  ?? '',
       stock:      product.stock      ?? '',
@@ -176,7 +176,7 @@ export default function Products() {
                       </div>
                       <div>
                         <div style={{ fontWeight: 500, fontSize: 12, color: 'var(--a-ink)' }}>{p.title}</div>
-                        <div className="a-td-muted">{p.author}</div>
+                        <div className="a-td-muted">{(p.authors ?? []).join(', ') || '—'}</div>
                         <div style={{ fontFamily: 'monospace', fontSize: 9, color: 'rgba(13,51,48,0.3)', marginTop: 1 }}>
                           {p.id?.slice(0, 8)}
                         </div>
@@ -297,16 +297,19 @@ export default function Products() {
                     />
                   </div>
 
-                  {/* Author */}
+                  {/* Authors */}
                   <div className="a-form-group span-2">
                     <label className="a-form-label">Tác giả *</label>
                     <input
                       className="a-input"
-                      value={form.author}
-                      onChange={f('author')}
-                      placeholder="Tên tác giả..."
+                      value={form.authors}
+                      onChange={f('authors')}
+                      placeholder="Nguyễn Nhật Ánh, Tô Hoài..."
                       required
                     />
+                    <span style={{ fontSize: 10, color: 'rgba(13,51,48,0.4)' }}>
+                      Nhiều tác giả cách nhau bằng dấu phẩy
+                    </span>
                   </div>
 
                   {/* Price */}
