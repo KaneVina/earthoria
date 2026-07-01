@@ -482,3 +482,65 @@ body.dark-mode .nav-hamburger {
     max-height: calc(100dvh - 64px);
   }
 }
+
+/* ──────────────────────────────────────────────────────────────
+   NAV MOBILE LINK — style cho từng mục trong panel
+   (phần này trước nằm ở main.css, đã chuyển hẳn về đây)
+   ────────────────────────────────────────────────────────────── */
+.nav-mobile-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 6px;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--text-body);
+  text-decoration: none;
+  border-bottom: 0.5px solid var(--border);
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-family: "Be Vietnam Pro", sans-serif;
+}
+
+.nav-mobile-link.active {
+  color: var(--gold);
+  font-weight: 400;
+}
+
+.nav-mobile-link.logout {
+  color: #c0392b;
+}
+
+.nav-mobile-divider {
+  height: 0.5px;
+  background: var(--border);
+  margin: 10px 0;
+}
+
+.nav-mobile-auth {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.nav-auth-buttons a,
+.nav-mobile-auth a {
+  text-decoration: none;
+  color: inherit;
+}
+
+body.dark-mode .nav-mobile-panel {
+  background: #121a16;
+  border-top-color: rgba(74, 158, 63, 0.2);
+}
+
+body.dark-mode .nav-mobile-link {
+  color: #c8d4cc;
+  border-color: rgba(255, 255, 255, 0.07);
+}
