@@ -351,7 +351,7 @@ export default function Cart() {
                       }}
                     >
                       <img
-                        src={item.book.coverImage || "https://via.placeholder.com/88x112"}
+                        src={item.book.coverImage || "https://placehold.co/88x112/0d3330/faf8f3?text=E"}
                         alt={item.book.title}
                         style={{ width: "100%", height: "100%", objectFit: "cover" }}
                       />

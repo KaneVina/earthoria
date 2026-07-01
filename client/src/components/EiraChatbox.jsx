@@ -210,6 +210,83 @@ function EiraUI() {
   const historyRef = useRef([]);
   const lastUserMsgRef = useRef("");
 
+  /* ── Kéo-thả bong bóng FAB ── */
+  const [dragPos, setDragPos] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const fabRef = useRef(null);
+  const dragRef = useRef({ active: false, moved: false, startX: 0, startY: 0, baseX: 0, baseY: 0, rect: null });
+  const suppressClickRef = useRef(false);
+
+  const DRAG_THRESHOLD = 4; // px, dưới ngưỡng này tính là "click" chứ không phải "kéo"
+
+  const handleFabPointerDown = (e) => {
+    if (e.button !== undefined && e.button !== 0) return; // chỉ chuột trái / chạm chính
+    const fab = fabRef.current;
+    if (!fab) return;
+    dragRef.current = {
+      active: true,
+      moved: false,
+      startX: e.clientX,
+      startY: e.clientY,
+      baseX: dragPos.x,
+      baseY: dragPos.y,
+      rect: fab.getBoundingClientRect(),
+    };
+    fab.setPointerCapture?.(e.pointerId);
+  };
+
+  const handleFabPointerMove = (e) => {
+    const ds = dragRef.current;
+    if (!ds.active) return;
+    const dx = e.clientX - ds.startX;
+    const dy = e.clientY - ds.startY;
+
+    if (!ds.moved) {
+      if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+      ds.moved = true;
+      setIsDragging(true);
+    }
+
+    const margin = 6;
+    const { rect } = ds;
+    const minLeft = margin;
+    const maxLeft = window.innerWidth - rect.width - margin;
+    const minTop = margin;
+    const maxTop = window.innerHeight - rect.height - margin;
+
+    const clampedLeft = Math.min(Math.max(rect.left + dx, minLeft), maxLeft);
+    const clampedTop = Math.min(Math.max(rect.top + dy, minTop), maxTop);
+
+    setDragPos({
+      x: ds.baseX + (clampedLeft - rect.left),
+      y: ds.baseY + (clampedTop - rect.top),
+    });
+  };
+
+  const endFabDrag = (e) => {
+    const ds = dragRef.current;
+    if (!ds.active) return;
+    dragRef.current.active = false;
+    setIsDragging(false);
+    try {
+      fabRef.current?.releasePointerCapture?.(e.pointerId);
+    } catch {
+      /* ignore */
+    }
+    if (ds.moved) {
+      // Vừa kéo xong thì bỏ qua sự kiện click kế tiếp (không toggle mở/đóng chat)
+      suppressClickRef.current = true;
+    }
+  };
+
+  const handleFabClick = () => {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      return;
+    }
+    setIsOpen((v) => !v);
+  };
+
   /* Show promo after 3s */
   useEffect(() => {
     if (promoDismissed || isOpen) return;
@@ -352,7 +429,11 @@ function EiraUI() {
   };
 
   return (
-    <div id="eira-root">
+    <div
+      id="eira-root"
+      className={isDragging ? "dragging" : ""}
+      style={{ "--drag-x": `${dragPos.x}px`, "--drag-y": `${dragPos.y}px` }}
+    >
       {/* ── Promo bubble ── */}
       <div
         id="eira-promo"
@@ -384,12 +465,17 @@ function EiraUI() {
         </div>
       </div>
 
-      {/* ── FAB — giữ nguyên bottom: 96px như code gốc ── */}
+      {/* ── FAB — giữ nguyên bottom: 96px như code gốc, giờ kéo-thả được ── */}
       <button
         id="eira-fab"
-        className={isOpen ? "fab-open" : ""}
-        aria-label="Chat với Eira"
-        onClick={() => setIsOpen((v) => !v)}
+        ref={fabRef}
+        className={`${isOpen ? "fab-open" : ""} ${isDragging ? "dragging" : ""}`.trim()}
+        aria-label="Chat với Eira (giữ và kéo để di chuyển)"
+        onClick={handleFabClick}
+        onPointerDown={handleFabPointerDown}
+        onPointerMove={handleFabPointerMove}
+        onPointerUp={endFabDrag}
+        onPointerCancel={endFabDrag}
       >
         <div className={`eira-online-dot${isOpen ? " hidden" : ""}`} />
         <span className="eira-fab-icon eira-ico-open">

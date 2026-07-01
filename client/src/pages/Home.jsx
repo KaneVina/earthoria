@@ -33,7 +33,7 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest" }) {
     >
       <div className="product-img-wrap">
         <img
-          src={book.coverImage || "https://via.placeholder.com/400x320"}
+          src={book.coverImage || "https://placehold.co/400x320/0d3330/faf8f3?text=Earthoria"}
           alt={book.title}
         />
         <div className="product-img-overlay">
@@ -1000,7 +1000,7 @@ function FlashDealSection({ books, onAddCart }) {
             }}
           >
             <img
-              src={book.coverImage || "https://via.placeholder.com/600x460"}
+              src={book.coverImage || "https://placehold.co/600x460/0d3330/faf8f3?text=Earthoria"}
               alt={book.title}
               style={{
                 width: "100%",
@@ -1510,7 +1510,7 @@ function TopRatedSection({ books, onAddCart }) {
                   >
                     <img
                       src={
-                        book.coverImage || "https://via.placeholder.com/72x88"
+                        book.coverImage || "https://placehold.co/72x88/0d3330/faf8f3?text=E"
                       }
                       alt={book.title}
                       style={{
@@ -2603,7 +2603,7 @@ export default function Home() {
                         <img
                           src={
                             book.coverImage ||
-                            "https://via.placeholder.com/90x112"
+                            "https://placehold.co/90x112/0d3330/faf8f3?text=E"
                           }
                           alt={book.title}
                           style={{

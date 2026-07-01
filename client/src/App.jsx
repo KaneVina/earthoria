@@ -90,7 +90,6 @@ export default function App() {
           <Route path="/legal/shipping" element={<ShippingPolicy />} />
           <Route path="/sitemap" element={<Sitemap />} />
 
-
           <Route
             path="/checkout"
             element={
@@ -200,7 +199,6 @@ export default function App() {
           }
         />
         <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
-        {/* Public AR route — quét QR trong sách, KHÔNG cần đăng nhập */}
         <Route path="/ar/:slug/:code" element={<ArView />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

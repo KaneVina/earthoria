@@ -54,20 +54,19 @@ app.get('/api/health', (req, res) => {
   })
 })
 
+// ─── 404 handler ───
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: 'Route not found' })
+})
 
-// Error handler
+// ─── Error handler ───
+// Luôn đặt CUỐI CÙNG, có đủ 4 tham số (err, req, res, next) để Express nhận diện là error handler
 app.use((err, req, res, next) => {
   console.error(err.stack)
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'Internal Server Error'
   })
-
-  // 404
-app.use((req, res) => {
-  res.status(404).json({ success: false, message: 'Route not found' })
-})
-
 })
 
 module.exports = app
