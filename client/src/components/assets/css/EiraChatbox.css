@@ -262,6 +262,73 @@
   }
 }
 
+/* ══════════════════════════════════════════════════
+   BADGE — số tin nhắn chưa đọc trên nút FAB
+   ══════════════════════════════════════════════════ */
+.eira-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: linear-gradient(145deg, #ff5252, #e0233d);
+  border: 2px solid #fff;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 800;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  box-shadow: 0 2px 8px rgba(224, 35, 61, 0.5);
+  animation:
+    badge-pop 0.36s var(--ease-bounce),
+    badge-pulse 1.8s ease-in-out 0.36s infinite;
+  pointer-events: none;
+}
+@keyframes badge-pop {
+  0% { transform: scale(0); }
+  55% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+@keyframes badge-pulse {
+  0%, 100% {
+    box-shadow: 0 2px 8px rgba(224, 35, 61, 0.5), 0 0 0 0 rgba(224, 35, 61, 0.55);
+  }
+  50% {
+    box-shadow: 0 2px 8px rgba(224, 35, 61, 0.5), 0 0 0 5px rgba(224, 35, 61, 0);
+  }
+}
+
+/* Rung nhẹ nút FAB đúng lúc badge vừa xuất hiện — báo hiệu tin nhắn mới */
+#eira-fab.has-badge {
+  animation:
+    fab-breathe 3.8s ease-in-out infinite,
+    fab-shake 0.5s var(--ease-out) 0.05s;
+}
+@keyframes fab-shake {
+  0%, 100% { transform: translate(var(--drag-x), var(--drag-y)) rotate(0deg); }
+  20% { transform: translate(var(--drag-x), var(--drag-y)) rotate(-8deg); }
+  40% { transform: translate(var(--drag-x), var(--drag-y)) rotate(7deg); }
+  60% { transform: translate(var(--drag-x), var(--drag-y)) rotate(-5deg); }
+  80% { transform: translate(var(--drag-x), var(--drag-y)) rotate(3deg); }
+}
+
+/* MOBILE — badge to & rõ hơn để dễ chạm/nhìn trên màn nhỏ */
+@media (max-width: 480px) {
+  .eira-badge {
+    top: -5px;
+    right: -5px;
+    min-width: 21px;
+    height: 21px;
+    font-size: 11px;
+    border-width: 2.5px;
+  }
+}
+
 .eira-fab-icon {
   position: absolute;
   display: flex;

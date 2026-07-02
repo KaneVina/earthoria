@@ -63,7 +63,7 @@ const login = async (req, res) => {
 
     const token = generateToken(user.id)
     return formatResponse(res, 200, 'Đăng nhập thành công', {
-      user: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar },
+      user: { id: user.id, name: user.name, email: user.email, role: user.role, avatar: user.avatar, userCode: user.userCode },
       token
     })
   } catch (error) {
@@ -76,7 +76,11 @@ const getMe = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
-      select: { id: true, name: true, email: true, phone: true, avatar: true, role: true, createdAt: true }
+      select: {
+        id: true, name: true, firstName: true, lastName: true,
+        dob: true, gender: true, email: true, phone: true,
+        avatar: true, role: true, userCode: true, createdAt: true   // + userCode, gender
+      }
     })
     return formatResponse(res, 200, 'OK', user)
   } catch (error) {
@@ -86,14 +90,26 @@ const getMe = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const { name, phone } = req.body
+    const { name, phone, firstName, lastName, dob, gender } = req.body
+    const data = {}
+    if (name !== undefined)      data.name = name
+    if (phone !== undefined)     data.phone = phone
+    if (firstName !== undefined) data.firstName = firstName
+    if (lastName !== undefined)  data.lastName = lastName
+    if (dob !== undefined)       data.dob = dob ? new Date(dob) : null
+    if (gender !== undefined)    data.gender = gender || null
+
     const user = await prisma.user.update({
       where: { id: req.user.id },
-      data: { name, phone },
-      select: { id: true, name: true, email: true, phone: true, avatar: true }
+      data,
+      select: {
+        id: true, name: true, firstName: true, lastName: true,
+        dob: true, gender: true, email: true, phone: true, avatar: true, userCode: true
+      }
     })
     return formatResponse(res, 200, 'Cập nhật thành công', user)
   } catch (error) {
+    console.error(error)
     return formatResponse(res, 500, 'Lỗi server')
   }
 }

@@ -204,11 +204,13 @@ function EiraUI() {
   const [suggHidden, setSuggHidden] = useState(false);
   const [promoVisible, setPromoVisible] = useState(false);
   const [promoDismissed, setPromoDismissed] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const msgsEndRef = useRef(null);
   const inpRef = useRef(null);
   const historyRef = useRef([]);
   const lastUserMsgRef = useRef("");
+  const isOpenRef = useRef(false);
 
   /* ── Kéo-thả bong bóng FAB ── */
   const [dragPos, setDragPos] = useState({ x: 0, y: 0 });
@@ -299,6 +301,13 @@ function EiraUI() {
     if (isOpen) setPromoVisible(false);
   }, [isOpen]);
 
+  /* Theo dõi isOpen bằng ref để tránh stale closure trong sendMessage,
+     đồng thời reset badge "chưa đọc" mỗi khi người dùng mở khung chat */
+  useEffect(() => {
+    isOpenRef.current = isOpen;
+    if (isOpen) setUnreadCount(0);
+  }, [isOpen]);
+
   /* Scroll to bottom */
   useEffect(() => {
     msgsEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -374,6 +383,8 @@ function EiraUI() {
 
         setIsTyping(false);
         setMessages((prev) => [...prev, makeMsg("bot", reply)]);
+        // Nếu khung chat đang đóng (đặc biệt trên mobile), tăng số badge "chưa đọc"
+        if (!isOpenRef.current) setUnreadCount((c) => c + 1);
       } catch (err) {
         setIsTyping(false);
         const isQuota =
@@ -469,15 +480,30 @@ function EiraUI() {
       <button
         id="eira-fab"
         ref={fabRef}
-        className={`${isOpen ? "fab-open" : ""} ${isDragging ? "dragging" : ""}`.trim()}
-        aria-label="Chat với Eira (giữ và kéo để di chuyển)"
+        className={`${isOpen ? "fab-open" : ""} ${isDragging ? "dragging" : ""} ${unreadCount > 0 && !isOpen ? "has-badge" : ""}`.trim()}
+        aria-label={
+          unreadCount > 0 && !isOpen
+            ? `Chat với Eira, ${unreadCount} tin nhắn mới chưa đọc`
+            : "Chat với Eira (giữ và kéo để di chuyển)"
+        }
         onClick={handleFabClick}
         onPointerDown={handleFabPointerDown}
         onPointerMove={handleFabPointerMove}
         onPointerUp={endFabDrag}
         onPointerCancel={endFabDrag}
       >
-        <div className={`eira-online-dot${isOpen ? " hidden" : ""}`} />
+        {/* Chấm "online" — ẩn khi đang mở HOẶC khi có badge chưa đọc (badge ưu tiên hiện) */}
+        <div
+          className={`eira-online-dot${isOpen || unreadCount > 0 ? " hidden" : ""}`}
+        />
+
+        {/* Badge số tin nhắn chưa đọc — nổi bật đặc biệt trên mobile */}
+        {unreadCount > 0 && !isOpen && (
+          <span key={unreadCount} className="eira-badge" aria-hidden="true">
+            {unreadCount > 9 ? "9+" : unreadCount}
+          </span>
+        )}
+
         <span className="eira-fab-icon eira-ico-open">
           <MessageCircle size={22} />
         </span>

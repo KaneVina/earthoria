@@ -182,6 +182,18 @@
 .pf-passport-name { font-family: 'Playfair Display', serif; font-size: clamp(24px, 3.2vw, 36px); font-weight: 300; color: var(--ivory); letter-spacing: -0.01em; line-height: 1.1; }
 .pf-passport-email { display: flex; align-items: center; gap: 8px; margin-top: 8px; color: rgba(250,248,243,0.45); font-size: 13px; }
 .pf-passport-email svg { color: rgba(74,158,63,0.6); flex-shrink: 0; }
+.pf-email-toggle-btn {
+  background: none; border: none; color: rgba(250,248,243,0.4); padding: 3px; display: flex;
+  align-items: center; justify-content: center; flex-shrink: 0; border-radius: 4px;
+}
+.pf-email-toggle-btn:hover { color: var(--gold); background: rgba(184,134,46,0.12); }
+.pf-email-verified-badge {
+  display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.02em; color: #4a9e3f;
+  background: rgba(74,158,63,0.12); border: 0.5px solid rgba(74,158,63,0.3);
+  border-radius: 20px; padding: 2px 9px 2px 7px;
+}
+.pf-email-verified-badge svg { color: #4a9e3f; }
 
 .pf-passport-logout {
   display: flex; align-items: center; gap: 10px;
@@ -445,6 +457,7 @@
 }
 .pf-field:hover .pf-field-edit-btn { opacity: 1; }
 .pf-field-edit-btn:hover { color: var(--gold); }
+.pf-field-reveal-btn { opacity: 1; }
 
 .pf-field-edit-row { display: flex; gap: 8px; align-items: center; }
 .pf-field-input {
@@ -712,7 +725,7 @@
 .pf-addr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .pf-addr-card { background: var(--white); border: 0.5px solid; border-radius: var(--pf-radius-md); padding: 24px 26px; position: relative; transition: box-shadow 0.3s var(--pf-ease), transform 0.3s var(--pf-ease); overflow: hidden; }
 .pf-addr-card:hover { box-shadow: var(--pf-shadow-md); transform: translateY(-3px); }
-.pf-addr-default-badge { position: absolute; top: 18px; right: 18px; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; background: var(--gold-pale); color: var(--forest); border-radius: 20px; padding: 5px 11px; font-weight: 500; z-index: 1; }
+.pf-addr-default-badge { display: inline-block; margin-bottom: 10px; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; background: var(--gold-pale); color: var(--forest); border-radius: 20px; padding: 5px 11px; font-weight: 500; }
 .pf-addr-name { font-size: 14px; color: var(--forest); font-weight: 500; margin-bottom: 5px; }
 .pf-addr-phone { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
 .pf-addr-text { font-size: 13px; color: var(--text-body); line-height: 1.7; margin-bottom: 18px; }
