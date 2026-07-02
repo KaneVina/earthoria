@@ -23,17 +23,6 @@
   --av-glow-a: rgba(74, 158, 63, 0.45);
   --av-glow-b: rgba(26, 92, 82, 0.5);
 
-  /* "Foil" accent — một màu vàng ấm thật sự, cố tình tách biệt khỏi
-     --av-gold (thực chất là xanh lá). CHỈ dùng cho chi tiết trang trí
-     tĩnh trên 2 panel thông tin sau khi model đã được "xác nhận" bởi
-     hiệu ứng quét (góc thẻ, chấm dẫn, viền mảnh) — KHÔNG dùng cho hover/
-     tương tác, để nút bấm vẫn đồng bộ màu với phần còn lại của sản phẩm.
-     Ý tưởng: quét công nghệ (xanh) dựng model, rồi thông tin hiện ra như
-     một tấm thẻ bảo tàng dát vàng. */
-  --av-foil: #cda86a;
-  --av-foil-soft: rgba(205, 168, 106, 0.32);
-  --av-foil-bright: #ecd19d;
-
   position: relative;
   width: 100%;
   height: 100vh;
@@ -44,9 +33,9 @@
   color: var(--av-ivory);
   overflow: hidden;
   font-family: "Be Vietnam Pro", sans-serif;
-  /* Khung viền chỉ vàng rất mảnh, bao trọn viewport — cảm giác như một
-     khung trưng bày bảo tàng, tinh tế, không lấn át nội dung. */
-  box-shadow: inset 0 0 0 1px rgba(205, 168, 106, 0.13);
+  /* Khung viền xanh rất mảnh, bao trọn viewport — chỉ dùng tông xanh có
+     sẵn của thương hiệu, không thêm màu mới. */
+  box-shadow: inset 0 0 0 1px var(--av-border-gold);
 }
 
 /* ─── GRAIN — lớp nhiễu hạt phim rất mảnh phủ toàn bộ trải nghiệm, giúp
@@ -482,6 +471,7 @@
 .ar-panel--right:not(.is-hidden):not(.is-collapsed) > *:nth-child(1) { animation-delay: 0.08s; }
 .ar-panel--right:not(.is-hidden):not(.is-collapsed) > *:nth-child(2) { animation-delay: 0.18s; }
 .ar-panel--right:not(.is-hidden):not(.is-collapsed) > *:nth-child(3) { animation-delay: 0.3s; }
+.ar-panel--right:not(.is-hidden):not(.is-collapsed) > *:nth-child(4) { animation-delay: 0.4s; }
 
 @keyframes ar-panel-child-in {
   from {
@@ -529,8 +519,8 @@
   height: 5px;
   margin-right: 9px;
   transform: rotate(45deg);
-  background: var(--av-foil);
-  box-shadow: 0 0 6px var(--av-foil-soft);
+  background: var(--av-gold);
+  box-shadow: 0 0 6px var(--av-tech-green-soft);
   vertical-align: middle;
 }
 
@@ -544,8 +534,9 @@
   text-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
 }
 
-/* Gạch chân vàng mảnh, "vẽ" dần từ trái sang sau khi tên hiện ra — điểm
-   nhấn sang trọng, chỉ một lần, không lặp lại để tránh rối mắt. */
+/* Gạch chân xanh mảnh (nhạt sang đậm), "vẽ" dần từ trái sang sau khi tên
+   hiện ra — điểm nhấn tinh tế, chỉ một lần, không lặp lại để tránh rối
+   mắt. Chỉ dùng 2 tông xanh sẵn có của thương hiệu. */
 .ar-panel__name::after {
   content: "";
   display: block;
@@ -553,7 +544,7 @@
   height: 2px;
   margin-top: 6px;
   border-radius: 2px;
-  background: linear-gradient(90deg, var(--av-foil-bright), var(--av-foil) 70%, transparent);
+  background: linear-gradient(90deg, var(--av-tech-green), var(--av-gold) 70%, transparent);
   transform-origin: left center;
   transform: scaleX(0);
 }
@@ -604,7 +595,7 @@
   opacity: 0.95;
   border-radius: 50%;
   background: rgba(250, 248, 243, 0.045);
-  border: 0.5px solid var(--av-foil-soft);
+  border: 0.5px solid var(--av-border-gold);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -638,8 +629,8 @@
   width: 5px;
   height: 5px;
   transform: rotate(45deg);
-  background: var(--av-foil);
-  box-shadow: 0 0 6px var(--av-foil-soft);
+  background: var(--av-gold);
+  box-shadow: 0 0 6px var(--av-tech-green-soft);
 }
 
 .ar-panel__eyebrow::after {
@@ -721,9 +712,9 @@
   }
 }
 
-/* 4 nét góc vàng mảnh — gợi nhắc khung 4 góc của hiệu ứng quét AR, nhưng
-   bằng tông vàng "foil" thay vì xanh tech, như dấu xác nhận: model này
-   đã được dựng xong và giờ là một tấm thẻ thông tin đáng tin cậy. */
+/* 4 nét góc mảnh — gợi nhắc khung 4 góc của hiệu ứng quét AR, như dấu
+   xác nhận: model này đã dựng xong và giờ là một tấm thẻ thông tin đáng
+   tin cậy. Dùng đúng tông viền xanh sẵn có, không thêm màu mới. */
 .ar-specs::after {
   content: "";
   position: absolute;
@@ -731,14 +722,14 @@
   pointer-events: none;
   opacity: 0;
   background-repeat: no-repeat;
-  background-image: linear-gradient(var(--av-foil-soft), var(--av-foil-soft)),
-    linear-gradient(var(--av-foil-soft), var(--av-foil-soft)),
-    linear-gradient(var(--av-foil-soft), var(--av-foil-soft)),
-    linear-gradient(var(--av-foil-soft), var(--av-foil-soft)),
-    linear-gradient(var(--av-foil-soft), var(--av-foil-soft)),
-    linear-gradient(var(--av-foil-soft), var(--av-foil-soft)),
-    linear-gradient(var(--av-foil-soft), var(--av-foil-soft)),
-    linear-gradient(var(--av-foil-soft), var(--av-foil-soft));
+  background-image: linear-gradient(var(--av-border-gold), var(--av-border-gold)),
+    linear-gradient(var(--av-border-gold), var(--av-border-gold)),
+    linear-gradient(var(--av-border-gold), var(--av-border-gold)),
+    linear-gradient(var(--av-border-gold), var(--av-border-gold)),
+    linear-gradient(var(--av-border-gold), var(--av-border-gold)),
+    linear-gradient(var(--av-border-gold), var(--av-border-gold)),
+    linear-gradient(var(--av-border-gold), var(--av-border-gold)),
+    linear-gradient(var(--av-border-gold), var(--av-border-gold));
   background-position: top 10px left 10px, top 10px left 10px, top 10px right 10px,
     top 10px right 10px, bottom 10px left 10px, bottom 10px left 10px,
     bottom 10px right 10px, bottom 10px right 10px;
@@ -824,11 +815,12 @@
   min-width: 10px;
   height: 0;
   margin-bottom: 3px;
-  border-bottom: 1px dotted var(--av-foil-soft);
+  border-bottom: 1px dotted var(--av-border-gold);
 }
 
 .ar-specs__row dd {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  min-width: 0;
   max-width: 55%;
   margin: 0;
   font-size: 14px;
@@ -856,8 +848,54 @@
   top: 3px;
   bottom: 3px;
   width: 1.5px;
-  background: linear-gradient(180deg, var(--av-foil), transparent 88%);
+  background: linear-gradient(180deg, var(--av-gold), transparent 88%);
   opacity: 0.75;
+}
+
+/* Nút "Xem thêm thông tin" — mở modal chi tiết. `.ar-panel--right > *`
+   ép width:100% cho mọi con trực tiếp, nên phải tự set lại width:auto
+   để nút ôm sát nội dung thay vì kéo dài hết chiều ngang panel. */
+.ar-more-btn {
+  width: auto;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 10px 16px;
+  background: rgba(250, 248, 243, 0.035);
+  border: 0.5px solid var(--av-border-gold);
+  border-radius: 999px;
+  color: var(--av-ivory);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+}
+
+.ar-more-btn svg {
+  width: 13px;
+  height: 13px;
+  color: var(--av-gold);
+  transition: transform 0.25s ease;
+}
+
+.ar-more-btn:hover {
+  background: rgba(13, 51, 48, 0.6);
+  border-color: var(--av-gold);
+  transform: translateY(-1px);
+}
+
+.ar-more-btn:hover svg {
+  transform: translateX(2px);
+}
+
+.ar-more-btn:active {
+  transform: translateY(0);
 }
 
 /* ─── LOADING / EMPTY STATE ─── */
@@ -891,8 +929,8 @@
 
 .ar-view__spinner::after {
   inset: 8px;
-  border-bottom-color: var(--av-foil, #cda86a);
-  border-left-color: var(--av-foil, #cda86a);
+  border-bottom-color: var(--av-tech-green, #6fe06a);
+  border-left-color: var(--av-tech-green, #6fe06a);
   opacity: 0.85;
   animation: ar-view-spin-reverse 1.3s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
 }
@@ -941,7 +979,7 @@
 }
 
 /* Huy hiệu tròn chứa icon (khoá / la bàn) phía trên nhãn — cùng ngôn ngữ
-   kính mờ + viền vàng mảnh với phần còn lại của trải nghiệm, để 2 màn
+   kính mờ + viền xanh mảnh với phần còn lại của trải nghiệm, để 2 màn
    "không có quyền" / "không tìm thấy" vẫn sang trọng chứ không trơ trọi. */
 .ar-view__badge {
   width: 60px;
@@ -951,9 +989,9 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  color: var(--av-foil, #cda86a);
-  background: radial-gradient(circle at 34% 30%, rgba(205, 168, 106, 0.16), rgba(10, 14, 12, 0.45));
-  border: 0.5px solid var(--av-foil-soft, rgba(205, 168, 106, 0.35));
+  color: var(--av-gold, #4a9e3f);
+  background: radial-gradient(circle at 34% 30%, rgba(74, 158, 63, 0.16), rgba(10, 14, 12, 0.45));
+  border: 0.5px solid var(--av-border-gold, rgba(74, 158, 63, 0.3));
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.25), 0 18px 40px -18px rgba(0, 0, 0, 0.7);
   animation: ar-badge-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -996,7 +1034,7 @@
   height: 5px;
   margin-right: 8px;
   transform: rotate(45deg);
-  background: var(--av-foil, #cda86a);
+  background: var(--av-gold, #4a9e3f);
   vertical-align: middle;
 }
 
@@ -1044,8 +1082,8 @@
     box-shadow 0.25s ease, transform 0.25s ease;
 }
 
-/* Vệt sáng vàng lướt qua khi hover — như ánh phản chiếu trên bề mặt dát
-   vàng, chỉ chạy một lần mỗi lần hover, không lặp lại liên tục. */
+/* Vệt sáng xanh lướt qua khi hover — ánh phản chiếu nhẹ, chỉ chạy một
+   lần mỗi lần hover, không lặp lại liên tục. */
 .ar-expand-btn::before {
   content: "";
   position: absolute;
@@ -1053,7 +1091,7 @@
   left: -60%;
   width: 35%;
   height: 100%;
-  background: linear-gradient(120deg, transparent, var(--av-foil-soft), transparent);
+  background: linear-gradient(120deg, transparent, var(--av-tech-green-soft), transparent);
   transform: skewX(-20deg);
   transition: left 0.7s ease;
   pointer-events: none;
@@ -1163,6 +1201,216 @@
 }
 
 /* ═══════════════════════════════════════════
+   CHI TIẾT MỞ RỘNG — modal mở khi bấm "Xem thêm
+   thông tin": nền phía sau làm mờ (backdrop blur),
+   thẻ nổi giữa màn hình chứa đầy đủ thông số + mô
+   tả (không giới hạn dòng như trên panel) + phần
+   "Có thể bạn chưa biết". Trên mobile chuyển thành
+   bottom-sheet trượt lên từ đáy. Dùng lại đúng bộ
+   màu xanh của thương hiệu, không thêm màu mới.
+   ═══════════════════════════════════════════ */
+.ar-detail {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.ar-detail__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 9, 7, 0.72);
+  backdrop-filter: blur(10px) saturate(1.1);
+  -webkit-backdrop-filter: blur(10px) saturate(1.1);
+  animation: ar-detail-backdrop-in 0.35s ease both;
+}
+
+@keyframes ar-detail-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.ar-detail__sheet {
+  position: relative;
+  z-index: 1;
+  width: min(560px, 100%);
+  max-height: 82vh;
+  overflow-y: auto;
+  background: rgba(8, 14, 12, 0.9);
+  backdrop-filter: blur(28px) saturate(1.3);
+  -webkit-backdrop-filter: blur(28px) saturate(1.3);
+  border: 0.5px solid var(--av-border-gold);
+  border-radius: 20px;
+  padding: 44px 36px 40px;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.4), 0 30px 90px -24px rgba(0, 0, 0, 0.75);
+  animation: ar-detail-sheet-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  scrollbar-width: thin;
+  scrollbar-color: var(--av-border-gold) transparent;
+}
+
+.ar-detail__sheet::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ar-detail__sheet::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ar-detail__sheet::-webkit-scrollbar-thumb {
+  background: var(--av-border-gold);
+  border-radius: 999px;
+}
+
+@keyframes ar-detail-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ar-detail__backdrop,
+  .ar-detail__sheet {
+    animation: none;
+  }
+}
+
+.ar-detail__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 14, 12, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 0.5px solid var(--av-border-gold);
+  border-radius: 50%;
+  color: var(--av-ivory);
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.ar-detail__close svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ar-detail__close:hover {
+  border-color: var(--av-gold);
+  background: rgba(13, 51, 48, 0.7);
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ar-detail__close:hover {
+    transform: none;
+  }
+}
+
+/* Dùng lại kiểu chữ "eyebrow sách" / "tên nhân vật" của panel trái cho
+   phần đầu modal — đồng bộ hệ chữ, không cần định nghĩa lại. Gạch chân
+   dưới tên vốn chỉ "vẽ dần" khi nằm trong .ar-panel--left; ở đây hiện
+   tĩnh luôn cho gọn, khỏi phụ thuộc animation của panel cha. */
+.ar-detail__sheet .ar-panel__book {
+  margin-bottom: 12px;
+}
+
+.ar-detail__sheet .ar-panel__name {
+  margin: 0 32px 28px 0;
+  font-size: clamp(26px, 4vw, 36px);
+}
+
+.ar-detail__sheet .ar-panel__name::after {
+  transform: scaleX(1);
+}
+
+.ar-detail__specs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 24px;
+  margin: 0 0 30px;
+  padding: 24px 0;
+  border-top: 0.5px solid rgba(244, 241, 234, 0.1);
+  border-bottom: 0.5px solid rgba(244, 241, 234, 0.1);
+}
+
+.ar-detail__spec dt {
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(244, 241, 234, 0.48);
+  font-weight: 400;
+  margin-bottom: 6px;
+}
+
+.ar-detail__spec dd {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--av-ivory);
+}
+
+.ar-detail__sheet .ar-panel__desc {
+  margin-bottom: 32px;
+}
+
+.ar-detail__facts-title {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--av-gold);
+  font-weight: 400;
+  margin-bottom: 14px;
+}
+
+.ar-detail__facts ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ar-detail__facts li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.6;
+  font-weight: 300;
+  color: rgba(244, 241, 234, 0.72);
+}
+
+.ar-detail__facts li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 7px;
+  width: 5px;
+  height: 5px;
+  transform: rotate(45deg);
+  background: var(--av-gold);
+}
+
+/* ═══════════════════════════════════════════
    RESPONSIVE — tablet
    ═══════════════════════════════════════════ */
 @media (max-width: 1024px) {
@@ -1236,11 +1484,63 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+
+  /* Modal luôn hiện đầy đủ mô tả — bỏ line-clamp 3 dòng chỉ áp dụng
+     cho panel ngoài, đây chính là lý do modal hữu ích nhất trên mobile:
+     đọc được trọn vẹn phần mô tả bị cắt bớt ở panel. */
+  .ar-detail__sheet .ar-panel__desc {
+    -webkit-line-clamp: unset;
+    display: block;
+    overflow: visible;
+  }
+
+  /* Modal chuyển thành bottom-sheet: trượt lên từ đáy, bo góc trên,
+     chiếm gần hết chiều rộng/chiều cao màn hình. */
+  .ar-detail {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .ar-detail__sheet {
+    width: 100%;
+    max-height: 88vh;
+    border-radius: 20px 20px 0 0;
+    padding: 34px 22px max(30px, env(safe-area-inset-bottom, 0px));
+    animation: ar-detail-sheet-in-mobile 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .ar-detail__sheet::before {
+    content: "";
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    width: 36px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(244, 241, 234, 0.25);
+    transform: translateX(-50%);
+  }
+
+  @keyframes ar-detail-sheet-in-mobile {
+    from {
+      opacity: 0;
+      transform: translateY(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 @media (max-width: 380px) {
   .ar-panel__book {
     font-size: 10px;
+  }
+
+  .ar-detail__specs {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 }
 

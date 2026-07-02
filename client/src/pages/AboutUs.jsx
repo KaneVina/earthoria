@@ -363,7 +363,7 @@ export default function AboutUs() {
                 role: "CTO — Technology",
                 name: "Nguyễn Phúc Khang",
                 code: "CE181578",
-                img: "phuc-khang",
+                img: "phuc-khangv2",
                 desc: "Phát triển và quản lý công nghệ AI, AR tích hợp vào sách. Xây dựng mô hình 3D, hệ thống AI tương tác và đảm bảo trải nghiệm người dùng liền mạch.",
               },
               {

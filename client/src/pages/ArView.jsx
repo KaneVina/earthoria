@@ -24,9 +24,10 @@ import "../components/assets/css/arview.css";
  *   - Mã không tồn tại hoặc đã bị vô hiệu hoá (404)  -> hiển thị màn
  *     "không tìm thấy mã".
  *
- * NOTE: phần `specs` / `description` hiện đang HARDCODE dữ liệu mẫu vì
- * API /ar/:code chưa trả về các field này. Khi backend bổ sung, chỉ cần
- * thay khối FALLBACK_DATA bên dưới bằng field thật từ `res.data.data`.
+ * NOTE: phần `specs` / `description` / `funFacts` hiện đang HARDCODE dữ
+ * liệu mẫu vì API /ar/:code chưa trả về các field này. Khi backend bổ
+ * sung, chỉ cần thay khối FALLBACK_DATA bên dưới bằng field thật từ
+ * `res.data.data`.
  *
  * UX flow:
  *   1. "scanning"  — hiệu ứng quét công nghệ chạy qua model vài giây
@@ -37,6 +38,9 @@ import "../components/assets/css/arview.css";
  *                    bấm nút đó để quay lại "preview"
  *   Trong cả "preview" và "immersive", người dùng vẫn kéo/xoay/zoom
  *   model bình thường qua OrbitControls.
+ *   Panel phải còn có nút "Xem thêm thông tin" mở modal chi tiết (nền
+ *   phía sau làm mờ), hiển thị đầy đủ thông số + mô tả (không bị giới
+ *   hạn 3 dòng như trên mobile) + phần "Có thể bạn chưa biết".
  */
 
 // ─── DỮ LIỆU MẪU (HARDCODE) — thay bằng dữ liệu thật từ API khi sẵn sàng ───
@@ -56,6 +60,11 @@ const FALLBACK_DATA = {
   ],
   description:
     "Gấu Bắc Cực là loài thú ăn thịt trên cạn lớn nhất hành tinh, sở hữu lớp lông trắng dày và lớp mỡ dưới da giúp chịu được cái lạnh khắc nghiệt. Chúng là những thợ săn hải cẩu tài ba, có thể bơi hàng chục km giữa các tảng băng. Biến đổi khí hậu đang khiến môi trường sống của chúng thu hẹp nhanh chóng, đẩy loài này đến gần nguy cơ tuyệt chủng.",
+  funFacts: [
+    "Da của gấu Bắc Cực thực chất có màu đen — giúp hấp thụ nhiệt mặt trời tốt hơn qua lớp lông trong suốt bên ngoài.",
+    "Chúng có thể ngửi thấy mùi hải cẩu từ cách xa hơn 1 km, kể cả khi con mồi ở dưới lớp băng dày.",
+    "Bàn chân to bản như mái chèo giúp gấu phân bổ trọng lượng khi di chuyển trên băng mỏng và bơi đường dài.",
+  ],
 };
 // ──────────────────────────────────────────────────────────────────────────
 
@@ -73,6 +82,19 @@ export default function ArView() {
   // "scanning" -> "preview" -> "immersive" (and back)
   const [stage, setStage] = useState("scanning");
   const scanTimeoutRef = useRef(null);
+
+  // Modal "Xem thêm thông tin" — mở/đóng độc lập với stage, chỉ có ý
+  // nghĩa khi đang ở "preview" (nút bị ẩn cùng panel ở stage khác).
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isDetailOpen) return;
+    function handleKeyDown(e) {
+      if (e.key === "Escape") setIsDetailOpen(false);
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isDetailOpen]);
 
   useEffect(() => {
     let cancelled = false;
@@ -103,6 +125,7 @@ export default function ArView() {
             ...data,
             specs: data.specs || FALLBACK_DATA.specs,
             description: data.description || FALLBACK_DATA.description,
+            funFacts: data.funFacts || FALLBACK_DATA.funFacts,
           },
         });
       } catch (err) {
@@ -234,7 +257,7 @@ export default function ArView() {
     );
   }
 
-  const { label, modelUrl, book, specs, description } = state.data;
+  const { label, modelUrl, book, specs, description, funFacts } = state.data;
   const isScanning = stage === "scanning";
   const isImmersive = stage === "immersive";
   const isPreview = stage === "preview";
@@ -346,6 +369,23 @@ export default function ArView() {
         </dl>
 
         <p className="ar-panel__desc">{description}</p>
+
+        <button
+          type="button"
+          className="ar-more-btn"
+          onClick={() => setIsDetailOpen(true)}
+        >
+          <span>Xem thêm thông tin</span>
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M9 6l6 6-6 6"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
       </section>
 
       {/* ── Nút điều khiển preview <-> immersive ── */}
@@ -409,6 +449,72 @@ export default function ArView() {
             </svg>
           </button>
         </>
+      )}
+
+      {/* ── Modal "Xem thêm thông tin": nền phía sau làm mờ (backdrop
+          blur), thẻ nổi giữa/đáy màn hình chứa đầy đủ thông số + mô tả
+          (không bị line-clamp như trên panel) + phần "Có thể bạn chưa
+          biết". Đóng bằng nút X, bấm ra ngoài nền mờ, hoặc phím Esc. ── */}
+      {isDetailOpen && (
+        <div
+          className="ar-detail"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="ar-detail-name"
+        >
+          <div
+            className="ar-detail__backdrop"
+            onClick={() => setIsDetailOpen(false)}
+            aria-hidden="true"
+          />
+          <div className="ar-detail__sheet">
+            <button
+              type="button"
+              className="ar-detail__close"
+              onClick={() => setIsDetailOpen(false)}
+              aria-label="Đóng thông tin chi tiết"
+              autoFocus
+            >
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M6 6l12 12M18 6 6 18"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+
+            <span className="ar-panel__book">{book.title}</span>
+            <h2 id="ar-detail-name" className="ar-panel__name">
+              {label}
+            </h2>
+
+            <dl className="ar-detail__specs">
+              {specs.map((item) => (
+                <div className="ar-detail__spec" key={item.label}>
+                  <dt>{item.label}</dt>
+                  <dd>{item.value}</dd>
+                </div>
+              ))}
+            </dl>
+
+            <p className="ar-panel__desc">{description}</p>
+
+            {Array.isArray(funFacts) && funFacts.length > 0 && (
+              <div className="ar-detail__facts">
+                <span className="ar-detail__facts-title">
+                  Có thể bạn chưa biết
+                </span>
+                <ul>
+                  {funFacts.map((fact, index) => (
+                    <li key={index}>{fact}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </main>
   );
