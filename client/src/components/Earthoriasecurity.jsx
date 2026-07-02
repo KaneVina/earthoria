@@ -1,12 +1,3 @@
-/**
- * EarthoriaSecurity — React Component
- * Drop <EarthoriaSecurity /> vào App.jsx (global, ngoài <Routes>)
- *
- * ⚠️  DevTools detection chỉ chạy đầy đủ ở production.
- *     Trong dev mode (Vite/CRA) chỉ dùng window-size check
- *     để tránh false positive do React DevTools extension.
- */
-
 import { useEffect, useRef, useCallback } from "react";
 
 /* ─── helpers ─────────────────────────────────────────────── */

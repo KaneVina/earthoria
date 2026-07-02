@@ -1,0 +1,883 @@
+/* ═══════════════════════════════════════════════════════════════
+   EARTHORIA · PROFILE — "Passport" theme
+   Upgrade pass: unified motion/shadow system, refined sidebar nav,
+   subtle modern radii, and a much stronger mobile experience.
+   Brand kept intact: forest green + gold on cream/ivory, serif display.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --pf-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --pf-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --pf-radius-sm: 3px;
+  --pf-radius-md: 6px;
+  --pf-radius-lg: 10px;
+  --pf-shadow-sm: 0 2px 8px rgba(13, 43, 30, 0.06);
+  --pf-shadow-md: 0 12px 32px rgba(13, 43, 30, 0.09);
+  --pf-shadow-lg: 0 28px 60px rgba(13, 43, 30, 0.14);
+  --pf-shadow-gold: 0 8px 24px rgba(184, 134, 46, 0.16);
+}
+
+* { -webkit-tap-highlight-color: transparent; }
+
+.pf-reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s var(--pf-ease), transform 0.7s var(--pf-ease); }
+.pf-reveal.in { opacity: 1; transform: translateY(0); }
+
+.pf-btn-tactile { transition: transform 0.18s var(--pf-ease), background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s var(--pf-ease); cursor: pointer; }
+.pf-btn-tactile:active { transform: scale(0.96); }
+.pf-btn-tactile:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: var(--pf-radius-sm); }
+.pf-btn-tactile:hover { box-shadow: var(--pf-shadow-gold); }
+
+/* Ánh sáng lướt nhẹ qua các nút CTA chính khi hover — tinh tế, không gây rối mắt */
+.pf-btn-shine { position: relative; overflow: hidden; }
+.pf-btn-shine::after {
+  content: ''; position: absolute; top: 0; left: -60%; width: 35%; height: 100%;
+  background: linear-gradient(115deg, transparent, rgba(255,255,255,0.28), transparent);
+  transform: skewX(-18deg); transition: left 0.65s var(--pf-ease); pointer-events: none;
+}
+.pf-btn-shine:hover::after { left: 130%; }
+.pf-btn-shine:hover { transform: translateY(-1px); }
+
+@keyframes pfShimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+@keyframes pfDotPulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.7); } }
+@keyframes pfSpin { to { transform: rotate(360deg); } }
+@keyframes pfOverlayIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pfModalIn { from { opacity: 0; transform: translateY(14px) scale(0.96); filter: blur(6px); } to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); } }
+@keyframes pfFadeSlide { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Skeleton: nhuộm ánh vàng nhẹ thay vì xanh lá, cảm giác cao cấp hơn khi chờ tải */
+.pf-skel {
+  background: linear-gradient(90deg, var(--border) 20%, rgba(184,134,46,0.18) 50%, var(--border) 80%);
+  background-size: 200% 100%;
+  border-radius: var(--pf-radius-sm);
+  animation: pfShimmer 1.6s ease-in-out infinite;
+}
+
+/* ── Guest state ── */
+.pf-guest-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 80px 20px 40px; background: var(--cream); }
+.pf-guest-card { text-align: center; max-width: 380px; width: 100%; padding: 0 4px; }
+.pf-guest-seal {
+  width: 64px; height: 64px; margin: 0 auto 28px; border-radius: 50%;
+  border: 0.5px solid var(--border-gold); display: flex; align-items: center; justify-content: center;
+  color: var(--gold); box-shadow: var(--pf-shadow-gold);
+}
+.pf-guest-title { font-family: 'Playfair Display', serif; font-size: clamp(24px, 6vw, 30px); font-weight: 300; color: var(--forest); margin-bottom: 14px; letter-spacing: -0.01em; }
+.pf-guest-title em { font-style: italic; color: var(--gold); }
+.pf-guest-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 32px; line-height: 1.7; font-weight: 300; }
+.pf-guest-cta { background: var(--forest); color: var(--ivory); border: none; border-radius: var(--pf-radius-sm); padding: 15px 36px; font-family: 'Be Vietnam Pro', sans-serif; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; width: 100%; max-width: 280px; }
+.pf-guest-cta:hover { background: var(--forest-mid); }
+
+
+/* ═══════════ PASSPORT HERO ═══════════ */
+.pf-passport-zone {
+  background: var(--forest);
+  position: relative;
+  overflow: hidden;
+  padding: 56px 100px 0;
+}
+.pf-passport-watermark {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-52%);
+  font-family: 'Playfair Display', serif; font-size: clamp(90px, 13vw, 220px); font-weight: 300;
+  color: rgba(255,255,255,0.025); white-space: nowrap; letter-spacing: -0.02em;
+  pointer-events: none; user-select: none; z-index: 0;
+}
+.pf-passport-grid {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+.pf-passport-glow-a {
+  position: absolute; top: -100px; right: -60px; width: 380px; height: 380px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(74,158,63,0.12) 0%, transparent 70%); pointer-events: none;
+}
+.pf-passport-glow-b {
+  position: absolute; bottom: -140px; left: 10%; width: 320px; height: 320px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(45,122,110,0.1) 0%, transparent 70%); pointer-events: none;
+}
+.pf-passport-inner { max-width: 1300px; margin: 0 auto; position: relative; z-index: 2; padding-bottom: 0; }
+
+/* Floating gold dust — a few slow-drifting motes to give the strip a sense
+   of depth and quiet luxury, without becoming a distraction. */
+.pf-dust {
+  position: absolute; width: 3px; height: 3px; border-radius: 50%;
+  background: var(--gold-light); opacity: 0; pointer-events: none; z-index: 1;
+  box-shadow: 0 0 6px 1px rgba(212,168,67,0.6);
+  animation: pfDustDrift 9s ease-in-out infinite;
+}
+.pf-dust-a { top: 22%; left: 62%; animation-delay: 0s; }
+.pf-dust-b { top: 60%; left: 78%; animation-delay: 3s; width: 2px; height: 2px; }
+.pf-dust-c { top: 40%; left: 88%; animation-delay: 6s; }
+@keyframes pfDustDrift {
+  0% { opacity: 0; transform: translateY(0) translateX(0); }
+  15% { opacity: 0.7; }
+  50% { opacity: 0.9; transform: translateY(-26px) translateX(-10px); }
+  85% { opacity: 0.3; }
+  100% { opacity: 0; transform: translateY(-52px) translateX(-18px); }
+}
+
+.pf-passport-card {
+  background: linear-gradient(165deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 100%);
+  border: 0.5px solid rgba(74,158,63,0.28);
+  border-radius: var(--pf-radius-lg) var(--pf-radius-lg) 0 0;
+  backdrop-filter: blur(8px);
+  padding: 44px 48px 0;
+  position: relative;
+  overflow: hidden;
+}
+.pf-passport-card::before {
+  content: '';
+  position: absolute; top: 18px; left: 18px; right: 18px; bottom: 0;
+  border: 0.5px solid rgba(74,158,63,0.14);
+  border-bottom: none;
+  border-radius: var(--pf-radius-md) var(--pf-radius-md) 0 0;
+  pointer-events: none;
+}
+/* Gold-foil sheen: a soft diagonal band of light that sweeps once across
+   the passport card on load, like catching a hologram under light. */
+.pf-passport-sheen {
+  position: absolute; top: -20%; left: -40%; width: 45%; height: 140%;
+  background: linear-gradient(115deg, transparent, rgba(212,168,67,0.16), rgba(255,255,255,0.06), transparent);
+  transform: skewX(-18deg) translateX(-40%);
+  pointer-events: none; z-index: 1;
+  animation: pfPassportSheen 2.2s var(--pf-ease) 0.4s 1 both;
+}
+@keyframes pfPassportSheen {
+  0% { transform: skewX(-18deg) translateX(-60%); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: skewX(-18deg) translateX(340%); opacity: 0; }
+}
+.pf-card-enter { animation: pfCardEnter 0.7s var(--pf-ease) both; }
+@keyframes pfCardEnter { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+
+.pf-stagger { animation: pfCascadeIn 0.6s var(--pf-ease) both; animation-delay: var(--d, 0s); }
+
+.pf-passport-card-top {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+  position: relative; z-index: 2;
+}
+.pf-passport-left { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
+
+.pf-passport-seal {
+  width: 84px; height: 84px; border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 0.5px solid rgba(74,158,63,0.45);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 400; color: var(--gold);
+  flex-shrink: 0; position: relative;
+  box-shadow: 0 0 0 0 rgba(212,168,67,0);
+}
+.pf-seal-enter { animation: pfSealEnter 0.8s var(--pf-ease-spring) both; }
+@keyframes pfSealEnter {
+  0% { opacity: 0; transform: scale(0.4) rotate(-25deg); }
+  60% { opacity: 1; }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); box-shadow: 0 0 22px 2px rgba(212,168,67,0.18); }
+}
+.pf-passport-seal-ring {
+  position: absolute; inset: -7px; border: 0.5px dashed rgba(74,158,63,0.3); border-radius: 50%;
+  animation: pfRingRotate 22s linear infinite;
+}
+@keyframes pfRingRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.pf-passport-tier { display: flex; align-items: center; gap: 8px; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+.pf-tier-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); animation: pfDotPulse 2s ease-in-out infinite; }
+.pf-passport-name { font-family: 'Playfair Display', serif; font-size: clamp(24px, 3.2vw, 36px); font-weight: 300; color: var(--ivory); letter-spacing: -0.01em; line-height: 1.1; }
+.pf-passport-email { display: flex; align-items: center; gap: 8px; margin-top: 8px; color: rgba(250,248,243,0.45); font-size: 13px; }
+.pf-passport-email svg { color: rgba(74,158,63,0.6); flex-shrink: 0; }
+
+.pf-passport-logout {
+  display: flex; align-items: center; gap: 10px;
+  background: transparent; border: 0.5px solid rgba(255,255,255,0.14); border-radius: var(--pf-radius-sm);
+  color: rgba(250,248,243,0.55); padding: 12px 22px;
+  font-family: 'Be Vietnam Pro', sans-serif; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.pf-passport-logout:hover { border-color: #b25450; color: #d99a96; background: rgba(178,84,80,0.06); }
+
+.pf-passport-divider { display: flex; align-items: center; justify-content: center; margin: 36px 0 0; position: relative; height: 1px; z-index: 2; }
+.pf-passport-divider::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 0.5px;
+  background: repeating-linear-gradient(90deg, rgba(74,158,63,0.35) 0, rgba(74,158,63,0.35) 6px, transparent 6px, transparent 13px);
+}
+.pf-passport-divider-mark {
+  position: relative; z-index: 1; width: 9px; height: 9px; background: var(--forest);
+  border: 0.5px solid var(--gold); transform: rotate(45deg);
+}
+
+.pf-passport-bottom {
+  display: flex; align-items: center; justify-content: space-between; gap: 28px; flex-wrap: wrap;
+  padding: 28px 0 26px; position: relative; z-index: 2;
+}
+.pf-passport-code-label { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 9px; }
+.pf-passport-code-row { display: flex; align-items: center; gap: 14px; }
+.pf-passport-code-value {
+  font-family: 'Courier New', ui-monospace, monospace;
+  font-size: clamp(16px, 2vw, 21px); letter-spacing: 0.12em; color: var(--gold-light);
+  font-weight: 600;
+}
+
+.pf-passport-stats { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
+.pf-passport-stat { text-align: right; }
+.pf-passport-stat-val { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 300; color: var(--ivory); line-height: 1; margin-bottom: 6px; }
+.pf-passport-stat-label { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
+.pf-passport-stat-sep { width: 0.5px; height: 32px; background: rgba(255,255,255,0.1); }
+
+/* ═══════════ BODY LAYOUT (sidebar + content, below the hero) ═══════════ */
+.pf-body {
+  display: flex; align-items: flex-start; gap: 56px; position: relative;
+  max-width: 1300px; margin: 0 auto; padding: 0 100px;
+}
+
+/* ═══════════ SIDEBAR — "Danh Mục" nav, redesigned ═══════════
+   A quiet ivory-line card floating on the forest background: rounded
+   container, breathing room per item, and a soft pill indicator that
+   glides beneath the active label (already computed in JS via
+   offsetTop/offsetHeight — CSS just needs to paint it well). */
+.pf-sidebar {
+  width: 252px; flex-shrink: 0; position: sticky; top: 92px;
+  max-height: calc(100vh - 112px); overflow-y: auto;
+  /* Nền forest đặc (không phải trong suốt) vì sidebar nằm trên nền cream
+     sáng của trang, không phải đè lên hero tối — trong suốt sẽ làm chữ
+     ivory gần như biến mất. Gradient chỉ là lớp phủ tạo chiều sâu. */
+  background:
+    linear-gradient(165deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 100%),
+    var(--forest);
+  box-shadow: var(--pf-shadow-lg);
+  border: 0.5px solid rgba(74,158,63,0.22);
+  border-radius: var(--pf-radius-lg);
+  padding: 26px 14px;
+  margin-top: 56px;
+  z-index: 20;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(143,216,130,0.3) transparent;
+}
+.pf-sidebar::-webkit-scrollbar { width: 5px; }
+.pf-sidebar::-webkit-scrollbar-thumb { background: rgba(143,216,130,0.25); border-radius: 3px; }
+.pf-sidebar::-webkit-scrollbar-thumb:hover { background: rgba(143,216,130,0.45); }
+
+.pf-sidebar-close { display: none; }
+.pf-sidebar-eyebrow {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: rgba(143,216,130,0.45); margin-bottom: 18px; padding: 0 12px; font-weight: 500;
+}
+.pf-sidebar-eyebrow::after { content: ''; flex: 1; height: 0.5px; background: rgba(143,216,130,0.18); }
+
+.pf-sidebar-nav {
+  position: relative; display: flex; flex-direction: column; gap: 4px;
+  /* Reset: đây là thẻ <nav>, có thể vô tình thừa kế padding/background từ
+     một rule global "nav{...}" (header nav của site) nếu selector đó khớp.
+     Khai báo tường minh để sidebar luôn độc lập với style nav header. */
+  padding: 0; margin: 0; background: transparent; border: none; width: 100%; list-style: none;
+}
+.pf-sidebar-indicator {
+  position: absolute; left: 0; right: 0; top: 0;
+  background: linear-gradient(90deg, rgba(74,158,63,0.22) 0%, rgba(74,158,63,0.05) 100%);
+  border-radius: var(--pf-radius-md);
+  opacity: 0;
+  transition: transform 0.45s var(--pf-ease), height 0.45s var(--pf-ease), opacity 0.3s ease;
+  pointer-events: none; z-index: 0; will-change: transform;
+}
+.pf-sidebar-indicator::before {
+  content: ''; position: absolute; left: 0; top: 6px; bottom: 6px; width: 2.5px; border-radius: 2px;
+  background: #8fd882; box-shadow: 0 0 8px 1px rgba(143,216,130,0.45);
+}
+.pf-sidebar-indicator.is-ready { opacity: 1; }
+
+.pf-sidebar-link {
+  position: relative; z-index: 1; display: flex; align-items: center; gap: 13px;
+  padding: 13px 14px; border-radius: var(--pf-radius-md);
+  background: transparent; border: none; color: rgba(250,248,243,0.62);
+  text-align: left; overflow: hidden; width: 100%;
+  transition: color 0.25s ease, background 0.25s ease;
+}
+.pf-sidebar-link:hover { color: rgba(250,248,243,0.92); background: rgba(255,255,255,0.045); }
+.pf-sidebar-link.is-active { color: var(--ivory); }
+.pf-sidebar-link-icon {
+  display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; flex-shrink: 0;
+  border-radius: 50%; border: 0.5px solid transparent;
+  transition: transform 0.3s var(--pf-ease), color 0.3s, border-color 0.3s, background 0.3s;
+}
+.pf-sidebar-link:hover .pf-sidebar-link-icon { transform: translateX(2px); }
+.pf-sidebar-link.is-active .pf-sidebar-link-icon { color: #8fd882; border-color: rgba(143,216,130,0.4); background: rgba(74,158,63,0.18); }
+.pf-sidebar-link-text { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.pf-sidebar-link-roman {
+  font-family: 'Playfair Display', serif; font-style: italic; font-size: 11px;
+  color: rgba(143,216,130,0.55); flex-shrink: 0; transition: color 0.25s ease;
+}
+.pf-sidebar-link.is-active .pf-sidebar-link-roman { color: #8fd882; opacity: 1; }
+.pf-sidebar-link-label {
+  font-size: 13.5px; letter-spacing: 0.02em; font-family: 'Be Vietnam Pro', sans-serif;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Quiet divider + footer note beneath the nav list, gives the sidebar a
+   finished, "card" feel rather than stopping abruptly after 5 links. */
+.pf-sidebar::after {
+  content: 'EARTHORIA · MEMBER PASSPORT';
+  display: block; margin-top: 22px; padding: 16px 12px 4px;
+  border-top: 0.5px solid rgba(255,255,255,0.08);
+  font-size: 8px; letter-spacing: 0.18em; color: rgba(255,255,255,0.2);
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+/* ── Mobile top bar + backdrop ── */
+.pf-mobile-topbar { display: none; }
+.pf-mobile-menu-btn {
+  width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+  background: var(--parchment); border: 0.5px solid var(--border-gold); border-radius: var(--pf-radius-sm); color: var(--forest);
+  flex-shrink: 0;
+}
+.pf-mobile-menu-btn:hover { border-color: var(--gold); color: var(--gold); }
+.pf-mobile-topbar-title { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--forest); letter-spacing: 0.01em; }
+
+.pf-sidebar-backdrop {
+  display: none; position: fixed; inset: 0; z-index: 999;
+  background: rgba(10,14,12,0.55); backdrop-filter: blur(2px);
+  opacity: 0; pointer-events: none; transition: opacity 0.35s ease;
+}
+.pf-sidebar-backdrop.is-visible { opacity: 1; pointer-events: auto; }
+
+/* ── Main content column ── */
+.pf-main { flex: 1; min-width: 0; }
+.pf-main-inner { padding: 56px 0 90px; }
+.pf-scroll-anchor { scroll-margin-top: 104px; }
+
+/* Chuyển chương: nội dung mờ dần vào, các mục con trong lưới/danh sách
+   xuất hiện nối tiếp nhau (cascade) để cảm giác chuyển động có chiều sâu
+   thay vì bật ra một cục cứng nhắc. */
+@keyframes pfTabFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pfCascadeIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.pf-tab-transition { animation: pfTabFadeIn 0.28s ease both; }
+.pf-fields-grid > *, .pf-addr-grid > *, .pf-stack-12 > *, .pf-stack-16 > *,
+.pf-filter-row > *, .pf-security-layout > *, .pf-detail-layout > * {
+  animation: pfCascadeIn 0.55s var(--pf-ease) both;
+}
+.pf-fields-grid > *:nth-child(1), .pf-addr-grid > *:nth-child(1), .pf-stack-12 > *:nth-child(1), .pf-stack-16 > *:nth-child(1), .pf-filter-row > *:nth-child(1) { animation-delay: .02s; }
+.pf-fields-grid > *:nth-child(2), .pf-addr-grid > *:nth-child(2), .pf-stack-12 > *:nth-child(2), .pf-stack-16 > *:nth-child(2), .pf-filter-row > *:nth-child(2) { animation-delay: .06s; }
+.pf-fields-grid > *:nth-child(3), .pf-addr-grid > *:nth-child(3), .pf-stack-12 > *:nth-child(3), .pf-stack-16 > *:nth-child(3), .pf-filter-row > *:nth-child(3) { animation-delay: .1s; }
+.pf-fields-grid > *:nth-child(4), .pf-addr-grid > *:nth-child(4), .pf-stack-16 > *:nth-child(4), .pf-filter-row > *:nth-child(4) { animation-delay: .14s; }
+.pf-fields-grid > *:nth-child(5), .pf-filter-row > *:nth-child(5) { animation-delay: .18s; }
+.pf-fields-grid > *:nth-child(6), .pf-filter-row > *:nth-child(6) { animation-delay: .22s; }
+.pf-filter-row > *:nth-child(n+7) { animation-delay: .24s; }
+.pf-stack-16 > *:nth-child(n+5) { animation-delay: .18s; }
+.pf-security-layout > *:nth-child(2) { animation-delay: .08s; }
+.pf-detail-layout > *:nth-child(2) { animation-delay: .08s; }
+
+/* Copy button (compact for code) */
+.pf-copy-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(74,158,63,0.08); border: 0.5px solid rgba(74,158,63,0.3); border-radius: var(--pf-radius-sm);
+  color: var(--gold-light); font-size: 10px; letter-spacing: 0.08em;
+  padding: 6px 11px; font-family: 'Be Vietnam Pro', sans-serif;
+}
+.pf-copy-btn:hover { background: rgba(74,158,63,0.16); }
+.pf-copy-btn.copied { color: #8fd882; border-color: #8fd882; animation: pfPopOnce 0.4s ease; }
+@keyframes pfPopOnce { 0% { transform: scale(1); } 45% { transform: scale(1.08); } 100% { transform: scale(1); } }
+.pf-copy-btn.compact { padding: 6px 8px; }
+
+/* On light backgrounds (order cards), copy button needs light theme */
+.pf-order-card .pf-copy-btn, .pf-detail-head-row .pf-copy-btn {
+  background: transparent; border-color: var(--border-gold); color: var(--gold);
+}
+.pf-order-card .pf-copy-btn:hover, .pf-detail-head-row .pf-copy-btn:hover { background: var(--gold-pale); }
+.pf-order-card .pf-copy-btn.copied, .pf-detail-head-row .pf-copy-btn.copied { color: var(--sage); border-color: var(--sage); }
+
+
+/* ═══════════ SECTION HEADER ═══════════ */
+.pf-section-header { margin-bottom: 40px; }
+.pf-section-chapter { font-family: 'Playfair Display', serif; font-style: italic; font-size: 12px; color: var(--mist); margin-bottom: 14px; }
+.pf-section-eyebrow-row { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.pf-section-eyebrow-line { width: 28px; height: 0.5px; background: var(--gold); }
+.pf-section-eyebrow-text { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); }
+.pf-section-title { font-family: 'Playfair Display', serif; font-size: clamp(26px, 4vw, 34px); font-weight: 300; color: var(--forest); letter-spacing: -0.01em; }
+.pf-section-title em { font-style: italic; color: var(--gold); }
+.pf-section-sub { font-size: 13px; color: var(--text-muted); margin-top: 10px; font-weight: 300; }
+
+/* ═══════════ FOOTER HELP STRIP ═══════════ */
+.pf-help-strip { background: var(--parchment); border-top: 0.5px solid var(--border); }
+.pf-help-strip-inner {
+  max-width: 1100px; margin: 0 auto; padding: 32px 64px;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+}
+.pf-help-strip-left { display: flex; align-items: center; gap: 18px; }
+.pf-help-strip-icon {
+  width: 42px; height: 42px; border: 0.5px solid var(--border-gold); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; color: var(--gold); flex-shrink: 0;
+}
+.pf-help-strip-title { font-family: 'Playfair Display', serif; font-size: 16px; color: var(--forest); margin-bottom: 3px; }
+.pf-help-strip-sub { font-size: 12px; color: var(--text-muted); font-weight: 300; max-width: 380px; }
+.pf-help-strip-link {
+  font-size: 11px; letter-spacing: 0.1em; color: var(--gold); text-decoration: none;
+  display: flex; align-items: center; gap: 8px; transition: gap 0.25s ease; flex-shrink: 0;
+}
+.pf-help-strip-link:hover { gap: 14px; }
+
+/* ═══════════ EDITABLE FIELDS ═══════════ */
+.pf-fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 36px; }
+.pf-field {
+  background: var(--white); border: 0.5px solid var(--border); border-radius: var(--pf-radius-md);
+  padding: 18px 22px; transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s var(--pf-ease);
+}
+.pf-field:hover { box-shadow: var(--pf-shadow-sm); }
+.pf-field.is-editing { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(74,158,63,0.06); }
+.pf-field.is-locked { background: var(--cream); }
+.pf-field.is-saved { animation: pfFieldSaved 1s ease; }
+@keyframes pfFieldSaved {
+  0% { border-color: var(--gold); box-shadow: 0 0 0 4px rgba(74,158,63,0.14); }
+  100% { border-color: var(--border); box-shadow: 0 0 0 0 rgba(74,158,63,0); }
+}
+.pf-field-label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted);
+  margin-bottom: 10px;
+}
+.pf-field-icon { color: var(--mist); display: flex; }
+.pf-field-lock-badge { margin-left: auto; color: var(--mist); display: flex; }
+.pf-field-display {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  cursor: pointer; min-height: 24px;
+}
+.pf-field.is-locked .pf-field-display { cursor: default; }
+.pf-field-value { font-size: 14px; color: var(--forest); font-weight: 500; font-family: 'Be Vietnam Pro', sans-serif; word-break: break-word; }
+.pf-field-value.is-empty { color: var(--mist); font-weight: 300; font-style: italic; }
+.pf-mono { font-family: 'Courier New', ui-monospace, monospace; letter-spacing: 0.06em; font-weight: 600; }
+.pf-field-edit-btn {
+  background: none; border: none; color: var(--mist); padding: 4px; display: flex; opacity: 0; flex-shrink: 0;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+.pf-field:hover .pf-field-edit-btn { opacity: 1; }
+.pf-field-edit-btn:hover { color: var(--gold); }
+
+.pf-field-edit-row { display: flex; gap: 8px; align-items: center; }
+.pf-field-input {
+  flex: 1; min-width: 0; font-family: 'Be Vietnam Pro', sans-serif; font-size: 14px; color: var(--text-body);
+  background: var(--ivory); border: 0.5px solid var(--gold); border-radius: var(--pf-radius-sm); padding: 9px 12px;
+  outline: none; box-shadow: 0 0 0 3px rgba(74,158,63,0.08);
+}
+.pf-field-input.has-error { border-color: #b25450; box-shadow: 0 0 0 3px rgba(178,84,80,0.07); }
+.pf-field-edit-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.pf-field-save, .pf-field-cancel {
+  width: 34px; height: 34px; border: 0.5px solid var(--border); border-radius: var(--pf-radius-sm); background: var(--white);
+  display: flex; align-items: center; justify-content: center; color: var(--text-muted);
+}
+.pf-field-save { color: var(--gold); border-color: var(--border-gold); }
+.pf-field-save:hover { background: var(--gold); color: var(--ivory); }
+.pf-field-cancel:hover { background: var(--cream); color: var(--forest); }
+.pf-field-error { font-size: 10px; color: #b25450; margin-top: 8px; letter-spacing: 0.03em; }
+.pf-spinner-sm { width: 12px; height: 12px; border: 1.5px solid var(--gold-pale); border-top-color: var(--gold); border-radius: 50%; animation: pfSpin 0.7s linear infinite; display: block; }
+
+/* ═══════════ ORNAMENT & SUBHEADER ═══════════ */
+.pf-ornament-sm { display: flex; align-items: center; gap: 10px; margin: 8px 0 32px; }
+.pf-ornament-sm span:not(.pf-ornament-mark) { flex: 1; height: 0.5px; background: var(--border); }
+.pf-ornament-mark { width: 5px; height: 5px; border: 0.5px solid var(--gold); transform: rotate(45deg); flex: none !important; }
+.pf-subheader-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+.pf-subheader-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 400; color: var(--forest); }
+.pf-subheader-title em { font-style: italic; color: var(--gold); }
+.pf-view-all { background: none; border: none; color: var(--gold); font-size: 12px; display: flex; align-items: center; gap: 7px; transition: gap 0.25s ease; }
+.pf-view-all:hover { gap: 12px; }
+.pf-stack-12 { display: flex; flex-direction: column; gap: 12px; }
+.pf-stack-16 { display: flex; flex-direction: column; gap: 16px; }
+
+/* ═══════════ POINTER SHEEN (used across order/address cards) ═══════════
+   A soft radial spotlight that tracks the cursor via --mx/--my custom
+   props (set from JS in useSheen). Purely additive — falls back to a
+   normal hover state if JS hasn't set the vars yet. */
+.pf-sheen-surface { position: relative; --mx: 50%; --my: 50%; --glow: 0; }
+.pf-sheen-glow {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  opacity: var(--glow);
+  transition: opacity 0.4s ease;
+  background: radial-gradient(220px circle at var(--mx) var(--my), rgba(212,168,67,0.10), transparent 65%);
+}
+.pf-sheen-surface > *:not(.pf-sheen-glow) { position: relative; z-index: 1; }
+
+/* ═══════════ MINI ORDER CARD ═══════════ */
+.pf-mini-order {
+  background: var(--white); border: 0.5px solid var(--border); border-radius: var(--pf-radius-md);
+  padding: 22px 26px; display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; row-gap: 14px; cursor: pointer; transition: border-color 0.35s ease, transform 0.35s var(--pf-ease), box-shadow 0.35s var(--pf-ease); position: relative;
+}
+.pf-mini-order:hover { border-color: var(--border-gold); transform: translateX(6px); box-shadow: var(--pf-shadow-md); }
+.pf-mini-order-accent { position: absolute; left: 0; top: 0; bottom: 0; width: 2px; border-radius: 2px 0 0 2px; background: var(--gold); opacity: 0; transition: opacity 0.3s ease; z-index: 1; }
+.pf-mini-order:hover .pf-mini-order-accent { opacity: 1; }
+.pf-mini-order-code { font-size: 13px; color: var(--forest); font-weight: 500; margin-bottom: 5px; letter-spacing: 0.01em; }
+.pf-mini-order-meta { font-size: 12px; color: var(--text-muted); }
+.pf-mini-order-price { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--forest); min-width: 90px; text-align: right; }
+
+.pf-status-pill { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 14px; border-radius: 30px; font-weight: 500; white-space: nowrap; }
+.pf-status-pill-lg { font-size: 11px; padding: 9px 22px; }
+
+/* ═══════════ FILTER PILLS ═══════════ */
+.pf-filter-row {
+  display: flex; gap: 8px; margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+.pf-filter-pill {
+  display: flex; align-items: center; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 9px 16px; border: 0.5px solid var(--border); border-radius: 30px; background: transparent; color: var(--text-muted);
+  font-family: 'Be Vietnam Pro', sans-serif; white-space: nowrap;
+}
+.pf-filter-pill:hover { border-color: var(--border-gold); color: var(--forest); }
+.pf-filter-pill.is-active { background: var(--forest); color: var(--ivory); border-color: var(--forest); }
+.pf-filter-count {
+  font-size: 9px; margin-left: 7px; padding: 1px 6px; border-radius: 20px;
+  background: var(--pale); color: var(--forest);
+}
+.pf-filter-pill.is-active .pf-filter-count { background: rgba(255,255,255,0.18); color: var(--ivory); }
+
+/* ═══════════ ORDER CARD (list) ═══════════ */
+.pf-order-card { background: var(--white); border: 0.5px solid var(--border); border-radius: var(--pf-radius-md); cursor: pointer; transition: box-shadow 0.4s var(--pf-ease), transform 0.4s var(--pf-ease), border-color 0.4s ease; overflow: hidden; }
+.pf-order-card:hover { box-shadow: var(--pf-shadow-lg); transform: translateY(-4px); border-color: var(--border-gold); }
+.pf-order-card-head { padding: 22px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; row-gap: 12px; border-bottom: 0.5px solid var(--border); position: relative; z-index: 1; }
+.pf-order-code { font-size: 13px; color: var(--forest); font-weight: 500; letter-spacing: 0.01em; }
+.pf-order-date { font-size: 12px; color: var(--text-muted); }
+.pf-vdivider { width: 0.5px; height: 14px; background: var(--border); }
+.pf-order-card-body { padding: 22px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; position: relative; z-index: 1; }
+.pf-thumb-cell { width: 54px; height: 70px; background: var(--cream); border: 0.5px solid var(--border); border-radius: var(--pf-radius-sm); overflow: hidden; flex-shrink: 0; transition: transform 0.3s var(--pf-ease); }
+.pf-order-card:hover .pf-thumb-cell { transform: translateY(-2px); }
+.pf-thumb-cell img { width: 100%; height: 100%; object-fit: cover; }
+.pf-thumb-more { background: var(--gold-pale) !important; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--forest); font-weight: 500; border: none !important; }
+.pf-order-item-count { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; letter-spacing: 0.02em; }
+.pf-order-total { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--forest); }
+
+/* ═══════════ ORDER DETAIL ═══════════ */
+.pf-back-btn { display: flex; align-items: center; gap: 8px; background: none; border: none; color: var(--text-muted); font-size: 12px; margin-bottom: 28px; font-family: 'Be Vietnam Pro', sans-serif; letter-spacing: 0.06em; padding: 4px 0; }
+.pf-back-btn:hover { color: var(--forest); gap: 12px; }
+.pf-detail-head-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 36px; flex-wrap: wrap; gap: 20px; }
+.pf-detail-eyebrow { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+.pf-detail-eyebrow-line { width: 24px; height: 0.5px; background: var(--gold); }
+.pf-detail-title { font-family: 'Playfair Display', serif; font-size: clamp(26px, 5vw, 36px); font-weight: 300; color: var(--forest); letter-spacing: -0.01em; word-break: break-all; }
+.pf-detail-date { font-size: 13px; color: var(--text-muted); margin-top: 8px; }
+.pf-detail-layout { display: grid; grid-template-columns: 1fr 340px; gap: 28px; }
+
+.pf-tracker-card { background: var(--white); border: 0.5px solid var(--border); border-radius: var(--pf-radius-md); padding: 40px 44px; margin-bottom: 28px; }
+.pf-tracker-row { display: flex; justify-content: space-between; position: relative; }
+.pf-tracker-line { position: absolute; top: 15px; left: 15px; right: 15px; height: 1.5px; background: var(--border); z-index: 0; }
+.pf-tracker-line-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-light)); transition: width 1s var(--pf-ease); position: relative; }
+.pf-tracker-line-dot {
+  position: absolute; right: -4px; top: 50%; transform: translateY(-50%);
+  width: 9px; height: 9px; border-radius: 50%; background: var(--gold-light);
+  box-shadow: 0 0 0 4px rgba(212,168,67,0.18), 0 0 10px 1px rgba(212,168,67,0.6);
+  animation: pfDotPulse 1.8s ease-in-out infinite;
+}
+.pf-tracker-step { display: flex; flex-direction: column; align-items: center; gap: 12px; position: relative; z-index: 1; flex: 1; }
+.pf-tracker-dot { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-muted); background: var(--white); transition: all 0.4s var(--pf-ease); }
+.pf-tracker-dot.done { background: var(--gold); border-color: var(--gold); color: #fff; }
+.pf-tracker-dot.current { animation: pfTrackerPulse 2s ease-in-out infinite; }
+@keyframes pfTrackerPulse {
+  0%, 100% { box-shadow: 0 0 0 6px rgba(74,158,63,0.12); }
+  50% { box-shadow: 0 0 0 11px rgba(74,158,63,0.04); }
+}
+.pf-tracker-label { font-size: 10px; letter-spacing: 0.06em; text-align: center; color: var(--text-muted); font-weight: 300; max-width: 84px; }
+.pf-tracker-label.done { color: var(--forest); font-weight: 500; }
+
+.pf-cancelled-banner { display: flex; align-items: center; gap: 12px; padding: 18px 24px; background: rgba(178,84,80,0.06); border: 0.5px solid rgba(178,84,80,0.2); border-radius: var(--pf-radius-md); margin-bottom: 28px; font-size: 13px; color: #8a4440; }
+
+.pf-items-card { background: var(--white); border: 0.5px solid var(--border); border-radius: var(--pf-radius-md); overflow: hidden; }
+.pf-items-header { padding: 22px 30px; border-bottom: 0.5px solid var(--border); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); }
+.pf-item-row { padding: 22px 30px; display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+.pf-item-thumb { width: 64px; height: 82px; background: var(--cream); border: 0.5px solid var(--border); border-radius: var(--pf-radius-sm); overflow: hidden; flex-shrink: 0; }
+.pf-item-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.pf-item-title { font-family: 'Playfair Display', serif; font-size: 17px; color: var(--forest); margin-bottom: 5px; }
+.pf-item-meta { font-size: 12px; color: var(--text-muted); }
+.pf-item-total { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--forest); }
+
+.pf-shipping-card { background: var(--white); border: 0.5px solid var(--border); border-radius: var(--pf-radius-md); margin-top: 22px; padding: 26px 30px; }
+.pf-shipping-head { display: flex; align-items: center; gap: 11px; margin-bottom: 18px; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); }
+.pf-shipping-name { font-size: 14px; color: var(--forest); margin-bottom: 7px; font-weight: 500; }
+.pf-shipping-detail { font-size: 13px; color: var(--text-muted); line-height: 1.75; }
+
+.pf-summary-card { background: var(--white); border: 0.5px solid var(--border); border-radius: var(--pf-radius-md); padding: 32px; position: sticky; top: 110px; }
+.pf-summary-title { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 22px; padding-bottom: 16px; border-bottom: 0.5px solid var(--border); }
+.pf-summary-line { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 14px; }
+.pf-summary-divider { height: 0.5px; background: var(--border); margin: 18px 0; }
+.pf-summary-total-label { font-family: 'Playfair Display', serif; font-size: 15px; color: var(--forest); }
+.pf-summary-total-val { font-family: 'Playfair Display', serif; font-size: 30px; color: var(--forest); }
+.pf-payment-badge { margin-top: 22px; padding: 13px 18px; background: var(--cream); border-radius: var(--pf-radius-sm); display: flex; align-items: center; gap: 11px; color: var(--gold); font-size: 11px; }
+.pf-payment-badge span { color: var(--text-muted); }
+
+
+/* ═══════════ SECURITY TAB ═══════════ */
+.pf-security-layout { display: grid; grid-template-columns: 1fr 300px; gap: 28px; }
+.pf-security-form-card { background: var(--white); border: 0.5px solid var(--border); border-radius: var(--pf-radius-md); padding: 40px 44px; }
+.pf-lock-icon-wrap { width: 36px; height: 36px; border: 0.5px solid var(--border-gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--gold); flex-shrink: 0; }
+.pf-security-title { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 400; color: var(--forest); }
+.pf-security-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 36px; line-height: 1.75; max-width: 440px; }
+.pf-pw-form { display: flex; flex-direction: column; gap: 24px; max-width: 440px; }
+.pf-pw-label { display: block; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 9px; font-family: 'Be Vietnam Pro', sans-serif; }
+.pf-pw-input {
+  width: 100%; padding: 14px 48px 14px 18px; border: 0.5px solid var(--border); border-radius: var(--pf-radius-sm); background: var(--ivory);
+  font-family: 'Be Vietnam Pro', sans-serif; font-size: 14px; color: var(--text-body); outline: none; transition: all 0.25s ease;
+}
+.pf-pw-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(74,158,63,0.08); }
+.pf-pw-input.has-error { border-color: #b25450; box-shadow: 0 0 0 3px rgba(178,84,80,0.06); }
+.pf-pw-toggle { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--mist); display: flex; }
+.pf-pw-toggle:hover { color: var(--gold); }
+.pf-strength-zone { margin-top: 10px; animation: pfFadeSlide 0.3s ease; }
+.pf-strength-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.pf-strength-seg { height: 2.5px; border-radius: 2px; transition: background 0.4s ease, transform 0.35s var(--pf-ease-spring); transform: scaleY(1); transform-origin: center; }
+.pf-strength-seg.is-filled { animation: pfSegPop 0.4s var(--pf-ease-spring); }
+@keyframes pfSegPop { 0% { transform: scaleY(0.4); } 60% { transform: scaleY(1.6); } 100% { transform: scaleY(1); } }
+.pf-strength-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 7px; font-weight: 500; }
+.pf-pw-checklist { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.pf-pw-check-item { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--text-muted); transition: color 0.3s ease; }
+.pf-pw-dot { width: 14px; height: 14px; border-radius: 50%; border: 0.5px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--ivory); transition: all 0.3s ease; flex-shrink: 0; }
+.pf-pw-check-item.met { color: var(--forest); }
+.pf-pw-check-item.met .pf-pw-dot { background: var(--gold); border-color: var(--gold); animation: pfPopOnce 0.35s ease; }
+.pf-pw-submit {
+  margin-top: 10px; background: var(--forest); color: var(--ivory); border: none; border-radius: var(--pf-radius-sm); padding: 16px 34px;
+  font-family: 'Be Vietnam Pro', sans-serif; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  align-self: flex-start; display: flex; align-items: center; gap: 10px;
+}
+.pf-pw-submit:hover:not(:disabled) { background: var(--forest-mid); gap: 18px; }
+.pf-pw-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.pf-tips-card { background: var(--forest); border-radius: var(--pf-radius-md); padding: 34px 30px; height: fit-content; position: relative; overflow: hidden; }
+.pf-tips-glow { position: absolute; bottom: -60px; left: -40px; width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, rgba(74,158,63,0.12) 0%, transparent 70%); }
+.pf-tips-eyebrow { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); }
+.pf-tip-row { display: flex; gap: 14px; font-size: 12.5px; color: rgba(250,248,243,0.6); line-height: 1.7; }
+.pf-tip-num { font-family: 'Playfair Display', serif; color: var(--gold); flex-shrink: 0; font-size: 13px; }
+
+/* ═══════════ ADDRESSES TAB ═══════════ */
+.pf-add-addr-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 26px; border-radius: var(--pf-radius-sm);
+  font-family: 'Be Vietnam Pro', sans-serif; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  margin-bottom: 28px; background: var(--forest); color: var(--ivory); border: none;
+}
+.pf-add-addr-btn:hover { background: var(--forest-mid); }
+.pf-add-addr-btn.is-cancel { background: var(--parchment); color: var(--forest); border: 0.5px solid var(--border); }
+.pf-addr-form { background: var(--white); border: 0.5px solid var(--border-gold); border-radius: var(--pf-radius-md); padding: 32px; margin-bottom: 28px; animation: pfFadeSlide 0.35s ease; }
+.pf-addr-form-editing { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; }
+.pf-form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+.pf-form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; margin-bottom: 22px; }
+.pf-form-input-wrap label { display: block; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
+.pf-form-input-wrap input {
+  width: 100%; padding: 12px 16px; border: 0.5px solid var(--border); border-radius: var(--pf-radius-sm); background: var(--ivory);
+  font-family: 'Be Vietnam Pro', sans-serif; font-size: 13px; outline: none; transition: border-color 0.25s ease;
+}
+
+/* ── Step hint (Province → Ward) ── */
+.pf-step-hint {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  font-size: 10px; letter-spacing: 0.06em; color: var(--text-muted);
+  margin-bottom: 14px; font-family: 'Be Vietnam Pro', sans-serif;
+}
+.pf-step-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--gold-pale); color: var(--forest);
+  font-size: 9px; font-weight: 600; flex-shrink: 0;
+}
+.pf-step-arrow { color: var(--gold); display: flex; }
+
+/* ── Location Combobox (Tỉnh/Phường autocomplete) ── */
+.pf-combobox { position: relative; }
+.pf-combobox-inner { position: relative; display: flex; align-items: center; }
+.pf-combobox-inner input { padding-right: 40px; }
+.pf-combobox-inner input:disabled { background: var(--cream); color: var(--mist); cursor: not-allowed; }
+.pf-combobox-inner input:focus:not(:disabled) { border-color: var(--gold); }
+.pf-combobox-check { position: absolute; right: 13px; color: var(--gold); display: flex; pointer-events: none; }
+.pf-combobox-spinner {
+  position: absolute; right: 13px; width: 13px; height: 13px;
+  border: 1.5px solid var(--gold-pale); border-top-color: var(--gold); border-radius: 50%;
+  animation: pfSpin 0.7s linear infinite;
+}
+.pf-combobox-dropdown {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 60;
+  background: var(--white); border: 0.5px solid var(--border-gold); border-radius: var(--pf-radius-md);
+  box-shadow: var(--pf-shadow-lg);
+  max-height: 260px; overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: var(--border-gold) transparent;
+}
+.pf-combobox-dropdown::-webkit-scrollbar { width: 5px; }
+.pf-combobox-dropdown::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 3px; }
+.pf-combobox-option {
+  padding: 11px 16px; font-size: 13px; color: var(--text-body); cursor: pointer;
+  border-bottom: 0.5px solid var(--border); transition: background 0.15s ease;
+}
+.pf-combobox-option:last-child { border-bottom: none; }
+.pf-combobox-option.is-highlight { background: var(--gold-pale); color: var(--forest); }
+.pf-combobox-option.is-selected { color: var(--gold); font-weight: 500; }
+.pf-combobox-empty { padding: 14px 16px; font-size: 12px; color: var(--text-muted); text-align: center; }
+
+.pf-form-input-wrap input:focus { border-color: var(--gold); }
+.pf-addr-default-check { display: flex; align-items: center; gap: 11px; margin-bottom: 24px; cursor: pointer; font-size: 13px; color: var(--text-muted); }
+.pf-addr-save-btn {
+  background: var(--forest); color: var(--ivory); border: none; border-radius: var(--pf-radius-sm); padding: 14px 30px;
+  font-family: 'Be Vietnam Pro', sans-serif; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.pf-addr-save-btn:hover { background: var(--forest-mid); }
+.pf-addr-cancel-btn {
+  background: transparent; color: var(--text-muted); border: 0.5px solid var(--border); border-radius: var(--pf-radius-sm); padding: 14px 26px;
+  font-family: 'Be Vietnam Pro', sans-serif; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.pf-addr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.pf-addr-card { background: var(--white); border: 0.5px solid; border-radius: var(--pf-radius-md); padding: 24px 26px; position: relative; transition: box-shadow 0.3s var(--pf-ease), transform 0.3s var(--pf-ease); overflow: hidden; }
+.pf-addr-card:hover { box-shadow: var(--pf-shadow-md); transform: translateY(-3px); }
+.pf-addr-default-badge { position: absolute; top: 18px; right: 18px; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; background: var(--gold-pale); color: var(--forest); border-radius: 20px; padding: 5px 11px; font-weight: 500; z-index: 1; }
+.pf-addr-name { font-size: 14px; color: var(--forest); font-weight: 500; margin-bottom: 5px; }
+.pf-addr-phone { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
+.pf-addr-text { font-size: 13px; color: var(--text-body); line-height: 1.7; margin-bottom: 18px; }
+.pf-addr-actions { display: flex; gap: 16px; flex-wrap: wrap; padding-top: 16px; border-top: 0.5px solid var(--border); position: relative; z-index: 1; }
+.pf-addr-action-gold { background: none; border: none; color: var(--gold); font-size: 11px; letter-spacing: 0.04em; }
+.pf-addr-action { background: none; border: none; color: var(--forest-mid); font-size: 11px; display: flex; align-items: center; gap: 7px; }
+
+/* ── AR book cards ── */
+.pf-ar-card { align-items: center; }
+.pf-ar-badge {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 0.5px solid var(--border-gold); color: var(--gold);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  transition: transform 0.35s var(--pf-ease), box-shadow 0.35s ease;
+}
+.pf-ar-card:hover .pf-ar-badge { transform: rotate(18deg) scale(1.08); box-shadow: 0 0 0 5px rgba(212,168,67,0.1); }
+.pf-ar-card-arrow { margin-left: auto; color: var(--gold); opacity: 0; transform: translateX(-6px); transition: all 0.3s ease; flex-shrink: 0; position: relative; z-index: 1; }
+.pf-ar-card:hover .pf-ar-card-arrow { opacity: 1; transform: translateX(0); }
+
+/* ═══════════ EMPTY STATE ═══════════ */
+.pf-empty-state { background: var(--white); border: 0.5px dashed var(--border); border-radius: var(--pf-radius-md); padding: 72px 32px; text-align: center; }
+.pf-empty-icon-wrap { width: 60px; height: 60px; border: 0.5px solid var(--border-gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: var(--gold); }
+.pf-empty-text { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--forest); font-weight: 400; margin-bottom: 8px; }
+.pf-empty-sub { font-size: 12.5px; color: var(--text-muted); }
+
+/* ═══════════ CONFIRM MODAL ═══════════ */
+.pf-overlay { position: fixed; inset: 0; background: rgba(10,14,12,0.55); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 24px; animation: pfOverlayIn 0.2s ease; }
+.pf-confirm { background: var(--ivory); border: 0.5px solid var(--border-gold); border-radius: var(--pf-radius-lg); max-width: 420px; width: 100%; padding: 36px 34px 30px; box-shadow: 0 40px 80px rgba(13,43,30,0.3); animation: pfModalIn 0.32s var(--pf-ease); }
+.pf-confirm-icon { width: 44px; height: 44px; border: 0.5px solid var(--border-gold); border-radius: var(--pf-radius-sm); display: flex; align-items: center; justify-content: center; color: var(--gold); margin-bottom: 20px; }
+.pf-confirm-icon.danger { border-color: rgba(178,84,80,0.35); color: #b25450; }
+.pf-confirm-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 400; color: var(--forest); margin-bottom: 10px; }
+.pf-confirm-msg { font-size: 13px; line-height: 1.75; color: var(--text-muted); margin-bottom: 28px; font-weight: 300; }
+.pf-confirm-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+.pf-confirm-cancel { background: transparent; border: 0.5px solid var(--border); border-radius: var(--pf-radius-sm); color: var(--text-muted); padding: 11px 22px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-family: 'Be Vietnam Pro', sans-serif; }
+.pf-confirm-cancel:hover { border-color: var(--border-gold); color: var(--forest); }
+.pf-confirm-ok { background: var(--forest); border: none; border-radius: var(--pf-radius-sm); color: var(--ivory); padding: 11px 26px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-family: 'Be Vietnam Pro', sans-serif; }
+.pf-confirm-ok:hover { background: var(--forest-mid); }
+.pf-confirm-ok.danger { background: #b25450; }
+.pf-confirm-ok.danger:hover { background: #9a423e; }
+
+/* ═══════════════════════════════════════════════════════════════
+   RESPONSIVE — tablet, mobile, small mobile
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 1100px) {
+  .pf-passport-zone { padding: 48px 56px 0; }
+  .pf-body { padding: 0 56px; gap: 40px; }
+  .pf-sidebar { width: 224px; }
+  .pf-main-inner { padding: 48px 0 80px; }
+  .pf-help-strip-inner { padding: 32px 56px; }
+}
+
+@media (max-width: 900px) {
+  .pf-passport-zone { padding: 110px 24px 0; }
+  .pf-passport-card { padding: 32px 24px 0; }
+  .pf-passport-bottom { flex-direction: column; align-items: flex-start; gap: 24px; }
+  .pf-passport-stats { width: 100%; justify-content: space-between; }
+
+  .pf-body { display: block; padding: 0 24px; }
+
+  /* Sidebar becomes a full-height drawer */
+  .pf-sidebar {
+    position: fixed; top: 0; left: 0; height: 100dvh; width: 280px; max-width: 84vw; max-height: none;
+    margin-top: 0; padding: max(env(safe-area-inset-top), 22px) 18px 22px;
+    border-radius: 0; border: none;
+    background: var(--forest);
+    transform: translateX(-100%);
+    transition: transform 0.4s var(--pf-ease);
+    box-shadow: 28px 0 60px rgba(10,14,12,0.4);
+    z-index: 1000;
+    display: flex; flex-direction: column;
+  }
+  .pf-sidebar.is-open { transform: translateX(0); }
+  .pf-sidebar::after { margin-top: auto; padding-top: 18px; padding-bottom: max(env(safe-area-inset-bottom), 4px); }
+  .pf-sidebar-close {
+    display: flex; position: absolute; top: max(env(safe-area-inset-top), 16px); right: 16px; z-index: 2;
+    width: 38px; height: 38px; align-items: center; justify-content: center; border-radius: 50%;
+    background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.14); color: rgba(250,248,243,0.6);
+  }
+  .pf-sidebar-close:hover { color: var(--gold); border-color: var(--gold); }
+  .pf-sidebar-eyebrow { margin-top: 46px; }
+  .pf-sidebar-link { padding: 15px 14px; }
+  .pf-sidebar-link-label { font-size: 14.5px; }
+
+  .pf-mobile-topbar {
+    display: flex; align-items: center; gap: 14px;
+    position: sticky; top: 92px; z-index: 30;
+    background: var(--cream); padding: 18px 0;
+    margin-bottom: 4px;
+  }
+  .pf-sidebar-backdrop { display: block; }
+  .pf-main-inner { padding: 8px 0 64px; }
+  .pf-help-strip-inner { padding: 28px 24px; flex-direction: column; align-items: flex-start; }
+  .pf-fields-grid, .pf-detail-layout, .pf-security-layout, .pf-addr-grid, .pf-form-row-3 { grid-template-columns: 1fr; }
+  .pf-summary-card { position: static; }
+
+  /* Filter pills: horizontal scroll instead of wrap, so 7 pills stay
+     one-line and reachable with a thumb swipe on narrow screens. */
+  .pf-filter-row {
+    flex-wrap: nowrap; overflow-x: auto; padding-bottom: 6px; margin: 0 -24px 32px; padding-left: 24px; padding-right: 24px;
+    scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .pf-filter-row::-webkit-scrollbar { display: none; }
+  .pf-filter-pill { scroll-snap-align: start; }
+
+  .pf-tracker-card { padding: 28px 16px; overflow-x: auto; }
+  .pf-tracker-row { min-width: 480px; }
+}
+
+@media (max-width: 640px) {
+  .pf-passport-zone { padding: 100px 16px 0; }
+  .pf-passport-card { padding: 26px 18px 0; }
+  .pf-passport-card-top { gap: 18px; }
+  .pf-passport-left { gap: 16px; }
+  .pf-passport-logout { padding: 10px 16px; align-self: flex-start; }
+  .pf-passport-code-row { flex-wrap: wrap; }
+
+  .pf-body { padding: 0 16px; }
+  .pf-help-strip-inner { padding: 24px 16px; }
+  .pf-main-inner { padding: 4px 0 56px; }
+
+  .pf-section-header { margin-bottom: 30px; }
+  .pf-fields-grid { gap: 12px; margin-bottom: 28px; }
+  .pf-field { padding: 15px 16px; }
+  .pf-field-edit-row { flex-wrap: wrap; }
+  .pf-field-input { min-width: 140px; }
+
+  .pf-mini-order { padding: 18px; }
+  .pf-mini-order:hover { transform: none; }
+  .pf-mini-order-price { min-width: 0; text-align: left; }
+
+  .pf-order-card-head, .pf-order-card-body { padding: 18px; }
+  .pf-order-card:hover { transform: none; }
+
+  .pf-tracker-card, .pf-security-form-card, .pf-tips-card, .pf-addr-form { padding: 24px 18px; }
+  .pf-summary-card { padding: 24px 20px; }
+  .pf-item-row { padding: 18px; }
+  .pf-shipping-card { padding: 20px; }
+
+  .pf-add-addr-btn { width: 100%; }
+  .pf-addr-form .pf-addr-save-btn, .pf-addr-form .pf-addr-cancel-btn { width: 100%; text-align: center; }
+  .pf-addr-form > div[style*="flex"] { flex-direction: column; }
+
+  .pf-confirm { padding: 28px 22px 24px; }
+  .pf-confirm-actions { flex-direction: column-reverse; }
+  .pf-confirm-actions .pf-btn-tactile { width: 100%; text-align: center; justify-content: center; }
+}
+
+@media (max-width: 560px) {
+  .pf-passport-left { gap: 18px; }
+  .pf-passport-seal { width: 60px; height: 60px; font-size: 22px; }
+  .pf-passport-name { font-size: 22px; }
+  .pf-form-row-2 { grid-template-columns: 1fr; }
+  .pf-passport-stat-sep { display: none; }
+  .pf-passport-stats { gap: 20px; }
+  .pf-passport-stat { text-align: left; }
+}
+
+/* Touch devices: skip hover-only affordances that would otherwise get
+   "stuck" after a tap (edit pencil, arrow reveals, etc). */
+@media (hover: none) {
+  .pf-field-edit-btn { opacity: 1; }
+  .pf-ar-card-arrow { opacity: 0.6; transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}

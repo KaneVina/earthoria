@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { authService } from '../services/authService'
@@ -7,6 +7,7 @@ import { arService } from '../services/arService'
 import { useAuthStore } from '../store/authStore'
 import { formatPrice, formatDate } from '../utils/helpers'
 import toast from 'react-hot-toast'
+import "../components/assets/css/profile.css";
 
 const F = { serif: "'Playfair Display', serif", sans: "'Be Vietnam Pro', sans-serif" }
 
@@ -57,6 +58,8 @@ const Icon = {
   alert: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
   seal: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><circle cx="12" cy="8" r="6"/><path d="M9 13.5 7 22l5-3 5 3-2-8.5"/></svg>,
   compass: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>,
+  menu: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>,
+  sparkle: <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2 13.8 9.2 21 11 13.8 12.8 12 20 10.2 12.8 3 11 10.2 9.2 12 2z"/></svg>,
 }
 
 // ─── Reveal-on-scroll ───
@@ -92,6 +95,26 @@ function useCountUp(end, duration = 900, enabled = true) {
     return () => raf && cancelAnimationFrame(raf)
   }, [end, duration, enabled])
   return value
+}
+
+// ─── Pointer-reactive "sheen" — tracks the cursor over a card and exposes
+// it as CSS custom properties (--mx / --my / --glow). Pure CSS then paints
+// a soft gold spotlight that follows the cursor — the kind of subtle,
+// tactile polish you'd feel on a lacquered surface rather than a flat div.
+function useSheen() {
+  const ref = useRef(null)
+  const onMouseMove = useCallback((e) => {
+    const el = ref.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const mx = ((e.clientX - rect.left) / rect.width) * 100
+    const my = ((e.clientY - rect.top) / rect.height) * 100
+    el.style.setProperty('--mx', `${mx}%`)
+    el.style.setProperty('--my', `${my}%`)
+  }, [])
+  const onMouseEnter = useCallback(() => { ref.current?.style.setProperty('--glow', '1') }, [])
+  const onMouseLeave = useCallback(() => { ref.current?.style.setProperty('--glow', '0') }, [])
+  return { ref, onMouseMove, onMouseEnter, onMouseLeave }
 }
 
 // ─── Confirm dialog ───
@@ -152,6 +175,7 @@ function EditableField({ label, value, icon, onSave, placeholder = 'Không có t
   const [draft, setDraft] = useState(value || '')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [justSaved, setJustSaved] = useState(false)
   const inputRef = useRef(null)
 
   useEffect(() => { setDraft(value || '') }, [value])
@@ -175,6 +199,10 @@ function EditableField({ label, value, icon, onSave, placeholder = 'Không có t
     try {
       await onSave(draft)
       setEditing(false)
+      // Nhá viền vàng-xanh nhẹ để xác nhận đã lưu, tự tắt sau ~1s — phản hồi
+      // tức thời hơn là chỉ dựa vào toast ở góc màn hình.
+      setJustSaved(true)
+      setTimeout(() => setJustSaved(false), 1000)
     } catch (err) {
       setError(err?.response?.data?.message || 'Cập nhật thất bại, vui lòng thử lại')
     } finally {
@@ -188,7 +216,7 @@ function EditableField({ label, value, icon, onSave, placeholder = 'Không có t
   }
 
   return (
-    <div className={`pf-field ${editing ? 'is-editing' : ''} ${locked ? 'is-locked' : ''}`}>
+    <div className={`pf-field ${editing ? 'is-editing' : ''} ${locked ? 'is-locked' : ''} ${justSaved ? 'is-saved' : ''}`}>
       <div className="pf-field-label">
         <span className="pf-field-icon">{icon}</span>
         {label}
@@ -241,12 +269,27 @@ export default function Profile() {
   const { user, logout, setUser } = useAuthStore()
   const [activeTab, setActiveTab] = useState('overview')
   const [selectedOrderId, setSelectedOrderId] = useState(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const containerRef = useReveal([activeTab, selectedOrderId])
+  const contentTopRef = useRef(null)
   const { confirm, dialog } = useConfirm()
+
+  // Khoá scroll nền + cho phép nhấn Esc để đóng khi drawer sidebar (mobile) đang mở
+  useEffect(() => {
+    if (!sidebarOpen) return
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const onKeyDown = (e) => { if (e.key === 'Escape') setSidebarOpen(false) }
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.body.style.overflow = prevOverflow
+      window.removeEventListener('keydown', onKeyDown)
+    }
+  }, [sidebarOpen])
 
   const { data: profile } = useQuery({
     queryKey: ['profile'],
-    queryFn: () => authService.getMe().then(r => r.data.data),
+    queryFn: () => authService.me().then(r => r.data.data),
     initialData: user,
   })
 
@@ -297,7 +340,6 @@ export default function Profile() {
     })
     if (!ok) return
     logout()
-     queryClient.clear()
     toast.success('Đã đăng xuất')
     navigate('/')
   }
@@ -310,8 +352,21 @@ export default function Profile() {
   const formattedCode = formatAccountCode(accountCode)
   const recentOrders = orders.slice(0, 3)
 
+  const currentChapter = CHAPTERS.find(c => c.id === activeTab)
+
+  const selectTab = (id) => {
+    setActiveTab(id)
+    setSelectedOrderId(null)
+    setSidebarOpen(false)
+    // Nếu người dùng đã cuộn xuống sâu, đưa mượt về đầu khu vực nội dung
+    // thay vì để họ tự cuộn lên tìm nội dung chương mới.
+    if (typeof window !== 'undefined' && window.scrollY > 60) {
+      contentTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }
+
   return (
-    <div ref={containerRef} style={{ minHeight: '100vh', background: 'var(--cream)', paddingTop: '92px' }}>
+    <div ref={containerRef} className="pf-shell" style={{ minHeight: '100vh', background: 'var(--cream)', paddingTop: '92px' }}>
 
       <PassportHero
         profile={profile}
@@ -323,47 +378,52 @@ export default function Profile() {
         onLogout={handleLogout}
       />
 
-      <div className="pf-chapters-bar">
-        <div className="pf-chapters-inner">
-          {CHAPTERS.map(ch => (
-            <button
-              key={ch.id}
-              onClick={() => { setActiveTab(ch.id); setSelectedOrderId(null) }}
-              className={`pf-btn-tactile pf-chapter-tab ${activeTab === ch.id ? 'is-active' : ''}`}
-            >
-              <span className="pf-chapter-roman">{ch.roman}</span>
-              <span className="pf-chapter-label">{ch.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+      <div className="pf-body">
+        <div className={`pf-sidebar-backdrop ${sidebarOpen ? 'is-visible' : ''}`} onClick={() => setSidebarOpen(false)} />
 
-      <div className="pf-main-layout pf-reveal">
-        {activeTab === 'overview' && (
-          <OverviewTab
-            profile={profile}
-            recentOrders={recentOrders}
-            ordersLoading={ordersLoading}
-            saveField={saveField}
-            onViewOrders={() => setActiveTab('orders')}
-            onViewOrder={(id) => { setActiveTab('orders'); setSelectedOrderId(id) }}
-          />
-        )}
-        {activeTab === 'orders' && !selectedOrderId && (
-          <OrdersTab orders={orders} loading={ordersLoading} onSelect={setSelectedOrderId} />
-        )}
-        {activeTab === 'orders' && selectedOrderId && (
-          <OrderDetailTab order={orderDetail} loading={orderDetailLoading} onBack={() => setSelectedOrderId(null)} />
-        )}
-        {activeTab === 'security' && <SecurityTab />}
-        {activeTab === 'addresses' && <AddressesTab profile={profile} confirm={confirm} />}
-        {activeTab === 'ar' && <ArTab arCodes={arCodes} loading={arLoading} />}
+        <SidebarNav
+          activeTab={activeTab}
+          onSelectTab={selectTab}
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />
+
+        <div className="pf-main">
+          <div ref={contentTopRef} className="pf-scroll-anchor" />
+          <div className="pf-mobile-topbar">
+            <button onClick={() => setSidebarOpen(true)} className="pf-btn-tactile pf-mobile-menu-btn" aria-label="Mở menu">
+              {Icon.menu}
+            </button>
+            <span className="pf-mobile-topbar-title">{currentChapter?.label}</span>
+          </div>
+
+          <div key={`${activeTab}-${selectedOrderId || 'list'}`} className="pf-main-inner pf-tab-transition">
+            {activeTab === 'overview' && (
+              <OverviewTab
+                profile={profile}
+                recentOrders={recentOrders}
+                ordersLoading={ordersLoading}
+                saveField={saveField}
+                onViewOrders={() => selectTab('orders')}
+                onViewOrder={(id) => { setActiveTab('orders'); setSelectedOrderId(id) }}
+              />
+            )}
+            {activeTab === 'orders' && !selectedOrderId && (
+              <OrdersTab orders={orders} loading={ordersLoading} onSelect={setSelectedOrderId} />
+            )}
+            {activeTab === 'orders' && selectedOrderId && (
+              <OrderDetailTab order={orderDetail} loading={orderDetailLoading} onBack={() => setSelectedOrderId(null)} />
+            )}
+            {activeTab === 'security' && <SecurityTab />}
+            {activeTab === 'addresses' && <AddressesTab profile={profile} confirm={confirm} />}
+            {activeTab === 'ar' && <ArTab arCodes={arCodes} loading={arLoading} />}
+          </div>
+        </div>
       </div>
 
       <FooterHelp />
 
       {dialog}
-      <style>{PROFILE_CSS}</style>
     </div>
   )
 }
@@ -379,58 +439,62 @@ function formatAccountCode(raw) {
 function GuestState() {
   return (
     <div className="pf-guest-wrap">
-      <div className="pf-guest-card">
+      <div className="pf-guest-card pf-reveal in">
         <div className="pf-guest-seal">{Icon.seal}</div>
         <h2 className="pf-guest-title">Vui Lòng <em>Đăng Nhập</em></h2>
         <p className="pf-guest-sub">Đăng nhập để xem hồ sơ, theo dõi đơn hàng và quản lý tài khoản của bạn.</p>
         <Link to="/login">
-          <button className="pf-btn-tactile pf-guest-cta">Đăng Nhập Ngay</button>
+          <button className="pf-btn-tactile pf-btn-shine pf-guest-cta">Đăng Nhập Ngay</button>
         </Link>
       </div>
-      <style>{PROFILE_CSS}</style>
     </div>
   )
 }
 
 // ════════════════════════ PASSPORT HERO ════════════════════════
-// Signature element: a membership "passport card" — replaces the generic
-// dashboard banner. Shows avatar seal, member tier, account code (stamped,
-// monospace), and two key stats. Email is intentionally NOT shown as editable
-// here (handled in Overview's field list) — this strip is identity-first.
+// Signature element: a membership "passport card" — full-width horizontal
+// strip finished like a lacquered travel document: a gold foil sheen sweeps
+// across on load, the seal settles in with a small overshoot, and the
+// stats/code arrive in a staggered cascade so the strip reads like a
+// stamp being pressed rather than a static block popping onto the page.
 function PassportHero({ profile, initials, memberTier, formattedCode, animatedOrderCount, animatedSpent, onLogout }) {
   const isAdmin = profile?.role === 'ADMIN'
   const roleMeta = isAdmin
-    ? { label: 'Quản Trị Viên', color: '#b8862e', bg: 'rgba(184,134,46,0.09)', border: 'rgba(184,134,46,0.28)', dot: '#b8862e', sealBg: 'linear-gradient(135deg,#b8862e 0%,#d4a843 100%)' }
-    : { label: 'Thành Viên',    color: '#4a9e3f', bg: 'rgba(74,158,63,0.09)',   border: 'rgba(74,158,63,0.25)',   dot: '#4a9e3f', sealBg: undefined }
+    ? { sealBg: 'linear-gradient(135deg,#b8862e 0%,#d4a843 100%)' }
+    : { sealBg: undefined }
   return (
     <div className="pf-passport-zone">
       <div className="pf-passport-watermark">EARTHORIA</div>
       <div className="pf-passport-grid" />
       <div className="pf-passport-glow-a" />
       <div className="pf-passport-glow-b" />
+      <span className="pf-dust pf-dust-a" />
+      <span className="pf-dust pf-dust-b" />
+      <span className="pf-dust pf-dust-c" />
 
       <div className="pf-passport-inner">
-        <div className="pf-passport-card pf-reveal">
+        <div className="pf-passport-card pf-card-enter">
+          <span className="pf-passport-sheen" aria-hidden="true" />
           <div className="pf-passport-card-top">
             <div className="pf-passport-left">
-              <div className="pf-passport-seal" style={isAdmin ? { background: roleMeta.sealBg, borderColor: 'rgba(184,134,46,0.4)' } : undefined}>
+              <div className="pf-passport-seal pf-seal-enter" style={isAdmin ? { background: roleMeta.sealBg, borderColor: 'rgba(184,134,46,0.4)' } : undefined}>
                 <div className="pf-passport-seal-ring" style={isAdmin ? { borderColor: 'rgba(184,134,46,0.35)' } : undefined} />
                 {initials}
               </div>
               <div className="pf-passport-id">
-                <div className="pf-passport-tier">
+                <div className="pf-passport-tier pf-stagger" style={{ '--d': '0.1s' }}>
                   <span className="pf-tier-dot" />
                   {memberTier}
                 </div>
-                <h1 className="pf-passport-name">{profile.firstName} {profile.lastName}</h1>
-                <div className="pf-passport-email">
+                <h1 className="pf-passport-name pf-stagger" style={{ '--d': '0.18s' }}>{profile.firstName} {profile.lastName}</h1>
+                <div className="pf-passport-email pf-stagger" style={{ '--d': '0.26s' }}>
                   {Icon.mail}
                   <span>{profile.email}</span>
                 </div>
               </div>
             </div>
 
-            <button onClick={onLogout} className="pf-btn-tactile pf-passport-logout">
+            <button onClick={onLogout} className="pf-btn-tactile pf-passport-logout pf-stagger" style={{ '--d': '0.3s' }}>
               {Icon.logout} Đăng Xuất
             </button>
           </div>
@@ -440,7 +504,7 @@ function PassportHero({ profile, initials, memberTier, formattedCode, animatedOr
           </div>
 
           <div className="pf-passport-bottom">
-            <div className="pf-passport-code-block">
+            <div className="pf-passport-code-block pf-stagger" style={{ '--d': '0.34s' }}>
               <div className="pf-passport-code-label">Mã Số Tài Khoản</div>
               <div className="pf-passport-code-row">
                 <span className="pf-passport-code-value">{formattedCode}</span>
@@ -449,17 +513,17 @@ function PassportHero({ profile, initials, memberTier, formattedCode, animatedOr
             </div>
 
             <div className="pf-passport-stats">
-              <div className="pf-passport-stat">
+              <div className="pf-passport-stat pf-stagger" style={{ '--d': '0.38s' }}>
                 <div className="pf-passport-stat-val">{animatedOrderCount}</div>
                 <div className="pf-passport-stat-label">Đơn hàng</div>
               </div>
               <div className="pf-passport-stat-sep" />
-              <div className="pf-passport-stat">
+              <div className="pf-passport-stat pf-stagger" style={{ '--d': '0.42s' }}>
                 <div className="pf-passport-stat-val">{animatedSpent}</div>
                 <div className="pf-passport-stat-label">Tổng chi tiêu</div>
               </div>
               <div className="pf-passport-stat-sep" />
-              <div className="pf-passport-stat">
+              <div className="pf-passport-stat pf-stagger" style={{ '--d': '0.46s' }}>
                 <div className="pf-passport-stat-val">{profile.createdAt ? formatDate(profile.createdAt) : '—'}</div>
                 <div className="pf-passport-stat-label">Thành viên từ</div>
               </div>
@@ -468,6 +532,59 @@ function PassportHero({ profile, initials, memberTier, formattedCode, animatedOr
         </div>
       </div>
     </div>
+  )
+}
+
+// ════════════════════════ SIDEBAR NAV ════════════════════════
+// Chỉ chứa 5 nút chuyển chương (thay cho thanh tab ngang cũ). Đứng dọc bên
+// trái, dưới PassportHero, sticky khi cuộn để menu luôn trong tầm tay.
+// Điểm nhấn: một "viên thuốc" nền trượt mượt theo vị trí mục đang chọn,
+// thay vì chỉ đổi màu tĩnh — đo vị trí thật của nút bằng ref rồi dịch
+// chuyển bằng transform để tận dụng GPU, không giật.
+function SidebarNav({ activeTab, onSelectTab, isOpen, onClose }) {
+  const navRef = useRef(null)
+  const itemRefs = useRef({})
+  const [indicator, setIndicator] = useState({ top: 0, height: 0, ready: false })
+
+  const measure = useCallback(() => {
+    const el = itemRefs.current[activeTab]
+    if (!el) return
+    setIndicator({ top: el.offsetTop, height: el.offsetHeight, ready: true })
+  }, [activeTab])
+
+  useLayoutEffect(() => { measure() }, [measure, isOpen])
+
+  useEffect(() => {
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [measure])
+
+  return (
+    <aside className={`pf-sidebar ${isOpen ? 'is-open' : ''}`}>
+      <button onClick={onClose} className="pf-btn-tactile pf-sidebar-close" aria-label="Đóng menu">{Icon.x}</button>
+      <div className="pf-sidebar-eyebrow">Danh Mục</div>
+      <div className="pf-sidebar-nav" role="navigation" aria-label="Danh mục hồ sơ" ref={navRef}>
+        <span
+          className={`pf-sidebar-indicator ${indicator.ready ? 'is-ready' : ''}`}
+          style={{ transform: `translateY(${indicator.top}px)`, height: `${indicator.height}px` }}
+          aria-hidden="true"
+        />
+        {CHAPTERS.map(ch => (
+          <button
+            key={ch.id}
+            ref={el => { itemRefs.current[ch.id] = el }}
+            onClick={() => onSelectTab(ch.id)}
+            className={`pf-btn-tactile pf-sidebar-link ${activeTab === ch.id ? 'is-active' : ''}`}
+          >
+            <span className="pf-sidebar-link-icon">{Icon[ch.icon]}</span>
+            <span className="pf-sidebar-link-text">
+              <span className="pf-sidebar-link-roman">{ch.roman}</span>
+              <span className="pf-sidebar-link-label">{ch.label}</span>
+            </span>
+          </button>
+        ))}
+      </div>
+    </aside>
   )
 }
 
@@ -591,8 +708,18 @@ function MiniOrderSkeleton() {
 
 function MiniOrderCard({ order, delay, onClick }) {
   const status = ORDER_STATUS_MAP[order.status] || ORDER_STATUS_MAP.PENDING
+  const sheen = useSheen()
   return (
-    <div onClick={onClick} className="pf-mini-order" style={{ transitionDelay: `${delay * 0.05}s` }}>
+    <div
+      ref={sheen.ref}
+      onMouseMove={sheen.onMouseMove}
+      onMouseEnter={sheen.onMouseEnter}
+      onMouseLeave={sheen.onMouseLeave}
+      onClick={onClick}
+      className="pf-mini-order pf-sheen-surface"
+      style={{ transitionDelay: `${delay * 0.05}s` }}
+    >
+      <span className="pf-sheen-glow" aria-hidden="true" />
       <div className="pf-mini-order-accent" />
       <div style={{ paddingLeft: '4px' }}>
         <div className="pf-mini-order-code">Đơn #{order.orderCode || order.id?.slice(0, 8)}</div>
@@ -663,8 +790,18 @@ function OrderCardSkeleton() {
 
 function OrderCard({ order, delay, onClick }) {
   const status = ORDER_STATUS_MAP[order.status] || ORDER_STATUS_MAP.PENDING
+  const sheen = useSheen()
   return (
-    <div onClick={onClick} className="pf-order-card" style={{ transitionDelay: `${Math.min(delay, 6) * 0.04}s` }}>
+    <div
+      ref={sheen.ref}
+      onMouseMove={sheen.onMouseMove}
+      onMouseEnter={sheen.onMouseEnter}
+      onMouseLeave={sheen.onMouseLeave}
+      onClick={onClick}
+      className="pf-order-card pf-sheen-surface"
+      style={{ transitionDelay: `${Math.min(delay, 6) * 0.04}s` }}
+    >
+      <span className="pf-sheen-glow" aria-hidden="true" />
       <div className="pf-order-card-head">
         <div style={{ display: 'flex', alignItems: 'center', gap: '18px', flexWrap: 'wrap', rowGap: '8px' }}>
           <span className="pf-order-code">Đơn #{order.orderCode || order.id?.slice(0, 8)}</span>
@@ -718,6 +855,7 @@ function OrderDetailTab({ order, loading, onBack }) {
   const status = ORDER_STATUS_MAP[order.status] || ORDER_STATUS_MAP.PENDING
   const isCancelled = order.status === 'CANCELLED'
   const stepIdx = ORDER_STEPS.indexOf(order.status)
+  const fillPct = Math.max(0, stepIdx) / (ORDER_STEPS.length - 1) * 100
   const shippingName = order.shippingName || order.address?.name || 'Chưa cập nhật'
   const shippingPhone = order.shippingPhone || order.address?.phone || 'Chưa cập nhật'
   const shippingAddress = order.shippingAddress
@@ -747,7 +885,9 @@ function OrderDetailTab({ order, loading, onBack }) {
         <div className="pf-tracker-card">
           <div className="pf-tracker-row">
             <div className="pf-tracker-line">
-              <div className="pf-tracker-line-fill" style={{ width: `${Math.max(0, stepIdx) / (ORDER_STEPS.length - 1) * 100}%` }} />
+              <div className="pf-tracker-line-fill" style={{ width: `${fillPct}%` }}>
+                <span className="pf-tracker-line-dot" />
+              </div>
             </div>
             {ORDER_STEPS.map((s, i) => {
               const st = ORDER_STATUS_MAP[s]
@@ -907,7 +1047,7 @@ function SecurityTab() {
                 <div className="pf-strength-zone">
                   <div className="pf-strength-bar">
                     {[0, 1, 2, 3].map(i => (
-                      <div key={i} className="pf-strength-seg" style={{ background: i < strength ? strengthMeta.color : 'var(--border)' }} />
+                      <div key={i} className={`pf-strength-seg ${i < strength ? 'is-filled' : ''}`} style={{ background: i < strength ? strengthMeta.color : 'var(--border)', transitionDelay: `${i * 0.05}s` }} />
                     ))}
                   </div>
                   <div className="pf-strength-label" style={{ color: strengthMeta.color }}>{strengthMeta.label}</div>
@@ -933,7 +1073,7 @@ function SecurityTab() {
               )}
             </div>
 
-            <button type="submit" disabled={!canSubmit} className="pf-btn-tactile pf-pw-submit">
+            <button type="submit" disabled={!canSubmit} className="pf-btn-tactile pf-btn-shine pf-pw-submit">
               {mutation.isPending ? 'Đang Xử Lý...' : <>Cập Nhật Mật Khẩu {Icon.arrowRight}</>}
             </button>
           </form>
@@ -1203,7 +1343,7 @@ function AddressesTab({ profile, confirm }) {
     <div>
       <SectionHeader chapter="IV" eyebrow="Quản Lý Giao Hàng" title="Sổ Địa Chỉ" emphasis="Giao Hàng" sub="Quản lý các địa chỉ nhận hàng của bạn — theo đơn vị hành chính 2 cấp mới nhất" />
 
-      <button onClick={() => (showForm ? closeForm() : openAddForm())} className={`pf-btn-tactile pf-add-addr-btn ${showForm ? 'is-cancel' : ''}`}>
+      <button onClick={() => (showForm ? closeForm() : openAddForm())} className={`pf-btn-tactile pf-btn-shine pf-add-addr-btn ${showForm ? 'is-cancel' : ''}`}>
         {showForm ? 'Hủy' : <>{Icon.plus} Thêm Địa Chỉ Mới</>}
       </button>
 
@@ -1247,7 +1387,7 @@ function AddressesTab({ profile, confirm }) {
             Đặt làm địa chỉ mặc định
           </label>
           <div style={{ display: 'flex', gap: '12px' }}>
-            <button type="submit" className="pf-btn-tactile pf-addr-save-btn">{editingId ? 'Lưu Thay Đổi' : 'Lưu Địa Chỉ'}</button>
+            <button type="submit" className="pf-btn-tactile pf-btn-shine pf-addr-save-btn">{editingId ? 'Lưu Thay Đổi' : 'Lưu Địa Chỉ'}</button>
             <button type="button" onClick={closeForm} className="pf-btn-tactile pf-addr-cancel-btn">Hủy Bỏ</button>
           </div>
         </form>
@@ -1258,26 +1398,41 @@ function AddressesTab({ profile, confirm }) {
       ) : (
         <div className="pf-addr-grid">
           {addresses.map(addr => (
-            <div key={addr.id} className="pf-addr-card" style={{ borderColor: addr.isDefault ? 'var(--gold)' : 'var(--border)' }}>
-              {addr.isDefault && <span className="pf-addr-default-badge">Mặc Định</span>}
-              <div className="pf-addr-name">{addr.name}</div>
-              <div className="pf-addr-phone">{addr.phone}</div>
-              <div className="pf-addr-text">{addr.street}, {addr.wardName || addr.ward}, {addr.provinceName || addr.city}</div>
-              <div className="pf-addr-actions">
-                {!addr.isDefault && (
-                  <button onClick={() => setDefault(addr.id)} className="pf-btn-tactile pf-addr-action-gold">Đặt Mặc Định</button>
-                )}
-                <button onClick={() => openEditForm(addr)} className="pf-btn-tactile pf-addr-action">
-                  {Icon.edit} Sửa
-                </button>
-                <button onClick={() => handleDelete(addr.id)} className="pf-btn-tactile pf-addr-action">
-                  {Icon.trash} Xóa
-                </button>
-              </div>
-            </div>
+            <AddressCard key={addr.id} addr={addr} onSetDefault={() => setDefault(addr.id)} onEdit={() => openEditForm(addr)} onDelete={() => handleDelete(addr.id)} />
           ))}
         </div>
       )}
+    </div>
+  )
+}
+
+function AddressCard({ addr, onSetDefault, onEdit, onDelete }) {
+  const sheen = useSheen()
+  return (
+    <div
+      ref={sheen.ref}
+      onMouseMove={sheen.onMouseMove}
+      onMouseEnter={sheen.onMouseEnter}
+      onMouseLeave={sheen.onMouseLeave}
+      className="pf-addr-card pf-sheen-surface"
+      style={{ borderColor: addr.isDefault ? 'var(--gold)' : 'var(--border)' }}
+    >
+      <span className="pf-sheen-glow" aria-hidden="true" />
+      {addr.isDefault && <span className="pf-addr-default-badge">Mặc Định</span>}
+      <div className="pf-addr-name">{addr.name}</div>
+      <div className="pf-addr-phone">{addr.phone}</div>
+      <div className="pf-addr-text">{addr.street}, {addr.wardName || addr.ward}, {addr.provinceName || addr.city}</div>
+      <div className="pf-addr-actions">
+        {!addr.isDefault && (
+          <button onClick={onSetDefault} className="pf-btn-tactile pf-addr-action-gold">Đặt Mặc Định</button>
+        )}
+        <button onClick={onEdit} className="pf-btn-tactile pf-addr-action">
+          {Icon.edit} Sửa
+        </button>
+        <button onClick={onDelete} className="pf-btn-tactile pf-addr-action">
+          {Icon.trash} Xóa
+        </button>
+      </div>
     </div>
   )
 }
@@ -1344,20 +1499,17 @@ function ArTab({ arCodes, loading }) {
               <Link
                 key={item.id}
                 to={`/ar/${group.book?.slug}/${item.code}`}
-                className="pf-addr-card"
+                className="pf-addr-card pf-ar-card"
                 style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 14 }}
               >
-                <div style={{
-                  width: 40, height: 40, borderRadius: '50%',
-                  border: '0.5px solid var(--border-gold)', color: 'var(--gold)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                }}>
+                <div className="pf-ar-badge">
                   {Icon.compass}
                 </div>
                 <div>
                   <div className="pf-addr-name" style={{ marginBottom: 3 }}>{item.label}</div>
                   <div className="pf-addr-phone">Bấm để xem mô hình 3D</div>
                 </div>
+                <span className="pf-ar-card-arrow">{Icon.arrowRight}</span>
               </Link>
             ))}
           </div>
@@ -1400,545 +1552,3 @@ function EmptyState({ icon, text, sub }) {
     </div>
   )
 }
-
-// ════════════════════════ STYLES ════════════════════════
-const PROFILE_CSS = `
-/* ── Reveal ── */
-.pf-reveal { opacity: 0; transform: translateY(18px); transition: all 0.7s cubic-bezier(0.16,1,0.3,1); }
-.pf-reveal.in { opacity: 1; transform: translateY(0); }
-
-.pf-btn-tactile { transition: transform 0.15s ease, background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease; cursor: pointer; }
-.pf-btn-tactile:active { transform: scale(0.96); }
-.pf-btn-tactile:focus-visible { outline: 1.5px solid var(--gold); outline-offset: 2px; }
-
-@keyframes pfShimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-@keyframes pfDotPulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.7); } }
-@keyframes pfSpin { to { transform: rotate(360deg); } }
-@keyframes pfOverlayIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes pfModalIn { from { opacity: 0; transform: translateY(14px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes pfFadeSlide { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
-
-.pf-skel {
-  background: linear-gradient(90deg, var(--border) 25%, rgba(74,158,63,0.14) 50%, var(--border) 75%);
-  background-size: 200% 100%;
-  animation: pfShimmer 1.5s ease-in-out infinite;
-}
-
-/* ── Guest state ── */
-.pf-guest-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding-top: 80px; background: var(--cream); }
-.pf-guest-card { text-align: center; max-width: 380px; padding: 0 24px; }
-.pf-guest-seal {
-  width: 64px; height: 64px; margin: 0 auto 28px; border-radius: 50%;
-  border: 0.5px solid var(--border-gold); display: flex; align-items: center; justify-content: center;
-  color: var(--gold);
-}
-.pf-guest-title { font-family: ${F.serif}; font-size: 30px; font-weight: 300; color: var(--forest); margin-bottom: 14px; letter-spacing: -0.01em; }
-.pf-guest-title em { font-style: italic; color: var(--gold); }
-.pf-guest-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 32px; line-height: 1.7; font-weight: 300; }
-.pf-guest-cta { background: var(--forest); color: var(--ivory); border: none; padding: 15px 36px; font-family: ${F.sans}; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; }
-.pf-guest-cta:hover { background: var(--forest-mid); }
-
-
-/* ═══════════ PASSPORT HERO ═══════════ */
-.pf-passport-zone {
-  background: var(--forest);
-  position: relative;
-  overflow: hidden;
-  padding: 56px 100px 0;
-}
-.pf-passport-watermark {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-52%);
-  font-family: ${F.serif}; font-size: clamp(90px, 13vw, 220px); font-weight: 300;
-  color: rgba(255,255,255,0.025); white-space: nowrap; letter-spacing: -0.02em;
-  pointer-events: none; user-select: none; z-index: 0;
-}
-.pf-passport-grid {
-  position: absolute; inset: 0; pointer-events: none;
-  background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-  background-size: 48px 48px;
-}
-.pf-passport-glow-a {
-  position: absolute; top: -100px; right: -60px; width: 380px; height: 380px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(74,158,63,0.12) 0%, transparent 70%); pointer-events: none;
-}
-.pf-passport-glow-b {
-  position: absolute; bottom: -140px; left: 10%; width: 320px; height: 320px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(45,122,110,0.1) 0%, transparent 70%); pointer-events: none;
-}
-.pf-passport-inner { max-width: 1300px; margin: 0 auto; position: relative; z-index: 2; padding-bottom: 0; }
-
-.pf-passport-card {
-  background: linear-gradient(165deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.015) 100%);
-  border: 0.5px solid rgba(74,158,63,0.28);
-  backdrop-filter: blur(8px);
-  padding: 44px 48px 0;
-  position: relative;
-  border-radius: 2px 2px 0 0;
-}
-.pf-passport-card::before {
-  content: '';
-  position: absolute; top: 18px; left: 18px; right: 18px; bottom: 0;
-  border: 0.5px solid rgba(74,158,63,0.14);
-  border-bottom: none;
-  pointer-events: none;
-}
-.pf-passport-card-top {
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap;
-}
-.pf-passport-left { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
-
-.pf-passport-seal {
-  width: 84px; height: 84px; border-radius: 50%;
-  background: rgba(255,255,255,0.06);
-  border: 0.5px solid rgba(74,158,63,0.45);
-  display: flex; align-items: center; justify-content: center;
-  font-family: ${F.serif}; font-size: 32px; font-weight: 400; color: var(--gold);
-  flex-shrink: 0; position: relative;
-}
-.pf-passport-seal-ring { position: absolute; inset: -7px; border: 0.5px solid rgba(74,158,63,0.2); border-radius: 50%; }
-
-.pf-passport-tier { display: flex; align-items: center; gap: 8px; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
-.pf-tier-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); animation: pfDotPulse 2s ease-in-out infinite; }
-.pf-passport-name { font-family: ${F.serif}; font-size: clamp(24px, 3.2vw, 36px); font-weight: 300; color: var(--ivory); letter-spacing: -0.01em; line-height: 1.1; }
-.pf-passport-email { display: flex; align-items: center; gap: 8px; margin-top: 8px; color: rgba(250,248,243,0.45); font-size: 13px; }
-.pf-passport-email svg { color: rgba(74,158,63,0.6); flex-shrink: 0; }
-
-.pf-passport-logout {
-  display: flex; align-items: center; gap: 10px;
-  background: transparent; border: 0.5px solid rgba(255,255,255,0.14);
-  color: rgba(250,248,243,0.55); padding: 12px 22px;
-  font-family: ${F.sans}; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
-}
-.pf-passport-logout:hover { border-color: #b25450; color: #d99a96; background: rgba(178,84,80,0.06); }
-
-.pf-passport-divider { display: flex; align-items: center; justify-content: center; margin: 36px 0 0; position: relative; height: 1px; }
-.pf-passport-divider::before {
-  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 0.5px;
-  background: repeating-linear-gradient(90deg, rgba(74,158,63,0.35) 0, rgba(74,158,63,0.35) 6px, transparent 6px, transparent 13px);
-}
-.pf-passport-divider-mark {
-  position: relative; z-index: 1; width: 9px; height: 9px; background: var(--forest);
-  border: 0.5px solid var(--gold); transform: rotate(45deg);
-}
-
-.pf-passport-bottom {
-  display: flex; align-items: center; justify-content: space-between; gap: 28px; flex-wrap: wrap;
-  padding: 28px 0 26px;
-}
-.pf-passport-code-label { font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 9px; }
-.pf-passport-code-row { display: flex; align-items: center; gap: 14px; }
-.pf-passport-code-value {
-  font-family: 'Courier New', ui-monospace, monospace;
-  font-size: clamp(16px, 2vw, 21px); letter-spacing: 0.12em; color: var(--gold-light);
-  font-weight: 600;
-}
-
-.pf-passport-stats { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; }
-.pf-passport-stat { text-align: right; }
-.pf-passport-stat-val { font-family: ${F.serif}; font-size: 24px; font-weight: 300; color: var(--ivory); line-height: 1; margin-bottom: 6px; }
-.pf-passport-stat-label { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.35); }
-.pf-passport-stat-sep { width: 0.5px; height: 32px; background: rgba(255,255,255,0.1); }
-
-/* Copy button (compact for code) */
-.pf-copy-btn {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: rgba(74,158,63,0.08); border: 0.5px solid rgba(74,158,63,0.3);
-  color: var(--gold-light); font-size: 10px; letter-spacing: 0.08em;
-  padding: 6px 11px; font-family: ${F.sans};
-}
-.pf-copy-btn:hover { background: rgba(74,158,63,0.16); }
-.pf-copy-btn.copied { color: #8fd882; border-color: #8fd882; }
-.pf-copy-btn.compact { padding: 6px 8px; }
-
-/* On light backgrounds (order cards), copy button needs light theme */
-.pf-order-card .pf-copy-btn, .pf-detail-head-row .pf-copy-btn {
-  background: transparent; border-color: var(--border-gold); color: var(--gold);
-}
-.pf-order-card .pf-copy-btn:hover, .pf-detail-head-row .pf-copy-btn:hover { background: var(--gold-pale); }
-.pf-order-card .pf-copy-btn.copied, .pf-detail-head-row .pf-copy-btn.copied { color: var(--sage); border-color: var(--sage); }
-
-
-/* ═══════════ CHAPTERS BAR ═══════════ */
-.pf-chapters-bar {
-  background: var(--forest);
-  border-top: 0.5px solid rgba(74,158,63,0.18);
-  padding: 0 100px;
-  position: relative; z-index: 2;
-}
-.pf-chapters-inner {
-  max-width: 1300px; margin: 0 auto;
-  display: flex; gap: 4px;
-  overflow-x: auto; scrollbar-width: none;
-}
-.pf-chapters-inner::-webkit-scrollbar { display: none; }
-.pf-chapter-tab {
-  display: flex; align-items: baseline; gap: 10px;
-  background: transparent; border: none;
-  border-bottom: 2px solid transparent;
-  padding: 18px 6px; margin-right: 36px;
-  font-family: ${F.sans}; white-space: nowrap;
-  color: rgba(250,248,243,0.4);
-}
-.pf-chapter-tab:hover { color: rgba(250,248,243,0.7); }
-.pf-chapter-tab.is-active { color: var(--ivory); border-bottom-color: var(--gold); }
-.pf-chapter-roman { font-family: ${F.serif}; font-size: 13px; font-style: italic; color: var(--gold); }
-.pf-chapter-label { font-size: 12px; letter-spacing: 0.08em; }
-
-/* ═══════════ MAIN LAYOUT ═══════════ */
-.pf-main-layout {
-  max-width: 1300px; margin: 0 auto;
-  padding: 56px 100px 90px;
-}
-
-/* ═══════════ SECTION HEADER ═══════════ */
-.pf-section-header { margin-bottom: 40px; }
-.pf-section-chapter { font-family: ${F.serif}; font-style: italic; font-size: 12px; color: var(--mist); margin-bottom: 14px; }
-.pf-section-eyebrow-row { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
-.pf-section-eyebrow-line { width: 28px; height: 0.5px; background: var(--gold); }
-.pf-section-eyebrow-text { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); }
-.pf-section-title { font-family: ${F.serif}; font-size: 34px; font-weight: 300; color: var(--forest); letter-spacing: -0.01em; }
-.pf-section-title em { font-style: italic; color: var(--gold); }
-.pf-section-sub { font-size: 13px; color: var(--text-muted); margin-top: 10px; font-weight: 300; }
-
-/* ═══════════ FOOTER HELP STRIP ═══════════ */
-.pf-help-strip { background: var(--parchment); border-top: 0.5px solid var(--border); }
-.pf-help-strip-inner {
-  max-width: 1300px; margin: 0 auto; padding: 36px 100px;
-  display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap;
-}
-.pf-help-strip-left { display: flex; align-items: center; gap: 18px; }
-.pf-help-strip-icon {
-  width: 42px; height: 42px; border: 0.5px solid var(--border-gold);
-  display: flex; align-items: center; justify-content: center; color: var(--gold); flex-shrink: 0;
-}
-.pf-help-strip-title { font-family: ${F.serif}; font-size: 16px; color: var(--forest); margin-bottom: 3px; }
-.pf-help-strip-sub { font-size: 12px; color: var(--text-muted); font-weight: 300; max-width: 380px; }
-.pf-help-strip-link {
-  font-size: 11px; letter-spacing: 0.1em; color: var(--gold); text-decoration: none;
-  display: flex; align-items: center; gap: 8px; transition: gap 0.25s; flex-shrink: 0;
-}
-.pf-help-strip-link:hover { gap: 14px; }
-
-/* ═══════════ EDITABLE FIELDS ═══════════ */
-.pf-fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 36px; }
-.pf-field {
-  background: var(--white); border: 0.5px solid var(--border);
-  padding: 18px 22px; transition: border-color 0.25s, box-shadow 0.25s;
-}
-.pf-field.is-editing { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(74,158,63,0.06); }
-.pf-field.is-locked { background: var(--cream); }
-.pf-field-label {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted);
-  margin-bottom: 10px;
-}
-.pf-field-icon { color: var(--mist); display: flex; }
-.pf-field-lock-badge { margin-left: auto; color: var(--mist); display: flex; }
-.pf-field-display {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  cursor: pointer; min-height: 24px;
-}
-.pf-field.is-locked .pf-field-display { cursor: default; }
-.pf-field-value { font-size: 14px; color: var(--forest); font-weight: 500; font-family: ${F.sans}; }
-.pf-field-value.is-empty { color: var(--mist); font-weight: 300; font-style: italic; }
-.pf-mono { font-family: 'Courier New', ui-monospace, monospace; letter-spacing: 0.06em; font-weight: 600; }
-.pf-field-edit-btn {
-  background: none; border: none; color: var(--mist); padding: 4px; display: flex; opacity: 0; transition: opacity 0.2s, color 0.2s;
-}
-.pf-field:hover .pf-field-edit-btn { opacity: 1; }
-.pf-field-edit-btn:hover { color: var(--gold); }
-
-.pf-field-edit-row { display: flex; gap: 8px; align-items: center; }
-.pf-field-input {
-  flex: 1; font-family: ${F.sans}; font-size: 14px; color: var(--text-body);
-  background: var(--ivory); border: 0.5px solid var(--gold); padding: 9px 12px;
-  outline: none; box-shadow: 0 0 0 3px rgba(74,158,63,0.08);
-}
-.pf-field-input.has-error { border-color: #b25450; box-shadow: 0 0 0 3px rgba(178,84,80,0.07); }
-.pf-field-edit-actions { display: flex; gap: 6px; flex-shrink: 0; }
-.pf-field-save, .pf-field-cancel {
-  width: 32px; height: 32px; border: 0.5px solid var(--border); background: var(--white);
-  display: flex; align-items: center; justify-content: center; color: var(--text-muted);
-}
-.pf-field-save { color: var(--gold); border-color: var(--border-gold); }
-.pf-field-save:hover { background: var(--gold); color: var(--ivory); }
-.pf-field-cancel:hover { background: var(--cream); color: var(--forest); }
-.pf-field-error { font-size: 10px; color: #b25450; margin-top: 8px; letter-spacing: 0.03em; }
-.pf-spinner-sm { width: 12px; height: 12px; border: 1.5px solid var(--gold-pale); border-top-color: var(--gold); border-radius: 50%; animation: pfSpin 0.7s linear infinite; display: block; }
-
-/* ═══════════ ORNAMENT & SUBHEADER ═══════════ */
-.pf-ornament-sm { display: flex; align-items: center; gap: 10px; margin: 8px 0 32px; }
-.pf-ornament-sm span:not(.pf-ornament-mark) { flex: 1; height: 0.5px; background: var(--border); }
-.pf-ornament-mark { width: 5px; height: 5px; border: 0.5px solid var(--gold); transform: rotate(45deg); flex: none !important; }
-.pf-subheader-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
-.pf-subheader-title { font-family: ${F.serif}; font-size: 22px; font-weight: 400; color: var(--forest); }
-.pf-subheader-title em { font-style: italic; color: var(--gold); }
-.pf-view-all { background: none; border: none; color: var(--gold); font-size: 12px; display: flex; align-items: center; gap: 7px; transition: gap 0.25s; }
-.pf-view-all:hover { gap: 12px; }
-.pf-stack-12 { display: flex; flex-direction: column; gap: 12px; }
-.pf-stack-16 { display: flex; flex-direction: column; gap: 16px; }
-
-
-/* ═══════════ MINI ORDER CARD ═══════════ */
-.pf-mini-order {
-  background: var(--white); border: 0.5px solid var(--border);
-  padding: 22px 26px; display: flex; justify-content: space-between; align-items: center;
-  flex-wrap: wrap; row-gap: 14px; cursor: pointer; transition: all 0.35s; position: relative;
-}
-.pf-mini-order:hover { border-color: var(--border-gold); transform: translateX(6px); box-shadow: 0 12px 32px rgba(13,43,30,0.08); }
-.pf-mini-order-accent { position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--gold); opacity: 0; transition: opacity 0.3s; }
-.pf-mini-order:hover .pf-mini-order-accent { opacity: 1; }
-.pf-mini-order-code { font-size: 13px; color: var(--forest); font-weight: 500; margin-bottom: 5px; letter-spacing: 0.01em; }
-.pf-mini-order-meta { font-size: 12px; color: var(--text-muted); }
-.pf-mini-order-price { font-family: ${F.serif}; font-size: 18px; color: var(--forest); min-width: 90px; text-align: right; }
-
-.pf-status-pill { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 14px; font-weight: 500; white-space: nowrap; }
-.pf-status-pill-lg { font-size: 11px; padding: 9px 22px; }
-
-/* ═══════════ FILTER PILLS ═══════════ */
-.pf-filter-row { display: flex; gap: 8px; margin-bottom: 32px; flex-wrap: wrap; }
-.pf-filter-pill {
-  display: flex; align-items: center; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
-  padding: 9px 16px; border: 0.5px solid var(--border); background: transparent; color: var(--text-muted);
-  font-family: ${F.sans};
-}
-.pf-filter-pill:hover { border-color: var(--border-gold); color: var(--forest); }
-.pf-filter-pill.is-active { background: var(--forest); color: var(--ivory); border-color: var(--forest); }
-.pf-filter-count {
-  font-size: 9px; margin-left: 7px; padding: 1px 6px; border-radius: 2px;
-  background: var(--pale); color: var(--forest);
-}
-.pf-filter-pill.is-active .pf-filter-count { background: rgba(255,255,255,0.18); color: var(--ivory); }
-
-/* ═══════════ ORDER CARD (list) ═══════════ */
-.pf-order-card { background: var(--white); border: 0.5px solid var(--border); cursor: pointer; transition: all 0.4s cubic-bezier(0.16,1,0.3,1); overflow: hidden; }
-.pf-order-card:hover { box-shadow: 0 28px 56px rgba(13,43,30,0.1); transform: translateY(-4px); border-color: var(--border-gold); }
-.pf-order-card-head { padding: 22px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; row-gap: 12px; border-bottom: 0.5px solid var(--border); }
-.pf-order-code { font-size: 13px; color: var(--forest); font-weight: 500; letter-spacing: 0.01em; }
-.pf-order-date { font-size: 12px; color: var(--text-muted); }
-.pf-vdivider { width: 0.5px; height: 14px; background: var(--border); }
-.pf-order-card-body { padding: 22px 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
-.pf-thumb-cell { width: 54px; height: 70px; background: var(--cream); border: 0.5px solid var(--border); overflow: hidden; flex-shrink: 0; }
-.pf-thumb-cell img { width: 100%; height: 100%; object-fit: cover; }
-.pf-thumb-more { background: var(--gold-pale) !important; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--forest); font-weight: 500; border: none !important; }
-.pf-order-item-count { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; letter-spacing: 0.02em; }
-.pf-order-total { font-family: ${F.serif}; font-size: 22px; color: var(--forest); }
-
-/* ═══════════ ORDER DETAIL ═══════════ */
-.pf-back-btn { display: flex; align-items: center; gap: 8px; background: none; border: none; color: var(--text-muted); font-size: 12px; margin-bottom: 28px; font-family: ${F.sans}; letter-spacing: 0.06em; }
-.pf-back-btn:hover { color: var(--forest); gap: 12px; }
-.pf-detail-head-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 36px; flex-wrap: wrap; gap: 20px; }
-.pf-detail-eyebrow { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
-.pf-detail-eyebrow-line { width: 24px; height: 0.5px; background: var(--gold); }
-.pf-detail-title { font-family: ${F.serif}; font-size: 36px; font-weight: 300; color: var(--forest); letter-spacing: -0.01em; }
-.pf-detail-date { font-size: 13px; color: var(--text-muted); margin-top: 8px; }
-.pf-detail-layout { display: grid; grid-template-columns: 1fr 340px; gap: 28px; }
-
-.pf-tracker-card { background: var(--white); border: 0.5px solid var(--border); padding: 40px 44px; margin-bottom: 28px; }
-.pf-tracker-row { display: flex; justify-content: space-between; position: relative; }
-.pf-tracker-line { position: absolute; top: 15px; left: 15px; right: 15px; height: 1.5px; background: var(--border); z-index: 0; }
-.pf-tracker-line-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-light)); transition: width 0.8s cubic-bezier(0.16,1,0.3,1); }
-.pf-tracker-step { display: flex; flex-direction: column; align-items: center; gap: 12px; position: relative; z-index: 1; flex: 1; }
-.pf-tracker-dot { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-muted); background: var(--white); transition: all 0.4s; }
-.pf-tracker-dot.done { background: var(--gold); border-color: var(--gold); color: #fff; }
-.pf-tracker-dot.current { box-shadow: 0 0 0 6px rgba(74,158,63,0.12); }
-.pf-tracker-label { font-size: 10px; letter-spacing: 0.06em; text-align: center; color: var(--text-muted); font-weight: 300; max-width: 84px; }
-.pf-tracker-label.done { color: var(--forest); font-weight: 500; }
-
-.pf-cancelled-banner { display: flex; align-items: center; gap: 12px; padding: 18px 24px; background: rgba(178,84,80,0.06); border: 0.5px solid rgba(178,84,80,0.2); margin-bottom: 28px; font-size: 13px; color: #8a4440; }
-
-.pf-items-card { background: var(--white); border: 0.5px solid var(--border); }
-.pf-items-header { padding: 22px 30px; border-bottom: 0.5px solid var(--border); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); }
-.pf-item-row { padding: 22px 30px; display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
-.pf-item-thumb { width: 64px; height: 82px; background: var(--cream); border: 0.5px solid var(--border); overflow: hidden; flex-shrink: 0; }
-.pf-item-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.pf-item-title { font-family: ${F.serif}; font-size: 17px; color: var(--forest); margin-bottom: 5px; }
-.pf-item-meta { font-size: 12px; color: var(--text-muted); }
-.pf-item-total { font-family: ${F.serif}; font-size: 18px; color: var(--forest); }
-
-.pf-shipping-card { background: var(--white); border: 0.5px solid var(--border); margin-top: 22px; padding: 26px 30px; }
-.pf-shipping-head { display: flex; align-items: center; gap: 11px; margin-bottom: 18px; font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); }
-.pf-shipping-name { font-size: 14px; color: var(--forest); margin-bottom: 7px; font-weight: 500; }
-.pf-shipping-detail { font-size: 13px; color: var(--text-muted); line-height: 1.75; }
-
-.pf-summary-card { background: var(--white); border: 0.5px solid var(--border); padding: 32px; position: sticky; top: 110px; }
-.pf-summary-title { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 22px; padding-bottom: 16px; border-bottom: 0.5px solid var(--border); }
-.pf-summary-line { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 14px; }
-.pf-summary-divider { height: 0.5px; background: var(--border); margin: 18px 0; }
-.pf-summary-total-label { font-family: ${F.serif}; font-size: 15px; color: var(--forest); }
-.pf-summary-total-val { font-family: ${F.serif}; font-size: 30px; color: var(--forest); }
-.pf-payment-badge { margin-top: 22px; padding: 13px 18px; background: var(--cream); display: flex; align-items: center; gap: 11px; color: var(--gold); font-size: 11px; }
-.pf-payment-badge span { color: var(--text-muted); }
-
-
-/* ═══════════ SECURITY TAB ═══════════ */
-.pf-security-layout { display: grid; grid-template-columns: 1fr 300px; gap: 28px; }
-.pf-security-form-card { background: var(--white); border: 0.5px solid var(--border); padding: 40px 44px; }
-.pf-lock-icon-wrap { width: 36px; height: 36px; border: 0.5px solid var(--border-gold); display: flex; align-items: center; justify-content: center; color: var(--gold); flex-shrink: 0; }
-.pf-security-title { font-family: ${F.serif}; font-size: 24px; font-weight: 400; color: var(--forest); }
-.pf-security-sub { font-size: 13px; color: var(--text-muted); margin-bottom: 36px; line-height: 1.75; max-width: 440px; }
-.pf-pw-form { display: flex; flex-direction: column; gap: 24px; max-width: 440px; }
-.pf-pw-label { display: block; font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 9px; font-family: ${F.sans}; }
-.pf-pw-input {
-  width: 100%; padding: 14px 48px 14px 18px; border: 0.5px solid var(--border); background: var(--ivory);
-  font-family: ${F.sans}; font-size: 14px; color: var(--text-body); outline: none; transition: all 0.25s;
-}
-.pf-pw-input:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(74,158,63,0.08); }
-.pf-pw-input.has-error { border-color: #b25450; box-shadow: 0 0 0 3px rgba(178,84,80,0.06); }
-.pf-pw-toggle { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--mist); display: flex; }
-.pf-pw-toggle:hover { color: var(--gold); }
-.pf-strength-zone { margin-top: 10px; animation: pfFadeSlide 0.3s ease; }
-.pf-strength-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
-.pf-strength-seg { height: 2.5px; border-radius: 2px; transition: background 0.3s; }
-.pf-strength-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 7px; font-weight: 500; }
-.pf-pw-checklist { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
-.pf-pw-check-item { display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--text-muted); transition: color 0.3s; }
-.pf-pw-dot { width: 14px; height: 14px; border-radius: 50%; border: 0.5px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--ivory); transition: all 0.3s; flex-shrink: 0; }
-.pf-pw-check-item.met { color: var(--forest); }
-.pf-pw-check-item.met .pf-pw-dot { background: var(--gold); border-color: var(--gold); }
-.pf-pw-submit {
-  margin-top: 10px; background: var(--forest); color: var(--ivory); border: none; padding: 16px 34px;
-  font-family: ${F.sans}; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
-  align-self: flex-start; display: flex; align-items: center; gap: 10px;
-}
-.pf-pw-submit:hover:not(:disabled) { background: var(--forest-mid); gap: 18px; }
-.pf-pw-submit:disabled { opacity: 0.6; cursor: not-allowed; }
-
-.pf-tips-card { background: var(--forest); padding: 34px 30px; height: fit-content; position: relative; overflow: hidden; }
-.pf-tips-glow { position: absolute; bottom: -60px; left: -40px; width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, rgba(74,158,63,0.12) 0%, transparent 70%); }
-.pf-tips-eyebrow { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); }
-.pf-tip-row { display: flex; gap: 14px; font-size: 12.5px; color: rgba(250,248,243,0.6); line-height: 1.7; }
-.pf-tip-num { font-family: ${F.serif}; color: var(--gold); flex-shrink: 0; font-size: 13px; }
-
-/* ═══════════ ADDRESSES TAB ═══════════ */
-.pf-add-addr-btn {
-  display: flex; align-items: center; gap: 10px; padding: 14px 26px;
-  font-family: ${F.sans}; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
-  margin-bottom: 28px; background: var(--forest); color: var(--ivory); border: none;
-}
-.pf-add-addr-btn:hover { background: var(--forest-mid); }
-.pf-add-addr-btn.is-cancel { background: var(--parchment); color: var(--forest); border: 0.5px solid var(--border); }
-.pf-addr-form { background: var(--white); border: 0.5px solid var(--border-gold); padding: 32px; margin-bottom: 28px; animation: pfFadeSlide 0.35s ease; }
-.pf-addr-form-editing { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; }
-.pf-form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
-.pf-form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; margin-bottom: 22px; }
-.pf-form-input-wrap label { display: block; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 8px; }
-.pf-form-input-wrap input {
-  width: 100%; padding: 12px 16px; border: 0.5px solid var(--border); background: var(--ivory);
-  font-family: ${F.sans}; font-size: 13px; outline: none; transition: border-color 0.25s;
-}
-
-/* ── Step hint (Province → Ward) ── */
-.pf-step-hint {
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  font-size: 10px; letter-spacing: 0.06em; color: var(--text-muted);
-  margin-bottom: 14px; font-family: ${F.sans};
-}
-.pf-step-num {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 16px; height: 16px; border-radius: 50%;
-  background: var(--gold-pale); color: var(--forest);
-  font-size: 9px; font-weight: 600; flex-shrink: 0;
-}
-.pf-step-arrow { color: var(--gold); display: flex; }
-
-/* ── Location Combobox (Tỉnh/Phường autocomplete) ── */
-.pf-combobox { position: relative; }
-.pf-combobox-inner { position: relative; display: flex; align-items: center; }
-.pf-combobox-inner input { padding-right: 40px; }
-.pf-combobox-inner input:disabled { background: var(--cream); color: var(--mist); cursor: not-allowed; }
-.pf-combobox-inner input:focus:not(:disabled) { border-color: var(--gold); }
-.pf-combobox-check { position: absolute; right: 13px; color: var(--gold); display: flex; pointer-events: none; }
-.pf-combobox-spinner {
-  position: absolute; right: 13px; width: 13px; height: 13px;
-  border: 1.5px solid var(--gold-pale); border-top-color: var(--gold); border-radius: 50%;
-  animation: pfSpin 0.7s linear infinite;
-}
-.pf-combobox-dropdown {
-  position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 60;
-  background: var(--white); border: 0.5px solid var(--border-gold);
-  box-shadow: 0 20px 44px rgba(13,43,30,0.14);
-  max-height: 260px; overflow-y: auto;
-}
-.pf-combobox-option {
-  padding: 10px 16px; font-size: 13px; color: var(--text-body); cursor: pointer;
-  border-bottom: 0.5px solid var(--border); transition: background 0.15s;
-}
-.pf-combobox-option:last-child { border-bottom: none; }
-.pf-combobox-option.is-highlight { background: var(--gold-pale); color: var(--forest); }
-.pf-combobox-option.is-selected { color: var(--gold); font-weight: 500; }
-.pf-combobox-empty { padding: 14px 16px; font-size: 12px; color: var(--text-muted); text-align: center; }
-
-.pf-form-input-wrap input:focus { border-color: var(--gold); }
-.pf-addr-default-check { display: flex; align-items: center; gap: 11px; margin-bottom: 24px; cursor: pointer; font-size: 13px; color: var(--text-muted); }
-.pf-addr-save-btn {
-  background: var(--forest); color: var(--ivory); border: none; padding: 14px 30px;
-  font-family: ${F.sans}; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
-}
-.pf-addr-save-btn:hover { background: var(--forest-mid); }
-.pf-addr-cancel-btn {
-  background: transparent; color: var(--text-muted); border: 0.5px solid var(--border); padding: 14px 26px;
-  font-family: ${F.sans}; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
-}
-.pf-addr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-.pf-addr-card { background: var(--white); border: 0.5px solid; padding: 24px 26px; position: relative; transition: box-shadow 0.3s; }
-.pf-addr-card:hover { box-shadow: 0 16px 40px rgba(13,43,30,0.08); }
-.pf-addr-default-badge { position: absolute; top: 18px; right: 18px; font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; background: var(--gold-pale); color: var(--forest); padding: 5px 11px; font-weight: 500; }
-.pf-addr-name { font-size: 14px; color: var(--forest); font-weight: 500; margin-bottom: 5px; }
-.pf-addr-phone { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; }
-.pf-addr-text { font-size: 13px; color: var(--text-body); line-height: 1.7; margin-bottom: 18px; }
-.pf-addr-actions { display: flex; gap: 16px; flex-wrap: wrap; padding-top: 16px; border-top: 0.5px solid var(--border); }
-.pf-addr-action-gold { background: none; border: none; color: var(--gold); font-size: 11px; letter-spacing: 0.04em; }
-.pf-addr-action { background: none; border: none; color: var(--forest-mid); font-size: 11px; display: flex; align-items: center; gap: 7px; }
-
-/* ═══════════ EMPTY STATE ═══════════ */
-.pf-empty-state { background: var(--white); border: 0.5px dashed var(--border); padding: 72px 32px; text-align: center; }
-.pf-empty-icon-wrap { width: 60px; height: 60px; border: 0.5px solid var(--border-gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: var(--gold); }
-.pf-empty-text { font-family: ${F.serif}; font-size: 18px; color: var(--forest); font-weight: 400; margin-bottom: 8px; }
-.pf-empty-sub { font-size: 12.5px; color: var(--text-muted); }
-
-/* ═══════════ CONFIRM MODAL ═══════════ */
-.pf-overlay { position: fixed; inset: 0; background: rgba(10,14,12,0.55); backdrop-filter: blur(3px); display: flex; align-items: center; justify-content: center; z-index: 2000; padding: 24px; animation: pfOverlayIn 0.2s ease; }
-.pf-confirm { background: var(--ivory); border: 0.5px solid var(--border-gold); max-width: 420px; width: 100%; padding: 36px 34px 30px; box-shadow: 0 40px 80px rgba(13,43,30,0.3); animation: pfModalIn 0.28s cubic-bezier(0.16,1,0.3,1); }
-.pf-confirm-icon { width: 44px; height: 44px; border: 0.5px solid var(--border-gold); display: flex; align-items: center; justify-content: center; color: var(--gold); margin-bottom: 20px; }
-.pf-confirm-icon.danger { border-color: rgba(178,84,80,0.35); color: #b25450; }
-.pf-confirm-title { font-family: ${F.serif}; font-size: 22px; font-weight: 400; color: var(--forest); margin-bottom: 10px; }
-.pf-confirm-msg { font-size: 13px; line-height: 1.75; color: var(--text-muted); margin-bottom: 28px; font-weight: 300; }
-.pf-confirm-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
-.pf-confirm-cancel { background: transparent; border: 0.5px solid var(--border); color: var(--text-muted); padding: 11px 22px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-family: ${F.sans}; }
-.pf-confirm-cancel:hover { border-color: var(--border-gold); color: var(--forest); }
-.pf-confirm-ok { background: var(--forest); border: none; color: var(--ivory); padding: 11px 26px; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; font-family: ${F.sans}; }
-.pf-confirm-ok:hover { background: var(--forest-mid); }
-.pf-confirm-ok.danger { background: #b25450; }
-.pf-confirm-ok.danger:hover { background: #9a423e; }
-
-/* ═══════════ RESPONSIVE ═══════════ */
-@media (max-width: 1100px) {
-  .pf-passport-zone { padding: 48px 56px 0; }
-  .pf-chapters-bar { padding: 0 56px; }
-  .pf-main-layout { padding: 48px 56px 80px; }
-  .pf-help-strip-inner { padding: 32px 56px; }
-}
-@media (max-width: 900px) {
-  .pf-passport-zone { padding: 110px 24px 0; }
-  .pf-passport-card { padding: 32px 24px 0; }
-  .pf-chapters-bar { padding: 0 24px; }
-  .pf-main-layout { padding: 40px 24px 64px; }
-  .pf-help-strip-inner { padding: 28px 24px; flex-direction: column; align-items: flex-start; }
-  .pf-fields-grid, .pf-detail-layout, .pf-security-layout, .pf-addr-grid, .pf-form-row-3 { grid-template-columns: 1fr; }
-  .pf-passport-bottom { flex-direction: column; align-items: flex-start; gap: 24px; }
-  .pf-passport-stats { width: 100%; justify-content: space-between; }
-  .pf-tracker-card { padding: 28px 16px; overflow-x: auto; }
-  .pf-tracker-row { min-width: 480px; }
-}
-@media (max-width: 560px) {
-  .pf-passport-left { gap: 18px; }
-  .pf-passport-seal { width: 64px; height: 64px; font-size: 24px; }
-  .pf-form-row-2 { grid-template-columns: 1fr; }
-  .pf-passport-stat-sep { display: none; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
-}
-`

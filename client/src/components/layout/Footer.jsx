@@ -3,6 +3,28 @@ import { Link } from "react-router-dom";
 export default function Footer() {
   return (
     <footer>
+      {/* Hiệu ứng bọt bong bóng đáy biển - mờ nhẹ, lơ lửng chậm rãi */}
+      <div className="footer-bubbles" aria-hidden="true">
+        <span className="bubble bubble-1" />
+        <span className="bubble bubble-2" />
+        <span className="bubble bubble-3" />
+        <span className="bubble bubble-4" />
+        <span className="bubble bubble-5" />
+        <span className="bubble bubble-6" />
+        <span className="bubble bubble-7" />
+        <span className="bubble bubble-8" />
+        <span className="bubble bubble-9" />
+        <span className="bubble bubble-10" />
+        <span className="bubble bubble-11" />
+        <span className="bubble bubble-12" />
+        <span className="bubble bubble-13" />
+        <span className="bubble bubble-14" />
+        <span className="bubble bubble-15" />
+        <span className="bubble bubble-16" />
+        <span className="bubble bubble-17" />
+        <span className="bubble bubble-18" />
+      </div>
+
       <div className="footer-inner">
         <div className="footer-top">
           {/* COL 1: Brand + Contact Info + Social + Newsletter */}
@@ -438,6 +460,89 @@ export default function Footer() {
       </div>
 
       <style>{`
+        footer {
+          position: relative;
+          overflow: hidden;
+        }
+
+        .footer-bubbles {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .footer-bubbles .bubble {
+          position: absolute;
+          bottom: -60px;
+          display: block;
+          border-radius: 50%;
+          background: radial-gradient(
+            circle at 30% 30%,
+            rgba(255, 255, 255, 0.22),
+            rgba(255, 255, 255, 0.05) 60%,
+            rgba(255, 255, 255, 0) 75%
+          );
+          border: 0.5px solid rgba(255, 255, 255, 0.12);
+          filter: blur(0.4px);
+          opacity: 0;
+          animation-name: bubble-float;
+          animation-timing-function: ease-in;
+          animation-iteration-count: infinite;
+        }
+
+        @keyframes bubble-float {
+          0% {
+            transform: translateY(0) translateX(0) scale(0.9);
+            opacity: 0;
+          }
+          8% {
+            opacity: 0.5;
+          }
+          50% {
+            transform: translateY(-50vh) translateX(12px) scale(1.05);
+          }
+          85% {
+            opacity: 0.35;
+          }
+          100% {
+            transform: translateY(-105%) translateX(-8px) scale(1);
+            opacity: 0;
+          }
+        }
+
+        .bubble-1  { left: 3%;  width: 10px; height: 10px; animation-duration: 15s; animation-delay: 0s;  }
+        .bubble-2  { left: 9%;  width: 6px;  height: 6px;  animation-duration: 11s; animation-delay: 2s;  }
+        .bubble-3  { left: 16%; width: 14px; height: 14px; animation-duration: 19s; animation-delay: 4s;  }
+        .bubble-4  { left: 24%; width: 8px;  height: 8px;  animation-duration: 13s; animation-delay: 1s;  }
+        .bubble-5  { left: 31%; width: 5px;  height: 5px;  animation-duration: 10s; animation-delay: 6s;  }
+        .bubble-6  { left: 38%; width: 12px; height: 12px; animation-duration: 17s; animation-delay: 3s;  }
+        .bubble-7  { left: 45%; width: 7px;  height: 7px;  animation-duration: 12s; animation-delay: 8s;  }
+        .bubble-8  { left: 52%; width: 16px; height: 16px; animation-duration: 21s; animation-delay: 5s;  }
+        .bubble-9  { left: 58%; width: 6px;  height: 6px;  animation-duration: 9s;  animation-delay: 0.5s;}
+        .bubble-10 { left: 65%; width: 10px; height: 10px; animation-duration: 16s; animation-delay: 7s;  }
+        .bubble-11 { left: 71%; width: 8px;  height: 8px;  animation-duration: 14s; animation-delay: 2.5s;}
+        .bubble-12 { left: 77%; width: 13px; height: 13px; animation-duration: 18s; animation-delay: 9s;  }
+        .bubble-13 { left: 83%; width: 5px;  height: 5px;  animation-duration: 11s; animation-delay: 4.5s;}
+        .bubble-14 { left: 89%; width: 9px;  height: 9px;  animation-duration: 15s; animation-delay: 1.5s;}
+        .bubble-15 { left: 95%; width: 7px;  height: 7px;  animation-duration: 13s; animation-delay: 6.5s;}
+        .bubble-16 { left: 13%; width: 4px;  height: 4px;  animation-duration: 20s; animation-delay: 10s; }
+        .bubble-17 { left: 47%; width: 11px; height: 11px; animation-duration: 22s; animation-delay: 3.5s;}
+        .bubble-18 { left: 68%; width: 15px; height: 15px; animation-duration: 24s; animation-delay: 8.5s;}
+
+        .footer-inner {
+          position: relative;
+          z-index: 1;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .footer-bubbles .bubble {
+            animation: none;
+            opacity: 0;
+          }
+        }
+
         .footer-contact-block {
           display: flex;
           flex-direction: column;

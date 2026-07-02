@@ -42,8 +42,17 @@ let _setEnabled = null;
 export function toggleCursorEffect() { _setEnabled?.(v => !v); }
 export function setCursorEffect(on) { _setEnabled?.(on); }
 
+/* Phát hiện thiết bị cảm ứng / mobile — dùng pointer:coarse làm chuẩn chính
+   vì đáng tin hơn userAgent, kèm fallback ontouchstart cho một số trình duyệt cũ */
+function detectMobile() {
+  if (typeof window === "undefined") return false;
+  const coarse = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+  const touch  = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+  return coarse || touch;
+}
+
 export default function CustomCursor() {
-  const canvasRef = useRef(null);
+  const canvasRef  = useRef(null);
   const enabledRef = useRef(true);
 
   useEffect(() => {
@@ -57,13 +66,26 @@ export default function CustomCursor() {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
 
+    const isMobile = detectMobile();
+
     const resize = () => {
       canvas.width  = window.innerWidth;
       canvas.height = window.innerHeight;
     };
     resize();
     window.addEventListener("resize", resize);
-    let mx = -300, my = -300;
+
+    /* Vị trí chuột "thô" (target) và vị trí đã làm mượt (smoothed) dùng để vẽ.
+       Việc tách 2 lớp này + nội suy (lerp) mỗi frame là thứ tạo cảm giác
+       con trỏ "trôi" mượt theo chuột thay vì dính cứng theo từng pixel. */
+    let tx = -300, ty = -300;   // target: cập nhật ngay khi có mousemove
+    let mx = -300, my = -300;   // smoothed: theo sau tx/ty một cách mượt mà
+    const CURSOR_SMOOTH = 0.22; // 0..1 — càng nhỏ càng "trễ"/mượt, càng lớn càng bám sát
+
+    /* Vòng ring giãn nở mượt khi nhấn/nhả thay vì đổi kích thước tức thời */
+    let ringR = isMobile ? 0 : 21;
+    let ringTarget = 21;
+
     let pressing = false;
     let frame = 0;
 
@@ -71,7 +93,7 @@ export default function CustomCursor() {
        LÁ CÂY RƠI — lớp phủ nền
        pointerEvents: none nên không chặn click
     ══════════════════════════════════════ */
-    const LEAF_COUNT = 22;
+    const LEAF_COUNT = isMobile ? 14 : 22; // giảm số lá trên mobile để nhẹ máy hơn
     const leaves = Array.from({ length: LEAF_COUNT }, (_, i) => spawnLeaf(i / LEAF_COUNT));
 
     function spawnLeaf(yFrac) {
@@ -113,7 +135,8 @@ export default function CustomCursor() {
     }
 
     /* ══════════════════════════════════════
-       FIREFLIES
+       FIREFLIES — chỉ bay theo con trỏ trên desktop.
+       Trên mobile chúng chỉ xuất hiện trong lúc hiệu ứng "bấm" (burst).
     ══════════════════════════════════════ */
     const N = 10;
     const flies = Array.from({ length: N }, () => ({
@@ -159,6 +182,9 @@ export default function CustomCursor() {
         f.sx = x + Math.cos(a) * d;
         f.sy = y + Math.sin(a) * d;
         f.st = 0;
+        /* trên mobile, đom đóm không có vị trí hiện tại theo chuột —
+           cho chúng xuất phát ngay tại điểm chạm để nổ ra tự nhiên */
+        if (isMobile) { f.x = x; f.y = y; }
       });
       for (let i = 0; i < 16; i++) {
         const a = (i / 16) * Math.PI * 2 + Math.random() * 0.25;
@@ -183,23 +209,40 @@ export default function CustomCursor() {
         flies.forEach(f => {
           if (f.scatter || f.gathering) {
             f.scatter   = false;
-            f.gathering = true;
+            f.gathering = !isMobile; // trên mobile không cần tụ lại theo chuột, để chúng tự tắt
             f.st        = 0;
           }
         });
       }, 420);
     }
 
-    const onMove  = e => { mx = e.clientX; my = e.clientY; };
-    const onDown  = () => { pressing = true; };
-    const onUp    = () => { pressing = false; };
+    /* ── Sự kiện chuột (desktop) ── */
+    const onMove  = e => { tx = e.clientX; ty = e.clientY; };
+    const onDown  = () => { pressing = true;  ringTarget = 15; };
+    const onUp    = () => { pressing = false; ringTarget = 21; };
     const onClick = e => { spawnBurst(e.clientX, e.clientY); scheduleGather(); };
 
-    document.addEventListener("mousemove", onMove);
-    document.addEventListener("mousedown", onDown);
-    document.addEventListener("mouseup",   onUp);
-    document.addEventListener("click",     onClick);
-    document.body.style.cursor = "none";
+    /* ── Sự kiện cảm ứng (mobile): chỉ tạo hiệu ứng "bấm", không theo dõi vị trí liên tục ── */
+    const onTouchStart = e => {
+      const t = e.touches[0];
+      if (!t) return;
+      pressing = true;
+      spawnBurst(t.clientX, t.clientY);
+      scheduleGather();
+    };
+    const onTouchEnd = () => { pressing = false; };
+
+    if (!isMobile) {
+      document.addEventListener("mousemove", onMove);
+      document.addEventListener("mousedown", onDown);
+      document.addEventListener("mouseup",   onUp);
+      document.addEventListener("click",     onClick);
+      document.body.style.cursor = "none"; /* ẩn con trỏ mặc định, thay bằng canvas */
+    } else {
+      document.addEventListener("touchstart", onTouchStart, { passive: true });
+      document.addEventListener("touchend",   onTouchEnd,   { passive: true });
+      /* không đụng tới document.body.style.cursor trên mobile — không cần thiết */
+    }
 
     /* ══════════════════════════════════════
        MAIN LOOP
@@ -210,13 +253,19 @@ export default function CustomCursor() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       /* 1. Lá cây — vẽ trước, dưới cùng */
-      if(enabledRef.current){updateLeaves();drawLeaves();}
+      if (enabledRef.current) { updateLeaves(); drawLeaves(); }
 
-      const visible = enabledRef.current && mx > -200;
+      /* 2. Làm mượt vị trí con trỏ + bán kính ring (desktop only) */
+      if (!isMobile) {
+        mx += (tx - mx) * CURSOR_SMOOTH;
+        my += (ty - my) * CURSOR_SMOOTH;
+        ringR += (ringTarget - ringR) * 0.25;
+      }
 
-      /* 2. Cursor ring + dot */
+      const visible = !isMobile && enabledRef.current && tx > -200;
+
+      /* 3. Cursor ring + dot — chỉ desktop */
       if (visible) {
-        const ringR = pressing ? 15 : 21;
         ctx.save();
         ctx.globalAlpha = pressing ? 0.92 : 0.58;
         ctx.strokeStyle = pressing ? "rgba(100,240,90,1)" : "rgba(74,200,63,0.88)";
@@ -240,16 +289,22 @@ export default function CustomCursor() {
         glowDot(mx, my, pressing ? 5 : 3.2, "#7fff78", pressing ? 22 : 14, pressing ? 1 : 0.96);
       }
 
-      /* 3. Fireflies */
+      /* 4. Fireflies */
       flies.forEach(f => {
         if (f.scatter) {
           f.st = Math.min(f.st + 0.042, 1);
           const e = easeOutCubic(f.st);
-          f.x = mx + (f.sx - mx) * e;
-          f.y = my + (f.sy - my) * e;
-          if (f.st >= 1) { f.scatter = false; f.gathering = true; f.st = 0; }
+          const originX = isMobile ? f.x : mx;
+          const originY = isMobile ? f.y : my;
+          f.x = originX + (f.sx - originX) * e;
+          f.y = originY + (f.sy - originY) * e;
+          if (f.st >= 1) {
+            f.scatter = false;
+            f.gathering = !isMobile;
+            f.st = 0;
+          }
 
-        } else if (f.gathering) {
+        } else if (f.gathering && !isMobile) {
           f.st = Math.min(f.st + 0.022, 1);
           const driftX  = Math.sin(f.wx) * f.driftAmp;
           const driftY  = Math.cos(f.wy) * f.driftAmp;
@@ -260,7 +315,7 @@ export default function CustomCursor() {
           f.y += (targetY - f.y) * (0.04 + ease * 0.05);
           if (f.st >= 1) f.gathering = false;
 
-        } else {
+        } else if (!isMobile) {
           f.wx += f.wsx;
           f.wy += f.wsy;
           const driftX  = Math.sin(f.wx) * f.driftAmp;
@@ -274,6 +329,7 @@ export default function CustomCursor() {
           f.x  += f.vx;
           f.y  += f.vy;
         }
+        /* trên mobile, khi không scatter thì đom đóm đứng yên ngoài màn hình (x=-300) — không vẽ gì cả nhờ alpha/blink dưới đây vẫn tính nhưng vị trí ở ngoài khung hình */
 
         const blink = 0.38 + 0.62 * Math.abs(Math.sin(frame * 0.042 + f.phase));
         const sz    = f.size * (pressing ? 1.35 : 1);
@@ -281,7 +337,7 @@ export default function CustomCursor() {
         glowDot(f.x, f.y, sz * 0.4, "#9affaa",  6, blink * 0.5);
       });
 
-      /* 4. Burst particles */
+      /* 5. Burst particles — hoạt động trên cả desktop lẫn mobile (khi chạm) */
       for (let i = bursts.length - 1; i >= 0; i--) {
         const b = bursts[i];
         if (b.delay > 0) { b.delay -= 0.018; continue; }
@@ -317,11 +373,16 @@ export default function CustomCursor() {
 
     return () => {
       window.removeEventListener("resize", resize);
-      document.removeEventListener("mousemove", onMove);
-      document.removeEventListener("mousedown", onDown);
-      document.removeEventListener("mouseup",   onUp);
-      document.removeEventListener("click",     onClick);
-      document.body.style.cursor = "";
+      if (!isMobile) {
+        document.removeEventListener("mousemove", onMove);
+        document.removeEventListener("mousedown", onDown);
+        document.removeEventListener("mouseup",   onUp);
+        document.removeEventListener("click",     onClick);
+        document.body.style.cursor = "";
+      } else {
+        document.removeEventListener("touchstart", onTouchStart);
+        document.removeEventListener("touchend",   onTouchEnd);
+      }
       clearTimeout(gatherTimer);
       cancelAnimationFrame(rafId);
     };
