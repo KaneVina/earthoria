@@ -21,6 +21,7 @@ import toast from "react-hot-toast";
 import logoImg from "../assets/img/logoBT-ngangtext.png";
 import SearchOverlay from "./SearchOverlay";
 import { useQueryClient } from '@tanstack/react-query'
+import "../assets/css/navbar.css";
 
 const logoCompactImg = "/logo-nho.png";
 export default function Navbar() {

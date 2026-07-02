@@ -199,7 +199,10 @@
   height: 30px;
   border: 1.6px solid var(--av-tech-green);
   opacity: 0;
-  filter: drop-shadow(0 0 6px var(--av-tech-green-soft));
+  /* Lớp bóng tối sát viền trước, rồi mới tới glow xanh — giữ cho nét góc
+     luôn rõ ràng ngay cả khi vệt quét/glow sáng đi ngang qua (đặc biệt
+     2 góc dưới, nơi line "nán" lại lâu hơn do easing ease-in-out). */
+  filter: drop-shadow(0 0 2px rgba(4, 9, 7, 0.85)) drop-shadow(0 0 6px var(--av-tech-green-soft));
   transition: opacity 0.4s ease;
 }
 
