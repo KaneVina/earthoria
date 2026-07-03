@@ -13,8 +13,16 @@ import SproutModel from "../components/SproutModel";
 /* ─────────────────────────────────────────────────────────────
    PRODUCT CARD COMPONENT
 ───────────────────────────────────────────────────────────── */
-function BookCard({ book, onAddCart, badge, badgeType = "forest" }) {
+function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
   const [wishlisted, setWishlisted] = useState(false);
+  const [added, setAdded] = useState(false);
+
+  const handleAddClick = () => {
+    if (isAdding) return;
+    setAdded(true);
+    onAddCart(book.hashId);
+    setTimeout(() => setAdded(false), 1400);
+  };
   const DEMO_TAGS = [
     "Khám phá",
     "Thiên nhiên",
@@ -42,9 +50,11 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest" }) {
           </Link>
           <button
             className="overlay-btn"
-            onClick={() => onAddCart(book.hashId)}
+            onClick={handleAddClick}
+            disabled={isAdding}
+            style={isAdding ? { opacity: 0.5, cursor: "not-allowed" } : {}}
           >
-            Thêm vào giỏ
+            {added ? "Đã thêm ✓" : "Thêm vào giỏ"}
           </button>
         </div>
         {badge && (
@@ -299,21 +309,25 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest" }) {
           <div style={{ position: "relative" }} className="card-action-wrap">
             <button
               className="add-cart"
-              onClick={() => onAddCart(book.hashId)}
+              onClick={handleAddClick}
               aria-label="Thêm vào giỏ hàng"
+              disabled={isAdding}
+              style={{
+                ...(added ? { background: "var(--forest)", color: "var(--ivory)" } : {}),
+                ...(isAdding ? { opacity: 0.5, cursor: "not-allowed" } : {}),
+              }}
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              >
-                <circle cx="9" cy="21" r="1" />
-                <circle cx="20" cy="21" r="1" />
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-              </svg>
+              {added ? (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <circle cx="9" cy="21" r="1" />
+                  <circle cx="20" cy="21" r="1" />
+                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                </svg>
+              )}
             </button>
             <span
               className="card-action-tooltip"
@@ -331,7 +345,7 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest" }) {
 /* ─────────────────────────────────────────────────────────────
    HORIZONTAL SCROLL BOOK ROW
 ───────────────────────────────────────────────────────────── */
-function BookScrollRow({ books, onAddCart, badgeLabel, badgeType }) {
+function BookScrollRow({ books, onAddCart, badgeLabel, badgeType, addingIds }) {
   const rowRef = useRef(null);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(true);
@@ -495,6 +509,7 @@ function BookScrollRow({ books, onAddCart, badgeLabel, badgeType }) {
               onAddCart={onAddCart}
               badge={badgeLabel}
               badgeType={badgeType}
+              isAdding={addingIds?.has(book.hashId)}
             />
           </div>
         ))}
@@ -1989,12 +2004,22 @@ export default function Home() {
     return () => observer.disconnect();
   }, [featuredBooks, newBooks, bestsellerBooks]);
 
+  const [addingIds, setAddingIds] = useState(new Set());
+
   const handleAddToCart = async (hashId) => {
+    if (addingIds.has(hashId)) return;
+    setAddingIds((prev) => new Set(prev).add(hashId));
+    toast.success("Đã thêm vào giỏ hàng");
     try {
       await addToCart(hashId, 1);
-      toast.success("Đã thêm vào giỏ hàng");
     } catch {
-      toast.error("Vui lòng đăng nhập để mua hàng");
+      toast.error("Có lỗi xảy ra, vui lòng thử lại");
+    } finally {
+      setAddingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(hashId);
+        return next;
+      });
     }
   };
 
@@ -2192,6 +2217,7 @@ export default function Home() {
                 onAddCart={handleAddToCart}
                 badge={book.isFeatured ? "Nổi Bật" : undefined}
                 badgeType="gold"
+                isAdding={addingIds.has(book.hashId)}
               />
             ))}
           </div>
@@ -2282,6 +2308,7 @@ export default function Home() {
             onAddCart={handleAddToCart}
             badgeLabel="Mới"
             badgeType="forest"
+            addingIds={addingIds}
           />
         </div>
       </section>
@@ -2680,6 +2707,7 @@ export default function Home() {
             onAddCart={handleAddToCart}
             badgeLabel="Bán Chạy"
             badgeType="gold"
+            addingIds={addingIds}
           />
         </div>
       </section>
