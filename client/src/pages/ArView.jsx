@@ -24,10 +24,10 @@ import "../components/assets/css/arview.css";
  *   - Mã không tồn tại hoặc đã bị vô hiệu hoá (404)  -> hiển thị màn
  *     "không tìm thấy mã".
  *
- * NOTE: phần `specs` / `description` / `funFacts` hiện đang HARDCODE dữ
- * liệu mẫu vì API /ar/:code chưa trả về các field này. Khi backend bổ
- * sung, chỉ cần thay khối FALLBACK_DATA bên dưới bằng field thật từ
- * `res.data.data`.
+ * NOTE: phần `specs` / `description` / `funFacts` / `habitatRegion` hiện
+ * đang HARDCODE dữ liệu mẫu vì API /ar/:code chưa trả về các field này.
+ * Khi backend bổ sung, chỉ cần thay khối FALLBACK_DATA bên dưới bằng
+ * field thật từ `res.data.data`.
  *
  * UX flow:
  *   1. "scanning"  — hiệu ứng quét công nghệ chạy qua model vài giây
@@ -38,10 +38,159 @@ import "../components/assets/css/arview.css";
  *                    bấm nút đó để quay lại "preview"
  *   Trong cả "preview" và "immersive", người dùng vẫn kéo/xoay/zoom
  *   model bình thường qua OrbitControls.
- *   Panel phải còn có nút "Xem thêm thông tin" mở modal chi tiết (nền
- *   phía sau làm mờ), hiển thị đầy đủ thông số + mô tả (không bị giới
- *   hạn 3 dòng như trên mobile) + phần "Có thể bạn chưa biết".
+ *
+ *   Panel phải còn có nút "Xem thêm thông tin": KHÔNG mở modal, mà panel
+ *   phải tự "kéo dài" sang trái (đổi width, đè lên vùng model), hiện đầy
+ *   đủ thông số dạng lưới + mô tả không giới hạn dòng + "Có thể bạn chưa
+ *   biết" + một bản đồ thế giới dạng lưới chấm, tô đậm vùng con vật sinh
+ *   sống (theo field `habitatRegion`). Panel trái vẫn giữ nguyên tên
+ *   sách + tên con vật, chỉ ẩn phần hướng dẫn kéo/zoom cho đỡ rối.
  */
+
+// ─── BẢN ĐỒ THẾ GIỚI DẠNG LƯỚI CHẤM ─────────────────────────────────────
+// Bản đồ được "vẽ" bằng lưới ô 24x12 (mỗi ô ~15° kinh/vĩ độ) thay vì path
+// toạ độ địa lý chính xác — cố tình cách điệu theo đúng ngôn ngữ "lưới
+// công nghệ" đã dùng ở hiệu ứng quét (.ar-scan__grid), vừa đẹp vừa dễ bảo
+// trì. Toạ độ vùng chỉ mang tính tương đối (không phải bản đồ chuẩn).
+const WORLD_MAP_COLS = 24;
+const WORLD_MAP_ROWS = 12;
+const WORLD_MAP_CELL = 10;
+
+const WORLD_MAP_REGION_RECTS = {
+  antarctic: [{ lngMin: -180, lngMax: 180, latMin: -90, latMax: -60 }],
+  oceania: [
+    { lngMin: 113, lngMax: 154, latMin: -39, latMax: -10 },
+    { lngMin: 165, lngMax: 180, latMin: -47, latMax: -34 },
+  ],
+  southAmerica: [
+    { lngMin: -82, lngMax: -35, latMin: -5, latMax: 13 },
+    { lngMin: -75, lngMax: -35, latMin: -25, latMax: -5 },
+    { lngMin: -75, lngMax: -53, latMin: -56, latMax: -25 },
+  ],
+  arctic: [{ lngMin: -180, lngMax: 180, latMin: 75, latMax: 90 }],
+  northAmerica: [
+    { lngMin: -168, lngMax: -52, latMin: 49, latMax: 75 },
+    { lngMin: -125, lngMax: -66, latMin: 24, latMax: 49 },
+    { lngMin: -118, lngMax: -86, latMin: 14, latMax: 24 },
+  ],
+  africa: [
+    { lngMin: -18, lngMax: 52, latMin: 0, latMax: 36 },
+    { lngMin: 11, lngMax: 42, latMin: -35, latMax: 0 },
+  ],
+  europe: [{ lngMin: -11, lngMax: 32, latMin: 36, latMax: 66 }],
+  asia: [
+    { lngMin: 32, lngMax: 180, latMin: 10, latMax: 66 },
+    { lngMin: 60, lngMax: 105, latMin: -10, latMax: 10 },
+  ],
+};
+// Thứ tự xử lý quyết định ô nào "thắng" khi 2 vùng lấn nhau ở biên —
+// vùng nhỏ/đặc thù xử lý trước, "asia" to nhất xử lý sau cùng.
+const WORLD_MAP_REGION_ORDER = [
+  "antarctic",
+  "oceania",
+  "southAmerica",
+  "arctic",
+  "northAmerica",
+  "africa",
+  "europe",
+  "asia",
+];
+
+function buildWorldMapCells() {
+  const assigned = new Map();
+  WORLD_MAP_REGION_ORDER.forEach((region) => {
+    WORLD_MAP_REGION_RECTS[region].forEach((rect) => {
+      const colStart = Math.max(0, Math.floor((rect.lngMin + 180) / 15));
+      const colEnd = Math.min(
+        WORLD_MAP_COLS - 1,
+        Math.floor((rect.lngMax + 180 - 0.01) / 15)
+      );
+      const rowStart = Math.max(0, Math.floor((90 - rect.latMax) / 15));
+      const rowEnd = Math.min(
+        WORLD_MAP_ROWS - 1,
+        Math.floor((90 - rect.latMin - 0.01) / 15)
+      );
+      for (let row = rowStart; row <= rowEnd; row += 1) {
+        for (let col = colStart; col <= colEnd; col += 1) {
+          const key = `${row}-${col}`;
+          if (!assigned.has(key)) assigned.set(key, region);
+        }
+      }
+    });
+  });
+  return Array.from(assigned.entries()).map(([key, region]) => {
+    const [row, col] = key.split("-").map(Number);
+    return { row, col, region };
+  });
+}
+
+const WORLD_MAP_CELLS = buildWorldMapCells();
+
+/**
+ * Bản đồ thế giới dạng lưới chấm, tô đậm (các) vùng con vật sinh sống.
+ * `habitatRegion` có thể là 1 chuỗi (VD "arctic") hoặc mảng nhiều vùng
+ * (VD ["asia", "europe"]) cho loài phân bố rộng. Không khớp field nào
+ * -> vẫn hiện bản đồ bình thường, chỉ là không có vùng nào tô đậm.
+ */
+function WorldMapCard({ habitatRegion }) {
+  const activeRegions = Array.isArray(habitatRegion)
+    ? habitatRegion
+    : habitatRegion
+    ? [habitatRegion]
+    : [];
+
+  const pins = activeRegions
+    .map((region) => {
+      const cells = WORLD_MAP_CELLS.filter((cell) => cell.region === region);
+      if (cells.length === 0) return null;
+      const row =
+        cells.reduce((sum, cell) => sum + cell.row, 0) / cells.length;
+      const col =
+        cells.reduce((sum, cell) => sum + cell.col, 0) / cells.length;
+      return { region, row, col };
+    })
+    .filter(Boolean);
+
+  return (
+    <div className="ar-more-map">
+      <svg
+        viewBox={`0 0 ${WORLD_MAP_COLS * WORLD_MAP_CELL} ${
+          WORLD_MAP_ROWS * WORLD_MAP_CELL
+        }`}
+        xmlns="http://www.w3.org/2000/svg"
+        role="img"
+        aria-label="Bản đồ vùng sinh sống"
+      >
+        {WORLD_MAP_CELLS.map((cell) => {
+          const isActive = activeRegions.includes(cell.region);
+          return (
+            <rect
+              key={`${cell.row}-${cell.col}`}
+              className={`ar-more-map__cell${isActive ? " is-active" : ""}`}
+              x={cell.col * WORLD_MAP_CELL + 1}
+              y={cell.row * WORLD_MAP_CELL + 1}
+              width={WORLD_MAP_CELL - 2}
+              height={WORLD_MAP_CELL - 2}
+              rx="2"
+            />
+          );
+        })}
+        {pins.map((pin) => (
+          <g
+            key={pin.region}
+            className="ar-more-map__pin"
+            transform={`translate(${
+              pin.col * WORLD_MAP_CELL + WORLD_MAP_CELL / 2
+            }, ${pin.row * WORLD_MAP_CELL + WORLD_MAP_CELL / 2})`}
+          >
+            <circle className="ar-more-map__pin-ring" r="9" />
+            <circle className="ar-more-map__pin-dot" r="3" />
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
+}
 
 // ─── DỮ LIỆU MẪU (HARDCODE) — thay bằng dữ liệu thật từ API khi sẵn sàng ───
 const FALLBACK_DATA = {
@@ -65,6 +214,9 @@ const FALLBACK_DATA = {
     "Chúng có thể ngửi thấy mùi hải cẩu từ cách xa hơn 1 km, kể cả khi con mồi ở dưới lớp băng dày.",
     "Bàn chân to bản như mái chèo giúp gấu phân bổ trọng lượng khi di chuyển trên băng mỏng và bơi đường dài.",
   ],
+  // Khớp key với WORLD_MAP_REGION_RECTS phía trên. Có thể để mảng nếu
+  // loài phân bố nhiều vùng, VD: ["asia", "europe"].
+  habitatRegion: "arctic",
 };
 // ──────────────────────────────────────────────────────────────────────────
 
@@ -83,18 +235,24 @@ export default function ArView() {
   const [stage, setStage] = useState("scanning");
   const scanTimeoutRef = useRef(null);
 
-  // Modal "Xem thêm thông tin" — mở/đóng độc lập với stage, chỉ có ý
-  // nghĩa khi đang ở "preview" (nút bị ẩn cùng panel ở stage khác).
-  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  // Panel phải "kéo dài" hiện đầy đủ thông tin — chỉ có ý nghĩa khi đang
+  // ở "preview" (nút mở nó bị ẩn cùng panel ở stage khác).
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
-    if (!isDetailOpen) return;
+    if (!isExpanded) return;
     function handleKeyDown(e) {
-      if (e.key === "Escape") setIsDetailOpen(false);
+      if (e.key === "Escape") setIsExpanded(false);
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isDetailOpen]);
+  }, [isExpanded]);
+
+  // Phòng hờ: nếu rời khỏi "preview" bằng đường nào đó, thu gọn lại
+  // panel phải để lần sau quay lại "preview" không bị kẹt ở trạng thái mở.
+  useEffect(() => {
+    if (stage !== "preview") setIsExpanded(false);
+  }, [stage]);
 
   useEffect(() => {
     let cancelled = false;
@@ -126,6 +284,7 @@ export default function ArView() {
             specs: data.specs || FALLBACK_DATA.specs,
             description: data.description || FALLBACK_DATA.description,
             funFacts: data.funFacts || FALLBACK_DATA.funFacts,
+            habitatRegion: data.habitatRegion || FALLBACK_DATA.habitatRegion,
           },
         });
       } catch (err) {
@@ -257,7 +416,8 @@ export default function ArView() {
     );
   }
 
-  const { label, modelUrl, book, specs, description, funFacts } = state.data;
+  const { label, modelUrl, book, specs, description, funFacts, habitatRegion } =
+    state.data;
   const isScanning = stage === "scanning";
   const isImmersive = stage === "immersive";
   const isPreview = stage === "preview";
@@ -308,11 +468,15 @@ export default function ArView() {
       {/* Vignette để chữ overlay luôn đọc được dù model sáng/tối */}
       <div className="ar-view__vignette" aria-hidden="true" />
 
-      {/* ── Overlay trái: tên sách nhỏ / tên nhân vật to / hướng dẫn ── */}
+      {/* ── Overlay trái: tên sách nhỏ / tên nhân vật to / hướng dẫn ──
+          Khi panel phải "kéo dài" (isExpanded), phần hướng dẫn kéo/zoom
+          bị ẩn cho đỡ rối, nhưng tên sách + tên con vật luôn còn. ── */}
       <section
         className={`ar-panel ar-panel--left${
           isImmersive ? " is-collapsed" : ""
-        }${isScanning ? " is-hidden" : ""}`}
+        }${isScanning ? " is-hidden" : ""}${
+          isExpanded ? " is-info-expanded" : ""
+        }`}
       >
         <span className="ar-panel__book">{book.title}</span>
         <h1 className="ar-panel__name">{label}</h1>
@@ -350,46 +514,104 @@ export default function ArView() {
         </div>
       </section>
 
-      {/* ── Overlay phải: Đặc điểm + bảng thông số + mô tả ── */}
+      {/* ── Overlay phải: bình thường hiện gọn Đặc điểm + bảng thông số
+          rút gọn + mô tả + nút "Xem thêm thông tin". Bấm nút đó, panel
+          tự kéo dài sang trái (đổi width, đè lên vùng model) và đổi
+          sang nội dung đầy đủ: bản đồ vùng sinh sống + bảng thông số
+          dạng lưới + mô tả trọn vẹn + "Có thể bạn chưa biết". ── */}
       <section
         className={`ar-panel ar-panel--right${
           isImmersive ? " is-collapsed" : ""
-        }${isScanning ? " is-hidden" : ""}`}
+        }${isScanning ? " is-hidden" : ""}${isExpanded ? " is-expanded" : ""}`}
       >
-        <span className="ar-panel__eyebrow">Đặc điểm</span>
+        {isExpanded ? (
+          <>
+            <button
+              type="button"
+              className="ar-more-close"
+              onClick={() => setIsExpanded(false)}
+              aria-label="Thu gọn thông tin"
+            >
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M6 6l12 12M18 6 6 18"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
 
-        <dl className="ar-specs">
-          {specs.map((item) => (
-            <div className="ar-specs__row" key={item.label}>
-              <dt>{item.label}</dt>
-              <span className="ar-specs__leader" aria-hidden="true" />
-              <dd>{item.value}</dd>
+            <div className="ar-more-content">
+              <span className="ar-panel__eyebrow">Thông tin chi tiết</span>
+
+              <span className="ar-more-section-title">Phạm vi sinh sống</span>
+              <WorldMapCard habitatRegion={habitatRegion} />
+
+              <dl className="ar-more-specs">
+                {specs.map((item) => (
+                  <div className="ar-more-spec" key={item.label}>
+                    <dt>{item.label}</dt>
+                    <dd>{item.value}</dd>
+                  </div>
+                ))}
+              </dl>
+
+              <p className="ar-more-desc">{description}</p>
+
+              {Array.isArray(funFacts) && funFacts.length > 0 && (
+                <div className="ar-more-facts">
+                  <span className="ar-more-section-title">
+                    Có thể bạn chưa biết
+                  </span>
+                  <ul>
+                    {funFacts.map((fact, index) => (
+                      <li key={index}>{fact}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
-          ))}
-        </dl>
+          </>
+        ) : (
+          <>
+            <span className="ar-panel__eyebrow">Đặc điểm</span>
 
-        <p className="ar-panel__desc">{description}</p>
+            <dl className="ar-specs">
+              {specs.map((item) => (
+                <div className="ar-specs__row" key={item.label}>
+                  <dt>{item.label}</dt>
+                  <span className="ar-specs__leader" aria-hidden="true" />
+                  <dd>{item.value}</dd>
+                </div>
+              ))}
+            </dl>
 
-        <button
-          type="button"
-          className="ar-more-btn"
-          onClick={() => setIsDetailOpen(true)}
-        >
-          <span>Xem thêm thông tin</span>
-          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M9 6l6 6-6 6"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+            <p className="ar-panel__desc">{description}</p>
+
+            <button
+              type="button"
+              className="ar-more-btn"
+              onClick={() => setIsExpanded(true)}
+            >
+              <span>Xem thêm thông tin</span>
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M9 6l6 6-6 6"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          </>
+        )}
       </section>
 
-      {/* ── Nút điều khiển preview <-> immersive ── */}
-      {isPreview && (
+      {/* ── Nút điều khiển preview <-> immersive — ẩn khi panel phải
+          đang kéo dài để khỏi đè lên phần thông tin ── */}
+      {isPreview && !isExpanded && (
         <button
           type="button"
           className="ar-expand-btn"
@@ -449,72 +671,6 @@ export default function ArView() {
             </svg>
           </button>
         </>
-      )}
-
-      {/* ── Modal "Xem thêm thông tin": nền phía sau làm mờ (backdrop
-          blur), thẻ nổi giữa/đáy màn hình chứa đầy đủ thông số + mô tả
-          (không bị line-clamp như trên panel) + phần "Có thể bạn chưa
-          biết". Đóng bằng nút X, bấm ra ngoài nền mờ, hoặc phím Esc. ── */}
-      {isDetailOpen && (
-        <div
-          className="ar-detail"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="ar-detail-name"
-        >
-          <div
-            className="ar-detail__backdrop"
-            onClick={() => setIsDetailOpen(false)}
-            aria-hidden="true"
-          />
-          <div className="ar-detail__sheet">
-            <button
-              type="button"
-              className="ar-detail__close"
-              onClick={() => setIsDetailOpen(false)}
-              aria-label="Đóng thông tin chi tiết"
-              autoFocus
-            >
-              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M6 6l12 12M18 6 6 18"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </button>
-
-            <span className="ar-panel__book">{book.title}</span>
-            <h2 id="ar-detail-name" className="ar-panel__name">
-              {label}
-            </h2>
-
-            <dl className="ar-detail__specs">
-              {specs.map((item) => (
-                <div className="ar-detail__spec" key={item.label}>
-                  <dt>{item.label}</dt>
-                  <dd>{item.value}</dd>
-                </div>
-              ))}
-            </dl>
-
-            <p className="ar-panel__desc">{description}</p>
-
-            {Array.isArray(funFacts) && funFacts.length > 0 && (
-              <div className="ar-detail__facts">
-                <span className="ar-detail__facts-title">
-                  Có thể bạn chưa biết
-                </span>
-                <ul>
-                  {funFacts.map((fact, index) => (
-                    <li key={index}>{fact}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </div>
       )}
     </main>
   );
