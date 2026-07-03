@@ -156,7 +156,7 @@ function BotMessage({ msg, onRegenerate }) {
     <div className={`em bot${msg.isError ? " em-error" : ""}`}>
       <div className="em-label-row">
         <div className="em-av">
-          <img src="/logo-nho2.png" alt="Eira" />
+          <img src="/eira/avatar.png" alt="Eira" />
         </div>
         <span className="em-name">Eira</span>
       </div>
@@ -203,7 +203,14 @@ function EiraUI() {
   const [isBusy, setIsBusy] = useState(false);
   const [suggHidden, setSuggHidden] = useState(false);
   const [promoVisible, setPromoVisible] = useState(false);
-  const [promoDismissed, setPromoDismissed] = useState(false);
+  const [promoDismissed, setPromoDismissed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return localStorage.getItem("eira_mascot_dismissed") === "1";
+    } catch {
+      return false;
+    }
+  });
   const [unreadCount, setUnreadCount] = useState(0);
 
   const msgsEndRef = useRef(null);
@@ -437,7 +444,14 @@ function EiraUI() {
     e.stopPropagation();
     setPromoVisible(false);
     setPromoDismissed(true);
+    // Xóa vĩnh viễn — không hiện lại linh vật/thông báo này nữa, kể cả sau khi tải lại trang
+    try {
+      localStorage.setItem("eira_mascot_dismissed", "1");
+    } catch {}
   };
+
+  // Đang ở trạng thái "chào mừng": hiện linh vật thay cho nút tròn thường
+  const showMascot = promoVisible && !promoDismissed && !isOpen;
 
   return (
     <div
@@ -445,46 +459,17 @@ function EiraUI() {
       className={isDragging ? "dragging" : ""}
       style={{ "--drag-x": `${dragPos.x}px`, "--drag-y": `${dragPos.y}px` }}
     >
-      {/* ── Promo bubble ── */}
-      <div
-        id="eira-promo"
-        className={
-          promoVisible && !promoDismissed && !isOpen ? "show" : "hidden"
-        }
-      >
-        <div
-          className="eira-promo-bubble"
-          onClick={() => {
-            setIsOpen(true);
-            setPromoVisible(false);
-          }}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === "Enter" && setIsOpen(true)}
-          aria-label="Mở chat với Eira"
-        >
-          <span className="eira-promo-text">
-            Ban đang cần <strong>tư vấn?</strong> Hỏi ngay Eira!
-          </span>
-          <button
-            className="eira-promo-close"
-            onClick={dismissPromo}
-            aria-label="Đóng gợi ý"
-          >
-            <X size={10} />
-          </button>
-        </div>
-      </div>
-
       {/* ── FAB — giữ nguyên bottom: 96px như code gốc, giờ kéo-thả được ── */}
       <button
         id="eira-fab"
         ref={fabRef}
-        className={`${isOpen ? "fab-open" : ""} ${isDragging ? "dragging" : ""} ${unreadCount > 0 && !isOpen ? "has-badge" : ""}`.trim()}
+        className={`${isOpen ? "fab-open" : ""} ${isDragging ? "dragging" : ""} ${unreadCount > 0 && !isOpen ? "has-badge" : ""} ${showMascot ? "mascot" : ""}`.trim()}
         aria-label={
-          unreadCount > 0 && !isOpen
-            ? `Chat với Eira, ${unreadCount} tin nhắn mới chưa đọc`
-            : "Chat với Eira (giữ và kéo để di chuyển)"
+          showMascot
+            ? "Eira đang vẫy chào — bấm để mở chat"
+            : unreadCount > 0 && !isOpen
+              ? `Chat với Eira, ${unreadCount} tin nhắn mới chưa đọc`
+              : "Chat với Eira (giữ và kéo để di chuyển)"
         }
         onClick={handleFabClick}
         onPointerDown={handleFabPointerDown}
@@ -492,24 +477,51 @@ function EiraUI() {
         onPointerUp={endFabDrag}
         onPointerCancel={endFabDrag}
       >
-        {/* Chấm "online" — ẩn khi đang mở HOẶC khi có badge chưa đọc (badge ưu tiên hiện) */}
-        <div
-          className={`eira-online-dot${isOpen || unreadCount > 0 ? " hidden" : ""}`}
-        />
+        {showMascot ? (
+          <>
+            {/* Linh vật chào mừng — thay cho icon tròn thường trong lúc gợi ý đang hiện */}
+            <img
+              className="eira-fab-mascot-img"
+              src="/eira/eira-sayhi.png"
+              alt="Eira vẫy chào"
+              draggable="false"
+            />
+            {/* Nút X riêng trên linh vật: đóng vĩnh viễn + trả về icon tròn hiện tại */}
+            <span
+              className="eira-fab-mascot-close"
+              role="button"
+              tabIndex={0}
+              aria-label="Đóng linh vật, không hiện lại nữa"
+              onClick={dismissPromo}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") dismissPromo(e);
+              }}
+            >
+              <X size={11} />
+            </span>
+          </>
+        ) : (
+          <>
+            {/* Chấm "online" — ẩn khi đang mở HOẶC khi có badge chưa đọc (badge ưu tiên hiện) */}
+            <div
+              className={`eira-online-dot${isOpen || unreadCount > 0 ? " hidden" : ""}`}
+            />
 
-        {/* Badge số tin nhắn chưa đọc — nổi bật đặc biệt trên mobile */}
-        {unreadCount > 0 && !isOpen && (
-          <span key={unreadCount} className="eira-badge" aria-hidden="true">
-            {unreadCount > 9 ? "9+" : unreadCount}
-          </span>
+            {/* Badge số tin nhắn chưa đọc — nổi bật đặc biệt trên mobile */}
+            {unreadCount > 0 && !isOpen && (
+              <span key={unreadCount} className="eira-badge" aria-hidden="true">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+
+            <span className="eira-fab-icon eira-ico-open">
+              <MessageCircle size={22} />
+            </span>
+            <span className="eira-fab-icon eira-ico-close">
+              <X size={20} />
+            </span>
+          </>
         )}
-
-        <span className="eira-fab-icon eira-ico-open">
-          <MessageCircle size={22} />
-        </span>
-        <span className="eira-fab-icon eira-ico-close">
-          <X size={20} />
-        </span>
       </button>
 
       {/* ── Chat Window ── */}
@@ -523,7 +535,9 @@ function EiraUI() {
         {/* Header — giữ gradient tối như gốc, chỉ 1 nút X */}
         <div id="eira-hdr">
           <div className="eira-avatar">
-            <img src="/logo-nho2.png" alt="Earthoria" />
+            <div className="eira-avatar-inner">
+              <img src="/eira/avatar.png" alt="Earthoria" />
+            </div>
             <div className="eira-av-online" />
           </div>
           <div className="eira-hdr-info">
@@ -531,8 +545,7 @@ function EiraUI() {
               Eira
             </div>
             <div className="eira-hdr-sub">
-              <span className="eira-hdr-status-dot" />
-              Trực tuyến · Phản hồi ngay
+              Trực tuyến · Hỗ trợ 24/7
             </div>
           </div>
           <div className="eira-hdr-actions">
@@ -575,7 +588,7 @@ function EiraUI() {
             <div className="eira-typing">
               <div className="typing-label-row">
                 <div className="em-av">
-                  <img src="/logo-nho2.png" alt="Eira" />
+                  <img src="/eira/avatar.png" alt="Eira" />
                 </div>
                 <span className="em-name" style={{ color: "#0d3330" }}>
                   Eira
