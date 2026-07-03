@@ -216,6 +216,9 @@ model CartItem {
 
   cart Cart @relation(fields: [cartId], references: [id], onDelete: Cascade)
   book Book @relation(fields: [bookId], references: [id])
+
+  @@index([cartId])
+  @@index([bookId])
 }
 
 // ─── ORDER ───

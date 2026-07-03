@@ -26,48 +26,36 @@ export const useCartStore = create((set, get) => ({
 
   // Optimistic: cập nhật UI ngay, sync API ngầm, rollback nếu lỗi
   addToCart: async (hashId, quantity = 1) => {
-    const prev = get().cart
+  const prev = get().cart
+  const existing = prev?.items?.find((i) => i.book?.hashId === hashId)
 
-    // 1. Tìm item đã có chưa
-    const existing = prev?.items?.find((i) => i.book?.hashId === hashId)
+  if (prev) {
+    const newItems = existing
+      ? prev.items.map((i) =>
+          i.book?.hashId === hashId
+            ? { ...i, quantity: i.quantity + quantity }
+            : i
+        )
+      : [
+          ...prev.items,
+          { id: `temp-${hashId}`, quantity, book: { hashId, title: '', price: 0, coverImage: '' } },
+        ]
+    set({ cart: { ...prev, items: newItems }, itemCount: calcCount(newItems) })
+  }
 
-    // 2. Cập nhật state ngay lập tức
-    if (prev) {
-      const newItems = existing
-        ? prev.items.map((i) =>
-            i.book?.hashId === hashId
-              ? { ...i, quantity: i.quantity + quantity }
-              : i
-          )
-        : [
-            ...prev.items,
-            // Placeholder — sẽ được ghi đè sau fetchCart nếu cần
-            {
-              id: `temp-${hashId}`,
-              quantity,
-              book: { hashId, title: '', price: 0, coverImage: '' },
-            },
-          ]
+  try {
+    await cartService.addToCart({ hashId, quantity }) // chỉ chờ request này
+  } catch (err) {
+    set({ cart: prev, itemCount: prev ? calcCount(prev.items) : 0 })
+    throw err // để component bắt được lỗi và hiện toast.error
+  }
 
-      const newCart = { ...prev, items: newItems }
-      set({ cart: newCart, itemCount: calcCount(newItems) })
-    }
-
-    // 3. Gọi API ngầm — không await ở UI
-    try {
-      await cartService.addToCart({ hashId, quantity })
-      // Sync lại để lấy đúng id/price từ server (chỉ 1 lần)
-      const res = await cartService.getCart()
-      const cart = res.data.data
-      set({ cart, itemCount: calcCount(cart.items) })
-    } catch {
-      // Rollback về state trước khi optimistic
-      set({
-        cart: prev,
-        itemCount: prev ? calcCount(prev.items) : 0,
-      })
-    }
-  },
+  // Sync để lấy đúng id/price — chạy NGẦM, không await, không chặn UI
+  cartService.getCart().then((res) => {
+    const cart = res.data.data
+    set({ cart, itemCount: calcCount(cart.items) })
+  }).catch(() => {})
+},
 
   updateItem: async (itemId, quantity) => {
     const prev = get().cart

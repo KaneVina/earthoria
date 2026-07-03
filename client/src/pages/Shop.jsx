@@ -284,7 +284,7 @@ function StarRating({ rating, count }) {
   );
 }
 
-function AddToCartBtn({ onAdd }) {
+function AddToCartBtn({ onAdd, disabled }) {
   const [added, setAdded] = useState(false);
   const btnRef = useRef(null);
   const [hovered, setHovered] = useState(false);
@@ -292,6 +292,7 @@ function AddToCartBtn({ onAdd }) {
 
   const handleClick = (e) => {
     e.stopPropagation();
+    if (disabled) return;
     setAdded(true);
     onAdd && onAdd();
     setTimeout(() => setAdded(false), 1400);
@@ -316,7 +317,11 @@ function AddToCartBtn({ onAdd }) {
         onClick={handleClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={() => setHovered(false)}
-        style={added ? { background: "var(--forest)", color: "var(--ivory)" } : {}}
+        disabled={disabled}
+        style={{
+          ...(added ? { background: "var(--forest)", color: "var(--ivory)" } : {}),
+          ...(disabled ? { opacity: 0.5, cursor: "not-allowed" } : {}),
+        }}
       >
         {added ? <CheckIcon /> : <CartIcon />}
       </button>
@@ -441,7 +446,7 @@ function WishlistBtn({ wishlisted, onToggle }) {
   );
 }
 
-function ProductCard({ book, onAddToCart, delay }) {
+function ProductCard({ book, onAddToCart, delay, isAdding }) {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const { isInWishlist, toggleWishlist } = useWishlistStore();
@@ -717,6 +722,7 @@ function ProductCard({ book, onAddToCart, delay }) {
           >
             <AddToCartBtn
               onAdd={() => onAddToCart && onAddToCart(book.hashId)}
+              disabled={isAdding}
             />
           </div>
         </div>
@@ -739,18 +745,30 @@ export default function Shop() {
 
   const ctaVideoRef = useRef(null);
 
-  const handleAddToCart = async (id) => {
-    if (!isAuthenticated) {
-      toast.error("Vui lòng đăng nhập để mua hàng");
-      return;
-    }
-    try {
-      await addToCart(id, 1);
-      toast.success("Đã thêm vào giỏ hàng");
-    } catch {
-      toast.error("Có lỗi xảy ra, vui lòng thử lại");
-    }
-  };
+  const [addingIds, setAddingIds] = useState(new Set());
+
+const handleAddToCart = async (id) => {
+  if (!isAuthenticated) {
+    toast.error("Vui lòng đăng nhập để mua hàng");
+    return;
+  }
+  if (addingIds.has(id)) return; // chặn bấm nhiều lần liên tiếp
+
+  setAddingIds((prev) => new Set(prev).add(id));
+  toast.success("Đã thêm vào giỏ hàng"); // hiện NGAY, không chờ API
+
+  try {
+    await addToCart(id, 1);
+  } catch {
+    toast.error("Có lỗi xảy ra, vui lòng thử lại");
+  } finally {
+    setAddingIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }
+};
   const { data: books = [], isLoading } = useQuery({
     queryKey: ["shop-books", activeCategory, sortValue],
     queryFn: () =>
@@ -764,6 +782,15 @@ export default function Shop() {
           order: sortValue === "Giá tăng dần" ? "asc" : "desc",
         })
         .then((r) => r.data.data.books || []),
+  });
+
+  const { data: featuredBook } = useQuery({
+    queryKey: ["shop-featured-book"],
+    queryFn: () =>
+      bookService.getFeatured().then((r) => {
+        const list = r.data.data.books || r.data.data || [];
+        return Array.isArray(list) ? list[0] : list;
+      }),
   });
 
   // CTA video: chỉ load khi gần viewport, phát chậm 0.4x
@@ -1210,64 +1237,66 @@ export default function Shop() {
           {/* PRODUCTS GRID */}
           <div className={`products-grid grid-${gridCols}`}>
             {/* FEATURED WIDE CARD */}
-            <div className="featured-product-card reveal">
-              <div className="product-img-wrap">
-                <img
-                  src="https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=700&q=80"
-                  alt="Bí Mật Rừng Mưa"
-                />
-                <div className="product-img-overlay" />
-                <span className="product-badge gold">Bán chạy</span>
-              </div>
-              <div className="featured-product-body">
-                <div className="featured-label">Sản phẩm nổi bật</div>
-                <h2 className="featured-title">
-                  Bí Mật
-                  <br />
-                  <em>Rừng Mưa</em>
-                </h2>
-                <p className="featured-desc">
-                  Khám phá 120+ loài động thực vật nhiệt đới qua mô hình AR sinh
-                  động. Công nghệ nhận diện hình ảnh và AI Tutor tích hợp trả
-                  lời mọi câu hỏi của bé.
-                </p>
-                <div className="featured-specs">
-                  {[
-                    { label: "Độ tuổi", val: "6–12 tuổi" },
-                    { label: "Mô hình AR", val: "120+" },
-                    { label: "Ngôn ngữ", val: "VI / EN" },
-                    { label: "AI Tutor", val: "Có" },
-                  ].map((spec) => (
-                    <div className="featured-spec-item" key={spec.label}>
-                      <div className="featured-spec-label">{spec.label}</div>
-                      <div className="featured-spec-val">{spec.val}</div>
-                    </div>
-                  ))}
+            {featuredBook && (
+              <div className="featured-product-card reveal">
+                <div className="product-img-wrap">
+                  <img
+                    src={featuredBook.img || featuredBook.coverImage}
+                    alt={featuredBook.title}
+                  />
+                  <div className="product-img-overlay" />
+                  {featuredBook.badge && (
+                    <span className="product-badge gold">{featuredBook.badge}</span>
+                  )}
                 </div>
-                <div className="featured-cta">
-                  <button
-                    className="btn-add-cart"
-                    onClick={() => toast.success("Đã thêm vào giỏ hàng")}
-                  >
-                    <CartIcon />
-                    Thêm vào giỏ — 390k
-                  </button>
-                  <button className="btn-ar-preview">
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
+                <div className="featured-product-body">
+                  <div className="featured-label">Sản phẩm nổi bật</div>
+                  <h2 className="featured-title">{featuredBook.title}</h2>
+                  <p className="featured-desc">
+                    {featuredBook.desc ||
+                      (featuredBook.description
+                        ? featuredBook.description.slice(0, 140) + "…"
+                        : "")}
+                  </p>
+                  <div className="featured-specs">
+                    {[
+                      { label: "Độ tuổi", val: featuredBook.ageRange || "4 – 10 tuổi" },
+                      { label: "Ngôn ngữ", val: featuredBook.language || "Tiếng Việt" },
+                      { label: "Danh mục", val: featuredBook.category?.name || featuredBook.category || "—" },
+                      { label: "Đánh giá", val: featuredBook.rating ? `${featuredBook.rating}★` : "—" },
+                    ].map((spec) => (
+                      <div className="featured-spec-item" key={spec.label}>
+                        <div className="featured-spec-label">{spec.label}</div>
+                        <div className="featured-spec-val">{spec.val}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="featured-cta">
+                    <button
+                      className="btn-add-cart"
+                      onClick={() => handleAddToCart(featuredBook.hashId)}
+                      disabled={addingIds.has(featuredBook.hashId)}
                     >
-                      <polygon points="5 3 19 12 5 21 5 3" />
-                    </svg>
-                    Demo AR
-                  </button>
+                      <CartIcon />
+                      Thêm vào giỏ — {featuredBook.price || formatPrice(featuredBook.salePrice)}
+                    </button>
+                    <button className="btn-ar-preview">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                      >
+                        <polygon points="5 3 19 12 5 21 5 3" />
+                      </svg>
+                      Demo AR
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* PROMO STRIP */}
             <div className="promo-strip reveal">
@@ -1288,6 +1317,7 @@ export default function Shop() {
                 book={book}
                 onAddToCart={handleAddToCart}
                 delay={(i % 3) + 1}
+                isAdding={addingIds.has(book.hashId)}
               />
             ))}
           </div>
