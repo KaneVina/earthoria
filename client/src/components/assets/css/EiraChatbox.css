@@ -44,7 +44,7 @@
   --drag-x: 0px;
   --drag-y: 0px;
 
- font-family: "Be Vietnam Pro", sans-serif;
+  font-family: "Be Vietnam Pro", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -66,13 +66,26 @@
   align-items: flex-end;
   pointer-events: none;
   opacity: 0;
-  transform: translate(var(--drag-x), var(--drag-y)) translateY(10px) scale(0.92);
-  transition: opacity 0.3s var(--ease-out), transform 0.42s var(--ease-spring);
+  transform: translate(var(--drag-x), var(--drag-y)) translateY(10px)
+    scale(0.92);
+  transition:
+    opacity 0.3s var(--ease-out),
+    transform 0.42s var(--ease-spring);
   will-change: opacity, transform;
 }
-#eira-promo.show   { opacity: 1; transform: translate(var(--drag-x), var(--drag-y)); pointer-events: auto; }
-#eira-promo.hidden { opacity: 0; pointer-events: none; transform: translate(var(--drag-x), var(--drag-y)) translateY(8px) scale(0.95); }
-#eira-root.dragging #eira-promo { transition: none; }
+#eira-promo.show {
+  opacity: 1;
+  transform: translate(var(--drag-x), var(--drag-y));
+  pointer-events: auto;
+}
+#eira-promo.hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(var(--drag-x), var(--drag-y)) translateY(8px) scale(0.95);
+}
+#eira-root.dragging #eira-promo {
+  transition: none;
+}
 
 @media (max-width: 480px) {
   #eira-promo {
@@ -89,24 +102,35 @@
   font-size: 12.5px;
   font-weight: 500;
   line-height: 1.5;
- padding: 10px 36px 10px 14px !important;
+  padding: 10px 36px 10px 14px !important;
   border-radius: 14px 14px 4px 14px;
   min-width: 200px;
   max-width: 240px;
   white-space: normal;
   word-break: break-word;
   border: 1px solid rgba(61, 158, 50, 0.28);
-  box-shadow: 0 14px 36px rgba(10, 46, 43, 0.3), 0 3px 8px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 14px 36px rgba(10, 46, 43, 0.3),
+    0 3px 8px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   overflow: visible;
-  transition: transform 0.22s var(--ease-out), box-shadow 0.22s;
+  transition:
+    transform 0.22s var(--ease-out),
+    box-shadow 0.22s;
 }
 .eira-promo-bubble::before {
   content: "";
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(61, 158, 50, 0.55), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(61, 158, 50, 0.55),
+    transparent
+  );
 }
 .eira-promo-bubble::after {
   content: "";
@@ -120,7 +144,9 @@
 }
 .eira-promo-bubble:hover {
   transform: translateY(-3px);
-  box-shadow: 0 20px 48px rgba(10, 46, 43, 0.38), 0 6px 14px rgba(0, 0, 0, 0.12);
+  box-shadow:
+    0 20px 48px rgba(10, 46, 43, 0.38),
+    0 6px 14px rgba(0, 0, 0, 0.12);
 }
 .eira-promo-bubble strong {
   color: var(--egl);
@@ -144,7 +170,10 @@
   flex-shrink: 0;
   z-index: 10;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  transition: background 0.18s, color 0.18s, transform 0.22s var(--ease-bounce);
+  transition:
+    background 0.18s,
+    color 0.18s,
+    transform 0.22s var(--ease-bounce);
 }
 .eira-promo-close:hover {
   background: #fff;
@@ -213,7 +242,9 @@
   cursor: grabbing;
   transition: none;
   animation: none;
-  box-shadow: 0 16px 44px rgba(10, 46, 43, 0.5), 0 0 0 10px rgba(61, 158, 50, 0.1);
+  box-shadow:
+    0 16px 44px rgba(10, 46, 43, 0.5),
+    0 0 0 10px rgba(61, 158, 50, 0.1);
 }
 #eira-fab.dragging:hover {
   transform: translate(var(--drag-x), var(--drag-y));
@@ -234,7 +265,8 @@
   cursor: pointer;
 }
 #eira-fab.mascot:hover {
-  transform: translate(var(--drag-x), var(--drag-y)) scale(1.05) translateY(-3px);
+  transform: translate(var(--drag-x), var(--drag-y)) scale(1.05)
+    translateY(-3px);
   box-shadow: none;
 }
 @media (max-width: 480px) {
@@ -244,6 +276,8 @@
   }
 }
 .eira-fab-mascot-img {
+  position: relative;
+  z-index: 2;
   width: 100%;
   height: 100%;
   object-fit: contain;
@@ -261,6 +295,148 @@
     opacity: 1;
   }
 }
+/* Ánh sáng xanh phát ra phía sau linh vật */
+.eira-fab-mascot-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  height: 150%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(82, 194, 68, 0.4) 0%,
+    rgba(82, 194, 68, 0.18) 40%,
+    rgba(82, 194, 68, 0) 72%
+  );
+  filter: blur(4px);
+  z-index: 0;
+  pointer-events: none;
+  animation: mascot-glow-pulse 3.6s ease-in-out infinite;
+}
+@keyframes mascot-glow-pulse {
+  0%,
+  100% {
+    opacity: 0.7;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+}
+
+/* Bệ sách xanh phát sáng dưới chân linh vật */
+.eira-fab-mascot-base {
+  position: absolute;
+  bottom: 4%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 58%;
+  z-index: 1;
+  pointer-events: none;
+}
+.eira-fab-mascot-book {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 16px;
+}
+.eira-fab-mascot-book::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(61, 158, 50, 0.6) 0%,
+    rgba(61, 158, 50, 0.24) 55%,
+    transparent 80%
+  );
+  filter: blur(2px);
+}
+.eira-fab-mascot-book::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 62%;
+  height: 7px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #4bc23f, #1f6b1a);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Các đốm sáng lập lòe bay quanh linh vật */
+.eira-firefly {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    #eafce6 0%,
+    #52c244 60%,
+    transparent 100%
+  );
+  box-shadow: 0 0 9px 2px rgba(61, 158, 50, 0.8);
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  animation: firefly-float 4.5s ease-in-out infinite;
+}
+.eira-firefly-1 {
+  top: 16%;
+  left: 4%;
+  animation-delay: 0s;
+}
+.eira-firefly-2 {
+  top: 66%;
+  left: 92%;
+  animation-delay: 0.9s;
+}
+.eira-firefly-3 {
+  top: 6%;
+  left: 80%;
+  animation-delay: 1.8s;
+}
+.eira-firefly-4 {
+  top: 84%;
+  left: 12%;
+  animation-delay: 2.6s;
+}
+.eira-firefly-5 {
+  top: 44%;
+  left: 98%;
+  animation-delay: 3.3s;
+}
+
+@keyframes firefly-float {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.6);
+  }
+  15% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.85;
+    transform: translate(6px, -16px) scale(1);
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-5px, -28px) scale(0.6);
+  }
+}
 .eira-fab-mascot-close {
   position: absolute;
   top: -6px;
@@ -268,20 +444,29 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95);
-  color: #0d3330;
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #2f8d52;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
   z-index: 5;
   transition:
     transform 0.2s var(--ease-bounce),
-    background 0.18s;
+    background 0.24s,
+    color 0.24s,
+    border-color 0.24s,
+    box-shadow 0.24s;
 }
 .eira-fab-mascot-close:hover {
-  background: #fff;
+  background: linear-gradient(135deg, #52c244, #1a5c3d);
+  border-color: rgba(255, 255, 255, 0.65);
+  color: #fff;
+  box-shadow: 0 4px 18px rgba(26, 92, 61, 0.5);
   transform: scale(1.14) rotate(90deg);
 }
 
@@ -359,16 +544,27 @@
   pointer-events: none;
 }
 @keyframes badge-pop {
-  0% { transform: scale(0); }
-  55% { transform: scale(1.25); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0);
+  }
+  55% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 @keyframes badge-pulse {
-  0%, 100% {
-    box-shadow: 0 2px 8px rgba(224, 35, 61, 0.5), 0 0 0 0 rgba(224, 35, 61, 0.55);
+  0%,
+  100% {
+    box-shadow:
+      0 2px 8px rgba(224, 35, 61, 0.5),
+      0 0 0 0 rgba(224, 35, 61, 0.55);
   }
   50% {
-    box-shadow: 0 2px 8px rgba(224, 35, 61, 0.5), 0 0 0 5px rgba(224, 35, 61, 0);
+    box-shadow:
+      0 2px 8px rgba(224, 35, 61, 0.5),
+      0 0 0 5px rgba(224, 35, 61, 0);
   }
 }
 
@@ -379,11 +575,22 @@
     fab-shake 0.5s var(--ease-out) 0.05s;
 }
 @keyframes fab-shake {
-  0%, 100% { transform: translate(var(--drag-x), var(--drag-y)) rotate(0deg); }
-  20% { transform: translate(var(--drag-x), var(--drag-y)) rotate(-8deg); }
-  40% { transform: translate(var(--drag-x), var(--drag-y)) rotate(7deg); }
-  60% { transform: translate(var(--drag-x), var(--drag-y)) rotate(-5deg); }
-  80% { transform: translate(var(--drag-x), var(--drag-y)) rotate(3deg); }
+  0%,
+  100% {
+    transform: translate(var(--drag-x), var(--drag-y)) rotate(0deg);
+  }
+  20% {
+    transform: translate(var(--drag-x), var(--drag-y)) rotate(-8deg);
+  }
+  40% {
+    transform: translate(var(--drag-x), var(--drag-y)) rotate(7deg);
+  }
+  60% {
+    transform: translate(var(--drag-x), var(--drag-y)) rotate(-5deg);
+  }
+  80% {
+    transform: translate(var(--drag-x), var(--drag-y)) rotate(3deg);
+  }
 }
 
 /* MOBILE — badge to & rõ hơn để dễ chạm/nhìn trên màn nhỏ */
@@ -492,7 +699,8 @@
   overflow: hidden;
 
   /* Animation */
-  transform: translate(var(--drag-x), var(--drag-y)) translateY(20px) scale(0.94);
+  transform: translate(var(--drag-x), var(--drag-y)) translateY(20px)
+    scale(0.94);
   opacity: 0;
   pointer-events: none;
   transform-origin: bottom right;
@@ -506,7 +714,9 @@
   opacity: 1;
   pointer-events: all;
 }
-#eira-root.dragging #eira-win { transition: none; }
+#eira-root.dragging #eira-win {
+  transition: none;
+}
 
 /* MOBILE — key fix: height tính từ đáy lên */
 @media (max-width: 480px) {

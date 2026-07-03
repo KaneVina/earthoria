@@ -2299,21 +2299,7 @@ body.dark-mode #back-top {
   justify-content: space-between;
   margin-bottom: 14px;
 }
-.mission-pillar-title {
-  font-family: "Playfair Display", serif;
-  font-size: 20px;
-  font-weight: 400;
-  color: var(--forest);
-}
-.mission-pillar-icon {
-  width: 36px;
-  height: 36px;
-  border: 0.5px solid var(--border-gold);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--gold);
-}
+
 .mission-pillar-text {
   font-size: 13px;
   line-height: 1.8;

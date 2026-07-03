@@ -481,7 +481,15 @@ function EiraUI() {
       >
         {showMascot ? (
           <>
-            {/* Linh vật chào mừng — thay cho icon tròn thường trong lúc gợi ý đang hiện */}
+            {/* Ánh sáng xanh phát sáng phía sau linh vật */}
+            <div className="eira-fab-mascot-glow" aria-hidden="true" />
+
+            {/* Các đốm sáng lập lòe bay quanh linh vật */}
+            <span className="eira-firefly eira-firefly-1" aria-hidden="true" />
+            <span className="eira-firefly eira-firefly-2" aria-hidden="true" />
+            <span className="eira-firefly eira-firefly-3" aria-hidden="true" />
+            <span className="eira-firefly eira-firefly-4" aria-hidden="true" />
+            <span className="eira-firefly eira-firefly-5" aria-hidden="true" />
             <img
               className="eira-fab-mascot-img"
               src="/eira/eira-sayhi.png"
