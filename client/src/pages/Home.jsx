@@ -8,7 +8,8 @@ import toast from "react-hot-toast";
 import { Truck, Gift, BookOpen, Star, ShieldCheck } from "lucide-react";
 import StickyScrollTransition from "./StickyScrollTransition";
 import HeroBanner from "../components/HeroBanner";
-import SproutModel from "../components/SproutModel";
+import { lazy, Suspense } from "react";
+const SproutModel = lazy(() => import("../components/SproutModel"));
 
 /* ─────────────────────────────────────────────────────────────
    PRODUCT CARD COMPONENT
@@ -41,7 +42,10 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
     >
       <div className="product-img-wrap">
         <img
-          src={book.coverImage || "https://placehold.co/400x320/0d3330/faf8f3?text=Earthoria"}
+          src={
+            book.coverImage ||
+            "https://placehold.co/400x320/0d3330/faf8f3?text=Earthoria"
+          }
           alt={book.title}
         />
         <div className="product-img-overlay">
@@ -313,16 +317,32 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
               aria-label="Thêm vào giỏ hàng"
               disabled={isAdding}
               style={{
-                ...(added ? { background: "var(--forest)", color: "var(--ivory)" } : {}),
+                ...(added
+                  ? { background: "var(--forest)", color: "var(--ivory)" }
+                  : {}),
                 ...(isAdding ? { opacity: 0.5, cursor: "not-allowed" } : {}),
               }}
             >
               {added ? (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               ) : (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
                   <circle cx="9" cy="21" r="1" />
                   <circle cx="20" cy="21" r="1" />
                   <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
@@ -1015,7 +1035,10 @@ function FlashDealSection({ books, onAddCart }) {
             }}
           >
             <img
-              src={book.coverImage || "https://placehold.co/600x460/0d3330/faf8f3?text=Earthoria"}
+              src={
+                book.coverImage ||
+                "https://placehold.co/600x460/0d3330/faf8f3?text=Earthoria"
+              }
               alt={book.title}
               style={{
                 width: "100%",
@@ -1525,7 +1548,8 @@ function TopRatedSection({ books, onAddCart }) {
                   >
                     <img
                       src={
-                        book.coverImage || "https://placehold.co/72x88/0d3330/faf8f3?text=E"
+                        book.coverImage ||
+                        "https://placehold.co/72x88/0d3330/faf8f3?text=E"
                       }
                       alt={book.title}
                       style={{
@@ -2719,7 +2743,9 @@ export default function Home() {
 
       {/* ═══ VALUES ═══ */}
       <section className="values-section">
-        <SproutModel className="values-3d-bg" />
+        <Suspense fallback={null}>
+          <SproutModel className="values-3d-bg" />
+        </Suspense>
         <div className="values-inner">
           <div className="section-header reveal">
             <div className="section-eyebrow">

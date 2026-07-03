@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
 /**
@@ -10,8 +10,30 @@ import * as THREE from "three";
  */
 export default function SproutModel({ className = "" }) {
   const mountRef = useRef(null);
+  const [inView, setInView] = useState(false);
+
+  /* Chỉ khởi tạo Three.js scene khi section gần vào viewport, tránh tốn main thread lúc trang vừa mount */
+  useEffect(() => {
+    const el = mountRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "300px" }, // bắt đầu load sớm 300px trước khi chạm viewport, tránh giật khi cuộn tới
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   useEffect(() => {
+    if (!inView) return;
     const el = mountRef.current;
     if (!el) return;
 
@@ -265,7 +287,7 @@ export default function SproutModel({ className = "" }) {
       glowTexGold.dispose();
       if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
     };
-  }, []);
+  }, [inView]);
 
   return (
     <div
