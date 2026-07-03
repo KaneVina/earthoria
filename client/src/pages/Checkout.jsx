@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
+
 import {
   ArrowLeft,
   ChevronRight,
@@ -31,6 +32,7 @@ import { addressService } from '../services/addressService'
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import StepBar from "../components/StepBar";
 
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -319,7 +321,7 @@ const PAYMENT_OPTIONS = [
     id: "cod",
     icon: Truck,
     label: "Thanh toán khi nhận hàng",
-    sub: "Trả tiền mặt cho shipper",
+    sub: "Trả tiền mặt cho shipper / nhân viên",
   },
   {
     id: "vnpay",
@@ -417,93 +419,6 @@ const fmtExpiry = (v) => {
   const d = v.replace(/\D/g, "").slice(0, 4);
   return d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d;
 };
-
-/* ─────────────────────────────────────────
-   SUB-COMPONENTS
-───────────────────────────────────────── */
-
-/** Step indicator bar */
-function StepBar({ current }) {
-  const steps = [
-    { n: 1, label: "Giao hàng" },
-    { n: 2, label: "Thanh toán" },
-    { n: 3, label: "Xác nhận" },
-  ];
-  return (
-    <div style={{ display: "flex", alignItems: "center", marginBottom: 48 }}>
-      {steps.map((s, i) => {
-        const done = current > s.n;
-        const active = current === s.n;
-        return (
-          <div
-            key={s.n}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              flex: i < steps.length - 1 ? 1 : "none",
-            }}
-          >
-            {/* circle + label */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                flexShrink: 0,
-              }}
-            >
-              <div
-                style={{
-                  width: 36,
-                  height: 36,
-                  background: done || active ? "var(--forest)" : "transparent",
-                  border: `0.5px solid ${done || active ? "var(--forest)" : "var(--border)"}`,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  transition: "all 0.35s",
-                  color: done || active ? "var(--ivory)" : "var(--text-muted)",
-                  fontFamily: "Playfair Display, serif",
-                  fontSize: 15,
-                }}
-              >
-                {done ? <Check size={15} strokeWidth={2.5} /> : s.n}
-              </div>
-              <span
-                style={{
-                  fontSize: 11,
-                  letterSpacing: "0.14em",
-                  textTransform: "uppercase",
-                  color: active
-                    ? "var(--forest)"
-                    : done
-                      ? "var(--gold)"
-                      : "var(--text-muted)",
-                  fontWeight: active ? 500 : 300,
-                  transition: "color 0.35s",
-                }}
-              >
-                {s.label}
-              </span>
-            </div>
-            {/* connector */}
-            {i < steps.length - 1 && (
-              <div
-                style={{
-                  flex: 1,
-                  height: 0.5,
-                  margin: "0 18px",
-                  background: done ? "var(--gold)" : "var(--border)",
-                  transition: "background 0.5s",
-                }}
-              />
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
 
 /** Section header inside form */
 function SectionHead({ icon: Icon, title }) {
@@ -1001,8 +916,9 @@ function OrderSummary({
       {/* coupon input */}
       <div
         style={{
-          padding: "14px 22px",
+          padding: "16px 22px",
           borderBottom: "0.5px solid var(--border)",
+          background: couponApplied ? "transparent" : "var(--gold-pale)",
         }}
       >
         {couponApplied ? (
@@ -1010,14 +926,14 @@ function OrderSummary({
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 8,
-              padding: "9px 12px",
+              gap: 10,
+              padding: "12px 14px",
               background: "var(--gold-pale)",
-              border: "0.5px solid var(--border-gold)",
+              border: "1px solid var(--gold)",
             }}
           >
-            <Tag size={13} style={{ color: "var(--gold)", flexShrink: 0 }} />
-            <span style={{ flex: 1, fontSize: 12, color: "var(--forest)" }}>
+            <Tag size={15} style={{ color: "var(--gold)", flexShrink: 0 }} />
+            <span style={{ flex: 1, fontSize: 13, color: "var(--forest)" }}>
               <strong>{couponApplied.code}</strong> — {couponApplied.label}
             </span>
             <button
@@ -1034,43 +950,68 @@ function OrderSummary({
             </button>
           </div>
         ) : (
-          <div style={{ display: "flex" }}>
-            <input
-              value={couponInput}
-              onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-              onKeyDown={(e) => e.key === "Enter" && onApply()}
-              placeholder="Mã giảm giá"
+          <>
+            <div
               style={{
-                flex: 1,
-                background: "var(--ivory)",
-                border: "0.5px solid var(--border)",
-                borderRight: "none",
-                padding: "9px 12px",
-                fontFamily: "Be Vietnam Pro, sans-serif",
-                fontSize: 12,
-                color: "var(--forest)",
-                outline: "none",
-                letterSpacing: "0.06em",
-              }}
-            />
-            <button
-              onClick={onApply}
-              style={{
-                background: "var(--forest)",
-                border: "none",
-                padding: "9px 16px",
-                cursor: "pointer",
-                fontSize: 10,
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                color: "var(--ivory)",
-                fontFamily: "Be Vietnam Pro, sans-serif",
-                whiteSpace: "nowrap",
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                marginBottom: 10,
               }}
             >
-              Áp dụng
-            </button>
-          </div>
+              <Tag size={13} style={{ color: "var(--gold)" }} />
+              <span
+                style={{
+                  fontSize: 11,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: "var(--forest)",
+                  fontWeight: 500,
+                }}
+              >
+                Bạn có mã giảm giá?
+              </span>
+            </div>
+            <div style={{ display: "flex" }}>
+              <input
+                value={couponInput}
+                onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                onKeyDown={(e) => e.key === "Enter" && onApply()}
+                placeholder="Nhập mã tại đây"
+                style={{
+                  flex: 1,
+                  background: "var(--white)",
+                  border: "1px solid var(--gold)",
+                  borderRight: "none",
+                  padding: "11px 14px",
+                  fontFamily: "Be Vietnam Pro, sans-serif",
+                  fontSize: 13,
+                  color: "var(--forest)",
+                  outline: "none",
+                  letterSpacing: "0.08em",
+                  fontWeight: 500,
+                }}
+              />
+              <button
+                onClick={onApply}
+                style={{
+                  background: "var(--gold)",
+                  border: "1px solid var(--gold)",
+                  padding: "11px 20px",
+                  cursor: "pointer",
+                  fontSize: 11,
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  color: "var(--ink)",
+                  fontFamily: "Be Vietnam Pro, sans-serif",
+                  fontWeight: 600,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Áp dụng
+              </button>
+            </div>
+          </>
         )}
       </div>
 
@@ -1269,6 +1210,8 @@ export default function Checkout() {
 
   /* ── submission ── */
   const [placing, setPlacing] = useState(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
+  const [requestInvoice, setRequestInvoice] = useState(false);
   const [deliveryMode, setDeliveryMode] = useState('shipping')
 const [savedAddresses, setSavedAddresses] = useState([])
 const [selectedAddressId, setSelectedAddressId] = useState(null)
@@ -1294,6 +1237,18 @@ const [savingAddr, setSavingAddr] = useState(false)
   useEffect(() => {
     fetchCart();
   }, [fetchCart]);
+
+  /* ── chặn back để sửa lại thông tin sau khi đã xác nhận đặt hàng ── */
+  useEffect(() => {
+    if (!orderPlaced) return;
+    window.history.pushState(null, "", window.location.href);
+    const blockBack = () => {
+      window.history.pushState(null, "", window.location.href);
+    };
+    window.addEventListener("popstate", blockBack);
+    return () => window.removeEventListener("popstate", blockBack);
+  }, [orderPlaced]);
+
 const applyAddress = (addr) => {
   setSelectedAddressId(addr.id)
   setShip(f => ({
@@ -1458,9 +1413,12 @@ useEffect(() => {
         paymentMethod: method,
         couponCode: couponApplied?.code || null,
         note: ship.note || null,
+        requestInvoice,
       });
       toast.success("Đặt hàng thành công!");
-      navigate("/order-success");
+      setOrderPlaced(true);
+      setStep(4);
+      scrollTop();
     } catch (err) {
       toast.error(
         err?.response?.data?.message || "Đặt hàng thất bại, thử lại!",
@@ -1597,7 +1555,7 @@ useEffect(() => {
           <em style={{ fontStyle: "italic", color: "var(--gold)" }}>Hàng</em>
         </h1>
 
-        <StepBar current={step} />
+         <StepBar current={step + 1} />
       </div>
 
       {/* main 2-col layout */}
@@ -1621,7 +1579,7 @@ useEffect(() => {
               └──────────────────────────────────┘ */}
 {step === 1 && (
             <div className="co-step">
-              <SectionHead icon={MapPin} title="Thông tin giao hàng" />
+              <SectionHead icon={MapPin} title="Thiết lập đơn hàng" />
 
               {/* ── Tile chọn hình thức ── */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 28 }}>
@@ -1700,6 +1658,16 @@ useEffect(() => {
                       placeholder="Thời gian đến lấy dự kiến…"
                       style={{ background: 'var(--white)', border: '0.5px solid var(--border)', padding: '13px 16px', fontFamily: 'Be Vietnam Pro, sans-serif', fontSize: 13, color: 'var(--forest)', fontWeight: 300, outline: 'none', resize: 'vertical', minHeight: 72, width: '100%', boxSizing: 'border-box', borderRadius: 0 }} />
                   </Field>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                    <input type="checkbox" checked={requestInvoice} onChange={e => setRequestInvoice(e.target.checked)} style={{ display: 'none' }} />
+                    <div style={{ width: 18, height: 18, border: `0.5px solid ${requestInvoice ? 'var(--forest)' : 'var(--border)'}`, background: requestInvoice ? 'var(--forest)' : 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', flexShrink: 0 }}>
+                      {requestInvoice && <Check size={11} style={{ color: 'var(--ivory)' }} />}
+                    </div>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 300, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <FileText size={13} style={{ color: 'var(--gold)' }} /> Yêu cầu xuất hoá đơn (VAT)
+                    </span>
+                  </label>
                 </div>
               )}
 
@@ -1819,6 +1787,16 @@ useEffect(() => {
                       placeholder="Giao giờ hành chính, gọi trước khi giao…"
                       style={{ background: 'var(--white)', border: '0.5px solid var(--border)', padding: '13px 16px', fontFamily: 'Be Vietnam Pro, sans-serif', fontSize: 13, color: 'var(--forest)', fontWeight: 300, outline: 'none', resize: 'vertical', minHeight: 72, width: '100%', boxSizing: 'border-box', borderRadius: 0 }} />
                   </Field>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                    <input type="checkbox" checked={requestInvoice} onChange={e => setRequestInvoice(e.target.checked)} style={{ display: 'none' }} />
+                    <div style={{ width: 18, height: 18, border: `0.5px solid ${requestInvoice ? 'var(--forest)' : 'var(--border)'}`, background: requestInvoice ? 'var(--forest)' : 'var(--white)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', flexShrink: 0 }}>
+                      {requestInvoice && <Check size={11} style={{ color: 'var(--ivory)' }} />}
+                    </div>
+                    <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 300, display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <FileText size={13} style={{ color: 'var(--gold)' }} /> Yêu cầu xuất hoá đơn (VAT)
+                    </span>
+                  </label>
                 </div>
               )}
 
@@ -2373,10 +2351,14 @@ useEffect(() => {
               <ReviewBlock
                 title="Địa chỉ giao hàng"
                 icon={MapPin}
-                onEdit={() => {
-                  setStep(1);
-                  scrollTop();
-                }}
+                onEdit={
+                  orderPlaced
+                    ? undefined
+                    : () => {
+                        setStep(1);
+                        scrollTop();
+                      }
+                }
                 rows={[
                   { label: "Người nhận", value: ship.fullName },
                   { label: "Điện thoại", value: ship.phone },
@@ -2395,10 +2377,14 @@ useEffect(() => {
               <ReviewBlock
                 title="Thanh toán"
                 icon={CreditCard}
-                onEdit={() => {
-                  setStep(2);
-                  scrollTop();
-                }}
+                onEdit={
+                  orderPlaced
+                    ? undefined
+                    : () => {
+                        setStep(2);
+                        scrollTop();
+                      }
+                }
                 rows={[
                   {
                     label: "Hình thức",
@@ -2610,6 +2596,105 @@ useEffect(() => {
                 >
                   <ArrowLeft size={12} /> Sửa phương thức thanh toán
                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* ┌──────────────────────────────────┐
+              │  STEP 4 — Hoàn tất               │
+              └──────────────────────────────────┘ */}
+          {step === 4 && (
+            <div
+              className="co-step"
+              style={{ textAlign: "center", padding: "40px 20px" }}
+            >
+              <div
+                style={{
+                  width: 80,
+                  height: 80,
+                  borderRadius: "50%",
+                  background: "var(--forest)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 28px",
+                }}
+              >
+                <Check size={34} color="var(--ivory)" strokeWidth={2} />
+              </div>
+
+              <h2
+                style={{
+                  fontFamily: "Playfair Display, serif",
+                  fontSize: 26,
+                  fontWeight: 400,
+                  color: "var(--forest)",
+                  marginBottom: 12,
+                }}
+              >
+                Cảm ơn bạn đã đặt hàng!
+              </h2>
+              <p
+                style={{
+                  fontSize: 13,
+                  color: "var(--text-muted)",
+                  marginBottom: 40,
+                  fontWeight: 300,
+                }}
+              >
+                Chúng tôi đã gửi email xác nhận đơn hàng. Đơn hàng sẽ được xử
+                lý và giao trong thời gian sớm nhất.
+              </p>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: 14,
+                  justifyContent: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <Link to="/shop" style={{ textDecoration: "none" }}>
+                  <button
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      background: "transparent",
+                      border: "0.5px solid var(--border)",
+                      padding: "15px 32px",
+                      cursor: "pointer",
+                      fontFamily: "Be Vietnam Pro, sans-serif",
+                      fontSize: 11,
+                      letterSpacing: "0.18em",
+                      textTransform: "uppercase",
+                      color: "var(--text-muted)",
+                    }}
+                  >
+                    Tiếp tục mua sắm
+                  </button>
+                </Link>
+
+                <Link to="/account/orders" style={{ textDecoration: "none" }}>
+                  <button
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 10,
+                      background: "var(--forest)",
+                      border: "none",
+                      padding: "15px 32px",
+                      cursor: "pointer",
+                      fontFamily: "Be Vietnam Pro, sans-serif",
+                      fontSize: 11,
+                      letterSpacing: "0.18em",
+                      textTransform: "uppercase",
+                      color: "var(--ivory)",
+                    }}
+                  >
+                    Xem đơn hàng của bạn
+                  </button>
+                </Link>
               </div>
             </div>
           )}

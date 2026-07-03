@@ -6,11 +6,18 @@ import {
   Minus,
   Plus,
   ArrowLeft,
+  ArrowRight,
+  X,
+  Check,
+  Lock,
+  RotateCcw,
+  Truck,
 } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
 import { formatPrice } from "../utils/helpers";
 import { orderService } from "../services/orderService";
 import toast from "react-hot-toast";
+import StepBar from "../components/StepBar";
 import { SkeletonCartItem, SkeletonCartSummary } from "../components/skeletons/SkeletonCart";
 
 const SHIPPING_THRESHOLD = 300000;
@@ -42,12 +49,8 @@ export default function Cart() {
   const shippingPct = Math.min((afterCoupon / SHIPPING_THRESHOLD) * 100, 100);
 
   const handleApplyCoupon = () => {
-    if (coupon.trim().toUpperCase() === VALID_COUPON.code) {
-      setCouponApplied(true);
-      toast.success("Mã giảm giá đã được áp dụng!");
-    } else {
-      toast.error("Mã giảm giá không hợp lệ");
-    }
+    setCouponApplied(true);
+    toast.success("Mã giảm giá đã được áp dụng!");
   };
 
   const handleCheckout = async () => {
@@ -68,7 +71,7 @@ export default function Cart() {
         <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "40px 100px 0" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "20px" }}>
             <div className="eyebrow-line" />
-            <span className="eyebrow-text">Bước 1 / 3</span>
+            <span className="eyebrow-text">Bước 1 / 5</span>
           </div>
           {/* Title skeleton */}
           <span className="skeleton" style={{ display: "block", width: 220, height: 60, marginBottom: 8 }} />
@@ -181,7 +184,7 @@ export default function Cart() {
       <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "40px 100px 0" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "20px" }}>
           <div className="eyebrow-line" />
-          <span className="eyebrow-text">Bước 1 / 3</span>
+          <span className="eyebrow-text">Bước 1 / 5</span>
         </div>
         <h1
           style={{
@@ -189,11 +192,13 @@ export default function Cart() {
             fontSize: "clamp(40px,5vw,72px)",
             fontWeight: 300,
             color: "var(--forest)",
+            marginBottom: 40,
           }}
         >
           Giỏ{" "}
           <em style={{ fontStyle: "italic", color: "var(--gold)" }}>Hàng</em>
         </h1>
+        <StepBar current={1} />
       </div>
 
       {/* Main layout */}
@@ -227,41 +232,21 @@ export default function Cart() {
               <strong style={{ color: "var(--ivory)" }}>Mã ưu đãi tháng 6:</strong>{" "}
               Nhập <strong style={{ color: "var(--ivory)" }}>EARTH15</strong> để giảm 15%
             </span>
-            <div style={{ display: "flex" }}>
-              <input
-                value={coupon}
-                onChange={(e) => setCoupon(e.target.value)}
-                placeholder="NHẬP MÃ"
-                style={{
-                  background: "rgba(255,255,255,0.08)",
-                  border: "0.5px solid rgba(255,255,255,0.15)",
-                  borderRight: "none",
-                  padding: "8px 14px",
-                  fontSize: "11px",
-                  color: "rgba(255,255,255,0.8)",
-                  outline: "none",
-                  width: "140px",
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                }}
-                onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
-              />
-              <button
-                onClick={handleApplyCoupon}
-                style={{
-                  background: "var(--gold)",
-                  border: "none",
-                  padding: "8px 16px",
-                  cursor: "pointer",
-                  fontSize: "10px",
-                  letterSpacing: "0.14em",
-                  textTransform: "uppercase",
-                  color: "var(--ink)",
-                }}
-              >
-                Áp dụng
-              </button>
-            </div>
+            <button
+              onClick={handleApplyCoupon}
+              style={{
+                background: "var(--gold)",
+                border: "none",
+                padding: "8px 16px",
+                cursor: "pointer",
+                fontSize: "10px",
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "var(--ink)",
+              }}
+            >
+              Lưu ngay!
+            </button>
           </div>
 
           {/* Coupon applied */}
@@ -277,9 +262,7 @@ export default function Cart() {
                 marginBottom: "16px",
               }}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
+              <Check size={14} color="var(--gold)" strokeWidth={2} />
               <span style={{ fontFamily: "Playfair Display,serif", fontSize: "15px", color: "var(--forest)" }}>
                 EARTH15
               </span>
@@ -378,23 +361,6 @@ export default function Cart() {
                       >
                         {item.book.title}
                       </div>
-                      <div style={{ display: "flex", gap: "16px" }}>
-                        <button
-                          onClick={() => removeItem(item.id)}
-                          style={{
-                            fontSize: "11px",
-                            color: "var(--text-muted)",
-                            background: "transparent",
-                            border: "none",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "4px",
-                          }}
-                        >
-                          <Trash2 size={11} /> Xoá
-                        </button>
-                      </div>
                     </div>
                   </div>
 
@@ -485,7 +451,7 @@ export default function Cart() {
             <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)", marginBottom: "12px", fontWeight: 300 }}>
               {afterCoupon >= SHIPPING_THRESHOLD ? (
                 <span style={{ color: "var(--gold)" }}>
-                  🎉 Bạn được{" "}
+                  Bạn được{" "}
                   <strong style={{ color: "var(--ivory)" }}>miễn phí giao hàng!</strong>
                 </span>
               ) : (
@@ -544,11 +510,6 @@ export default function Cart() {
                 ...(couponApplied
                   ? [{ label: "Mã EARTH15 (−15%)", val: `-${formatPrice(couponDiscount)}`, red: true }]
                   : []),
-                {
-                  label: "Phí giao hàng",
-                  val: shippingFee === 0 ? "Miễn phí" : formatPrice(shippingFee),
-                  free: shippingFee === 0,
-                },
               ].map((line, i) => (
                 <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
                   <span style={{ color: "var(--text-muted)", fontWeight: 300 }}>{line.label}</span>
@@ -589,9 +550,7 @@ export default function Cart() {
                 }}
               >
                 Tiến hành thanh toán
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
+                <ArrowRight size={14} />
               </button>
             </Link>
 
@@ -628,15 +587,13 @@ export default function Cart() {
             }}
           >
             {[
-              "Thanh toán bảo mật · SSL 256-bit",
-              "Đổi trả miễn phí trong 30 ngày",
-              "Giao hàng toàn quốc 2–4 ngày",
-            ].map((t, i) => (
+              { text: "Thanh toán bảo mật · SSL 256-bit", Icon: Lock },
+              { text: "Đổi trả miễn phí trong 30 ngày", Icon: RotateCcw },
+              { text: "Giao hàng toàn quốc 2–4 ngày", Icon: Truck },
+            ].map(({ text, Icon }, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "11px", color: "var(--text-muted)" }}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.5">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                </svg>
-                {t}
+                <Icon size={13} color="var(--gold)" strokeWidth={1.5} />
+                {text}
               </div>
             ))}
           </div>
