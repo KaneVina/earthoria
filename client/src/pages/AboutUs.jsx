@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import Logo3D from "../components/Logo3D.jsx";
 import "../components/assets/css/about-us.css";
 
 export default function AboutUs() {
@@ -30,7 +31,37 @@ export default function AboutUs() {
       );
       rows.forEach((r) => valObserver.observe(r));
     }
-
+    // Tech stats — line of code counter
+    const counterEl = document.getElementById("tech-loc-counter");
+    if (counterEl) {
+      const target = parseInt(counterEl.dataset.target, 10) || 0;
+      let counted = false;
+      const counterObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && !counted) {
+              counted = true;
+              const duration = 2200;
+              const start = performance.now();
+              const easeOutExpo = (t) =>
+                t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+              const tick = (now) => {
+                const progress = Math.min((now - start) / duration, 1);
+                const eased = easeOutExpo(progress);
+                counterEl.textContent = Math.round(
+                  eased * target,
+                ).toLocaleString("vi-VN");
+                if (progress < 1) requestAnimationFrame(tick);
+              };
+              requestAnimationFrame(tick);
+              counterObserver.disconnect();
+            }
+          });
+        },
+        { threshold: 0.5 },
+      );
+      counterObserver.observe(counterEl);
+    }
     return () => observer.disconnect();
   }, []);
 
@@ -66,7 +97,7 @@ export default function AboutUs() {
           <h1 className="about-hero-headline reveal">
             Chúng Tôi Là
             <br />
-            <em>Earthoria</em> —<br />
+            <em className="hero-gradient-text">Earthoria</em> —<br />
             Nơi Sách Gặp
             <br />
             Công Nghệ
@@ -223,9 +254,9 @@ export default function AboutUs() {
               </span>
               <div className="section-eyebrow-line"></div>
             </div>
-            <h2 className="section-title">
-              Phân Tích <em>Logo</em> Earthoria
-            </h2>
+            <div className="section-title-logo3d">
+              <Logo3D />
+            </div>
             <p className="section-subtitle">
               Mỗi đường nét, màu sắc và hình khối đều mang một ý nghĩa riêng —
               phản ánh triết lý và tầm nhìn của Earthoria.
@@ -375,7 +406,7 @@ export default function AboutUs() {
               },
               {
                 role: "CPO — Product",
-                name: "Lê Tuân",
+                name: "Lê Tuấn",
                 code: "CE180824",
                 img: "le-tuan",
                 desc: "Phát triển concept và chiến lược nội dung sách. Thiết kế hệ thống câu đố, hoạt động tương tác và đề xuất tích hợp AI & AR vào trải nghiệm học tập.",
@@ -578,7 +609,7 @@ export default function AboutUs() {
                 date: "Tuần 2–3",
                 dateSub: "Thiết kế nội dung",
                 title: "Thiết Kế Nội Dung & Hệ Thống Câu Đố",
-                desc: 'Nhóm CPO Lê Tuân và CDO Lê Anh Song Đường dẫn dắt giai đoạn thiết kế nội dung cho cuốn sách đầu tiên với chủ đề "Bảo vệ Trái Đất". Hệ thống câu đố, trang trả lời và nội dung học mở rộng được xây dựng cho 15–20 trang, kèm QR code liên kết AR.',
+                desc: 'Nhóm CPO Lê Tuấn và CDO Lê Anh Song Đường dẫn dắt giai đoạn thiết kế nội dung cho cuốn sách đầu tiên với chủ đề "Bảo vệ Trái Đất". Hệ thống câu đố, trang trả lời và nội dung học mở rộng được xây dựng cho 15–20 trang, kèm QR code liên kết AR.',
                 tag: "Content manuscript hoàn thành",
                 delay: "reveal-delay-2",
               },
@@ -641,7 +672,11 @@ export default function AboutUs() {
         <div className="advisor-inner">
           <div className="section-header reveal">
             <div className="advisor-logo-wrap">
-              <img src="/logo-hoptac.png" alt="Logo hợp tác" className="advisor-logo" />
+              <img
+                src="/logo-hoptac.png"
+                alt="Logo hợp tác"
+                className="advisor-logo"
+              />
             </div>
             <div className="section-eyebrow">
               <div className="section-eyebrow-line"></div>
@@ -694,6 +729,82 @@ export default function AboutUs() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Dong code */}
+      {/* TECH STATS */}
+      <section className="tech-stats-section">
+        <div className="tech-stats-blob tech-stats-blob-navy"></div>
+        <div className="tech-stats-blob tech-stats-blob-green"></div>
+
+        <div className="tech-stats-inner">
+          <div className="tech-stats-header reveal">
+            <div
+              className="section-eyebrow"
+              style={{ justifyContent: "center" }}
+            >
+              <div
+                className="section-eyebrow-line"
+                style={{ background: "rgba(91,161,59,0.5)" }}
+              ></div>
+              <span className="section-eyebrow-text">Hậu Trường Kỹ Thuật</span>
+              <div
+                className="section-eyebrow-line"
+                style={{ background: "rgba(91,161,59,0.5)" }}
+              ></div>
+            </div>
+            <h2 className="tech-stats-title">
+              Được Kiến Tạo Bằng <em>Từng Dòng Code</em>
+            </h2>
+            <p className="tech-stats-sub">
+              Từ giao diện tương tác, mô hình 3D dựng lại chính logo thương
+              hiệu, đến trợ lý AI đồng hành cùng trẻ nhỏ — mỗi tính năng của
+              Earthoria đều bắt đầu từ một dòng code.
+            </p>
+          </div>
+
+          <div className="tech-stats-editor reveal reveal-delay-1">
+            <div className="tech-editor-topbar">
+              <div className="tech-editor-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div className="tech-editor-filename">earthoria.stats</div>
+            </div>
+
+            <div className="tech-editor-body">
+              <div className="tech-editor-counter">
+                <span
+                  className="tech-editor-number"
+                  id="tech-loc-counter"
+                  data-target="62246"
+                >
+                  0
+                </span>
+                <span className="tech-editor-cursor">|</span>
+              </div>
+              <div className="tech-editor-caption">
+                dòng code đã viết — và vẫn đang tăng mỗi ngày
+              </div>
+
+              <div className="tech-stack-tags">
+                {[
+                  "React",
+                  "Three.js / WebGL",
+                  "React Three Fiber",
+                  "AI Assistant",
+                  "AR 3D",
+                  "Vite",
+                ].map((t, i) => (
+                  <span className="tech-stack-tag" key={i}>
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>

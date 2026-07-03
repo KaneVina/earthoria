@@ -133,21 +133,24 @@ function LogoGroup() {
 }
 
 export default function Logo3D() {
-  const [autoRotate, setAutoRotate] = useState(true);
+  const [autoRotate, setAutoRotate] = useState(false);
 
   return (
     <div
-      style={{
+       style={{
         width: "100%",
-        height: "100%",
-        minHeight: 480,
+        height: 220,
         position: "relative",
-        background: "linear-gradient(180deg,#f7faf8 0%,#eef3ee 100%)",
-        borderRadius: 16,
         overflow: "hidden",
       }}
     >
-      <Canvas shadows camera={{ position: [0, 0.6, 13], fov: 30 }} dpr={[1, 2]} gl={{ antialias: true }}>
+      <Canvas
+        shadows
+        camera={{ position: [0, 0.6, 9], fov: 30 }}
+        dpr={[1, 2]}
+        gl={{ antialias: true, alpha: true }}
+        style={{ background: "transparent" }}
+      >
         <ambientLight intensity={0.55} />
         <directionalLight
           position={[6, 9, 8]}
@@ -162,38 +165,17 @@ export default function Logo3D() {
 
         <ContactShadows position={[0, -1.7, 0]} opacity={0.35} scale={18} blur={2.2} far={5} />
 
-        <Environment preset="city" />
-
         <OrbitControls
           enablePan={false}
           autoRotate={autoRotate}
           autoRotateSpeed={1.1}
-          minDistance={7}
-          maxDistance={22}
+          minDistance={5}
+          maxDistance={14}
           minPolarAngle={Math.PI / 3.2}
           maxPolarAngle={Math.PI / 1.7}
+          onStart={() => setAutoRotate(true)}
         />
       </Canvas>
-
-      <button
-        onClick={() => setAutoRotate((v) => !v)}
-        style={{
-          position: "absolute",
-          bottom: 16,
-          right: 16,
-          padding: "8px 14px",
-          borderRadius: 999,
-          border: "1px solid #d8e2da",
-          background: "rgba(255,255,255,0.9)",
-          color: "#0E3B4D",
-          fontSize: 13,
-          fontWeight: 600,
-          cursor: "pointer",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-        }}
-      >
-        {autoRotate ? "Tắt tự xoay" : "Bật tự xoay"}
-      </button>
     </div>
   );
 }
