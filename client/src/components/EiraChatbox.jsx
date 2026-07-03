@@ -56,6 +56,10 @@ TEAM EARTHORIA:
 - CPO: Lê Tuấn — nội dung sách, hệ thống câu đố, trải nghiệm học tập
 - CTO: Nguyễn Phúc Khang — phát triển AI, AR, website và ứng dụng. Cha đẻ của website earthoria hiện tại.
 
+MÃ SỐ
+Mã số Mã Số Earthoria hay còn gọi là mã ETR. Đây là mã số khi tài khoản của bạn đã xác thực thành công bởi google và được earthoria duyệt.
+Trong một số trường hợp, cung cấp mã earthoria để nhân viên có thể kiểm tra thông tin của bạn. Mã earthoria sẽ bị tước vĩnh viễn nếu bạn vi phạm các nguyên tắc cộng đồng của chúng tôi hoặc tài khoản bị vô hiệu hóa hay đình chỉ.
+
 LỢI ÍCH:
 - Cho trẻ: tăng hứng thú đọc sách, kích thích tư duy sáng tạo, ghi nhớ kiến thức tốt hơn
 - Cho phụ huynh & giáo viên: công cụ học tập hiện đại, kết hợp giải trí và giáo dục có chiều sâu
