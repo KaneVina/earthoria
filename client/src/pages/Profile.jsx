@@ -1347,7 +1347,7 @@ function OverviewTab({
         <div className="pf-field is-locked">
           <div className="pf-field-label">
             <span className="pf-field-icon">{Icon.shield}</span>
-            Mã Số Tài Khoản
+            Mã Số Tài Khoản (MTK)
             <span
               className="pf-field-lock-badge"
               title="Mã định danh không thể thay đổi"
