@@ -2819,8 +2819,12 @@ function useTheme() {
   }, [isDark]);
 
   useEffect(() => {
-    const hasManualChoice = localStorage.getItem("earthoria-theme-manual") === "1";
-    if (hasManualChoice) return;
+    // Chỉ đồng bộ theo hệ điều hành nếu đây là lần đầu tiên vào web
+    // (chưa từng lưu theme nào). Nếu đã có giá trị lưu rồi (kể cả mặc định
+    // "light" ban đầu), tuyệt đối không ghi đè nữa mỗi khi tab này mount lại.
+    const hasStoredTheme = localStorage.getItem("earthoria-theme") !== null;
+    if (hasStoredTheme) return;
+
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
     setIsDark(mq.matches);
     const onChange = (e) => setIsDark(e.matches);
@@ -2828,10 +2832,7 @@ function useTheme() {
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
-  const toggle = () => {
-    localStorage.setItem("earthoria-theme-manual", "1");
-    setIsDark((v) => !v);
-  };
+  const toggle = () => setIsDark((v) => !v);
 
   return { isDark, toggle };
 }

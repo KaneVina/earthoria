@@ -5,6 +5,7 @@ import {
   ShieldCheck,
   Truck,
   RefreshCcw,
+  Cookie,
   ArrowRight,
   Mail,
   Phone,
@@ -39,6 +40,17 @@ const POLICIES = [
     label: "Xem Chính Sách Bảo Mật",
   },
   {
+    icon: Cookie,
+    eyebrow: "Theo Dõi & Cá Nhân Hóa",
+    title: "Chính Sách Cookie",
+    desc: "Cách chúng tôi sử dụng cookie để vận hành website, ghi nhớ giỏ hàng và cá nhân hóa trải nghiệm đọc sách — cùng cam kết không quảng cáo theo dõi trên hồ sơ trẻ em.",
+    version: "v1.6",
+    updated: "15/06/2026",
+    highlights: ["Toàn quyền bật/tắt từng nhóm", "Không quảng cáo cho trẻ em", "Bảng chi tiết từng cookie"],
+    to: "/legal/cookies",
+    label: "Xem Chính Sách Cookie",
+  },
+  {
     icon: RefreshCcw,
     eyebrow: "Đổi Trả & Hoàn Tiền",
     title: "Chính Sách Trả Hàng & Hoàn Tiền",
@@ -51,6 +63,7 @@ const POLICIES = [
   },
   {
     icon: Truck,
+    eyebrow: "Giao Nhận",
     title: "Chính Sách Vận Chuyển",
     desc: "Mọi thứ cần biết về thời gian giao hàng, phí vận chuyển, tiêu chuẩn đóng gói bảo vệ sách AR và cam kết xử lý khi hàng hỏng hoặc thất lạc trong quá trình vận chuyển.",
     version: "v2.1",
@@ -439,7 +452,8 @@ export default function LegalHub() {
           </h2>
           <p className="lh-contact-sub reveal">
             Đội ngũ Earthoria sẵn sàng giải đáp mọi thắc mắc liên quan đến
-            điều khoản, bảo mật hoặc vận chuyển — từ thứ Hai đến Chủ Nhật.
+            điều khoản, bảo mật, cookie hoặc vận chuyển — từ thứ Hai đến Chủ
+            Nhật.
           </p>
           <div className="lh-contact-grid reveal">
             <a href="mailto:legal@earthoria.vn" className="lh-contact-item">

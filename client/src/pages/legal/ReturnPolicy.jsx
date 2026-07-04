@@ -870,14 +870,6 @@ export default function ReturnPolicy() {
           </div>
         </div>
       </section>
-
-      <button
-        className={`legal-back-top ${showTop ? "visible" : ""}`}
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        aria-label="Lên đầu trang"
-      >
-        <ArrowUp size={18} />
-      </button>
     </>
   );
 }

@@ -927,15 +927,6 @@ export default function ShippingPolicy() {
           </div>
         </div>
       </section>
-
-      {/* ═══ BACK TO TOP ═══ */}
-      <button
-        className={`legal-back-top ${showTop ? "visible" : ""}`}
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        aria-label="Lên đầu trang"
-      >
-        <ArrowUp size={18} />
-      </button>
     </>
   );
 }

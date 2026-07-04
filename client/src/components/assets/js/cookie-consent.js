@@ -127,7 +127,7 @@
           Earthoria sử dụng cookie thiết yếu để trang hoạt động và cookie tuỳ chọn để cải thiện
           trải nghiệm của bạn. Bạn có thể chấp nhận tất cả, chỉ giữ cookie cần thiết,
           hoặc tự tuỳ chỉnh từng nhóm. Xem thêm tại
-          <a href="#" id="cc-policy-link">Chính sách Cookie</a>.
+          <a href="/legal/cookie" id="cc-policy-link">Chính sách Cookie</a>.
         </p>
       </div>
       <div class="cc-banner-actions">

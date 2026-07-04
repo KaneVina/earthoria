@@ -35,6 +35,7 @@ import Analytics from "./pages/admin/Analytics";
 import Maintenance from "./pages/Maintenance";
 import Logo3D from "./components/Logo3D";
 import ArView from "./pages/ArView";
+import CookiePolicy from "./pages/legal/CookiePolicy";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -88,6 +89,7 @@ export default function App() {
           <Route path="/legal/terms" element={<TermsOfService />} />
           <Route path="/legal/privacy" element={<PrivacyPolicy />} />
           <Route path="/legal/shipping" element={<ShippingPolicy />} />
+          <Route path="/legal/cookie" element={<CookiePolicy />} />
           <Route path="/sitemap" element={<Sitemap />} />
 
           <Route
