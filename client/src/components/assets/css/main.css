@@ -831,45 +831,7 @@ nav {
   transform: scale(1.06);
   filter: saturate(1);
 }
-.product-img-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(13, 43, 30, 0);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.4s ease;
-  gap: 12px;
-}
-.product-card:hover .product-img-overlay {
-  background: rgba(13, 43, 30, 0.45);
-}
-.overlay-btn {
-  font-family: "Be Vietnam Pro", sans-serif;
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--ivory);
-  border: 0.5px solid rgba(255, 255, 255, 0.6);
-  padding: 10px 20px;
-  cursor: pointer;
-  background: transparent;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: all 0.3s ease 0.05s;
-}
-.product-card:hover .overlay-btn {
-  opacity: 1;
-  transform: translateY(0);
-}
-.overlay-btn.primary {
-  background: rgba(250, 248, 243, 0.15);
-  backdrop-filter: blur(8px);
-}
-.overlay-btn.primary:hover {
-  background: var(--ivory);
-  color: var(--forest);
-}
+
 .product-img-overlay {
   position: absolute;
   inset: 0;

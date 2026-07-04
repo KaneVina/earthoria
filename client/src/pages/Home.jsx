@@ -555,19 +555,18 @@ function NewsletterSection() {
   const [sent, setSent] = useState(false);
   return (
     <section
+      className="newsletter-section"
       style={{
         background: "var(--parchment)",
-        padding: "80px 100px",
         borderTop: "0.5px solid var(--border)",
         borderBottom: "0.5px solid var(--border)",
       }}
     >
       <div
+        className="newsletter-grid"
         style={{
           maxWidth: "1400px",
           margin: "0 auto",
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
           gap: "80px",
           alignItems: "center",
         }}
@@ -1520,9 +1519,8 @@ function TopRatedSection({ books, onAddCart }) {
 
         {/* grid */}
         <div
+          className="top-rated-grid"
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
             gap: "0",
             border: "0.5px solid var(--border)",
           }}
@@ -2436,12 +2434,10 @@ export default function Home() {
           EARTHORIA
         </div>
         <div
+          className="promo-banner-grid"
           style={{
             maxWidth: "1400px",
             margin: "0 auto",
-            padding: "80px 100px",
-            display: "grid",
-            gridTemplateColumns: "1fr auto",
             gap: "60px",
             alignItems: "center",
           }}
@@ -2645,10 +2641,8 @@ export default function Home() {
           {/* Bestseller rank podium — fixed */}
           {displayBest.length > 0 && (
             <div
-              className="reveal"
+              className="reveal bestseller-podium"
               style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr 1fr",
                 gap: "16px",
                 marginBottom: "48px",
                 alignItems: "end",

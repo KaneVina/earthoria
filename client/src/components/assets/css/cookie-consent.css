@@ -297,16 +297,126 @@ body.dark-mode .cc-group { border-color: rgba(255,255,255,0.08); }
 body.dark-mode .cc-modal-close { border-color: rgba(255,255,255,0.12); color: rgba(200,212,204,0.6); }
 body.dark-mode .cc-toggle-track { background: #2a3530; border-color: rgba(255,255,255,0.1); }
 
-/* ── Responsive ── */
+/* ═══════════════════════════════════════════════
+   RESPONSIVE — MOBILE
+   Modal chuyển thành bottom-sheet "kiểu app", banner gọn & dễ bấm,
+   tôn trọng vùng an toàn (notch / thanh home-indicator), animation
+   mượt bằng cubic-bezier giống hệt bản desktop.
+   ═══════════════════════════════════════════════ */
+
+/* Tiện ích: JS có thể gắn class này lên <body> khi banner/modal đang mở
+   để khoá cuộn nền trên mobile (tránh giật/lag khi kéo modal). */
+body.cc-lock-scroll { overflow: hidden; height: 100%; }
+
 @media (max-width: 860px) {
+
+  /* ── Banner: gọn lại, dán sát mép, chừa vùng an toàn phía dưới ── */
   .cc-banner {
     grid-template-columns: 1fr;
-    left: 12px; right: 12px; bottom: 12px;
-    padding: 24px 22px; gap: 18px;
+    left: 12px; right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    padding: 22px 20px;
+    gap: 16px;
+    box-shadow: 0 -8px 40px rgba(13,43,30,0.16), 0 12px 40px rgba(13,43,30,0.12);
+    will-change: transform, opacity;
   }
   .cc-banner-icon { display: none; }
-  .cc-banner-actions { min-width: 0; }
-  .cc-modal { max-width: calc(100% - 24px); max-height: 90vh; }
-  .cc-modal-header, .cc-modal-body, .cc-modal-footer { padding-left: 24px; padding-right: 24px; }
-  .cc-modal-footer { flex-direction: column; }
+  .cc-banner-title { font-size: 16.5px; gap: 8px; }
+  .cc-banner-text { font-size: 12.5px; line-height: 1.65; max-width: 100%; }
+
+  /* Nút bấm: full-width, xếp chồng, vùng chạm thoải mái (≥48px) */
+  .cc-banner-actions { min-width: 0; width: 100%; gap: 8px; }
+  .cc-btn { font-size: 11.5px; padding: 14px 20px; }
+  .cc-btn-accept-all,
+  .cc-btn-essential-only { width: 100%; min-height: 48px; }
+  .cc-btn-customize {
+    width: 100%; padding: 10px;
+    order: 3; /* luôn nằm cuối để 2 lựa chọn chính nổi bật hơn */
+  }
+  .cc-banner-progress { height: 2px; }
+
+  /* Backdrop nhẹ tay hơn trên màn hình nhỏ, tránh cảm giác nặng nề */
+  .cc-banner-backdrop { background: rgba(10,14,12,0.3); }
+
+  /* ── Nút mở lại cài đặt: né home-indicator, dễ bấm bằng ngón cái ── */
+  .cc-reopen-btn {
+    left: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+    width: 46px; height: 46px;
+  }
+
+  /* ── Modal → Bottom sheet: trượt lên từ đáy màn hình ──
+     Quen thuộc với thao tác một tay, mượt hơn centered-modal khi nội
+     dung dài phải cuộn, và không bị "nhảy" theo bàn phím ảo. */
+  .cc-modal {
+    top: auto; left: 0; right: 0; bottom: 0;
+    width: 100%; max-width: 100%;
+    max-height: 88vh;
+    transform: translateY(100%);
+    border: none;
+    border-top: 0.5px solid var(--border-gold, rgba(74,158,63,0.3));
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -20px 60px rgba(13,43,30,0.28);
+    -webkit-overflow-scrolling: touch;
+    will-change: transform;
+  }
+  .cc-modal.show { transform: translateY(0); }
+
+  /* Tay cầm kéo — gợi ý trực quan đây là sheet có thể vuốt để đóng */
+  .cc-modal-header {
+    position: sticky; top: 0;
+    padding: 28px 22px 16px;
+    border-radius: 20px 20px 0 0;
+  }
+  .cc-modal-header::before {
+    content: "";
+    position: absolute;
+    top: 10px; left: 50%;
+    transform: translateX(-50%);
+    width: 36px; height: 4px;
+    background: var(--border, rgba(13,43,30,0.18));
+    border-radius: 4px;
+  }
+  .cc-modal-eyebrow-text { font-size: 8.5px; }
+  .cc-modal-title { font-size: 20px; padding-right: 30px; }
+  .cc-modal-sub { font-size: 12px; }
+  .cc-modal-close { top: 24px; right: 16px; width: 30px; height: 30px; }
+
+  .cc-modal-body { padding: 4px 22px 8px; }
+  .cc-group { padding: 18px 0; }
+  .cc-group-head { flex-wrap: wrap; }
+  .cc-group-title { font-size: 15px; }
+  .cc-group-desc { font-size: 12px; max-width: 100%; }
+
+  /* Toggle: vùng chạm lớn hơn cho ngón tay */
+  .cc-toggle { width: 48px; height: 26px; }
+  .cc-toggle-thumb { width: 20px; height: 20px; }
+  .cc-toggle input:checked ~ .cc-toggle-track .cc-toggle-thumb { transform: translateX(22px); }
+  .cc-toggle.locked .cc-toggle-thumb { transform: translateX(22px); }
+
+  /* Footer: nút xếp chồng, chừa vùng an toàn dưới cùng */
+  .cc-modal-footer {
+    flex-direction: column;
+    padding: 16px 22px calc(18px + env(safe-area-inset-bottom, 0px));
+  }
+  .cc-modal-footer .cc-btn { min-height: 48px; }
 }
+
+/* ── Điện thoại nhỏ / rất hẹp (≤ 380px) ── */
+@media (max-width: 380px) {
+  .cc-banner { left: 8px; right: 8px; padding: 18px 16px; }
+  .cc-banner-title { font-size: 15.5px; }
+  .cc-banner-text { font-size: 12px; }
+  .cc-btn { font-size: 10.5px; padding: 13px 16px; }
+  .cc-modal-title { font-size: 18px; }
+  .cc-reopen-btn { width: 44px; height: 44px; }
+}
+
+/* ── Landscape trên di động: modal thấp hơn, không chiếm hết màn hình ── */
+@media (max-width: 860px) and (orientation: landscape) {
+  .cc-modal { max-height: 96vh; border-radius: 16px 16px 0 0; }
+  .cc-banner { bottom: 8px; padding: 16px 20px; }
+}
+
+/* ── Dark mode bổ sung cho phần mobile ── */
+body.dark-mode .cc-modal-header::before { background: rgba(255,255,255,0.16); }
