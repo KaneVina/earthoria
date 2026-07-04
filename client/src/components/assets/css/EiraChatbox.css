@@ -53,132 +53,25 @@
   margin: 0;
   padding: 0;
 }
+
 /* ══════════════════════════════════════════════════
-   PROMO BUBBLE
+   ACCESSIBILITY — focus-visible rõ ràng cho bàn phím
+   (các nút bên dưới có outline:none nên cần thay thế
+   bằng một chỉ báo focus tương đương, tránh mất dấu vết
+   khi điều hướng bằng Tab)
    ══════════════════════════════════════════════════ */
-#eira-promo {
-  position: fixed;
-  bottom: 96px;
-  right: 82px;
-  z-index: 99988;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  pointer-events: none;
-  opacity: 0;
-  transform: translate(var(--drag-x), var(--drag-y)) translateY(10px)
-    scale(0.92);
-  transition:
-    opacity 0.3s var(--ease-out),
-    transform 0.42s var(--ease-spring);
-  will-change: opacity, transform;
+#eira-root button:focus-visible,
+#eira-root [role="button"]:focus-visible {
+  outline: 2px solid var(--egl);
+  outline-offset: 2px;
+  border-radius: 6px;
 }
-#eira-promo.show {
-  opacity: 1;
-  transform: translate(var(--drag-x), var(--drag-y));
-  pointer-events: auto;
+#eira-root #eira-fab:focus-visible {
+  outline: 3px solid var(--egl);
+  outline-offset: 3px;
 }
-#eira-promo.hidden {
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(var(--drag-x), var(--drag-y)) translateY(8px) scale(0.95);
-}
-#eira-root.dragging #eira-promo {
-  transition: none;
-}
-
-@media (max-width: 480px) {
-  #eira-promo {
-    right: 44px; /* dịch trái để đầu nhọn của bong bóng chỉa đúng vào tâm nút FAB tròn */
-    bottom: calc(90px + env(safe-area-inset-bottom, 0px));
-  }
-}
-
-.eira-promo-bubble {
-  position: relative;
-  background: linear-gradient(135deg, #0f3835, #0a2e2b);
-  color: rgba(255, 255, 255, 0.92);
-  display: block;
-  font-size: 12.5px;
-  font-weight: 500;
-  line-height: 1.5;
-  padding: 10px 36px 10px 14px !important;
-  border-radius: 14px 14px 4px 14px;
-  min-width: 200px;
-  max-width: 240px;
-  white-space: normal;
-  word-break: break-word;
-  border: 1px solid rgba(61, 158, 50, 0.28);
-  box-shadow:
-    0 14px 36px rgba(10, 46, 43, 0.3),
-    0 3px 8px rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-  overflow: visible;
-  transition:
-    transform 0.22s var(--ease-out),
-    box-shadow 0.22s;
-}
-.eira-promo-bubble::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(61, 158, 50, 0.55),
-    transparent
-  );
-}
-.eira-promo-bubble::after {
-  content: "";
-  position: absolute;
-  bottom: 8px;
-  right: -8px;
-  top: unset;
-  border: 8px solid transparent;
-  border-left-color: #0f3835;
-  border-right: none;
-}
-.eira-promo-bubble:hover {
-  transform: translateY(-3px);
-  box-shadow:
-    0 20px 48px rgba(10, 46, 43, 0.38),
-    0 6px 14px rgba(0, 0, 0, 0.12);
-}
-.eira-promo-bubble strong {
-  color: var(--egl);
-  font-weight: 650;
-}
-
-.eira-promo-close {
-  position: absolute;
-  top: 10px;
-  right: 8px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.92);
-  border: none;
-  color: #0d3330;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  z-index: 10;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  transition:
-    background 0.18s,
-    color 0.18s,
-    transform 0.22s var(--ease-bounce);
-}
-.eira-promo-close:hover {
-  background: #fff;
-  color: #0a2e2b;
-  transform: scale(1.14) rotate(90deg);
+#eira-root #eira-inp:focus-visible {
+  outline: none; /* viền đã được xử lý qua #eira-input-row:focus-within */
 }
 
 /* ══════════════════════════════════════════════════
@@ -252,7 +145,7 @@
 
 /* ══════════════════════════════════════════════════
    MASCOT — trạng thái "chào mừng": nút tròn phình to
-   thành linh vật, có nút X riêng để đóng vĩnh viễn
+   thành linh vật, có nút X riêng để ẩn tạm 5 phút
    ══════════════════════════════════════════════════ */
 #eira-fab.mascot {
   width: 188px;
@@ -325,52 +218,6 @@
     opacity: 1;
     transform: translate(-50%, -50%) scale(1.1);
   }
-}
-
-/* Bệ sách xanh phát sáng dưới chân linh vật */
-.eira-fab-mascot-base {
-  position: absolute;
-  bottom: 4%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 58%;
-  z-index: 1;
-  pointer-events: none;
-}
-.eira-fab-mascot-book {
-  display: block;
-  position: relative;
-  width: 100%;
-  height: 16px;
-}
-.eira-fab-mascot-book::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  height: 10px;
-  border-radius: 50%;
-  background: radial-gradient(
-    ellipse at center,
-    rgba(61, 158, 50, 0.6) 0%,
-    rgba(61, 158, 50, 0.24) 55%,
-    transparent 80%
-  );
-  filter: blur(2px);
-}
-.eira-fab-mascot-book::after {
-  content: "";
-  position: absolute;
-  top: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 62%;
-  height: 7px;
-  border-radius: 3px;
-  background: linear-gradient(180deg, #4bc23f, #1f6b1a);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Các đốm sáng lập lòe bay quanh linh vật */
@@ -909,31 +756,33 @@
 }
 .eira-hdr-sub {
   font-size: 10.5px;
-  color: rgba(255, 255, 255, 0.38);
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.06em;
   margin-top: 3px;
   display: flex;
   align-items: center;
-  gap: 5px;
 }
-.eira-hdr-sub::before {
-  content: "";
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--eg);
-  flex-shrink: 0;
-  animation: blink-dot 2.2s ease-in-out infinite;
+
+.eira-hdr-badge {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  background: linear-gradient(135deg, var(--eg), var(--egl));
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  vertical-align: middle;
+  margin-left: 6px;
+  position: relative;
+  top: -1px;
 }
-@keyframes blink-dot {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.2;
-  }
+
+.eira-hdr-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1;
 }
 
 .eira-close-btn {
@@ -1181,19 +1030,15 @@
 
 .em-time {
   font-size: 12px;
-  color: var(--c-hint);
+  color: rgba(0, 0, 0, 0.45);
   margin-top: 4px;
   padding: 0 3px;
   letter-spacing: 0.03em;
+  opacity: 1 !important;
   transition: opacity 0.18s;
 }
-
-.em-time {
-  opacity: 1 !important; /* bỏ mờ */
-  color: rgba(0, 0, 0, 0.45); /* tăng từ var(--c-hint) */
-}
 .em:not(:hover) .em-time {
-  opacity: 0.5;
+  opacity: 0.5 !important;
 }
 .em.user .em-time {
   text-align: right;
@@ -1365,7 +1210,6 @@
   white-space: nowrap;
   line-height: 1 !important;
   text-decoration: none !important;
-  outline: none !important;
   margin: 0 !important;
   transition:
     background 0.18s,
@@ -1498,6 +1342,15 @@
   opacity: 0.42;
   animation: blink-dot 2.2s ease-in-out infinite;
 }
+@keyframes blink-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
 
 /* ══════════════════════════════════════════════════
    REDUCED MOTION
@@ -1511,17 +1364,14 @@
   #eira-hdr::after,
   #eira-root .eira-welcome::before,
   .eira-foot-dot,
-  .eira-fab-mascot-img,
-  .eira-hdr-sub::before {
+  .eira-fab-mascot-img {
     animation: none !important;
   }
   #eira-win,
-  #eira-promo,
   .em,
   .eira-chip,
   .em-action-btn,
   .eira-close-btn,
-  .eira-promo-close,
   #eira-send,
   .eira-avatar,
   .em-av,
@@ -1529,6 +1379,7 @@
     transition: none !important;
   }
 }
+
 #eira-fab.fab-open {
   opacity: 0;
   pointer-events: none;
@@ -1536,39 +1387,4 @@
   transition:
     opacity 0.2s ease,
     transform 0.2s ease;
-}
-.eira-hdr-badge {
-  display: inline-block;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  background: linear-gradient(135deg, var(--eg), var(--egl));
-  color: #fff;
-  padding: 2px 6px;
-  border-radius: 4px;
-  vertical-align: middle;
-  margin-left: 6px;
-  position: relative;
-  top: -1px;
-}
-
-.eira-hdr-sub {
-  font-size: 10.5px;
-  color: rgba(255, 255, 255, 0.5);
-  letter-spacing: 0.06em;
-  margin-top: 3px;
-  display: flex;
-  align-items: center;
-}
-
-/* Xóa ::before cũ vì đã thay bằng span */
-.eira-hdr-sub::before {
-  display: none;
-}
-
-.eira-hdr-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  z-index: 1;
 }

@@ -670,14 +670,30 @@ export default function ArView() {
             </svg>
             <span>Cuộn / chụm hai ngón để phóng to · thu nhỏ</span>
           </div>
+          <div className="ar-hint__row">
+            <svg
+              className="ar-hint__icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle cx="7.5" cy="12" r="1.3" fill="currentColor" />
+              <circle cx="12" cy="12" r="1.3" fill="currentColor" />
+              <circle cx="16.5" cy="12" r="1.3" fill="currentColor" />
+              <circle
+                cx="12"
+                cy="12"
+                r="8.2"
+                stroke="currentColor"
+                strokeWidth="1.2"
+                strokeDasharray="1.5 3"
+              />
+            </svg>
+            <span>Chạm 3 lần để dừng · tiếp tục xoay</span>
+          </div>
         </div>
       </section>
 
-      {/* ── Overlay phải: bình thường hiện gọn Đặc điểm + bảng thông số
-          rút gọn + mô tả + nút "Xem thêm thông tin". Bấm nút đó, panel
-          tự kéo dài sang trái (đổi width, đè lên vùng model) và đổi
-          sang nội dung đầy đủ: bản đồ vùng sinh sống + bảng thông số
-          dạng lưới + mô tả trọn vẹn + "Có thể bạn chưa biết". ── */}
       <section
         className={`ar-panel ar-panel--right${
           isImmersive ? " is-collapsed" : ""

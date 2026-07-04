@@ -1,4 +1,4 @@
-import { Suspense, useRef, useMemo } from "react";
+import { Suspense, useRef, useMemo, useState, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import {
@@ -8,18 +8,6 @@ import {
   OrbitControls,
 } from "@react-three/drei";
 
-/**
- * Loads and renders the GLB mesh.
- * Wrap this in <Suspense> — useGLTF suspends while the file streams in.
- *
- * GLB files exported from different tools (Blender, etc.) can come in at
- * wildly different real-world scales — some are 1 unit tall, some are
- * 100+ units tall. If we don't normalize that, the fixed camera distance
- * either floats far away from a tiny model or ends up INSIDE a huge one
- * (which looks like a blank/foggy close-up — exactly what "stuck inside
- * the elephant" looks like). So we measure the model's bounding box after
- * load and rescale it to a consistent target size before centering it.
- */
 function Mesh({
   url,
   autoRotate,
@@ -135,10 +123,53 @@ export default function Model3D({
   rimColor = "#6fe06a",
   rimIntensity = 2.2,
 }) {
+  // Trạng thái xoay thực tế, tách khỏi prop `autoRotate` — người dùng có
+  // thể tạm dừng/tiếp tục bằng cách chạm/click 3 lần liên tiếp, độc lập
+  // với giá trị prop truyền vào từ ngoài.
+  const [spinning, setSpinning] = useState(autoRotate);
+  useEffect(() => {
+    setSpinning(autoRotate);
+  }, [autoRotate]);
+
+  // Đếm số lần TAP (nhấn rồi nhả gần như tại chỗ, không kéo) trong một
+  // khoảng thời gian ngắn. Phân biệt tap với kéo-xoay bằng cách so
+  // khoảng cách con trỏ giữa lúc pointerdown và pointerup — nếu di
+  // chuyển quá một ngưỡng nhỏ, đó là thao tác kéo xoay (OrbitControls),
+  // không tính là tap, và bộ đếm không được cộng thêm.
+  const tapStateRef = useRef({ count: 0, timer: null, downPos: null });
+
+  const handlePointerDown = (e) => {
+    tapStateRef.current.downPos = { x: e.clientX, y: e.clientY };
+  };
+
+  const handlePointerUp = (e) => {
+    const down = tapStateRef.current.downPos;
+    tapStateRef.current.downPos = null;
+    if (!down) return;
+
+    const dx = e.clientX - down.x;
+    const dy = e.clientY - down.y;
+    const isDrag = Math.hypot(dx, dy) > 8; // ngưỡng 8px
+    if (isDrag) return;
+
+    tapStateRef.current.count += 1;
+    clearTimeout(tapStateRef.current.timer);
+    tapStateRef.current.timer = setTimeout(() => {
+      tapStateRef.current.count = 0;
+    }, 600); // 3 lần tap phải nằm trong 600ms
+
+    if (tapStateRef.current.count >= 3) {
+      tapStateRef.current.count = 0;
+      setSpinning((prev) => !prev);
+    }
+  };
+
   return (
     <div
       className={`model3d-viewer ${className}`}
       style={{ width: "100%", height, background, position: "relative" }}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
     >
       <Canvas
         camera={{ position: [0, 0.4, 3.4], fov: 38 }}
@@ -146,13 +177,7 @@ export default function Model3D({
         gl={{ antialias: true, alpha: true }}
       >
         <Suspense fallback={null}>
-          {/* Ánh sáng nền dịu, KHÔNG để model bị "phẳng" — chỉ đủ để
-              giữ chi tiết ở vùng tối, phần lớn độ tương phản đến từ
-              key light + rim light bên dưới. */}
           <ambientLight intensity={0.32} />
-
-          {/* Key light — nguồn sáng chính, ấm nhẹ, từ trên-trước-phải,
-              tạo bóng đổ rõ ràng (đổ vào ContactShadows bên dưới). */}
           <directionalLight
             position={[3, 4.5, 2.5]}
             intensity={1.65}
@@ -161,13 +186,6 @@ export default function Model3D({
             shadow-mapSize={[1024, 1024]}
           />
 
-          {/* Rim light kép — hai đèn màu công nghệ (xanh lá, khớp brand)
-              đặt CHÉO PHÍA SAU model, hắt sáng dọc theo rìa ngược sáng
-              của model khi xoay. Đây là kỹ thuật "edge lighting" tiêu
-              chuẩn trong chụp sản phẩm cao cấp — viền sáng mảnh, sắc
-              nét xuất hiện tự nhiên theo góc nhìn, không phải vẽ thêm
-              hình học nào, nên luôn khớp hoàn hảo với silhouette thật
-              của model dù nó xoay hướng nào. */}
           <pointLight
             position={[-2.2, 1.4, -2]}
             intensity={rimIntensity}
@@ -193,7 +211,7 @@ export default function Model3D({
 
           <Mesh
             url={url}
-            autoRotate={autoRotate}
+            autoRotate={spinning}
             autoRotateSpeed={autoRotateSpeed}
             scaleMultiplier={scaleMultiplier}
           />

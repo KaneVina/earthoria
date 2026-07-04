@@ -19,6 +19,10 @@ const GROQ_KEY = import.meta.env.VITE_GROQ_KEY;
 const GROQ_URL = import.meta.env.VITE_GROQ_URL;
 const GROQ_MODEL = import.meta.env.VITE_GROQ_MODEL;
 
+/* Mascot chỉ ẩn tạm thời — không còn lưu vĩnh viễn vào localStorage */
+const MASCOT_HIDE_DURATION = 5 * 60 * 1000; // 5 phút
+const MASCOT_FIRST_SHOW_DELAY = 3000; // 3 giây sau khi trang sẵn sàng
+
 const SYSTEM_PROMPT = `Bạn là Eira — trợ lý AI thân thiện của Earthoria.
 
 NGUYÊN TẮC TUYỆT ĐỐI:
@@ -134,6 +138,7 @@ function ActionButtons({ msg, onRegenerate }) {
   return (
     <div className="em-actions">
       <button
+        type="button"
         className={`em-action-btn${copied ? " copied" : ""}`}
         title={copied ? "Đã sao chép!" : "Sao chép"}
         onClick={handleCopy}
@@ -148,10 +153,11 @@ function ActionButtons({ msg, onRegenerate }) {
 
       {msg.role === "bot" && !msg.isError && onRegenerate && (
         <button
+          type="button"
           className="em-action-btn"
           title="Hỏi lại"
           onClick={onRegenerate}
-          aria-label="Hỏi lại"
+          aria-label="Hỏi lại câu này"
         >
           <RotateCcw size={12} strokeWidth={2} />
         </button>
@@ -166,7 +172,7 @@ function BotMessage({ msg, onRegenerate }) {
     <div className={`em bot${msg.isError ? " em-error" : ""}`}>
       <div className="em-label-row">
         <div className="em-av">
-          <img src="/eira/avatar.png" alt="Eira" />
+          <img src="/eira/avatar.png" alt="" />
         </div>
         <span className="em-name">Eira</span>
       </div>
@@ -212,15 +218,11 @@ function EiraUI() {
   const [isTyping, setIsTyping] = useState(false);
   const [isBusy, setIsBusy] = useState(false);
   const [suggHidden, setSuggHidden] = useState(false);
+
+  /* Mascot: chỉ ẩn TẠM THỜI 5 phút khi người dùng bấm X, không lưu localStorage,
+     không có trạng thái "vĩnh viễn" — mỗi lần tải lại trang mascot sẽ hiện lại như bình thường */
   const [promoVisible, setPromoVisible] = useState(false);
-  const [promoDismissed, setPromoDismissed] = useState(() => {
-    if (typeof window === "undefined") return false;
-    try {
-      return localStorage.getItem("eira_mascot_dismissed") === "1";
-    } catch {
-      return false;
-    }
-  });
+  const [promoDismissed, setPromoDismissed] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
   const msgsEndRef = useRef(null);
@@ -228,6 +230,7 @@ function EiraUI() {
   const historyRef = useRef([]);
   const lastUserMsgRef = useRef("");
   const isOpenRef = useRef(false);
+  const mascotTimeoutRef = useRef(null);
 
   /* ── Kéo-thả bong bóng FAB ── */
   const [dragPos, setDragPos] = useState({ x: 0, y: 0 });
@@ -240,6 +243,11 @@ function EiraUI() {
 
   const handleFabPointerDown = (e) => {
     if (e.button !== undefined && e.button !== 0) return; // chỉ chuột trái / chạm chính
+
+    // Nếu bấm vào nút X của mascot thì KHÔNG khởi tạo kéo-thả / pointer-capture,
+    // tránh việc capture "cướp" mất sự kiện click và khiến chat bị mở nhầm
+    if (e.target.closest?.(".eira-fab-mascot-close")) return;
+
     const fab = fabRef.current;
     if (!fab) return;
     dragRef.current = {
@@ -306,10 +314,10 @@ function EiraUI() {
     setIsOpen((v) => !v);
   };
 
-  /* Show promo after 3s */
+  /* Show promo lần đầu, và mỗi khi promoDismissed quay lại false (hết 5 phút ẩn) */
   useEffect(() => {
     if (promoDismissed || isOpen) return;
-    const t = setTimeout(() => setPromoVisible(true), 3000);
+    const t = setTimeout(() => setPromoVisible(true), MASCOT_FIRST_SHOW_DELAY);
     return () => clearTimeout(t);
   }, [promoDismissed, isOpen]);
 
@@ -317,6 +325,13 @@ function EiraUI() {
   useEffect(() => {
     if (isOpen) setPromoVisible(false);
   }, [isOpen]);
+
+  /* Dọn timeout ẩn-tạm-5-phút khi component unmount, tránh set-state sau khi unmount */
+  useEffect(() => {
+    return () => {
+      if (mascotTimeoutRef.current) clearTimeout(mascotTimeoutRef.current);
+    };
+  }, []);
 
   /* Theo dõi isOpen bằng ref để tránh stale closure trong sendMessage,
      đồng thời reset badge "chưa đọc" mỗi khi người dùng mở khung chat */
@@ -346,6 +361,16 @@ function EiraUI() {
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
+  }, [isOpen]);
+
+  /* Đóng bằng phím Esc — chuẩn UX của mọi widget chat nổi */
+  useEffect(() => {
+    if (!isOpen) return;
+    const handler = (e) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
   }, [isOpen]);
 
   /* Core send */
@@ -418,6 +443,8 @@ function EiraUI() {
         setMessages((prev) => [...prev, makeMsg("bot", errMsg, true)]);
       } finally {
         setIsBusy(false);
+        // Trả focus về ô nhập để người dùng gõ tiếp ngay, không cần bấm lại vào ô
+        setTimeout(() => inpRef.current?.focus(), 0);
       }
     },
     [isBusy],
@@ -450,14 +477,21 @@ function EiraUI() {
     el.style.height = Math.min(el.scrollHeight, 100) + "px";
   };
 
+  /* Bấm X trên mascot: ẩn NGAY LẬP TỨC, tự động hiện lại sau 5 phút.
+     Không có gì được lưu lại — tải lại trang là coi như chưa từng đóng. */
   const dismissPromo = (e) => {
     e.stopPropagation();
+    e.preventDefault();
+    suppressClickRef.current = true; // lớp an toàn thứ 2: chặn click lọt lên nút FAB cha
+
     setPromoVisible(false);
     setPromoDismissed(true);
-    // Xóa vĩnh viễn — không hiện lại linh vật/thông báo này nữa, kể cả sau khi tải lại trang
-    try {
-      localStorage.setItem("eira_mascot_dismissed", "1");
-    } catch {}
+
+    if (mascotTimeoutRef.current) clearTimeout(mascotTimeoutRef.current);
+    mascotTimeoutRef.current = setTimeout(() => {
+      setPromoDismissed(false);
+      mascotTimeoutRef.current = null;
+    }, MASCOT_HIDE_DURATION);
   };
 
   // Đang ở trạng thái "chào mừng": hiện linh vật thay cho nút tròn thường
@@ -471,6 +505,7 @@ function EiraUI() {
     >
       {/* ── FAB — giữ nguyên bottom: 96px như code gốc, giờ kéo-thả được ── */}
       <button
+        type="button"
         id="eira-fab"
         ref={fabRef}
         className={`${isOpen ? "fab-open" : ""} ${isDragging ? "dragging" : ""} ${unreadCount > 0 && !isOpen ? "has-badge" : ""} ${showMascot ? "mascot" : ""}`.trim()}
@@ -504,12 +539,13 @@ function EiraUI() {
               alt="Eira vẫy chào"
               draggable="false"
             />
-            {/* Nút X riêng trên linh vật: đóng vĩnh viễn + trả về icon tròn hiện tại */}
+            {/* Nút X riêng trên linh vật: chỉ ẩn tạm 5 phút, không đóng vĩnh viễn */}
             <span
               className="eira-fab-mascot-close"
               role="button"
               tabIndex={0}
-              aria-label="Đóng linh vật, không hiện lại nữa"
+              aria-label="Ẩn linh vật, tự hiện lại sau 5 phút"
+              onPointerDown={(e) => e.stopPropagation()}
               onClick={dismissPromo}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") dismissPromo(e);
@@ -554,22 +590,19 @@ function EiraUI() {
         <div id="eira-hdr">
           <div className="eira-avatar">
             <div className="eira-avatar-inner">
-              <img src="/eira/avatar.png" alt="Earthoria" />
+              <img src="/eira/avatar.png" alt="" />
             </div>
             <div className="eira-av-online" />
           </div>
           <div className="eira-hdr-info">
-            <div className="eira-hdr-name">
-              Eira
-            </div>
-            <div className="eira-hdr-sub">
-              Trực tuyến · Hỗ trợ 24/7
-            </div>
+            <div className="eira-hdr-name">Eira</div>
+            <div className="eira-hdr-sub">Trực tuyến · Hỗ trợ 24/7</div>
           </div>
           <div className="eira-hdr-actions">
             <button
+              type="button"
               className="eira-close-btn"
-              aria-label="Đóng"
+              aria-label="Đóng khung chat"
               onClick={() => setIsOpen(false)}
             >
               <X size={15} />
@@ -606,7 +639,7 @@ function EiraUI() {
             <div className="eira-typing">
               <div className="typing-label-row">
                 <div className="em-av">
-                  <img src="/eira/avatar.png" alt="Eira" />
+                  <img src="/eira/avatar.png" alt="" />
                 </div>
                 <span className="em-name" style={{ color: "#0d3330" }}>
                   Eira
@@ -627,6 +660,7 @@ function EiraUI() {
         <div id="eira-sugg" className={suggHidden ? "hidden" : ""}>
           {SUGGESTIONS.map(({ Icon, label }) => (
             <button
+              type="button"
               key={label}
               className="eira-chip"
               onClick={() => sendMessage(label)}
@@ -650,10 +684,12 @@ function EiraUI() {
               onInput={handleInput}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
+              aria-label="Nhập tin nhắn"
             />
             <button
+              type="button"
               id="eira-send"
-              aria-label="Gửi"
+              aria-label="Gửi tin nhắn"
               disabled={isBusy || !input.trim()}
               onClick={() => sendMessage(input)}
             >
