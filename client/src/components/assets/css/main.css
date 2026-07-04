@@ -8539,3 +8539,14 @@ body.dark-mode .trust-metric-label { color: rgba(180,200,188,0.5); }
     border-bottom: 0.5px solid var(--border);
   }
 }
+.review-card .verified-badge {
+  background: transparent;
+  color: var(--gold);
+  border: 0.5px solid var(--border-gold);
+  transition: all 0.4s;
+}
+.review-card:hover .verified-badge {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(212, 233, 220, 0.85);
+  border-color: rgba(212, 233, 220, 0.3);
+}
