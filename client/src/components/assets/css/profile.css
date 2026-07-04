@@ -891,6 +891,109 @@
   .pf-ar-card-arrow { opacity: 0.6; transform: translateX(0); }
 }
 
+.pf-sidebar-link.is-danger { color: rgba(217, 154, 150, 0.75); }
+.pf-sidebar-link.is-danger:hover { color: #d99a96; background: rgba(178,84,80,0.08); }
+.pf-sidebar-link.is-danger .pf-sidebar-link-roman { color: rgba(217,154,150,0.5); }
+.pf-sidebar-link.is-danger .pf-sidebar-link-icon { color: rgba(217,154,150,0.75); }
+
+.pf-settings-card {
+  background: var(--white); border: 0.5px solid var(--border); border-radius: var(--pf-radius-md);
+  padding: 32px 34px; margin-bottom: 24px;
+}
+.pf-settings-card-head { display: flex; align-items: center; gap: 16px; margin-bottom: 26px; }
+.pf-settings-card-title { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 400; color: var(--forest); margin-bottom: 4px; }
+.pf-settings-card-sub { font-size: 12.5px; color: var(--text-muted); font-weight: 300; }
+
+.pf-settings-info-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+  background: var(--border); border: 0.5px solid var(--border); border-radius: var(--pf-radius-sm);
+  overflow: hidden; margin-bottom: 30px;
+}
+.pf-settings-info-item { background: var(--cream); padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; }
+.pf-settings-info-label { font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); }
+.pf-settings-info-val { font-size: 14px; color: var(--forest); font-weight: 500; }
+.pf-env-badge {
+  display: inline-block; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+  background: var(--gold-pale); color: var(--forest); padding: 3px 10px; border-radius: 20px; font-weight: 500;
+}
+
+.pf-changelog-head {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-muted);
+  margin-bottom: 16px; padding-bottom: 12px; border-bottom: 0.5px solid var(--border);
+}
+.pf-changelog-toggle { background: none; border: none; color: var(--gold); font-size: 10px; letter-spacing: 0.08em; text-transform: none; }
+.pf-changelog-list { display: flex; flex-direction: column; gap: 18px; }
+.pf-changelog-item { display: flex; gap: 14px; }
+.pf-changelog-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--gold); margin-top: 6px; flex-shrink: 0; }
+.pf-changelog-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.pf-changelog-meta .pf-mono { font-size: 12px; color: var(--forest); font-weight: 600; }
+.pf-changelog-date { font-size: 11px; color: var(--text-muted); }
+.pf-changelog-note { font-size: 12.5px; color: var(--text-muted); line-height: 1.65; }
+
+.pf-theme-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.pf-theme-row-title { font-size: 14px; color: var(--forest); font-weight: 500; margin-bottom: 4px; }
+.pf-theme-row-desc { font-size: 12px; color: var(--text-muted); max-width: 360px; }
+
+.pf-switch { position: relative; width: 52px; height: 30px; flex-shrink: 0; cursor: pointer; }
+.pf-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+.pf-switch-track {
+  position: absolute; inset: 0; background: var(--pale); border: 0.5px solid var(--border);
+  border-radius: 30px; transition: background 0.3s ease, border-color 0.3s ease;
+}
+.pf-switch-thumb {
+  position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--white); box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+  display: flex; align-items: center; justify-content: center; color: var(--gold);
+  transition: transform 0.35s var(--pf-ease-spring);
+}
+.pf-switch input:checked ~ .pf-switch-track { background: var(--forest); border-color: var(--forest); }
+.pf-switch input:checked ~ .pf-switch-track .pf-switch-thumb { transform: translateX(22px); color: var(--gold-light); background: #1c2822; }
+
+.pf-cookie-groups { display: flex; flex-direction: column; margin-bottom: 22px; }
+.pf-cookie-group-row {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;
+  padding: 16px 0; border-bottom: 0.5px solid var(--border);
+}
+.pf-cookie-group-row:last-of-type { border-bottom: none; }
+.pf-cookie-group-title { font-size: 13.5px; color: var(--forest); font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.pf-cookie-locked-tag {
+  display: inline-flex; align-items: center; gap: 4px; font-size: 9px; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--gold); background: var(--gold-pale); padding: 2px 8px; border-radius: 20px; font-weight: 500;
+}
+.pf-cookie-group-desc { font-size: 12px; color: var(--text-muted); margin-top: 4px; max-width: 420px; }
+.pf-cookie-status-dot {
+  font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 12px; border-radius: 20px;
+  white-space: nowrap; flex-shrink: 0; font-weight: 500;
+}
+.pf-cookie-status-dot.on { background: var(--gold-pale); color: var(--forest); }
+.pf-cookie-status-dot.off { background: var(--cream); color: var(--text-muted); }
+.pf-cookie-updated-at { font-size: 11px; color: var(--mist); margin-top: 8px; }
+
+.pf-cookie-manage-btn {
+  display: inline-flex; align-items: center; gap: 10px; background: var(--forest); color: var(--ivory);
+  border: none; border-radius: var(--pf-radius-sm); padding: 13px 26px;
+  font-family: 'Be Vietnam Pro', sans-serif; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+}
+.pf-cookie-manage-btn:hover { background: var(--forest-mid); }
+
+body.dark-mode .pf-settings-card { background: #141a17; border-color: rgba(255,255,255,0.07); }
+body.dark-mode .pf-settings-card-title { color: #c8d4cc; }
+body.dark-mode .pf-settings-info-item { background: #0f1510; }
+body.dark-mode .pf-settings-info-val { color: #c8d4cc; }
+body.dark-mode .pf-changelog-meta .pf-mono { color: #c8d4cc; }
+body.dark-mode .pf-cookie-group-title { color: #c8d4cc; }
+body.dark-mode .pf-switch-track { background: #2a3530; border-color: rgba(255,255,255,0.1); }
+
+@media (max-width: 900px) {
+  .pf-settings-info-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .pf-settings-card { padding: 22px 18px; }
+  .pf-settings-info-grid { grid-template-columns: 1fr; }
+  .pf-theme-row { flex-direction: column; align-items: flex-start; gap: 14px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }

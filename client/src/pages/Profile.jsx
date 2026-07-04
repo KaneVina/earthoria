@@ -26,7 +26,23 @@ const CHAPTERS = [
   { id: "security", label: "Bảo Mật", roman: "III", icon: "lock" },
   { id: "addresses", label: "Địa Chỉ", roman: "IV", icon: "map" },
   { id: "ar", label: "Sách AR", roman: "V", icon: "compass" },
+  { id: "settings", label: "Cài Đặt Hệ Thống", roman: "VI", icon: "settings" },
+  { id: "logout", label: "Đăng Xuất", roman: "VII", icon: "logout", danger: true },
 ];
+
+const SYSTEM_INFO = {
+  siteName: "Earthoria",
+  version: "v2.4.0",
+  releaseDate: "20/06/2026",
+  environment: "Production",
+  changelog: [
+    { version: "v2.4.0", date: "20/06/2026", note: "Thêm sổ địa chỉ theo đơn vị hành chính 2 cấp, tối ưu tốc độ tải trang Hồ sơ." },
+    { version: "v2.3.0", date: "02/05/2026", note: "Ra mắt tính năng Sách AR - xem mô hình 3D trực tiếp từ tài khoản." },
+    { version: "v2.2.1", date: "14/04/2026", note: "Sửa lỗi hiển thị trạng thái đơn hàng, cải thiện hiệu năng trang Giỏ hàng." },
+    { version: "v2.2.0", date: "01/04/2026", note: "Thêm chế độ Sáng/Tối và trung tâm quản lý Cookie theo tiêu chuẩn mới." },
+    { version: "v2.1.0", date: "10/03/2026", note: "Ra mắt hệ thống Hồ sơ thành viên phong cách Passport." },
+  ],
+};
 
 const ORDER_STATUS_MAP = {
   PENDING: {
@@ -418,6 +434,38 @@ const Icon = {
       stroke="none"
     >
       <path d="M12 2 13.8 9.2 21 11 13.8 12.8 12 20 10.2 12.8 3 11 10.2 9.2 12 2z" />
+    </svg>
+  ),
+  settings: (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  ),
+  sun: (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </svg>
+  ),
+  moon: (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  ),
+  cookie: (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
+      <path d="M12 2a10 10 0 1 0 9.54 13.11c-.5.16-1.03.24-1.54.24a4 4 0 0 1-4-4 3.5 3.5 0 0 1-3.5-3.5 4 4 0 0 1-4-4c0-.51.08-1.01.23-1.46A10 10 0 0 0 12 2z" />
+      <circle cx="8.5" cy="10.5" r="0.8" fill="currentColor" stroke="none" />
+      <circle cx="13" cy="14.5" r="0.8" fill="currentColor" stroke="none" />
+      <circle cx="9.5" cy="15.5" r="0.6" fill="currentColor" stroke="none" />
     </svg>
   ),
 };
@@ -865,6 +913,11 @@ export default function Profile() {
   const currentChapter = CHAPTERS.find((c) => c.id === activeTab);
 
   const selectTab = (id) => {
+    if (id === "logout") {
+      setSidebarOpen(false);
+      handleLogout();
+      return;
+    }
     setActiveTab(id);
     setSelectedOrderId(null);
     setSidebarOpen(false);
@@ -962,6 +1015,7 @@ export default function Profile() {
             {activeTab === "ar" && (
               <ArTab arCodes={arCodes} loading={arLoading} />
             )}
+            {activeTab === "settings" && <SettingsTab />}
           </div>
         </div>
       </div>
@@ -1232,7 +1286,7 @@ function SidebarNav({ activeTab, onSelectTab, isOpen, onClose }) {
               itemRefs.current[ch.id] = el;
             }}
             onClick={() => onSelectTab(ch.id)}
-            className={`pf-btn-tactile pf-sidebar-link ${activeTab === ch.id ? "is-active" : ""}`}
+            className={`pf-btn-tactile pf-sidebar-link ${activeTab === ch.id ? "is-active" : ""} ${ch.danger ? "is-danger" : ""}`}
           >
             <span className="pf-sidebar-link-icon">{Icon[ch.icon]}</span>
             <span className="pf-sidebar-link-text">
@@ -2749,6 +2803,259 @@ function ArTab({ arCodes, loading }) {
           </div>
         </div>
       ))}
+    </div>
+  );
+}
+
+function useTheme() {
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("earthoria-theme") === "dark";
+  });
+
+  useEffect(() => {
+    document.body.classList.toggle("dark-mode", isDark);
+    localStorage.setItem("earthoria-theme", isDark ? "dark" : "light");
+  }, [isDark]);
+
+  useEffect(() => {
+    const hasManualChoice = localStorage.getItem("earthoria-theme-manual") === "1";
+    if (hasManualChoice) return;
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    setIsDark(mq.matches);
+    const onChange = (e) => setIsDark(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
+  const toggle = () => {
+    localStorage.setItem("earthoria-theme-manual", "1");
+    setIsDark((v) => !v);
+  };
+
+  return { isDark, toggle };
+}
+
+function useCookiePrefs() {
+  const [consent, setConsent] = useState(() =>
+    typeof window !== "undefined" && window.EarthoriaCookies
+      ? window.EarthoriaCookies.getConsent()
+      : null,
+  );
+
+  useEffect(() => {
+    // Nếu module tải chậm hơn React, chủ động kiểm tra lại vài lần
+    if (!window.EarthoriaCookies) {
+      let attempts = 0;
+      const timer = setInterval(() => {
+        attempts += 1;
+        if (window.EarthoriaCookies) {
+          setConsent(window.EarthoriaCookies.getConsent());
+          clearInterval(timer);
+        } else if (attempts >= 10) {
+          clearInterval(timer);
+        }
+      }, 200);
+      return () => clearInterval(timer);
+    }
+  }, []);
+
+  useEffect(() => {
+    const onUpdate = (e) =>
+      setConsent({ choices: e.detail.choices, timestamp: e.detail.timestamp });
+    document.addEventListener("earthoria:cookie-consent", onUpdate);
+    return () => document.removeEventListener("earthoria:cookie-consent", onUpdate);
+  }, []);
+
+  return consent;
+}
+
+const COOKIE_GROUP_LABELS = {
+  essential: { title: "Cookie thiết yếu", desc: "Đăng nhập, giỏ hàng, bảo mật phiên - luôn bật." },
+  analytics: { title: "Cookie phân tích", desc: "Giúp cải thiện trải nghiệm dựa trên hành vi sử dụng." },
+  marketing: { title: "Cookie tiếp thị", desc: "Cá nhân hoá quảng cáo và đo lường chiến dịch." },
+  functional: { title: "Cookie chức năng", desc: "Ghi nhớ chế độ hiển thị, ngôn ngữ..." },
+};
+
+function SettingsTab() {
+  const { isDark, toggle } = useTheme();
+  const consent = useCookiePrefs();
+  const [expandedChangelog, setExpandedChangelog] = useState(false);
+
+const openCookieSettings = () => {
+    if (window.EarthoriaCookies) {
+      window.EarthoriaCookies.openSettings();
+      return;
+    }
+    // Script có thể vẫn đang tải — thử lại vài lần trước khi báo lỗi hẳn
+    let attempts = 0;
+    const timer = setInterval(() => {
+      attempts += 1;
+      if (window.EarthoriaCookies) {
+        clearInterval(timer);
+        window.EarthoriaCookies.openSettings();
+      } else if (attempts >= 10) {
+        clearInterval(timer);
+        toast.error(
+          "Chưa tải được module Cookie. Vui lòng tải lại trang (F5) rồi thử lại.",
+        );
+      }
+    }, 200);
+  };
+
+  const visibleLogs = expandedChangelog
+    ? SYSTEM_INFO.changelog
+    : SYSTEM_INFO.changelog.slice(0, 3);
+
+  return (
+    <div>
+      <SectionHeader
+        chapter="VI"
+        eyebrow="Tuỳ Chỉnh Hệ Thống"
+        title="Cài Đặt"
+        emphasis="Hệ Thống"
+        sub="Thông tin phiên bản, giao diện hiển thị và quyền riêng tư cookie"
+      />
+
+      <div className="pf-settings-card">
+        <div className="pf-settings-card-head">
+          <div className="pf-lock-icon-wrap">{Icon.seal}</div>
+          <div>
+            <h3 className="pf-settings-card-title">Thông Tin Hệ Thống</h3>
+            <p className="pf-settings-card-sub">Phiên bản hiện tại và môi trường đang chạy</p>
+          </div>
+        </div>
+        <div className="pf-settings-info-grid">
+          <div className="pf-settings-info-item">
+            <span className="pf-settings-info-label">Tên website</span>
+            <span className="pf-settings-info-val">{SYSTEM_INFO.siteName}</span>
+          </div>
+          <div className="pf-settings-info-item">
+            <span className="pf-settings-info-label">Phiên bản</span>
+            <span className="pf-settings-info-val pf-mono">{SYSTEM_INFO.version}</span>
+          </div>
+          <div className="pf-settings-info-item">
+            <span className="pf-settings-info-label">Ngày phát hành</span>
+            <span className="pf-settings-info-val">{SYSTEM_INFO.releaseDate}</span>
+          </div>
+          <div className="pf-settings-info-item">
+            <span className="pf-settings-info-label">Môi trường</span>
+            <span className="pf-settings-info-val">
+              <span className="pf-env-badge">{SYSTEM_INFO.environment}</span>
+            </span>
+          </div>
+        </div>
+
+        <div className="pf-changelog-head">
+          <span>Lịch Sử Cập Nhật</span>
+          {SYSTEM_INFO.changelog.length > 3 && (
+            <button
+              type="button"
+              className="pf-btn-tactile pf-changelog-toggle"
+              onClick={() => setExpandedChangelog((v) => !v)}
+            >
+              {expandedChangelog ? "Thu gọn" : "Xem tất cả"}
+            </button>
+          )}
+        </div>
+        <div className="pf-changelog-list">
+          {visibleLogs.map((log) => (
+            <div key={log.version} className="pf-changelog-item">
+              <div className="pf-changelog-dot" />
+              <div className="pf-changelog-body">
+                <div className="pf-changelog-meta">
+                  <span className="pf-mono">{log.version}</span>
+                  <span className="pf-changelog-date">{log.date}</span>
+                </div>
+                <p className="pf-changelog-note">{log.note}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="pf-settings-card">
+        <div className="pf-settings-card-head">
+          <div className="pf-lock-icon-wrap">{isDark ? Icon.moon : Icon.sun}</div>
+          <div>
+            <h3 className="pf-settings-card-title">Giao Diện Hiển Thị</h3>
+            <p className="pf-settings-card-sub">Chọn chế độ sáng, tối để phù hợp với mắt bạn</p>
+          </div>
+        </div>
+
+        <div className="pf-theme-row">
+          <div>
+            <div className="pf-theme-row-title">Chế độ tối</div>
+            <div className="pf-theme-row-desc">
+              {isDark
+                ? "Đang bật - giao diện tối, dịu mắt hơn vào ban đêm"
+                : "Đang tắt - giao diện sáng mặc định"}
+            </div>
+          </div>
+          <label className="pf-switch">
+            <input type="checkbox" checked={isDark} onChange={toggle} />
+            <span className="pf-switch-track">
+              <span className="pf-switch-thumb">{isDark ? Icon.moon : Icon.sun}</span>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div className="pf-settings-card">
+        <div className="pf-settings-card-head">
+          <div className="pf-lock-icon-wrap">{Icon.cookie}</div>
+          <div>
+            <h3 className="pf-settings-card-title">Quyền Riêng Tư &amp; Cookie</h3>
+            <p className="pf-settings-card-sub">
+              Quản lý các nhóm cookie đang được sử dụng trên trình duyệt của bạn
+            </p>
+          </div>
+        </div>
+
+        {consent?.choices ? (
+          <div className="pf-cookie-groups">
+            {Object.entries(COOKIE_GROUP_LABELS).map(([key, meta]) => {
+              const active = !!consent.choices[key];
+              const locked = key === "essential";
+              return (
+                <div key={key} className="pf-cookie-group-row">
+                  <div>
+                    <div className="pf-cookie-group-title">
+                      {meta.title}
+                      {locked && (
+                        <span className="pf-cookie-locked-tag">
+                          {Icon.lock} Luôn bật
+                        </span>
+                      )}
+                    </div>
+                    <div className="pf-cookie-group-desc">{meta.desc}</div>
+                  </div>
+                  <span className={`pf-cookie-status-dot ${active ? "on" : "off"}`}>
+                    {active ? "Đang bật" : "Đang tắt"}
+                  </span>
+                </div>
+              );
+            })}
+            {consent.timestamp && (
+              <div className="pf-cookie-updated-at">
+                Cập nhật lần cuối: {formatDate(consent.timestamp)}
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="pf-settings-card-sub" style={{ marginBottom: 20 }}>
+            Bạn chưa thiết lập tuỳ chọn cookie trên thiết bị này.
+          </p>
+        )}
+
+        <button
+          type="button"
+          onClick={openCookieSettings}
+          className="pf-btn-tactile pf-btn-shine pf-cookie-manage-btn"
+        >
+          {Icon.settings} Quản Lý Cài Đặt Cookie
+        </button>
+      </div>
     </div>
   );
 }
