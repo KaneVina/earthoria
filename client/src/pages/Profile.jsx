@@ -1128,7 +1128,9 @@ function PassportHero({
               className="pf-passport-code-block pf-stagger"
               style={{ "--d": "0.34s" }}
             >
-              <div className="pf-passport-code-label">Mã Số Earthoria (ETR)</div>
+              <div className="pf-passport-code-label">
+                Mã Số Earthoria (ETR)
+              </div>
               <div className="pf-passport-code-row">
                 <span className="pf-passport-code-value">{formattedCode}</span>
                 <CopyButton text={formattedCode} compact />
@@ -2116,15 +2118,17 @@ function SecurityTab() {
               <span className="pf-tips-eyebrow">Mẹo Bảo Mật</span>
             </div>
             {[
-              "Dùng 8–16 ký tự, kết hợp chữ hoa, chữ thường và ký tự đặc biệt.",
-              "Không sử dụng lại mật khẩu đã dùng ở trang web khác.",
-              "Không chia sẻ mật khẩu qua email hoặc tin nhắn.",
-              "Đổi mật khẩu định kỳ mỗi 3–6 tháng để bảo mật tối ưu.",
-            ].map((tip, i) => (
+              "Sử dụng 8–16 ký tự, kết hợp chữ hoa, chữ thường và ký tự đặc biệt để tăng độ an toàn.",
+              "Tránh dùng lại mật khẩu đã sử dụng cho các trang web hoặc dịch vụ khác.",
+              "Không đặt mật khẩu chứa thông tin cá nhân dễ đoán như họ tên, ngày sinh hay số điện thoại.",
+              "Không chia sẻ mật khẩu qua email, tin nhắn hoặc bất kỳ kênh liên lạc nào khác.",
+              "Nên thay đổi mật khẩu định kỳ mỗi 3–6 tháng để duy trì mức độ bảo mật tốt nhất.",
+              "Earthoria sẽ không bao giờ chủ động yêu cầu bạn cung cấp mật khẩu qua bất kỳ hình thức nào.",
+            ].map((tip, i, arr) => (
               <div
                 key={i}
                 className="pf-tip-row"
-                style={{ marginBottom: i < 3 ? "18px" : 0 }}
+                style={{ marginBottom: i < arr.length - 1 ? "18px" : 0 }}
               >
                 <span className="pf-tip-num">
                   {String(i + 1).padStart(2, "0")}

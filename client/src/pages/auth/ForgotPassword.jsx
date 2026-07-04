@@ -131,7 +131,7 @@ export default function ForgotPassword() {
   const resetMutation = useMutation({
     mutationFn: (data) => authService.resetPassword(data),
     onSuccess: () => {
-      toast.success("Đặt lại mật khẩu thành công!");
+      toast.success("Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại.");
       setTimeout(() => navigate("/login"), 1200);
     },
     onError: (err) => {

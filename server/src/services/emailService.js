@@ -69,7 +69,7 @@ function wrapEmailTemplate({ preheader, bodyHtml, ctaUrl }) {
               Liên hệ: <a href="mailto:helpdesk.earthoria@gmail.com"
                 style="color:rgba(255,255,255,0.6);text-decoration:none;">helpdesk.earthoria@gmail.com</a><br>
               Số điện thoại: 0849 324 423<br>
-              Địa chỉ: 123 Nguyễn Văn Linh, Quận 7, TP. Hồ Chí Minh
+              Địa chỉ: 600 Nguyễn Văn Cừ Nối Dài, An Bình, Cần Thơ
             </div>
           </td>
         </tr>
