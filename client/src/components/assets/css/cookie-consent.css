@@ -1,0 +1,312 @@
+/* ═══════════════════════════════════════════════
+   COOKIE CONSENT — EARTHORIA
+   Tách biệt: essential (luôn bật) vs. các nhóm khác
+   ═══════════════════════════════════════════════ */
+
+/* ── Overlay nhẹ khi mở modal tùy chỉnh ── */
+.cc-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(10, 14, 12, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 3000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+.cc-modal-overlay.show { opacity: 1; pointer-events: all; }
+
+/* ── Backdrop mờ phía sau banner cookie đầu tiên ──
+   Nhẹ hơn overlay của modal (không blur mạnh, không chặn tương tác toàn
+   trang) — chỉ đủ để mắt người dùng dồn về banner, giống cảm giác
+   "ưu tiên nhẹ nhàng" của Stripe/Notion thay vì banner nổi trơ trên nền. */
+.cc-banner-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(10, 14, 12, 0.28);
+  backdrop-filter: blur(1.5px);
+  z-index: 3050; /* dưới banner (3100), trên nội dung trang */
+  opacity: 0;
+  pointer-events: none; /* không chặn thao tác đọc/scroll trang phía sau */
+  transition: opacity 0.5s ease;
+}
+.cc-banner-backdrop.show { opacity: 1; }
+
+/* ── Banner chính (dưới cùng màn hình) ── */
+.cc-banner {
+  position: fixed;
+  left: 24px; right: 24px; bottom: 24px;
+  max-width: 1100px; margin: 0 auto;
+  background: var(--ivory, #faf8f3);
+  border: 0.5px solid var(--border-gold, rgba(74,158,63,0.3));
+  box-shadow: 0 24px 64px rgba(13,43,30,0.22);
+  z-index: 3100; /* trên .cc-banner-backdrop (3050) */
+  padding: 32px 36px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 28px;
+  align-items: center;
+  transform: translateY(140%) scale(0.98);
+  opacity: 0;
+  transition: transform 0.55s cubic-bezier(0.16,1,0.3,1), opacity 0.5s ease;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  overflow: hidden; /* để thanh đếm ngược bo theo góc dưới của banner */
+}
+.cc-banner.show { transform: translateY(0) scale(1); opacity: 1; }
+
+/* ── Thanh đếm ngược (chỉ render khi AUTO_DISMISS_SECONDS được bật trong JS) ── */
+.cc-banner-progress {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  height: 2.5px;
+  background: rgba(74,158,63,0.12);
+  grid-column: 1 / -1;
+}
+.cc-banner-progress-fill {
+  height: 100%; width: 100%;
+  background: linear-gradient(90deg, var(--gold, #4a9e3f), var(--gold-light, #5cb84f));
+}
+
+.cc-banner-icon {
+  width: 48px; height: 48px;
+  border: 0.5px solid var(--border-gold, rgba(74,158,63,0.3));
+  background: var(--gold-pale, #d4edcf);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold, #4a9e3f);
+  flex-shrink: 0;
+}
+.cc-banner-body {}
+.cc-banner-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px; font-weight: 400;
+  color: var(--forest, #0d3330);
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 10px;
+}
+.cc-banner-title em { font-style: italic; color: var(--gold, #4a9e3f); }
+.cc-banner-text {
+  font-size: 13px; line-height: 1.75;
+  color: var(--text-muted, #5a6b60);
+  font-weight: 300; max-width: 640px;
+}
+.cc-banner-text a {
+  color: var(--gold, #4a9e3f);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.25s;
+}
+.cc-banner-text a:hover { color: var(--forest-mid, #1a5c52); }
+
+.cc-banner-actions {
+  display: flex; flex-direction: column; gap: 10px;
+  min-width: 220px;
+}
+.cc-btn {
+  font-family: 'Be Vietnam Pro', sans-serif;
+  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 12px 22px; cursor: pointer; border: none;
+  transition: all 0.3s ease;
+  white-space: nowrap; text-align: center;
+}
+.cc-btn-accept-all {
+  background: var(--forest, #0d3330);
+  color: var(--ivory, #faf8f3);
+}
+.cc-btn-accept-all:hover { background: var(--forest-mid, #1a5c52); }
+.cc-btn-essential-only {
+  background: transparent;
+  color: var(--forest, #0d3330);
+  border: 0.5px solid var(--border, rgba(13,43,30,0.12));
+}
+.cc-btn-essential-only:hover { border-color: var(--gold, #4a9e3f); background: var(--gold-pale, #d4edcf); }
+.cc-btn-customize {
+  background: transparent;
+  color: var(--gold, #4a9e3f);
+  font-weight: 400;
+  padding: 8px 10px;
+  border: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  letter-spacing: 0.08em;
+}
+.cc-btn-customize:hover { color: var(--forest-mid, #1a5c52); }
+
+/* ── Nút mở lại cài đặt cookie (floating, sau khi đã có lựa chọn) ── */
+.cc-reopen-btn {
+  position: fixed; bottom: 24px; left: 24px;
+  width: 44px; height: 44px;
+  background: var(--forest, #0d3330);
+  border: 0.5px solid var(--border-gold, rgba(74,158,63,0.3));
+  color: var(--gold, #4a9e3f);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 700;
+  opacity: 0; transform: translateY(12px) scale(0.9);
+  pointer-events: none;
+  transition: all 0.35s ease;
+}
+.cc-reopen-btn.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+.cc-reopen-btn:hover { background: var(--forest-mid, #1a5c52); }
+
+/* ── MODAL TÙY CHỈNH ── */
+.cc-modal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) scale(0.96);
+  width: 100%; max-width: 560px;
+  max-height: 84vh;
+  overflow-y: auto;
+  background: var(--white, #ffffff);
+  border: 0.5px solid var(--border-gold, rgba(74,158,63,0.3));
+  box-shadow: 0 40px 100px rgba(13,43,30,0.3);
+  z-index: 3200;
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1), opacity 0.35s ease;
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+.cc-modal.show {
+  opacity: 1; pointer-events: all;
+  transform: translate(-50%, -50%) scale(1);
+}
+.cc-modal-header {
+  padding: 32px 36px 20px;
+  border-bottom: 0.5px solid var(--border, rgba(13,43,30,0.12));
+  position: sticky; top: 0; background: var(--white, #ffffff); z-index: 2;
+}
+.cc-modal-eyebrow {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+}
+.cc-modal-eyebrow-line { width: 28px; height: 0.5px; background: var(--gold, #4a9e3f); }
+.cc-modal-eyebrow-text {
+  font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--gold, #4a9e3f); font-weight: 400;
+}
+.cc-modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px; font-weight: 400; color: var(--forest, #0d3330);
+}
+.cc-modal-title em { font-style: italic; color: var(--gold, #4a9e3f); }
+.cc-modal-sub {
+  font-size: 12.5px; line-height: 1.7; color: var(--text-muted, #5a6b60);
+  margin-top: 10px; font-weight: 300;
+}
+.cc-modal-close {
+  position: absolute; top: 28px; right: 28px;
+  width: 32px; height: 32px;
+  border: 0.5px solid var(--border, rgba(13,43,30,0.12));
+  background: transparent; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted, #5a6b60);
+  transition: all 0.3s;
+}
+.cc-modal-close:hover { border-color: var(--gold, #4a9e3f); color: var(--forest, #0d3330); }
+
+.cc-modal-body { padding: 8px 36px 12px; }
+
+/* Nhóm cookie */
+.cc-group {
+  padding: 22px 0;
+  border-bottom: 0.5px solid var(--border, rgba(13,43,30,0.12));
+}
+.cc-group:last-child { border-bottom: none; }
+.cc-group-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; margin-bottom: 8px;
+}
+.cc-group-title-wrap { display: flex; align-items: center; gap: 10px; }
+.cc-group-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px; font-weight: 400; color: var(--forest, #0d3330);
+}
+.cc-group-badge {
+  font-size: 8.5px; letter-spacing: 0.14em; text-transform: uppercase;
+  padding: 3px 9px;
+  background: var(--gold-pale, #d4edcf); color: var(--gold, #4a9e3f);
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+.cc-group-desc {
+  font-size: 12.5px; line-height: 1.7; color: var(--text-muted, #5a6b60);
+  font-weight: 300; max-width: 400px;
+}
+
+/* Toggle switch */
+.cc-toggle {
+  position: relative; flex-shrink: 0;
+  width: 44px; height: 24px;
+}
+.cc-toggle input {
+  opacity: 0; width: 0; height: 0; position: absolute;
+}
+.cc-toggle-track {
+  position: absolute; inset: 0;
+  background: var(--pale, #d4e8dc);
+  border: 0.5px solid var(--border, rgba(13,43,30,0.12));
+  cursor: pointer;
+  transition: background 0.3s, border-color 0.3s;
+}
+.cc-toggle-thumb {
+  position: absolute; top: 2px; left: 2px;
+  width: 18px; height: 18px;
+  background: var(--white, #fff);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.cc-toggle input:checked ~ .cc-toggle-track {
+  background: var(--gold, #4a9e3f);
+  border-color: var(--gold, #4a9e3f);
+}
+.cc-toggle input:checked ~ .cc-toggle-track .cc-toggle-thumb {
+  transform: translateX(20px);
+}
+/* Trạng thái khoá — essential luôn bật, không tương tác */
+.cc-toggle.locked { cursor: not-allowed; }
+.cc-toggle.locked .cc-toggle-track {
+  background: var(--forest, #0d3330);
+  border-color: var(--forest, #0d3330);
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+.cc-toggle.locked .cc-toggle-thumb { transform: translateX(20px); }
+.cc-toggle.locked input { pointer-events: none; }
+
+.cc-group-locked-note {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10.5px; color: var(--gold, #4a9e3f);
+  margin-top: 8px; letter-spacing: 0.02em;
+}
+
+.cc-modal-footer {
+  padding: 20px 36px 32px;
+  display: flex; gap: 12px;
+  border-top: 0.5px solid var(--border, rgba(13,43,30,0.12));
+  position: sticky; bottom: 0; background: var(--white, #fff);
+}
+.cc-modal-footer .cc-btn { flex: 1; padding: 14px 18px; }
+
+/* ── Dark mode ── */
+body.dark-mode .cc-banner-backdrop { background: rgba(0,0,0,0.4); }
+body.dark-mode .cc-banner { background: #141a17; border-color: rgba(74,158,63,0.25); }
+body.dark-mode .cc-banner-title { color: #c8d4cc; }
+body.dark-mode .cc-banner-text { color: rgba(200,212,204,0.55); }
+body.dark-mode .cc-btn-essential-only { color: #c8d4cc; border-color: rgba(255,255,255,0.12); }
+body.dark-mode .cc-modal { background: #141a17; border-color: rgba(74,158,63,0.25); }
+body.dark-mode .cc-modal-header,
+body.dark-mode .cc-modal-footer { background: #141a17; border-color: rgba(255,255,255,0.08); }
+body.dark-mode .cc-modal-title { color: #c8d4cc; }
+body.dark-mode .cc-modal-sub,
+body.dark-mode .cc-group-desc { color: rgba(200,212,204,0.5); }
+body.dark-mode .cc-group-title { color: #c8d4cc; }
+body.dark-mode .cc-group { border-color: rgba(255,255,255,0.08); }
+body.dark-mode .cc-modal-close { border-color: rgba(255,255,255,0.12); color: rgba(200,212,204,0.6); }
+body.dark-mode .cc-toggle-track { background: #2a3530; border-color: rgba(255,255,255,0.1); }
+
+/* ── Responsive ── */
+@media (max-width: 860px) {
+  .cc-banner {
+    grid-template-columns: 1fr;
+    left: 12px; right: 12px; bottom: 12px;
+    padding: 24px 22px; gap: 18px;
+  }
+  .cc-banner-icon { display: none; }
+  .cc-banner-actions { min-width: 0; }
+  .cc-modal { max-width: calc(100% - 24px); max-height: 90vh; }
+  .cc-modal-header, .cc-modal-body, .cc-modal-footer { padding-left: 24px; padding-right: 24px; }
+  .cc-modal-footer { flex-direction: column; }
+}

@@ -6,6 +6,8 @@ import App from './App.jsx'
 import './components/assets/css/main.css'
 import './components/assets/css/main2.css'
 import './components/assets/css/navbar.css'
+import './components/assets/css/cookie-consent.css'
+import './components/assets/js/cookie-consent.js'
 
 // import './assets/js/main.js'
 
