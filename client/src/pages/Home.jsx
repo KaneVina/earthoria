@@ -5,7 +5,15 @@ import { bookService } from "../services/bookService";
 import { useCartStore } from "../store/cartStore";
 import { formatPrice, getBookUrl } from "../utils/helpers";
 import toast from "react-hot-toast";
-import { Truck, Gift, BookOpen, Star, ShieldCheck } from "lucide-react";
+import {
+  Truck,
+  Gift,
+  BookOpen,
+  Star,
+  ShieldCheck,
+  Users,
+  RotateCcw,
+} from "lucide-react";
 import StickyScrollTransition from "./StickyScrollTransition";
 import HeroBanner from "../components/HeroBanner";
 import { lazy, Suspense } from "react";
@@ -834,7 +842,63 @@ function AppShowcase() {
     </section>
   );
 }
+/* Đếm số mượt bằng easing, kích hoạt khi cuộn tới */
+function CountUpMetric({
+  target,
+  decimals = 0,
+  suffix = "",
+  label,
+  icon: Icon,
+}) {
+  const ref = useRef(null);
+  const [value, setValue] = useState(0);
+  const [started, setStarted] = useState(false);
 
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !started) {
+          setStarted(true);
+          const duration = 1400;
+          const start = performance.now();
+          const animate = (now) => {
+            const progress = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+            setValue(target * eased);
+            if (progress < 1) requestAnimationFrame(animate);
+            else setValue(target);
+          };
+          requestAnimationFrame(animate);
+        }
+      },
+      { threshold: 0.4 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [started, target]);
+
+  const display =
+    decimals > 0
+      ? value.toFixed(decimals)
+      : Math.round(value).toLocaleString("vi-VN");
+
+  return (
+    <div className="trust-metric-item" ref={ref}>
+      <div className="trust-metric-bg" />
+      <div className="trust-metric-icon-box">
+        <Icon size={18} strokeWidth={1.4} />
+      </div>
+      <div className="trust-metric-number">
+        <span>{display}</span>
+        {suffix && <span className="trust-metric-suffix">{suffix}</span>}
+      </div>
+      <div className="trust-metric-label">{label}</div>
+      <div className="trust-metric-accent" />
+    </div>
+  );
+}
 /* ─────────────────────────────────────────────────────────────
    TESTIMONIALS SECTION (enhanced)
 ───────────────────────────────────────────────────────────── */
@@ -2947,55 +3011,34 @@ export default function Home() {
           </div>
 
           {/* Trust numbers below reviews */}
-          <div
-            className="reveal"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4,1fr)",
-              gap: "0",
-              marginTop: "64px",
-              border: "0.5px solid var(--border)",
-            }}
-          >
-            {[
-              ["98%", "Phụ huynh hài lòng"],
-              ["4.9★", "Đánh giá trung bình"],
-              ["1,000+", "Gia đình tin dùng"],
-              ["30 ngày", "Đổi trả miễn phí"],
-            ].map(([val, label], i, arr) => (
-              <div
-                key={label}
-                style={{
-                  padding: "32px 28px",
-                  textAlign: "center",
-                  borderRight:
-                    i < arr.length - 1 ? "0.5px solid var(--border)" : "none",
-                  background: "var(--ivory)",
-                }}
-              >
-                <div
-                  style={{
-                    fontFamily: "Playfair Display,serif",
-                    fontSize: "36px",
-                    fontWeight: 300,
-                    color: "var(--forest)",
-                    marginBottom: "6px",
-                  }}
-                >
-                  {val}
-                </div>
-                <div
-                  style={{
-                    fontSize: "10px",
-                    letterSpacing: "0.18em",
-                    textTransform: "uppercase",
-                    color: "var(--text-muted)",
-                  }}
-                >
-                  {label}
-                </div>
-              </div>
-            ))}
+          <div className="reveal trust-metrics-wrap">
+            <div className="trust-metrics-grid">
+              <CountUpMetric
+                target={98}
+                suffix="%"
+                label="Phụ huynh hài lòng"
+                icon={ShieldCheck}
+              />
+              <CountUpMetric
+                target={4.9}
+                decimals={1}
+                suffix="★"
+                label="Đánh giá trung bình"
+                icon={Star}
+              />
+              <CountUpMetric
+                target={1000}
+                suffix="+"
+                label="Gia đình tin dùng"
+                icon={Users}
+              />
+              <CountUpMetric
+                target={30}
+                suffix=" ngày"
+                label="Đổi trả miễn phí"
+                icon={RotateCcw}
+              />
+            </div>
           </div>
         </div>
       </section>

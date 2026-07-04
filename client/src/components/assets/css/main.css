@@ -8319,3 +8319,223 @@ body.dark-mode .otp-input {
 body.dark-mode .otp-input.filled {
   border-color: var(--gold);
 }
+/* ─── TRUST NUMBERS (nâng cấp) ─── */
+.trust-numbers-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: 0.5px solid var(--border-gold);
+  overflow: hidden;
+}
+.trust-num-item {
+  padding: 48px 28px 40px;
+  text-align: center;
+  position: relative;
+  background: var(--ivory);
+  border-right: 0.5px solid var(--border);
+  transition: background 0.5s ease, transform 0.5s cubic-bezier(0.16,1,0.3,1);
+  cursor: default;
+}
+.trust-num-item:last-child { border-right: none; }
+.trust-num-item:hover {
+  background: var(--parchment);
+  transform: translateY(-6px);
+}
+.trust-num-accent {
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 24px; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  transition: width 0.45s cubic-bezier(0.16,1,0.3,1);
+}
+.trust-num-item:hover .trust-num-accent { width: 70%; }
+.trust-num-icon {
+  color: var(--gold);
+  margin-bottom: 16px;
+  opacity: 0.8;
+  transition: transform 0.5s cubic-bezier(0.16,1,0.3,1), opacity 0.3s;
+}
+.trust-num-item:hover .trust-num-icon {
+  transform: scale(1.15) translateY(-2px);
+  opacity: 1;
+}
+.trust-num-value {
+  font-family: "Playfair Display", serif;
+  font-size: 40px;
+  font-weight: 300;
+  color: var(--forest);
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.trust-num-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.trust-num-divider-dot {
+  position: absolute;
+  bottom: 14px; left: 50%;
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--gold);
+  transform: translateX(-50%) scale(0);
+  transition: transform 0.4s cubic-bezier(0.16,1,0.3,1) 0.05s;
+}
+.trust-num-item:hover .trust-num-divider-dot {
+  transform: translateX(-50%) scale(1);
+}
+
+body.dark-mode .trust-numbers-grid { border-color: rgba(74,158,63,0.25); }
+body.dark-mode .trust-num-item {
+  background: #1c2822;
+  border-color: rgba(255,255,255,0.07);
+}
+body.dark-mode .trust-num-item:hover { background: #222e28; }
+body.dark-mode .trust-num-value { color: #c8d4cc; }
+/* ─── TRUST METRICS STRIP ─── */
+.trust-metrics-wrap {
+  position: relative;
+  margin-top: 64px;
+  border: 0.5px solid var(--border-gold);
+  background: var(--ivory);
+  overflow: hidden;
+}
+.trust-metrics-wrap::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.6;
+}
+.trust-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+.trust-metric-item {
+  position: relative;
+  padding: 44px 24px;
+  text-align: center;
+  border-right: 0.5px solid var(--border);
+  background: var(--ivory);
+  overflow: hidden;
+  cursor: default;
+  transition: transform 0.55s cubic-bezier(0.16,1,0.3,1);
+  z-index: 1;
+}
+.trust-metric-item:last-child { border-right: none; }
+
+/* lớp gradient forest phủ dần khi hover — tách riêng để mượt tuyệt đối */
+.trust-metric-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #0d3330 0%, #1a5c52 55%, #4a9e3f 120%);
+  opacity: 0;
+  transform: scale(1.08);
+  transition: opacity 0.55s ease, transform 0.7s cubic-bezier(0.16,1,0.3,1);
+  z-index: -1;
+}
+.trust-metric-item:hover {
+  transform: translateY(-5px);
+}
+.trust-metric-item:hover .trust-metric-bg {
+  opacity: 1;
+  transform: scale(1);
+}
+.trust-metric-item:hover {
+  box-shadow: 0 24px 48px rgba(13,43,30,0.18);
+}
+
+.trust-metric-icon-box {
+  width: 46px;
+  height: 46px;
+  margin: 0 auto 20px;
+  border: 0.5px solid var(--border-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+  background: var(--white);
+  transition: all 0.5s cubic-bezier(0.16,1,0.3,1);
+}
+.trust-metric-item:hover .trust-metric-icon-box {
+  border-color: rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.08);
+  color: var(--gold-light);
+  transform: rotate(360deg);
+}
+
+.trust-metric-number {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+  font-family: "Playfair Display", serif;
+  font-size: 40px;
+  font-weight: 300;
+  color: var(--forest);
+  line-height: 1;
+  letter-spacing: -0.01em;
+  margin-bottom: 10px;
+  transition: color 0.5s ease;
+}
+.trust-metric-item:hover .trust-metric-number {
+  color: var(--ivory);
+}
+.trust-metric-suffix {
+  font-family: "Montserrat", sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.trust-metric-label {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 400;
+  transition: color 0.5s ease;
+}
+.trust-metric-item:hover .trust-metric-label {
+  color: rgba(250,248,243,0.65);
+}
+
+.trust-metric-accent {
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background: var(--gold);
+  transition: width 0.5s cubic-bezier(0.16,1,0.3,1);
+}
+.trust-metric-item:hover .trust-metric-accent {
+  width: 40%;
+}
+
+body.dark-mode .trust-metrics-wrap {
+  background: #1c2822;
+  border-color: rgba(74,158,63,0.25);
+}
+body.dark-mode .trust-metric-item {
+  background: #1c2822;
+  border-color: rgba(255,255,255,0.07);
+}
+body.dark-mode .trust-metric-icon-box {
+  background: #222e28;
+  border-color: rgba(74,158,63,0.25);
+}
+body.dark-mode .trust-metric-number { color: #c8d4cc; }
+body.dark-mode .trust-metric-label { color: rgba(180,200,188,0.5); }
+
+@media (max-width: 900px) {
+  .trust-metrics-grid { grid-template-columns: 1fr 1fr; }
+  .trust-metric-item:nth-child(2) { border-right: none; }
+  .trust-metric-item:nth-child(1),
+  .trust-metric-item:nth-child(2) {
+    border-bottom: 0.5px solid var(--border);
+  }
+}

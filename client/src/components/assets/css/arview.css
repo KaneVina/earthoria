@@ -38,21 +38,6 @@
   box-shadow: inset 0 0 0 1px var(--av-border-gold);
 }
 
-/* /* ─── GRAIN — lớp nhiễu hạt phim rất mảnh phủ nền/model, giúp nền tối đỡ
-   "phẳng" và có cảm giác cao cấp, điện ảnh hơn. Cường độ cực thấp
-   (~4.5%). z-index để THẤP HƠN panel/bản đồ (z-index 3) — hạt nhiễu chỉ
-   nên phủ lên khung cảnh nền, không phủ lên chữ/UI/bản đồ vì sẽ làm các
-   ô lưới nhỏ trông lấm tấm, kém sạch. Luôn pointer-events:none. ─── */
-/* .ar-view::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  mix-blend-mode: overlay;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-} */
-
 .ar-view--center {
   display: flex;
   align-items: center;
