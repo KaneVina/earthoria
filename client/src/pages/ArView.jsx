@@ -4,6 +4,8 @@ import api from "../services/api";
 import { arService } from "../services/arService";
 import Model3D from "../components/3d/Model3D";
 import "../components/assets/css/arview.css";
+import ReactECharts from "echarts-for-react";
+import * as echarts from "echarts/core";
 
 /**
  * Trang xem AR khi khách quét QR trong sách — BẮT BUỘC đăng nhập.
@@ -24,10 +26,10 @@ import "../components/assets/css/arview.css";
  *   - Mã không tồn tại hoặc đã bị vô hiệu hoá (404)  -> hiển thị màn
  *     "không tìm thấy mã".
  *
- * NOTE: phần `specs` / `description` / `funFacts` / `habitatRegion` hiện
- * đang HARDCODE dữ liệu mẫu vì API /ar/:code chưa trả về các field này.
- * Khi backend bổ sung, chỉ cần thay khối FALLBACK_DATA bên dưới bằng
- * field thật từ `res.data.data`.
+ * NOTE: phần `specs` / `description` / `funFacts` / `habitatRegion` /
+ * `habitatCountries` hiện đang HARDCODE dữ liệu mẫu vì API /ar/:code
+ * chưa trả về các field này. Khi backend bổ sung, chỉ cần thay khối
+ * FALLBACK_DATA bên dưới bằng field thật từ `res.data.data`.
  *
  * UX flow:
  *   1. "scanning"  — hiệu ứng quét công nghệ chạy qua model vài giây
@@ -42,152 +44,290 @@ import "../components/assets/css/arview.css";
  *   Panel phải còn có nút "Xem thêm thông tin": KHÔNG mở modal, mà panel
  *   phải tự "kéo dài" sang trái (đổi width, đè lên vùng model), hiện đầy
  *   đủ thông số dạng lưới + mô tả không giới hạn dòng + "Có thể bạn chưa
- *   biết" + một bản đồ thế giới dạng lưới chấm, tô đậm vùng con vật sinh
- *   sống (theo field `habitatRegion`). Panel trái vẫn giữ nguyên tên
- *   sách + tên con vật, chỉ ẩn phần hướng dẫn kéo/zoom cho đỡ rối.
+ *   biết" + một bản đồ thế giới thật, tô đậm/nhạt theo mật độ phân bố
+ *   thật của loài (field `habitatCountries`). Panel trái vẫn giữ nguyên
+ *   tên sách + tên con vật, chỉ ẩn phần hướng dẫn kéo/zoom cho đỡ rối.
  */
 
-// ─── BẢN ĐỒ THẾ GIỚI DẠNG LƯỚI CHẤM ─────────────────────────────────────
-// Bản đồ được "vẽ" bằng lưới ô 24x12 (mỗi ô ~15° kinh/vĩ độ) thay vì path
-// toạ độ địa lý chính xác — cố tình cách điệu theo đúng ngôn ngữ "lưới
-// công nghệ" đã dùng ở hiệu ứng quét (.ar-scan__grid), vừa đẹp vừa dễ bảo
-// trì. Toạ độ vùng chỉ mang tính tương đối (không phải bản đồ chuẩn).
-const WORLD_MAP_COLS = 24;
-const WORLD_MAP_ROWS = 12;
-const WORLD_MAP_CELL = 10;
+// ─── BẢN ĐỒ THẾ GIỚI THẬT (ECharts + GeoJSON) ───────────────────────────
+// GeoJSON thế giới công khai, tải qua CDN 1 lần rồi cache lại cho cả
+// session — không cần tự host file trong dự án. Tên thuộc tính quốc gia
+// trong file này là tiếng Anh (VD "Vietnam", "Canada", "Greenland"),
+// nên `habitatCountries` bên dưới cũng dùng tên tiếng Anh làm khoá để
+// khớp đúng với dữ liệu bản đồ.
+const WORLD_MAP_GEO_URL = "https://cdn.jsdelivr.net/npm/echarts@4.9.0/map/json/world.json";
+const WORLD_MAP_NAME = "earthoria-world";
 
-const WORLD_MAP_REGION_RECTS = {
-  antarctic: [{ lngMin: -180, lngMax: 180, latMin: -90, latMax: -60 }],
-  oceania: [
-    { lngMin: 113, lngMax: 154, latMin: -39, latMax: -10 },
-    { lngMin: 165, lngMax: 180, latMin: -47, latMax: -34 },
-  ],
-  southAmerica: [
-    { lngMin: -82, lngMax: -35, latMin: -5, latMax: 13 },
-    { lngMin: -75, lngMax: -35, latMin: -25, latMax: -5 },
-    { lngMin: -75, lngMax: -53, latMin: -56, latMax: -25 },
-  ],
-  arctic: [{ lngMin: -180, lngMax: 180, latMin: 75, latMax: 90 }],
-  northAmerica: [
-    { lngMin: -168, lngMax: -52, latMin: 49, latMax: 75 },
-    { lngMin: -125, lngMax: -66, latMin: 24, latMax: 49 },
-    { lngMin: -118, lngMax: -86, latMin: 14, latMax: 24 },
-  ],
-  africa: [
-    { lngMin: -18, lngMax: 52, latMin: 0, latMax: 36 },
-    { lngMin: 11, lngMax: 42, latMin: -35, latMax: 0 },
-  ],
-  europe: [{ lngMin: -11, lngMax: 32, latMin: 36, latMax: 66 }],
-  asia: [
-    { lngMin: 32, lngMax: 180, latMin: 10, latMax: 66 },
-    { lngMin: 60, lngMax: 105, latMin: -10, latMax: 10 },
-  ],
-};
-// Thứ tự xử lý quyết định ô nào "thắng" khi 2 vùng lấn nhau ở biên —
-// vùng nhỏ/đặc thù xử lý trước, "asia" to nhất xử lý sau cùng.
-const WORLD_MAP_REGION_ORDER = [
-  "antarctic",
-  "oceania",
-  "southAmerica",
-  "arctic",
-  "northAmerica",
-  "africa",
-  "europe",
-  "asia",
-];
-
-function buildWorldMapCells() {
-  const assigned = new Map();
-  WORLD_MAP_REGION_ORDER.forEach((region) => {
-    WORLD_MAP_REGION_RECTS[region].forEach((rect) => {
-      const colStart = Math.max(0, Math.floor((rect.lngMin + 180) / 15));
-      const colEnd = Math.min(
-        WORLD_MAP_COLS - 1,
-        Math.floor((rect.lngMax + 180 - 0.01) / 15)
-      );
-      const rowStart = Math.max(0, Math.floor((90 - rect.latMax) / 15));
-      const rowEnd = Math.min(
-        WORLD_MAP_ROWS - 1,
-        Math.floor((90 - rect.latMin - 0.01) / 15)
-      );
-      for (let row = rowStart; row <= rowEnd; row += 1) {
-        for (let col = colStart; col <= colEnd; col += 1) {
-          const key = `${row}-${col}`;
-          if (!assigned.has(key)) assigned.set(key, region);
-        }
-      }
-    });
-  });
-  return Array.from(assigned.entries()).map(([key, region]) => {
-    const [row, col] = key.split("-").map(Number);
-    return { row, col, region };
-  });
-}
-
-const WORLD_MAP_CELLS = buildWorldMapCells();
+let worldMapRegistered = false;
+let worldMapFetchPromise = null;
 
 /**
- * Bản đồ thế giới dạng lưới chấm, tô đậm (các) vùng con vật sinh sống.
- * `habitatRegion` có thể là 1 chuỗi (VD "arctic") hoặc mảng nhiều vùng
- * (VD ["asia", "europe"]) cho loài phân bố rộng. Không khớp field nào
- * -> vẫn hiện bản đồ bình thường, chỉ là không có vùng nào tô đậm.
+ * Hook tải + đăng ký bản đồ thế giới vào ECharts đúng 1 lần cho toàn bộ
+ * session (nhiều lần mở panel / nhiều con vật khác nhau dùng chung 1
+ * bản đồ đã đăng ký, không tải lại). Trả về true khi đã sẵn sàng vẽ.
  */
-function WorldMapCard({ habitatRegion }) {
-  const activeRegions = Array.isArray(habitatRegion)
+function useWorldMapRegistered() {
+  const [ready, setReady] = useState(worldMapRegistered);
+
+  useEffect(() => {
+    if (worldMapRegistered) {
+      setReady(true);
+      return;
+    }
+    if (!worldMapFetchPromise) {
+      worldMapFetchPromise = fetch(WORLD_MAP_GEO_URL)
+        .then((res) => res.json())
+        .then((geoJson) => {
+          echarts.registerMap(WORLD_MAP_NAME, geoJson);
+          worldMapRegistered = true;
+          return true;
+        });
+    }
+    let cancelled = false;
+    worldMapFetchPromise.then(() => {
+      if (!cancelled) setReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return ready;
+}
+
+// ─── TƯƠNG THÍCH NGƯỢC ──────────────────────────────────────────────
+// Nếu backend chưa kịp trả `habitatCountries` (tên quốc gia -> mật độ
+// 0..1) mà chỉ có `habitatRegion` kiểu cũ, quy đổi tạm sang một vài
+// quốc gia đại diện cho vùng đó với mật độ mặc định. Đây chỉ là
+// fallback thô — nên ưu tiên bổ sung `habitatCountries` ở API thật để
+// có bản đồ chính xác theo mật độ thật của loài.
+const REGION_TO_COUNTRIES = {
+  arctic: ["Greenland", "Canada", "Russia", "Norway", "Iceland"],
+  antarctic: ["Antarctica"],
+  oceania: ["Australia", "New Zealand", "Papua New Guinea", "Fiji"],
+  southAmerica: [
+    "Brazil",
+    "Argentina",
+    "Peru",
+    "Colombia",
+    "Chile",
+    "Venezuela",
+    "Ecuador",
+    "Bolivia",
+  ],
+  northAmerica: ["United States", "Canada", "Mexico"],
+  africa: [
+    "Dem. Rep. Congo",
+    "Kenya",
+    "Tanzania",
+    "South Africa",
+    "Nigeria",
+    "Egypt",
+    "Ethiopia",
+    "Mozambique",
+    "Namibia",
+  ],
+  europe: [
+    "France",
+    "Germany",
+    "Spain",
+    "Italy",
+    "United Kingdom",
+    "Poland",
+    "Sweden",
+    "Finland",
+    "Norway",
+  ],
+  asia: [
+    "China",
+    "India",
+    "Russia",
+    "Indonesia",
+    "Malaysia",
+    "Thailand",
+    "Vietnam",
+    "Mongolia",
+    "Kazakhstan",
+    "Japan",
+  ],
+};
+
+function normalizeHabitatCountries({ habitatCountries, habitatRegion }) {
+  if (habitatCountries && Object.keys(habitatCountries).length) {
+    return habitatCountries; // { "Greenland": 0.9, "Canada": 0.7, ... } — dữ liệu thật
+  }
+  const regions = Array.isArray(habitatRegion)
     ? habitatRegion
     : habitatRegion
     ? [habitatRegion]
     : [];
+  const map = {};
+  regions.forEach((r) => {
+    (REGION_TO_COUNTRIES[r] || []).forEach((name) => {
+      map[name] = 0.55; // không có số liệu chi tiết -> mật độ trung bình mặc định
+    });
+  });
+  return map;
+}
 
-  const pins = activeRegions
-    .map((region) => {
-      const cells = WORLD_MAP_CELLS.filter((cell) => cell.region === region);
-      if (cells.length === 0) return null;
-      const row =
-        cells.reduce((sum, cell) => sum + cell.row, 0) / cells.length;
-      const col =
-        cells.reduce((sum, cell) => sum + cell.col, 0) / cells.length;
-      return { region, row, col };
-    })
-    .filter(Boolean);
+function WorldMapCard({ habitatCountries, habitatRegion }) {
+  const mapReady = useWorldMapRegistered();
+  const chartRef = useRef(null);
+  const containerRef = useRef(null);
+  const densityMap = normalizeHabitatCountries({ habitatCountries, habitatRegion });
+  const hasData = Object.keys(densityMap).length > 0;
+
+  // FIX: resize() không tham số khiến ECharts tự đo container bằng
+  // getBoundingClientRect() đúng lúc được gọi — nếu đúng lúc đó
+  // container đang ở kích thước trung gian (giữa lúc panel phải chạy
+  // transition đổi width 0.55s), ECharts sẽ khoá nhầm theo số đo sai
+  // đó và không tự sửa lại. Vì thời điểm tải xong GeoJSON (mapReady)
+  // khác nhau mỗi lần reload, lỗi này xảy ra không cố định.
+  // -> Luôn đo tường minh bằng getBoundingClientRect() và truyền thẳng
+  // {width, height} vào resize() để ECharts không tự đoán, cộng thêm 1
+  // lần đo "chốt" sau khi transition chắc chắn đã xong hẳn.
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const el = containerRef.current;
+
+    const resizeChart = () => {
+      const instance = chartRef.current?.getEchartsInstance();
+      if (!instance) return;
+      const { width, height } = el.getBoundingClientRect();
+      if (width > 0 && height > 0) {
+        instance.resize({ width, height });
+      }
+    };
+
+    const observer = new ResizeObserver(resizeChart);
+    observer.observe(el);
+    const settleTimeout = setTimeout(resizeChart, 650);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(settleTimeout);
+    };
+  }, [mapReady]);
+
+  if (!mapReady) {
+    return (
+      <div className="ar-more-map ar-more-map--loading">
+        <span className="ar-more-map__loading-dot" />
+        <p className="ar-more-map__empty">Đang tải bản đồ…</p>
+      </div>
+    );
+  }
+
+  const maxValue = Math.max(1, ...Object.values(densityMap));
+  const data = Object.entries(densityMap).map(([name, value]) => {
+    const intensity = value / maxValue;
+    return {
+      name,
+      value,
+      itemStyle:
+        intensity > 0.05
+          ? {
+              borderColor: `rgba(111, 224, 106, ${0.35 + intensity * 0.55})`,
+              borderWidth: 0.6 + intensity * 0.6,
+              shadowColor: "rgba(111, 224, 106, 0.55)",
+              shadowBlur: 4 + intensity * 10,
+            }
+          : undefined,
+    };
+  });
+
+  const option = {
+    backgroundColor: "transparent",
+    tooltip: {
+      show: true,
+      trigger: "item",
+      confine: true,
+      backgroundColor: "rgba(10, 14, 12, 0.9)",
+      borderColor: "rgba(74, 158, 63, 0.3)",
+      borderWidth: 0.5,
+      padding: [8, 12],
+      textStyle: {
+        color: "#faf8f3",
+        fontSize: 12,
+        fontFamily: '"Be Vietnam Pro", sans-serif',
+      },
+      formatter: (params) => {
+        const value = params.value;
+        if (value === undefined || value === null || isNaN(value)) {
+          return `<div style="font-weight:500">${params.name}</div>`;
+        }
+        const pct = Math.round((value / maxValue) * 100);
+        const level = pct >= 70 ? "Mật độ cao" : pct >= 35 ? "Mật độ trung bình" : "Mật độ thấp";
+        return `<div style="font-weight:500;margin-bottom:2px">${params.name}</div>
+          <div style="color:#6fe06a;font-size:11px;letter-spacing:.02em">${level} · ${pct}%</div>`;
+      },
+    },
+    visualMap: {
+      show: hasData,
+      min: 0,
+      max: maxValue,
+      left: 8,
+      bottom: 4,
+      itemWidth: 10,
+      itemHeight: 70,
+      calculable: false,
+      text: ["Nhiều", "Ít"],
+      textStyle: {
+        color: "rgba(244, 241, 234, 0.55)",
+        fontSize: 10,
+      },
+      inRange: {
+        color: ["rgba(244, 241, 234, 0.06)", "#3fae55", "#6fe06a"],
+      },
+    },
+    series: [
+      {
+        type: "map",
+        map: WORLD_MAP_NAME,
+        roam: "scale",
+        scaleLimit: { min: 1, max: 5 },
+        selectedMode: false,
+        left: "1%",
+        right: "1%",
+        top: "3%",
+        bottom: "22%", // vẫn chừa chỗ cho visualMap "Nhiều/Ít" ở góc dưới trái
+        aspectScale: 0.75,
+        itemStyle: {
+          borderColor: "rgba(244, 241, 234, 0.14)",
+          borderWidth: 0.4,
+          areaColor: "rgba(244, 241, 234, 0.06)",
+        },
+        emphasis: {
+          itemStyle: {
+            areaColor: "rgba(111, 224, 106, 0.5)",
+            borderColor: "#6fe06a",
+            borderWidth: 1,
+          },
+          label: { show: false },
+        },
+        animation: true,
+        animationDuration: 700,
+        animationEasing: "cubicOut",
+        animationDurationUpdate: 500,
+        data,
+      },
+    ],
+  };
 
   return (
     <div className="ar-more-map">
-      <svg
-        viewBox={`0 0 ${WORLD_MAP_COLS * WORLD_MAP_CELL} ${
-          WORLD_MAP_ROWS * WORLD_MAP_CELL
-        }`}
-        xmlns="http://www.w3.org/2000/svg"
-        role="img"
-        aria-label="Bản đồ vùng sinh sống"
-      >
-        {WORLD_MAP_CELLS.map((cell) => {
-          const isActive = activeRegions.includes(cell.region);
-          return (
-            <rect
-              key={`${cell.row}-${cell.col}`}
-              className={`ar-more-map__cell${isActive ? " is-active" : ""}`}
-              x={cell.col * WORLD_MAP_CELL + 1}
-              y={cell.row * WORLD_MAP_CELL + 1}
-              width={WORLD_MAP_CELL - 2}
-              height={WORLD_MAP_CELL - 2}
-              rx="2"
-            />
-          );
-        })}
-        {pins.map((pin) => (
-          <g
-            key={pin.region}
-            className="ar-more-map__pin"
-            transform={`translate(${
-              pin.col * WORLD_MAP_CELL + WORLD_MAP_CELL / 2
-            }, ${pin.row * WORLD_MAP_CELL + WORLD_MAP_CELL / 2})`}
-          >
-            <circle className="ar-more-map__pin-ring" r="9" />
-            <circle className="ar-more-map__pin-dot" r="3" />
-          </g>
-        ))}
-      </svg>
+      <div className="ar-more-map__chart" ref={containerRef}>
+        <ReactECharts
+          ref={chartRef}
+          option={option}
+          style={{ height: "100%", width: "100%" }}
+          notMerge
+          lazyUpdate
+        />
+      </div>
+      {!hasData && (
+        <p className="ar-more-map__empty">Chưa có dữ liệu phân bố chi tiết.</p>
+      )}
     </div>
   );
 }
@@ -214,9 +354,17 @@ const FALLBACK_DATA = {
     "Chúng có thể ngửi thấy mùi hải cẩu từ cách xa hơn 1 km, kể cả khi con mồi ở dưới lớp băng dày.",
     "Bàn chân to bản như mái chèo giúp gấu phân bổ trọng lượng khi di chuyển trên băng mỏng và bơi đường dài.",
   ],
-  // Khớp key với WORLD_MAP_REGION_RECTS phía trên. Có thể để mảng nếu
-  // loài phân bố nhiều vùng, VD: ["asia", "europe"].
+  // Dùng khi chưa có habitatCountries chi tiết (xem REGION_TO_COUNTRIES).
   habitatRegion: "arctic",
+  // Dữ liệu mật độ phân bố thật theo quốc gia (0..1) — ưu tiên field
+  // này khi backend đã có; càng cao càng đậm màu trên bản đồ.
+  habitatCountries: {
+    Greenland: 0.9,
+    Canada: 0.75,
+    Russia: 0.5,
+    Norway: 0.35,
+    Iceland: 0.15,
+  },
 };
 // ──────────────────────────────────────────────────────────────────────────
 
@@ -275,7 +423,8 @@ export default function ArView() {
         }
 
         // Ghép dữ liệu thật với dữ liệu mẫu cho các field API chưa có
-        // (specs / description) để UI luôn có nội dung hiển thị.
+        // (specs / description / habitatCountries) để UI luôn có nội
+        // dung hiển thị.
         setState({
           status: "ready",
           data: {
@@ -285,6 +434,8 @@ export default function ArView() {
             description: data.description || FALLBACK_DATA.description,
             funFacts: data.funFacts || FALLBACK_DATA.funFacts,
             habitatRegion: data.habitatRegion || FALLBACK_DATA.habitatRegion,
+            habitatCountries:
+              data.habitatCountries || FALLBACK_DATA.habitatCountries,
           },
         });
       } catch (err) {
@@ -416,8 +567,16 @@ export default function ArView() {
     );
   }
 
-  const { label, modelUrl, book, specs, description, funFacts, habitatRegion } =
-    state.data;
+  const {
+    label,
+    modelUrl,
+    book,
+    specs,
+    description,
+    funFacts,
+    habitatRegion,
+    habitatCountries,
+  } = state.data;
   const isScanning = stage === "scanning";
   const isImmersive = stage === "immersive";
   const isPreview = stage === "preview";
@@ -546,7 +705,10 @@ export default function ArView() {
               <span className="ar-panel__eyebrow">Thông tin chi tiết</span>
 
               <span className="ar-more-section-title">Phạm vi sinh sống</span>
-              <WorldMapCard habitatRegion={habitatRegion} />
+              <WorldMapCard
+                habitatCountries={habitatCountries}
+                habitatRegion={habitatRegion}
+              />
 
               <dl className="ar-more-specs">
                 {specs.map((item) => (
