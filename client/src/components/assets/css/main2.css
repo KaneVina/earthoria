@@ -1815,5 +1815,5 @@ body.dark-mode .wl-empty-sub {
 }
 html, body, #root {
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }

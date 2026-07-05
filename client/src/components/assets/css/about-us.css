@@ -1159,3 +1159,128 @@ body.dark-mode .team-avatar { background: #222e28; border-color: rgba(74,158,63,
     padding: 48px 20px 40px;
   }
 }
+/* ─── VALUES EXTENDED (Nguyên Tắc Dẫn Đường) ─── */
+.about-values-section {
+  padding: 140px 100px;
+  background: var(--cream);
+  position: relative;
+}
+.about-values-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.about-values-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 100px;
+  align-items: start;
+}
+
+/* Cột trái — sticky */
+.about-values-sticky {
+  position: sticky;
+  top: 120px;
+  align-self: start;
+}
+.about-values-sticky-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 120px;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--gold, #c9a15a);
+  opacity: 0.9;
+  margin-bottom: 24px;
+  transition: all 0.4s ease;
+}
+.about-values-sticky-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(32px, 3vw, 44px);
+  font-weight: 400;
+  line-height: 1.15;
+  color: var(--forest);
+  margin-bottom: 24px;
+}
+.about-values-sticky-title em {
+  font-style: italic;
+  color: var(--gold, #c9a15a);
+}
+.about-values-sticky-desc {
+  font-size: 14px;
+  line-height: 1.85;
+  color: var(--text-muted);
+  font-weight: 300;
+  max-width: 380px;
+}
+
+/* Cột phải — danh sách các dòng giá trị */
+.about-values-list {
+  display: flex;
+  flex-direction: column;
+}
+.about-value-row {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 24px;
+  padding: 48px 0;
+  border-bottom: 0.5px solid var(--border, rgba(13,51,48,0.1));
+  min-height: 200px;
+}
+.about-value-row:first-child {
+  border-top: 0.5px solid var(--border, rgba(13,51,48,0.1));
+}
+.about-value-row-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  color: var(--gold, #c9a15a);
+  letter-spacing: 0.1em;
+  padding-top: 4px;
+}
+.about-value-row-content {
+  display: flex;
+  flex-direction: column;
+}
+.about-value-row-icon {
+  width: 40px;
+  height: 40px;
+  border: 0.5px solid var(--border-gold, rgba(201,161,90,0.4));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold, #c9a15a);
+  margin-bottom: 18px;
+}
+.about-value-row-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--forest);
+  margin-bottom: 12px;
+}
+.about-value-row-desc {
+  font-size: 14px;
+  line-height: 1.85;
+  color: var(--text-muted);
+  font-weight: 300;
+  max-width: 560px;
+}
+
+@media (max-width: 900px) {
+  .about-values-section { padding: 80px 24px; }
+  .about-values-layout {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .about-values-sticky {
+    position: static;
+    top: unset;
+  }
+  .about-values-sticky-num { font-size: 72px; }
+}
+
+/* Dark mode */
+body.dark-mode .about-values-section { background: #161e1a; }
+body.dark-mode .about-values-sticky-title,
+body.dark-mode .about-value-row-title { color: #c8d4cc; }
+body.dark-mode .about-values-sticky-desc,
+body.dark-mode .about-value-row-desc { color: rgba(180,200,188,0.5); }
+body.dark-mode .about-value-row { border-color: rgba(255,255,255,0.07); }
