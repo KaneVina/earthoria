@@ -15,7 +15,6 @@ const isMobileDevice = (() => {
 })();
 
 const POLL_MS = isMobileDevice ? 1500 : 800;
-const SESSION_KEY = "eth_cr_accepted";
 
 /* ─── styles (injected once) ──────────────────────────────── */
 const CSS = `
@@ -272,7 +271,6 @@ function isDevToolsOpen() {
 export default function EarthoriaSecurity() {
   const stateRef = useRef({
     devToolsOpen:        false,
-    overlayMode:         "copyright", // "copyright" | "devtools"
     orientationChanging: false,
     tabHidden:           false,
     pollTimer:           null,
@@ -290,31 +288,9 @@ export default function EarthoriaSecurity() {
   /* ── overlay helpers ── */
   const getOverlay = () => document.getElementById("eth-overlay");
 
-  const showOverlay = useCallback((mode) => {
+  const showOverlay = useCallback(() => {
     const el = getOverlay();
     if (!el) return;
-
-    const crContent = document.getElementById("eth-cr-content");
-    const dtContent = document.getElementById("eth-dt-content");
-    const iconCR    = document.getElementById("eth-icon-cr");
-    const iconDT    = document.getElementById("eth-icon-dt");
-    const iconRing  = document.getElementById("eth-icon-ring");
-
-    if (mode === "devtools") {
-      if (crContent) crContent.style.display = "none";
-      if (dtContent) dtContent.style.display = "block";
-      if (iconCR)    iconCR.style.display    = "none";
-      if (iconDT)    iconDT.style.display    = "flex";
-      if (iconRing)  iconRing.style.borderColor = "rgba(224,122,95,0.4)";
-    } else {
-      if (crContent) crContent.style.display = "block";
-      if (dtContent) dtContent.style.display = "none";
-      if (iconCR)    iconCR.style.display    = "flex";
-      if (iconDT)    iconDT.style.display    = "none";
-      if (iconRing)  iconRing.style.borderColor = "rgba(74,158,63,0.4)";
-    }
-
-    stateRef.current.overlayMode = mode;
     el.classList.add("eth-show");
     document.body.style.overflow = "hidden";
 
@@ -338,10 +314,10 @@ export default function EarthoriaSecurity() {
 
     if (open && !S.devToolsOpen) {
       S.devToolsOpen = true;
-      showOverlay("devtools");
+      showOverlay();
     } else if (!open && S.devToolsOpen) {
       S.devToolsOpen = false;
-      if (S.overlayMode === "devtools") hideOverlay();
+      hideOverlay();
     }
   }, [showOverlay, hideOverlay]);
 
@@ -359,14 +335,6 @@ export default function EarthoriaSecurity() {
 
   /* ── boot effects ── */
   useEffect(() => {
-    /* copyright notice on first visit (per session) */
-    if (!sessionStorage.getItem(SESSION_KEY)) {
-      setTimeout(() => {
-        showOverlay("copyright");
-        sessionStorage.setItem(SESSION_KEY, "1");
-      }, 800);
-    }
-
     /* initial devtools check */
     setTimeout(tick, 300);
 
@@ -445,14 +413,6 @@ export default function EarthoriaSecurity() {
     };
   }, []);
 
-  /* ── close handler (exposed to inline onclick) ── */
-  useEffect(() => {
-    window.__ethCloseCopyright = () => {
-      if (stateRef.current.overlayMode === "copyright") hideOverlay();
-    };
-    return () => { delete window.__ethCloseCopyright; };
-  }, [hideOverlay]);
-
   /* ── render overlay DOM ── */
   return (
     <div id="eth-overlay" role="alertdialog" aria-modal="true" aria-labelledby="eth-title">
@@ -483,121 +443,22 @@ export default function EarthoriaSecurity() {
         {/* Body */}
         <div className="eth-body">
           {/* Icon ring */}
-          <div className="eth-icon-ring" id="eth-icon-ring">
-            <div id="eth-icon-cr">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-                stroke="#4a9e3f" strokeWidth="1.2" aria-hidden="true">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M14.5 9a4 4 0 1 0 0 6"/>
-              </svg>
-            </div>
-            <div id="eth-icon-dt" style={{ display: "none" }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
-                stroke="#e07a5f" strokeWidth="1.2" aria-hidden="true">
-                <polyline points="16 18 22 12 16 6"/>
-                <polyline points="8 6 2 12 8 18"/>
-              </svg>
-            </div>
-          </div>
-
-          {/* ── COPYRIGHT content ── */}
-          <div id="eth-cr-content">
-            <div className="eth-eyebrow">
-              <div className="eth-eyebrow-line" />
-              <span className="eth-eyebrow-text">Bảo vệ bản quyền</span>
-              <div className="eth-eyebrow-line" />
-            </div>
-            <h1 className="eth-headline" id="eth-title">
-              Tác phẩm được<br />bảo hộ <em>bản quyền</em>
-            </h1>
-            <p className="eth-subtitle">
-              Toàn bộ nội dung, hình ảnh và mã nguồn trên Earthoria
-              được bảo vệ theo pháp luật sở hữu trí tuệ.
-            </p>
-            <div className="eth-ornament">
-              <div className="eth-ornament-line" />
-              <div className="eth-ornament-mark" />
-              <div className="eth-ornament-line" />
-            </div>
-            <div className="eth-copyright">
-              <div className="eth-cr-row">
-                <div className="eth-cr-icon">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                  </svg>
-                </div>
-                <div>
-                  <div className="eth-cr-title">Quyền sở hữu trí tuệ</div>
-                  <div className="eth-cr-desc">
-                    Bản quyền © 2026 Earthoria. Mọi nội dung — văn bản, hình ảnh,
-                    mô hình AR, âm thanh — đều thuộc quyền sở hữu độc quyền của Earthoria.
-                    All rights reserved.
-                  </div>
-                </div>
-              </div>
-              <div className="eth-cr-row">
-                <div className="eth-cr-icon">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
-                  </svg>
-                </div>
-                <div>
-                  <div className="eth-cr-title">Nghiêm cấm sao chép</div>
-                  <div className="eth-cr-desc">
-                    Sao chép, phân phối, chỉnh sửa hoặc sử dụng thương mại bất kỳ
-                    nội dung nào khi chưa có sự cho phép bằng văn bản là vi phạm pháp luật.
-                  </div>
-                </div>
-              </div>
-              <div className="eth-cr-row">
-                <div className="eth-cr-icon">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                  </svg>
-                </div>
-                <div>
-                  <div className="eth-cr-title">Liên hệ hợp tác</div>
-                  <div className="eth-cr-desc">
-                    Để được cấp phép sử dụng:{" "}
-                    <span style={{ color: "rgba(74,158,63,0.8)" }}>earthoriavn@gmail.com</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="eth-actions">
-              <button className="eth-btn-main" onClick={() => window.__ethCloseCopyright?.()}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-                Tôi đã hiểu / I Understand
-              </button>
-              <button
-                className="eth-btn-main"
-                style={{ flex: 0, padding: "13px 16px" }}
-                onClick={() => { window.location.href = "mailto:earthoriavn@gmail.com"; }}
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                  <polyline points="22,6 12,13 2,6"/>
-                </svg>
-              </button>
-            </div>
+          <div className="eth-icon-ring" id="eth-icon-ring" style={{ borderColor: "rgba(224,122,95,0.4)" }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+              stroke="#e07a5f" strokeWidth="1.2" aria-hidden="true">
+              <polyline points="16 18 22 12 16 6"/>
+              <polyline points="8 6 2 12 8 18"/>
+            </svg>
           </div>
 
           {/* ── DEVTOOLS content ── */}
-          <div id="eth-dt-content" style={{ display: "none" }}>
+          <div id="eth-dt-content">
             <div className="eth-eyebrow">
               <div className="eth-eyebrow-line" style={{ background: "#e07a5f" }} />
               <span className="eth-eyebrow-text" style={{ color: "#e07a5f" }}>Cảnh báo bảo mật</span>
               <div className="eth-eyebrow-line" style={{ background: "#e07a5f" }} />
             </div>
-            <h1 className="eth-headline" style={{ color: "rgba(250,200,180,0.95)" }}>
+            <h1 className="eth-headline" id="eth-title" style={{ color: "rgba(250,200,180,0.95)" }}>
               DevTools đã<br />được <em style={{ color: "#e07a5f" }}>phát hiện</em>
             </h1>
             <p className="eth-subtitle">
