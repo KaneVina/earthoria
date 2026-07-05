@@ -3,27 +3,9 @@ import { Link } from "react-router-dom";
 export default function Footer() {
   return (
     <footer>
-      {/* Hiệu ứng bọt bong bóng đáy biển - mờ nhẹ, lơ lửng chậm rãi */}
-      <div className="footer-bubbles" aria-hidden="true">
-        <span className="bubble bubble-1" />
-        <span className="bubble bubble-2" />
-        <span className="bubble bubble-3" />
-        <span className="bubble bubble-4" />
-        <span className="bubble bubble-5" />
-        <span className="bubble bubble-6" />
-        <span className="bubble bubble-7" />
-        <span className="bubble bubble-8" />
-        <span className="bubble bubble-9" />
-        <span className="bubble bubble-10" />
-        <span className="bubble bubble-11" />
-        <span className="bubble bubble-12" />
-        <span className="bubble bubble-13" />
-        <span className="bubble bubble-14" />
-        <span className="bubble bubble-15" />
-        <span className="bubble bubble-16" />
-        <span className="bubble bubble-17" />
-        <span className="bubble bubble-18" />
-      </div>
+      {/* ── Lớp ánh sáng luxury */}
+      <div className="footer-top-accent" aria-hidden="true" />
+      <div className="footer-luxury-ambient" aria-hidden="true" />
 
       <div className="footer-inner">
         <div className="footer-top">
@@ -117,10 +99,11 @@ export default function Footer() {
               >
                 Nhận thông báo mới
               </div>
-              <div style={{ display: "flex" }}>
+              <div className="footer-newsletter-row" style={{ display: "flex" }}>
                 <input
                   type="email"
                   placeholder="Email của bạn"
+                  className="footer-newsletter-input"
                   style={{
                     flex: 1,
                     background: "rgba(255,255,255,0.05)",
@@ -133,6 +116,7 @@ export default function Footer() {
                   }}
                 />
                 <button
+                  className="footer-newsletter-btn"
                   style={{
                     background: "var(--gold)",
                     border: "none",
@@ -321,6 +305,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="X (Twitter)"
+                  className="footer-social-icon"
                   style={{
                     width: 38,
                     height: 38,
@@ -362,6 +347,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="LinkedIn"
+                  className="footer-social-icon"
                   style={{
                     width: 38,
                     height: 38,
@@ -403,6 +389,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Instagram"
+                  className="footer-social-icon"
                   style={{
                     width: 38,
                     height: 38,
@@ -463,84 +450,6 @@ export default function Footer() {
         footer {
           position: relative;
           overflow: hidden;
-        }
-
-        .footer-bubbles {
-          position: absolute;
-          inset: 0;
-          overflow: hidden;
-          pointer-events: none;
-          z-index: 0;
-        }
-
-        .footer-bubbles .bubble {
-          position: absolute;
-          bottom: -60px;
-          display: block;
-          border-radius: 50%;
-          background: radial-gradient(
-            circle at 30% 30%,
-            rgba(255, 255, 255, 0.22),
-            rgba(255, 255, 255, 0.05) 60%,
-            rgba(255, 255, 255, 0) 75%
-          );
-          border: 0.5px solid rgba(255, 255, 255, 0.12);
-          filter: blur(0.4px);
-          opacity: 0;
-          animation-name: bubble-float;
-          animation-timing-function: ease-in;
-          animation-iteration-count: infinite;
-        }
-
-        @keyframes bubble-float {
-          0% {
-            transform: translateY(0) translateX(0) scale(0.9);
-            opacity: 0;
-          }
-          8% {
-            opacity: 0.5;
-          }
-          50% {
-            transform: translateY(-50vh) translateX(12px) scale(1.05);
-          }
-          85% {
-            opacity: 0.35;
-          }
-          100% {
-            transform: translateY(-105%) translateX(-8px) scale(1);
-            opacity: 0;
-          }
-        }
-
-        .bubble-1  { left: 3%;  width: 10px; height: 10px; animation-duration: 15s; animation-delay: 0s;  }
-        .bubble-2  { left: 9%;  width: 6px;  height: 6px;  animation-duration: 11s; animation-delay: 2s;  }
-        .bubble-3  { left: 16%; width: 14px; height: 14px; animation-duration: 19s; animation-delay: 4s;  }
-        .bubble-4  { left: 24%; width: 8px;  height: 8px;  animation-duration: 13s; animation-delay: 1s;  }
-        .bubble-5  { left: 31%; width: 5px;  height: 5px;  animation-duration: 10s; animation-delay: 6s;  }
-        .bubble-6  { left: 38%; width: 12px; height: 12px; animation-duration: 17s; animation-delay: 3s;  }
-        .bubble-7  { left: 45%; width: 7px;  height: 7px;  animation-duration: 12s; animation-delay: 8s;  }
-        .bubble-8  { left: 52%; width: 16px; height: 16px; animation-duration: 21s; animation-delay: 5s;  }
-        .bubble-9  { left: 58%; width: 6px;  height: 6px;  animation-duration: 9s;  animation-delay: 0.5s;}
-        .bubble-10 { left: 65%; width: 10px; height: 10px; animation-duration: 16s; animation-delay: 7s;  }
-        .bubble-11 { left: 71%; width: 8px;  height: 8px;  animation-duration: 14s; animation-delay: 2.5s;}
-        .bubble-12 { left: 77%; width: 13px; height: 13px; animation-duration: 18s; animation-delay: 9s;  }
-        .bubble-13 { left: 83%; width: 5px;  height: 5px;  animation-duration: 11s; animation-delay: 4.5s;}
-        .bubble-14 { left: 89%; width: 9px;  height: 9px;  animation-duration: 15s; animation-delay: 1.5s;}
-        .bubble-15 { left: 95%; width: 7px;  height: 7px;  animation-duration: 13s; animation-delay: 6.5s;}
-        .bubble-16 { left: 13%; width: 4px;  height: 4px;  animation-duration: 20s; animation-delay: 10s; }
-        .bubble-17 { left: 47%; width: 11px; height: 11px; animation-duration: 22s; animation-delay: 3.5s;}
-        .bubble-18 { left: 68%; width: 15px; height: 15px; animation-duration: 24s; animation-delay: 8.5s;}
-
-        .footer-inner {
-          position: relative;
-          z-index: 1;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-          .footer-bubbles .bubble {
-            animation: none;
-            opacity: 0;
-          }
         }
 
         .footer-contact-block {
@@ -632,6 +541,171 @@ export default function Footer() {
           height: 40px;
           width: auto;
           display: block;
+        }
+
+        /* ══════════════════════════════════════════════════════════
+           NÂNG CẤP LUXURY — chỉ THÊM MỚI, không xoá / không thay thế
+           bất kỳ rule nào ở trên. Toàn bộ theo tông xanh var(--gold).
+           ══════════════════════════════════════════════════════════ */
+
+        /* Đường sáng mảnh lướt qua ở mép trên cùng footer */
+        .footer-top-accent {
+          position: absolute;
+          top: 0; left: 0; right: 0;
+          height: 1px;
+          z-index: 2;
+          background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(74, 158, 63, 0.15) 15%,
+            rgba(74, 158, 63, 0.85) 50%,
+            rgba(74, 158, 63, 0.15) 85%,
+            transparent
+          );
+          background-size: 220% 100%;
+          animation: footerAccentSweep 7s ease-in-out infinite;
+        }
+        @keyframes footerAccentSweep {
+          0%   { background-position: 100% 0; }
+          50%  { background-position: 0% 0; }
+          100% { background-position: 100% 0; }
+        }
+
+        /* Ánh sáng nền tĩnh rất nhẹ, tăng chiều sâu, không cạnh tranh với bong bóng */
+        .footer-luxury-ambient {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          z-index: 0;
+          background:
+            radial-gradient(ellipse 60% 90% at 8% 0%, rgba(74, 158, 63, 0.07), transparent 60%),
+            radial-gradient(ellipse 55% 80% at 92% 100%, rgba(26, 92, 82, 0.16), transparent 65%);
+        }
+
+        /* Logo: quầng sáng mềm phía sau khi hover, không đổi kích thước/khối đã có */
+        .footer-brand-block {
+          position: relative;
+        }
+        .footer-brand-block::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 0;
+          width: 60px;
+          height: 60px;
+          transform: translateY(-50%);
+          background: radial-gradient(circle, rgba(74,158,63,0.22), transparent 70%);
+          opacity: 0;
+          transition: opacity 0.5s ease;
+          pointer-events: none;
+          z-index: -1;
+        }
+        .footer-brand-block:hover::before {
+          opacity: 1;
+        }
+        .footer-brand-name {
+          transition: letter-spacing 0.4s ease, color 0.4s ease;
+        }
+        .footer-brand-block:hover .footer-brand-name {
+          letter-spacing: 0.02em;
+        }
+
+        /* Ô liên hệ: dịch nhẹ khi hover, cảm giác "phản hồi" cao cấp hơn */
+        .footer-contact-item {
+          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .footer-contact-item:hover {
+          transform: translateX(4px);
+        }
+
+        /* Ô nhập newsletter: viền sáng lên khi focus + nút có hiệu ứng ánh sáng lướt qua */
+        .footer-newsletter-row {
+          transition: box-shadow 0.35s ease;
+        }
+        .footer-newsletter-row:focus-within {
+          box-shadow: 0 0 0 4px rgba(74, 158, 63, 0.1);
+        }
+        .footer-newsletter-input::placeholder {
+          transition: color 0.3s ease;
+        }
+        .footer-newsletter-btn {
+          position: relative;
+          overflow: hidden;
+          transition: background 0.3s ease, transform 0.2s ease;
+        }
+        .footer-newsletter-btn::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(100deg, transparent, rgba(255,255,255,0.4), transparent);
+          transform: translateX(-120%);
+          transition: transform 0.6s ease;
+        }
+        .footer-newsletter-btn:hover::before {
+          transform: translateX(120%);
+        }
+        .footer-newsletter-btn:hover {
+          background: var(--gold-light, var(--gold));
+        }
+        .footer-newsletter-btn:active {
+          transform: scale(0.94);
+        }
+
+        /* Social icon: nảy nhẹ + đổ bóng xanh khi hover, cộng thêm cho hiệu ứng JS đã có sẵn */
+        .footer-social-icon {
+          box-shadow: 0 0 0 rgba(74, 158, 63, 0);
+          transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+                      box-shadow 0.35s ease;
+        }
+        .footer-social-icon:hover {
+          transform: translateY(-3px) scale(1.06);
+          box-shadow: 0 10px 24px rgba(74, 158, 63, 0.25);
+        }
+
+        /* App button: thêm đổ bóng xanh mềm khi hover, giữ nguyên transform gốc */
+        .footer-app-btn:hover {
+          filter: drop-shadow(0 8px 16px rgba(74, 158, 63, 0.22));
+        }
+
+        /* Viền phân cách mảnh + chấm sáng giữa các cột — chi tiết luxury mới, không đụng layout gốc */
+        .footer-top > div:not(:last-child) {
+          position: relative;
+        }
+        .footer-top > div:not(:last-child)::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          right: -30px;
+          width: 1px;
+          height: 100%;
+          background: linear-gradient(
+            to bottom,
+            transparent,
+            rgba(74, 158, 63, 0.18) 15%,
+            rgba(74, 158, 63, 0.18) 85%,
+            transparent
+          );
+        }
+
+        @media (max-width: 900px) {
+          .footer-top > div:not(:last-child)::after {
+            display: none;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .footer-top-accent,
+          .footer-brand-block::before,
+          .footer-brand-name,
+          .footer-contact-item,
+          .footer-newsletter-row,
+          .footer-newsletter-btn,
+          .footer-newsletter-btn::before,
+          .footer-social-icon,
+          .footer-app-btn {
+            transition: none;
+            animation: none;
+          }
         }
       `}</style>
     </footer>
