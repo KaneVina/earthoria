@@ -36,6 +36,7 @@ import Maintenance from "./pages/Maintenance";
 import Logo3D from "./components/Logo3D";
 import ArView from "./pages/ArView";
 import CookiePolicy from "./pages/legal/CookiePolicy";
+import ParentDashboard from "./pages/ParentDashboard";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -56,7 +57,6 @@ const GuestRoute = ({ children }) => {
 // Khởi động trang bảo trì
 const MAINTENANCE_MODE = false;
 // const MAINTENANCE_MODE = true;
-
 
 export default function App() {
   if (MAINTENANCE_MODE) {
@@ -89,7 +89,7 @@ export default function App() {
           <Route path="/legal/terms" element={<TermsOfService />} />
           <Route path="/legal/privacy" element={<PrivacyPolicy />} />
           <Route path="/legal/shipping" element={<ShippingPolicy />} />
-          <Route path="/legal/cookie" element={<CookiePolicy />} />
+          <Route path="/legal/cookies" element={<CookiePolicy />} />
           <Route path="/sitemap" element={<Sitemap />} />
 
           <Route
@@ -97,6 +97,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Checkout />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/parent-dashboard"
+            element={
+              <ProtectedRoute>
+                <ParentDashboard />
               </ProtectedRoute>
             }
           />
@@ -134,7 +142,7 @@ export default function App() {
             </GuestRoute>
           }
         />
-          <Route path="/3d" element={<Logo3D />} />
+        <Route path="/3d" element={<Logo3D />} />
         <Route
           path="/register"
           element={
