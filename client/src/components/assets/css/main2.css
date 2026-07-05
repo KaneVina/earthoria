@@ -1813,3 +1813,7 @@ body.dark-mode .wl-empty-sub {
     padding: 40px 16px;
   }
 }
+html, body, #root {
+  max-width: 100%;
+  overflow-x: hidden;
+}
