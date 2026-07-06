@@ -1,9 +1,42 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import Logo3D from "../components/Logo3D.jsx";
 import "../components/assets/css/about-us.css";
 
 export default function AboutUs() {
+  const logoSectionRef = useRef(null);
+  const logoTiltRef = useRef(null);
+
+  const handleLogoSectionMouseMove = useCallback((e) => {
+    const el = logoSectionRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    el.style.setProperty(
+      "--lp-x",
+      `${((e.clientX - rect.left) / rect.width) * 100}%`,
+    );
+    el.style.setProperty(
+      "--lp-y",
+      `${((e.clientY - rect.top) / rect.height) * 100}%`,
+    );
+  }, []);
+
+  const handleLogoTiltMouseMove = useCallback((e) => {
+    const el = logoTiltRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width;
+    const py = (e.clientY - rect.top) / rect.height;
+    el.style.setProperty("--ry", `${(px - 0.5) * 14}deg`);
+    el.style.setProperty("--rx", `${(0.5 - py) * 14}deg`);
+    el.style.setProperty("--gx", `${px * 100}%`);
+    el.style.setProperty("--gy", `${py * 100}%`);
+  }, []);
+  const handleLogoTiltMouseLeave = useCallback(() => {
+    const el = logoTiltRef.current;
+    el?.style.setProperty("--rx", "0deg");
+    el?.style.setProperty("--ry", "0deg");
+  }, []);
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) =>
@@ -61,6 +94,52 @@ export default function AboutUs() {
         { threshold: 0.5 },
       );
       counterObserver.observe(counterEl);
+    }
+    // Logo analysis: mục đang active phát sáng + xương sống tô dần theo scroll
+    const logoItems = document.querySelectorAll(".logo-analysis-item");
+    const logoContent = document.querySelector(".logo-analysis-content");
+    if (logoItems.length && logoContent) {
+      const logoObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              logoItems.forEach((it) => it.classList.remove("is-active"));
+              e.target.classList.add("is-active");
+              const idx = Number(e.target.dataset.logoIdx || 0);
+              logoContent.style.setProperty(
+                "--logo-progress",
+                `${((idx + 1) / logoItems.length) * 100}%`,
+              );
+            }
+          });
+        },
+        { threshold: 0.6 },
+      );
+      logoItems.forEach((it) => logoObserver.observe(it));
+    }
+    // Story Timeline: mốc đang active nở sáng + đường nối tô dần theo tiến trình
+    const storyEvents = document.querySelectorAll(
+      ".story-event[data-story-idx]",
+    );
+    const storyTimeline = document.querySelector(".story-timeline");
+    if (storyEvents.length && storyTimeline) {
+      const storyObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              storyEvents.forEach((ev) => ev.classList.remove("is-active"));
+              e.target.classList.add("is-active");
+              const idx = Number(e.target.dataset.storyIdx || 0);
+              storyTimeline.style.setProperty(
+                "--story-progress",
+                `${((idx + 1) / storyEvents.length) * 100}%`,
+              );
+            }
+          });
+        },
+        { threshold: 0.5 },
+      );
+      storyEvents.forEach((ev) => storyObserver.observe(ev));
     }
     return () => observer.disconnect();
   }, []);
@@ -244,7 +323,11 @@ export default function AboutUs() {
       </section>
 
       {/* LOGO ANALYSIS */}
-      <section className="logo-section">
+      <section
+        className="logo-section"
+        ref={logoSectionRef}
+        onMouseMove={handleLogoSectionMouseMove}
+      >
         <div className="logo-inner">
           <div className="section-header reveal">
             <div className="section-eyebrow">
@@ -266,14 +349,23 @@ export default function AboutUs() {
           <div className="logo-analysis-grid">
             {/* Logo display */}
             <div className="logo-display reveal">
-              <div className="logo-display-inner">
-                <img
-                  src="/logo-nho2.png"
-                  alt="Earthoria Logo"
-                  className="logo-display-img"
-                />
-                <div className="logo-display-ring logo-ring-1"></div>
-                <div className="logo-display-ring logo-ring-2"></div>
+              <div
+                className="logo-display-tilt"
+                ref={logoTiltRef}
+                onMouseMove={handleLogoTiltMouseMove}
+                onMouseLeave={handleLogoTiltMouseLeave}
+              >
+                <div className="logo-display-inner">
+                  <img
+                    src="/logo-nho2.png"
+                    alt="Earthoria Logo"
+                    className="logo-display-img"
+                  />
+                  <div className="logo-display-ring logo-ring-1"></div>
+                  <div className="logo-display-ring logo-ring-2"></div>
+                  <div className="logo-ring-3"></div>
+                  <div className="logo-display-glow" aria-hidden="true"></div>
+                </div>
               </div>
             </div>
 
@@ -301,7 +393,7 @@ export default function AboutUs() {
                   desc: "Đường nét sạch, hình khối đơn giản giúp logo dễ nhận diện trên mọi nền tảng — từ bìa sách in ấn đến icon ứng dụng di động. Tính scalable của logo đảm bảo thương hiệu luôn nhất quán dù ở kích thước nào.",
                 },
               ].map((item, i) => (
-                <div className="logo-analysis-item" key={i}>
+                <div className="logo-analysis-item" data-logo-idx={i} key={i}>
                   <div className="logo-analysis-num">{item.num}</div>
                   <div className="logo-analysis-body">
                     <h3 className="logo-analysis-title">{item.title}</h3>
@@ -646,7 +738,11 @@ export default function AboutUs() {
                 delay: "reveal-delay-2",
               },
             ].map((ev, i) => (
-              <div className={`story-event reveal ${ev.delay}`} key={i}>
+              <div
+                className={`story-event reveal ${ev.delay}`}
+                data-story-idx={i}
+                key={i}
+              >
                 <div className="story-event-date">
                   {ev.date}
                   <span>{ev.dateSub}</span>

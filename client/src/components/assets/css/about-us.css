@@ -1187,11 +1187,11 @@ body.dark-mode .team-avatar { background: #222e28; border-color: rgba(74,158,63,
   font-size: 120px;
   font-weight: 300;
   line-height: 1;
-  color: var(--gold, #c9a15a);
-  opacity: 0.9;
-  margin-bottom: 24px;
-  transition: all 0.4s ease;
+  color: var(--pale, #d4e8dc);
+  margin-bottom: -20px;
+  transition: color 0.5s ease;
 }
+
 .about-values-sticky-title {
   font-family: 'Playfair Display', serif;
   font-size: clamp(32px, 3vw, 44px);
@@ -1284,3 +1284,361 @@ body.dark-mode .about-value-row-title { color: #c8d4cc; }
 body.dark-mode .about-values-sticky-desc,
 body.dark-mode .about-value-row-desc { color: rgba(180,200,188,0.5); }
 body.dark-mode .about-value-row { border-color: rgba(255,255,255,0.07); }
+/* ─── STORY TIMELINE ─── */
+.story-section {
+  padding: 120px 100px;
+  background: var(--forest);
+  position: relative;
+  overflow: hidden;
+}
+.story-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse at 10% 50%,
+      rgba(74, 158, 63, 0.08) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse at 90% 20%,
+      rgba(74, 158, 63, 0.06) 0%,
+      transparent 55%
+    );
+  pointer-events: none;
+}
+.story-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+.story-timeline {
+  position: relative;
+  margin-top: 80px;
+  padding-left: 60px;
+}
+.story-timeline::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 0.5px;
+  background: linear-gradient(
+    to bottom,
+    var(--gold),
+    rgba(74, 158, 63, 0.2),
+    var(--gold)
+  );
+}
+.story-event {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 60px;
+  padding: 48px 0;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+  align-items: start;
+}
+.story-event:last-child {
+  border-bottom: none;
+}
+.story-event::before {
+  content: "";
+  position: absolute;
+  left: -64px;
+  top: 56px;
+  width: 8px;
+  height: 8px;
+  background: var(--gold);
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(74, 158, 63, 0.15);
+  transition: box-shadow 0.4s;
+}
+.story-event:hover::before {
+  box-shadow: 0 0 0 8px rgba(74, 158, 63, 0.2);
+}
+.story-event-date {
+  font-family: "Playfair Display", serif;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  padding-top: 4px;
+  text-align: right;
+}
+.story-event-date span {
+  display: block;
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.3);
+  margin-top: 4px;
+  font-style: normal;
+}
+.story-event-body {
+}
+.story-event-title {
+  font-family: "Playfair Display", serif;
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--ivory);
+  margin-bottom: 14px;
+  line-height: 1.2;
+}
+.story-event-title em {
+  font-style: italic;
+  color: var(--gold);
+}
+.story-event-desc {
+  font-size: 14px;
+  line-height: 1.85;
+  color: rgba(250, 248, 243, 0.55);
+  font-weight: 300;
+  max-width: 560px;
+}
+.story-event-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  padding: 7px 16px;
+  border: 0.5px solid rgba(74, 158, 63, 0.3);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-family: "Be Vietnam Pro", sans-serif;
+}
+.story-event-tag-dot {
+  width: 4px;
+  height: 4px;
+  background: var(--gold);
+  border-radius: 50%;
+}
+
+/* ─── ADVISOR / MENTOR SECTION ─── */
+.advisor-section {
+  padding: 120px 100px;
+  background: var(--parchment);
+  position: relative;
+  overflow: hidden;
+}
+.advisor-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.advisor-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-top: 80px;
+}
+.advisor-card {
+  background: var(--white);
+  border: 0.5px solid var(--border);
+  padding: 48px 44px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s ease;
+  cursor: default;
+}
+.advisor-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 0 48px 48px 0;
+  border-color: transparent var(--gold-pale) transparent transparent;
+  transition: border-color 0.4s;
+}
+.advisor-card:hover::after {
+  border-color: transparent var(--gold) transparent transparent;
+}
+.advisor-card:hover {
+  box-shadow: 0 32px 64px rgba(13, 51, 48, 0.1);
+  transform: translateY(-6px);
+  border-color: var(--border-gold);
+}
+.advisor-card-type {
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.advisor-card-type::after {
+  content: "";
+  flex: 1;
+  height: 0.5px;
+  background: var(--border-gold);
+}
+.advisor-avatar {
+  width: 80px;
+  height: 80px;
+  background: var(--forest);
+  border: 0.5px solid var(--border-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 28px;
+  position: relative;
+}
+.advisor-avatar::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 0.5px solid rgba(74, 158, 63, 0.2);
+}
+.advisor-avatar-letter {
+  font-family: "Playfair Display", serif;
+  font-size: 30px;
+  font-weight: 300;
+  color: var(--gold);
+  line-height: 1;
+}
+.advisor-name {
+  font-family: "Playfair Display", serif;
+  font-size: 28px;
+  font-weight: 400;
+  color: var(--forest);
+  margin-bottom: 6px;
+}
+.advisor-title {
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 28px;
+  font-family: "Be Vietnam Pro", sans-serif;
+}
+.advisor-desc {
+  font-size: 14px;
+  line-height: 1.85;
+  color: var(--text-muted);
+  font-weight: 300;
+  padding-top: 24px;
+  border-top: 0.5px solid var(--border);
+}
+.advisor-quote {
+  font-family: "Playfair Display", serif;
+  font-size: 16px;
+  font-style: italic;
+  color: var(--forest);
+  line-height: 1.6;
+  margin-top: 20px;
+  padding-left: 20px;
+  border-left: 2px solid var(--gold);
+}
+
+/* ─── DARK MODE — Story & Advisor ─── */
+body.dark-mode .story-section { background: #0a0f0c; }
+body.dark-mode .story-event { border-color: rgba(255, 255, 255, 0.05); }
+body.dark-mode .story-event-title { color: #c8d4cc; }
+body.dark-mode .story-event-desc { color: rgba(180, 200, 188, 0.45); }
+body.dark-mode .story-event-date { color: var(--gold); }
+body.dark-mode .story-event-date span { color: rgba(180, 200, 188, 0.3); }
+
+body.dark-mode .advisor-section { background: #161e1a; }
+body.dark-mode .advisor-card { background: #1c2822; border-color: rgba(255, 255, 255, 0.06); }
+body.dark-mode .advisor-card:hover { border-color: rgba(74, 158, 63, 0.3); }
+body.dark-mode .advisor-name { color: #c8d4cc; }
+body.dark-mode .advisor-quote { color: #c8d4cc; }
+body.dark-mode .advisor-desc {
+  color: rgba(180, 200, 188, 0.5);
+  border-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .advisor-title { color: rgba(180, 200, 188, 0.45); }
+body.dark-mode .advisor-card::after {
+  border-color: transparent rgba(74, 158, 63, 0.15) transparent transparent;
+}
+
+/* ─── RESPONSIVE — Story & Advisor ─── */
+@media (max-width: 1100px) {
+  .story-section,
+  .advisor-section {
+    padding-left: 40px;
+    padding-right: 40px;
+  }
+}
+@media (max-width: 900px) {
+  .story-timeline { padding-left: 32px; }
+  .story-event { grid-template-columns: 140px 1fr; gap: 32px; }
+  .advisor-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .story-section { padding: 80px 24px; }
+  .story-timeline { padding-left: 20px; }
+  .story-event { grid-template-columns: 1fr; gap: 12px; }
+  .advisor-section { padding: 80px 24px; }
+  .advisor-grid { grid-template-columns: 1fr; }
+}
+/* ─── STORY TIMELINE — LUXURY UPGRADE ─── */
+
+/* Đường nền mờ tĩnh (giữ nguyên hình dáng), tách riêng khỏi đường tô dần */
+.story-timeline::before {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Đường tô dần theo tiến trình cuộn qua từng mốc — cùng cơ chế với
+   .about-values-list::after và .logo-analysis-content::after đã làm */
+.story-timeline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12px;
+  width: 0.5px;
+  background: linear-gradient(180deg, var(--gold), rgba(74, 158, 63, 0.35));
+  height: var(--story-progress, 0%);
+  transition: height 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 10px 1px rgba(74, 158, 63, 0.5);
+}
+
+/* Chấm mốc: thêm base transform để transition mượt, rồi "nở sáng" khi active */
+.story-event::before {
+  transform: scale(1);
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
+}
+.story-event.is-active::before {
+  transform: scale(1.7);
+  box-shadow: 0 0 0 5px rgba(74, 158, 63, 0.18), 0 0 18px 4px rgba(74, 158, 63, 0.55);
+}
+
+/* Tiêu đề mốc phát sáng ánh vàng chạy qua khi active — đồng bộ với
+   .logo-analysis-item.is-active .logo-analysis-title đã làm ở Logo section */
+.story-event-title {
+  transition: color 0.4s ease;
+}
+.story-event.is-active .story-event-title {
+  background: linear-gradient(90deg, var(--ivory) 0%, #e8c878 50%, var(--ivory) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: storyTitleShimmer 2.8s linear infinite;
+}
+@keyframes storyTitleShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Ngày tháng bên trái cũng sáng nhẹ lên khi mốc đang active */
+.story-event-date {
+  transition: color 0.4s ease, transform 0.4s ease;
+}
+.story-event.is-active .story-event-date {
+  color: #e8c878;
+  transform: scale(1.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-event.is-active .story-event-title { animation: none; }
+}
