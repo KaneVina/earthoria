@@ -1602,7 +1602,6 @@ body.dark-mode .advisor-card::after {
   box-shadow: 0 0 10px 1px rgba(74, 158, 63, 0.5);
 }
 
-/* Chấm mốc: thêm base transform để transition mượt, rồi "nở sáng" khi active */
 .story-event::before {
   transform: scale(1);
   transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
@@ -1630,7 +1629,6 @@ body.dark-mode .advisor-card::after {
   100% { background-position: 200% 0; }
 }
 
-/* Ngày tháng bên trái cũng sáng nhẹ lên khi mốc đang active */
 .story-event-date {
   transition: color 0.4s ease, transform 0.4s ease;
 }

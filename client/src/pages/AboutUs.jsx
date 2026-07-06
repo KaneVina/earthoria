@@ -117,7 +117,6 @@ export default function AboutUs() {
       );
       logoItems.forEach((it) => logoObserver.observe(it));
     }
-    // Story Timeline: mốc đang active nở sáng + đường nối tô dần theo tiến trình
     const storyEvents = document.querySelectorAll(
       ".story-event[data-story-idx]",
     );
