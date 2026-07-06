@@ -5,7 +5,7 @@ async function verifyEmailTransport() {
   console.log('✓ Resend email service ready')
 }
 
-function wrapEmailTemplate({ preheader, bodyHtml, ctaUrl }) {
+function wrapEmailTemplate({ preheader, bodyHtml, ctaUrl, footerDepartment = 'IT' }) {
   const logoUrl = process.env.EMAIL_LOGO_URL || ''
   const clientUrl = ctaUrl || process.env.CLIENT_URL || '#'
 
@@ -63,7 +63,7 @@ function wrapEmailTemplate({ preheader, bodyHtml, ctaUrl }) {
             <img src="${logoUrl}" alt="Earthoria" height="28"
                  style="display:block;margin-bottom:18px;height:28px;width:auto;filter:brightness(0) invert(1);opacity:0.8;">
             <div style="font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:rgba(255,255,255,0.35);font-weight:500;margin-bottom:14px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
-              Phòng IT
+              Phòng ${footerDepartment}
             </div>
             <div style="font-size:12px;color:rgba(255,255,255,0.5);line-height:2;font-weight:300;font-family:'Be Vietnam Pro',Arial,sans-serif;">
               Liên hệ: <a href="mailto:helpdesk.earthoria@gmail.com"
@@ -216,10 +216,6 @@ function nameFromEmail(email) {
   return parts.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
 }
 
-/**
- * Khối chữ ký người gửi — logo bên trái, gạch dọc ở giữa,
- * thông tin (Tên/Phòng/SĐT/Email) bên phải. Giống mẫu chữ ký công ty.
- */
 function buildSignatureBlock({ name, department, phone, email } = {}) {
   if (!name && !email) return ''
 
@@ -254,11 +250,29 @@ function buildSignatureBlock({ name, department, phone, email } = {}) {
   `
 }
 
+// Regex bắt link http/https trong nội dung admin gõ (chặn ký tự ) ] " ' cuối để tránh dính dấu câu)
+const URL_REGEX = /(https?:\/\/[^\s<>"'\)\]]+)/g
+
+/**
+ * Render 1 link thành nút bấm "Xem ngay"
+ */
+function renderLinkButton(url) {
+  return `
+    <div style="text-align:center;margin:4px 0 24px;">
+      <a href="${url}"
+         style="display:inline-block;background:#0b2e2b;color:#faf8f2;font-size:12px;font-weight:500;letter-spacing:2px;text-transform:uppercase;padding:13px 34px;border-radius:6px;text-decoration:none;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+        Xem ngay
+      </a>
+    </div>`
+}
+
 /**
  * Build phần nội dung (bodyHtml) cho email soạn thủ công từ admin.
  * @param {string} heading      - Tiêu đề hiển thị (vd: "Thông Báo Bảo Trì")
  * @param {string} greetingName - Tên người nhận (tự suy ra từ email)
- * @param {string} bodyText     - Nội dung admin gõ (plain text, có thể nhiều đoạn cách nhau bằng dòng trống)
+ * @param {string} bodyText     - Nội dung admin gõ (plain text, có thể nhiều đoạn cách nhau bằng dòng trống).
+ *                                 Nếu trong đoạn có chứa link http(s), link sẽ tự động được tách ra
+ *                                 và hiển thị thành nút "Xem ngay" để click vào xem.
  * @param {object} sender       - { name, department, phone, email }
  */
 function buildCustomEmailBody({ heading, greetingName, bodyText, sender }) {
@@ -266,10 +280,25 @@ function buildCustomEmailBody({ heading, greetingName, bodyText, sender }) {
     .split(/\n{2,}/)
     .map(p => p.trim())
     .filter(Boolean)
-    .map(p => `
-      <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 16px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
-        ${p.replace(/\n/g, '<br>')}
-      </p>`)
+    .map(p => {
+      // Tách các link ra khỏi đoạn văn
+      const links = p.match(URL_REGEX) || []
+      const textOnly = p
+        .replace(URL_REGEX, '')
+        .replace(/[ \t]{2,}/g, ' ')
+        .trim()
+
+      const textHtml = textOnly
+        ? `<p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 16px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+             ${textOnly.replace(/\n/g, '<br>')}
+           </p>`
+        : ''
+
+      // Mỗi link tìm được sẽ thành 1 nút "Xem ngay"
+      const buttonsHtml = links.map(renderLinkButton).join('')
+
+      return textHtml + buttonsHtml
+    })
     .join('')
 
   return `
@@ -286,18 +315,25 @@ function buildCustomEmailBody({ heading, greetingName, bodyText, sender }) {
 
     ${paragraphs}
 
+    <p style="font-size:13.5px;color:#0b2e2b;font-weight:500;margin:24px 0 4px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Trân trọng,
+    </p>
     ${buildSignatureBlock(sender)}
   `
 }
 
 /**
- * Gửi email tuỳ chỉnh do admin soạn (dùng chung layout wrapEmailTemplate có sẵn)
+ * Dựng HTML hoàn chỉnh cho email thủ công — dùng chung cho cả gửi thật (sendCustomEmail)
+ * và xem trước (preview), để đảm bảo preview luôn khớp 100% với email thật sự được gửi.
+ * @param {string|string[]} to - người nhận đầu tiên dùng để suy ra tên chào (nếu không truyền greetingName)
  */
-async function sendCustomEmail({ to, cc, bcc, subject, heading, content, sender }) {
-  const greetingName = nameFromEmail(Array.isArray(to) ? to[0] : String(to).split(',')[0].trim())
+function renderCustomEmailHtml({ to, subject, heading, content, sender, greetingName: greetingNameOverride }) {
+  const firstTo = Array.isArray(to) ? to[0] : String(to || '').split(',')[0].trim()
+  const greetingName = greetingNameOverride || nameFromEmail(firstTo)
 
-  const html = wrapEmailTemplate({
+  return wrapEmailTemplate({
     preheader: subject,
+    footerDepartment: (sender && sender.department) || 'IT',
     bodyHtml: buildCustomEmailBody({
       heading: heading || subject,
       greetingName,
@@ -305,6 +341,14 @@ async function sendCustomEmail({ to, cc, bcc, subject, heading, content, sender 
       sender,
     }),
   })
+}
+
+/**
+ * Gửi email tuỳ chỉnh do admin soạn (dùng chung layout wrapEmailTemplate có sẵn).
+ * Footer sẽ tự lấy tên phòng ban theo sender.department (nếu admin không nhập thì mặc định "IT").
+ */
+async function sendCustomEmail({ to, cc, bcc, subject, heading, content, sender }) {
+  const html = renderCustomEmailHtml({ to, subject, heading, content, sender })
 
   const payload = {
     from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
@@ -323,5 +367,6 @@ module.exports = {
   sendOtpEmail,
   sendPasswordChangedEmail,
   sendCustomEmail,
+  renderCustomEmailHtml,
   nameFromEmail,
 }

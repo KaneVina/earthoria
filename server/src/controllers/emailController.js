@@ -1,6 +1,6 @@
 // src/controllers/emailController.js
 const { Resend } = require('resend')
-const { sendCustomEmail } = require('../services/emailService')
+const { sendCustomEmail, renderCustomEmailHtml } = require('../services/emailService')
 const prisma = require('../config/db')
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -100,7 +100,8 @@ exports.getEmailDetail = async (req, res) => {
    Lấy thông tin tài khoản admin/staff đang đăng nhập để tự điền
    chữ ký — vì đã qua middleware protect + adminOnly nên chắc chắn
    là tài khoản đã xác thực.
-   Field nào null thì frontend mới cho phép sửa, còn lại khoá cứng.
+   Field nào null thì frontend mới cho phép sửa, còn lại khoá cứng
+   (nhưng frontend vẫn cho bấm mở khoá thủ công nếu cần sửa).
 ══════════════════════════════════════════════ */
 exports.getSenderProfile = async (req, res) => {
   try {
@@ -139,6 +140,7 @@ exports.getSenderProfile = async (req, res) => {
 /* ══════════════════════════════════════════════
    GET /admin/emails/customers?search=
    Gợi ý email khách hàng (role CUSTOMER) khi admin gõ vào ô "to"
+   Cho phép gõ từ 1 ký tự đã trả gợi ý (khớp theo tên hoặc email, không phân biệt hoa/thường).
 ══════════════════════════════════════════════ */
 exports.searchCustomers = async (req, res) => {
   try {
@@ -156,13 +158,37 @@ exports.searchCustomers = async (req, res) => {
         ],
       },
       select: { name: true, email: true },
-      take: 6,
+      take: 8,
       orderBy: { createdAt: 'desc' },
     })
 
     return res.json({ success: true, data: customers })
   } catch (err) {
     return serverError(res, err, 'searchCustomers')
+  }
+}
+
+/* ══════════════════════════════════════════════
+   POST /admin/emails/preview
+   Dựng thử HTML email theo đúng template thật (KHÔNG gửi mail).
+   Dùng cho khung xem trước bên phải form soạn email.
+   Body: { to?, subject?, content?, sender? }
+══════════════════════════════════════════════ */
+exports.previewManualEmail = async (req, res) => {
+  try {
+    const { to, subject, content, sender } = req.body
+
+    const html = renderCustomEmailHtml({
+      to:      to || 'khachhang@example.com',
+      subject: subject || '(Chưa có tiêu đề)',
+      heading: subject || '(Chưa có tiêu đề)',
+      content: content || '',
+      sender:  sender && (sender.name || sender.email) ? sender : null,
+    })
+
+    return res.json({ success: true, data: { html } })
+  } catch (err) {
+    return serverError(res, err, 'previewManualEmail')
   }
 }
 

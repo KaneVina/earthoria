@@ -6,6 +6,7 @@ const {
   getEmailHistory,
   getEmailDetail,
   sendManualEmail,
+  previewManualEmail,
   getSenderProfile,
   searchCustomers,
 } = require('../controllers/emailController')
@@ -22,7 +23,8 @@ router.get('/customers', searchCustomers)    // gợi ý email khách hàng
 router.get('/',    getEmailHistory)
 router.get('/:id', getEmailDetail)
 
-// ── Gửi email thủ công ──
-router.post('/send', sendManualEmail)
+// ── Soạn thủ công ──
+router.post('/preview', previewManualEmail)  // xem trước HTML, KHÔNG gửi mail thật
+router.post('/send',    sendManualEmail)
 
 module.exports = router

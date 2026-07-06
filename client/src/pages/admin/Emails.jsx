@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
 import {
-  Mail, Send, Eye, X, Plus, RefreshCw, Clock, Lock,
+  Mail, Send, Eye, X, Plus, RefreshCw, Clock, Lock, Unlock, Loader2,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../services/api'
@@ -31,21 +31,27 @@ function StatusBadge({ status, label }) {
 
 /* ══════════════════════════════════════════════
    COMPOSE MODAL
-   — "to" có autocomplete gợi ý khách hàng (role CUSTOMER) trong DB
+   — "to" có autocomplete gợi ý khách hàng (role CUSTOMER) trong DB, gõ từ 1 ký tự là gợi ý
    — Chữ ký tự điền theo tài khoản admin/staff đang đăng nhập:
-     field nào có sẵn dữ liệu -> khoá (readOnly), field null -> cho sửa
+     field nào có sẵn dữ liệu -> khoá mặc định (readOnly), nhưng có nút mở khoá để sửa tay
+   — Bên phải hiển thị xem trước email theo đúng template thật, cập nhật tự động khi gõ
 ══════════════════════════════════════════════ */
 function ComposeModal({ onClose, onSent }) {
   const [form, setForm] = useState({
     to: '', cc: '', bcc: '', subject: '', content: '',
     senderName: '', senderDept: '', senderPhone: '', senderEmail: '',
   })
-  // Field nào bị khoá (đã có sẵn từ tài khoản, không cho sửa)
+  // Field nào đang bị khoá (mặc định khoá nếu có sẵn dữ liệu từ tài khoản, có thể bấm mở)
   const [lockedFields, setLockedFields] = useState({})
 
   const [toSuggestions, setToSuggestions] = useState([])
   const [showSuggestions, setShowSuggestions] = useState(false)
   const suggestTimer = useRef(null)
+
+  // ── Xem trước email ──
+  const [previewHtml, setPreviewHtml] = useState('')
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const previewTimer = useRef(null)
 
   // ── Lấy thông tin tài khoản đang đăng nhập để tự điền chữ ký ──
   const { data: profile } = useQuery({
@@ -73,7 +79,11 @@ function ComposeModal({ onClose, onSent }) {
 
   const update = (key) => (e) => setForm({ ...form, [key]: e.target.value })
 
-  /* ── Autocomplete cho ô "to": gõ tới đâu gợi ý khách hàng tới đó ── */
+  const toggleLock = (field) => {
+    setLockedFields((prev) => ({ ...prev, [field]: !prev[field] }))
+  }
+
+  /* ── Autocomplete cho ô "to": gõ tới đâu gợi ý khách hàng tới đó (từ 1 ký tự) ── */
   const handleToChange = (e) => {
     const value = e.target.value
     setForm({ ...form, to: value })
@@ -81,7 +91,7 @@ function ComposeModal({ onClose, onSent }) {
     const lastSegment = value.split(',').pop().trim()
     clearTimeout(suggestTimer.current)
 
-    if (lastSegment.length < 2) {
+    if (lastSegment.length < 1) {
       setToSuggestions([])
       setShowSuggestions(false)
       return
@@ -92,10 +102,11 @@ function ComposeModal({ onClose, onSent }) {
         const res = await api.get('/admin/emails/customers', { params: { search: lastSegment } })
         setToSuggestions(res.data.data ?? [])
         setShowSuggestions(true)
-      } catch {
+      } catch (err) {
+        console.error('[ComposeModal] Lỗi tìm gợi ý khách hàng:', err)
         setToSuggestions([])
       }
-    }, 300)
+    }, 200)
   }
 
   const pickSuggestion = (email) => {
@@ -106,6 +117,35 @@ function ComposeModal({ onClose, onSent }) {
     setShowSuggestions(false)
     setToSuggestions([])
   }
+
+  /* ── Xem trước email: debounce gọi API preview mỗi khi nội dung liên quan thay đổi ── */
+  useEffect(() => {
+    clearTimeout(previewTimer.current)
+    previewTimer.current = setTimeout(async () => {
+      setPreviewLoading(true)
+      try {
+        const hasSender = form.senderName.trim() || form.senderEmail.trim()
+        const res = await api.post('/admin/emails/preview', {
+          to:      form.to,
+          subject: form.subject,
+          content: form.content,
+          sender: hasSender ? {
+            name:       form.senderName || undefined,
+            department: form.senderDept || undefined,
+            phone:      form.senderPhone || undefined,
+            email:      form.senderEmail || undefined,
+          } : null,
+        })
+        setPreviewHtml(res.data?.data?.html || '')
+      } catch (err) {
+        console.error('[ComposeModal] Lỗi tạo bản xem trước:', err)
+      } finally {
+        setPreviewLoading(false)
+      }
+    }, 400)
+
+    return () => clearTimeout(previewTimer.current)
+  }, [form.to, form.subject, form.content, form.senderName, form.senderDept, form.senderPhone, form.senderEmail])
 
   const sendMutation = useMutation({
     mutationFn: (payload) => api.post('/admin/emails/send', payload).then(r => r.data),
@@ -143,9 +183,9 @@ function ComposeModal({ onClose, onSent }) {
     })
   }
 
-  /* Ô input chữ ký: khoá lại nếu đã có sẵn dữ liệu từ tài khoản */
+  /* Ô input chữ ký: khoá theo mặc định nếu đã có sẵn dữ liệu, nhưng có nút bấm mở/khoá lại */
   const SignatureInput = ({ field, placeholder }) => {
-    const locked = lockedFields[field]
+    const locked = !!lockedFields[field]
     return (
       <div style={{ position: 'relative' }}>
         <input
@@ -154,126 +194,176 @@ function ComposeModal({ onClose, onSent }) {
           value={form[field]}
           onChange={update(field)}
           readOnly={locked}
-          style={locked ? { background: 'var(--a-ink-05)', color: 'var(--a-ink-60)', cursor: 'not-allowed' } : undefined}
+          style={{
+            paddingRight: 32,
+            ...(locked ? { background: 'var(--a-ink-05)', color: 'var(--a-ink-60)' } : undefined),
+          }}
         />
-        {locked && (
-          <Lock size={11} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--a-ink-40)' }} />
-        )}
+        <button
+          type="button"
+          onClick={() => toggleLock(field)}
+          title={locked ? 'Bấm để sửa' : 'Bấm để khoá lại'}
+          style={{
+            position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+            background: 'none', border: 'none', cursor: 'pointer', padding: 2,
+            display: 'flex', alignItems: 'center', color: locked ? 'var(--a-ink-40)' : 'var(--a-brand, #0b2e2b)',
+          }}
+        >
+          {locked ? <Lock size={12} /> : <Unlock size={12} />}
+        </button>
       </div>
     )
   }
 
   return (
     <div className="a-modal-overlay" onClick={onClose}>
-      <div className="a-modal wide" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="a-modal wide"
+        onClick={(e) => e.stopPropagation()}
+        style={{ maxWidth: 1220, width: '96vw', height: '88vh', display: 'flex', flexDirection: 'column' }}
+      >
         <div className="a-modal-header">
           <h3 className="a-modal-title">Soạn email mới</h3>
           <button className="a-modal-close" onClick={onClose}><X size={16} /></button>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="a-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
+          {/* ── 2 cột: trái = form, phải = xem trước email ── */}
+          <div style={{ display: 'flex', flex: 1, minHeight: 0, borderTop: '1px solid var(--a-ink-08)' }}>
 
-            {/* ── Người nhận (có autocomplete) ── */}
-            <div className="a-form-group" style={{ position: 'relative' }}>
-              <label className="a-form-label">Người nhận (to) *</label>
-              <input
-                className="a-input"
-                placeholder="Gõ email hoặc tên khách hàng..."
-                value={form.to}
-                onChange={handleToChange}
-                onFocus={() => toSuggestions.length && setShowSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-                autoComplete="off"
-              />
-              {showSuggestions && toSuggestions.length > 0 && (
-                <div style={{
-                  position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20,
-                  background: 'var(--a-white)', border: '1px solid var(--a-ink-08)',
-                  borderRadius: 8, marginTop: 4, boxShadow: '0 8px 24px rgba(0,0,0,0.10)',
-                  maxHeight: 180, overflowY: 'auto',
-                }}>
-                  {toSuggestions.map((c) => (
-                    <div
-                      key={c.email}
-                      onMouseDown={() => pickSuggestion(c.email)}
-                      style={{ padding: '8px 12px', cursor: 'pointer', fontSize: 12 }}
-                      onMouseEnter={(e) => e.currentTarget.style.background = 'var(--a-surface)'}
-                      onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                    >
-                      <div style={{ fontWeight: 500 }}>{c.name}</div>
-                      <div style={{ color: 'var(--a-ink-40)', fontSize: 11 }}>{c.email}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="a-form-grid">
-              <div className="a-form-group">
-                <label className="a-form-label">CC</label>
-                <input className="a-input" placeholder="tuỳ chọn" value={form.cc} onChange={update('cc')} />
+            {/* CỘT TRÁI — FORM */}
+            <div
+              className="a-modal-body"
+              style={{
+                flex: '0 0 46%', maxWidth: '46%', overflowY: 'auto',
+                display: 'flex', flexDirection: 'column', gap: 16,
+                borderRight: '1px solid var(--a-ink-08)',
+              }}
+            >
+              {/* ── Người nhận (có autocomplete) ── */}
+              <div className="a-form-group" style={{ position: 'relative' }}>
+                <label className="a-form-label">Người nhận (to) *</label>
+                <input
+                  className="a-input"
+                  placeholder="Gõ email hoặc tên khách hàng..."
+                  value={form.to}
+                  onChange={handleToChange}
+                  onFocus={() => toSuggestions.length && setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+                  autoComplete="off"
+                />
+                {showSuggestions && toSuggestions.length > 0 && (
+                  <div style={{
+                    position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20,
+                    background: 'var(--a-white)', border: '1px solid var(--a-ink-08)',
+                    borderRadius: 8, marginTop: 4, boxShadow: '0 8px 24px rgba(0,0,0,0.10)',
+                    maxHeight: 180, overflowY: 'auto',
+                  }}>
+                    {toSuggestions.map((c) => (
+                      <div
+                        key={c.email}
+                        onMouseDown={() => pickSuggestion(c.email)}
+                        style={{ padding: '8px 12px', cursor: 'pointer', fontSize: 12 }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--a-surface)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                      >
+                        <div style={{ fontWeight: 500 }}>{c.name}</div>
+                        <div style={{ color: 'var(--a-ink-40)', fontSize: 11 }}>{c.email}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="a-form-group">
-                <label className="a-form-label">BCC</label>
-                <input className="a-input" placeholder="tuỳ chọn" value={form.bcc} onChange={update('bcc')} />
-              </div>
-            </div>
 
-            {/* ── Tiêu đề & Nội dung ── */}
-            <div className="a-form-group">
-              <label className="a-form-label">Tiêu đề *</label>
-              <input
-                className="a-input"
-                placeholder="vd: Thông báo bảo trì hệ thống"
-                value={form.subject}
-                onChange={update('subject')}
-              />
-              <p style={{ fontSize: 11, color: 'var(--a-ink-40)', marginTop: 5 }}>
-                Tiêu đề này sẽ vừa là dòng subject, vừa hiển thị làm tiêu đề chính trong email.
-              </p>
-            </div>
-
-            <div className="a-form-group">
-              <label className="a-form-label">Nội dung *</label>
-              <textarea
-                className="a-input a-textarea"
-                style={{ minHeight: 160 }}
-                placeholder={'Gõ nội dung email ở đây...\n\nCách dòng trống để tạo đoạn văn mới.'}
-                value={form.content}
-                onChange={update('content')}
-              />
-              <p style={{ fontSize: 11, color: 'var(--a-ink-40)', marginTop: 5 }}>
-                Chỉ cần gõ chữ thường — hệ thống tự canh chỉnh theo mẫu email của Earthoria.
-                Dòng chào "Xin chào, ..." sẽ tự lấy tên từ email người nhận đầu tiên.
-              </p>
-            </div>
-
-            {/* ── Chữ ký người gửi ── */}
-            <div style={{ borderTop: '1px solid var(--a-ink-08)', paddingTop: 14 }}>
-              <label className="a-form-label" style={{ marginBottom: 4, display: 'block' }}>
-                Chữ ký người gửi
-              </label>
-              <p style={{ fontSize: 11, color: 'var(--a-ink-40)', marginBottom: 10 }}>
-                Tự lấy theo tài khoản đang đăng nhập. Field có khoá là bị khoá vì đã có sẵn dữ liệu.
-              </p>
               <div className="a-form-grid">
                 <div className="a-form-group">
-                  <label className="a-form-label" style={{ fontSize: 9 }}>Tên</label>
-                  <SignatureInput field="senderName" placeholder="vd: Phúc Khang" />
+                  <label className="a-form-label">CC</label>
+                  <input className="a-input" placeholder="tuỳ chọn" value={form.cc} onChange={update('cc')} />
                 </div>
                 <div className="a-form-group">
-                  <label className="a-form-label" style={{ fontSize: 9 }}>Phòng ban</label>
-                  <SignatureInput field="senderDept" placeholder="vd: IT" />
+                  <label className="a-form-label">BCC</label>
+                  <input className="a-input" placeholder="tuỳ chọn" value={form.bcc} onChange={update('bcc')} />
                 </div>
-                <div className="a-form-group">
-                  <label className="a-form-label" style={{ fontSize: 9 }}>Số điện thoại</label>
-                  <SignatureInput field="senderPhone" placeholder="tuỳ chọn" />
+              </div>
+
+              {/* ── Tiêu đề & Nội dung ── */}
+              <div className="a-form-group">
+                <label className="a-form-label">Tiêu đề *</label>
+                <input
+                  className="a-input"
+                  placeholder="vd: Thông báo bảo trì hệ thống"
+                  value={form.subject}
+                  onChange={update('subject')}
+                />
+                <p style={{ fontSize: 11, color: 'var(--a-ink-40)', marginTop: 5 }}>
+                  Tiêu đề này sẽ vừa là dòng subject, vừa hiển thị làm tiêu đề chính trong email.
+                </p>
+              </div>
+
+              <div className="a-form-group">
+                <label className="a-form-label">Nội dung *</label>
+                <textarea
+                  className="a-input a-textarea"
+                  style={{ minHeight: 160 }}
+                  placeholder={'Gõ nội dung email ở đây...\n\nCách dòng trống để tạo đoạn văn mới.\nDán link http(s)://... vào đoạn văn sẽ tự thành nút "Xem ngay".'}
+                  value={form.content}
+                  onChange={update('content')}
+                />
+                <p style={{ fontSize: 11, color: 'var(--a-ink-40)', marginTop: 5 }}>
+                  Chỉ cần gõ chữ thường — hệ thống tự canh chỉnh theo mẫu email của Earthoria.
+                  Dòng chào "Xin chào, ..." sẽ tự lấy tên từ email người nhận đầu tiên.
+                </p>
+              </div>
+
+              {/* ── Chữ ký người gửi ── */}
+              <div style={{ borderTop: '1px solid var(--a-ink-08)', paddingTop: 14 }}>
+                <label className="a-form-label" style={{ marginBottom: 4, display: 'block' }}>
+                  Chữ ký người gửi
+                </label>
+                <p style={{ fontSize: 11, color: 'var(--a-ink-40)', marginBottom: 10 }}>
+                  Tự lấy theo tài khoản đang đăng nhập. Bấm icon ổ khoá để mở/khoá sửa từng field.
+                </p>
+                <div className="a-form-grid">
+                  <div className="a-form-group">
+                    <label className="a-form-label" style={{ fontSize: 9 }}>Tên</label>
+                    <SignatureInput field="senderName" placeholder="vd: Phúc Khang" />
+                  </div>
+                  <div className="a-form-group">
+                    <label className="a-form-label" style={{ fontSize: 9 }}>Phòng ban</label>
+                    <SignatureInput field="senderDept" placeholder="vd: IT" />
+                  </div>
+                  <div className="a-form-group">
+                    <label className="a-form-label" style={{ fontSize: 9 }}>Số điện thoại</label>
+                    <SignatureInput field="senderPhone" placeholder="tuỳ chọn" />
+                  </div>
+                  <div className="a-form-group">
+                    <label className="a-form-label" style={{ fontSize: 9 }}>Email liên hệ</label>
+                    <SignatureInput field="senderEmail" placeholder="tuỳ chọn" />
+                  </div>
                 </div>
-                <div className="a-form-group">
-                  <label className="a-form-label" style={{ fontSize: 9 }}>Email liên hệ</label>
-                  <SignatureInput field="senderEmail" placeholder="tuỳ chọn" />
-                </div>
+              </div>
+            </div>
+
+            {/* CỘT PHẢI — XEM TRƯỚC EMAIL */}
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', background: 'var(--a-surface)' }}>
+              <div style={{
+                padding: '10px 16px', borderBottom: '1px solid var(--a-ink-08)',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                fontSize: 11, color: 'var(--a-ink-40)', letterSpacing: 1, textTransform: 'uppercase',
+              }}>
+                <span>Xem trước email</span>
+                {previewLoading && (
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> Đang cập nhật...
+                  </span>
+                )}
+              </div>
+              <div style={{ flex: 1, minHeight: 0 }}>
+                <iframe
+                  title="Xem trước email"
+                  srcDoc={previewHtml}
+                  style={{ width: '100%', height: '100%', border: 'none', background: '#eceae3' }}
+                />
               </div>
             </div>
           </div>
