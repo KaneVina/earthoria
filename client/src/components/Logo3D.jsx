@@ -1,36 +1,17 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState, useCallback } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Environment, ContactShadows } from "@react-three/drei";
 import * as THREE from "three";
 import { NAVY_LETTERS, GREEN_LETTERS } from "./letterData";
 
-/**
- * EARTHORIA — Logo 3D
- * ---------------------------------------------------------------
- * Hình dạng từng chữ cái KHÔNG được vẽ tay ước lượng, mà được
- * trace trực tiếp từ file ảnh logo gốc (logoBT_1__12_.png) bằng
- * OpenCV (phân tách màu navy/green theo kênh RGB -> threshold ->
- * connectedComponents -> findContours với RETR_CCOMP để giữ đúng
- * các lỗ rỗng như vành khuyên chữ O). Toạ độ polygon thật sau đó
- * được chuẩn hoá và nhúng vào letterData.js.
- *
- * Vì vậy hình khối 3D ở đây bám sát 1:1 đường viền thật của logo,
- * kể cả các chi tiết tinh như nét hở của chữ R, đỉnh nhọn chữ A,
- * và 2 chiếc lá nối liền phía trên chữ O.
- * ---------------------------------------------------------------
- */
-
 const NAVY_COLOR = "#0E3B4D";
 const GREEN_COLOR = "#5BA13B";
 
-// Khoảng cách offsetX gốc lấy thẳng từ ảnh (đơn vị px logo gốc),
-// dùng nguyên để giữ đúng kerning giữa các chữ.
 const ORIGINAL_OFFSETS = {
   E: 107, A1: 234, R1: 389, T: 524, H: 661,
   O: 818, R2: 965, I: 1102, A2: 1162,
 };
 
-/** Build THREE.Shape từ polygon outer + holes (mảng [x,y]) */
 function buildShapeFromPoints(outer, holes) {
   const shape = new THREE.Shape();
   outer.forEach(([x, y], i) => {
@@ -52,7 +33,6 @@ function buildShapeFromPoints(outer, holes) {
   return shape;
 }
 
-/** Một chữ cái 3D, geometry build từ dữ liệu trace thật */
 function Letter3D({ letterDef, color, depth = 26, bevelSize = 1.6 }) {
   const geometry = useMemo(() => {
     const shape = buildShapeFromPoints(letterDef.outer, letterDef.holes);
@@ -62,10 +42,9 @@ function Letter3D({ letterDef, color, depth = 26, bevelSize = 1.6 }) {
       bevelThickness: bevelSize,
       bevelSize: bevelSize * 0.85,
       bevelSegments: 6,
-      curveSegments: 1, // polygon đã là đường thẳng nối điểm trace -> không cần chia nhỏ thêm
+      curveSegments: 1,
       steps: 1,
     });
-    // căn geometry quanh tâm bbox của chính nó để group định vị dễ
     geo.computeBoundingBox();
     const bb = geo.boundingBox;
     geo.translate(-(bb.min.x + bb.max.x) / 2, -(bb.min.y + bb.max.y) / 2, -depth / 2);
@@ -76,11 +55,12 @@ function Letter3D({ letterDef, color, depth = 26, bevelSize = 1.6 }) {
     <mesh geometry={geometry} castShadow receiveShadow>
       <meshPhysicalMaterial
         color={color}
-        roughness={0.3}
-        metalness={0.2}
-        clearcoat={0.65}
-        clearcoatRoughness={0.2}
-        reflectivity={0.55}
+        roughness={0.28}
+        metalness={0.25}
+        clearcoat={0.7}
+        clearcoatRoughness={0.18}
+        reflectivity={0.6}
+        envMapIntensity={1.1}
       />
     </mesh>
   );
@@ -92,35 +72,54 @@ const WORD_ORDER = [
   { def: NAVY_LETTERS[2], color: NAVY_COLOR, offsetKey: "R1" },
   { def: NAVY_LETTERS[3], color: NAVY_COLOR, offsetKey: "T" },
   { def: NAVY_LETTERS[4], color: NAVY_COLOR, offsetKey: "H" },
-  { def: GREEN_LETTERS[0], color: GREEN_COLOR, offsetKey: "O" }, // bao gồm 2 lá dính liền
+  { def: GREEN_LETTERS[0], color: GREEN_COLOR, offsetKey: "O" },
   { def: GREEN_LETTERS[1], color: GREEN_COLOR, offsetKey: "R2" },
   { def: GREEN_LETTERS[2], color: GREEN_COLOR, offsetKey: "I" },
   { def: GREEN_LETTERS[3], color: GREEN_COLOR, offsetKey: "A2" },
 ];
 
-function LogoGroup() {
+// ─── Đèn "theo con trỏ" — quét một điểm sáng vàng ấm qua bề mặt logo khi
+// người dùng di chuột, giống ánh phản chiếu trên huy hiệu kim loại thật
+// thay vì ánh sáng tĩnh. Dùng lerp để chuyển động mượt, không giật khung.
+function PointerLight({ pointer }) {
+  const lightRef = useRef();
+  useFrame(() => {
+    if (!lightRef.current) return;
+    const target = new THREE.Vector3(pointer.current.x * 6, pointer.current.y * 4 + 2, 5);
+    lightRef.current.position.lerp(target, 0.08);
+  });
+  return (
+    <pointLight ref={lightRef} intensity={1.5} color="#e8c878" distance={14} decay={2} />
+  );
+}
+
+function LogoGroup({ pointer }) {
   const groupRef = useRef();
 
   useFrame((state) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.25) * 0.16;
-      groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.8) * 0.08;
-    }
+    if (!groupRef.current) return;
+    const idleY = Math.sin(state.clock.elapsedTime * 0.25) * 0.16;
+    const idleFloat = Math.sin(state.clock.elapsedTime * 0.8) * 0.08;
+    // Nghiêng nhẹ thêm theo vị trí con trỏ, cộng dồn lên nhịp xoay tự thân
+    // sẵn có — lerp để cảm giác "nặng tay", sang trọng hơn là bám cứng.
+    const targetY = idleY + pointer.current.x * 0.32;
+    const targetX = pointer.current.y * -0.18;
+    groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetY, 0.06);
+    groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetX, 0.06);
+    groupRef.current.position.y = idleFloat;
   });
 
-  // Tổng chiều rộng (dùng offset gốc + width chữ cuối) để center cả cụm logo
   const lastLetter = WORD_ORDER[WORD_ORDER.length - 1];
   const totalWidth =
     ORIGINAL_OFFSETS[lastLetter.offsetKey] + lastLetter.def.width - ORIGINAL_OFFSETS["E"];
   const centerX = ORIGINAL_OFFSETS["E"] + totalWidth / 2;
 
-  const scale = 0.018; // co toàn bộ logo (đơn vị px gốc) về kích thước scene hợp lý
+  const scale = 0.018;
 
   return (
     <group ref={groupRef} scale={[scale, scale, scale]}>
       {WORD_ORDER.map(({ def, color, offsetKey }, i) => {
         const x = ORIGINAL_OFFSETS[offsetKey] + def.width / 2 - centerX;
-        // baseline: chữ thường cao ~104-105, chữ O cao 144 (có lá) -> căn theo baseline chung y=0..105
         const y = def.height / 2 - 105 / 2;
         return (
           <group key={i} position={[x, y, 0]}>
@@ -134,15 +133,23 @@ function LogoGroup() {
 
 export default function Logo3D() {
   const [autoRotate, setAutoRotate] = useState(false);
+  const pointer = useRef({ x: 0, y: 0 });
+
+  const handlePointerMove = useCallback((e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    pointer.current.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    pointer.current.y = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+  }, []);
+  const handlePointerLeave = useCallback(() => {
+    pointer.current.x = 0;
+    pointer.current.y = 0;
+  }, []);
 
   return (
     <div
-       style={{
-        width: "100%",
-        height: 220,
-        position: "relative",
-        overflow: "hidden",
-      }}
+      style={{ width: "100%", height: 220, position: "relative", overflow: "hidden" }}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
     >
       <Canvas
         shadows
@@ -151,17 +158,23 @@ export default function Logo3D() {
         gl={{ antialias: true, alpha: true }}
         style={{ background: "transparent" }}
       >
-        <ambientLight intensity={0.55} />
+        <ambientLight intensity={0.5} />
         <directionalLight
           position={[6, 9, 8]}
-          intensity={1.5}
+          intensity={1.3}
           castShadow
           shadow-mapSize-width={1024}
           shadow-mapSize-height={1024}
         />
-        <directionalLight position={[-6, 4, -6]} intensity={0.4} color={"#bcd6c4"} />
+        <directionalLight position={[-6, 4, -6]} intensity={0.35} color={"#bcd6c4"} />
+        <PointerLight pointer={pointer} />
 
-        <LogoGroup />
+        {/* Environment map — yếu tố quan trọng nhất để vật liệu clearcoat
+            có phản chiếu thật (bầu trời/môi trường xung quanh) thay vì chỉ
+            ăn 2 đèn hướng tĩnh, giúp logo trông như kim loại/ngọc thật */}
+        <Environment preset="city" blur={1} />
+
+        <LogoGroup pointer={pointer} />
 
         <ContactShadows position={[0, -1.7, 0]} opacity={0.35} scale={18} blur={2.2} far={5} />
 
