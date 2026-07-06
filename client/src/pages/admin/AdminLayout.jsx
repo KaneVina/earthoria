@@ -1,59 +1,74 @@
 // AdminLayout.jsx — Shared sidebar layout for all admin pages
-import '../../components/assets/css/admin.css'
-import { useState, useEffect } from 'react'
-import { useLocation, Link, useNavigate } from 'react-router-dom'
+import "../../components/assets/css/admin.css";
+import { useState, useEffect } from "react";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import {
-  LayoutDashboard, Package, ShoppingBag, Users, Tag,
-  ChevronRight, ChevronLeft, LogOut, Bell, Menu, X,
-  Settings, Search, BarChart2,
-} from 'lucide-react'
-import { useAuthStore } from '../../store/authStore'
-import toast from 'react-hot-toast'
-import { QueryClient } from '@tanstack/react-query'
+  LayoutDashboard,
+  Package,
+  ShoppingBag,
+  Users,
+  Tag,
+  ChevronRight,
+  ChevronLeft,
+  LogOut,
+  Bell,
+  Menu,
+  X,
+  Mail,
+  Settings,
+  Search,
+  BarChart2,
+} from "lucide-react";
+import { useAuthStore } from "../../store/authStore";
+import toast from "react-hot-toast";
+import { QueryClient } from "@tanstack/react-query";
 
 const NAV_ITEMS = [
-  { label: 'Dashboard',    href: '/dashboard',             icon: LayoutDashboard },
-  { label: 'Sản phẩm',    href: '/dashboard/products',    icon: Package          },
-  { label: 'Đơn hàng',    href: '/dashboard/orders',      icon: ShoppingBag      },
-  { label: 'Người dùng',  href: '/dashboard/users',       icon: Users            },
-  { label: 'Mã giảm giá', href: '/dashboard/coupons',     icon: Tag              },
-  { label: 'Analytics',   href: '/dashboard/analytics',   icon: BarChart2        },
-]
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Sản phẩm", href: "/dashboard/products", icon: Package },
+  { label: "Đơn hàng", href: "/dashboard/orders", icon: ShoppingBag },
+  { label: "Người dùng", href: "/dashboard/users", icon: Users },
+  { label: "Mã giảm giá", href: "/dashboard/coupons", icon: Tag },
+  { label: "Analytics", href: "/dashboard/analytics", icon: BarChart2 },
+  { label: "Email", href: "/dashboard/emails", icon: Mail },
+];
 
 export default function AdminLayout({ children }) {
-  const location    = useLocation()
-  const navigate    = useNavigate()
-  const currentPath = location.pathname
+  const location = useLocation();
+  const navigate = useNavigate();
+  const currentPath = location.pathname;
 
-  const { logout } = useAuthStore()
+  const { logout } = useAuthStore();
 
   const handleLogout = () => {
-    logout()
-     QueryClient.clear()
-    toast.success('Đã đăng xuất')
-    navigate('/')
-  }
+    logout();
+    QueryClient.clear();
+    toast.success("Đã đăng xuất");
+    navigate("/");
+  };
 
-  const [collapsed, setCollapsed]     = useState(false)
-  const [mobileOpen, setMobileOpen]   = useState(false)
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   // Close mobile sidebar on route change
   useEffect(() => {
-    setMobileOpen(false)
-  }, [currentPath])
+    setMobileOpen(false);
+  }, [currentPath]);
 
   // Close mobile sidebar on Escape key
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') setMobileOpen(false) }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [])
+    const onKey = (e) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
 
-  const currentLabel = NAV_ITEMS.find(n => n.href === currentPath)?.label ?? 'Dashboard'
+  const currentLabel =
+    NAV_ITEMS.find((n) => n.href === currentPath)?.label ?? "Dashboard";
 
   return (
     <div className="admin-root">
-
       {/* ── Mobile overlay ── */}
       {mobileOpen && (
         <div
@@ -66,18 +81,17 @@ export default function AdminLayout({ children }) {
       {/* ══════════════ SIDEBAR ══════════════ */}
       <aside
         className={[
-          'a-sidebar',
-          collapsed  ? 'collapsed'    : '',
-          mobileOpen ? 'mobile-open'  : '',
-        ].join(' ')}
+          "a-sidebar",
+          collapsed ? "collapsed" : "",
+          mobileOpen ? "mobile-open" : "",
+        ].join(" ")}
         aria-label="Admin navigation"
       >
-
         {/* Logo row */}
         <div className="a-logo">
           {!collapsed && (
             <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div className="a-logo-mark">E</div>
                 <span className="a-logo-name">Earthoria</span>
               </div>
@@ -91,7 +105,14 @@ export default function AdminLayout({ children }) {
             </>
           )}
           {collapsed && (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 10,
+              }}
+            >
               <div className="a-logo-mark">E</div>
               <button
                 className="a-collapse-btn"
@@ -109,15 +130,15 @@ export default function AdminLayout({ children }) {
 
         {/* Nav items */}
         <nav className="a-nav" aria-label="Admin menu">
-          {NAV_ITEMS.map(item => {
-            const Icon   = item.icon
-            const active = currentPath === item.href
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const active = currentPath === item.href;
             return (
               <Link
                 key={item.href}
                 to={item.href}
-                className={`a-nav-item${active ? ' active' : ''}`}
-                aria-current={active ? 'page' : undefined}
+                className={`a-nav-item${active ? " active" : ""}`}
+                aria-current={active ? "page" : undefined}
                 title={collapsed ? item.label : undefined}
               >
                 <Icon
@@ -127,7 +148,7 @@ export default function AdminLayout({ children }) {
                 />
                 <span className="a-nav-item-label">{item.label}</span>
               </Link>
-            )
+            );
           })}
         </nav>
 
@@ -136,7 +157,7 @@ export default function AdminLayout({ children }) {
           <Link
             to="/dashboard/settings"
             className="a-nav-item"
-            title={collapsed ? 'Cài đặt' : undefined}
+            title={collapsed ? "Cài đặt" : undefined}
           >
             <Settings size={15} strokeWidth={1.6} className="a-nav-item-icon" />
             <span className="a-nav-item-label">Cài đặt</span>
@@ -164,17 +185,16 @@ export default function AdminLayout({ children }) {
       </aside>
 
       {/* ══════════════ MAIN AREA ══════════════ */}
-      <div className={`a-main${collapsed ? ' collapsed' : ''}`}>
-
+      <div className={`a-main${collapsed ? " collapsed" : ""}`}>
         {/* Topbar */}
         <header className="a-topbar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             {/* Mobile menu trigger */}
             <button
               onClick={() => setMobileOpen(true)}
               className="a-topbar-btn"
               aria-label="Mở menu"
-              style={{ display: 'none' }} // shown via @media in CSS
+              style={{ display: "none" }} // shown via @media in CSS
             >
               <Menu size={18} />
             </button>
@@ -182,7 +202,11 @@ export default function AdminLayout({ children }) {
             {/* Breadcrumb */}
             <nav className="a-breadcrumb" aria-label="Breadcrumb">
               <span>Admin</span>
-              <ChevronRight size={11} className="a-breadcrumb-sep" aria-hidden="true" />
+              <ChevronRight
+                size={11}
+                className="a-breadcrumb-sep"
+                aria-hidden="true"
+              />
               <span className="a-breadcrumb-current">{currentLabel}</span>
             </nav>
           </div>
@@ -195,15 +219,15 @@ export default function AdminLayout({ children }) {
               <Bell size={15} />
               <span className="a-topbar-badge" aria-hidden="true" />
             </button>
-            <div className="a-topbar-avatar" aria-label="Tài khoản admin">A</div>
+            <div className="a-topbar-avatar" aria-label="Tài khoản admin">
+              A
+            </div>
           </div>
         </header>
 
         {/* Page content */}
-        <main className="a-page">
-          {children}
-        </main>
+        <main className="a-page">{children}</main>
       </div>
     </div>
-  )
+  );
 }

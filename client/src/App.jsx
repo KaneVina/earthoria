@@ -36,6 +36,7 @@ import Maintenance from "./pages/Maintenance";
 import Logo3D from "./components/Logo3D";
 import ArView from "./pages/ArView";
 import CookiePolicy from "./pages/legal/CookiePolicy";
+import Emails from "./pages/admin/Emails";
 // import ParentDashboard from "./pages/ParentDashboard";
 
 const ProtectedRoute = ({ children }) => {
@@ -71,7 +72,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <EarthoriaSecurity />
+      {/* <EarthoriaSecurity /> */}
       <ScrollToTop />
       <CustomCursor />
       <EiraChatbox />
@@ -168,6 +169,7 @@ export default function App() {
             </AdminRoute>
           }
         />
+        <Route path="/dashboard/emails" element={<Emails />} />
         <Route
           path="/dashboard/products"
           element={

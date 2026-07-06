@@ -201,8 +201,127 @@ async function sendPasswordChangedEmail({ to, name }) {
   })
 }
 
+const SIGNATURE_LOGO_URL = 'https://earthoria.id.vn/logo-chinh.png'
+
+/**
+ * Suy ra tên hiển thị từ phần trước @ của email.
+ * vd: "nguyen.phuc.khang@fpt.edu.vn" -> "Nguyen Phuc Khang"
+ *     "khangnpce181578@fpt.edu.vn"   -> "Khangnpce181578" (không tách được thì giữ nguyên, viết hoa chữ đầu)
+ */
+function nameFromEmail(email) {
+  if (!email) return 'bạn'
+  const local = email.split('@')[0]
+  const parts = local.replace(/[._-]+/g, ' ').trim().split(/\s+/).filter(Boolean)
+  if (!parts.length) return 'bạn'
+  return parts.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+}
+
+/**
+ * Khối chữ ký người gửi — logo bên trái, gạch dọc ở giữa,
+ * thông tin (Tên/Phòng/SĐT/Email) bên phải. Giống mẫu chữ ký công ty.
+ */
+function buildSignatureBlock({ name, department, phone, email } = {}) {
+  if (!name && !email) return ''
+
+  return `
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:30px 0 6px;">
+      <tr>
+        <td style="vertical-align:middle;padding-right:18px;">
+          <img src="${SIGNATURE_LOGO_URL}" alt="Earthoria" height="42"
+               style="display:block;height:42px;width:auto;">
+        </td>
+        <td style="border-left:1.5px solid rgba(11,46,43,0.15);padding-left:18px;vertical-align:middle;">
+          ${name ? `
+          <div style="font-size:14px;font-weight:600;color:#0b2e2b;margin-bottom:3px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+            ${name}
+          </div>` : ''}
+          ${department ? `
+          <div style="font-size:12px;font-weight:500;color:#4a9e3f;margin-bottom:8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+            Phòng ${department} — Earthoria
+          </div>` : ''}
+          ${phone ? `
+          <div style="font-size:12px;color:#5a6b60;line-height:1.8;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+            <strong style="color:#0b2e2b;font-weight:500;">Mobile:</strong> ${phone}
+          </div>` : ''}
+          ${email ? `
+          <div style="font-size:12px;color:#5a6b60;line-height:1.8;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+            <strong style="color:#0b2e2b;font-weight:500;">Email:</strong>
+            <a href="mailto:${email}" style="color:#1a5a9e;text-decoration:none;">${email}</a>
+          </div>` : ''}
+        </td>
+      </tr>
+    </table>
+  `
+}
+
+/**
+ * Build phần nội dung (bodyHtml) cho email soạn thủ công từ admin.
+ * @param {string} heading      - Tiêu đề hiển thị (vd: "Thông Báo Bảo Trì")
+ * @param {string} greetingName - Tên người nhận (tự suy ra từ email)
+ * @param {string} bodyText     - Nội dung admin gõ (plain text, có thể nhiều đoạn cách nhau bằng dòng trống)
+ * @param {object} sender       - { name, department, phone, email }
+ */
+function buildCustomEmailBody({ heading, greetingName, bodyText, sender }) {
+  const paragraphs = (bodyText || '')
+    .split(/\n{2,}/)
+    .map(p => p.trim())
+    .filter(Boolean)
+    .map(p => `
+      <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 16px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+        ${p.replace(/\n/g, '<br>')}
+      </p>`)
+    .join('')
+
+  return `
+    <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Thông báo hệ thống
+    </div>
+    <h1 style="font-size:26px;font-weight:600;color:#0b2e2b;line-height:1.3;margin:0 0 28px;text-align:center;letter-spacing:1px;text-transform:uppercase;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      ${heading}
+    </h1>
+
+    <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Xin chào, ${greetingName}.
+    </p>
+
+    ${paragraphs}
+
+    ${buildSignatureBlock(sender)}
+  `
+}
+
+/**
+ * Gửi email tuỳ chỉnh do admin soạn (dùng chung layout wrapEmailTemplate có sẵn)
+ */
+async function sendCustomEmail({ to, cc, bcc, subject, heading, content, sender }) {
+  const greetingName = nameFromEmail(Array.isArray(to) ? to[0] : String(to).split(',')[0].trim())
+
+  const html = wrapEmailTemplate({
+    preheader: subject,
+    bodyHtml: buildCustomEmailBody({
+      heading: heading || subject,
+      greetingName,
+      bodyText: content,
+      sender,
+    }),
+  })
+
+  const payload = {
+    from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
+    to,
+    subject,
+    html,
+  }
+  if (cc)  payload.cc  = cc
+  if (bcc) payload.bcc = bcc
+
+  return resend.emails.send(payload)
+}
+
 module.exports = {
   verifyEmailTransport,
   sendOtpEmail,
   sendPasswordChangedEmail,
+  sendCustomEmail,
+  nameFromEmail,
 }

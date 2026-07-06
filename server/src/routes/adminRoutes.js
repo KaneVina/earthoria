@@ -38,6 +38,9 @@ router.put('/categories/:id',    updateCategory)
 router.get('/orders',      getOrders)
 router.put('/orders/:id',  updateOrderStatus)
 
+//Email
+router.use('/emails', require('./emailRoutes'))
+
 // ── Users ──
 router.get('/users',                  getUsers)
 router.put('/users/:id/toggle',       toggleUser)
