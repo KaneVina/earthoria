@@ -12,7 +12,7 @@ const protect = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'Không có quyền truy cập' })
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET)
     const user = await prisma.user.findUnique({
       where: { id: decoded.id },
       select: { id: true, email: true, name: true, role: true, isActive: true }
@@ -30,10 +30,18 @@ const protect = async (req, res, next) => {
 }
 
 const adminOnly = (req, res, next) => {
-  if (req.user?.role !== 'ADMIN') {
-    return res.status(403).json({ success: false, message: 'Chỉ admin mới có quyền này' })
-  }
-     next()
+if (req.user?.role !== 'ADMIN') {
+return res.status(403).json({ success: false, message: 'Chỉ admin mới có quyền này' })
+}
+next()
 }
 
-module.exports = { protect, adminOnly }
+// Dùng cho các route mà STAFF cũng được phép (vd: xem/tạo mã AR)
+const staffOrAdmin = (req, res, next) => {
+if (req.user?.role !== 'ADMIN' && req.user?.role !== 'STAFF') {
+return res.status(403).json({ success: false, message: 'Chỉ admin hoặc staff mới có quyền này' })
+}
+next()
+}
+
+module.exports = { protect, adminOnly, staffOrAdmin }

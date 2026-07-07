@@ -25,11 +25,8 @@ export default function Login() {
     try {
       setLoading(true);
       const res = await authService.login(data);
-      console.log("res.data:", res.data);
-      const { user, token, isNew } = res.data.data;
-      console.log("user.role:", user.role);
-      setAuth(user, token);
-      console.log("store sau setAuth:", useAuthStore.getState());
+      const { user, accessToken } = res.data.data;
+      setAuth(user, accessToken);
 
       // Nếu người dùng bị dẫn tới trang login từ 1 trang cần đăng nhập
       // (vd quét QR AR), quay lại đúng trang đó thay vì luôn về trang
@@ -39,15 +36,15 @@ export default function Login() {
       const isSafeRedirect =
         redirect && redirect.startsWith("/") && !redirect.startsWith("//");
 
-      if (isSafeRedirect) {
-        window.location.href = redirect;
-      } else if (user.role === "ADMIN") {
-        window.location.href = "/dashboard";
-      } else {
-        window.location.href = "/";
-      }
-
       toast.success(`Chào mừng trở lại, ${user.name}!`);
+
+      if (isSafeRedirect) {
+        navigate(redirect, { replace: true });
+      } else if (user.role === "ADMIN") {
+        navigate("/dashboard", { replace: true });
+      } else {
+        navigate("/", { replace: true });
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || "Đăng nhập thất bại");
     } finally {

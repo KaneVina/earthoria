@@ -1,6 +1,6 @@
 // AdminLayout.jsx — Shared sidebar layout for all admin pages
 import "../../components/assets/css/admin.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -18,6 +18,7 @@ import {
   Settings,
   Search,
   BarChart2,
+  QrCode,
 } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 import toast from "react-hot-toast";
@@ -29,11 +30,21 @@ const NAV_ITEMS = [
   { label: "Đơn hàng", href: "/dashboard/orders", icon: ShoppingBag },
   { label: "Người dùng", href: "/dashboard/users", icon: Users },
   { label: "Mã giảm giá", href: "/dashboard/coupons", icon: Tag },
+  { label: "Tạo mã QR", href: "/dashboard/ar-codes", icon: QrCode },
   { label: "Analytics", href: "/dashboard/analytics", icon: BarChart2 },
   { label: "Email", href: "/dashboard/emails", icon: Mail },
 ];
 
-export default function AdminLayout({ children }) {
+/**
+ * AdminLayout
+ *
+ * `crumbs` (optional): mảng breadcrumb tùy biến cho từng trang, vd trang
+ * chi tiết sách muốn hiện "Sản phẩm / Doraemon tập 1" thay vì chỉ "Dashboard".
+ * Format: [{ label: "Sản phẩm", to: "/dashboard/products" }, { label: "Doraemon tập 1" }]
+ * Mục cuối cùng (không có `to`) là trang hiện tại, hiển thị đậm.
+ * Nếu không truyền, tự suy ra 1 mục duy nhất từ NAV_ITEMS như cũ.
+ */
+export default function AdminLayout({ children, crumbs }) {
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
@@ -67,6 +78,8 @@ export default function AdminLayout({ children }) {
   const currentLabel =
     NAV_ITEMS.find((n) => n.href === currentPath)?.label ?? "Dashboard";
 
+  const breadcrumbItems = crumbs && crumbs.length ? crumbs : [{ label: currentLabel }];
+
   return (
     <div className="admin-root">
       {/* ── Mobile overlay ── */}
@@ -92,8 +105,12 @@ export default function AdminLayout({ children }) {
           {!collapsed && (
             <>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div className="a-logo-mark">E</div>
-                <span className="a-logo-name">Earthoria</span>
+                <img
+                  src="/logo-dai-trang.png"
+                  alt="Earthoria"
+                  className="a-logo-img"
+                  style={{ height: 32, width: "auto" }}
+                />
               </div>
               <button
                 className="a-collapse-btn"
@@ -113,7 +130,12 @@ export default function AdminLayout({ children }) {
                 gap: 10,
               }}
             >
-              <div className="a-logo-mark">E</div>
+              <img
+                src="/logo-ngan-trang.png"
+                alt="Earthoria"
+                className="a-logo-img"
+                style={{ height: 28, width: "auto" }}
+              />
               <button
                 className="a-collapse-btn"
                 onClick={() => setCollapsed(false)}
@@ -202,12 +224,27 @@ export default function AdminLayout({ children }) {
             {/* Breadcrumb */}
             <nav className="a-breadcrumb" aria-label="Breadcrumb">
               <span>Admin</span>
-              <ChevronRight
-                size={11}
-                className="a-breadcrumb-sep"
-                aria-hidden="true"
-              />
-              <span className="a-breadcrumb-current">{currentLabel}</span>
+              {breadcrumbItems.map((c, i) => {
+                const isLast = i === breadcrumbItems.length - 1;
+                return (
+                  <Fragment key={`${c.label}-${i}`}>
+                    <ChevronRight
+                      size={11}
+                      className="a-breadcrumb-sep"
+                      aria-hidden="true"
+                    />
+                    {!isLast && c.to ? (
+                      <Link to={c.to} className="a-breadcrumb-link">
+                        {c.label}
+                      </Link>
+                    ) : (
+                      <span className={isLast ? "a-breadcrumb-current" : ""}>
+                        {c.label}
+                      </span>
+                    )}
+                  </Fragment>
+                );
+              })}
             </nav>
           </div>
 

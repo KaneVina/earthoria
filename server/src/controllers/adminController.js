@@ -1,5 +1,6 @@
 // src/controllers/adminController.js
 const prisma = require('../config/db')
+const { generateProductCode } = require('../utils/generateProductCode')
 
 /* ─── Helpers ─── */
 const CHART_COLORS = {
@@ -278,6 +279,30 @@ function withAuthorNames(book) {
   }
 }
 
+exports.getProductById = async (req, res) => {
+  try {
+    const { id } = req.params
+    const book = await prisma.book.findUnique({
+      where: { id },
+      include: {
+        category: { select: { id: true, name: true } },
+        authors:  { include: { author: true }, orderBy: { order: 'asc' } },
+        arCodes:  { orderBy: { createdAt: 'asc' } },
+        _count:   { select: { orderItems: true, reviews: true } },
+      },
+    })
+
+    if (!book) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy sách' })
+    }
+
+    return res.json({ success: true, data: { ...withAuthorNames(book), isVisible: book.isActive } })
+  } catch (err) {
+    console.error('[getProductById]', err)
+    return res.status(500).json({ success: false, message: 'Lỗi server' })
+  }
+}
+
 exports.getProducts = async (req, res) => {
   try {
     const page   = Math.max(1, parseInt(req.query.page)  || 1)
@@ -304,8 +329,9 @@ exports.getProducts = async (req, res) => {
     if (search) {
       conditions.push({
         OR: [
-          { title:     { contains: search, mode: 'insensitive' } },
-          { publisher: { contains: search, mode: 'insensitive' } },
+          { title:       { contains: search, mode: 'insensitive' } },
+          { publisher:   { contains: search, mode: 'insensitive' } },
+          { productCode: { contains: search, mode: 'insensitive' } },
         ],
       })
     }
@@ -361,7 +387,7 @@ exports.createProduct = async (req, res) => {
       title, description, price, salePrice, dealerPrice, stock,
       categoryId, isVisible, publisher, pages, language, authors,
       publishYear, dimensions, weightGrams, coverType, paperType,
-      ageMin, ageMax,
+      ageMin, ageMax, unit,
     } = req.body
 
     if (!title || !price || !categoryId) {
@@ -373,17 +399,22 @@ exports.createProduct = async (req, res) => {
     const existing = await prisma.book.findUnique({ where: { slug } })
     const finalSlug = existing ? `${slug}-${Date.now()}` : slug
 
+    // productCode LUÔN sinh ở server, không nhận từ client (chống trùng/giả mạo)
+    const productCode = await generateProductCode()
+
     const authorIds = await resolveAuthorIds(authors)
 
     const book = await prisma.book.create({
       data: {
         title,
         slug:        finalSlug,
+        productCode,
         description: description ?? null,
         price:       Number(price),
         salePrice:   salePrice   ? Number(salePrice)   : null,
         dealerPrice: dealerPrice ? Number(dealerPrice) : null,
         stock:       Number(stock) || 0,
+        unit:        unit || 'Cuốn',
         categoryId,
         isActive:    isVisible !== false,
         publisher:   publisher ?? null,
@@ -897,6 +928,48 @@ function generateArCode() {
   return crypto.randomBytes(24).toString('base64url')
 }
 
+exports.searchProductsQuick = async (req, res) => {
+  try {
+    const q    = req.query.q?.trim()    ?? ''
+    const code = req.query.code?.trim() ?? ''
+
+    // Nhánh tìm chính xác theo mã sách — dùng khi InventoryImport auto-khớp Excel
+    if (code) {
+      const book = await prisma.book.findUnique({
+        where: { productCode: code },
+        select: {
+          id: true, title: true, slug: true, coverImage: true,
+          productCode: true, unit: true, stock: true,
+        },
+      })
+      return res.json({ success: true, data: book ? [book] : [] })
+    }
+
+    if (q.length < 1) return res.json({ success: true, data: [] })
+
+    const books = await prisma.book.findMany({
+      where: {
+        OR: [
+          { title: { contains: q, mode: 'insensitive' } },
+          { slug:  { contains: q, mode: 'insensitive' } },
+        ],
+      },
+      select: {
+        id: true, title: true, slug: true, coverImage: true,
+        productCode: true, unit: true, stock: true,
+        _count: { select: { arCodes: true } },
+      },
+      take: 8,
+      orderBy: { title: 'asc' },
+    })
+
+    return res.json({ success: true, data: books })
+  } catch (err) {
+    console.error('[searchProductsQuick]', err)
+    return res.status(500).json({ success: false, message: 'Lỗi server' })
+  }
+}
+
 exports.getArCodes = async (req, res) => {
   try {
     const { bookId } = req.params
@@ -913,7 +986,7 @@ exports.getArCodes = async (req, res) => {
 exports.createArCode = async (req, res) => {
   try {
     const { bookId } = req.params
-    const { label } = req.body
+    const { label, accessType } = req.body
 
     if (!label) {
       return res.status(400).json({ success: false, message: 'Thiếu label' })
@@ -927,6 +1000,8 @@ exports.createArCode = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Không tìm thấy sách' })
     }
 
+    const finalAccessType = accessType === 'PUBLIC' ? 'PUBLIC' : 'CUSTOMER_ONLY'
+
     const code = generateArCode()
     const uploadResult = await uploadGlbBuffer(req.file.buffer, code)
 
@@ -936,6 +1011,7 @@ exports.createArCode = async (req, res) => {
         label,
         modelUrl: uploadResult.secure_url,
         bookId,
+        accessType: finalAccessType,
       },
     })
 
@@ -948,7 +1024,7 @@ exports.createArCode = async (req, res) => {
 exports.updateArCode = async (req, res) => {
   try {
     const { id } = req.params
-    const { label } = req.body
+    const { label, accessType } = req.body
 
     const existing = await prisma.arCode.findUnique({ where: { id } })
     if (!existing) {
@@ -957,6 +1033,7 @@ exports.updateArCode = async (req, res) => {
 
     const data = {}
     if (label) data.label = label
+    if (accessType === 'PUBLIC' || accessType === 'CUSTOMER_ONLY') data.accessType = accessType
 
     if (req.file) {
       const uploadResult = await uploadGlbBuffer(req.file.buffer, existing.code)
@@ -985,5 +1062,239 @@ exports.toggleArCode = async (req, res) => {
     return res.json({ success: true, data: arCode })
   } catch (err) {
     return serverError(res, err, 'toggleArCode')
+  }
+}
+
+/* ══════════════════════════════════════════════
+   AR CODES — GỘP THEO SÁCH (trang ArCodeManager)
+══════════════════════════════════════════════ */
+
+/**
+ * GET /admin/ar-codes — danh sách TẤT CẢ mã AR, gộp theo sách, có
+ * search (tên sách / label / code) + lọc accessType/status + phân
+ * trang THEO SỐ SÁCH mỗi trang (không phải theo số mã).
+ */
+exports.getArCodesGroupedAll = async (req, res) => {
+  try {
+    const page   = Math.max(1, parseInt(req.query.page)  || 1)
+    const limit  = Math.max(1, parseInt(req.query.limit) || 8)
+    const search = req.query.search?.trim() ?? ''
+    const accessType = req.query.accessType?.trim() ?? ''
+    const status     = req.query.status?.trim() ?? ''
+
+    const arCodeWhere = {}
+    if (accessType === 'PUBLIC' || accessType === 'CUSTOMER_ONLY') {
+      arCodeWhere.accessType = accessType
+    }
+    if (status === 'active')   arCodeWhere.isActive = true
+    if (status === 'inactive') arCodeWhere.isActive = false
+
+    const bookWhere = { arCodes: { some: arCodeWhere } }
+
+    if (search) {
+      bookWhere.AND = [
+        {
+          OR: [
+            { title: { contains: search, mode: 'insensitive' } },
+            {
+              arCodes: {
+                some: {
+                  ...arCodeWhere,
+                  OR: [
+                    { label: { contains: search, mode: 'insensitive' } },
+                    { code:  { contains: search, mode: 'insensitive' } },
+                  ],
+                },
+              },
+            },
+          ],
+        },
+      ]
+    }
+
+    const [books, total] = await Promise.all([
+      prisma.book.findMany({
+        where: bookWhere,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { title: 'asc' },
+        select: {
+          id: true, title: true, slug: true, coverImage: true,
+          arCodes: { where: arCodeWhere, orderBy: { createdAt: 'asc' } },
+        },
+      }),
+      prisma.book.count({ where: bookWhere }),
+    ])
+
+    const groups = books
+      .filter(b => b.arCodes.length > 0)
+      .map(b => ({
+        book: { id: b.id, title: b.title, slug: b.slug, coverImage: b.coverImage },
+        arCodes: b.arCodes,
+      }))
+
+    return res.json({
+      success: true,
+      data: { groups, total, totalPages: Math.max(1, Math.ceil(total / limit)), page },
+    })
+  } catch (err) {
+    return serverError(res, err, 'getArCodesGroupedAll')
+  }
+}
+
+/**
+ * PATCH /admin/ar-codes/:id/access — đổi quyền xem 1 mã AR ngay tại chỗ,
+ * không cần gửi lại label/file như update đầy đủ.
+ */
+exports.updateArCodeAccess = async (req, res) => {
+  try {
+    const { id } = req.params
+    const { accessType } = req.body
+
+    if (accessType !== 'PUBLIC' && accessType !== 'CUSTOMER_ONLY') {
+      return res.status(400).json({ success: false, message: 'accessType không hợp lệ' })
+    }
+
+    const arCode = await prisma.arCode.update({ where: { id }, data: { accessType } })
+    return res.json({ success: true, data: arCode })
+  } catch (err) {
+    if (err.code === 'P2025') {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy mã AR' })
+    }
+    return serverError(res, err, 'updateArCodeAccess')
+  }
+}
+
+
+/* ══════════════════════════════════════════════
+   NHẬP KHO
+══════════════════════════════════════════════ */
+
+/**
+ * POST /admin/inventory/imports — lưu 1 phiếu nhập kho.
+ *
+ * Với dòng "mã mới" (không có productId): kiểm tra trùng lặp trước khi
+ * tạo Book mới — ưu tiên khớp theo productCode (nếu admin có gõ tay),
+ * sau đó khớp theo title (không phân biệt hoa/thường), để tránh tạo
+ * bản ghi sách trùng khi admin lỡ nhập lại cùng 1 sách nhiều lần.
+ *
+ * Sách tự tạo qua nhập kho được gán category "Chưa phân loại" và
+ * isActive=false (ẩn khỏi cửa hàng) cho tới khi admin vào bổ sung đầy
+ * đủ thông tin (mô tả, tác giả, ảnh bìa...) rồi hiển thị lại thủ công.
+ */
+exports.createInventoryImport = async (req, res) => {
+  try {
+    const { code, items } = req.body
+
+    if (!code || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, message: 'Thiếu mã phiếu hoặc danh sách dòng nhập' })
+    }
+
+    const existingImport = await prisma.inventoryImport.findUnique({ where: { code } })
+    if (existingImport) {
+      return res.status(409).json({ success: false, message: 'Mã phiếu đã tồn tại' })
+    }
+
+    const slugify = require('slugify')
+
+    const result = await prisma.$transaction(async (tx) => {
+      let fallbackCategory = await tx.category.findUnique({ where: { slug: 'chua-phan-loai' } })
+      if (!fallbackCategory) {
+        fallbackCategory = await tx.category.create({
+          data: { name: 'Chưa phân loại', slug: 'chua-phan-loai' },
+        })
+      }
+
+      const savedItems = []
+
+      for (const raw of items) {
+        const qtyActual = Number(raw.qtyActual) || 0
+        const unitPrice = Number(raw.unitPrice) || 0
+        const qtyDocument =
+          raw.qtyDocument === null || raw.qtyDocument === undefined || raw.qtyDocument === ''
+            ? null
+            : Number(raw.qtyDocument)
+
+        let book = null
+
+        if (raw.productId) {
+          book = await tx.book.findUnique({ where: { id: raw.productId } })
+          if (!book) {
+            throw Object.assign(
+              new Error(`Không tìm thấy sách đã chọn (id: ${raw.productId})`),
+              { status: 404 }
+            )
+          }
+        } else {
+          const trimmedCode = raw.productCode?.trim()
+          if (trimmedCode) {
+            book = await tx.book.findUnique({ where: { productCode: trimmedCode } })
+          }
+          if (!book && raw.title) {
+            book = await tx.book.findFirst({
+              where: { title: { equals: raw.title.trim(), mode: 'insensitive' } },
+            })
+          }
+
+          if (!book) {
+            const title = raw.title?.trim()
+            if (!title) {
+              throw Object.assign(new Error('Thiếu tên sản phẩm cho dòng nhập mã mới'), { status: 400 })
+            }
+
+            const baseSlug = slugify(title, { lower: true, locale: 'vi', strict: true })
+            const slugExists = await tx.book.findUnique({ where: { slug: baseSlug } })
+            const finalSlug = slugExists ? `${baseSlug}-${Date.now()}` : baseSlug
+
+            const productCode = trimmedCode || (await generateProductCode(tx))
+
+            book = await tx.book.create({
+              data: {
+                title,
+                slug: finalSlug,
+                productCode,
+                price: unitPrice,
+                stock: 0,
+                unit: raw.unit || 'Cuốn',
+                categoryId: fallbackCategory.id,
+                isActive: false,
+              },
+            })
+          }
+        }
+
+        const updatedBook = await tx.book.update({
+          where: { id: book.id },
+          data: { stock: { increment: qtyActual } },
+        })
+
+        savedItems.push({
+          bookId: updatedBook.id,
+          title: book.title,
+          productCode: book.productCode,
+          unit: raw.unit || book.unit || 'Cuốn',
+          oldQty: Number(raw.oldQty) || 0,
+          qtyDocument,
+          qtyActual,
+          unitPrice,
+        })
+      }
+
+      return tx.inventoryImport.create({
+        data: {
+          code,
+          createdBy: req.user.id,
+          items: { create: savedItems },
+        },
+        include: { items: true },
+      })
+    })
+
+    return res.status(201).json({ success: true, data: result })
+  } catch (err) {
+    if (err.status) {
+      return res.status(err.status).json({ success: false, message: err.message })
+    }
+    return serverError(res, err, 'createInventoryImport')
   }
 }

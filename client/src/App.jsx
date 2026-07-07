@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./store/authStore";
+import { authService } from "./services/authService";
 import Layout from "./components/layout/Layout";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
@@ -37,6 +39,11 @@ import Logo3D from "./components/Logo3D";
 import ArView from "./pages/ArView";
 import CookiePolicy from "./pages/legal/CookiePolicy";
 import Emails from "./pages/admin/Emails";
+import ProductDetail from "./pages/admin/ProductDetail";
+import ProductCreate from "./pages/admin/ProductCreate";
+import ArCodeManager from "./pages/admin/ArCodeManager";
+import Settings from "./pages/admin/Settings";
+import InventoryImport from "./pages/admin/InventoryImport";
 // import ParentDashboard from "./pages/ParentDashboard";
 
 const ProtectedRoute = ({ children }) => {
@@ -60,6 +67,37 @@ const MAINTENANCE_MODE = false;
 // const MAINTENANCE_MODE = true;
 
 export default function App() {
+  const { setAuth, setAuthChecked, authChecked } = useAuthStore();
+
+  // Bootstrap: mỗi lần load app (F5, mở tab mới...), accessToken trong memory
+  // đã mất — thử gọi /auth/refresh 1 lần, cookie refreshToken (HttpOnly) sẽ
+  // tự gửi kèm. Nếu còn hạn thì tự đăng nhập lại êm, không thì coi như guest.
+  useEffect(() => {
+    let cancelled = false;
+
+    authService
+      .refresh()
+      .then((res) => {
+        if (cancelled) return;
+        const { accessToken, user } = res.data.data;
+        setAuth(user, accessToken);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setAuthChecked();
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Chờ bước bootstrap xong mới render, tránh nháy trạng thái "chưa đăng
+  // nhập" rồi mới nhảy sang "đã đăng nhập" gây giật UI / redirect nhầm.
+  if (!authChecked) {
+    return null; // có thể thay bằng 1 spinner full-screen nếu muốn
+  }
+
   if (MAINTENANCE_MODE) {
     return (
       <BrowserRouter>
@@ -175,6 +213,46 @@ export default function App() {
           element={
             <AdminRoute>
               <Products />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/products/inventory-import"
+          element={
+            <AdminRoute>
+              <InventoryImport />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/settings"
+          element={
+            <AdminRoute>
+              <Settings />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/products/new"
+          element={
+            <AdminRoute>
+              <ProductCreate />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/products/:id"
+          element={
+            <AdminRoute>
+              <ProductDetail />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/ar-codes"
+          element={
+            <AdminRoute>
+              <ArCodeManager />
             </AdminRoute>
           }
         />

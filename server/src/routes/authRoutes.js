@@ -3,7 +3,7 @@ const router   = express.Router()
 const passport = require('../config/passport') // ← import passport config
 const {
   register, login, getMe, updateProfile, changePassword,
-  googleAuth, googleCallback
+  googleAuth, googleCallback, refresh, logout
 } = require('../controllers/authController')
 const {
   forgotPassword,
@@ -25,6 +25,8 @@ router.post('/register',        register)
 router.post('/send-register-otp',    sendRegisterOtp)
 router.post('/verify-register-otp',  verifyRegisterOtp)
 router.post('/login',           login)
+router.post('/refresh',         refresh)
+router.post('/logout',          logout)
 router.post('/forgot-password', forgotPasswordLimiter, forgotPassword)
 router.post('/verify-otp',      verifyOtpLimiter,      verifyOtp)
 router.post('/reset-password',  resetPasswordLimiter,  resetPassword)

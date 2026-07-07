@@ -1,46 +1,41 @@
 import { useEffect, useRef } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
+import { authService } from '../../services/authService'
 import toast from 'react-hot-toast'
 
+// Backend (googleCallback) giờ KHÔNG còn nhét token/thông tin user vào query
+// string nữa (tránh lộ qua URL/lịch sử trình duyệt/log). Nó chỉ set cookie
+// refreshToken (HttpOnly) rồi redirect về đây. Trang này chỉ việc gọi
+// /auth/refresh — cookie tự động gửi kèm — để lấy accessToken + user thật.
 export default function GoogleAuthSuccess() {
   const navigate    = useNavigate()
-  const [params]    = useSearchParams()
-  const { setAuth } = useAuthStore()
-  const handled     = useRef(false) // chặn StrictMode chạy 2 lần
+  const { setAuth }  = useAuthStore()
+  const handled      = useRef(false) // chặn StrictMode chạy 2 lần
 
   useEffect(() => {
     if (handled.current) return
     handled.current = true
 
-    const token    = params.get('token')
-    const id       = params.get('id')
-    const name     = params.get('name')
-    const email    = params.get('email')
-    const avatar   = params.get('avatar')
-    const role     = params.get('role')
-    // Backend trả về isNew=true nếu vừa tạo tài khoản lần đầu
-    const isNew    = params.get('isNew') === 'true'
+    const run = async () => {
+      try {
+        const res = await authService.refresh()
+        const { accessToken, user } = res.data.data
+        setAuth(user, accessToken)
+        toast.success(`Chào mừng trở lại, ${user.name}!`)
 
-    if (!token) {
-      toast.error('Đăng nhập Google thất bại')
-      navigate('/login')
-      return
+        if (user.role === 'ADMIN') {
+          navigate('/dashboard', { replace: true })
+        } else {
+          navigate('/', { replace: true })
+        }
+      } catch (err) {
+        toast.error('Đăng nhập Google thất bại')
+        navigate('/login', { replace: true })
+      }
     }
 
-    setAuth({ id, name, email, avatar, role }, token)
-
-    if (isNew) {
-      toast.success(`Chào mừng đến với Earthoria, ${name}! 🌿`, { duration: 4000 })
-    } else {
-      toast.success(`Chào mừng trở lại, ${name}!`)
-    }
-
-       if (role === 'ADMIN') {
-      navigate('/dashboard', { replace: true })
-    } else {
-      navigate('/', { replace: true })
-    }
+    run()
   }, [])
 
   return (

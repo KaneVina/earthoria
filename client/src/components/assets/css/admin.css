@@ -146,27 +146,19 @@
   padding: 22px 0 18px;
 }
 
-.a-logo-mark {
-  width: 30px;
-  height: 30px;
-  background: linear-gradient(135deg, var(--a-green), var(--a-green-light));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--a-font-serif);
-  font-size: 13px;
-  color: var(--a-forest);
-  font-weight: 700;
+.a-logo-img {
+  height: 24px;
+  width: auto;
+  max-width: 140px;
+  object-fit: contain;
   flex-shrink: 0;
 }
 
-.a-logo-name {
-  font-family: var(--a-font-serif);
-  font-size: 15px;
-  color: #EDE8DC;
-  letter-spacing: 0.06em;
-  font-weight: 400;
-  white-space: nowrap;
+.a-logo-img-collapsed {
+  height: 26px;
+  width: 26px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 /* Sidebar — Nav section label */
@@ -389,23 +381,35 @@
   padding: 0 var(--a-page-pad);
   flex-shrink: 0;
 }
-
+/* ── Breadcrumb ── */
 .a-breadcrumb {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
-  color: var(--a-ink-40);
+  font-size: 12px;
+  color: rgba(13, 51, 48, 0.45);
+  white-space: nowrap;
 }
 
 .a-breadcrumb-sep {
-  font-size: 11px;
-  opacity: 0.6;
+  color: rgba(13, 51, 48, 0.25);
+  flex-shrink: 0;
+}
+
+.a-breadcrumb-link {
+  color: rgba(13, 51, 48, 0.55);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.a-breadcrumb-link:hover {
+  color: #0D3330;
+  text-decoration: underline;
 }
 
 .a-breadcrumb-current {
-  color: var(--a-ink);
-  font-weight: 500;
+  color: #0D3330;
+  font-weight: 600;
 }
 
 .a-topbar-actions {
@@ -1390,3 +1394,410 @@
     grid-template-columns: 1fr;
   }
 }
+/* ═══════════════════════════════════════════════════════════
+   DARK MODE — Earthoria Admin
+   Kích hoạt bằng cách thêm class "dark" vào .admin-root
+   Ví dụ: <div className={`admin-root ${isDark ? "dark" : ""}`}>
+   ═══════════════════════════════════════════════════════════ */
+
+.admin-root.dark {
+  /* Brand — giữ nguyên tông forest/green nhưng làm sáng hơn để nổi trên nền tối */
+  --a-forest:       #0f3d38;
+  --a-forest-mid:   #1e6358;
+  --a-forest-light: #2f8a7a;
+  --a-green:        #5cb84f;
+  --a-green-light:  #8fd684;
+  --a-green-pale:   #1c3320;
+
+  /* Neutrals — đảo ngược thang màu */
+  --a-bg:           #0f1512;
+  --a-surface:      #171d19;
+  --a-white:        #1c2320;
+  --a-ink:          #EDE8DC;
+  --a-ink-60:       rgba(237, 232, 220, 0.62);
+  --a-ink-40:       rgba(237, 232, 220, 0.42);
+  --a-ink-20:       rgba(237, 232, 220, 0.16);
+  --a-ink-08:       rgba(237, 232, 220, 0.08);
+  --a-ink-05:       rgba(237, 232, 220, 0.05);
+
+  /* Semantic — tăng nhẹ độ sáng để dễ đọc trên nền tối */
+  --a-success-bg:   rgba(92, 184, 79, 0.14);
+  --a-success-text: #7ed072;
+  --a-warning-bg:   rgba(237, 161, 0, 0.14);
+  --a-warning-text: #f0b940;
+  --a-danger-bg:    rgba(224, 100, 100, 0.14);
+  --a-danger-text:  #ec7c7c;
+  --a-info-bg:      rgba(74, 150, 230, 0.14);
+  --a-info-text:    #6fa8ea;
+
+  /* Chart colors — sáng hơn để nổi trên nền tối */
+  --a-chart-primary: #7ed0c0;
+  --a-chart-accent:  #5cb84f;
+  --a-chart-blue:    #4a96e6;
+  --a-chart-amber:   #f0b940;
+  --a-chart-purple:  #8b7ae0;
+  --a-chart-red:     #ec7c7c;
+  --a-chart-grid:    rgba(237, 232, 220, 0.08);
+  --a-chart-tick:    rgba(237, 232, 220, 0.35);
+
+  /* KPI accents */
+  --a-kpi-blue:   #4a96e6;
+  --a-kpi-green:  #5cb84f;
+  --a-kpi-amber:  #f0b940;
+  --a-kpi-purple: #8b7ae0;
+
+  background: var(--a-bg);
+  color: var(--a-ink);
+}
+
+/* ── Sidebar: giữ forest tối nhưng đậm hơn 1 chút để phân lớp với bg ── */
+.admin-root.dark .a-sidebar {
+  background: #0a2624;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.35);
+}
+
+.admin-root.dark .a-logo {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.admin-root.dark .a-nav-section {
+  color: rgba(255, 255, 255, 0.22);
+}
+
+.admin-root.dark .a-nav-item {
+  color: rgba(237, 232, 220, 0.50);
+}
+
+.admin-root.dark .a-nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #EDE8DC;
+}
+
+.admin-root.dark .a-nav-item.active {
+  background: rgba(92, 184, 79, 0.16);
+  color: var(--a-green-light);
+}
+
+.admin-root.dark .a-sidebar-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.admin-root.dark .a-avatar-circle {
+  background: rgba(92, 184, 79, 0.18);
+  border: 1px solid rgba(92, 184, 79, 0.32);
+}
+
+.admin-root.dark .a-collapse-btn {
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: rgba(237, 232, 220, 0.45);
+}
+
+.admin-root.dark .a-collapse-btn:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #EDE8DC;
+}
+
+/* ── Topbar ── */
+.admin-root.dark .a-topbar {
+  background: rgba(15, 21, 18, 0.92);
+  border-bottom: 1px solid var(--a-ink-08);
+}
+
+.admin-root.dark .a-topbar-btn {
+  border: 1px solid var(--a-ink-08);
+  color: var(--a-ink-40);
+}
+
+.admin-root.dark .a-topbar-btn:hover {
+  background: rgba(237, 232, 220, 0.06);
+  color: var(--a-ink);
+}
+
+.admin-root.dark .a-topbar-avatar {
+  background: var(--a-forest);
+  color: var(--a-green-light);
+}
+
+/* ── KPI cards ── */
+.admin-root.dark .a-kpi {
+  background: var(--a-white);
+  border: 1px solid var(--a-ink-08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.20);
+}
+
+.admin-root.dark .a-kpi-icon.blue   { background: rgba(74, 150, 230, 0.14); }
+.admin-root.dark .a-kpi-icon.green  { background: rgba(92, 184,  79, 0.14); }
+.admin-root.dark .a-kpi-icon.amber  { background: rgba(240, 185,  64, 0.14); }
+.admin-root.dark .a-kpi-icon.purple { background: rgba(139, 122, 224, 0.14); }
+
+/* ── Chart / table cards ── */
+.admin-root.dark .a-chart-card,
+.admin-root.dark .a-table-card,
+.admin-root.dark .a-mini-stat {
+  background: var(--a-white);
+  border: 1px solid var(--a-ink-08);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.20);
+}
+
+.admin-root.dark .a-table th {
+  background: var(--a-surface);
+  color: var(--a-ink-40);
+}
+
+.admin-root.dark .a-table td {
+  border-top: 1px solid var(--a-ink-05);
+  color: var(--a-ink);
+}
+
+.admin-root.dark .a-table tbody tr:hover td {
+  background: rgba(237, 232, 220, 0.03);
+}
+
+.admin-root.dark .a-table-head {
+  border-bottom: 1px solid var(--a-ink-05);
+}
+
+/* ── Buttons ── */
+.admin-root.dark .a-btn-primary {
+  background: var(--a-forest-mid);
+  color: #EDE8DC;
+}
+
+.admin-root.dark .a-btn-primary:hover {
+  background: var(--a-forest-light);
+}
+
+.admin-root.dark .a-btn-ghost {
+  border: 1px solid var(--a-ink-20);
+  color: var(--a-ink-60);
+}
+
+.admin-root.dark .a-btn-ghost:hover {
+  background: var(--a-surface);
+  border-color: var(--a-ink-40);
+}
+
+/* ── Form elements ── */
+.admin-root.dark .a-input,
+.admin-root.dark .a-inline-select {
+  background: var(--a-surface);
+  border: 1px solid var(--a-ink-20);
+  color: var(--a-ink);
+}
+
+.admin-root.dark .a-input:focus {
+  border-color: var(--a-green);
+  box-shadow: 0 0 0 3px rgba(92, 184, 79, 0.12);
+}
+
+.admin-root.dark .a-input:hover:not(:focus) {
+  border-color: var(--a-ink-40);
+}
+
+.admin-root.dark .a-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23EDE8DC' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+/* ── Pills / badges ── */
+.admin-root.dark .a-pill {
+  border: 1px solid var(--a-ink-20);
+  color: var(--a-ink-60);
+}
+
+.admin-root.dark .a-pill:hover {
+  border-color: var(--a-ink-40);
+  color: var(--a-ink);
+}
+
+.admin-root.dark .a-pill.active {
+  background: var(--a-forest-mid);
+  border-color: var(--a-forest-mid);
+}
+
+.admin-root.dark .a-code-badge {
+  background: var(--a-ink-08);
+  color: var(--a-green-light);
+}
+
+/* ── Modal ── */
+.admin-root.dark .a-modal-overlay {
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.admin-root.dark .a-modal {
+  background: var(--a-white);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.admin-root.dark .a-modal-header {
+  background: var(--a-white);
+  border-bottom: 1px solid var(--a-ink-08);
+}
+
+.admin-root.dark .a-modal-close:hover {
+  background: var(--a-surface);
+  color: var(--a-ink);
+}
+
+/* ── Book thumb / avatar ── */
+.admin-root.dark .a-book-thumb {
+  background: #26302a;
+  border: 1px solid var(--a-ink-08);
+  color: var(--a-ink-40);
+}
+
+.admin-root.dark .a-user-avatar {
+  background: var(--a-forest);
+  color: var(--a-green-light);
+}
+
+/* ── Pagination ── */
+.admin-root.dark .a-page-btn {
+  border: 1px solid var(--a-ink-20);
+  color: var(--a-ink-60);
+}
+
+.admin-root.dark .a-page-btn:hover {
+  background: var(--a-surface);
+}
+
+.admin-root.dark .a-page-btn.active {
+  background: var(--a-forest-mid);
+  border-color: var(--a-forest-mid);
+  color: #EDE8DC;
+}
+
+/* ── Skeleton loading (shimmer tối) ── */
+.admin-root.dark .a-skeleton {
+  background: linear-gradient(90deg, var(--a-surface) 25%, #232b26 50%, var(--a-surface) 75%);
+  background-size: 600px 100%;
+}
+
+/* ── Toast override ── */
+.admin-root.dark .a-toast-success {
+  background: var(--a-forest-mid) !important;
+  color: #EDE8DC !important;
+}
+/* ═══════════════════════════════════════════════════════════
+   DARK MODE — Mobile overrides
+   ═══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .admin-root.dark .a-mobile-overlay.open {
+    background: rgba(0, 0, 0, 0.65);
+  }
+
+  .admin-root.dark .a-sidebar {
+    box-shadow: 8px 0 32px rgba(0, 0, 0, 0.5);
+  }
+
+  .admin-root.dark .a-page {
+    background: var(--a-bg);
+  }
+
+  .admin-root.dark .a-topbar {
+    background: rgba(15, 21, 18, 0.96);
+  }
+
+  /* Card padding/border vẫn giữ nguyên nhưng bóng đổ nhẹ hơn trên mobile để đỡ nặng mắt */
+  .admin-root.dark .a-kpi,
+  .admin-root.dark .a-chart-card,
+  .admin-root.dark .a-table-card,
+  .admin-root.dark .a-mini-stat {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Modal full-width hơn trên mobile, dark bg đậm hơn cho contrast */
+  .admin-root.dark .a-modal-overlay {
+    padding: 12px;
+  }
+
+  .admin-root.dark .a-modal {
+    max-height: 92vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-root.dark .a-kpi-value {
+    color: var(--a-ink);
+  }
+}
+@media (max-width: 768px) {
+  /* Ẩn nút menu trên desktop, hiện trên mobile */
+  .a-menu-trigger {
+    display: flex !important;
+  }
+}
+
+/* Mặc định ẩn trên desktop */
+.a-menu-trigger {
+  display: none;
+}
+/* ── EditableField (Settings) ── */
+.a-fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 640px) { .a-fields-grid { grid-template-columns: 1fr; } }
+
+.a-field {
+  background: var(--a-surface);
+  border: 1px solid var(--a-ink-08);
+  border-radius: var(--a-radius);
+  padding: 14px 16px;
+  transition: var(--a-trans-fast);
+}
+.a-field.is-editing { border-color: var(--a-green); box-shadow: 0 0 0 3px rgba(74,158,63,0.08); }
+.a-field.is-locked { background: var(--a-bg); }
+
+.a-field-label {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--a-ink-40); margin-bottom: 9px;
+}
+.a-field-icon { color: var(--a-ink-40); }
+.a-field-lock { margin-left: auto; color: var(--a-ink-40); display: flex; }
+
+.a-field-display {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  cursor: pointer; min-height: 20px;
+}
+.a-field.is-locked .a-field-display { cursor: default; }
+.a-field-value { font-size: 13px; color: var(--a-ink); font-weight: 500; }
+.a-field-value.is-empty { color: var(--a-ink-40); font-style: italic; font-weight: 400; }
+
+.a-field-edit-btn {
+  background: none; border: none; color: var(--a-ink-40); padding: 3px;
+  display: flex; cursor: pointer; transition: var(--a-trans-fast);
+}
+.a-field-edit-btn:hover { color: var(--a-green); }
+
+.a-field-edit-row { display: flex; gap: 8px; align-items: center; }
+.a-field-edit-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.a-field-error { font-size: 10px; color: var(--a-danger-text); margin-top: 6px; }
+.a-spinner-sm {
+  width: 12px; height: 12px; border: 1.5px solid rgba(74,158,63,0.25);
+  border-top-color: var(--a-green); border-radius: 50%;
+  animation: a-spin 0.7s linear infinite; display: block;
+}
+@keyframes a-spin { to { transform: rotate(360deg); } }
+
+/* ── Theme toggle row ── */
+.a-theme-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.a-theme-row-title { font-size: 13px; color: var(--a-ink); font-weight: 500; margin-bottom: 3px; }
+.a-theme-row-desc { font-size: 11px; color: var(--a-ink-40); max-width: 340px; }
+
+.a-switch { position: relative; width: 46px; height: 26px; flex-shrink: 0; cursor: pointer; }
+.a-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+.a-switch-track {
+  position: absolute; inset: 0; background: var(--a-ink-08);
+  border: 1px solid var(--a-ink-08); border-radius: 30px; transition: var(--a-trans-fast);
+}
+.a-switch-thumb {
+  position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--a-white); box-shadow: 0 2px 6px rgba(0,0,0,0.16);
+  display: flex; align-items: center; justify-content: center; color: var(--a-kpi-amber);
+  transition: transform 0.3s var(--a-trans-fast, ease);
+}
+.a-switch input:checked ~ .a-switch-track { background: var(--a-forest); border-color: var(--a-forest); }
+.a-switch input:checked ~ .a-switch-track .a-switch-thumb { transform: translateX(20px); color: var(--a-green-light); }
+
+.admin-root.dark .a-field { background: var(--a-surface); border-color: var(--a-ink-08); }
+.admin-root.dark .a-field.is-locked { background: var(--a-bg); }
+.admin-root.dark .a-switch-track { background: var(--a-ink-08); border-color: var(--a-ink-08); }

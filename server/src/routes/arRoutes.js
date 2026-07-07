@@ -10,6 +10,7 @@ router.get('/my-books', protect, getMyArCodes)
 
 // Route quét QR — giờ bắt buộc đăng nhập. Chưa có token hợp lệ → 401
 // từ chính middleware `protect`, frontend tự điều hướng sang /login.
-router.get('/:code', protect, getArCode)
+const { optionalAuth } = require('../middlewares/optionalAuth')
+router.get('/:code', optionalAuth, getArCode)
 
 module.exports = router

@@ -2,6 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const helmet = require('helmet')
 const morgan = require('morgan')
+const cookieParser = require('cookie-parser')
 const rateLimit = require('express-rate-limit')
 const passport = require('./config/passport')
 const app = express()
@@ -25,6 +26,7 @@ app.use(rateLimit({
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use(cookieParser())
 app.use(passport.initialize())
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'))

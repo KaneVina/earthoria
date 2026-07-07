@@ -25,22 +25,29 @@ exports.getArCode = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Không tìm thấy mã này' })
     }
 
-    const owns = await prisma.orderItem.findFirst({
-      where: {
-        bookId: arCode.bookId,
-        order: { userId: req.user.id, status: 'DELIVERED' },
-      },
-      select: { id: true },
-    })
+    if (arCode.accessType !== 'PUBLIC') {
+      if (!req.user) {
+        return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập để xem mô hình AR' })
+      }
 
-    if (!owns) {
-      return res.status(403).json({
-        success: false,
-        message: 'Bạn cần sở hữu cuốn sách này (đơn hàng đã giao) để xem mô hình AR',
-      })
+      if (req.user.role !== 'ADMIN' && req.user.role !== 'STAFF') {
+        const owns = await prisma.orderItem.findFirst({
+          where: {
+            bookId: arCode.bookId,
+            order: { userId: req.user.id, status: 'DELIVERED' },
+          },
+          select: { id: true },
+        })
+
+        if (!owns) {
+          return res.status(403).json({
+            success: false,
+            message: 'Bạn cần sở hữu cuốn sách này (đơn hàng đã giao) để xem mô hình AR',
+          })
+        }
+      }
     }
 
-    // Đếm lượt quét — dùng để phát hiện bất thường (mục 4 trong yêu cầu)
     await prisma.arCode.update({
       where: { id: arCode.id },
       data: { scanCount: { increment: 1 } },
@@ -52,6 +59,7 @@ exports.getArCode = async (req, res) => {
         label: arCode.label,
         modelUrl: arCode.modelUrl,
         posterUrl: arCode.posterUrl,
+        accessType: arCode.accessType,
         book: arCode.book,
       },
     })

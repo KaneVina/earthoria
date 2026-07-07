@@ -4,7 +4,7 @@ const uploadGlb = require('../middlewares/uploadGlb')
 const {
   getDashboard,
   // Products (books)
-  getProducts, createProduct, updateProduct, deleteProduct,
+  getProducts, getProductById, createProduct, updateProduct, deleteProduct, searchProductsQuick,
   // Categories
   getCategories, createCategory, updateCategory,
   // Orders
@@ -14,49 +14,63 @@ const {
   // Coupons
   getCoupons, createCoupon, toggleCoupon,
   // Ar
-   getArCodes, createArCode, updateArCode, toggleArCode,
+  getArCodes, createArCode, updateArCode, toggleArCode,
+  getArCodesGroupedAll, updateArCodeAccess,
+  // Inventory
+  createInventoryImport,
 } = require('../controllers/adminController')
-const { protect, adminOnly } = require('../middlewares/authMiddleware')
+const { protect, adminOnly, staffOrAdmin } = require('../middlewares/authMiddleware')
 
-router.use(protect, adminOnly)
+// Chỉ xác thực đăng nhập ở đây — phân quyền admin/staff áp dụng riêng từng route bên dưới
+router.use(protect)
 
 // ── Dashboard ──
-router.get('/dashboard', getDashboard)
+router.get('/dashboard', adminOnly, getDashboard)
 
 // ── Products (/admin/products) ──
-router.get('/products',        getProducts)
-router.post('/products',       createProduct)
-router.put('/products/:id',    updateProduct)
-router.delete('/products/:id', deleteProduct)
+// Search + xem chi tiết 1 sách: staff cũng cần dùng khi tạo mã QR / xem AR
+router.get('/products/search',  staffOrAdmin, searchProductsQuick)
+router.get('/products/:id',     staffOrAdmin, getProductById)
+router.get('/products',         adminOnly, getProducts)
+router.post('/products',        adminOnly, createProduct)
+router.put('/products/:id',     adminOnly, updateProduct)
+router.delete('/products/:id',  adminOnly, deleteProduct)
 
 // ── Categories ──
-router.get('/categories',        getCategories)
-router.post('/categories',       createCategory)
-router.put('/categories/:id',    updateCategory)
+router.get('/categories',        adminOnly, getCategories)
+router.post('/categories',       adminOnly, createCategory)
+router.put('/categories/:id',    adminOnly, updateCategory)
 
 // ── Orders ──
-router.get('/orders',      getOrders)
-router.put('/orders/:id',  updateOrderStatus)
+router.get('/orders',      adminOnly, getOrders)
+router.put('/orders/:id',  adminOnly, updateOrderStatus)
 
 //Email
-router.use('/emails', require('./emailRoutes'))
+router.use('/emails', adminOnly, require('./emailRoutes'))
 
 // ── Users ──
-router.get('/users',                  getUsers)
-router.put('/users/:id/toggle',       toggleUser)
+router.get('/users',                  adminOnly, getUsers)
+router.put('/users/:id/toggle',       adminOnly, toggleUser)
 // Chạy 1 lần sau migration để gắn mã cho user cũ
-router.post('/users/backfill-codes',  backfillUserCodes)
+router.post('/users/backfill-codes',  adminOnly, backfillUserCodes)
 
 // ── Coupons ──
-router.get('/coupons',            getCoupons)
-router.post('/coupons',           createCoupon)
-router.put('/coupons/:id/toggle', toggleCoupon)
+router.get('/coupons',            adminOnly, getCoupons)
+router.post('/coupons',           adminOnly, createCoupon)
+router.put('/coupons/:id/toggle', adminOnly, toggleCoupon)
 
-// ── AR Codes ──
-router.get('/products/:bookId/ar-codes',  getArCodes)
-router.post('/products/:bookId/ar-codes', uploadGlb.single('model'), createArCode)
-router.put('/ar-codes/:id',               uploadGlb.single('model'), updateArCode)
-router.put('/ar-codes/:id/toggle',        toggleArCode)
+// ── AR Codes (staff + admin đều được quản lý) ──
+// LƯU Ý: '/ar-codes' (gộp toàn hệ thống) và '/products/:bookId/ar-codes'
+// (theo 1 sách) là 2 path khác nhau hoàn toàn — không đụng độ thứ tự.
+router.get('/ar-codes',                   staffOrAdmin, getArCodesGroupedAll)
+router.patch('/ar-codes/:id/access',      staffOrAdmin, updateArCodeAccess)
+router.get('/products/:bookId/ar-codes',  staffOrAdmin, getArCodes)
+router.post('/products/:bookId/ar-codes', staffOrAdmin, uploadGlb.single('model'), createArCode)
+router.put('/ar-codes/:id',               staffOrAdmin, uploadGlb.single('model'), updateArCode)
+router.put('/ar-codes/:id/toggle',        staffOrAdmin, toggleArCode)
+
+// ── Nhập kho ──
+router.post('/inventory/imports', staffOrAdmin, createInventoryImport)
 
 // ── UptimeRobot proxy ──
 router.get('/server-status', async (req, res) => {
