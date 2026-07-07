@@ -537,13 +537,36 @@ export default function HeroBanner() {
               <Link to={s.ctaLink}>
                 <button className="hb-btn-main">
                   {s.ctaLabel}
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
                 </button>
               </Link>
-              <button className="hb-btn-ghost">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <button
+                className="hb-btn-ghost"
+                onClick={() =>
+                  window.open(
+                    "https://www.earthoria.id.vn/ar/dai-duong-huyen-bi/bF_D6JVr6B1vocFkZo8eqbCZ2nk_-YN7",
+                    "_blank",
+                    "noopener,noreferrer",
+                  )
+                }
+              >
+                <svg
+                  width="13"
+                  height="13"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
                   <polygon points="5 3 19 12 5 21 5 3" />
                 </svg>
                 Xem demo AR
@@ -567,18 +590,34 @@ export default function HeroBanner() {
 
           <span className="hb-counter">
             {String(current + 1).padStart(2, "0")}{" "}
-            <span style={{ color: "rgba(255,255,255,0.18)", margin: "0 4px" }}>/</span>{" "}
+            <span style={{ color: "rgba(255,255,255,0.18)", margin: "0 4px" }}>
+              /
+            </span>{" "}
             {String(total).padStart(2, "0")}
           </span>
 
           <div className="hb-arrows">
             <button className="hb-arrow" onClick={prev_} aria-label="Previous">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
                 <path d="M19 12H5M12 19l-7-7 7-7" />
               </svg>
             </button>
             <button className="hb-arrow" onClick={next} aria-label="Next">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+              >
                 <path d="M5 12h14M12 5l7 7-7 7" />
               </svg>
             </button>
@@ -612,7 +651,9 @@ export default function HeroBanner() {
                   }}
                 />
               )}
-              <div className="hb-thumb-label">{String(i + 1).padStart(2, "0")}</div>
+              <div className="hb-thumb-label">
+                {String(i + 1).padStart(2, "0")}
+              </div>
             </div>
           ))}
         </div>
