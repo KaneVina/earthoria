@@ -27,7 +27,13 @@ const CHAPTERS = [
   { id: "addresses", label: "Địa Chỉ", roman: "IV", icon: "map" },
   { id: "ar", label: "Sách AR", roman: "V", icon: "compass" },
   { id: "settings", label: "Cài Đặt Hệ Thống", roman: "VI", icon: "settings" },
-  { id: "logout", label: "Đăng Xuất", roman: "VII", icon: "logout", danger: true },
+  {
+    id: "logout",
+    label: "Đăng Xuất",
+    roman: "VII",
+    icon: "logout",
+    danger: true,
+  },
 ];
 
 const SYSTEM_INFO = {
@@ -36,11 +42,31 @@ const SYSTEM_INFO = {
   releaseDate: "20/06/2026",
   environment: "Production",
   changelog: [
-    { version: "v2.4.0", date: "20/06/2026", note: "Thêm sổ địa chỉ theo đơn vị hành chính 2 cấp, tối ưu tốc độ tải trang Hồ sơ." },
-    { version: "v2.3.0", date: "02/05/2026", note: "Ra mắt tính năng Sách AR - xem mô hình 3D trực tiếp từ tài khoản." },
-    { version: "v2.2.1", date: "14/04/2026", note: "Sửa lỗi hiển thị trạng thái đơn hàng, cải thiện hiệu năng trang Giỏ hàng." },
-    { version: "v2.2.0", date: "01/04/2026", note: "Thêm chế độ Sáng/Tối và trung tâm quản lý Cookie theo tiêu chuẩn mới." },
-    { version: "v2.1.0", date: "10/03/2026", note: "Ra mắt hệ thống Hồ sơ thành viên phong cách Passport." },
+    {
+      version: "v2.4.0",
+      date: "20/06/2026",
+      note: "Thêm sổ địa chỉ theo đơn vị hành chính 2 cấp, tối ưu tốc độ tải trang Hồ sơ.",
+    },
+    {
+      version: "v2.3.0",
+      date: "02/05/2026",
+      note: "Ra mắt tính năng Sách AR - xem mô hình 3D trực tiếp từ tài khoản.",
+    },
+    {
+      version: "v2.2.1",
+      date: "14/04/2026",
+      note: "Sửa lỗi hiển thị trạng thái đơn hàng, cải thiện hiệu năng trang Giỏ hàng.",
+    },
+    {
+      version: "v2.2.0",
+      date: "01/04/2026",
+      note: "Thêm chế độ Sáng/Tối và trung tâm quản lý Cookie theo tiêu chuẩn mới.",
+    },
+    {
+      version: "v2.1.0",
+      date: "10/03/2026",
+      note: "Ra mắt hệ thống Hồ sơ thành viên phong cách Passport.",
+    },
   ],
 };
 
@@ -240,6 +266,19 @@ const Icon = {
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     </svg>
   ),
+  family: (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.2"
+    >
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      <polyline points="9 12 11 14 15 9" />
+    </svg>
+  ),
   truck: (
     <svg
       width="13"
@@ -437,13 +476,27 @@ const Icon = {
     </svg>
   ),
   settings: (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+    >
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
     </svg>
   ),
   sun: (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
       <circle cx="12" cy="12" r="5" />
       <line x1="12" y1="1" x2="12" y2="3" />
       <line x1="12" y1="21" x2="12" y2="23" />
@@ -456,12 +509,26 @@ const Icon = {
     </svg>
   ),
   moon: (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
       <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
     </svg>
   ),
   cookie: (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4">
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+    >
       <path d="M12 2a10 10 0 1 0 9.54 13.11c-.5.16-1.03.24-1.54.24a4 4 0 0 1-4-4 3.5 3.5 0 0 1-3.5-3.5 4 4 0 0 1-4-4c0-.51.08-1.01.23-1.46A10 10 0 0 0 12 2z" />
       <circle cx="8.5" cy="10.5" r="0.8" fill="currentColor" stroke="none" />
       <circle cx="13" cy="14.5" r="0.8" fill="currentColor" stroke="none" />
@@ -511,11 +578,58 @@ function useCountUp(end, duration = 900, enabled = true) {
   }, [end, duration, enabled]);
   return value;
 }
+// ─── Passport 3D interaction: tilt theo chuột + parallax nền + holo sheen ───
+// zoneRef bọc toàn bộ hero (điều khiển parallax nền: watermark, glow blobs)
+// cardRef bọc riêng tấm thẻ (điều khiển tilt 3D + holographic sheen)
+function usePassportInteraction(maxTilt = 5, parallax = 16) {
+  const zoneRef = useRef(null);
+  const cardRef = useRef(null);
 
+  const shouldSkip = () =>
+    typeof window !== "undefined" &&
+    (window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      window.matchMedia("(pointer: coarse)").matches);
+
+  const onMouseMove = useCallback(
+    (e) => {
+      if (shouldSkip()) return;
+      const zone = zoneRef.current;
+      const card = cardRef.current;
+      if (!zone || !card) return;
+
+      // Parallax nền: watermark + glow trôi ngược hướng chuột, tạo chiều sâu
+      const zRect = zone.getBoundingClientRect();
+      const zx = (e.clientX - zRect.left) / zRect.width - 0.5;
+      const zy = (e.clientY - zRect.top) / zRect.height - 0.5;
+      zone.style.setProperty("--pz-x", `${zx * parallax}px`);
+      zone.style.setProperty("--pz-y", `${zy * parallax}px`);
+
+      // Tilt 3D + holo sheen: tính riêng theo vị trí chuột trong chính tấm thẻ
+      const cRect = card.getBoundingClientRect();
+      const cx = (e.clientX - cRect.left) / cRect.width;
+      const cy = (e.clientY - cRect.top) / cRect.height;
+      card.style.setProperty("--mx", `${cx * 100}%`);
+      card.style.setProperty("--my", `${cy * 100}%`);
+      card.style.setProperty("--rx", `${(0.5 - cy) * maxTilt * 2}deg`);
+      card.style.setProperty("--ry", `${(cx - 0.5) * maxTilt * 2}deg`);
+      card.style.setProperty("--glow", "1");
+    },
+    [maxTilt, parallax],
+  );
+
+  const onMouseLeave = useCallback(() => {
+    const zone = zoneRef.current;
+    const card = cardRef.current;
+    zone?.style.setProperty("--pz-x", "0px");
+    zone?.style.setProperty("--pz-y", "0px");
+    card?.style.setProperty("--rx", "0deg");
+    card?.style.setProperty("--ry", "0deg");
+    card?.style.setProperty("--glow", "0");
+  }, []);
+
+  return { zoneRef, cardRef, onMouseMove, onMouseLeave };
+}
 // ─── Pointer-reactive "sheen" — tracks the cursor over a card and exposes
-// it as CSS custom properties (--mx / --my / --glow). Pure CSS then paints
-// a soft gold spotlight that follows the cursor — the kind of subtle,
-// tactile polish you'd feel on a lacquered surface rather than a flat div.
 function useSheen() {
   const ref = useRef(null);
   const onMouseMove = useCallback((e) => {
@@ -1069,11 +1183,6 @@ function GuestState() {
 }
 
 // ════════════════════════ PASSPORT HERO ════════════════════════
-// Signature element: a membership "passport card" — full-width horizontal
-// strip finished like a lacquered travel document: a gold foil sheen sweeps
-// across on load, the seal settles in with a small overshoot, and the
-// stats/code arrive in a staggered cascade so the strip reads like a
-// stamp being pressed rather than a static block popping onto the page.
 function PassportHero({
   profile,
   initials,
@@ -1088,8 +1197,16 @@ function PassportHero({
     ? { sealBg: "linear-gradient(135deg,#b8862e 0%,#d4a843 100%)" }
     : { sealBg: undefined };
   const [emailRevealed, setEmailRevealed] = useState(false);
+  const { zoneRef, cardRef, onMouseMove, onMouseLeave } =
+    usePassportInteraction();
+
   return (
-    <div className="pf-passport-zone">
+    <div
+      className="pf-passport-zone"
+      ref={zoneRef}
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+    >
       <div className="pf-passport-watermark">EARTHORIA</div>
       <div className="pf-passport-grid" />
       <div className="pf-passport-glow-a" />
@@ -1100,122 +1217,134 @@ function PassportHero({
 
       <div className="pf-passport-inner">
         <div className="pf-passport-card pf-card-enter">
-          <span className="pf-passport-sheen" aria-hidden="true" />
-          <div className="pf-passport-card-top">
-            <div className="pf-passport-left">
-              <div
-                className="pf-passport-seal pf-seal-enter"
-                style={
-                  isAdmin
-                    ? {
-                        background: roleMeta.sealBg,
-                        borderColor: "rgba(184,134,46,0.4)",
-                      }
-                    : undefined
-                }
-              >
-                <div
-                  className="pf-passport-seal-ring"
-                  style={
-                    isAdmin
-                      ? { borderColor: "rgba(184,134,46,0.35)" }
-                      : undefined
-                  }
-                />
-                {initials}
-              </div>
-              <div className="pf-passport-id">
-                <div
-                  className="pf-passport-tier pf-stagger"
-                  style={{ "--d": "0.1s" }}
-                >
-                  <span className="pf-tier-dot" />
-                  {memberTier}
-                </div>
-                <h1
-                  className="pf-passport-name pf-stagger"
-                  style={{ "--d": "0.18s" }}
-                >
-                  {profile.firstName} {profile.lastName}
-                </h1>
-                <div
-                  className="pf-passport-email pf-stagger"
-                  style={{ "--d": "0.26s" }}
-                >
-                  {Icon.mail}
-                  <span>
-                    {emailRevealed ? profile.email : maskEmail(profile.email)}
-                  </span>
-                  <button
-                    type="button"
-                    className="pf-btn-tactile pf-email-toggle-btn"
-                    onClick={() => setEmailRevealed((r) => !r)}
-                    aria-label={
-                      emailRevealed ? "Ẩn email" : "Hiện đầy đủ email"
+          {/* Lớp tilt 3D + holographic sheen — tách riêng khỏi entrance
+              animation của .pf-passport-card để tránh 2 transform xung đột */}
+          <div className="pf-passport-tilt-surface" ref={cardRef}>
+            <span className="pf-passport-sheen" aria-hidden="true" />
+            <span className="pf-holo-sheen" aria-hidden="true" />
+
+            <div className="pf-passport-card-top">
+              <div className="pf-passport-left">
+                <div className="pf-seal-magnetic">
+                  <div
+                    className="pf-passport-seal pf-seal-enter"
+                    style={
+                      isAdmin
+                        ? {
+                            background: roleMeta.sealBg,
+                            borderColor: "rgba(184,134,46,0.4)",
+                          }
+                        : undefined
                     }
-                    title={emailRevealed ? "Ẩn email" : "Hiện đầy đủ email"}
                   >
-                    {emailRevealed ? Icon.eyeOff : Icon.eye}
-                  </button>
-                  <span className="pf-email-verified-badge">
-                    {Icon.checkSm} Đã xác thực
+                    <div
+                      className="pf-passport-seal-ring"
+                      style={
+                        isAdmin
+                          ? { borderColor: "rgba(184,134,46,0.35)" }
+                          : undefined
+                      }
+                    />
+                    {initials}
+                  </div>
+                </div>
+                <div className="pf-passport-id">
+                  <div
+                    className="pf-passport-tier pf-stagger"
+                    style={{ "--d": "0.1s" }}
+                  >
+                    <span className="pf-tier-dot" />
+                    <span className="pf-tier-shimmer-text">{memberTier}</span>
+                  </div>
+                  <h1
+                    className="pf-passport-name pf-stagger"
+                    style={{ "--d": "0.18s" }}
+                  >
+                    {profile.firstName} {profile.lastName}
+                  </h1>
+                  <div
+                    className="pf-passport-email pf-stagger"
+                    style={{ "--d": "0.26s" }}
+                  >
+                    {Icon.mail}
+                    <span>
+                      {emailRevealed ? profile.email : maskEmail(profile.email)}
+                    </span>
+                    <button
+                      type="button"
+                      className="pf-btn-tactile pf-email-toggle-btn"
+                      onClick={() => setEmailRevealed((r) => !r)}
+                      aria-label={
+                        emailRevealed ? "Ẩn email" : "Hiện đầy đủ email"
+                      }
+                      title={emailRevealed ? "Ẩn email" : "Hiện đầy đủ email"}
+                    >
+                      {emailRevealed ? Icon.eyeOff : Icon.eye}
+                    </button>
+                    <span className="pf-email-verified-badge">
+                      {Icon.checkSm} Đã xác thực
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={onLogout}
+                className="pf-btn-tactile pf-passport-logout pf-stagger"
+                style={{ "--d": "0.3s" }}
+              >
+                {Icon.logout} Đăng Xuất
+              </button>
+            </div>
+
+            <div className="pf-passport-divider">
+              <span className="pf-passport-divider-mark" />
+            </div>
+
+            <div className="pf-passport-bottom">
+              <div
+                className="pf-passport-code-block pf-stagger"
+                style={{ "--d": "0.34s" }}
+              >
+                <div className="pf-passport-code-label">
+                  Mã Số Earthoria (ETR)
+                </div>
+                <div className="pf-passport-code-row">
+                  <span className="pf-passport-code-value">
+                    {formattedCode}
                   </span>
+                  <CopyButton text={formattedCode} compact />
                 </div>
               </div>
-            </div>
 
-            <button
-              onClick={onLogout}
-              className="pf-btn-tactile pf-passport-logout pf-stagger"
-              style={{ "--d": "0.3s" }}
-            >
-              {Icon.logout} Đăng Xuất
-            </button>
-          </div>
-
-          <div className="pf-passport-divider">
-            <span className="pf-passport-divider-mark" />
-          </div>
-
-          <div className="pf-passport-bottom">
-            <div
-              className="pf-passport-code-block pf-stagger"
-              style={{ "--d": "0.34s" }}
-            >
-              <div className="pf-passport-code-label">
-                Mã Số Earthoria (ETR)
-              </div>
-              <div className="pf-passport-code-row">
-                <span className="pf-passport-code-value">{formattedCode}</span>
-                <CopyButton text={formattedCode} compact />
-              </div>
-            </div>
-
-            <div className="pf-passport-stats">
-              <div
-                className="pf-passport-stat pf-stagger"
-                style={{ "--d": "0.38s" }}
-              >
-                <div className="pf-passport-stat-val">{animatedOrderCount}</div>
-                <div className="pf-passport-stat-label">Đơn hàng</div>
-              </div>
-              <div className="pf-passport-stat-sep" />
-              <div
-                className="pf-passport-stat pf-stagger"
-                style={{ "--d": "0.42s" }}
-              >
-                <div className="pf-passport-stat-val">{animatedSpent}</div>
-                <div className="pf-passport-stat-label">Tổng chi tiêu</div>
-              </div>
-              <div className="pf-passport-stat-sep" />
-              <div
-                className="pf-passport-stat pf-stagger"
-                style={{ "--d": "0.46s" }}
-              >
-                <div className="pf-passport-stat-val">
-                  {profile.createdAt ? formatDate(profile.createdAt) : "—"}
+              <div className="pf-passport-stats">
+                <div
+                  className="pf-passport-stat pf-stagger"
+                  style={{ "--d": "0.38s" }}
+                >
+                  <div className="pf-passport-stat-val">
+                    {animatedOrderCount}
+                  </div>
+                  <div className="pf-passport-stat-label">Đơn hàng</div>
                 </div>
-                <div className="pf-passport-stat-label">Thành viên từ</div>
+                <div className="pf-passport-stat-sep" />
+                <div
+                  className="pf-passport-stat pf-stagger"
+                  style={{ "--d": "0.42s" }}
+                >
+                  <div className="pf-passport-stat-val">{animatedSpent}</div>
+                  <div className="pf-passport-stat-label">Tổng chi tiêu</div>
+                </div>
+                <div className="pf-passport-stat-sep" />
+                <div
+                  className="pf-passport-stat pf-stagger"
+                  style={{ "--d": "0.46s" }}
+                >
+                  <div className="pf-passport-stat-val">
+                    {profile.createdAt ? formatDate(profile.createdAt) : "—"}
+                  </div>
+                  <div className="pf-passport-stat-label">Thành viên từ</div>
+                </div>
               </div>
             </div>
           </div>
@@ -2707,6 +2836,22 @@ function AddressCard({ addr, onSetDefault, onEdit, onDelete }) {
    Bấm vào 1 mục sẽ đi thẳng tới /ar/:slug/:code để xem mô hình 3D,
    không cần quét lại QR giấy.
 ══════════════════════════════════════════════ */
+function ParentDashboardBanner() {
+  return (
+    <Link to="/parent-dashboard" className="pkd-cta-banner">
+      <div className="pkd-cta-icon">{Icon.family}</div>
+      <div className="pkd-cta-text">
+        <div className="pkd-cta-title">Bảng điều khiển phụ huynh</div>
+        <div className="pkd-cta-desc">
+          Đặt giới hạn giờ xem, bật quy tắc 20-20-20 và khóa AR từ xa cho con
+          bạn.
+        </div>
+      </div>
+      <span className="pkd-cta-btn">Mở dashboard {Icon.arrowRight}</span>
+    </Link>
+  );
+}
+
 function ArTab({ arCodes, loading }) {
   if (loading) {
     return (
@@ -2718,6 +2863,7 @@ function ArTab({ arCodes, loading }) {
           emphasis="AR Của Tôi"
           sub="Toàn bộ mô hình 3D thuộc các cuốn sách bạn đã mua và nhận hàng"
         />
+        <ParentDashboardBanner />
         <div
           style={{
             padding: 48,
@@ -2741,6 +2887,7 @@ function ArTab({ arCodes, loading }) {
           emphasis="AR Của Tôi"
           sub="Toàn bộ mô hình 3D thuộc các cuốn sách bạn đã mua và nhận hàng"
         />
+        <ParentDashboardBanner />
         <EmptyState
           icon={Icon.compass}
           text="Chưa có sách AR nào"
@@ -2768,6 +2915,7 @@ function ArTab({ arCodes, loading }) {
         emphasis="AR Của Tôi"
         sub="Toàn bộ mô hình 3D thuộc các cuốn sách bạn đã mua và nhận hàng"
       />
+      <ParentDashboardBanner />
 
       {Object.values(grouped).map((group) => (
         <div key={group.book?.id} style={{ marginBottom: 36 }}>
@@ -2865,17 +3013,30 @@ function useCookiePrefs() {
     const onUpdate = (e) =>
       setConsent({ choices: e.detail.choices, timestamp: e.detail.timestamp });
     document.addEventListener("earthoria:cookie-consent", onUpdate);
-    return () => document.removeEventListener("earthoria:cookie-consent", onUpdate);
+    return () =>
+      document.removeEventListener("earthoria:cookie-consent", onUpdate);
   }, []);
 
   return consent;
 }
 
 const COOKIE_GROUP_LABELS = {
-  essential: { title: "Cookie thiết yếu", desc: "Đăng nhập, giỏ hàng, bảo mật phiên - luôn bật." },
-  analytics: { title: "Cookie phân tích", desc: "Giúp cải thiện trải nghiệm dựa trên hành vi sử dụng." },
-  marketing: { title: "Cookie tiếp thị", desc: "Cá nhân hoá quảng cáo và đo lường chiến dịch." },
-  functional: { title: "Cookie chức năng", desc: "Ghi nhớ chế độ hiển thị, ngôn ngữ..." },
+  essential: {
+    title: "Cookie thiết yếu",
+    desc: "Đăng nhập, giỏ hàng, bảo mật phiên - luôn bật.",
+  },
+  analytics: {
+    title: "Cookie phân tích",
+    desc: "Giúp cải thiện trải nghiệm dựa trên hành vi sử dụng.",
+  },
+  marketing: {
+    title: "Cookie tiếp thị",
+    desc: "Cá nhân hoá quảng cáo và đo lường chiến dịch.",
+  },
+  functional: {
+    title: "Cookie chức năng",
+    desc: "Ghi nhớ chế độ hiển thị, ngôn ngữ...",
+  },
 };
 
 function SettingsTab() {
@@ -2883,7 +3044,7 @@ function SettingsTab() {
   const consent = useCookiePrefs();
   const [expandedChangelog, setExpandedChangelog] = useState(false);
 
-const openCookieSettings = () => {
+  const openCookieSettings = () => {
     if (window.EarthoriaCookies) {
       window.EarthoriaCookies.openSettings();
       return;
@@ -2923,7 +3084,9 @@ const openCookieSettings = () => {
           <div className="pf-lock-icon-wrap">{Icon.seal}</div>
           <div>
             <h3 className="pf-settings-card-title">Thông Tin Hệ Thống</h3>
-            <p className="pf-settings-card-sub">Phiên bản hiện tại và môi trường đang chạy</p>
+            <p className="pf-settings-card-sub">
+              Phiên bản hiện tại và môi trường đang chạy
+            </p>
           </div>
         </div>
         <div className="pf-settings-info-grid">
@@ -2933,11 +3096,15 @@ const openCookieSettings = () => {
           </div>
           <div className="pf-settings-info-item">
             <span className="pf-settings-info-label">Phiên bản</span>
-            <span className="pf-settings-info-val pf-mono">{SYSTEM_INFO.version}</span>
+            <span className="pf-settings-info-val pf-mono">
+              {SYSTEM_INFO.version}
+            </span>
           </div>
           <div className="pf-settings-info-item">
             <span className="pf-settings-info-label">Ngày phát hành</span>
-            <span className="pf-settings-info-val">{SYSTEM_INFO.releaseDate}</span>
+            <span className="pf-settings-info-val">
+              {SYSTEM_INFO.releaseDate}
+            </span>
           </div>
           <div className="pf-settings-info-item">
             <span className="pf-settings-info-label">Môi trường</span>
@@ -2977,10 +3144,14 @@ const openCookieSettings = () => {
 
       <div className="pf-settings-card">
         <div className="pf-settings-card-head">
-          <div className="pf-lock-icon-wrap">{isDark ? Icon.moon : Icon.sun}</div>
+          <div className="pf-lock-icon-wrap">
+            {isDark ? Icon.moon : Icon.sun}
+          </div>
           <div>
             <h3 className="pf-settings-card-title">Giao Diện Hiển Thị</h3>
-            <p className="pf-settings-card-sub">Chọn chế độ sáng, tối để phù hợp với mắt bạn</p>
+            <p className="pf-settings-card-sub">
+              Chọn chế độ sáng, tối để phù hợp với mắt bạn
+            </p>
           </div>
         </div>
 
@@ -2996,7 +3167,9 @@ const openCookieSettings = () => {
           <label className="pf-switch">
             <input type="checkbox" checked={isDark} onChange={toggle} />
             <span className="pf-switch-track">
-              <span className="pf-switch-thumb">{isDark ? Icon.moon : Icon.sun}</span>
+              <span className="pf-switch-thumb">
+                {isDark ? Icon.moon : Icon.sun}
+              </span>
             </span>
           </label>
         </div>
@@ -3006,7 +3179,9 @@ const openCookieSettings = () => {
         <div className="pf-settings-card-head">
           <div className="pf-lock-icon-wrap">{Icon.cookie}</div>
           <div>
-            <h3 className="pf-settings-card-title">Quyền Riêng Tư &amp; Cookie</h3>
+            <h3 className="pf-settings-card-title">
+              Quyền Riêng Tư &amp; Cookie
+            </h3>
             <p className="pf-settings-card-sub">
               Quản lý các nhóm cookie đang được sử dụng trên trình duyệt của bạn
             </p>
@@ -3031,7 +3206,9 @@ const openCookieSettings = () => {
                     </div>
                     <div className="pf-cookie-group-desc">{meta.desc}</div>
                   </div>
-                  <span className={`pf-cookie-status-dot ${active ? "on" : "off"}`}>
+                  <span
+                    className={`pf-cookie-status-dot ${active ? "on" : "off"}`}
+                  >
                     {active ? "Đang bật" : "Đang tắt"}
                   </span>
                 </div>

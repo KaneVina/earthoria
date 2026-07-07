@@ -10,6 +10,7 @@ import {
   Package,
   LogOut,
   ChevronDown,
+  ShieldCheck,
   Search,
 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -20,12 +21,12 @@ import { useTheme } from "../../hooks/useTheme";
 import toast from "react-hot-toast";
 import logoImg from "../assets/img/logoBT-ngangtext.png";
 import SearchOverlay from "./SearchOverlay";
-import { useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from "@tanstack/react-query";
 import "../assets/css/navbar.css";
 
 const logoCompactImg = "/logo-nho.png";
 export default function Navbar() {
-const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -71,7 +72,7 @@ const queryClient = useQueryClient()
   // ── Helpers ───────────────────────────────────────────
   const handleLogout = () => {
     logout();
-     queryClient.clear()
+    queryClient.clear();
     toast.success("Đã đăng xuất");
     navigate("/");
   };
@@ -88,18 +89,28 @@ const queryClient = useQueryClient()
   };
 
   const navLinks = [
-    { to: "/home",    label: "Trang chủ" },
-    { to: "/shop",    label: "Cửa hàng" },
-    { to: "/blog",    label: "Tin tức" },
-    { to: "/about",   label: "Về chúng tôi" },
+    { to: "/home", label: "Trang chủ" },
+    { to: "/shop", label: "Cửa hàng" },
+    { to: "/blog", label: "Tin tức" },
+    { to: "/about", label: "Về chúng tôi" },
     { to: "/contact", label: "Liên hệ" },
   ];
 
   const firstLetter = user?.name?.trim()?.charAt(0)?.toUpperCase() || "?";
   const isAdmin = user?.role === "ADMIN";
   const roleMeta = isAdmin
-    ? { label: "Quản Trị Viên", color: "#b8862e", bg: "rgba(184,134,46,0.08)", border: "rgba(184,134,46,0.25)" }
-    : { label: "Thành Viên",    color: "#4a9e3f", bg: "rgba(74,158,63,0.08)",  border: "rgba(74,158,63,0.22)"  };
+    ? {
+        label: "Quản Trị Viên",
+        color: "#b8862e",
+        bg: "rgba(184,134,46,0.08)",
+        border: "rgba(184,134,46,0.25)",
+      }
+    : {
+        label: "Thành Viên",
+        color: "#4a9e3f",
+        bg: "rgba(74,158,63,0.08)",
+        border: "rgba(74,158,63,0.22)",
+      };
 
   // ── Render ────────────────────────────────────────────
   return (
@@ -110,14 +121,20 @@ const queryClient = useQueryClient()
       <nav
         id="navbar"
         className={scrolled ? "is-scrolled" : ""}
-        style={{ boxShadow: scrolled ? "0 8px 32px rgba(13,43,30,0.06)" : "none" }}
+        style={{
+          boxShadow: scrolled ? "0 8px 32px rgba(13,43,30,0.06)" : "none",
+        }}
       >
         <div className="nav-inner">
           {/* Logo */}
           <Link to="/" className="nav-logo">
             <span className="nav-logo-swap">
-              <img src={logoImg}        alt="EARTHORIA" className="nav-logo-full" />
-              <img src={logoCompactImg} alt="EARTHORIA" className="nav-logo-compact" />
+              <img src={logoImg} alt="EARTHORIA" className="nav-logo-full" />
+              <img
+                src={logoCompactImg}
+                alt="EARTHORIA"
+                className="nav-logo-compact"
+              />
             </span>
           </Link>
 
@@ -125,7 +142,10 @@ const queryClient = useQueryClient()
           <ul className="nav-links">
             {navLinks.map((link) => (
               <li key={link.to}>
-                <Link to={link.to} className={isActive(link.to) ? "active" : ""}>
+                <Link
+                  to={link.to}
+                  className={isActive(link.to) ? "active" : ""}
+                >
                   {link.label}
                 </Link>
               </li>
@@ -152,7 +172,11 @@ const queryClient = useQueryClient()
                 aria-label="Chuyển chế độ sáng/tối"
                 data-tooltip={isDark ? "Chế độ sáng" : "Chế độ tối"}
               >
-                {isDark ? <Sun size={16} strokeWidth={1.8} /> : <Moon size={16} strokeWidth={1.8} />}
+                {isDark ? (
+                  <Sun size={16} strokeWidth={1.8} />
+                ) : (
+                  <Moon size={16} strokeWidth={1.8} />
+                )}
               </button>
 
               {/* Wishlist */}
@@ -203,7 +227,10 @@ const queryClient = useQueryClient()
                   <ChevronDown size={14} className="user-caret" />
                 </button>
 
-                <div className="user-dropdown" style={{ minWidth: "100%", width: "max-content" }}>
+                <div
+                  className="user-dropdown"
+                  style={{ minWidth: "100%", width: "max-content" }}
+                >
                   <div className="user-dropdown-header">
                     <span
                       className="user-dropdown-avatar"
@@ -253,6 +280,9 @@ const queryClient = useQueryClient()
                   </Link>
                   <Link to="/profile" className="user-dropdown-item">
                     <Package size={16} /> Đơn hàng
+                  </Link>
+                  <Link to="/parent-dashboard" className="user-dropdown-item">
+                    <ShieldCheck size={16} /> Bảng điều khiển phụ huynh
                   </Link>
                   {isAdmin && (
                     <Link to="/dashboard" className="user-dropdown-item">
@@ -321,6 +351,9 @@ const queryClient = useQueryClient()
               <Link to="/profile" className="nav-mobile-link">
                 <Package size={15} /> Đơn hàng
               </Link>
+              <Link to="/parent-dashboard" className="nav-mobile-link">
+                <ShieldCheck size={15} /> Bảng điều khiển phụ huynh
+              </Link>
               <button
                 type="button"
                 className="nav-mobile-link logout"
@@ -332,10 +365,14 @@ const queryClient = useQueryClient()
           ) : (
             <div className="nav-mobile-auth">
               <Link to="/login" style={{ width: "100%" }}>
-                <button className="btn-ghost" style={{ width: "100%" }}>Đăng nhập</button>
+                <button className="btn-ghost" style={{ width: "100%" }}>
+                  Đăng nhập
+                </button>
               </Link>
               <Link to="/register" style={{ width: "100%" }}>
-                <button className="btn-primary" style={{ width: "100%" }}>Đăng ký</button>
+                <button className="btn-primary" style={{ width: "100%" }}>
+                  Đăng ký
+                </button>
               </Link>
             </div>
           )}

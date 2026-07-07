@@ -867,7 +867,7 @@ export default function AboutUs() {
                 <span></span>
                 <span></span>
               </div>
-              <div className="tech-editor-filename">earthoria.stats</div>
+              <div className="tech-editor-filename">https://www.earthoria.id.vn</div>
             </div>
 
             <div className="tech-editor-body">

@@ -997,3 +997,90 @@ body.dark-mode .pf-switch-track { background: #2a3530; border-color: rgba(255,25
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+/* ═══════════ LUXURY UPGRADE: NHẬN DIỆN THƯƠNG HIỆU ═══════════ */
+
+/* Quầng sáng lớn bám nhẹ theo con trỏ trên toàn section — tạo chiều sâu
+   cho nền forest phẳng, biến --lp-x/--lp-y do JS set khi di chuột */
+.logo-section { --lp-x: 50%; --lp-y: 50%; position: relative; }
+.logo-section::before {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(640px circle at var(--lp-x) var(--lp-y), rgba(74,158,63,0.09), transparent 62%);
+}
+.logo-inner { position: relative; z-index: 1; }
+
+/* Wrapper tilt 3D quanh khối logo ảnh tĩnh — nghiêng theo con trỏ như
+   đang cầm một huy hiệu kim loại dưới ánh đèn */
+.logo-display-tilt {
+  --rx: 0deg; --ry: 0deg; --gx: 50%; --gy: 50%;
+  perspective: 1400px;
+}
+.logo-display-inner {
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 0.5s cubic-bezier(0.16,1,0.3,1);
+  transform-style: preserve-3d;
+}
+
+/* Ring thứ 3: viền vàng nét đứt xoay chậm — khác nhịp với 2 ring pulse có
+   sẵn, giống một con dấu/huy hiệu chính thức bao quanh logo */
+.logo-ring-3 {
+  position: absolute;
+  width: 296px; height: 296px;
+  border-radius: 50%;
+  border: 0.5px dashed rgba(212,168,67,0.35);
+  animation: logoRing3Rotate 26s linear infinite;
+  pointer-events: none;
+}
+@keyframes logoRing3Rotate { to { transform: rotate(360deg); } }
+
+/* Ánh sáng vàng bám theo con trỏ, phủ lên logo bằng screen-blend để giống
+   phản chiếu kim loại/ngọc thay vì một lớp overlay phẳng */
+.logo-display-glow {
+  position: absolute; inset: -40px; border-radius: 50%; z-index: 3;
+  pointer-events: none; opacity: 0; transition: opacity 0.4s ease;
+  background: radial-gradient(180px circle at var(--gx) var(--gy), rgba(212,168,67,0.38), transparent 65%);
+  mix-blend-mode: screen;
+}
+.logo-display-tilt:hover .logo-display-glow { opacity: 1; }
+
+/* Đường "xương sống" dọc bên trái danh sách 01–04, sáng dần theo mục
+   đang được xem tới — cùng cơ chế fill-theo-scroll như phần Đơn Hàng */
+.logo-analysis-content { position: relative; padding-left: 28px; }
+.logo-analysis-content::before {
+  content: ''; position: absolute; left: 0; top: 6px; bottom: 6px; width: 1px;
+  background: rgba(255,255,255,0.08);
+}
+.logo-analysis-content::after {
+  content: ''; position: absolute; left: 0; top: 6px; width: 1px;
+  background: linear-gradient(180deg, var(--gold, #c9a15a), rgba(74,158,63,0.5));
+  height: var(--logo-progress, 0%);
+  transition: height 0.5s cubic-bezier(0.16,1,0.3,1);
+  box-shadow: 0 0 8px 1px rgba(212,168,67,0.5);
+}
+
+/* Số + tiêu đề "phát sáng" khi mục đang active trong viewport */
+.logo-analysis-num {
+  transition: color 0.4s ease, transform 0.4s ease, text-shadow 0.4s ease;
+}
+.logo-analysis-item.is-active .logo-analysis-num {
+  color: #e8c878;
+  transform: scale(1.15);
+  text-shadow: 0 0 12px rgba(212,168,67,0.6);
+}
+.logo-analysis-item.is-active .logo-analysis-title {
+  background: linear-gradient(90deg, var(--ivory) 0%, #e8c878 50%, var(--ivory) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  animation: logoTitleShimmer 2.6s linear infinite;
+}
+.logo-analysis-item.is-active { border-bottom-color: rgba(74,158,63,0.35); }
+@keyframes logoTitleShimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-display-inner { transform: none !important; }
+  .logo-ring-3 { animation: none; }
+}
+@media (pointer: coarse) {
+  .logo-display-glow { display: none; }
+}

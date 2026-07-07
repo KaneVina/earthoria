@@ -270,11 +270,7 @@ export default function Login() {
               </label>
               <Link
                 to="/forgot-password"
-                style={{
-                  fontSize: "12px",
-                  color: "var(--gold)",
-                  textDecoration: "none",
-                }}
+                className="auth-forgot-link"
               >
                 Quên mật khẩu?
               </Link>

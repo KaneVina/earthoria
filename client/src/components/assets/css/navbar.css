@@ -589,3 +589,79 @@ body.dark-mode .nav-mobile-link {
   color: #c8d4cc;
   border-color: rgba(255, 255, 255, 0.07);
 }
+
+.pkd-cta-banner {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: var(--forest);
+  border-radius: 8px;
+  padding: 22px 26px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none !important;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.pkd-cta-banner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgba(13, 43, 30, 0.2);
+}
+.pkd-cta-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: rgba(74, 158, 63, 0.15);
+  border: 0.5px solid rgba(74, 158, 63, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+}
+.pkd-cta-text {
+  flex: 1;
+  min-width: 0;
+}
+.pkd-cta-title {
+  font-family: "Playfair Display", serif;
+  font-size: 17px;
+  color: var(--ivory);
+  margin-bottom: 4px;
+}
+.pkd-cta-desc {
+  font-size: 12.5px;
+  color: rgba(250, 248, 243, 0.5);
+  line-height: 1.6;
+  max-width: 420px;
+}
+.pkd-cta-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  background: var(--gold);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 11px 20px;
+  border-radius: 6px;
+  white-space: nowrap;
+  transition: background 0.25s ease;
+}
+.pkd-cta-banner:hover .pkd-cta-btn {
+  background: var(--gold-light);
+}
+
+@media (max-width: 560px) {
+  .pkd-cta-banner {
+    flex-wrap: wrap;
+  }
+  .pkd-cta-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}

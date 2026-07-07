@@ -592,7 +592,7 @@ export default function ContactPage() {
                 ))}
 
                 <a
-                  href="https://maps.google.com/?q=10.0127,105.7309"
+                  href="https://maps.app.goo.gl/uuwTHLjKWDG8yq5EA"
                   target="_blank"
                   rel="noreferrer"
                   className="map-directions-btn"
