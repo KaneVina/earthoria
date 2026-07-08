@@ -21,9 +21,8 @@ export default function GoogleAuthSuccess() {
 
     const run = async () => {
       try {
-        const res = await authService.refresh()
-        const { accessToken, user } = res.data.data
-        setAuth(user, accessToken)
+        await authService.refresh()
+        const { user } = useAuthStore.getState()
         toast.success(`Chào mừng trở lại, ${user.name}!`)
 
         if (user.role === 'ADMIN') {

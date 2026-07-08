@@ -85,10 +85,9 @@ export default function App() {
 
     authService
       .refresh()
-      .then((res) => {
+      .then(() => {
         if (cancelled) return;
-        const { accessToken, user } = res.data.data;
-        setAuth(user, accessToken);
+        setAuthChecked();
       })
       .catch(() => {
         if (cancelled) return;

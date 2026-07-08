@@ -1,9 +1,9 @@
-import api from './api'
+import api, { refreshSession } from './api'
 
 export const authService = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
-  refresh: () => api.post('/auth/refresh'),
+  refresh: refreshSession,
   logout: () => api.post('/auth/logout'),
   getMe: () => api.get('/auth/me'),
   updateProfile: (data) => api.put('/auth/update-profile', data),
