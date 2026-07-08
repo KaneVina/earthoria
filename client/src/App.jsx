@@ -102,7 +102,7 @@ export default function App() {
   // Chờ bước bootstrap xong mới render, tránh nháy trạng thái "chưa đăng
   // nhập" rồi mới nhảy sang "đã đăng nhập" gây giật UI / redirect nhầm.
   if (!authChecked) {
-    return <FullScreenLoader message="Đang tải..." />;
+    return <FullScreenLoader message="Chờ một chút! Chúng tôi đang tiến hàng xác thực tài khoản cho bạn." />;
   }
 
   if (MAINTENANCE_MODE) {
