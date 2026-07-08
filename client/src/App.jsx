@@ -12,9 +12,10 @@ import Register from "./pages/auth/Register";
 import AboutUs from "./pages/AboutUs";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/admin/Dashboard";
-import Products from "./pages/admin/Products";
+import Products from "./pages/admin/product/Products";
 import Orders from "./pages/admin/Orders";
-import Users from "./pages/admin/Users";
+import Users from "./pages/admin/user/Users";
+import UserCreate from "./pages/admin/user/UserCreate";
 import Coupons from "./pages/admin/Coupons";
 import GoogleAuthSuccess from "./pages/auth/GoogleAuthSuccess";
 import CustomCursor from "./components/CustomCursor";
@@ -39,18 +40,25 @@ import Logo3D from "./components/Logo3D";
 import ArView from "./pages/ArView";
 import CookiePolicy from "./pages/legal/CookiePolicy";
 import Emails from "./pages/admin/Emails";
-import ProductDetail from "./pages/admin/ProductDetail";
-import ProductCreate from "./pages/admin/ProductCreate";
+import ProductDetail from "./pages/admin/product/ProductDetail";
+import ProductCreate from "./pages/admin/product/ProductCreate";
 import ArCodeManager from "./pages/admin/ArCodeManager";
 import Settings from "./pages/admin/Settings";
-import InventoryImport from "./pages/admin/InventoryImport";
+import InventoryImport from "./pages/admin/product/InventoryImport";
+import FullScreenLoader from "./components/FullScreenLoader";
 // import ParentDashboard from "./pages/ParentDashboard";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
   return isAuthenticated ? children : <Navigate to="/login" replace />;
 };
-
+const StaffOrAdminRoute = ({ children }) => {
+  const { user, isAuthenticated } = useAuthStore();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!["ADMIN", "STAFF"].includes(user?.role))
+    return <Navigate to="/" replace />;
+  return children;
+};
 const AdminRoute = ({ children }) => {
   const { user, isAuthenticated } = useAuthStore();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
@@ -95,7 +103,7 @@ export default function App() {
   // Chờ bước bootstrap xong mới render, tránh nháy trạng thái "chưa đăng
   // nhập" rồi mới nhảy sang "đã đăng nhập" gây giật UI / redirect nhầm.
   if (!authChecked) {
-    return null; // có thể thay bằng 1 spinner full-screen nếu muốn
+    return <FullScreenLoader message="Đang tải..." />;
   }
 
   if (MAINTENANCE_MODE) {
@@ -202,9 +210,9 @@ export default function App() {
         <Route
           path="/dashboard"
           element={
-            <AdminRoute>
+            <StaffOrAdminRoute>
               <Dashboard />
-            </AdminRoute>
+            </StaffOrAdminRoute>
           }
         />
         <Route path="/dashboard/emails" element={<Emails />} />
@@ -277,6 +285,14 @@ export default function App() {
           element={
             <AdminRoute>
               <Users />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/users/new"
+          element={
+            <AdminRoute>
+              <UserCreate />
             </AdminRoute>
           }
         />

@@ -2,6 +2,8 @@ import { useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import { authService } from '../../services/authService'
+import FullScreenLoader from "../../components/FullScreenLoader";
+
 import toast from 'react-hot-toast'
 
 // Backend (googleCallback) giờ KHÔNG còn nhét token/thông tin user vào query
@@ -38,20 +40,5 @@ export default function GoogleAuthSuccess() {
     run()
   }, [])
 
-  return (
-    <div style={{
-      display: 'flex', alignItems: 'center',
-      justifyContent: 'center', height: '100vh',
-      flexDirection: 'column', gap: '16px'
-    }}>
-      <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
-        stroke="var(--forest)" strokeWidth="1.5"
-        style={{ animation: 'spin .7s linear infinite' }}>
-        <path d="M21 12a9 9 0 1 1-6.22-8.56"/>
-      </svg>
-      <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
-        Đang xử lý đăng nhập...
-      </p>
-    </div>
-  )
+return <FullScreenLoader message="Đang xử lý đăng nhập..." />;
 }

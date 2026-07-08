@@ -20,6 +20,9 @@
   --border-gold: rgba(74, 158, 63, 0.3);
   --on-forest: #faf8f3;
 }
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 
 *,
 *::before,
