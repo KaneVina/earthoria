@@ -41,11 +41,11 @@ import ArView from "./pages/ArView";
 import CookiePolicy from "./pages/legal/CookiePolicy";
 import Emails from "./pages/admin/Emails";
 import ProductDetail from "./pages/admin/product/ProductDetail";
-import ProductCreate from "./pages/admin/product/ProductCreate";
 import ArCodeManager from "./pages/admin/ArCodeManager";
 import Settings from "./pages/admin/Settings";
 import InventoryImport from "./pages/admin/product/InventoryImport";
 import FullScreenLoader from "./components/FullScreenLoader";
+import ProductCreate from "./pages/admin/product/ProductCreate";
 // import ParentDashboard from "./pages/ParentDashboard";
 
 const ProtectedRoute = ({ children }) => {

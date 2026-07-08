@@ -13,11 +13,8 @@ import { generateProductCode } from "../../../utils/generateProductCode";
 export default function ProductCreate() {
   const qc = useQueryClient();
   const navigate = useNavigate();
-
   const [form, setForm] = useState(EMPTY_FORM);
-  // Mã sách chỉ để xem trước — server sẽ là nơi sinh mã thật & đảm bảo không trùng.
   const [codePreview, setCodePreview] = useState(() => generateProductCode());
-
   const { data: categories = [] } = useQuery({
     queryKey: ["admin-categories"],
     queryFn: () => api.get("/categories").then((r) => r.data.data),
