@@ -3,12 +3,12 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, RefreshCw } from "lucide-react";
-import api from "../../services/api";
+import api from "../../../services/api";
 import toast from "react-hot-toast";
-import AdminLayout from "./AdminLayout";
+import AdminLayout from "../AdminLayout";
 import ProductFormFields from "./ProductFormFields";
 import { EMPTY_FORM, formToPayload } from "./productFormUtils";
-import { generateProductCode } from "../../utils/generateProductCode";
+import { generateProductCode } from "../../../utils/generateProductCode";
 
 export default function ProductCreate() {
   const qc = useQueryClient();

@@ -1,12 +1,14 @@
 // Users.jsx — Admin user management
 import { useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Search, Lock, Unlock, X, ChevronDown, Copy, Check } from 'lucide-react'
-import api from '../../services/api'
-import { formatDate } from '../../utils/helpers'
+import { Search, Lock, Unlock, X, ChevronDown, Copy, Check, ArrowUpCircle, ArrowDownCircle, UserPlus } from 'lucide-react'
+import api from "../../../services/api";
+import { formatDate } from "../../../utils/helpers";
 import toast from 'react-hot-toast'
-import AdminLayout from './AdminLayout'
-import Pagination from '../../components/Pagination'
+import AdminLayout from '../AdminLayout'
+import Pagination from '../../../components/Pagination'
+import { useAuthStore } from '../../../store/authStore'
 
 /* ─── Avatar color pool (deterministic by first char) ─── */
 const AVATAR_COLORS = [
@@ -19,18 +21,8 @@ const avatarColor = (name = '') =>
 const ROLE_CONFIG = {
   ADMIN:    { label: 'Admin',    cls: 'dark'    },
   STAFF:    { label: 'Staff',    cls: 'blue'    },
+  DEALER:   { label: 'Dealer',   cls: 'purple'  },
   CUSTOMER: { label: 'Customer', cls: 'neutral' },
-}
-
-/* ─── useDebounce ─── */
-function useDebounce(value, delay = 350) {
-  const [debounced, setDebounced] = useState(value)
-  useState(() => {
-    const t = setTimeout(() => setDebounced(value), delay)
-    return () => clearTimeout(t)
-  })
-  // proper debounce with useCallback approach
-  return debounced
 }
 
 /* ─── UserCodeBadge ─── */
@@ -134,13 +126,17 @@ function FilterSelect({ value, onChange, options, placeholder }) {
 ══════════════════════════════════════════════ */
 export default function Users() {
   const qc = useQueryClient()
+  const navigate = useNavigate()
+  const { user: viewer } = useAuthStore()
+  const viewerRole = viewer?.role // 'STAFF' | 'ADMIN'
 
   const [searchInput, setSearchInput]   = useState('')
   const [search, setSearch]             = useState('')
   const [page, setPage]                 = useState(1)
   const [roleFilter, setRoleFilter]     = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [confirmUser, setConfirmUser]   = useState(null)
+  const [confirmUser, setConfirmUser]   = useState(null) // lock/unlock
+  const [promoteUser, setPromoteUser]   = useState(null) // upgrade/downgrade
 
   // Debounce search để tránh gọi API liên tục khi gõ
   const handleSearchChange = useCallback((val) => {
@@ -193,12 +189,47 @@ export default function Users() {
       qc.invalidateQueries(['admin-users'])
       setConfirmUser(null)
     },
-    onError: () => toast.error('Cập nhật thất bại!'),
+    onError: (err) => toast.error(err?.response?.data?.message || 'Cập nhật thất bại!'),
+  })
+
+  const promoteMutation = useMutation({
+    mutationFn: ({ id, role }) => api.put(`/admin/users/${id}/role`, { role }),
+    onSuccess: () => {
+      toast.success('Cập nhật cấp bậc thành công! Email thông báo đã được gửi.')
+      qc.invalidateQueries(['admin-users'])
+      setPromoteUser(null)
+    },
+    onError: (err) => toast.error(err?.response?.data?.message || 'Cập nhật thất bại!'),
   })
 
   const users      = data?.users      ?? []
   const totalPages = data?.totalPages ?? 1
   const total      = data?.total      ?? 0
+
+  /* ── Phân quyền theo role người đang xem ── */
+  // Staff: xem staff (read-only), xem+sửa customer/dealer
+  // Admin: xem+sửa customer/dealer/staff
+  const canPromote = (targetRole) => ['CUSTOMER', 'DEALER'].includes(targetRole)
+
+  const canToggle = (targetRole) => {
+    if (viewerRole === 'STAFF') return ['CUSTOMER', 'DEALER'].includes(targetRole)
+    if (viewerRole === 'ADMIN') return ['CUSTOMER', 'DEALER', 'STAFF'].includes(targetRole)
+    return false
+  }
+
+  const canCreateRoles = viewerRole === 'ADMIN' ? ['DEALER', 'STAFF'] : viewerRole === 'STAFF' ? ['DEALER'] : []
+
+  const roleFilterOptions = viewerRole === 'ADMIN'
+    ? [
+        { value: 'CUSTOMER', label: 'Customer' },
+        { value: 'DEALER',   label: 'Dealer'    },
+        { value: 'STAFF',    label: 'Staff'     },
+      ]
+    : [
+        { value: 'CUSTOMER', label: 'Customer' },
+        { value: 'DEALER',   label: 'Dealer'    },
+        { value: 'STAFF',    label: 'Staff'     },
+      ]
 
   return (
     <AdminLayout>
@@ -209,8 +240,20 @@ export default function Users() {
           <p className="a-page-eyebrow">Quản lý</p>
           <h1 className="a-page-title">Người <em>Dùng</em></h1>
         </div>
-        <div style={{ fontSize: 12, color: 'rgba(13,51,48,0.4)' }}>
-          Tổng <strong style={{ color: 'var(--a-ink)' }}>{total}</strong> tài khoản
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ fontSize: 12, color: 'rgba(13,51,48,0.4)' }}>
+            Tổng <strong style={{ color: 'var(--a-ink)' }}>{total}</strong> tài khoản
+          </div>
+          {canCreateRoles.length > 0 && (
+            <button
+              className="a-btn-primary"
+              style={{ padding: '8px 16px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
+              onClick={() => navigate('/dashboard/users/new')}
+            >
+              <UserPlus size={13} />
+              Tạo tài khoản
+            </button>
+          )}
         </div>
       </div>
 
@@ -257,11 +300,7 @@ export default function Users() {
           value={roleFilter}
           onChange={handleRoleChange}
           placeholder="Tất cả vai trò"
-          options={[
-            { value: 'CUSTOMER', label: 'Customer' },
-            { value: 'STAFF',    label: 'Staff'    },
-            { value: 'ADMIN',    label: 'Admin'    },
-          ]}
+          options={roleFilterOptions}
         />
 
         {/* Status filter */}
@@ -328,6 +367,8 @@ export default function Users() {
                 </tr>
               ) : users.map(user => {
                 const roleCfg = ROLE_CONFIG[user.role] ?? ROLE_CONFIG.CUSTOMER
+                const showPromote = canPromote(user.role)
+                const showToggle = canToggle(user.role)
                 return (
                   <tr key={user.id}>
                     {/* User code */}
@@ -373,15 +414,30 @@ export default function Users() {
 
                     {/* Action */}
                     <td>
-                      {user.role !== 'ADMIN' && (
-                        <button
-                          className={`a-btn-icon ${user.isActive ? 'lock' : 'unlock'}`}
-                          onClick={() => setConfirmUser({ user, action: user.isActive ? 'lock' : 'unlock' })}
-                          aria-label={user.isActive ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}
-                        >
-                          {user.isActive ? <Lock size={12} /> : <Unlock size={12} />}
-                        </button>
-                      )}
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        {showPromote && (
+                          <button
+                            className="a-btn-icon"
+                            onClick={() => setPromoteUser(user)}
+                            title={user.role === 'CUSTOMER' ? 'Nâng lên Dealer' : 'Hạ xuống Customer'}
+                            aria-label={user.role === 'CUSTOMER' ? 'Nâng lên Dealer' : 'Hạ xuống Customer'}
+                          >
+                            {user.role === 'CUSTOMER' ? <ArrowUpCircle size={13} /> : <ArrowDownCircle size={13} />}
+                          </button>
+                        )}
+                        {showToggle && (
+                          <button
+                            className={`a-btn-icon ${user.isActive ? 'lock' : 'unlock'}`}
+                            onClick={() => setConfirmUser({ user, action: user.isActive ? 'lock' : 'unlock' })}
+                            aria-label={user.isActive ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}
+                          >
+                            {user.isActive ? <Lock size={12} /> : <Unlock size={12} />}
+                          </button>
+                        )}
+                        {!showPromote && !showToggle && (
+                          <span className="a-td-muted" style={{ fontSize: 11 }}>—</span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 )
@@ -453,6 +509,61 @@ export default function Users() {
                 }
               </button>
               <button className="a-btn-ghost" onClick={() => setConfirmUser(null)}>Hủy</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Confirm promote/demote modal ── */}
+      {promoteUser && (
+        <div
+          className="a-modal-overlay"
+          onClick={e => e.target === e.currentTarget && setPromoteUser(null)}
+        >
+          <div className="a-modal" style={{ maxWidth: 420 }}>
+            <div className="a-modal-header">
+              <h3 className="a-modal-title">
+                {promoteUser.role === 'CUSTOMER' ? 'Nâng cấp lên Dealer' : 'Hạ cấp xuống Customer'}
+              </h3>
+              <button className="a-modal-close" onClick={() => setPromoteUser(null)}>
+                <X size={16} />
+              </button>
+            </div>
+            <div className="a-modal-body">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+                <div
+                  className="a-user-avatar"
+                  style={{ width: 40, height: 40, fontSize: 16, background: avatarColor(promoteUser.name) }}
+                >
+                  {promoteUser.name?.[0]?.toUpperCase()}
+                </div>
+                <div>
+                  <div style={{ fontWeight: 500 }}>{promoteUser.name}</div>
+                  <div className="a-td-muted">{promoteUser.email}</div>
+                </div>
+              </div>
+              {promoteUser.userCode && (
+                <div style={{ marginBottom: 12 }}>
+                  <UserCodeBadge code={promoteUser.userCode} />
+                </div>
+              )}
+              <p style={{ fontSize: 13, color: 'rgba(13,51,48,0.65)', lineHeight: 1.6 }}>
+                Hệ thống sẽ tự sinh <strong>mã ETR mới</strong> và <strong>mật khẩu tạm thời mới</strong>,
+                gửi email thông báo đến người dùng. Họ cần đổi mật khẩu ngay khi đăng nhập lần đầu.
+              </p>
+            </div>
+            <div className="a-modal-footer">
+              <button
+                className="a-btn-primary"
+                disabled={promoteMutation.isPending}
+                onClick={() => promoteMutation.mutate({
+                  id: promoteUser.id,
+                  role: promoteUser.role === 'CUSTOMER' ? 'DEALER' : 'CUSTOMER',
+                })}
+              >
+                {promoteMutation.isPending ? 'Đang xử lý...' : 'Xác nhận'}
+              </button>
+              <button className="a-btn-ghost" onClick={() => setPromoteUser(null)}>Hủy</button>
             </div>
           </div>
         </div>

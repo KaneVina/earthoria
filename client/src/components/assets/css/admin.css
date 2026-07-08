@@ -1801,3 +1801,124 @@
 .admin-root.dark .a-field { background: var(--a-surface); border-color: var(--a-ink-08); }
 .admin-root.dark .a-field.is-locked { background: var(--a-bg); }
 .admin-root.dark .a-switch-track { background: var(--a-ink-08); border-color: var(--a-ink-08); }
+/* ── Thêm vào admin.css: style cho nhóm menu có thể thu gọn ── */
+
+.a-nav-group {
+  margin-bottom: 4px;
+}
+
+.a-nav-group-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.a-nav-group-header:hover {
+  opacity: 0.8;
+}
+
+.a-nav-group-chevron {
+  transition: transform 0.18s ease;
+}
+
+.a-nav-group-chevron.rotated {
+  transform: rotate(-90deg);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ADMIN — Tab bar (Sách / Phụ kiện / Danh mục)
+   File riêng, import thêm vào Products.jsx:
+     import "./admin-tabs.css";
+   Dùng chung token màu với admin.css nên phải load SAU admin.css.
+   ═══════════════════════════════════════════════════════════ */
+
+.a-tabbar {
+  position: relative;
+  display: flex;
+  gap: 4px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--a-ink-08);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.a-tabbar::-webkit-scrollbar { display: none; }
+
+.a-tab {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--a-font-sans);
+  font-size: 12.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--a-ink-40);
+  padding: 10px 4px 13px;
+  margin: 0 14px;
+  transition: color 0.18s ease;
+  white-space: nowrap;
+}
+
+.a-tab:first-child { margin-left: 0; }
+
+.a-tab:hover { color: var(--a-ink-60); }
+
+.a-tab.active { color: var(--a-forest); }
+
+.a-tab-count {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--a-ink-40);
+  background: var(--a-ink-08);
+  border-radius: 20px;
+  padding: 1px 6px;
+  transition: var(--a-trans-fast);
+}
+
+.a-tab.active .a-tab-count {
+  color: var(--a-forest);
+  background: var(--a-green-pale);
+}
+
+.a-tab-indicator {
+  position: absolute;
+  bottom: -1px;
+  height: 2px;
+  background: var(--a-green);
+  border-radius: 2px 2px 0 0;
+  transition: transform 0.32s cubic-bezier(.4, 0, .2, 1), width 0.32s cubic-bezier(.4, 0, .2, 1);
+  left: 0;
+  will-change: transform, width;
+}
+
+/* Fade nhẹ khi đổi tab, để cảm giác mượt hơn là "nhảy" content */
+.a-tab-panel {
+  animation: a-tab-fade 0.22s ease;
+}
+
+@keyframes a-tab-fade {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Dark mode ── */
+.admin-root.dark .a-tab.active { color: var(--a-green-light); }
+.admin-root.dark .a-tab-count { background: var(--a-ink-08); color: var(--a-ink-40); }
+.admin-root.dark .a-tab.active .a-tab-count {
+  color: var(--a-green-light);
+  background: rgba(92, 184, 79, 0.16);
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .a-tab { margin: 0 10px; font-size: 12px; }
+}

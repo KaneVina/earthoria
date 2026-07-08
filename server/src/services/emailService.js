@@ -362,6 +362,157 @@ async function sendCustomEmail({ to, cc, bcc, subject, heading, content, sender 
   return resend.emails.send(payload)
 }
 
+const ROLE_LABEL_VI = {
+  CUSTOMER: 'Khách hàng',
+  DEALER: 'Đại lý (Dealer)',
+  STAFF: 'Nhân viên (Staff)',
+  ADMIN: 'Quản trị viên',
+}
+
+// Icon triangle-alert (Lucide), nhúng trực tiếp SVG vì email client không load icon font/JS được
+const ALERT_TRIANGLE_ICON = `
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b23a30" stroke-width="2.2"
+       stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px;display:inline-block;">
+    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+    <path d="M12 9v4"></path>
+    <path d="M12 17h.01"></path>
+  </svg>
+`
+
+function buildSystemSignatureBlock() {
+  return `
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:32px 0 6px;">
+      <tr>
+        <td style="vertical-align:middle;padding-right:18px;">
+          <img src="${SIGNATURE_LOGO_URL}" alt="Earthoria" height="42"
+               style="display:block;height:42px;width:auto;">
+        </td>
+        <td style="border-left:1.5px solid rgba(11,46,43,0.15);padding-left:18px;vertical-align:middle;">
+          <div style="font-size:14px;font-weight:600;color:#0b2e2b;margin-bottom:3px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+            Earthoria System
+          </div>
+          <div style="font-size:12px;font-weight:500;color:#4a9e3f;margin-bottom:8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+            Phòng ITD | IT Department
+          </div>
+          <div style="font-size:12px;color:#5a6b60;line-height:1.8;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+            <strong style="color:#0b2e2b;font-weight:500;">Email:</strong>
+            <a href="mailto:helpdesk.earthoria@gmail.com" style="color:#1a5a9e;text-decoration:none;">helpdesk.earthoria@gmail.com</a>
+          </div>
+        </td>
+      </tr>
+    </table>
+  `
+}
+
+async function sendAccountProvisionedEmail({ to, role, name, userCode, password, dateIssued, isUpgrade }) {
+  const dateStr = dateIssued.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
+  const heading = isUpgrade ? 'Tài Khoản Đã Được Nâng Cấp' : 'Chào Mừng Đến Với Earthoria'
+  const roleLabel = ROLE_LABEL_VI[role] || role
+  const changePasswordUrl = 'https://www.earthoria.id.vn/forgot-password'
+
+  const bodyHtml = `
+    <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Thông báo hệ thống
+    </div>
+    <h1 style="font-size:26px;font-weight:600;color:#0b2e2b;line-height:1.3;margin:0 0 28px;text-align:center;letter-spacing:1px;text-transform:uppercase;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      ${heading}
+    </h1>
+
+    <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Xin chào, ${name}.
+    </p>
+    <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 28px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      ${isUpgrade
+        ? `Tài khoản của bạn vừa được nâng cấp lên vai trò <strong style="color:#0b2e2b;font-weight:500;">${roleLabel}</strong> trên hệ thống Earthoria. Dưới đây là thông tin đăng nhập mới của bạn.`
+        : `Một tài khoản với vai trò <strong style="color:#0b2e2b;font-weight:500;">${roleLabel}</strong> vừa được khởi tạo cho bạn trên hệ thống Earthoria. Vui lòng lưu lại thông tin đăng nhập bên dưới.`
+      }
+    </p>
+
+    <!-- THÔNG TIN TÀI KHOẢN -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+      <tr>
+        <td style="background:#fff;border:1px solid rgba(11,46,43,0.09);border-radius:10px;overflow:hidden;">
+          <div style="background:#f0f7ec;padding:14px 28px;border-bottom:1px solid rgba(11,46,43,0.06);">
+            <div style="font-size:9.5px;letter-spacing:2.5px;text-transform:uppercase;color:#4a9e3f;font-weight:600;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+              Thông tin tài khoản
+            </div>
+          </div>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:6px 0;">
+            <tr>
+              <td style="padding:12px 28px;font-size:12.5px;color:#8a9690;font-weight:400;width:38%;font-family:'Be Vietnam Pro',Arial,sans-serif;">Vai trò</td>
+              <td style="padding:12px 28px 12px 0;font-size:13px;color:#0b2e2b;font-weight:500;font-family:'Be Vietnam Pro',Arial,sans-serif;">${roleLabel}</td>
+            </tr>
+            <tr>
+              <td style="padding:12px 28px;font-size:12.5px;color:#8a9690;font-weight:400;border-top:1px solid rgba(11,46,43,0.05);font-family:'Be Vietnam Pro',Arial,sans-serif;">Họ và tên</td>
+              <td style="padding:12px 28px 12px 0;font-size:13px;color:#0b2e2b;font-weight:500;border-top:1px solid rgba(11,46,43,0.05);font-family:'Be Vietnam Pro',Arial,sans-serif;">${name}</td>
+            </tr>
+            <tr>
+              <td style="padding:12px 28px;font-size:12.5px;color:#8a9690;font-weight:400;border-top:1px solid rgba(11,46,43,0.05);font-family:'Be Vietnam Pro',Arial,sans-serif;">Email đăng nhập</td>
+              <td style="padding:12px 28px 12px 0;font-size:13px;color:#0b2e2b;font-weight:500;border-top:1px solid rgba(11,46,43,0.05);font-family:'Be Vietnam Pro',Arial,sans-serif;">${to}</td>
+            </tr>
+            <tr>
+              <td style="padding:12px 28px;font-size:12.5px;color:#8a9690;font-weight:400;border-top:1px solid rgba(11,46,43,0.05);font-family:'Be Vietnam Pro',Arial,sans-serif;">Mã định danh (ETR)</td>
+              <td style="padding:12px 28px 12px 0;font-size:13px;color:#0b2e2b;font-weight:500;letter-spacing:0.5px;border-top:1px solid rgba(11,46,43,0.05);font-family:'Be Vietnam Pro',Arial,sans-serif;">${userCode}</td>
+            </tr>
+            <tr>
+              <td style="padding:12px 28px;font-size:12.5px;color:#8a9690;font-weight:400;border-top:1px solid rgba(11,46,43,0.05);font-family:'Be Vietnam Pro',Arial,sans-serif;">Ngày cấp</td>
+              <td style="padding:12px 28px 12px 0;font-size:13px;color:#0b2e2b;font-weight:500;border-top:1px solid rgba(11,46,43,0.05);font-family:'Be Vietnam Pro',Arial,sans-serif;">${dateStr}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+
+    <!-- MẬT KHẨU TẠM THỜI -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+      <tr>
+        <td style="background:#faf8f2;border:1.5px dashed rgba(11,46,43,0.25);border-radius:10px;padding:24px 28px;text-align:center;">
+          <div style="font-size:9.5px;letter-spacing:2.5px;text-transform:uppercase;color:#a0b8a8;font-weight:600;margin-bottom:12px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+            Mật khẩu tạm thời
+          </div>
+          <div style="font-size:24px;font-weight:600;color:#0b2e2b;letter-spacing:2px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+            ${password}
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <!-- CẢNH BÁO BẢO MẬT + NÚT ĐỔI MẬT KHẨU -->
+    <div style="background:rgba(192,80,80,0.05);border:1px solid rgba(192,80,80,0.18);border-radius:8px;padding:20px 22px;margin-bottom:8px;">
+      <p style="font-size:13px;color:#5a2820;font-weight:600;margin:0 0 10px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+        ${ALERT_TRIANGLE_ICON}Lưu ý bảo mật quan trọng
+      </p>
+      <p style="font-size:12px;color:#7a4440;line-height:1.9;font-weight:300;margin:0 0 18px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+        Vì lý do an toàn, vui lòng đổi mật khẩu ngay trong lần đăng nhập đầu tiên. Không chia sẻ thông tin đăng nhập này với bất kỳ ai, kể cả nhân viên Earthoria. Nếu bạn không yêu cầu thao tác này, vui lòng liên hệ ngay với chúng tôi để được hỗ trợ.
+      </p>
+      <div style="text-align:center;">
+        <a href="${changePasswordUrl}"
+           style="display:inline-block;background:#b23a30;color:#fff8f6;font-size:11.5px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;padding:12px 30px;border-radius:6px;text-decoration:none;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+          Đổi mật khẩu ngay
+        </a>
+      </div>
+    </div>
+
+    ${buildSystemSignatureBlock()}
+  `
+
+  return resend.emails.send({
+    from: `Earthoria System <noreply@earthoria.id.vn>`,
+    to,
+    subject: isUpgrade
+      ? `Tài khoản của bạn đã được nâng cấp lên ${roleLabel}`
+      : `Tài khoản ${roleLabel} của bạn đã sẵn sàng`,
+    html: wrapEmailTemplate({
+      preheader: isUpgrade
+        ? 'Tài khoản của bạn vừa được nâng cấp — xem thông tin đăng nhập mới.'
+        : 'Tài khoản mới của bạn đã được khởi tạo — xem thông tin đăng nhập.',
+      bodyHtml,
+      ctaUrl: 'https://www.earthoria.id.vn',
+      footerDepartment: 'ITD',
+    }),
+  })
+}
+
 module.exports = {
   verifyEmailTransport,
   sendOtpEmail,
@@ -369,4 +520,5 @@ module.exports = {
   sendCustomEmail,
   renderCustomEmailHtml,
   nameFromEmail,
+  sendAccountProvisionedEmail,
 }

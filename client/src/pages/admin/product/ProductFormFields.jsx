@@ -3,7 +3,7 @@
 // "Chi tiết sách" (ProductDetail, edit ngay tại chỗ) để không phải
 // duy trì 2 bộ field lệch nhau ở 2 nơi.
 import { computeModePrice } from "./productFormUtils";
-import { formatPrice } from "../../utils/helpers";
+import { formatPrice } from "../../../utils/helpers";
 
 const ModeToggle = ({ mode, onChange }) => (
   <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>

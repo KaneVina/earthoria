@@ -1,16 +1,17 @@
-// Products.jsx — Admin product management (danh sách + tìm kiếm + lọc)
-// Tạo sách mới & sửa sách giờ là 2 TRANG riêng (ProductCreate / ProductDetail),
-// trang này chỉ còn nhiệm vụ liệt kê, tìm kiếm, lọc, xóa.
-import { useState } from "react";
+// Products.jsx — Admin: khu vực "Sản phẩm" với 3 tab ngang: Sách / Phụ kiện / Danh mục.
+// Tab "Sách" giữ nguyên logic danh sách + tìm kiếm + lọc cũ (chỉ chuyển vào trong 1 tab-panel).
+// 2 tab mới (Phụ kiện, Danh mục) được tách thành 2 file riêng, import ngang hàng và render vào đây.
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, Edit2, Trash2, X, Upload, Eye, PackagePlus } from "lucide-react";
-import api from "../../services/api";
-import { formatPrice } from "../../utils/helpers";
+import { Plus, Search, Eye, Trash2, X, Upload, PackagePlus } from "lucide-react";
+import api from "../../../services/api";
+import { formatPrice } from "../../../utils/helpers";
 import toast from "react-hot-toast";
-import AdminLayout from "./AdminLayout";
+import AdminLayout from "../AdminLayout";
+import ProductsAccessories from "./ProductsAccessories";
+import ProductsCategories from "./ProductsCategories";
 
-// Đã bỏ filter theo ID (thừa, trùng chức năng với ô tìm kiếm mã sách bên dưới)
 const EMPTY_FILTERS = { categoryId: "", language: "", status: "", ageMin: "", ageMax: "" };
 
 /* % giảm hiển thị dạng badge, vd giá gốc 420.000 -> giá bán 260.400 => -38% */
@@ -20,7 +21,128 @@ const calcDiscountPercent = (base, sale) => {
   return Math.round((1 - s / b) * 100);
 };
 
+const TABS = [
+  { key: "books", label: "Sách", crumb: "Sách" },
+  { key: "accessories", label: "Phụ kiện", crumb: "Phụ kiện" },
+  { key: "categories", label: "Danh mục", crumb: "Danh mục" },
+];
+
 export default function Products() {
+  const [activeTab, setActiveTab] = useState("books");
+
+  /* ── Sliding underline indicator ── */
+  const tabRefs = useRef({});
+  const [indicator, setIndicator] = useState({ left: 0, width: 0 });
+
+  useEffect(() => {
+    const el = tabRefs.current[activeTab];
+    if (el) setIndicator({ left: el.offsetLeft, width: el.offsetWidth });
+  }, [activeTab]);
+
+  // Cập nhật lại vị trí indicator khi resize (vd thu gọn sidebar làm đổi độ rộng)
+  useEffect(() => {
+    const onResize = () => {
+      const el = tabRefs.current[activeTab];
+      if (el) setIndicator({ left: el.offsetLeft, width: el.offsetWidth });
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [activeTab]);
+
+  const activeCrumb = TABS.find((t) => t.key === activeTab)?.crumb ?? "";
+
+  return (
+    <AdminLayout>
+      {/* ── Breadcrumb ── */}
+      <div className="a-breadcrumb" style={{ marginBottom: 14 }}>
+        <span>Quản lý</span>
+        <span className="a-breadcrumb-sep">/</span>
+        <span className="a-breadcrumb-link" style={{ cursor: "default" }}>
+          Sản phẩm
+        </span>
+        <span className="a-breadcrumb-sep">/</span>
+        <span className="a-breadcrumb-current">{activeCrumb}</span>
+      </div>
+
+      {/* ── Page header ── */}
+      <div className="a-page-header">
+        <div>
+          <p className="a-page-eyebrow">Quản lý</p>
+          <h1 className="a-page-title">
+            Sản <em>Phẩm</em>
+          </h1>
+        </div>
+
+        {activeTab === "books" && (
+          <div style={{ display: "flex", gap: 8 }}>
+            <BooksImportButtons />
+          </div>
+        )}
+      </div>
+
+      {/* ── Tab bar ── */}
+      <div className="a-tabbar">
+        {TABS.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            ref={(el) => (tabRefs.current[tab.key] = el)}
+            className={`a-tab${activeTab === tab.key ? " active" : ""}`}
+            onClick={() => setActiveTab(tab.key)}
+          >
+            {tab.label}
+          </button>
+        ))}
+        <span
+          className="a-tab-indicator"
+          style={{ transform: `translateX(${indicator.left}px)`, width: indicator.width }}
+        />
+      </div>
+
+      {/* ── Tab panels ── */}
+      {activeTab === "books" && (
+        <div className="a-tab-panel" key="books">
+          <BooksTab />
+        </div>
+      )}
+      {activeTab === "accessories" && (
+        <div className="a-tab-panel" key="accessories">
+          <ProductsAccessories />
+        </div>
+      )}
+      {activeTab === "categories" && (
+        <div className="a-tab-panel" key="categories">
+          <ProductsCategories />
+        </div>
+      )}
+    </AdminLayout>
+  );
+}
+
+/* Nút "Nhập kho" / "Thêm sách mới" ở góc phải header — chỉ hiện khi đang ở tab Sách */
+function BooksImportButtons() {
+  const navigate = useNavigate();
+  return (
+    <>
+      <button
+        className="a-btn-ghost"
+        onClick={() => navigate("/dashboard/products/inventory-import")}
+      >
+        <PackagePlus size={13} />
+        Nhập kho
+      </button>
+      <button className="a-btn-primary" onClick={() => navigate("/dashboard/products/new")}>
+        <Plus size={13} />
+        Thêm sách mới
+      </button>
+    </>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   TAB: SÁCH — danh sách, tìm kiếm, lọc, xóa (logic gốc giữ nguyên)
+   ══════════════════════════════════════════════════════════ */
+function BooksTab() {
   const qc = useQueryClient();
   const navigate = useNavigate();
 
@@ -40,7 +162,7 @@ export default function Products() {
   const hasActiveFilters = Object.values(filters).some((v) => v !== "");
 
   /* ── Queries ──
-     `search` giờ khớp theo tên sách, nhà xuất bản, VÀ mã sách (productCode) — xử lý ở backend. */
+     `search` khớp theo tên sách, nhà xuất bản, VÀ mã sách (productCode) — xử lý ở backend. */
   const { data, isLoading } = useQuery({
     queryKey: ["admin-products", page, search, filters],
     queryFn: () =>
@@ -70,30 +192,7 @@ export default function Products() {
   const totalCount = data?.total ?? 0;
 
   return (
-    <AdminLayout>
-      {/* ── Page header ── */}
-      <div className="a-page-header">
-        <div>
-          <p className="a-page-eyebrow">Quản lý</p>
-          <h1 className="a-page-title">
-            Sản <em>Phẩm</em>
-          </h1>
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button
-            className="a-btn-ghost"
-            onClick={() => navigate("/dashboard/products/inventory-import")}
-          >
-            <PackagePlus size={13} />
-            Nhập kho
-          </button>
-          <button className="a-btn-primary" onClick={() => navigate("/dashboard/products/new")}>
-            <Plus size={13} />
-            Thêm sách mới
-          </button>
-        </div>
-      </div>
-
+    <>
       {/* ── Search + Filters (gộp chung 1 hàng, wrap khi hẹp) ── */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
         <div className="a-search-wrap" style={{ marginBottom: 0, flex: "1 1 260px", maxWidth: 360 }}>
@@ -202,7 +301,12 @@ export default function Products() {
                   const discount = calcDiscountPercent(p.price, p.salePrice);
                   const mainPrice = p.salePrice ?? p.price;
                   return (
-                    <tr key={p.id}>
+                    <tr
+                      key={p.id}
+                      className="a-row-clickable"
+                      onClick={() => navigate(`/dashboard/products/${p.id}`)}
+                      style={{ cursor: "pointer" }}
+                    >
                       {/* Book info */}
                       <td>
                         <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
@@ -239,7 +343,7 @@ export default function Products() {
 
                       {/* Price */}
                       <td>
-                        <div className="a-td-serif">{formatPrice(mainPrice)}</div>
+                        <div className="a-td-sans">{formatPrice(mainPrice)}</div>
                         {p.salePrice ? (
                           <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, marginTop: 1 }}>
                             <span style={{ color: "rgba(13,51,48,0.35)", textDecoration: "line-through" }}>
@@ -276,24 +380,16 @@ export default function Products() {
                         </span>
                       </td>
 
-                      {/* Actions */}
-                      <td>
+                      {/* Actions — chỉ còn 1 nút Chi tiết (xem + sửa gộp chung) + nút Xóa */}
+                      <td onClick={(e) => e.stopPropagation()}>
                         <div style={{ display: "flex", gap: 6 }}>
                           <button
-                            className="a-btn-icon"
+                            className="a-btn-icon edit"
                             onClick={() => navigate(`/dashboard/products/${p.id}`)}
                             aria-label="Chi tiết"
                             title="Xem & sửa chi tiết"
                           >
                             <Eye size={12} />
-                          </button>
-                          <button
-                            className="a-btn-icon edit"
-                            onClick={() => navigate(`/dashboard/products/${p.id}`)}
-                            aria-label="Chỉnh sửa"
-                            title="Chỉnh sửa"
-                          >
-                            <Edit2 size={12} />
                           </button>
                           <button
                             className="a-btn-icon delete"
@@ -346,7 +442,7 @@ export default function Products() {
         </div>
       </div>
 
-      {/* ══ DELETE CONFIRM MODAL (giữ modal — chỉ là xác nhận ngắn, không phải form) ══ */}
+      {/* ══ DELETE CONFIRM MODAL ══ */}
       {confirmDelete && (
         <div
           className="a-modal-overlay"
@@ -381,6 +477,6 @@ export default function Products() {
           </div>
         </div>
       )}
-    </AdminLayout>
+    </>
   );
 }

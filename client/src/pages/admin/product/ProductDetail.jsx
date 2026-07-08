@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Upload, Trash2, X } from "lucide-react";
-import api from "../../services/api";
-import { formatPrice } from "../../utils/helpers";
+import { ArrowLeft, Upload, Trash2, X, Copy } from "lucide-react";
+import api from "../../../services/api";
+import { formatPrice } from "../../../utils/helpers";
 import toast from "react-hot-toast";
-import AdminLayout from "./AdminLayout";
+import AdminLayout from "../AdminLayout";
 import ProductFormFields from "./ProductFormFields";
 import { EMPTY_FORM, bookToForm, formToPayload } from "./productFormUtils";
 
@@ -75,6 +75,12 @@ export default function ProductDetail() {
     updateMutation.mutate(formToPayload(form));
   };
 
+  const copyId = () => {
+    if (!book?.id) return;
+    navigator.clipboard.writeText(book.id);
+    toast.success("Đã sao chép ID sách");
+  };
+
   return (
     <AdminLayout
       crumbs={[
@@ -133,6 +139,42 @@ export default function ProductDetail() {
                   <span style={{ fontSize: 12, color: "rgba(13,51,48,0.5)" }}>
                     {(book.authors ?? []).join(", ") || "—"}
                   </span>
+                </div>
+                {/* ID sách (dùng để tra cứu, đối chiếu DB, hỗ trợ kỹ thuật...) */}
+                <div
+                  style={{
+                    marginTop: 6,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
+                  <span style={{ fontSize: 11, color: "rgba(13,51,48,0.4)" }}>ID:</span>
+                  <span
+                    style={{
+                      fontFamily: "monospace",
+                      fontSize: 11,
+                      color: "rgba(13,51,48,0.55)",
+                    }}
+                  >
+                    {book.id}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={copyId}
+                    title="Sao chép ID"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      color: "rgba(13,51,48,0.4)",
+                      padding: 2,
+                    }}
+                  >
+                    <Copy size={11} />
+                  </button>
                 </div>
               </div>
             </div>

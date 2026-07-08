@@ -18,6 +18,7 @@ const {
   getArCodesGroupedAll, updateArCodeAccess,
   // Inventory
   createInventoryImport,
+  updateUserRole, createManagedUser,
 } = require('../controllers/adminController')
 const { protect, adminOnly, staffOrAdmin } = require('../middlewares/authMiddleware')
 
@@ -49,10 +50,12 @@ router.put('/orders/:id',  adminOnly, updateOrderStatus)
 router.use('/emails', adminOnly, require('./emailRoutes'))
 
 // ── Users ──
-router.get('/users',                  adminOnly, getUsers)
-router.put('/users/:id/toggle',       adminOnly, toggleUser)
+router.get('/users',                  staffOrAdmin, getUsers)
+router.post('/users',                 staffOrAdmin, createManagedUser)
+router.put('/users/:id/toggle',       staffOrAdmin, toggleUser)
 // Chạy 1 lần sau migration để gắn mã cho user cũ
 router.post('/users/backfill-codes',  adminOnly, backfillUserCodes)
+router.put('/users/:id/role',         staffOrAdmin, updateUserRole)
 
 // ── Coupons ──
 router.get('/coupons',            adminOnly, getCoupons)

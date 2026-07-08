@@ -98,12 +98,29 @@ export default function Navbar() {
 
   const firstLetter = user?.name?.trim()?.charAt(0)?.toUpperCase() || "?";
   const isAdmin = user?.role === "ADMIN";
+  const isStaff = user?.role === "STAFF";
+  const isDealer = user?.role === "DEALER";
+  const canAccessDashboard = isAdmin || isStaff;
   const roleMeta = isAdmin
     ? {
         label: "Quản Trị Viên",
         color: "#b8862e",
         bg: "rgba(184,134,46,0.08)",
         border: "rgba(184,134,46,0.25)",
+      }
+    : isStaff
+    ? {
+        label: "Nhân Viên",
+        color: "#2a78d6",
+        bg: "rgba(42,120,214,0.08)",
+        border: "rgba(42,120,214,0.25)",
+      }
+    : isDealer
+    ? {
+        label: "Đại Lý",
+        color: "#7a4fb5",
+        bg: "rgba(122,79,181,0.08)",
+        border: "rgba(122,79,181,0.25)",
       }
     : {
         label: "Thành Viên",
@@ -284,7 +301,7 @@ export default function Navbar() {
                   <Link to="/parent-dashboard" className="user-dropdown-item">
                     <ShieldCheck size={16} /> Bảng điều khiển phụ huynh
                   </Link>
-                  {isAdmin && (
+                  {canAccessDashboard && (
                     <Link to="/dashboard" className="user-dropdown-item">
                       <User size={16} /> Quản trị
                     </Link>
@@ -332,7 +349,7 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          {isAdmin && (
+          {canAccessDashboard && (
             <Link
               to="/dashboard"
               className={`nav-mobile-link ${isActive("/dashboard") ? "active" : ""}`}

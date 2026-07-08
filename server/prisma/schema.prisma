@@ -50,6 +50,7 @@ model UserCodeSeq {
 
 enum Role {
   CUSTOMER
+   DEALER
   STAFF
   ADMIN
 }

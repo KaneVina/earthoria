@@ -163,6 +163,11 @@ export default function BookDetail() {
     ? Math.round((1 - book.discountPrice / book.price) * 100)
     : 0
 
+  // ── Tên tác giả (hỗ trợ 1 hoặc nhiều tác giả) ──
+  const authorNames = book?.authors?.length
+    ? book.authors.map(a => a?.name || a).filter(Boolean).join(', ')
+    : (book?.author?.name || book?.author || book?.authorName || 'Đang cập nhật')
+
   // ── Handlers ──
   const changeImg = (idx) => {
     if (idx === activeThumb) return
@@ -308,13 +313,26 @@ export default function BookDetail() {
             </span>
           </div>
 
-          <h1 className="product-title-main">
-            {book.title?.split(' ').slice(0, -1).join(' ') || book.title}
-            <br/>
-            <em>{book.title?.split(' ').slice(-1)[0]}</em>
-          </h1>
+          <h1 className="product-title-main">{book.title}</h1>
           <p className="product-subtitle">
             {book.subtitle || 'Khám phá thế giới qua công nghệ tăng cường'}
+          </p>
+
+          {/* Tác giả */}
+          <p
+            style={{
+              fontSize: '13px',
+              fontWeight: 300,
+              color: 'var(--text-muted)',
+              marginTop: '-6px',
+              marginBottom: '18px',
+              letterSpacing: '0.02em',
+            }}
+          >
+            Tác giả:{' '}
+            <span style={{ color: 'var(--forest)', fontWeight: 500 }}>
+              {authorNames}
+            </span>
           </p>
 
           {/* Rating row */}
@@ -470,6 +488,7 @@ export default function BookDetail() {
                 <div className="details-list">
                   {[
                     ['Tên sách', book.title],
+                    ['Tác giả', authorNames],
                     ['Nhà xuất bản', book.publisher || 'Earthoria Publishing'],
                     ['Năm xuất bản', book.publishYear || '2026'],
                     ['Số trang', book.pages ? `${book.pages} trang` : '128 trang'],
@@ -722,10 +741,7 @@ export default function BookDetail() {
       <div className={`sticky-bar${stickyVisible ? ' visible' : ''}`}>
         <div className="sticky-bar-inner">
           <div>
-            <div className="sticky-product-name">
-              {book.title?.split(' ').slice(0, -1).join(' ') || book.title}{' '}
-              <em>{book.title?.split(' ').slice(-1)[0]}</em>
-            </div>
+            <div className="sticky-product-name">{book.title}</div>
             <div className="sticky-stars">
               {Array.from({ length: 5 }).map((_, i) => (
                 <span key={i} className="star">★</span>

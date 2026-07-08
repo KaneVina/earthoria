@@ -30,12 +30,12 @@ import {
   AlertTriangle,
   FileSpreadsheet,
 } from "lucide-react";
-import api from "../../services/api";
-import { formatPrice } from "../../utils/helpers";
-import { useAuthStore } from "../../store/authStore";
+import api from "../../../services/api";
+import { formatPrice } from "../../../utils/helpers";
+import { useAuthStore } from "../../../store/authStore";
 import toast from "react-hot-toast";
-import AdminLayout from "./AdminLayout";
-import { generateImportCode } from "../../utils/generateImportCode";
+import AdminLayout from "../AdminLayout";
+import { generateImportCode } from "../../../utils/generateImportCode";
 import { downloadImportTemplate, parseImportFile } from "./inventoryExcelUtils";
 
 const makeEmptyRow = () => ({
