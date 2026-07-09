@@ -23,6 +23,7 @@ import logoImg from "../assets/img/logoBT-ngangtext.png";
 import SearchOverlay from "./SearchOverlay";
 import { useQueryClient } from "@tanstack/react-query";
 import "../assets/css/navbar.css";
+import { authService } from "../../services/authService";
 
 const logoCompactImg = "/logo-nho.png";
 export default function Navbar() {
