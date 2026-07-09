@@ -1,0 +1,448 @@
+/* ═══════════════════════════════════════════════════════════
+   EARTHORIA — Voucher / Coupon module
+   Dùng chung token với admin.css → PHẢI import SAU admin.css
+   Import trong Coupons.jsx:
+     import "../../components/assets/css/admin.css";
+     import "../../components/assets/css/admin-vouchers.css";
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Toolbar: search + filter pills + create ── */
+.a-vc-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.a-vc-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.a-vc-toolbar .a-search-wrap {
+  margin-bottom: 0;
+}
+
+.a-vc-toolbar .a-pills {
+  margin-bottom: 0;
+}
+
+/* ── Result count ── */
+.a-vc-count {
+  font-size: 11px;
+  color: var(--a-ink-40);
+  margin: 14px 0 16px;
+}
+
+.a-vc-count strong {
+  color: var(--a-ink);
+  font-weight: 600;
+}
+
+/* ── Grid ── */
+.a-voucher-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 18px;
+}
+
+/* ── Ticket card ── */
+.a-voucher-card {
+  position: relative;
+  display: flex;
+  background: var(--a-white);
+  border-radius: 14px;
+  border: 1px solid var(--a-ink-08);
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(13, 51, 48, 0.03);
+  transition: var(--a-trans-base);
+  animation: a-vc-in 0.35s ease both;
+}
+
+@keyframes a-vc-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.a-voucher-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 32px rgba(13, 51, 48, 0.12);
+  border-color: var(--a-ink-08);
+}
+
+.a-voucher-card.is-dim {
+  opacity: 0.55;
+}
+
+.a-voucher-card.is-dim:hover {
+  opacity: 0.85;
+}
+
+/* Perforation notches — cắt tròn 2 đầu, "ăn" vào nền trang (--a-bg) */
+.a-voucher-card::before,
+.a-voucher-card::after {
+  content: "";
+  position: absolute;
+  left: 96px;
+  width: 18px;
+  height: 18px;
+  background: var(--a-bg);
+  border-radius: 50%;
+  z-index: 3;
+  box-shadow: inset 0 0 0 1px var(--a-ink-08);
+}
+.a-voucher-card::before {
+  top: -9px;
+}
+.a-voucher-card::after {
+  bottom: -9px;
+}
+
+/* Dashed perforation line */
+.a-voucher-perf {
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: 104px;
+  width: 0;
+  border-left: 1.5px dashed var(--a-ink-20);
+  z-index: 2;
+}
+
+/* Stub — phần giá trị bên trái, gradient forest sang trọng */
+.a-voucher-stub {
+  width: 104px;
+  flex-shrink: 0;
+  background: linear-gradient(165deg, var(--a-forest) 0%, var(--a-forest-mid) 100%);
+  color: #ede8dc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 18px 8px;
+  text-align: center;
+  position: relative;
+}
+
+.a-voucher-stub-icon {
+  color: var(--a-green-light);
+  margin-bottom: 2px;
+  opacity: 0.85;
+}
+
+.a-voucher-stub-value {
+  font-family: var(--a-font-serif);
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.05;
+}
+
+.a-voucher-stub-unit {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(237, 232, 220, 0.5);
+  margin-top: 2px;
+}
+
+/* Body — phần chi tiết bên phải */
+.a-voucher-body {
+  flex: 1;
+  min-width: 0;
+  padding: 16px 18px 14px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.a-voucher-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.a-voucher-code-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.a-voucher-code-row .a-code-badge {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 160px;
+}
+
+.a-voucher-copy-btn {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border: none;
+  background: var(--a-ink-05);
+  color: var(--a-ink-40);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--a-trans-fast);
+}
+
+.a-voucher-copy-btn:hover {
+  background: var(--a-green-pale);
+  color: var(--a-forest);
+}
+
+.a-voucher-copy-btn.copied {
+  background: var(--a-success-bg);
+  color: var(--a-success-text);
+}
+
+/* Meta grid: đơn tối thiểu / giảm tối đa */
+.a-voucher-meta {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.a-voucher-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.a-voucher-meta-label {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--a-ink-40);
+}
+
+.a-voucher-meta-value {
+  font-size: 12px;
+  color: var(--a-ink);
+  font-weight: 500;
+}
+
+/* Usage progress */
+.a-voucher-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.a-voucher-progress-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 10px;
+  color: var(--a-ink-40);
+}
+
+.a-voucher-progress-row strong {
+  color: var(--a-ink-60);
+  font-weight: 600;
+}
+
+.a-voucher-progress-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--a-ink-08);
+  overflow: hidden;
+}
+
+.a-voucher-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--a-green), var(--a-green-light));
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.a-voucher-progress-fill.is-full {
+  background: linear-gradient(90deg, var(--a-danger-text), #e08787);
+}
+
+/* Footer: hạn dùng + trạng thái + actions */
+.a-voucher-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--a-ink-05);
+}
+
+.a-voucher-expiry {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  color: var(--a-ink-40);
+}
+
+.a-voucher-expiry.soon {
+  color: var(--a-warning-text);
+  font-weight: 500;
+}
+
+.a-voucher-expiry.expired {
+  color: var(--a-danger-text);
+  font-weight: 500;
+}
+
+.a-voucher-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Corner ribbon — sắp hết hạn */
+.a-voucher-ribbon {
+  position: absolute;
+  top: 10px;
+  right: -30px;
+  width: 118px;
+  padding: 3px 0;
+  background: var(--a-kpi-amber);
+  color: #fff;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  transform: rotate(40deg);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  z-index: 4;
+}
+
+/* ── Empty state ── */
+.a-vc-empty {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 64px 20px;
+  color: var(--a-ink-40);
+  border: 1.5px dashed var(--a-ink-08);
+  border-radius: var(--a-radius-lg);
+  background: var(--a-white);
+}
+
+.a-vc-empty-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--a-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--a-ink-20);
+}
+
+.a-vc-empty-title {
+  font-family: var(--a-font-serif);
+  font-size: 16px;
+  color: var(--a-ink-60);
+}
+
+.a-vc-empty-sub {
+  font-size: 11.5px;
+  text-align: center;
+  max-width: 280px;
+}
+
+/* ── Skeleton grid while loading ── */
+.a-voucher-skeleton {
+  height: 128px;
+  border-radius: 14px;
+}
+
+/* ── Delete confirm modal ── */
+.a-vc-confirm-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--a-danger-bg);
+  color: var(--a-danger-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.a-vc-confirm-text {
+  font-size: 12.5px;
+  color: var(--a-ink-60);
+  line-height: 1.6;
+}
+
+.a-vc-confirm-text strong {
+  color: var(--a-ink);
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .a-voucher-grid {
+    grid-template-columns: 1fr;
+  }
+  .a-vc-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .a-vc-toolbar .a-search-wrap {
+    max-width: none;
+  }
+}
+
+/* ── Dark mode ── */
+.admin-root.dark .a-voucher-card {
+  background: var(--a-white);
+  border-color: var(--a-ink-08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+.admin-root.dark .a-voucher-card::before,
+.admin-root.dark .a-voucher-card::after {
+  background: var(--a-bg);
+  box-shadow: inset 0 0 0 1px var(--a-ink-08);
+}
+.admin-root.dark .a-voucher-stub {
+  background: linear-gradient(165deg, #0a2624 0%, var(--a-forest-mid) 100%);
+}
+.admin-root.dark .a-voucher-copy-btn {
+  background: var(--a-ink-08);
+  color: var(--a-ink-40);
+}
+.admin-root.dark .a-voucher-copy-btn:hover {
+  background: rgba(92, 184, 79, 0.16);
+  color: var(--a-green-light);
+}
+.admin-root.dark .a-voucher-progress-track {
+  background: var(--a-ink-08);
+}
+.admin-root.dark .a-vc-empty {
+  background: var(--a-white);
+  border-color: var(--a-ink-08);
+}
+.admin-root.dark .a-vc-empty-icon {
+  background: var(--a-surface);
+}
