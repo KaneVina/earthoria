@@ -239,12 +239,16 @@ export default function Settings() {
     },
     [updateProfileMutation]
   );
-
-  const handleLogout = () => {
-    logout();
-    toast.success("Đã đăng xuất");
-    navigate("/");
-  };
+const handleLogout = async () => {
+  try {
+    await authService.logout();
+  } catch (err) {
+    console.error("Logout API failed:", err);
+  }
+  logout();
+  toast.success("Đã đăng xuất");
+  navigate("/");
+};
 
   if (!profile) return null;
 

@@ -5,7 +5,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
-
+import { authService } from "../../services/authService";
 import Sidebar from "../../components/Sidebar";
 import Topbar from "../../components/Topbar";
 import { ALL_NAV_ITEMS } from "./navConfig";
@@ -27,12 +27,17 @@ export default function AdminLayout({ children, crumbs }) {
   const { logout } = useAuthStore();
   const queryClient = useQueryClient();
 
-  const handleLogout = () => {
-    logout();
-    queryClient.clear();
-    toast.success("Đã đăng xuất");
-    navigate("/");
-  };
+ const handleLogout = async () => {
+  try {
+    await authService.logout(); // gọi POST /auth/logout — clear cookie + revoke token ở DB
+  } catch (err) {
+    console.error("Logout API failed:", err);
+  }
+  logout();
+  queryClient.clear();
+  toast.success("Đã đăng xuất");
+  navigate("/");
+};
 
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);

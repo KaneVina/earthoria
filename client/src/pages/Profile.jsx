@@ -994,19 +994,26 @@ export default function Profile() {
   const animatedSpent = useCountUp(totalSpent, 1100, !ordersLoading);
 
   const handleLogout = async () => {
-    const ok = await confirm({
-      title: "Đăng Xuất Tài Khoản?",
-      message:
-        "Bạn sẽ cần đăng nhập lại để xem đơn hàng và tiếp tục mua sắm tại Earthoria.",
-      confirmLabel: "Đăng Xuất",
-      cancelLabel: "Ở Lại",
-      danger: true,
-    });
-    if (!ok) return;
-    logout();
-    toast.success("Đã đăng xuất");
-    navigate("/");
-  };
+  const ok = await confirm({
+    title: "Đăng Xuất Tài Khoản?",
+    message:
+      "Bạn sẽ cần đăng nhập lại để xem đơn hàng và tiếp tục mua sắm tại Earthoria.",
+    confirmLabel: "Đăng Xuất",
+    cancelLabel: "Ở Lại",
+    danger: true,
+  });
+  if (!ok) return;
+
+  try {
+    await authService.logout(); // gọi POST /auth/logout — clear cookie + revoke token ở DB
+  } catch (err) {
+    console.error("Logout API failed:", err);
+  }
+
+  logout(); // clear Zustand state
+  toast.success("Đã đăng xuất");
+  navigate("/");
+};
 
   if (!profile) return <GuestState />;
 

@@ -70,12 +70,18 @@ export default function Navbar() {
   }, [location.pathname, location.search]);
 
   // ── Helpers ───────────────────────────────────────────
-  const handleLogout = () => {
-    logout();
-    queryClient.clear();
-    toast.success("Đã đăng xuất");
-    navigate("/");
-  };
+const handleLogout = async () => {
+  try {
+    await authService.logout(); // gọi POST /auth/logout — clear cookie + revoke token ở DB
+  } catch (err) {
+    console.error("Logout API failed:", err);
+    // vẫn tiếp tục clear local state dù API lỗi, tránh kẹt UI
+  }
+  logout();          // clear Zustand state
+  queryClient.clear();
+  toast.success("Đã đăng xuất");
+  navigate("/");
+};
 
   const isHome = location.pathname === "/" || location.pathname === "/home";
 
