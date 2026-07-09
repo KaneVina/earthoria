@@ -445,7 +445,11 @@ function WishlistBtn({ wishlisted, onToggle }) {
     </>
   );
 }
-
+// book.price từ API là number (VD 460000), còn STATIC_PRODUCTS là string đã format sẵn ("350.000đ")
+const displayPrice = (val) => {
+  if (val === undefined || val === null || val === "") return "";
+  return typeof val === "number" ? formatPrice(val) : val;
+};
 function ProductCard({ book, onAddToCart, delay, isAdding }) {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
@@ -677,7 +681,7 @@ function ProductCard({ book, onAddToCart, delay, isAdding }) {
                     lineHeight: 1,
                   }}
                 >
-                  {book.oldPrice || formatPrice(book.price)}
+                  {book.oldPrice || displayPrice(book.price)}
                 </span>
                 {book.discount && (
                   <span
@@ -710,7 +714,7 @@ function ProductCard({ book, onAddToCart, delay, isAdding }) {
               <div style={{ height: "16px" }} />
             )}
             <span className="product-price">
-              {book.price || formatPrice(book.salePrice)}
+              {displayPrice(book.price) || displayPrice(book.salePrice)}
             </span>
           </div>
 
@@ -1278,7 +1282,7 @@ const handleAddToCart = async (id) => {
                       disabled={addingIds.has(featuredBook.hashId)}
                     >
                       <CartIcon />
-                      Thêm vào giỏ — {featuredBook.price || formatPrice(featuredBook.salePrice)}
+                     Thêm vào giỏ — {displayPrice(featuredBook.price) || displayPrice(featuredBook.salePrice)}
                     </button>
                     <button className="btn-ar-preview">
                       <svg
