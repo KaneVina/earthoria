@@ -160,9 +160,12 @@ export default function CustomCursor() {
 
     /* ══════════════════════════════════════
        FIREFLIES — chỉ bay theo con trỏ trên desktop.
-       Trên mobile chúng chỉ xuất hiện trong lúc hiệu ứng "bấm" (burst).
+       Trên mobile chúng chỉ xuất hiện trong lúc hiệu ứng "bấm" (burst),
+       sau đó MỜ DẦN (fade-out) rồi biến mất hẳn — không còn đứng
+       "dính" mãi trên màn hình như trước.
     ══════════════════════════════════════ */
     const N = 10;
+    const FADE_STEP = 0.045; // tốc độ mờ dần khi đom đóm "biến mất" trên mobile
     const flies = Array.from({ length: N }, () => ({
       x: -300,
       y: -300,
@@ -179,6 +182,8 @@ export default function CustomCursor() {
       phase: Math.random() * Math.PI * 2,
       scatter: false,
       gathering: false,
+      fadeOut: false /* NEW: trạng thái mờ dần trước khi biến mất (mobile) */,
+      fadeAlpha: 1 /* NEW: hệ số alpha nhân thêm khi đang fade-out */,
       sx: 0,
       sy: 0,
       st: 0,
@@ -212,6 +217,8 @@ export default function CustomCursor() {
         const d = 52 + Math.random() * 80;
         f.scatter = true;
         f.gathering = false;
+        f.fadeOut = false; // hủy fade-out cũ nếu chạm liên tiếp
+        f.fadeAlpha = 1;
         f.sx = x + Math.cos(a) * d;
         f.sy = y + Math.sin(a) * d;
         f.st = 0;
@@ -364,8 +371,31 @@ export default function CustomCursor() {
           f.y = originY + (f.sy - originY) * e;
           if (f.st >= 1) {
             f.scatter = false;
-            f.gathering = !isMobile;
+            if (isMobile) {
+              /* FIX: trên mobile không có "gathering" theo chuột (vì không
+                 có vị trí con trỏ liên tục) — trước đây điều này khiến
+                 đom đóm đứng yên vĩnh viễn tại điểm dừng. Giờ chuyển sang
+                 trạng thái mờ dần rồi tự ẩn đi, mượt mà thay vì biến mất
+                 đột ngột hay ở lại mãi mãi. */
+              f.fadeOut = true;
+              f.fadeAlpha = 1;
+            } else {
+              f.gathering = true;
+            }
             f.st = 0;
+          }
+        } else if (f.fadeOut) {
+          /* NEW: pha mờ dần dành riêng cho mobile sau khi bay tới điểm chạm */
+          f.fadeAlpha -= FADE_STEP;
+          /* trôi nhẹ lên trên khi mờ đi, như đom đóm thật đang bay đi mất,
+             thay vì đứng khựng một chỗ */
+          f.y -= 0.35;
+          f.x += Math.sin(frame * 0.05 + f.phase) * 0.15;
+          if (f.fadeAlpha <= 0) {
+            f.fadeOut = false;
+            f.fadeAlpha = 1;
+            f.x = -300;
+            f.y = -300;
           }
         } else if (f.gathering && !isMobile) {
           f.st = Math.min(f.st + 0.022, 1);
@@ -391,12 +421,14 @@ export default function CustomCursor() {
           f.x += f.vx;
           f.y += f.vy;
         }
-        /* trên mobile, khi không scatter thì đom đóm đứng yên ngoài màn hình (x=-300) — không vẽ gì cả nhờ alpha/blink dưới đây vẫn tính nhưng vị trí ở ngoài khung hình */
+        /* trên mobile, khi không scatter/fadeOut thì đom đóm đứng yên
+           ngoài màn hình (x=-300) — không vẽ gì cả nhờ vị trí ở ngoài khung hình */
 
         const blink = 0.38 + 0.62 * Math.abs(Math.sin(frame * 0.042 + f.phase));
         const sz = f.size * (pressing ? 1.35 : 1);
-        glowDot(f.x, f.y, sz, "#4ac83f", 14, blink * 0.88);
-        glowDot(f.x, f.y, sz * 0.4, "#9affaa", 6, blink * 0.5);
+        const fadeMul = f.fadeOut ? Math.max(f.fadeAlpha, 0) : 1;
+        glowDot(f.x, f.y, sz, "#4ac83f", 14, blink * 0.88 * fadeMul);
+        glowDot(f.x, f.y, sz * 0.4, "#9affaa", 6, blink * 0.5 * fadeMul);
       });
 
       /* 5. Burst particles — hoạt động trên cả desktop lẫn mobile (khi chạm) */

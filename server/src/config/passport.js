@@ -9,13 +9,6 @@ passport.use(
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL:  process.env.GOOGLE_CALLBACK_URL,
     },
-//     passport.use(
-//   new GoogleStrategy(
-//     {
-//       clientID: '1067162305399-t1nq4p2mg3qsuhdh47rpnanpjeuml6rn.apps.googleusercontent.com',
-//       clientSecret: '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',
-//       callbackURL: 'http://localhost:5000/api/v1/auth/google/callback',
-//     },
     async (accessToken, refreshToken, profile, done) => {
       try {
         const email  = profile.emails?.[0]?.value
