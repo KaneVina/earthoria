@@ -1613,3 +1613,29 @@ exports.createManagedUser = async (req, res) => {
     return res.status(500).json({ success: false, message: "Lỗi server" });
   }
 };
+
+/**
+ * GET /admin/ar-codes/:id — chi tiết 1 mã AR kèm thông tin sách,
+ * dùng cho trang chi tiết/sửa gộp chung (ArCodeDetail).
+ */
+exports.getArCodeById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const arCode = await prisma.arCode.findUnique({
+      where: { id },
+      include: {
+        book: {
+          select: { id: true, title: true, slug: true, coverImage: true },
+        },
+      },
+    });
+    if (!arCode) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy mã AR" });
+    }
+    return res.json({ success: true, data: arCode });
+  } catch (err) {
+    return serverError(res, err, "getArCodeById");
+  }
+};

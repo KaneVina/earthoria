@@ -46,6 +46,7 @@ import Settings from "./pages/admin/Settings";
 import InventoryImport from "./pages/admin/product/InventoryImport";
 import FullScreenLoader from "./components/FullScreenLoader";
 import ProductCreate from "./pages/admin/product/ProductCreate";
+import ArCodeDetail from "./pages/admin/ArCodeDetail";
 // import ParentDashboard from "./pages/ParentDashboard";
 
 const ProtectedRoute = ({ children }) => {
@@ -102,7 +103,9 @@ export default function App() {
   // Chờ bước bootstrap xong mới render, tránh nháy trạng thái "chưa đăng
   // nhập" rồi mới nhảy sang "đã đăng nhập" gây giật UI / redirect nhầm.
   if (!authChecked) {
-    return <FullScreenLoader message="Chờ một chút! Chúng tôi đang tiến hàng xác thực tài khoản cho bạn." />;
+    return (
+      <FullScreenLoader message="Chờ một chút! Chúng tôi đang tiến hàng xác thực tài khoản cho bạn." />
+    );
   }
 
   if (MAINTENANCE_MODE) {
@@ -260,6 +263,22 @@ export default function App() {
           element={
             <AdminRoute>
               <ArCodeManager />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/ar-codes/new"
+          element={
+            <AdminRoute>
+              <ArCodeDetail />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/ar-codes/:id"
+          element={
+            <AdminRoute>
+              <ArCodeDetail />
             </AdminRoute>
           }
         />

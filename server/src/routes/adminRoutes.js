@@ -1,98 +1,131 @@
-const express = require('express')
-const router = express.Router()
-const uploadGlb = require('../middlewares/uploadGlb')
+const express = require("express");
+const router = express.Router();
+const uploadGlb = require("../middlewares/uploadGlb");
 const {
   getDashboard,
   // Products (books)
-  getProducts, getProductById, createProduct, updateProduct, deleteProduct, searchProductsQuick,
+  getProducts,
+  getProductById,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  searchProductsQuick,
   // Categories
-  getCategories, createCategory, updateCategory,
+  getCategories,
+  createCategory,
+  updateCategory,
   // Orders
-  getOrders, updateOrderStatus,
+  getOrders,
+  updateOrderStatus,
   // Users
-  getUsers, toggleUser, backfillUserCodes,
+  getUsers,
+  toggleUser,
+  backfillUserCodes,
   // Coupons
-  getCoupons, createCoupon, toggleCoupon,
+  getCoupons,
+  createCoupon,
+  toggleCoupon,
   // Ar
-  getArCodes, createArCode, updateArCode, toggleArCode,
-  getArCodesGroupedAll, updateArCodeAccess,
+  getArCodes,
+  createArCode,
+  updateArCode,
+  toggleArCode,
+  getArCodesGroupedAll,
+  updateArCodeAccess,
+  getArCodeById,
   // Inventory
   createInventoryImport,
-  updateUserRole, createManagedUser,
-} = require('../controllers/adminController')
-const { protect, adminOnly, staffOrAdmin } = require('../middlewares/authMiddleware')
+  updateUserRole,
+  createManagedUser,
+} = require("../controllers/adminController");
+const {
+  protect,
+  adminOnly,
+  staffOrAdmin,
+} = require("../middlewares/authMiddleware");
 
 // Chỉ xác thực đăng nhập ở đây — phân quyền admin/staff áp dụng riêng từng route bên dưới
-router.use(protect)
+router.use(protect);
 
 // ── Dashboard ──
-router.get('/dashboard', adminOnly, getDashboard)
+router.get("/dashboard", adminOnly, getDashboard);
 
 // ── Products (/admin/products) ──
 // Search + xem chi tiết 1 sách: staff cũng cần dùng khi tạo mã QR / xem AR
-router.get('/products/search',  staffOrAdmin, searchProductsQuick)
-router.get('/products/:id',     staffOrAdmin, getProductById)
-router.get('/products',         adminOnly, getProducts)
-router.post('/products',        adminOnly, createProduct)
-router.put('/products/:id',     adminOnly, updateProduct)
-router.delete('/products/:id',  adminOnly, deleteProduct)
+router.get("/products/search", staffOrAdmin, searchProductsQuick);
+router.get("/products/:id", staffOrAdmin, getProductById);
+router.get("/products", adminOnly, getProducts);
+router.post("/products", adminOnly, createProduct);
+router.put("/products/:id", adminOnly, updateProduct);
+router.delete("/products/:id", adminOnly, deleteProduct);
 
 // ── Categories ──
-router.get('/categories',        adminOnly, getCategories)
-router.post('/categories',       adminOnly, createCategory)
-router.put('/categories/:id',    adminOnly, updateCategory)
+router.get("/categories", adminOnly, getCategories);
+router.post("/categories", adminOnly, createCategory);
+router.put("/categories/:id", adminOnly, updateCategory);
 
 // ── Orders ──
-router.get('/orders',      adminOnly, getOrders)
-router.put('/orders/:id',  adminOnly, updateOrderStatus)
+router.get("/orders", adminOnly, getOrders);
+router.put("/orders/:id", adminOnly, updateOrderStatus);
 
 //Email
-router.use('/emails', adminOnly, require('./emailRoutes'))
+router.use("/emails", adminOnly, require("./emailRoutes"));
 
 // ── Users ──
-router.get('/users',                  staffOrAdmin, getUsers)
-router.post('/users',                 staffOrAdmin, createManagedUser)
-router.put('/users/:id/toggle',       staffOrAdmin, toggleUser)
+router.get("/users", staffOrAdmin, getUsers);
+router.post("/users", staffOrAdmin, createManagedUser);
+router.put("/users/:id/toggle", staffOrAdmin, toggleUser);
 // Chạy 1 lần sau migration để gắn mã cho user cũ
-router.post('/users/backfill-codes',  adminOnly, backfillUserCodes)
-router.put('/users/:id/role',         staffOrAdmin, updateUserRole)
+router.post("/users/backfill-codes", adminOnly, backfillUserCodes);
+router.put("/users/:id/role", staffOrAdmin, updateUserRole);
 
 // ── Coupons ──
-router.get('/coupons',            adminOnly, getCoupons)
-router.post('/coupons',           adminOnly, createCoupon)
-router.put('/coupons/:id/toggle', adminOnly, toggleCoupon)
+router.get("/coupons", adminOnly, getCoupons);
+router.post("/coupons", adminOnly, createCoupon);
+router.put("/coupons/:id/toggle", adminOnly, toggleCoupon);
 
 // ── AR Codes (staff + admin đều được quản lý) ──
 // LƯU Ý: '/ar-codes' (gộp toàn hệ thống) và '/products/:bookId/ar-codes'
 // (theo 1 sách) là 2 path khác nhau hoàn toàn — không đụng độ thứ tự.
-router.get('/ar-codes',                   staffOrAdmin, getArCodesGroupedAll)
-router.patch('/ar-codes/:id/access',      staffOrAdmin, updateArCodeAccess)
-router.get('/products/:bookId/ar-codes',  staffOrAdmin, getArCodes)
-router.post('/products/:bookId/ar-codes', staffOrAdmin, uploadGlb.single('model'), createArCode)
-router.put('/ar-codes/:id',               staffOrAdmin, uploadGlb.single('model'), updateArCode)
-router.put('/ar-codes/:id/toggle',        staffOrAdmin, toggleArCode)
+router.get("/ar-codes", staffOrAdmin, getArCodesGroupedAll);
+router.get("/ar-codes/:id", staffOrAdmin, getArCodeById);
+router.patch("/ar-codes/:id/access", staffOrAdmin, updateArCodeAccess);
+router.get("/products/:bookId/ar-codes", staffOrAdmin, getArCodes);
+router.post(
+  "/products/:bookId/ar-codes",
+  staffOrAdmin,
+  uploadGlb.single("model"),
+  createArCode,
+);
+router.put(
+  "/ar-codes/:id",
+  staffOrAdmin,
+  uploadGlb.single("model"),
+  updateArCode,
+);
+router.put("/ar-codes/:id/toggle", staffOrAdmin, toggleArCode);
 
 // ── Nhập kho ──
-router.post('/inventory/imports', staffOrAdmin, createInventoryImport)
+router.post("/inventory/imports", staffOrAdmin, createInventoryImport);
 
 // ── UptimeRobot proxy ──
-router.get('/server-status', async (req, res) => {
+router.get("/server-status", async (req, res) => {
   try {
-    const response = await fetch('https://api.uptimerobot.com/v2/getMonitors', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    const response = await fetch("https://api.uptimerobot.com/v2/getMonitors", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: new URLSearchParams({
-        api_key:              process.env.UPTIMEROBOT_API_KEY,
-        monitors:             process.env.UPTIMEROBOT_MONITOR_ID,
-        response_times:       '1',
-        response_times_limit: '10',
+        api_key: process.env.UPTIMEROBOT_API_KEY,
+        monitors: process.env.UPTIMEROBOT_MONITOR_ID,
+        response_times: "1",
+        response_times_limit: "10",
       }),
-    })
-    const data = await response.json()
-    res.json(data)
+    });
+    const data = await response.json();
+    res.json(data);
   } catch (err) {
-    res.status(500).json({ stat: 'fail', message: err.message })
+    res.status(500).json({ stat: "fail", message: err.message });
   }
-})
+});
 
-module.exports = router
+module.exports = router;
