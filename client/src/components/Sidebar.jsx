@@ -3,6 +3,22 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, ChevronLeft, ChevronDown, LogOut, Settings } from "lucide-react";
 import { NAV_GROUPS } from "../pages/admin/navConfig";
+import { useAuthStore } from "../store/authStore";
+
+// Lấy chữ cái đầu của tên để hiển thị trong avatar tròn khi không có ảnh
+function getInitials(user) {
+  if (!user) return "A";
+  if (user.firstName || user.lastName) {
+    return `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}`.toUpperCase() || "A";
+  }
+  if (user.name) {
+    const parts = user.name.trim().split(/\s+/);
+    return parts.length > 1
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : parts[0][0].toUpperCase();
+  }
+  return "A";
+}
 
 export default function Sidebar({
   collapsed,
@@ -11,6 +27,8 @@ export default function Sidebar({
   currentPath,
   onLogout,
 }) {
+  const user = useAuthStore((s) => s.user);
+
   // Trạng thái thu gọn của từng NHÓM menu (khác với collapsed toàn bộ sidebar)
   // mặc định tất cả các nhóm đều mở
   const [collapsedGroups, setCollapsedGroups] = useState({});
@@ -18,6 +36,10 @@ export default function Sidebar({
   const toggleGroup = (groupId) => {
     setCollapsedGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }));
   };
+
+  const displayName = user?.name || `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "Chưa đăng nhập";
+  const displayEmail = user?.email || "—";
+  const initials = getInitials(user);
 
   return (
     <aside
@@ -137,11 +159,20 @@ export default function Sidebar({
         </Link>
 
         <div className="a-avatar-row">
-          <div className="a-avatar-circle">A</div>
+          {user?.avatar ? (
+            <img
+              src={user.avatar}
+              alt={displayName}
+              className="a-avatar-circle"
+              style={{ objectFit: "cover" }}
+            />
+          ) : (
+            <div className="a-avatar-circle">{initials}</div>
+          )}
           {!collapsed && (
             <div className="a-avatar-info" style={{ flex: 1, minWidth: 0 }}>
-              <div className="a-avatar-name">Admin</div>
-              <div className="a-avatar-email">admin@earthoria.vn</div>
+              <div className="a-avatar-name" title={displayName}>{displayName}</div>
+              <div className="a-avatar-email" title={displayEmail}>{displayEmail}</div>
             </div>
           )}
           {!collapsed && (
