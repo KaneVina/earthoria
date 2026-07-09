@@ -2587,7 +2587,7 @@ body.dark-mode #back-top {
 
 /* ─── SOCIAL / COMMUNITY ─── */
 .community-section {
-  padding: 100px 100px;
+  padding: 120px 100px;
   background: var(--forest);
   border-top: 0.5px solid rgba(255, 255, 255, 0.06);
 }
