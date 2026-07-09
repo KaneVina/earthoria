@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import toast from "react-hot-toast";
-import { QueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
 import Sidebar from "../../components/Sidebar";
 import Topbar from "../../components/Topbar";
@@ -25,10 +25,11 @@ export default function AdminLayout({ children, crumbs }) {
   const currentPath = location.pathname;
 
   const { logout } = useAuthStore();
+  const queryClient = useQueryClient();
 
   const handleLogout = () => {
     logout();
-    QueryClient.clear();
+    queryClient.clear();
     toast.success("Đã đăng xuất");
     navigate("/");
   };
