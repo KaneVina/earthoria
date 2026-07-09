@@ -1,17 +1,4 @@
 // Analytics.jsx — Trang theo dõi lưu lượng truy cập (Umami)
-// Đặt tại: src/pages/admin/Analytics.jsx
-//
-// CÀI ĐẶT:
-//   1. Tạo file .env trong thư mục client:
-//      VITE_UMAMI_URL=https://your-umami.onrender.com
-//      VITE_UMAMI_SITE_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-//      VITE_UMAMI_USER=admin
-//      VITE_UMAMI_PASS=your_password
-//      (Token được tự động lấy qua POST /api/auth/login, cache 23 giờ)
-//
-//   2. Thêm tracking script vào index.html:
-//      <script defer src="${VITE_UMAMI_URL}/script.js" data-website-id="${VITE_UMAMI_SITE_ID}"></script>
-
 import { useState, useEffect, useCallback } from "react";
 import {
   Users,
@@ -61,7 +48,7 @@ function getRange(period) {
 }
 
 function fmtNum(n) {
-  if (n == null) return "—";
+  if (n == null || isNaN(n)) return "—";
   if (n >= 1000) return (n / 1000).toFixed(1) + "k";
   return String(n);
 }
@@ -75,7 +62,7 @@ function fmtDur(ms) {
 
 // ─── TOKEN MANAGER ────────────────────────────────────────────────────────────
 // Token được lấy tự động qua POST /api/auth/login và cache 23 giờ.
-// Không cần VITE_UMAMI_TOKEN trong .env nữa.
+// Tự động login lại nếu gặp 401 (ví dụ do server Umami restart).
 let _token = null;
 let _tokenExpiry = 0;
 
@@ -96,15 +83,36 @@ async function getToken() {
 // ─── API FETCH ────────────────────────────────────────────────────────────────
 async function umamiGet(path, params = {}) {
   if (!UMAMI_URL || !SITE_ID || !UMAMI_PASS) return null;
-  const token = await getToken();
-  const url = new URL(`${UMAMI_URL}/api/websites/${SITE_ID}${path}`);
-  Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
-  const res = await fetch(url, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+
+  const doFetch = async (token) => {
+    const url = new URL(`${UMAMI_URL}/api/websites/${SITE_ID}${path}`);
+    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+    return fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+  };
+
+  let token = await getToken();
+  let res = await doFetch(token);
+
+  // Token bị vô hiệu (ví dụ server Umami vừa restart) → login lại và thử 1 lần nữa
+  if (res.status === 401) {
+    console.warn(`Umami 401 trên ${path}, đang login lại...`);
+    _token = null;
+    _tokenExpiry = 0;
+    token = await getToken();
+    res = await doFetch(token);
+  }
+
   // 400 = không có data (chưa có traffic), trả rỗng thay vì crash
-  if (res.status === 400) return [];
-  if (!res.ok) throw new Error(`Umami API lỗi: ${res.status}`);
+  if (res.status === 400) {
+    const body = await res.json().catch(() => null);
+    console.warn(`Umami 400 trên ${path}:`, body);
+    return [];
+  }
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    console.warn(`Umami lỗi ${res.status} trên ${path}:`, body);
+    throw new Error(`Umami API lỗi: ${res.status}`);
+  }
   return res.json();
 }
 
@@ -279,7 +287,8 @@ function ListCard({ title, items, valueKey = "y", labelKey = "x", formatVal }) {
 }
 
 function DeviceDonut({ data }) {
-  const desktop = data?.desktop || 0;
+  // Umami trả về key: "laptop" (không phải "desktop"), "mobile", "tablet"
+  const desktop = data?.laptop || data?.desktop || 0;
   const mobile = data?.mobile || 0;
   const tablet = data?.tablet || 0;
   const total = desktop + mobile + tablet || 1;
@@ -521,20 +530,30 @@ export default function Analytics() {
         timezone: "Asia/Ho_Chi_Minh",
       };
 
-      const [sumData, pvData, countriesData, citiesData, devData, refData] =
-        await Promise.all([
-          umamiGet("/stats", { startAt, endAt }),
-          umamiGet("/pageviews", pvParams),
-          umamiGet("/metrics", { ...metricsParams, type: "country" }),
-          umamiGet("/metrics", { ...metricsParams, type: "city" }),
-          umamiGet("/metrics", { ...metricsParams, type: "device" }),
-          umamiGet("/metrics", { ...metricsParams, type: "referrer" }),
-        ]);
+      const [
+        sumData,
+        pvData,
+        pagesData,
+        countriesData,
+        citiesData,
+        devData,
+        refData,
+      ] = await Promise.all([
+        umamiGet("/stats", { startAt, endAt }),
+        umamiGet("/pageviews", pvParams),
+        umamiGet("/metrics", { ...metricsParams, type: "path" }),
+        umamiGet("/metrics", { ...metricsParams, type: "country" }),
+        umamiGet("/metrics", { ...metricsParams, type: "city" }),
+        umamiGet("/metrics", { ...metricsParams, type: "device" }),
+        umamiGet("/metrics", { ...metricsParams, type: "referrer" }),
+      ]);
 
+      // /stats trả cấu trúc phẳng: { pageviews, visitors, visits, bounces, totaltime, comparison: {...} }
       setSummary(sumData);
-      // Merge pageviews + sessions into chart data
-      const pvArr = pvData?.pageviews?.data || [];
-      const ssArr = pvData?.sessions?.data || [];
+
+      // /pageviews trả { pageviews: [{x,y}...], sessions: [{x,y}...] } — mảng trực tiếp, không có .data
+      const pvArr = pvData?.pageviews || [];
+      const ssArr = pvData?.sessions || [];
       const merged = pvArr.map((pv, i) => ({
         date: new Date(pv.x).toLocaleDateString("vi-VN", {
           day: "2-digit",
@@ -544,7 +563,8 @@ export default function Analytics() {
         "Người dùng": ssArr[i]?.y || 0,
       }));
       setPageviews(merged);
-      setPages([]);
+
+      setPages(pagesData || []);
       setCountries(countriesData || []);
       setCities(citiesData || []);
       setDevices(
@@ -718,31 +738,38 @@ export default function Analytics() {
               icon={TrendingUp}
               label="Tổng lượt xem"
               accent
-              value={fmtNum(summary?.pageviews?.value)}
-              sub={`vs ${fmtNum(summary?.pageviews?.change)} kỳ trước`}
+              value={fmtNum(summary?.pageviews)}
+              sub={`vs ${fmtNum(summary?.comparison?.pageviews)} kỳ trước`}
             />
             <StatCard
               icon={Users}
               label="Người dùng"
-              value={fmtNum(summary?.visitors?.value)}
-              sub={`+${fmtNum(summary?.visitors?.change)} mới`}
+              value={fmtNum(summary?.visitors)}
+              sub={
+                summary?.visitors != null &&
+                summary?.comparison?.visitors != null
+                  ? `${summary.visitors - summary.comparison.visitors >= 0 ? "+" : ""}${
+                      summary.visitors - summary.comparison.visitors
+                    } so với kỳ trước`
+                  : undefined
+              }
             />
             <StatCard
               icon={Activity}
               label="Phiên truy cập"
-              value={fmtNum(summary?.visits?.value)}
+              value={fmtNum(summary?.visits)}
             />
             <StatCard
               icon={Clock}
               label="Thời gian TB"
-              value={fmtDur(summary?.totaltime?.value)}
+              value={fmtDur(summary?.totaltime)}
             />
             <StatCard
               icon={FileText}
               label="Tỷ lệ thoát"
               value={
-                summary?.bounces?.value != null
-                  ? `${Math.round((summary.bounces.value / (summary.visits?.value || 1)) * 100)}%`
+                summary?.bounces != null && summary?.visits
+                  ? `${Math.round((summary.bounces / summary.visits) * 100)}%`
                   : "—"
               }
             />
