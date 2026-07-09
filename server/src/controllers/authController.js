@@ -5,7 +5,7 @@ const tokenService = require("../services/tokenService");
 const passport = require("passport");
 
 const REFRESH_COOKIE_NAME = "refreshToken";
-const REFRESH_COOKIE_PATH = "/api/v1/auth"; // cookie chỉ gửi kèm request tới nhóm route /auth
+const REFRESH_COOKIE_PATH = "/";
 
 function setRefreshCookie(res, rawToken, expiresAt) {
   res.cookie(REFRESH_COOKIE_NAME, rawToken, {
