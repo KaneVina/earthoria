@@ -7,12 +7,11 @@ export default function Topbar({ breadcrumbItems, onOpenMobileMenu }) {
   return (
     <header className="a-topbar">
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        {/* Mobile menu trigger */}
+        {/* Mobile menu trigger — chỉ hiện khi màn hình <= 768px (xem .a-menu-trigger trong admin.css) */}
         <button
           onClick={onOpenMobileMenu}
-          className="a-topbar-btn"
+          className="a-topbar-btn a-menu-trigger"
           aria-label="Mở menu"
-          style={{ display: "none" }} // shown via @media in CSS
         >
           <Menu size={18} />
         </button>
