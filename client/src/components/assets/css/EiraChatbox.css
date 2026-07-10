@@ -1446,6 +1446,36 @@
   color: #7c2d12;
 }
 
+/* Nút liên kết điều hướng nội bộ — thay cho link chữ thô, bấm để chuyển trang thật (react-router) */
+.em-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 2px 3px;
+  padding: 5px 10px 5px 12px;
+  border: 1px solid rgba(21, 128, 61, 0.28);
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #15803d;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  cursor: pointer;
+  vertical-align: middle;
+  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+.em-link-btn:hover {
+  background: #d1fae5;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(21, 128, 61, 0.18);
+}
+.em-link-btn:active {
+  transform: translateY(0);
+}
+.em-link-btn svg {
+  flex-shrink: 0;
+}
+
 /* Nút xóa hội thoại trong header — dùng chung style với nút đóng */
 .eira-hdr-actions {
   display: flex;

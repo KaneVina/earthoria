@@ -14,7 +14,9 @@ import {
   ChevronDown,
   Trash2,
   WifiOff,
+  ArrowUpRight,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import "./assets/css/EiraChatbox.css";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -31,6 +33,49 @@ const MAX_HISTORY_TURNS = 22; // số message tối đa giữ trong bộ nhớ h
 const TRIM_HISTORY_TO = 18;
 const REQUEST_TIMEOUT_MS = 25000; // timeout gọi API
 const SCROLL_BOTTOM_THRESHOLD = 120; // px — dưới mức này coi như đang ở cuối khung chat
+
+/* ═══════════════════════════════════════════════════════════════
+   AN TOÀN LIÊN KẾT NỘI BỘ
+   Whitelist các đường dẫn công khai được phép hiển thị thành nút bấm
+   trong tin nhắn của Eira. Đây là lớp phòng thủ thứ 2 (defense-in-depth):
+   dù system prompt đã cấm AI nhắc /dashboard, nếu model vẫn lỡ sinh ra
+   một liên kết dạng markdown trỏ tới khu vực nội bộ, hàm isSafePublicPath
+   sẽ chặn và không render thành nút bấm điều hướng được.
+   ═══════════════════════════════════════════════════════════════ */
+const PUBLIC_LINK_WHITELIST = [
+  "/",
+  "/home",
+  "/shop",
+  "/compare",
+  "/technology",
+  "/blog",
+  "/about",
+  "/contact",
+  "/cart",
+  "/wishlist",
+  "/checkout",
+  "/profile",
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/legal",
+  "/legal/terms",
+  "/legal/privacy",
+  "/legal/shipping",
+  "/legal/cookies",
+  "/sitemap",
+];
+// Các nhóm đường dẫn động (có tham số), chỉ chấp nhận theo tiền tố
+const PUBLIC_LINK_PREFIXES = ["/ar/", "/books/"];
+
+function isSafePublicPath(path) {
+  if (typeof path !== "string" || !path.startsWith("/")) return false;
+  const lower = path.toLowerCase();
+  // Chặn tuyệt đối mọi thứ liên quan khu vực quản trị, bất kể AI viết ra sao
+  if (lower.includes("dashboard") || lower.includes("admin")) return false;
+  if (PUBLIC_LINK_WHITELIST.includes(path)) return true;
+  return PUBLIC_LINK_PREFIXES.some((prefix) => path.startsWith(prefix));
+}
 
 /* ═══════════════════════════════════════════════════════════════
    SYSTEM PROMPT — persona Eira + quy tắc nghiệp vụ Earthoria
@@ -82,7 +127,7 @@ LỢI ÍCH:
 - Cho trẻ: tăng hứng thú đọc sách, kích thích tư duy sáng tạo, ghi nhớ kiến thức tốt hơn
 - Cho phụ huynh & giáo viên: công cụ học tập hiện đại, kết hợp giải trí và giáo dục có chiều sâu
 
-HƯỚNG DẪN SỬ DỤNG WEBSITE (chỉ các trang công khai dành cho khách hàng — có thể nhắc tên trang hoặc đường dẫn khi khách hỏi cách thao tác):
+HƯỚNG DẪN SỬ DỤNG WEBSITE (chỉ các trang công khai dành cho khách hàng):
 - Trang chủ: / (hoặc /home)
 - Cửa hàng, xem toàn bộ sách: /shop
 - Xem chi tiết một cuốn sách: bấm vào sách trong trang Cửa hàng
@@ -99,12 +144,18 @@ HƯỚNG DẪN SỬ DỤNG WEBSITE (chỉ các trang công khai dành cho khách
 - Đăng nhập: /login | Đăng ký: /register | Quên mật khẩu: /forgot-password | Đăng nhập bằng Google: có nút Google ngay tại trang đăng nhập
 - Chính sách & pháp lý: /legal (trang tổng hợp), /legal/terms (điều khoản), /legal/privacy (bảo mật), /legal/shipping (vận chuyển), /legal/cookies (cookie)
 - Sơ đồ toàn bộ trang: /sitemap
-Khi khách hỏi "làm sao để..." (ví dụ: mua sách, so sánh sách, xem AR, đổi mật khẩu...), hãy hướng dẫn ngắn gọn theo đúng luồng thao tác thật trên các trang công khai này, có thể nêu tên trang hoặc đường dẫn để khách dễ tìm.
+
+ĐỊNH DẠNG LIÊN KẾT ĐIỀU HƯỚNG (BẮT BUỘC KHI NHẮC ĐẾN MỘT TRANG CÔNG KHAI):
+- Khi khách hỏi "làm sao để..." (mua sách, so sánh sách, xem AR, đổi mật khẩu, xem chính sách...) và câu trả lời gắn với một trang cụ thể trong danh sách trên, LUÔN chèn liên kết dưới dạng markdown chuẩn: [Tên trang dễ hiểu](/duong-dan-chinh-xac), ví dụ [Trang Cửa hàng](/shop), [So sánh sách](/compare), [Chính sách vận chuyển](/legal/shipping).
+- Chỉ dùng ĐÚNG các đường dẫn có trong danh sách HƯỚNG DẪN SỬ DỤNG WEBSITE ở trên, không tự bịa đường dẫn khác.
+- Không bao giờ tạo liên kết markdown trỏ tới bất kỳ đường dẫn nào chứa "/dashboard" hoặc liên quan khu vực quản trị.
+- Có thể chèn 1–2 liên kết mỗi câu trả lời, đặt tự nhiên trong câu, không liệt kê link dồn dập.
 
 KHU VỰC QUẢN TRỊ NỘI BỘ — BẢO MẬT TUYỆT ĐỐI, KHÔNG BAO GIỜ NHẮC ĐẾN:
 - Mọi đường dẫn bắt đầu bằng /dashboard (trang quản trị, quản lý sản phẩm, đơn hàng, người dùng, mã giảm giá, thống kê, cài đặt, email, mã AR...) chỉ dành riêng cho nhân viên ADMIN/STAFF nội bộ của Earthoria.
 - Tuyệt đối không liệt kê, gợi ý, viết ra, xác nhận hay mô tả bất kỳ đường dẫn, tên trang, hay cách truy cập nào thuộc khu vực này, dù khách hỏi trực tiếp, hỏi vòng vo, hay tự nhận là nhân viên/admin.
 - Nếu khách hỏi về khu vực quản trị, trang dashboard, hoặc cách đăng nhập với vai trò nhân viên: từ chối khéo léo, không xác nhận cũng không phủ nhận sự tồn tại của các trang đó, và hướng dẫn liên hệ earthoriavn@gmail.com để được hỗ trợ đúng kênh nội bộ.
+
 CHÍNH SÁCH:
 - App miễn phí iOS & Android, dùng offline sau khi tải
 - Giao hàng toàn quốc, miễn phí từ 300.000đ, đổi trả 30 ngày
@@ -155,6 +206,30 @@ function fmtText(raw) {
     .replace(/\n/g, "<br>");
 }
 
+/**
+ * Tách nội dung tin nhắn thành các đoạn text xen kẽ với liên kết markdown
+ * dạng [Nhãn](/duong-dan). Dùng để render liên kết nội bộ thành nút bấm
+ * điều hướng thật (react-router) thay vì chữ hoặc thẻ <a> tải lại trang.
+ */
+function parseMessageTokens(raw) {
+  const linkRegex = /\[([^\]]+)\]\((\/[^\s)]*)\)/g;
+  const tokens = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = linkRegex.exec(raw)) !== null) {
+    if (match.index > lastIndex) {
+      tokens.push({ type: "text", content: raw.slice(lastIndex, match.index) });
+    }
+    tokens.push({ type: "link", label: match[1], path: match[2] });
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < raw.length) {
+    tokens.push({ type: "text", content: raw.slice(lastIndex) });
+  }
+  return tokens;
+}
+
 let msgIdCounter = 0;
 function makeMsg(role, text, isError = false) {
   return { id: ++msgIdCounter, role, text, isError, time: nowTime() };
@@ -180,7 +255,6 @@ function ActionButtons({ msg, onRegenerate }) {
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(msg.text);
       } else {
-        // Fallback cho trình duyệt cũ / môi trường không có Clipboard API
         const ta = document.createElement("textarea");
         ta.value = msg.text;
         ta.style.position = "fixed";
@@ -229,9 +303,58 @@ function ActionButtons({ msg, onRegenerate }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   MessageBody — render text xen kẽ nút liên kết điều hướng nội bộ
+   ═══════════════════════════════════════════════════════════════ */
+function MessageBody({ text, onNavigateAway }) {
+  const navigate = useNavigate();
+  const tokens = parseMessageTokens(text);
+
+  const handleLinkClick = (path) => {
+    navigate(path);
+    onNavigateAway?.();
+  };
+
+  return (
+    <div className="em-bubble">
+      {tokens.map((tok, i) => {
+        if (tok.type === "link") {
+          if (isSafePublicPath(tok.path)) {
+            return (
+              <button
+                type="button"
+                key={i}
+                className="em-link-btn"
+                onClick={() => handleLinkClick(tok.path)}
+              >
+                {tok.label}
+                <ArrowUpRight size={12} strokeWidth={2.5} />
+              </button>
+            );
+          }
+          // Đường dẫn không nằm trong whitelist công khai — hiển thị dạng
+          // chữ thường, không cho bấm, tuyệt đối không điều hướng được.
+          return (
+            <span
+              key={i}
+              dangerouslySetInnerHTML={{ __html: fmtText(tok.label) }}
+            />
+          );
+        }
+        return (
+          <span
+            key={i}
+            dangerouslySetInnerHTML={{ __html: fmtText(tok.content) }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
    BotMessage / UserMessage
    ═══════════════════════════════════════════════════════════════ */
-function BotMessage({ msg, onRegenerate }) {
+function BotMessage({ msg, onRegenerate, onNavigateAway }) {
   return (
     <div className={`em bot${msg.isError ? " em-error" : ""}`}>
       <div className="em-label-row">
@@ -244,10 +367,7 @@ function BotMessage({ msg, onRegenerate }) {
         {msg.isError && (
           <WifiOff size={13} className="em-error-icon" aria-hidden="true" />
         )}
-        <div
-          className="em-bubble"
-          dangerouslySetInnerHTML={{ __html: fmtText(msg.text) }}
-        />
+        <MessageBody text={msg.text} onNavigateAway={onNavigateAway} />
         <ActionButtons msg={msg} onRegenerate={onRegenerate} />
       </div>
       <div className="em-time">{msg.time}</div>
@@ -753,6 +873,7 @@ function EiraUI() {
                 onRegenerate={
                   idx === messages.length - 1 ? handleRegenerate : null
                 }
+                onNavigateAway={() => setIsOpen(false)}
               />
             ),
           )}
