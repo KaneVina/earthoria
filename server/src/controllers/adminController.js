@@ -609,7 +609,6 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
-// adminController.js — thay thế deleteProduct
 exports.deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -621,16 +620,18 @@ exports.deleteProduct = async (req, res) => {
         .json({ success: false, message: "Không tìm thấy sách" });
     }
 
-    const [orderCount, arCodeCount] = await Promise.all([
+    const [orderCount, arCodeCount, inventoryImportCount] = await Promise.all([
       prisma.orderItem.count({ where: { bookId: id } }),
       prisma.arCode.count({ where: { bookId: id } }),
+      prisma.inventoryImportItem.count({ where: { bookId: id } }),
     ]);
 
     const blockers = [];
     if (orderCount > 0) blockers.push(`${orderCount} đơn hàng đã mua`);
     if (arCodeCount > 0) blockers.push(`${arCodeCount} mã AR đang liên kết`);
+    if (inventoryImportCount > 0)
+      blockers.push(`${inventoryImportCount} phiếu nhập kho liên quan`);
 
-    // Có ràng buộc -> KHÔNG cho xóa cứng, dù client có ép cũng chỉ được vô hiệu hóa
     if (blockers.length > 0) {
       if (book.isActive) {
         await prisma.book.update({ where: { id }, data: { isActive: false } });
@@ -638,15 +639,21 @@ exports.deleteProduct = async (req, res) => {
       return res.status(409).json({
         success: false,
         softDeleted: true,
-        message: `Không thể xóa vĩnh viễn vì sách còn ${blockers.join(" và ")}. Sách đã được vô hiệu hóa (ẩn khỏi cửa hàng) thay vì xóa.`,
+        message: `Không thể xóa vì sách còn ${blockers.join(", ")}. Sách đã được chuyển sang trạng thái ngừng kinh doanh.`,
       });
     }
 
-    // Không đơn hàng, không mã AR -> an toàn để xóa cứng
-    // Dọn ảnh trên Cloudinary trước khi xóa record (tránh rác)
-    await deleteAllBookImages(book);
-
+    // Xóa record DB TRƯỚC — nếu bước này lỗi thì ảnh Cloudinary vẫn còn nguyên,
+    // tránh trường hợp ảnh mất nhưng record vẫn tồn tại (dữ liệu không đồng bộ).
     await prisma.book.delete({ where: { id } });
+
+    // Dọn ảnh sau khi chắc chắn record đã xóa thành công. Lỗi ở bước này
+    // (Cloudinary timeout...) chỉ để lại rác ảnh mồ côi, không ảnh hưởng tính
+    // toàn vẹn dữ liệu — chấp nhận được, không rollback record vừa xóa.
+    await deleteAllBookImages(book).catch((err) =>
+      console.error("[deleteProduct] Xóa ảnh Cloudinary thất bại, có thể còn rác:", err),
+    );
+
     return res.json({ success: true, message: "Đã xóa sách vĩnh viễn" });
   } catch (err) {
     if (err.code === "P2025") {
@@ -654,6 +661,25 @@ exports.deleteProduct = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Không tìm thấy sách" });
     }
+
+    if (err.code === "P2003") {
+      // meta.field_name cho biết chính xác bảng nào đang giữ khóa ngoại tới
+      // Book mà chưa được liệt kê ở check phía trên -> debug nhanh, không cần đoán.
+      console.error(
+        "[deleteProduct] Chặn xóa do khóa ngoại chưa liệt kê ở trên:",
+        err.meta?.field_name ?? err.meta,
+      );
+      try {
+        await prisma.book.update({ where: { id: req.params.id }, data: { isActive: false } });
+      } catch (_) {}
+      return res.status(409).json({
+        success: false,
+        softDeleted: true,
+        message:
+          "Không thể xóa vì sách vẫn còn liên kết với dữ liệu khác trong hệ thống. Sách đã được chuyển sang trạng thái ngừng kinh doanh.",
+      });
+    }
+
     console.error("[deleteProduct]", err);
     return res.status(500).json({ success: false, message: "Lỗi server" });
   }
