@@ -47,6 +47,8 @@ import InventoryImport from "./pages/admin/product/InventoryImport";
 import FullScreenLoader from "./components/FullScreenLoader";
 import ProductCreate from "./pages/admin/product/ProductCreate";
 import ArCodeDetail from "./pages/admin/ArCodeDetail";
+import Compare from "./pages/Compare";
+import FloatingCompareBar from "./components/FloatingCompareBar";
 // import ParentDashboard from "./pages/ParentDashboard";
 
 const ProtectedRoute = ({ children }) => {
@@ -124,12 +126,14 @@ export default function App() {
       <ScrollToTop />
       <CustomCursor />
       <EiraChatbox />
+      <FloatingCompareBar />
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/home" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/books/:slug/:hashId" element={<BookDetail />} />
+          <Route path="/compare" element={<Compare />} />
           <Route path="/technology" element={<ARGuide />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/about" element={<AboutUs />} />

@@ -6,6 +6,7 @@ import { useCartStore } from '../store/cartStore'
 import { useAuthStore } from '../store/authStore'
 import { formatPrice, formatDate } from '../utils/helpers'
 import toast from 'react-hot-toast'
+import CompareModal from '../components/CompareModal'
 
 // ── Fallback images khi chưa có ảnh từ API ──
 const FALLBACK_IMGS = [
@@ -101,6 +102,7 @@ export default function BookDetail() {
   const [backTopVisible, setBackTopVisible] = useState(false)
   const [progress, setProgress] = useState(0)
   const [reviewForm, setReviewForm] = useState({ rating: 5, title: '', content: '' })
+  const [compareOpen, setCompareOpen] = useState(false)
 
   // ── Fetch book ──
   const { data: book, isLoading, isError } = useQuery({
@@ -442,7 +444,7 @@ export default function BookDetail() {
             }}>
               <IconShare /> Chia sẻ
             </button>
-            <button className="btn-secondary" onClick={() => toast.success('Tính năng đang phát triển!')}>
+            <button className="btn-secondary" onClick={() => setCompareOpen(true)}>
               <IconSearch /> So sánh
             </button>
           </div>
@@ -769,6 +771,13 @@ export default function BookDetail() {
       >
         <IconChevronUp />
       </button>
+
+      {/* ══ COMPARE MODAL ══ */}
+      <CompareModal
+        open={compareOpen}
+        onClose={() => setCompareOpen(false)}
+        currentBook={book}
+      />
     </>
   )
 }

@@ -1381,13 +1381,23 @@ body.dark-mode .nav-hamburger:hover {
 
 /* Navbar mobile responsive */
 @media (max-width: 900px) {
-  .nav-links { display: none; }
-  .nav-hamburger { display: flex; }
-  .nav-mobile-panel { display: flex; }
+  .nav-links {
+    display: none;
+  }
+  .nav-hamburger {
+    display: flex;
+  }
+  .nav-mobile-panel {
+    display: flex;
+  }
 }
 @media (min-width: 901px) {
-  .nav-hamburger { display: none; }
-  .nav-mobile-panel { display: none !important; }
+  .nav-hamburger {
+    display: none;
+  }
+  .nav-mobile-panel {
+    display: none !important;
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -1585,15 +1595,15 @@ body.dark-mode .sticky-btn:hover {
    Bổ sung override CSS vars cho dark mode:
    ───────────────────────────────────────────────────────────── */
 body.dark-mode {
-  --ivory:       #121a16;
-  --white:       #1c2822;
-  --cream:       #161e1a;
-  --parchment:   #1a2420;
-  --text-body:   #c8d4cc;
-  --text-muted:  rgba(180, 200, 188, 0.45);
-  --border:      rgba(255, 255, 255, 0.08);
+  --ivory: #121a16;
+  --white: #1c2822;
+  --cream: #161e1a;
+  --parchment: #1a2420;
+  --text-body: #c8d4cc;
+  --text-muted: rgba(180, 200, 188, 0.45);
+  --border: rgba(255, 255, 255, 0.08);
   --border-gold: rgba(74, 158, 63, 0.28);
-  --gold-pale:   rgba(74, 158, 63, 0.1);
+  --gold-pale: rgba(74, 158, 63, 0.1);
 }
 
 /* Cart inline: promo banner nền forest → đã OK
@@ -1602,18 +1612,18 @@ body.dark-mode {
 
 /* Cart responsive */
 @media (max-width: 900px) {
-  div[style*="gridTemplateColumns: \"1fr 400px\""] {
+  div[style*='gridTemplateColumns: "1fr 400px"'] {
     grid-template-columns: 1fr !important;
   }
 }
 @media (max-width: 600px) {
-  div[style*="gridTemplateColumns: \"1fr 100px 140px 44px\""] {
+  div[style*='gridTemplateColumns: "1fr 100px 140px 44px"'] {
     grid-template-columns: 1fr 80px !important;
     gap: 12px !important;
   }
-  div[style*="padding: \"48px 100px\""],
-  div[style*="padding: \"40px 100px\""],
-  div[style*="padding: \"80px 100px\""] {
+  div[style*='padding: "48px 100px"'],
+  div[style*='padding: "40px 100px"'],
+  div[style*='padding: "80px 100px"'] {
     padding-left: 16px !important;
     padding-right: 16px !important;
   }
@@ -1663,21 +1673,21 @@ body.dark-mode .co-step select {
 /* Checkout responsive */
 @media (max-width: 900px) {
   div[style*="gridTemplateColumns: 1fr 400px"],
-  div[style*="gridTemplateColumns: \"1fr 400px\""] {
+  div[style*='gridTemplateColumns: "1fr 400px"'] {
     grid-template-columns: 1fr !important;
   }
-  div[style*="padding: \"8px 100px\""],
-  div[style*="padding: \"32px 100px\""] {
+  div[style*='padding: "8px 100px"'],
+  div[style*='padding: "32px 100px"'] {
     padding-left: 20px !important;
     padding-right: 20px !important;
   }
 }
 @media (max-width: 600px) {
   div[style*="gridTemplateColumns: '1fr 1fr'"],
-  div[style*="gridTemplateColumns: \"1fr 1fr\""] {
+  div[style*='gridTemplateColumns: "1fr 1fr"'] {
     grid-template-columns: 1fr !important;
   }
-  div[style*="padding: \"8px 100px\""] {
+  div[style*='padding: "8px 100px"'] {
     padding: 8px 16px 80px !important;
   }
 }
@@ -1813,7 +1823,9 @@ body.dark-mode .wl-empty-sub {
     padding: 40px 16px;
   }
 }
-html, body, #root {
+html,
+body,
+#root {
   max-width: 100%;
   overflow-x: clip;
 }
@@ -1887,4 +1899,41 @@ body.dark-mode .auth-social-btn.google-btn:focus-visible {
   box-shadow:
     0 0 0 3px rgba(74, 158, 63, 0.25),
     0 10px 24px rgba(0, 0, 0, 0.3);
+}
+/* ═══════════════════════════════════════
+   FIX: Compare modal & floating bar
+   Thêm vào CUỐI main2.css
+   ═══════════════════════════════════════ */
+
+/* 1) Item đầu không bị dính sát tab / cắt khi cuộn */
+.search-results-list {
+  padding-top: 8px;
+}
+
+/* 2) Đường phân cách rõ ràng giữa các hàng sản phẩm trong CompareModal */
+.search-result-row {
+  border-bottom: 0.5px solid var(--border);
+}
+.search-result-row:last-child {
+  border-bottom: none;
+}
+body.dark-mode .search-result-row {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+/* 3) Kéo nút +/check lại gần nội dung hàng hơn, không "trôi" xa giá */
+.search-result-row {
+  gap: 12px; /* thay vì mặc định rộng hơn do margin-left 12px ở nút được bỏ */
+}
+.search-result-row > div:last-child {
+  margin-left: 0 !important; /* bỏ margin-left: 12px trong inline style cũ */
+}
+
+.search-panel-body {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  overscroll-behavior: contain;
+}
+.search-panel {
+  overflow: hidden;
 }
