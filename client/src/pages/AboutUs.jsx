@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import Logo3D from "../components/Logo3D.jsx";
 import "../components/assets/css/about-us.css";
+import OrgChart from "../components/OrgChart.jsx";
 
 export default function AboutUs() {
   const logoSectionRef = useRef(null);
@@ -528,6 +529,9 @@ export default function AboutUs() {
         </div>
       </section>
 
+      {/* ORG CHART */}
+      <OrgChart />
+
       {/* VALUES EXTENDED */}
       <section className="about-values-section">
         <div className="about-values-inner">
@@ -867,7 +871,9 @@ export default function AboutUs() {
                 <span></span>
                 <span></span>
               </div>
-              <div className="tech-editor-filename">https://www.earthoria.id.vn</div>
+              <div className="tech-editor-filename">
+                https://www.earthoria.id.vn
+              </div>
             </div>
 
             <div className="tech-editor-body">
