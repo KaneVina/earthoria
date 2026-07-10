@@ -1,31 +1,37 @@
 const cloudinary = require('../config/cloudinary')
 
+function uploadGlbBuffer(buffer, code) { /* giữ nguyên như cũ */ }
+
 /**
- * Upload buffer .glb lên Cloudinary với resource_type: 'raw' (bắt buộc,
- * vì .glb không phải ảnh/video — để mặc định Cloudinary sẽ từ chối
- * hoặc xử lý sai).
- *
- * public_id CỐ ĐỊNH theo `code` của ArCode: khi thay model mới cho
- * cùng 1 mã QR, upload đè lên cùng public_id (overwrite: true) —
- * Cloudinary tự tăng version, không tích file rác, và không cần đổi
- * modelUrl thủ công vì secure_url trả về đã là bản mới nhất.
+ * Upload 1 ảnh sách lên Cloudinary. Mỗi ảnh có public_id RIÊNG (không cố định
+ * như .glb) vì 1 sách có nhiều ảnh cùng lúc, không phải "đè bản mới nhất".
+ * folder: books/{bookId}/{timestamp}-{random}
  */
-function uploadGlbBuffer(buffer, code) {
+function uploadImageBuffer(buffer, bookId) {
   return new Promise((resolve, reject) => {
+    const publicId = `books/${bookId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
     const stream = cloudinary.uploader.upload_stream(
       {
-        resource_type: 'raw',
-        public_id: `ar-models/${code}`,
-        overwrite: true,
-        invalidate: true, // xoá cache CDN của version cũ ngay lập tức
+        resource_type: 'image',
+        public_id: publicId,
+        overwrite: false,
+        // giới hạn chiều rộng tối đa, giữ tỉ lệ, tránh ảnh gốc quá nặng
+        transformation: [{ width: 1600, crop: 'limit' }],
       },
-      (err, result) => {
-        if (err) return reject(err)
-        resolve(result)
-      }
+      (err, result) => (err ? reject(err) : resolve(result))
     )
     stream.end(buffer)
   })
 }
 
-module.exports = { uploadGlbBuffer }
+function deleteImageByPublicId(publicId) {
+  return cloudinary.uploader.destroy(publicId, { resource_type: 'image' })
+}
+
+/** Lấy public_id từ 1 secure_url dạng .../upload/v123456/books/xxx/yyy.jpg */
+function extractPublicId(url) {
+  const m = url.match(/\/upload\/(?:v\d+\/)?(.+)\.\w+$/)
+  return m ? m[1] : null
+}
+
+module.exports = { uploadGlbBuffer, uploadImageBuffer, deleteImageByPublicId, extractPublicId }

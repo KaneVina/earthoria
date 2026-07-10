@@ -1,8 +1,8 @@
 // src/controllers/adminController.js
 const prisma = require("../config/db");
 const { generateProductCode } = require("../utils/generateProductCode");
-const bcrypt = require('bcryptjs')
-const { sendAccountProvisionedEmail } = require('../services/emailService')
+const bcrypt = require("bcryptjs");
+const { sendAccountProvisionedEmail } = require("../services/emailService");
 
 /* ─── Helpers ─── */
 const CHART_COLORS = {
@@ -24,27 +24,27 @@ const STATUS_LABEL = {
   REFUNDED: "Hoàn tiền",
 };
 function generateRandomPassword() {
-  const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
-  const lower = 'abcdefghijkmnpqrstuvwxyz'
-  const digits = '23456789'
-  const special = '!@#$%^&*_-+='
-  const all = upper + lower + digits + special
-  const length = 8 + Math.floor(Math.random() * 9) // 8..16
+  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const lower = "abcdefghijkmnpqrstuvwxyz";
+  const digits = "23456789";
+  const special = "!@#$%^&*_-+=";
+  const all = upper + lower + digits + special;
+  const length = 8 + Math.floor(Math.random() * 9); // 8..16
 
   const chars = [
     upper[Math.floor(Math.random() * upper.length)],
     lower[Math.floor(Math.random() * lower.length)],
     digits[Math.floor(Math.random() * digits.length)],
     special[Math.floor(Math.random() * special.length)],
-  ]
+  ];
   for (let i = chars.length; i < length; i++) {
-    chars.push(all[Math.floor(Math.random() * all.length)])
+    chars.push(all[Math.floor(Math.random() * all.length)]);
   }
   for (let i = chars.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[chars[i], chars[j]] = [chars[j], chars[i]]
+    const j = Math.floor(Math.random() * (i + 1));
+    [chars[i], chars[j]] = [chars[j], chars[i]];
   }
-  return chars.join('')
+  return chars.join("");
 }
 /* helper: tính thời gian tương đối */
 function formatRelativeTime(date) {
@@ -292,25 +292,25 @@ exports.getDashboard = async (req, res) => {
  * đúng theo thứ tự nhập (dùng để set field `order` trong BookAuthor).
  */
 async function resolveAuthorIds(authorsInput) {
-  if (!authorsInput) return []
+  if (!authorsInput) return [];
   const names = Array.isArray(authorsInput)
     ? authorsInput
-    : String(authorsInput).split(',')
+    : String(authorsInput).split(",");
   // Set đã đảm bảo không có 2 upsert trùng tên chạy song song -> an toàn
-  const cleanNames = [...new Set(names.map(n => n.trim()).filter(Boolean))]
+  const cleanNames = [...new Set(names.map((n) => n.trim()).filter(Boolean))];
 
   const authors = await Promise.all(
-    cleanNames.map(name =>
+    cleanNames.map((name) =>
       prisma.author.upsert({
-        where:  { name },
+        where: { name },
         update: {},
         create: { name },
-      })
-    )
-  )
+      }),
+    ),
+  );
 
   // Giữ đúng thứ tự nhập ban đầu (Promise.all trả về theo đúng thứ tự input)
-  return authors.map(a => a.id)
+  return authors.map((a) => a.id);
 }
 
 /** Helper: gắn danh sách tên author vào 1 book (đã include authors.author) */
@@ -330,7 +330,7 @@ exports.getProductById = async (req, res) => {
         category: { select: { id: true, name: true } },
         authors: { include: { author: true }, orderBy: { order: "asc" } },
         arCodes: { orderBy: { createdAt: "asc" } },
-        _count: { select: { orderItems: true, reviews: true } },
+        _count: { select: { orderItems: true, reviews: true, arCodes: true } },
       },
     });
 
@@ -412,7 +412,7 @@ exports.getProducts = async (req, res) => {
         orderBy: { createdAt: "desc" },
         include: {
           category: { select: { id: true, name: true } },
-          _count: { select: { orderItems: true } },
+          _count: { select: { orderItems: true, arCodes: true } },
           authors: { include: { author: true }, orderBy: { order: "asc" } },
         },
       }),
@@ -465,12 +465,10 @@ exports.createProduct = async (req, res) => {
     } = req.body;
 
     if (!title || !price || !categoryId) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Thiếu thông tin bắt buộc (title, price, categoryId)",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Thiếu thông tin bắt buộc (title, price, categoryId)",
+      });
     }
 
     const slugify = require("slugify");
@@ -611,21 +609,45 @@ exports.updateProduct = async (req, res) => {
   }
 };
 
+// adminController.js — thay thế deleteProduct
 exports.deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const orderCount = await prisma.orderItem.count({ where: { bookId: id } });
-    if (orderCount > 0) {
-      await prisma.book.update({ where: { id }, data: { isActive: false } });
-      return res.json({
-        success: true,
-        message: "Sách đã được ẩn khỏi cửa hàng (có đơn hàng liên quan)",
+    const book = await prisma.book.findUnique({ where: { id } });
+    if (!book) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy sách" });
+    }
+
+    const [orderCount, arCodeCount] = await Promise.all([
+      prisma.orderItem.count({ where: { bookId: id } }),
+      prisma.arCode.count({ where: { bookId: id } }),
+    ]);
+
+    const blockers = [];
+    if (orderCount > 0) blockers.push(`${orderCount} đơn hàng đã mua`);
+    if (arCodeCount > 0) blockers.push(`${arCodeCount} mã AR đang liên kết`);
+
+    // Có ràng buộc -> KHÔNG cho xóa cứng, dù client có ép cũng chỉ được vô hiệu hóa
+    if (blockers.length > 0) {
+      if (book.isActive) {
+        await prisma.book.update({ where: { id }, data: { isActive: false } });
+      }
+      return res.status(409).json({
+        success: false,
+        softDeleted: true,
+        message: `Không thể xóa vĩnh viễn vì sách còn ${blockers.join(" và ")}. Sách đã được vô hiệu hóa (ẩn khỏi cửa hàng) thay vì xóa.`,
       });
     }
 
+    // Không đơn hàng, không mã AR -> an toàn để xóa cứng
+    // Dọn ảnh trên Cloudinary trước khi xóa record (tránh rác)
+    await deleteAllBookImages(book);
+
     await prisma.book.delete({ where: { id } });
-    return res.json({ success: true, message: "Đã xóa sách thành công" });
+    return res.json({ success: true, message: "Đã xóa sách vĩnh viễn" });
   } catch (err) {
     if (err.code === "P2025") {
       return res
@@ -843,7 +865,9 @@ exports.getUsers = async (req, res) => {
     } else if (viewerRole === "ADMIN") {
       scopeRoles = ["CUSTOMER", "DEALER", "STAFF"];
     } else {
-      return res.status(403).json({ success: false, message: "Không có quyền truy cập" });
+      return res
+        .status(403)
+        .json({ success: false, message: "Không có quyền truy cập" });
     }
 
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -879,18 +903,28 @@ exports.getUsers = async (req, res) => {
 
     const [users, total] = await Promise.all([
       prisma.user.findMany({
-        where, skip, take: limit,
+        where,
+        skip,
+        take: limit,
         orderBy: { createdAt: "desc" },
         select: {
-          id: true, name: true, email: true, role: true, isActive: true,
-          userCode: true, createdAt: true,
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          isActive: true,
+          userCode: true,
+          createdAt: true,
           _count: { select: { orders: true } },
         },
       }),
       prisma.user.count({ where }),
     ]);
 
-    return res.json({ success: true, data: { users, total, totalPages: Math.ceil(total / limit), page } });
+    return res.json({
+      success: true,
+      data: { users, total, totalPages: Math.ceil(total / limit), page },
+    });
   } catch (err) {
     console.error("[getUsers]", err);
     return res.status(500).json({ success: false, message: "Lỗi server" });
@@ -904,20 +938,35 @@ exports.toggleUser = async (req, res) => {
 
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) {
-      return res.status(404).json({ success: false, message: "Không tìm thấy người dùng" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy người dùng" });
     }
 
     if (viewerRole === "STAFF" && !["CUSTOMER", "DEALER"].includes(user.role)) {
-      return res.status(403).json({ success: false, message: "Staff chỉ được khóa/mở khóa tài khoản Customer hoặc Dealer" });
+      return res.status(403).json({
+        success: false,
+        message: "Staff chỉ được khóa/mở khóa tài khoản Customer hoặc Dealer",
+      });
     }
-    if (viewerRole === "ADMIN" && !["CUSTOMER", "DEALER", "STAFF"].includes(user.role)) {
-      return res.status(403).json({ success: false, message: "Không thể khóa tài khoản Admin" });
+    if (
+      viewerRole === "ADMIN" &&
+      !["CUSTOMER", "DEALER", "STAFF"].includes(user.role)
+    ) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Không thể khóa tài khoản Admin" });
     }
     if (!["STAFF", "ADMIN"].includes(viewerRole)) {
-      return res.status(403).json({ success: false, message: "Không có quyền" });
+      return res
+        .status(403)
+        .json({ success: false, message: "Không có quyền" });
     }
 
-    const updated = await prisma.user.update({ where: { id }, data: { isActive: !user.isActive } });
+    const updated = await prisma.user.update({
+      where: { id },
+      data: { isActive: !user.isActive },
+    });
     return res.json({ success: true, data: updated });
   } catch (err) {
     console.error("[toggleUser]", err);
@@ -967,12 +1016,10 @@ exports.createCoupon = async (req, res) => {
       req.body;
 
     if (!code || !type || !value) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Thiếu thông tin bắt buộc (code, type, value)",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Thiếu thông tin bắt buộc (code, type, value)",
+      });
     }
 
     const validTypes = ["PERCENTAGE", "FIXED"];
@@ -1043,7 +1090,12 @@ exports.toggleCoupon = async (req, res) => {
    AR CODE MANAGEMENT (staff)
 ══════════════════════════════════════════════ */
 const crypto = require("crypto");
-const { uploadGlbBuffer } = require("../services/cloudinaryUploadService");
+const {
+  uploadGlbBuffer,
+  uploadImageBuffer,
+  deleteImageByPublicId,
+  extractPublicId,
+} = require("../services/cloudinaryUploadService");
 
 // Chỉ trả chi tiết lỗi thật ra response khi đang chạy dev, tránh lộ
 // thông tin nội bộ (đường dẫn, config, stack) khi đã lên production.
@@ -1364,12 +1416,10 @@ exports.createInventoryImport = async (req, res) => {
     const { code, items } = req.body;
 
     if (!code || !Array.isArray(items) || items.length === 0) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Thiếu mã phiếu hoặc danh sách dòng nhập",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Thiếu mã phiếu hoặc danh sách dòng nhập",
+      });
     }
 
     const existingImport = await prisma.inventoryImport.findUnique({
@@ -1520,21 +1570,33 @@ exports.updateUserRole = async (req, res) => {
     const viewerRole = req.user.role;
 
     if (!["CUSTOMER", "DEALER"].includes(newRole)) {
-      return res.status(400).json({ success: false, message: "Chỉ được nâng/hạ cấp giữa Customer và Dealer" });
+      return res.status(400).json({
+        success: false,
+        message: "Chỉ được nâng/hạ cấp giữa Customer và Dealer",
+      });
     }
     if (!["STAFF", "ADMIN"].includes(viewerRole)) {
-      return res.status(403).json({ success: false, message: "Không có quyền" });
+      return res
+        .status(403)
+        .json({ success: false, message: "Không có quyền" });
     }
 
     const target = await prisma.user.findUnique({ where: { id } });
     if (!target) {
-      return res.status(404).json({ success: false, message: "Không tìm thấy người dùng" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy người dùng" });
     }
     if (!["CUSTOMER", "DEALER"].includes(target.role)) {
-      return res.status(403).json({ success: false, message: "Chỉ được nâng/hạ cấp tài khoản Customer hoặc Dealer" });
+      return res.status(403).json({
+        success: false,
+        message: "Chỉ được nâng/hạ cấp tài khoản Customer hoặc Dealer",
+      });
     }
     if (target.role === newRole) {
-      return res.status(400).json({ success: false, message: "Tài khoản đã ở cấp bậc này" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Tài khoản đã ở cấp bậc này" });
     }
 
     const newUserCode = await generateUserCode(newRole, new Date());
@@ -1573,19 +1635,30 @@ exports.createManagedUser = async (req, res) => {
     const { name, email, role, gender, phone } = req.body;
 
     if (!name || !email || !role) {
-      return res.status(400).json({ success: false, message: "Thiếu thông tin bắt buộc (họ tên, email, vai trò)" });
+      return res.status(400).json({
+        success: false,
+        message: "Thiếu thông tin bắt buộc (họ tên, email, vai trò)",
+      });
     }
 
-    const allowedCreateRoles = viewerRole === "ADMIN" ? ["DEALER", "STAFF"]
-      : viewerRole === "STAFF" ? ["DEALER"]
-      : [];
+    const allowedCreateRoles =
+      viewerRole === "ADMIN"
+        ? ["DEALER", "STAFF"]
+        : viewerRole === "STAFF"
+          ? ["DEALER"]
+          : [];
     if (!allowedCreateRoles.includes(role)) {
-      return res.status(403).json({ success: false, message: "Bạn không có quyền tạo tài khoản vai trò này" });
+      return res.status(403).json({
+        success: false,
+        message: "Bạn không có quyền tạo tài khoản vai trò này",
+      });
     }
 
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
-      return res.status(409).json({ success: false, message: "Email đã được sử dụng" });
+      return res
+        .status(409)
+        .json({ success: false, message: "Email đã được sử dụng" });
     }
 
     const userCode = await generateUserCode(role, new Date());
@@ -1594,7 +1667,10 @@ exports.createManagedUser = async (req, res) => {
 
     const user = await prisma.user.create({
       data: {
-        name, email, role, userCode,
+        name,
+        email,
+        role,
+        userCode,
         password: hashedPassword,
         gender: gender || null,
         phone: phone || null,
@@ -1603,8 +1679,13 @@ exports.createManagedUser = async (req, res) => {
     });
 
     sendAccountProvisionedEmail({
-      to: email, role, name, userCode, password,
-      dateIssued: new Date(), isUpgrade: false,
+      to: email,
+      role,
+      name,
+      userCode,
+      password,
+      dateIssued: new Date(),
+      isUpgrade: false,
     }).catch((err) => console.error("[createManagedUser email]", err));
 
     return res.status(201).json({ success: true, data: user });
@@ -1637,5 +1718,123 @@ exports.getArCodeById = async (req, res) => {
     return res.json({ success: true, data: arCode });
   } catch (err) {
     return serverError(res, err, "getArCodeById");
+  }
+};
+
+async function deleteAllBookImages(book) {
+  const urls = [book.coverImage, ...(book.images ?? [])].filter(Boolean);
+  await Promise.all(
+    urls.map((url) => {
+      const publicId = extractPublicId(url);
+      return publicId ? deleteImageByPublicId(publicId).catch(() => {}) : null;
+    }),
+  );
+}
+
+/**
+ * POST /admin/products/:id/images — upload thêm N ảnh (không giới hạn số lượng
+ * trong 1 lần gọi lẫn tổng số ảnh của sách). Ảnh đầu tiên upload cho 1 sách
+ * chưa có coverImage sẽ tự động thành ảnh bìa.
+ */
+exports.uploadProductImages = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const book = await prisma.book.findUnique({ where: { id } });
+    if (!book) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy sách" });
+    }
+    if (!req.files?.length) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Thiếu file ảnh" });
+    }
+
+    const uploaded = await Promise.all(
+      req.files.map((f) => uploadImageBuffer(f.buffer, id)),
+    );
+    const newUrls = uploaded.map((u) => u.secure_url);
+
+    const updated = await prisma.book.update({
+      where: { id },
+      data: {
+        images: { push: newUrls },
+        ...(book.coverImage ? {} : { coverImage: newUrls[0] }),
+      },
+      select: { id: true, coverImage: true, images: true },
+    });
+
+    return res.status(201).json({ success: true, data: updated });
+  } catch (err) {
+    return serverError(res, err, "uploadProductImages");
+  }
+};
+
+/**
+ * DELETE /admin/products/:id/images — xóa 1 ảnh khỏi sách (khỏi Cloudinary + DB).
+ * body: { url }
+ */
+exports.deleteProductImage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { url } = req.body;
+    if (!url)
+      return res.status(400).json({ success: false, message: "Thiếu url ảnh" });
+
+    const book = await prisma.book.findUnique({ where: { id } });
+    if (!book)
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy sách" });
+
+    const publicId = extractPublicId(url);
+    if (publicId) await deleteImageByPublicId(publicId).catch(() => {});
+
+    const remainingImages = (book.images ?? []).filter((u) => u !== url);
+    const isCover = book.coverImage === url;
+
+    const updated = await prisma.book.update({
+      where: { id },
+      data: {
+        images: remainingImages,
+        ...(isCover ? { coverImage: remainingImages[0] ?? null } : {}),
+      },
+      select: { id: true, coverImage: true, images: true },
+    });
+
+    return res.json({ success: true, data: updated });
+  } catch (err) {
+    return serverError(res, err, "deleteProductImage");
+  }
+};
+
+/** PATCH /admin/products/:id/cover — chọn 1 ảnh trong images[] làm ảnh bìa */
+exports.setProductCover = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { url } = req.body;
+    if (!url)
+      return res.status(400).json({ success: false, message: "Thiếu url ảnh" });
+
+    const book = await prisma.book.findUnique({ where: { id } });
+    if (!book)
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy sách" });
+    if (!(book.images ?? []).includes(url)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Ảnh không thuộc sách này" });
+    }
+
+    const updated = await prisma.book.update({
+      where: { id },
+      data: { coverImage: url },
+      select: { id: true, coverImage: true, images: true },
+    });
+    return res.json({ success: true, data: updated });
+  } catch (err) {
+    return serverError(res, err, "setProductCover");
   }
 };

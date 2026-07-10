@@ -57,7 +57,8 @@ export default function ProductDetail() {
       qc.invalidateQueries(["admin-products"]);
       setDirty(false);
     },
-    onError: (e) => toast.error(e.response?.data?.message || "Cập nhật thất bại!"),
+    onError: (e) =>
+      toast.error(e.response?.data?.message || "Cập nhật thất bại!"),
   });
 
   const deleteMutation = useMutation({
@@ -67,7 +68,17 @@ export default function ProductDetail() {
       qc.invalidateQueries(["admin-products"]);
       navigate("/dashboard/products");
     },
-    onError: () => toast.error("Xóa thất bại!"),
+    onError: (e) => {
+      if (e.response?.status === 409 && e.response?.data?.softDeleted) {
+        toast(e.response.data.message, { icon: "⚠️" });
+        qc.invalidateQueries(["admin-products"]);
+        qc.invalidateQueries(["admin-product-detail", id]);
+        setConfirmDelete(false);
+        // sách đã bị ẩn (isActive=false), không xóa hẳn nên vẫn còn trang chi tiết -> không navigate đi
+      } else {
+        toast.error(e.response?.data?.message || "Xóa thất bại!");
+      }
+    },
   });
 
   const handleSubmit = (e) => {
@@ -97,7 +108,13 @@ export default function ProductDetail() {
       </button>
 
       {isLoading || !book ? (
-        <div style={{ padding: 60, textAlign: "center", color: "rgba(13,51,48,0.3)" }}>
+        <div
+          style={{
+            padding: 60,
+            textAlign: "center",
+            color: "rgba(13,51,48,0.3)",
+          }}
+        >
           {isLoading ? "Đang tải..." : "Không tìm thấy sách"}
         </div>
       ) : (
@@ -149,7 +166,9 @@ export default function ProductDetail() {
                     gap: 6,
                   }}
                 >
-                  <span style={{ fontSize: 11, color: "rgba(13,51,48,0.4)" }}>ID:</span>
+                  <span style={{ fontSize: 11, color: "rgba(13,51,48,0.4)" }}>
+                    ID:
+                  </span>
                   <span
                     style={{
                       fontFamily: "monospace",
@@ -179,7 +198,9 @@ export default function ProductDetail() {
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span className={`a-badge ${book.isVisible ? "success" : "neutral"}`}>
+              <span
+                className={`a-badge ${book.isVisible ? "success" : "neutral"}`}
+              >
                 {book.isVisible ? "Hiển thị" : "Đã ẩn"}
               </span>
               <button
@@ -217,7 +238,15 @@ export default function ProductDetail() {
             </div>
             <div className="a-mini-stat">
               <div className="a-mini-stat-label">Đã bán</div>
-              <div className="a-mini-stat-value">{book._count?.orderItems ?? 0}</div>
+              <div className="a-mini-stat-value">
+                {book._count?.orderItems ?? 0}
+              </div>
+            </div>
+            <div className="a-mini-stat">
+              <div className="a-mini-stat-label">Mã AR</div>
+              <div className="a-mini-stat-value">
+                {book._count?.arCodes ?? 0}
+              </div>
             </div>
           </div>
 
@@ -227,7 +256,9 @@ export default function ProductDetail() {
               <h3 className="a-chart-title">
                 Thông <em>tin sách</em>
               </h3>
-              <p className="a-chart-sub">Chỉnh sửa trực tiếp bên dưới rồi bấm Lưu thay đổi</p>
+              <p className="a-chart-sub">
+                Chỉnh sửa trực tiếp bên dưới rồi bấm Lưu thay đổi
+              </p>
             </div>
             <form onSubmit={handleSubmit}>
               <ProductFormFields
@@ -267,7 +298,9 @@ export default function ProductDetail() {
               </h3>
               <a
                 className="a-table-link"
-                onClick={() => navigate(`/dashboard/ar-codes?bookId=${book.id}`)}
+                onClick={() =>
+                  navigate(`/dashboard/ar-codes?bookId=${book.id}`)
+                }
                 style={{ cursor: "pointer" }}
               >
                 Quản lý mã AR →
@@ -277,11 +310,15 @@ export default function ProductDetail() {
               <table className="a-table">
                 <thead>
                   <tr>
-                    {["Label", "Mã (code)", "Quyền xem", "Lượt quét", "Trạng thái"].map(
-                      (h) => (
-                        <th key={h}>{h}</th>
-                      )
-                    )}
+                    {[
+                      "Label",
+                      "Mã (code)",
+                      "Quyền xem",
+                      "Lượt quét",
+                      "Trạng thái",
+                    ].map((h) => (
+                      <th key={h}>{h}</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
@@ -289,24 +326,36 @@ export default function ProductDetail() {
                     <tr>
                       <td
                         colSpan={5}
-                        style={{ padding: 32, textAlign: "center", color: "rgba(13,51,48,0.3)" }}
+                        style={{
+                          padding: 32,
+                          textAlign: "center",
+                          color: "rgba(13,51,48,0.3)",
+                        }}
                       >
                         Sách này chưa có mã AR nào
                       </td>
                     </tr>
                   ) : (
                     book.arCodes.map((ac) => {
-                      const access = ACCESS_LABEL[ac.accessType] ?? ACCESS_LABEL.CUSTOMER_ONLY;
+                      const access =
+                        ACCESS_LABEL[ac.accessType] ??
+                        ACCESS_LABEL.CUSTOMER_ONLY;
                       return (
                         <tr key={ac.id}>
-                          <td style={{ fontWeight: 500, fontSize: 12 }}>{ac.label}</td>
+                          <td style={{ fontWeight: 500, fontSize: 12 }}>
+                            {ac.label}
+                          </td>
                           <td className="a-td-mono">{ac.code}</td>
                           <td>
-                            <span className={`a-badge ${access.cls}`}>{access.label}</span>
+                            <span className={`a-badge ${access.cls}`}>
+                              {access.label}
+                            </span>
                           </td>
                           <td className="a-td-muted">{ac.scanCount}</td>
                           <td>
-                            <span className={`a-badge ${ac.isActive ? "success" : "neutral"}`}>
+                            <span
+                              className={`a-badge ${ac.isActive ? "success" : "neutral"}`}
+                            >
                               {ac.isActive ? "Hoạt động" : "Đã vô hiệu hoá"}
                             </span>
                           </td>
@@ -325,19 +374,30 @@ export default function ProductDetail() {
       {confirmDelete && (
         <div
           className="a-modal-overlay"
-          onClick={(e) => e.target === e.currentTarget && setConfirmDelete(false)}
+          onClick={(e) =>
+            e.target === e.currentTarget && setConfirmDelete(false)
+          }
         >
           <div className="a-modal" style={{ maxWidth: 420 }}>
             <div className="a-modal-header">
               <h3 className="a-modal-title">Xác nhận xóa</h3>
-              <button className="a-modal-close" onClick={() => setConfirmDelete(false)}>
+              <button
+                className="a-modal-close"
+                onClick={() => setConfirmDelete(false)}
+              >
                 <X size={16} />
               </button>
             </div>
             <div className="a-modal-body">
-              <p style={{ fontSize: 13, color: "rgba(13,51,48,0.7)", lineHeight: 1.6 }}>
-                Bạn có chắc muốn xóa sách <strong>"{book?.title}"</strong>? Hành động này
-                không thể hoàn tác.
+              <p
+                style={{
+                  fontSize: 13,
+                  color: "rgba(13,51,48,0.7)",
+                  lineHeight: 1.6,
+                }}
+              >
+                Bạn có chắc muốn xóa sách <strong>"{book?.title}"</strong>? Hành
+                động này không thể hoàn tác.
               </p>
             </div>
             <div className="a-modal-footer">
@@ -349,7 +409,10 @@ export default function ProductDetail() {
               >
                 {deleteMutation.isPending ? "Đang xóa..." : "Xóa sách"}
               </button>
-              <button className="a-btn-ghost" onClick={() => setConfirmDelete(false)}>
+              <button
+                className="a-btn-ghost"
+                onClick={() => setConfirmDelete(false)}
+              >
                 Hủy
               </button>
             </div>

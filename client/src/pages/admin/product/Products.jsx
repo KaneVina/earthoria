@@ -4,7 +4,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, Eye, Trash2, X, Upload, PackagePlus } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Eye,
+  Trash2,
+  X,
+  Upload,
+  PackagePlus,
+} from "lucide-react";
 import api from "../../../services/api";
 import { formatPrice } from "../../../utils/helpers";
 import toast from "react-hot-toast";
@@ -12,11 +20,18 @@ import AdminLayout from "../AdminLayout";
 import ProductsAccessories from "./ProductsAccessories";
 import ProductsCategories from "./ProductsCategories";
 
-const EMPTY_FILTERS = { categoryId: "", language: "", status: "", ageMin: "", ageMax: "" };
+const EMPTY_FILTERS = {
+  categoryId: "",
+  language: "",
+  status: "",
+  ageMin: "",
+  ageMax: "",
+};
 
 /* % giảm hiển thị dạng badge, vd giá gốc 420.000 -> giá bán 260.400 => -38% */
 const calcDiscountPercent = (base, sale) => {
-  const b = Number(base), s = Number(sale);
+  const b = Number(base),
+    s = Number(sale);
   if (!b || !s || s >= b) return 0;
   return Math.round((1 - s / b) * 100);
 };
@@ -95,7 +110,10 @@ export default function Products() {
         ))}
         <span
           className="a-tab-indicator"
-          style={{ transform: `translateX(${indicator.left}px)`, width: indicator.width }}
+          style={{
+            transform: `translateX(${indicator.left}px)`,
+            width: indicator.width,
+          }}
         />
       </div>
 
@@ -131,7 +149,10 @@ function BooksImportButtons() {
         <PackagePlus size={13} />
         Nhập kho
       </button>
-      <button className="a-btn-primary" onClick={() => navigate("/dashboard/products/new")}>
+      <button
+        className="a-btn-primary"
+        onClick={() => navigate("/dashboard/products/new")}
+      >
         <Plus size={13} />
         Thêm sách mới
       </button>
@@ -167,7 +188,9 @@ function BooksTab() {
     queryKey: ["admin-products", page, search, filters],
     queryFn: () =>
       api
-        .get("/admin/products", { params: { page, limit: 12, search, ...filters } })
+        .get("/admin/products", {
+          params: { page, limit: 12, search, ...filters },
+        })
         .then((r) => r.data.data),
     keepPreviousData: true,
   });
@@ -184,7 +207,15 @@ function BooksTab() {
       qc.invalidateQueries(["admin-products"]);
       setConfirmDelete(null);
     },
-    onError: () => toast.error("Xóa thất bại!"),
+    onError: (e) => {
+      if (e.response?.status === 409 && e.response?.data?.softDeleted) {
+        toast(e.response.data.message, { icon: "⚠️" });
+        qc.invalidateQueries(["admin-products"]);
+        setConfirmDelete(null);
+      } else {
+        toast.error(e.response?.data?.message || "Xóa thất bại!");
+      }
+    },
   });
 
   const products = data?.products ?? [];
@@ -194,8 +225,18 @@ function BooksTab() {
   return (
     <>
       {/* ── Search + Filters (gộp chung 1 hàng, wrap khi hẹp) ── */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
-        <div className="a-search-wrap" style={{ marginBottom: 0, flex: "1 1 260px", maxWidth: 360 }}>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 10,
+          alignItems: "center",
+        }}
+      >
+        <div
+          className="a-search-wrap"
+          style={{ marginBottom: 0, flex: "1 1 260px", maxWidth: 360 }}
+        >
           <Search size={13} className="a-search-icon" />
           <input
             className="a-input"
@@ -278,7 +319,16 @@ function BooksTab() {
           <table className="a-table">
             <thead>
               <tr>
-                {["Sách", "Danh mục", "Giá", "Tồn kho", "Đã bán", "Trạng thái", ""].map((h) => (
+                {[
+                  "Sách",
+                  "Danh mục",
+                  "Giá",
+                  "Tồn kho",
+                  "Đã bán",
+                  "Mã AR",
+                  "Trạng thái",
+                  "",
+                ].map((h) => (
                   <th key={h}>{h}</th>
                 ))}
               </tr>
@@ -286,13 +336,27 @@ function BooksTab() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} style={{ padding: 48, textAlign: "center", color: "rgba(13,51,48,0.3)" }}>
+                  <td
+                    colSpan={8}
+                    style={{
+                      padding: 48,
+                      textAlign: "center",
+                      color: "rgba(13,51,48,0.3)",
+                    }}
+                  >
                     Đang tải...
                   </td>
                 </tr>
               ) : !products.length ? (
                 <tr>
-                  <td colSpan={7} style={{ padding: 48, textAlign: "center", color: "rgba(13,51,48,0.3)" }}>
+                  <td
+                    colSpan={8}
+                    style={{
+                      padding: 48,
+                      textAlign: "center",
+                      color: "rgba(13,51,48,0.3)",
+                    }}
+                  >
                     Không tìm thấy sách nào
                   </td>
                 </tr>
@@ -309,7 +373,13 @@ function BooksTab() {
                     >
                       {/* Book info */}
                       <td>
-                        <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 11,
+                          }}
+                        >
                           <div className="a-book-thumb">
                             {p.coverImage ? (
                               <img src={p.coverImage} alt={p.title} />
@@ -318,10 +388,18 @@ function BooksTab() {
                             )}
                           </div>
                           <div>
-                            <div style={{ fontWeight: 500, fontSize: 12, color: "var(--a-ink)" }}>
+                            <div
+                              style={{
+                                fontWeight: 500,
+                                fontSize: 12,
+                                color: "var(--a-ink)",
+                              }}
+                            >
                               {p.title}
                             </div>
-                            <div className="a-td-muted">{(p.authors ?? []).join(", ") || "—"}</div>
+                            <div className="a-td-muted">
+                              {(p.authors ?? []).join(", ") || "—"}
+                            </div>
                             <div
                               style={{
                                 fontFamily: "monospace",
@@ -338,26 +416,52 @@ function BooksTab() {
 
                       {/* Category */}
                       <td>
-                        <span className="a-badge neutral">{p.category?.name ?? "—"}</span>
+                        <span className="a-badge neutral">
+                          {p.category?.name ?? "—"}
+                        </span>
                       </td>
 
                       {/* Price */}
                       <td>
-                        <div className="a-td-sans">{formatPrice(mainPrice)}</div>
+                        <div className="a-td-sans">
+                          {formatPrice(mainPrice)}
+                        </div>
                         {p.salePrice ? (
-                          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, marginTop: 1 }}>
-                            <span style={{ color: "rgba(13,51,48,0.35)", textDecoration: "line-through" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                              fontSize: 11,
+                              marginTop: 1,
+                            }}
+                          >
+                            <span
+                              style={{
+                                color: "rgba(13,51,48,0.35)",
+                                textDecoration: "line-through",
+                              }}
+                            >
                               {formatPrice(p.price)}
                             </span>
                             {discount > 0 && (
-                              <span className="a-badge danger" style={{ fontSize: 9, padding: "1px 5px" }}>
+                              <span
+                                className="a-badge danger"
+                                style={{ fontSize: 9, padding: "1px 5px" }}
+                              >
                                 -{discount}%
                               </span>
                             )}
                           </div>
                         ) : null}
                         {p.dealerPrice ? (
-                          <div style={{ fontSize: 10, color: "rgba(13,51,48,0.4)", marginTop: 2 }}>
+                          <div
+                            style={{
+                              fontSize: 10,
+                              color: "rgba(13,51,48,0.4)",
+                              marginTop: 2,
+                            }}
+                          >
                             Đại lý: {formatPrice(p.dealerPrice)}
                           </div>
                         ) : null}
@@ -365,17 +469,29 @@ function BooksTab() {
 
                       {/* Stock */}
                       <td>
-                        <span className={p.stock <= 10 ? "a-td-danger" : ""} style={{ fontWeight: 600 }}>
+                        <span
+                          className={p.stock <= 10 ? "a-td-danger" : ""}
+                          style={{ fontWeight: 600 }}
+                        >
                           {p.stock}
                         </span>
                       </td>
 
                       {/* Sold */}
-                      <td className="a-td-muted">{p._count?.orderItems ?? 0}</td>
-
+                      <td className="a-td-muted">
+                        {p._count?.orderItems ?? 0}
+                      </td>
+                      {/* AR codes count */}
+                      <td>
+                        <span className="a-badge info" style={{ fontSize: 10 }}>
+                          {p._count?.arCodes ?? 0} mã
+                        </span>
+                      </td>
                       {/* Status */}
                       <td>
-                        <span className={`a-badge ${p.isVisible ? "success" : "neutral"}`}>
+                        <span
+                          className={`a-badge ${p.isVisible ? "success" : "neutral"}`}
+                        >
                           {p.isVisible ? "Hiển thị" : "Đã ẩn"}
                         </span>
                       </td>
@@ -385,7 +501,9 @@ function BooksTab() {
                         <div style={{ display: "flex", gap: 6 }}>
                           <button
                             className="a-btn-icon edit"
-                            onClick={() => navigate(`/dashboard/products/${p.id}`)}
+                            onClick={() =>
+                              navigate(`/dashboard/products/${p.id}`)
+                            }
                             aria-label="Chi tiết"
                             title="Xem & sửa chi tiết"
                           >
@@ -446,19 +564,31 @@ function BooksTab() {
       {confirmDelete && (
         <div
           className="a-modal-overlay"
-          onClick={(e) => e.target === e.currentTarget && setConfirmDelete(null)}
+          onClick={(e) =>
+            e.target === e.currentTarget && setConfirmDelete(null)
+          }
         >
           <div className="a-modal" style={{ maxWidth: 420 }}>
             <div className="a-modal-header">
               <h3 className="a-modal-title">Xác nhận xóa</h3>
-              <button className="a-modal-close" onClick={() => setConfirmDelete(null)}>
+              <button
+                className="a-modal-close"
+                onClick={() => setConfirmDelete(null)}
+              >
                 <X size={16} />
               </button>
             </div>
             <div className="a-modal-body">
-              <p style={{ fontSize: 13, color: "rgba(13,51,48,0.7)", lineHeight: 1.6 }}>
-                Bạn có chắc muốn xóa sách <strong>"{confirmDelete.title}"</strong>? Hành động
-                này không thể hoàn tác.
+              <p
+                style={{
+                  fontSize: 13,
+                  color: "rgba(13,51,48,0.7)",
+                  lineHeight: 1.6,
+                }}
+              >
+                Bạn có chắc muốn xóa sách{" "}
+                <strong>"{confirmDelete.title}"</strong>? Hành động này không
+                thể hoàn tác.
               </p>
             </div>
             <div className="a-modal-footer">
@@ -470,7 +600,10 @@ function BooksTab() {
               >
                 {deleteMutation.isPending ? "Đang xóa..." : "Xóa sách"}
               </button>
-              <button className="a-btn-ghost" onClick={() => setConfirmDelete(null)}>
+              <button
+                className="a-btn-ghost"
+                onClick={() => setConfirmDelete(null)}
+              >
                 Hủy
               </button>
             </div>

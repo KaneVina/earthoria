@@ -43,6 +43,8 @@ const {
   adminOnly,
   staffOrAdmin,
 } = require("../middlewares/authMiddleware");
+const uploadImages = require("../middlewares/uploadImages");
+const { uploadProductImages, deleteProductImage, setProductCover } = require("../controllers/adminController");
 
 // Chỉ xác thực đăng nhập ở đây — phân quyền admin/staff áp dụng riêng từng route bên dưới
 router.use(protect);
@@ -58,6 +60,9 @@ router.get("/products", adminOnly, getProducts);
 router.post("/products", adminOnly, createProduct);
 router.put("/products/:id", adminOnly, updateProduct);
 router.delete("/products/:id", adminOnly, deleteProduct);
+router.post("/products/:id/images", adminOnly, uploadImages.array("images"), uploadProductImages);
+router.delete("/products/:id/images", adminOnly, deleteProductImage);
+router.patch("/products/:id/cover", adminOnly, setProductCover);
 
 // ── Categories ──
 router.get("/categories", adminOnly, getCategories);
