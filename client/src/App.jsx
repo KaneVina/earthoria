@@ -74,15 +74,13 @@ const GuestRoute = ({ children }) => {
   return !isAuthenticated ? children : <Navigate to="/" replace />;
 };
 // Khởi động trang bảo trì
-const MAINTENANCE_MODE = false;
-// const MAINTENANCE_MODE = true;
+// const MAINTENANCE_MODE = false;
+const MAINTENANCE_MODE = true;
 
 export default function App() {
   const { setAuth, setAuthChecked, authChecked } = useAuthStore();
 
-  // Bootstrap: mỗi lần load app (F5, mở tab mới...), accessToken trong memory
-  // đã mất — thử gọi /auth/refresh 1 lần, cookie refreshToken (HttpOnly) sẽ
-  // tự gửi kèm. Nếu còn hạn thì tự đăng nhập lại êm, không thì coi như guest.
+  // Bootstrap: mỗi lần load app (F5, mở tab mới...), accessToken trong memory đã mất — thử gọi /auth/refresh 1 lần, cookie refreshToken (HttpOnly) sẽ tự gửi kèm. Nếu còn hạn thì tự đăng nhập lại êm, không thì coi như guest.
   useEffect(() => {
     let cancelled = false;
 
@@ -102,8 +100,7 @@ export default function App() {
     };
   }, []);
 
-  // Chờ bước bootstrap xong mới render, tránh nháy trạng thái "chưa đăng
-  // nhập" rồi mới nhảy sang "đã đăng nhập" gây giật UI / redirect nhầm.
+  // Chờ bước bootstrap xong mới render, tránh nháy trạng thái "chưa đăng nhập" rồi mới nhảy sang "đã đăng nhập" gây giật UI / redirect nhầm.
   if (!authChecked) {
     return (
       <FullScreenLoader message="Chờ một chút! Chúng tôi đang tiến hàng xác thực tài khoản cho bạn." />
@@ -122,7 +119,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      {/* <EarthoriaSecurity /> */}
+      <EarthoriaSecurity />
       <ScrollToTop />
       <CustomCursor />
       <EiraChatbox />

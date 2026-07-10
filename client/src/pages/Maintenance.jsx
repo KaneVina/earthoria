@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const TARGET_DATE = new Date("2026-06-30T18:00:00+07:00");
+const TARGET_DATE = new Date("2026-07-12T18:00:00+07:00");
 
 function useCountdown(target) {
   const [time, setTime] = useState(() => calc());
@@ -162,7 +162,7 @@ export default function Maintenance() {
               <path d="M12 7v5l3 3" />
             </svg>
             <span>
-              Dự kiến hoàn thành lúc <strong style={styles.timePillStrong}>18:00 · 30/06/2026</strong>
+              Dự kiến hoàn thành lúc <strong style={styles.timePillStrong}>18:00 · 12/07/2026</strong>
             </span>
           </div>
 
