@@ -1388,3 +1388,71 @@
     opacity 0.2s ease,
     transform 0.2s ease;
 }
+/* ═══════════════════════════════════════════════════════════════
+   BỔ SUNG CHO EiraChatbox.jsx (phiên bản nâng cấp)
+   Dán đoạn này vào cuối file assets/css/EiraChatbox.css hiện có.
+   Các biến màu (--eira-*) dùng lại theo hệ thống màu gốc nếu đã khai báo;
+   nếu chưa có, các giá trị fallback bên dưới vẫn hoạt động độc lập.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Nút cuộn xuống cuối hội thoại */
+#eira-scroll-btn {
+  position: absolute;
+  right: 14px;
+  bottom: 108px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(13, 51, 48, 0.12);
+  background: #ffffff;
+  color: #0d3330;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(13, 51, 48, 0.16);
+  cursor: pointer;
+  z-index: 5;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+#eira-scroll-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(13, 51, 48, 0.22);
+}
+#eira-scroll-btn:active {
+  transform: translateY(0);
+}
+
+/* Đếm ký tự khi gần chạm giới hạn nhập */
+#eira-char-count {
+  font-size: 11px;
+  color: #8a8f8e;
+  text-align: right;
+  padding: 2px 6px 0 0;
+  user-select: none;
+}
+#eira-char-count:has(+ *) {
+  color: #8a8f8e;
+}
+
+/* Icon cảnh báo mất kết nối trong tin nhắn lỗi */
+.em-error-icon {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: #d97706;
+}
+.em-error .em-bubble {
+  background: #fff7ed;
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  color: #7c2d12;
+}
+
+/* Nút xóa hội thoại trong header — dùng chung style với nút đóng */
+.eira-hdr-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.eira-close-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

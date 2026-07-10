@@ -11,30 +11,44 @@ import {
   Copy,
   RotateCcw,
   Check,
+  ChevronDown,
+  Trash2,
+  WifiOff,
 } from "lucide-react";
 import "./assets/css/EiraChatbox.css";
 
-/* ─── CONFIG ─── */
+/* ═══════════════════════════════════════════════════════════════
+   CONFIG
+   ═══════════════════════════════════════════════════════════════ */
 const GROQ_KEY = import.meta.env.VITE_GROQ_KEY;
 const GROQ_URL = import.meta.env.VITE_GROQ_URL;
 const GROQ_MODEL = import.meta.env.VITE_GROQ_MODEL;
 
-/* Mascot chỉ ẩn tạm thời — không còn lưu vĩnh viễn vào localStorage */
-const MASCOT_HIDE_DURATION = 5 * 60 * 1000; // 5 phút
+const MASCOT_HIDE_DURATION = 5 * 60 * 1000; // 5 phút — ẩn tạm, không lưu vĩnh viễn
 const MASCOT_FIRST_SHOW_DELAY = 3000; // 3 giây sau khi trang sẵn sàng
+const MAX_INPUT_LEN = 500;
+const MAX_HISTORY_TURNS = 22; // số message tối đa giữ trong bộ nhớ hội thoại
+const TRIM_HISTORY_TO = 18;
+const REQUEST_TIMEOUT_MS = 25000; // timeout gọi API
+const SCROLL_BOTTOM_THRESHOLD = 120; // px — dưới mức này coi như đang ở cuối khung chat
 
-const SYSTEM_PROMPT = `Bạn là Eira — trợ lý AI thân thiện của Earthoria.
+/* ═══════════════════════════════════════════════════════════════
+   SYSTEM PROMPT — persona Eira + quy tắc nghiệp vụ Earthoria
+   + văn phong tư vấn/mô tả sản phẩm tự nhiên, chuyên sâu
+   ═══════════════════════════════════════════════════════════════ */
+const SYSTEM_PROMPT = `Bạn là Eira — trợ lý AI thân thiện đồng thời là chuyên viên tư vấn khách hàng chuyên nghiệp của thương hiệu sách giáo dục tương tác Earthoria. Bạn kết hợp giữa kiến thức chuyên môn về sản phẩm và sự tinh tế trong cách truyền đạt, giúp phụ huynh không chỉ hiểu giá trị của sản phẩm mà còn cảm nhận được mong muốn sở hữu nó cho con em mình.
 
 NGUYÊN TẮC TUYỆT ĐỐI:
 - LUÔN LUÔN trả lời bằng tiếng Việt, dù người dùng hỏi bằng ngôn ngữ nào.
 - Không bao giờ dùng tiếng Anh trong câu trả lời.
 - Từ chối trả lời những câu hỏi nhạy cảm liên quan đến chính trị, tôn giáo, chiến tranh.
+- Khi người dùng gửi một đoạn mã số có số và ký tự: từ chối ngay lập tức với lý do bảo mật. Tuyệt đối không được phân tích hay làm lộ thông tin bảo mật.
 
 THÔNG TIN EARTHORIA:
-- Tên: Earthoria — thương hiệu sách giáo dục tương tác AR & AI dành cho trẻ em 5–12 tuổi tại Việt Nam
-- Startup sinh viên FPT University Campus Cần Thơ (EXE101, Summer 2026), thành lập 25/05/2026
+- Tên: Earthoria — thương hiệu sách giáo dục tương tác AR & AI dành cho trẻ em 5–12 tuổi tại Việt Nam.
+- Startup sinh viên FPT University Campus Cần Thơ (EXE101, Summer 2026), thành lập 25/05/2026.
 - Website: earthoria.id.vn | Fanpage: facebook.com/Earthoriavn | Email: earthoriavn@gmail.com
-- Địa chỉ: 600 Nguyễn Văn Cừ, Ninh Kiều, Cần Thơ
+- Địa chỉ: 600 Nguyễn Văn Cừ, Ninh Kiều, Cần Thơ.
 
 SẢN PHẨM:
 Earthoria là bộ sách giáo dục tương tác tích hợp AI & AR, cho phép trẻ "học qua chơi" với:
@@ -58,15 +72,11 @@ TEAM EARTHORIA:
 - CMO: Lư Quốc Tài — marketing, mạng xã hội, chiến dịch quảng bá
 - CDO: Lê Anh Song Dương — thiết kế hình ảnh, minh họa, nhận diện thương hiệu
 - CPO: Lê Tuấn — nội dung sách, hệ thống câu đố, trải nghiệm học tập
-- CTO: Nguyễn Phúc Khang — phát triển AI, AR, website và ứng dụng. Cha đẻ của website earthoria hiện tại.
+- CTO: Nguyễn Phúc Khang — phát triển AI, AR, website và ứng dụng. Cha đẻ của website Earthoria hiện tại.
 
-MÃ SỐ- người dùng hỏi để biết nó là gì thì giải thcihs
-- Mã số Mã Số Earthoria hay còn gọi là mã ETR. Đây là mã số khi tài khoản của bạn đã xác thực thành công bởi google và được earthoria duyệt.
-Trong một số trường hợp, cung cấp mã earthoria để nhân viên có thể kiểm tra thông tin của bạn. Mã earthoria sẽ bị tước vĩnh viễn nếu bạn vi phạm các nguyên tắc cộng đồng của chúng tôi hoặc tài khoản bị vô hiệu hóa hay đình chỉ.
-
-- Mã số tài khoản: mã số tài khoản hay còn gọi là mã MTK. Đây là mã số xác thực tài khoản của bạn. Trong một số trường hợp cảm thấy nghi ngờ, chúng tôi sẽ yêu cầu xác nhận mã này để bảo vệ tài khoản của bạn. Vì vậy những mã số không được cho người khác biết.
-
-- Khi người dùng gửi một đoạn mã số có số và ký tự : từ chối ngay lập tức với lý do bảo mật. Tuyệt đối không được phân tích làm lộ thông tin bảo mật.
+MÃ SỐ (giải thích khi người dùng hỏi):
+- Mã Earthoria (mã ETR): mã số khi tài khoản đã được xác thực thành công qua Google và được Earthoria duyệt. Có thể được yêu cầu cung cấp để nhân viên kiểm tra thông tin. Mã sẽ bị tước vĩnh viễn nếu vi phạm nguyên tắc cộng đồng hoặc tài khoản bị vô hiệu hóa/đình chỉ.
+- Mã số tài khoản (mã MTK): mã xác thực tài khoản. Trong trường hợp nghi ngờ bảo mật, có thể được yêu cầu xác nhận mã này. Mã này tuyệt đối không được tiết lộ cho người khác.
 
 LỢI ÍCH:
 - Cho trẻ: tăng hứng thú đọc sách, kích thích tư duy sáng tạo, ghi nhớ kiến thức tốt hơn
@@ -78,12 +88,14 @@ CHÍNH SÁCH:
 - Mã tháng 6: EARTH15 (giảm 15% khi mua từ 2 cuốn)
 - Thanh toán: VISA, VNPAY, MoMo, COD
 
-CÁCH TƯ VẤN:
-- Giới thiệu bản thân tên là Eira.
-- Phong cách Thân thiện, dùng emoji nhẹ nhàng 🌿, và chuyên nghiệp
-- Hỏi tuổi bé và sở thích trước khi gợi ý sách
-- Nhắc mã EARTH15 khi khách hỏi mua 2+ cuốn
-- Trả lời ngắn gọn dưới 120 từ, dùng bullet points
+CÁCH TƯ VẤN VÀ VĂN PHONG:
+- Giới thiệu bản thân là Eira, nhân viên tư vấn của Earthoria, ngay từ lời chào đầu tiên.
+- Phong cách thân thiện, dùng emoji nhẹ nhàng 🌿, chuyên nghiệp và gần gũi.
+- Hỏi tuổi bé và sở thích trước khi gợi ý sách phù hợp.
+- Nhắc mã EARTH15 khi khách hỏi mua từ 2 cuốn trở lên.
+- Với câu hỏi thông tin nhanh (giá, chính sách, giờ hoạt động...): trả lời ngắn gọn dưới 120 từ, có thể dùng bullet points.
+- Với câu tư vấn/mô tả sâu một sản phẩm cụ thể theo hướng thuyết phục: trình bày dạng văn xuôi tự nhiên, không dùng bullet, không dùng ký hiệu định dạng như **, *, #, -, không dùng dấu gạch dài (—); thể hiện chiều sâu hiểu biết về giáo dục trẻ em, lồng ghép ngắn gọn giá trị hoặc triết lý thiết kế sản phẩm thay vì chỉ liệt kê thông tin một chiều; đa dạng hóa cách mở đầu câu/đoạn và độ dài câu để tránh nhịp điệu máy móc; dùng ngôn ngữ thận trọng ("có thể", "thường thì") khi không chắc chắn tuyệt đối; kết thúc bằng một lời cảm ơn chân thành vì khách đã quan tâm đến Earthoria.
+- Luôn phản hồi như đang trực tiếp trò chuyện với khách hàng, không tạo văn bản dạng mẫu hay kịch bản cố định.
 - Nếu không biết thông tin, hướng dẫn liên hệ earthoriavn@gmail.com`;
 
 const SUGGESTIONS = [
@@ -94,7 +106,9 @@ const SUGGESTIONS = [
   { Icon: GitCompare, label: "So sánh 2 cuốn sách" },
 ];
 
-/* ─── Helpers ─── */
+/* ═══════════════════════════════════════════════════════════════
+   HELPERS
+   ═══════════════════════════════════════════════════════════════ */
 function nowTime() {
   return new Date().toLocaleTimeString("vi-VN", {
     hour: "2-digit",
@@ -121,17 +135,40 @@ function makeMsg(role, text, isError = false) {
   return { id: ++msgIdCounter, role, text, isError, time: nowTime() };
 }
 
-/* ─── ActionButtons ─── */
+/** Gọi fetch kèm timeout, tránh treo UI vô thời hạn khi mạng chập chờn */
+function fetchWithTimeout(url, options, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() =>
+    clearTimeout(timer),
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ActionButtons
+   ═══════════════════════════════════════════════════════════════ */
 function ActionButtons({ msg, onRegenerate }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(msg.text);
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(msg.text);
+      } else {
+        // Fallback cho trình duyệt cũ / môi trường không có Clipboard API
+        const ta = document.createElement("textarea");
+        ta.value = msg.text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      /* fallback */
+      /* im lặng bỏ qua nếu clipboard bị chặn quyền */
     }
   };
 
@@ -166,7 +203,9 @@ function ActionButtons({ msg, onRegenerate }) {
   );
 }
 
-/* ─── BotMessage ─── */
+/* ═══════════════════════════════════════════════════════════════
+   BotMessage / UserMessage
+   ═══════════════════════════════════════════════════════════════ */
 function BotMessage({ msg, onRegenerate }) {
   return (
     <div className={`em bot${msg.isError ? " em-error" : ""}`}>
@@ -177,6 +216,9 @@ function BotMessage({ msg, onRegenerate }) {
         <span className="em-name">Eira</span>
       </div>
       <div className="em-content-row">
+        {msg.isError && (
+          <WifiOff size={13} className="em-error-icon" aria-hidden="true" />
+        )}
         <div
           className="em-bubble"
           dangerouslySetInnerHTML={{ __html: fmtText(msg.text) }}
@@ -188,7 +230,6 @@ function BotMessage({ msg, onRegenerate }) {
   );
 }
 
-/* ─── UserMessage ─── */
 function UserMessage({ msg }) {
   const safe = msg.text
     .replace(/&/g, "&amp;")
@@ -210,7 +251,9 @@ function UserMessage({ msg }) {
   );
 }
 
-/* ─── Main UI ─── */
+/* ═══════════════════════════════════════════════════════════════
+   MAIN UI
+   ═══════════════════════════════════════════════════════════════ */
 function EiraUI() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -218,13 +261,15 @@ function EiraUI() {
   const [isTyping, setIsTyping] = useState(false);
   const [isBusy, setIsBusy] = useState(false);
   const [suggHidden, setSuggHidden] = useState(false);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const [configError, setConfigError] = useState(null);
 
-  /* Mascot: chỉ ẩn TẠM THỜI 5 phút khi người dùng bấm X, không lưu localStorage,
-     không có trạng thái "vĩnh viễn" — mỗi lần tải lại trang mascot sẽ hiện lại như bình thường */
+  /* Mascot: chỉ ẩn TẠM THỜI 5 phút khi người dùng bấm X, không lưu localStorage */
   const [promoVisible, setPromoVisible] = useState(false);
   const [promoDismissed, setPromoDismissed] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  const msgsWrapRef = useRef(null);
   const msgsEndRef = useRef(null);
   const inpRef = useRef(null);
   const historyRef = useRef([]);
@@ -236,16 +281,30 @@ function EiraUI() {
   const [dragPos, setDragPos] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const fabRef = useRef(null);
-  const dragRef = useRef({ active: false, moved: false, startX: 0, startY: 0, baseX: 0, baseY: 0, rect: null });
+  const dragRef = useRef({
+    active: false,
+    moved: false,
+    startX: 0,
+    startY: 0,
+    baseX: 0,
+    baseY: 0,
+    rect: null,
+  });
   const suppressClickRef = useRef(false);
 
-  const DRAG_THRESHOLD = 4; // px, dưới ngưỡng này tính là "click" chứ không phải "kéo"
+  const DRAG_THRESHOLD = 4; // px — dưới ngưỡng này tính là "click" chứ không phải "kéo"
+
+  /* Kiểm tra cấu hình môi trường ngay khi mount, tránh lỗi im lặng khó chẩn đoán */
+  useEffect(() => {
+    if (!GROQ_KEY || !GROQ_URL || !GROQ_MODEL) {
+      setConfigError(
+        "Thiếu cấu hình kết nối AI (VITE_GROQ_KEY / VITE_GROQ_URL / VITE_GROQ_MODEL). Vui lòng kiểm tra file .env.",
+      );
+    }
+  }, []);
 
   const handleFabPointerDown = (e) => {
     if (e.button !== undefined && e.button !== 0) return; // chỉ chuột trái / chạm chính
-
-    // Nếu bấm vào nút X của mascot thì KHÔNG khởi tạo kéo-thả / pointer-capture,
-    // tránh việc capture "cướp" mất sự kiện click và khiến chat bị mở nhầm
     if (e.target.closest?.(".eira-fab-mascot-close")) return;
 
     const fab = fabRef.current;
@@ -301,7 +360,6 @@ function EiraUI() {
       /* ignore */
     }
     if (ds.moved) {
-      // Vừa kéo xong thì bỏ qua sự kiện click kế tiếp (không toggle mở/đóng chat)
       suppressClickRef.current = true;
     }
   };
@@ -321,36 +379,54 @@ function EiraUI() {
     return () => clearTimeout(t);
   }, [promoDismissed, isOpen]);
 
-  /* Hide promo when open */
   useEffect(() => {
     if (isOpen) setPromoVisible(false);
   }, [isOpen]);
 
-  /* Dọn timeout ẩn-tạm-5-phút khi component unmount, tránh set-state sau khi unmount */
   useEffect(() => {
     return () => {
       if (mascotTimeoutRef.current) clearTimeout(mascotTimeoutRef.current);
     };
   }, []);
 
-  /* Theo dõi isOpen bằng ref để tránh stale closure trong sendMessage,
-     đồng thời reset badge "chưa đọc" mỗi khi người dùng mở khung chat */
   useEffect(() => {
     isOpenRef.current = isOpen;
     if (isOpen) setUnreadCount(0);
   }, [isOpen]);
 
-  /* Scroll to bottom */
+  /* Tự động cuộn xuống cuối khi có tin nhắn mới hoặc đang gõ,
+     nhưng chỉ khi người dùng đang thực sự ở gần cuối khung chat */
   useEffect(() => {
-    msgsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const wrap = msgsWrapRef.current;
+    if (!wrap) return;
+    const distFromBottom =
+      wrap.scrollHeight - wrap.scrollTop - wrap.clientHeight;
+    if (distFromBottom < SCROLL_BOTTOM_THRESHOLD * 2) {
+      msgsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages, isTyping]);
 
-  /* Focus input */
+  /* Theo dõi vị trí cuộn để hiện nút "xuống cuối" khi người dùng cuộn lên xem lại lịch sử */
+  useEffect(() => {
+    const wrap = msgsWrapRef.current;
+    if (!wrap) return;
+    const onScroll = () => {
+      const distFromBottom =
+        wrap.scrollHeight - wrap.scrollTop - wrap.clientHeight;
+      setShowScrollBtn(distFromBottom > SCROLL_BOTTOM_THRESHOLD);
+    };
+    wrap.addEventListener("scroll", onScroll, { passive: true });
+    return () => wrap.removeEventListener("scroll", onScroll);
+  }, [isOpen]);
+
+  const scrollToBottom = () => {
+    msgsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   useEffect(() => {
     if (isOpen) setTimeout(() => inpRef.current?.focus(), 380);
   }, [isOpen]);
 
-  /* Close on outside click */
   useEffect(() => {
     const handler = (e) => {
       if (!isOpen) return;
@@ -363,7 +439,6 @@ function EiraUI() {
     return () => document.removeEventListener("mousedown", handler);
   }, [isOpen]);
 
-  /* Đóng bằng phím Esc — chuẩn UX của mọi widget chat nổi */
   useEffect(() => {
     if (!isOpen) return;
     const handler = (e) => {
@@ -376,15 +451,19 @@ function EiraUI() {
   /* Core send */
   const sendMessage = useCallback(
     async (text) => {
-      const trimmed = text?.trim();
+      const trimmed = text?.trim().slice(0, MAX_INPUT_LEN);
       if (!trimmed || isBusy) return;
+
+      if (configError) {
+        setMessages((prev) => [...prev, makeMsg("bot", configError, true)]);
+        return;
+      }
 
       setIsBusy(true);
       setSuggHidden(true);
       setInput("");
       lastUserMsgRef.current = trimmed;
 
-      // Reset textarea
       if (inpRef.current) inpRef.current.style.height = "auto";
 
       setMessages((prev) => [...prev, makeMsg("user", trimmed)]);
@@ -392,23 +471,27 @@ function EiraUI() {
       setIsTyping(true);
 
       try {
-        const res = await fetch(GROQ_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${GROQ_KEY}`,
+        const res = await fetchWithTimeout(
+          GROQ_URL,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${GROQ_KEY}`,
+            },
+            body: JSON.stringify({
+              model: GROQ_MODEL,
+              messages: [
+                { role: "system", content: SYSTEM_PROMPT },
+                ...historyRef.current,
+              ],
+              temperature: 0.72,
+              max_tokens: 380,
+              top_p: 0.88,
+            }),
           },
-          body: JSON.stringify({
-            model: GROQ_MODEL,
-            messages: [
-              { role: "system", content: SYSTEM_PROMPT },
-              ...historyRef.current,
-            ],
-            temperature: 0.72,
-            max_tokens: 380,
-            top_p: 0.88,
-          }),
-        });
+          REQUEST_TIMEOUT_MS,
+        );
 
         if (!res.ok) {
           const errBody = await res.json().catch(() => ({}));
@@ -416,41 +499,47 @@ function EiraUI() {
         }
 
         const data = await res.json();
-        const reply = data?.choices?.[0]?.message?.content || null;
+        const reply = data?.choices?.[0]?.message?.content?.trim() || null;
         if (!reply) throw new Error("Không nhận được phản hồi từ AI");
 
         historyRef.current.push({ role: "assistant", content: reply });
-        if (historyRef.current.length > 22)
-          historyRef.current = historyRef.current.slice(-18);
+        if (historyRef.current.length > MAX_HISTORY_TURNS)
+          historyRef.current = historyRef.current.slice(-TRIM_HISTORY_TO);
 
         setIsTyping(false);
         setMessages((prev) => [...prev, makeMsg("bot", reply)]);
-        // Nếu khung chat đang đóng (đặc biệt trên mobile), tăng số badge "chưa đọc"
         if (!isOpenRef.current) setUnreadCount((c) => c + 1);
       } catch (err) {
         setIsTyping(false);
+
+        const isAbort = err.name === "AbortError";
         const isQuota =
-          err.message.includes("quota") || err.message.includes("429");
+          err.message?.includes("quota") || err.message?.includes("429");
         const isKey =
-          err.message.includes("API key") || err.message.includes("400");
-        const errMsg = isQuota
-          ? "Mình đang bị quá tải một chút 😅 Thử lại sau vài giây nhé!"
-          : isKey
-            ? "API key Groq chưa đúng — cần dạng gsk_... Kiểm tra lại GROQ_KEY!"
-            : `Có lỗi xảy ra: ${err.message}`;
+          err.message?.includes("API key") || err.message?.includes("400");
+        const isNetwork =
+          err instanceof TypeError && err.message?.includes("fetch");
+
+        const errMsg = isAbort
+          ? "Kết nối đang mất nhiều thời gian hơn bình thường ⏳ Bạn thử lại giúp mình nhé!"
+          : isNetwork
+            ? "Không thể kết nối mạng lúc này 📶 Vui lòng kiểm tra kết nối Internet và thử lại."
+            : isQuota
+              ? "Mình đang bị quá tải một chút 😅 Thử lại sau vài giây nhé!"
+              : isKey
+                ? "Hệ thống AI đang gặp sự cố cấu hình. Vui lòng liên hệ earthoriavn@gmail.com để được hỗ trợ."
+                : `Có lỗi xảy ra, bạn thử lại giúp mình nhé! (${err.message})`;
 
         historyRef.current.pop();
         setMessages((prev) => [...prev, makeMsg("bot", errMsg, true)]);
       } finally {
         setIsBusy(false);
-        // Trả focus về ô nhập để người dùng gõ tiếp ngay, không cần bấm lại vào ô
         setTimeout(() => inpRef.current?.focus(), 0);
       }
     },
-    [isBusy],
+    [isBusy, configError],
   );
 
-  /* Regenerate last answer */
   const handleRegenerate = useCallback(() => {
     if (!lastUserMsgRef.current || isBusy) return;
     if (historyRef.current.length >= 2)
@@ -463,6 +552,15 @@ function EiraUI() {
     sendMessage(lastUserMsgRef.current);
   }, [isBusy, sendMessage]);
 
+  /* Xóa toàn bộ hội thoại hiện tại, bắt đầu lại từ đầu */
+  const handleClearChat = useCallback(() => {
+    if (isBusy) return;
+    setMessages([]);
+    historyRef.current = [];
+    lastUserMsgRef.current = "";
+    setSuggHidden(false);
+  }, [isBusy]);
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -471,18 +569,16 @@ function EiraUI() {
   };
 
   const handleInput = (e) => {
-    setInput(e.target.value);
+    setInput(e.target.value.slice(0, MAX_INPUT_LEN));
     const el = e.target;
     el.style.height = "auto";
     el.style.height = Math.min(el.scrollHeight, 100) + "px";
   };
 
-  /* Bấm X trên mascot: ẩn NGAY LẬP TỨC, tự động hiện lại sau 5 phút.
-     Không có gì được lưu lại — tải lại trang là coi như chưa từng đóng. */
   const dismissPromo = (e) => {
     e.stopPropagation();
     e.preventDefault();
-    suppressClickRef.current = true; // lớp an toàn thứ 2: chặn click lọt lên nút FAB cha
+    suppressClickRef.current = true;
 
     setPromoVisible(false);
     setPromoDismissed(true);
@@ -494,8 +590,8 @@ function EiraUI() {
     }, MASCOT_HIDE_DURATION);
   };
 
-  // Đang ở trạng thái "chào mừng": hiện linh vật thay cho nút tròn thường
   const showMascot = promoVisible && !promoDismissed && !isOpen;
+  const nearLimit = input.length >= MAX_INPUT_LEN - 40;
 
   return (
     <div
@@ -503,7 +599,7 @@ function EiraUI() {
       className={isDragging ? "dragging" : ""}
       style={{ "--drag-x": `${dragPos.x}px`, "--drag-y": `${dragPos.y}px` }}
     >
-      {/* ── FAB — giữ nguyên bottom: 96px như code gốc, giờ kéo-thả được ── */}
+      {/* ── FAB ── */}
       <button
         type="button"
         id="eira-fab"
@@ -524,10 +620,7 @@ function EiraUI() {
       >
         {showMascot ? (
           <>
-            {/* Ánh sáng xanh phát sáng phía sau linh vật */}
             <div className="eira-fab-mascot-glow" aria-hidden="true" />
-
-            {/* Các đốm sáng lập lòe bay quanh linh vật */}
             <span className="eira-firefly eira-firefly-1" aria-hidden="true" />
             <span className="eira-firefly eira-firefly-2" aria-hidden="true" />
             <span className="eira-firefly eira-firefly-3" aria-hidden="true" />
@@ -539,7 +632,6 @@ function EiraUI() {
               alt="Eira vẫy chào"
               draggable="false"
             />
-            {/* Nút X riêng trên linh vật: chỉ ẩn tạm 5 phút, không đóng vĩnh viễn */}
             <span
               className="eira-fab-mascot-close"
               role="button"
@@ -556,18 +648,14 @@ function EiraUI() {
           </>
         ) : (
           <>
-            {/* Chấm "online" — ẩn khi đang mở HOẶC khi có badge chưa đọc (badge ưu tiên hiện) */}
             <div
               className={`eira-online-dot${isOpen || unreadCount > 0 ? " hidden" : ""}`}
             />
-
-            {/* Badge số tin nhắn chưa đọc — nổi bật đặc biệt trên mobile */}
             {unreadCount > 0 && !isOpen && (
               <span key={unreadCount} className="eira-badge" aria-hidden="true">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
-
             <span className="eira-fab-icon eira-ico-open">
               <MessageCircle size={22} />
             </span>
@@ -586,7 +674,6 @@ function EiraUI() {
         aria-modal="true"
         aria-label="Eira - Trợ lý Earthoria"
       >
-        {/* Header — giữ gradient tối như gốc, chỉ 1 nút X */}
         <div id="eira-hdr">
           <div className="eira-avatar">
             <div className="eira-avatar-inner">
@@ -599,6 +686,18 @@ function EiraUI() {
             <div className="eira-hdr-sub">Trực tuyến · Hỗ trợ 24/7</div>
           </div>
           <div className="eira-hdr-actions">
+            {messages.length > 0 && (
+              <button
+                type="button"
+                className="eira-close-btn"
+                aria-label="Xóa hội thoại"
+                title="Xóa hội thoại"
+                onClick={handleClearChat}
+                disabled={isBusy}
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
             <button
               type="button"
               className="eira-close-btn"
@@ -610,8 +709,7 @@ function EiraUI() {
           </div>
         </div>
 
-        {/* Messages */}
-        <div id="eira-msgs" aria-live="polite">
+        <div id="eira-msgs" ref={msgsWrapRef} aria-live="polite">
           <div className="eira-welcome">
             Xin chào! Mình là <strong>Eira</strong> 🌿 — trợ lý ảo của
             Earthoria.
@@ -634,7 +732,6 @@ function EiraUI() {
             ),
           )}
 
-          {/* Typing */}
           {isTyping && (
             <div className="eira-typing">
               <div className="typing-label-row">
@@ -656,7 +753,18 @@ function EiraUI() {
           <div ref={msgsEndRef} />
         </div>
 
-        {/* Suggestions */}
+        {/* Nút cuộn xuống cuối — hiện khi người dùng cuộn lên xem lại lịch sử */}
+        {showScrollBtn && (
+          <button
+            type="button"
+            id="eira-scroll-btn"
+            aria-label="Cuộn xuống tin nhắn mới nhất"
+            onClick={scrollToBottom}
+          >
+            <ChevronDown size={16} strokeWidth={2.5} />
+          </button>
+        )}
+
         <div id="eira-sugg" className={suggHidden ? "hidden" : ""}>
           {SUGGESTIONS.map(({ Icon, label }) => (
             <button
@@ -671,7 +779,6 @@ function EiraUI() {
           ))}
         </div>
 
-        {/* Input — Claude-style unified box */}
         <div id="eira-input-wrap">
           <div id="eira-input-row">
             <textarea
@@ -679,7 +786,7 @@ function EiraUI() {
               ref={inpRef}
               placeholder="Nhắn tin với Eira..."
               rows={1}
-              maxLength={500}
+              maxLength={MAX_INPUT_LEN}
               value={input}
               onInput={handleInput}
               onChange={(e) => setInput(e.target.value)}
@@ -696,9 +803,13 @@ function EiraUI() {
               <Send size={15} strokeWidth={2} />
             </button>
           </div>
+          {nearLimit && (
+            <div id="eira-char-count" role="status">
+              {input.length}/{MAX_INPUT_LEN}
+            </div>
+          )}
         </div>
 
-        {/* Footer */}
         <div id="eira-foot">
           <div className="eira-foot-dot" />
           Powered by Earthoria
