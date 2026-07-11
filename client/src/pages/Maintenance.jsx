@@ -125,7 +125,7 @@ export default function Maintenance() {
           </div>
 
           <h2 className="em-rise-3" style={styles.vHeadline}>
-            Mỗi cuốn sách
+            Mỗi cuốn sách cũng
             <br />
             cần một <em style={styles.vHeadlineEm}>khoảnh khắc</em>
             <br />
@@ -133,8 +133,9 @@ export default function Maintenance() {
           </h2>
 
           <p className="em-rise-4" style={styles.vSub}>
-            Đằng sau cánh cửa khép, đội ngũ của chúng tôi đang sắp xếp lại từng
-            trang sách số để hành trình tiếp theo của bạn mượt mà hơn.
+            Đằng sau quyển sách đang khép lại, đội ngũ của chúng tôi đang sắp
+            xếp lại từng trang sách số để hành trình tiếp theo của bạn mượt mà
+            hơn.
           </p>
         </div>
 
@@ -177,9 +178,14 @@ export default function Maintenance() {
             </h1>
 
             <p style={styles.desc}>
-              Earthoria tạm ngưng phục vụ trong thời gian ngắn để thực hiện các
-              nâng cấp dưới đây. Xin lỗi vì sự bất tiện này — mọi dữ liệu, đơn
-              hàng và tủ sách của bạn đều được giữ nguyên vẹn.
+              Earthoria xin phép được tạm ngưng phục vụ trong thời gian ngắn để
+              thực hiện các nâng cấp và bảo trì hệ thống nhằm mang đến trải
+              nghiệm ổn định và tốt hơn cho người dùng.
+            </p>
+            <p style={styles.desc}>
+              Chúng tôi thành thật xin lỗi vì sự bất tiện này. Toàn bộ dữ liệu,
+              đơn hàng và tủ sách của bạn vẫn được lưu trữ an toàn và sẽ không
+              bị ảnh hưởng trong quá trình bảo trì.
             </p>
 
             <div style={styles.noteRow}>
@@ -243,7 +249,7 @@ export default function Maintenance() {
                   <path d="M12 7v5l3 3" />
                 </svg>
                 <span>
-                  Dự kiến hoàn thành lúc{" "}
+                  Thời gian dự kiến hoàn tất:{" "}
                   <strong style={styles.timePillStrong}>
                     18:00 · 12/07/2026
                   </strong>
@@ -674,8 +680,8 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    width: 44,
-    height: 44,
+    width: 68,
+    height: 68,
     flexShrink: 0,
   },
   headerLogo: {
