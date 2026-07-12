@@ -485,8 +485,11 @@ body.dark-mode .view-btn {
   border-color: rgba(255, 255, 255, 0.08);
   color: rgba(180, 200, 188, 0.4);
 }
-body.dark-mode .view-btn.active,
 body.dark-mode .view-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+body.dark-mode .view-btn.active {
   background: #2a5c3a;
   color: var(--ivory);
   border-color: #2a5c3a;

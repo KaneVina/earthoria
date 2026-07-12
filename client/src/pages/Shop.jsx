@@ -25,13 +25,7 @@ const FEATURES = [
   { label: "Bộ sưu tập", count: 4 },
 ];
 
-const TOOLBAR_PILLS = [
-  "Tất cả",
-  "Thiên nhiên",
-  "Vũ trụ",
-  "Khoa học",
-  "Bộ sưu tập",
-];
+
 
 const TRUST_ITEMS = [
   {
@@ -837,7 +831,6 @@ export default function Shop() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [activeFeatures, setActiveFeatures] = useState(["Có AR"]);
   const [activeTags, setActiveTags] = useState(["3–5 tuổi"]);
-  const [activeToolbarPill, setActiveToolbarPill] = useState("Tất cả");
   const [gridCols, setGridCols] = useState(3);
   const [sortValue, setSortValue] = useState("Nổi bật");
   const [activePage, setActivePage] = useState(1);
@@ -1247,17 +1240,6 @@ export default function Shop() {
         <main>
           {/* TOOLBAR */}
           <div className="shop-toolbar">
-            <div className="toolbar-pills">
-              {TOOLBAR_PILLS.map((pill) => (
-                <button
-                  key={pill}
-                  className={`pill${activeToolbarPill === pill ? " active" : ""}`}
-                  onClick={() => setActiveToolbarPill(pill)}
-                >
-                  {pill}
-                </button>
-              ))}
-            </div>
             <div className="toolbar-right">
               <span className="sort-label">Sắp xếp</span>
               <select

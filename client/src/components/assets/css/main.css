@@ -4131,9 +4131,9 @@ body.dark-mode .social-card-handle {
 }
 
 /* ── Shop Toolbar ── */
-.shop-toolbar {
+ .shop-toolbar {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   margin-bottom: 36px;
 }
@@ -4145,11 +4145,15 @@ body.dark-mode .social-card-handle {
   display: flex;
   align-items: center;
   gap: 20px;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
 }
 .sort-label {
   font-size: 11px;
   letter-spacing: 0.1em;
   color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .sort-select {
   font-family: "Be Vietnam Pro", sans-serif;
@@ -4166,6 +4170,7 @@ body.dark-mode .social-card-handle {
   background-repeat: no-repeat;
   background-position: right 12px center;
 }
+
 .view-toggle {
   display: flex;
   gap: 4px;
@@ -4180,13 +4185,31 @@ body.dark-mode .social-card-handle {
   cursor: pointer;
   background: transparent;
   color: var(--text-muted);
-  transition: all 0.3s;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.view-btn.active,
+.view-btn svg {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
 .view-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+  transform: translateY(-2px);
+}
+.view-btn:hover svg {
+  transform: scale(1.15);
+}
+.view-btn:active {
+  transform: translateY(0) scale(0.92);
+  transition-duration: 0.1s;
+}
+.view-btn.active {
   background: var(--forest);
   color: var(--ivory);
   border-color: var(--forest);
+  transform: translateY(0);
+}
+.view-btn.active svg {
+  transform: scale(1);
 }
 
 /* ── Grid variants ── */
@@ -4301,8 +4324,8 @@ body.dark-mode .social-card-handle {
 }
 
 /* ── Featured product (wide card) ── */
-.featured-product-card {
-  grid-column: span 3;
+ .featured-product-card {
+  grid-column: 1 / -1;
   display: grid;
   grid-template-columns: 1.1fr 1fr;
   background: var(--white);
@@ -4426,7 +4449,7 @@ body.dark-mode .social-card-handle {
 
 /* ── Promo Strip ── */
 .promo-strip {
-  grid-column: span 3;
+  grid-column: 1 / -1;
   background: var(--forest);
   padding: 40px 48px;
   display: flex;
