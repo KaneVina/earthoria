@@ -226,7 +226,15 @@ function getPageNumbers(current, total) {
     return Array.from({ length: total }, (_, i) => i + 1);
   }
 
-  const pages = new Set([1, 2, total - 1, total, current - 1, current, current + 1]);
+  const pages = new Set([
+    1,
+    2,
+    total - 1,
+    total,
+    current - 1,
+    current,
+    current + 1,
+  ]);
   const sorted = [...pages]
     .filter((p) => p >= 1 && p <= total)
     .sort((a, b) => a - b);
@@ -342,42 +350,50 @@ function AddToCartBtn({ onAdd, disabled }) {
         onMouseLeave={() => setHovered(false)}
         disabled={disabled}
         style={{
-          ...(added ? { background: "var(--forest)", color: "var(--ivory)" } : {}),
+          ...(added
+            ? { background: "var(--forest)", color: "var(--ivory)" }
+            : {}),
           ...(disabled ? { opacity: 0.5, cursor: "not-allowed" } : {}),
         }}
       >
         {added ? <CheckIcon /> : <CartIcon />}
       </button>
-      {hovered && !added && createPortal(
-        <span style={{
-          position: "absolute",
-          top: pos.top,
-          left: pos.left,
-          transform: "translateX(-50%)",
-          background: "var(--forest, #0d2b1e)",
-          color: "var(--ivory, #faf8f3)",
-          fontFamily: "'Be Vietnam Pro', sans-serif",
-          fontSize: "11px",
-          fontWeight: 300,
-          letterSpacing: "0.06em",
-          padding: "6px 12px",
-          border: "0.5px solid rgba(180,150,80,0.3)",
-          pointerEvents: "none",
-          zIndex: 99999,
-          whiteSpace: "nowrap",
-        }}>
-          <span style={{
-            position: "absolute",
-            bottom: "100%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            border: "5px solid transparent",
-            borderBottomColor: "var(--forest, #0d2b1e)",
-          }} />
-          Thêm vào giỏ hàng
-        </span>,
-        document.body
-      )}
+      {hovered &&
+        !added &&
+        createPortal(
+          <span
+            style={{
+              position: "absolute",
+              top: pos.top,
+              left: pos.left,
+              transform: "translateX(-50%)",
+              background: "var(--forest, #0d2b1e)",
+              color: "var(--ivory, #faf8f3)",
+              fontFamily: "'Be Vietnam Pro', sans-serif",
+              fontSize: "11px",
+              fontWeight: 300,
+              letterSpacing: "0.06em",
+              padding: "6px 12px",
+              border: "0.5px solid rgba(180,150,80,0.3)",
+              pointerEvents: "none",
+              zIndex: 99999,
+              whiteSpace: "nowrap",
+            }}
+          >
+            <span
+              style={{
+                position: "absolute",
+                bottom: "100%",
+                left: "50%",
+                transform: "translateX(-50%)",
+                border: "5px solid transparent",
+                borderBottomColor: "var(--forest, #0d2b1e)",
+              }}
+            />
+            Thêm vào giỏ hàng
+          </span>,
+          document.body,
+        )}
     </>
   );
 }
@@ -435,36 +451,41 @@ function WishlistBtn({ wishlisted, onToggle }) {
       >
         <HeartIcon filled={wishlisted} />
       </button>
-      {hovered && createPortal(
-        <span style={{
-          position: "absolute",
-          top: pos.top,
-          left: pos.left,
-          transform: "translateX(-50%)",
-          background: "var(--forest, #0d2b1e)",
-          color: "var(--ivory, #faf8f3)",
-          fontFamily: "'Be Vietnam Pro', sans-serif",
-          fontSize: "11px",
-          fontWeight: 300,
-          letterSpacing: "0.06em",
-          padding: "6px 12px",
-          border: "0.5px solid rgba(180,150,80,0.3)",
-          pointerEvents: "none",
-          zIndex: 99999,
-          whiteSpace: "nowrap",
-        }}>
-          <span style={{
-            position: "absolute",
-            bottom: "100%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            border: "5px solid transparent",
-            borderBottomColor: "var(--forest, #0d2b1e)",
-          }} />
-          {wishlisted ? "Bỏ yêu thích" : "Thêm yêu thích"}
-        </span>,
-        document.body
-      )}
+      {hovered &&
+        createPortal(
+          <span
+            style={{
+              position: "absolute",
+              top: pos.top,
+              left: pos.left,
+              transform: "translateX(-50%)",
+              background: "var(--forest, #0d2b1e)",
+              color: "var(--ivory, #faf8f3)",
+              fontFamily: "'Be Vietnam Pro', sans-serif",
+              fontSize: "11px",
+              fontWeight: 300,
+              letterSpacing: "0.06em",
+              padding: "6px 12px",
+              border: "0.5px solid rgba(180,150,80,0.3)",
+              pointerEvents: "none",
+              zIndex: 99999,
+              whiteSpace: "nowrap",
+            }}
+          >
+            <span
+              style={{
+                position: "absolute",
+                bottom: "100%",
+                left: "50%",
+                transform: "translateX(-50%)",
+                border: "5px solid transparent",
+                borderBottomColor: "var(--forest, #0d2b1e)",
+              }}
+            />
+            {wishlisted ? "Bỏ yêu thích" : "Thêm yêu thích"}
+          </span>,
+          document.body,
+        )}
     </>
   );
 }
@@ -473,6 +494,57 @@ const displayPrice = (val) => {
   if (val === undefined || val === null || val === "") return "";
   return typeof val === "number" ? formatPrice(val) : val;
 };
+// Đếm số chạy giảm dần từ giá gốc xuống giá sale — chỉ bắt đầu khi lướt tới,
+// đứng yên ở giá gốc lúc chưa lướt tới, giống hiệu ứng countdown
+function CountdownPrice({ from, to, duration = 1200 }) {
+  const [display, setDisplay] = useState(from);
+  const rafRef = useRef(null);
+  const wrapRef = useRef(null);
+  const hasPlayedRef = useRef(false);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasPlayedRef.current) {
+          hasPlayedRef.current = true;
+
+          if (from === to) {
+            setDisplay(to);
+            observer.disconnect();
+            return;
+          }
+
+          const start = performance.now();
+          const tick = (now) => {
+            const progress = Math.min((now - start) / duration, 1);
+            // ease-out để số chạy nhanh lúc đầu, chậm dần lúc cuối
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = Math.round(from - (from - to) * eased);
+            setDisplay(current);
+            if (progress < 1) {
+              rafRef.current = requestAnimationFrame(tick);
+            }
+          };
+          rafRef.current = requestAnimationFrame(tick);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 },
+    );
+
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, [from, to, duration]);
+
+  return <span ref={wrapRef}>{displayPrice(display)}</span>;
+}
+
 function ProductCard({ book, onAddToCart, delay, isAdding }) {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
@@ -504,7 +576,12 @@ function ProductCard({ book, onAddToCart, delay, isAdding }) {
     <div
       className={`product-card reveal${delay ? ` reveal-delay-${delay}` : ""}`}
       onClick={handleCardClick}
-      style={{ cursor: "pointer", display: "flex", flexDirection: "column", position: "relative" }}
+      style={{
+        cursor: "pointer",
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+      }}
     >
       <div className="product-img-wrap">
         <img src={book.img || book.coverImage} alt={book.title} />
@@ -535,7 +612,12 @@ function ProductCard({ book, onAddToCart, delay, isAdding }) {
         {/* Wishlist + tooltip portal */}
         <div
           className="card-wishlist-wrap"
-          style={{ position: "absolute", top: "16px", right: "16px", zIndex: 10 }}
+          style={{
+            position: "absolute",
+            top: "16px",
+            right: "16px",
+            zIndex: 10,
+          }}
           onClick={(e) => e.stopPropagation()}
         >
           <WishlistBtn wishlisted={wishlisted} onToggle={handleWishlist} />
@@ -691,35 +773,21 @@ function ProductCard({ book, onAddToCart, delay, isAdding }) {
         {/* Footer — giá + giỏ hàng */}
         <div className="product-footer" style={{ alignItems: "center" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-            {book.oldPrice ||
-            (book.salePrice && book.salePrice < book.price) ? (
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "6px" }}
-              >
-                <span
-                  style={{
-                    fontSize: "12px",
-                    color: "var(--text-muted)",
-                    textDecoration: "line-through",
-                    lineHeight: 1,
-                  }}
+            {book.salePrice && book.salePrice < book.price ? (
+              <>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "6px" }}
                 >
-                  {book.oldPrice || displayPrice(book.price)}
-                </span>
-                {book.discount && (
                   <span
                     style={{
-                      fontSize: "9px",
-                      letterSpacing: "0.1em",
-                      color: "#c05050",
-                      background: "rgba(192,80,80,0.08)",
-                      padding: "2px 6px",
+                      fontSize: "12px",
+                      color: "var(--text-muted)",
+                      textDecoration: "line-through",
+                      lineHeight: 1,
                     }}
                   >
-                    {book.discount}
+                    {displayPrice(book.price)}
                   </span>
-                )}
-                {!book.discount && book.salePrice && book.price && (
                   <span
                     style={{
                       fontSize: "9px",
@@ -731,14 +799,19 @@ function ProductCard({ book, onAddToCart, delay, isAdding }) {
                   >
                     -{Math.round((1 - book.salePrice / book.price) * 100)}%
                   </span>
-                )}
-              </div>
+                </div>
+                <span className="product-price">
+                  <CountdownPrice from={book.price} to={book.salePrice} />
+                </span>
+              </>
             ) : (
-              <div style={{ height: "16px" }} />
+              <>
+                <div style={{ height: "16px" }} />
+                <span className="product-price">
+                  {displayPrice(book.price)}
+                </span>
+              </>
             )}
-            <span className="product-price">
-              {displayPrice(book.price) || displayPrice(book.salePrice)}
-            </span>
           </div>
 
           {/* Cart + tooltip */}
@@ -774,28 +847,28 @@ export default function Shop() {
 
   const [addingIds, setAddingIds] = useState(new Set());
 
-const handleAddToCart = async (id) => {
-  if (!isAuthenticated) {
-    toast.error("Vui lòng đăng nhập để mua hàng");
-    return;
-  }
-  if (addingIds.has(id)) return; // chặn bấm nhiều lần liên tiếp
+  const handleAddToCart = async (id) => {
+    if (!isAuthenticated) {
+      toast.error("Vui lòng đăng nhập để mua hàng");
+      return;
+    }
+    if (addingIds.has(id)) return; // chặn bấm nhiều lần liên tiếp
 
-  setAddingIds((prev) => new Set(prev).add(id));
-  toast.success("Đã thêm vào giỏ hàng"); // hiện NGAY, không chờ API
+    setAddingIds((prev) => new Set(prev).add(id));
+    toast.success("Đã thêm vào giỏ hàng"); // hiện NGAY, không chờ API
 
-  try {
-    await addToCart(id, 1);
-  } catch {
-    toast.error("Có lỗi xảy ra, vui lòng thử lại");
-  } finally {
-    setAddingIds((prev) => {
-      const next = new Set(prev);
-      next.delete(id);
-      return next;
-    });
-  }
-};
+    try {
+      await addToCart(id, 1);
+    } catch {
+      toast.error("Có lỗi xảy ra, vui lòng thử lại");
+    } finally {
+      setAddingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
+  };
   const PAGE_SIZE = 12;
 
   const { data: shopData, isLoading } = useQuery({
@@ -848,9 +921,12 @@ const handleAddToCart = async (id) => {
           video.src =
             "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260511_131941_d136af49-e243-493a-be14-6ff3f24e09e6.mp4";
           video.load();
-          video.play().then(() => {
-            video.playbackRate = 0.4;
-          }).catch(() => {});
+          video
+            .play()
+            .then(() => {
+              video.playbackRate = 0.4;
+            })
+            .catch(() => {});
           observer.disconnect();
         }
       },
@@ -876,7 +952,9 @@ const handleAddToCart = async (id) => {
   const usingFallback = !isLoading && books.length === 0;
   const displayBooks = usingFallback ? STATIC_PRODUCTS : books;
   // Nếu đang dùng dữ liệu tĩnh fallback (API chưa có sách) thì chỉ có 1 trang
-  const totalPages = usingFallback ? 1 : Math.max(1, pagination.totalPages || 1);
+  const totalPages = usingFallback
+    ? 1
+    : Math.max(1, pagination.totalPages || 1);
 
   const goToPage = (p) => {
     const next = Math.min(Math.max(1, p), totalPages);
@@ -1304,7 +1382,9 @@ const handleAddToCart = async (id) => {
                   />
                   <div className="product-img-overlay" />
                   {featuredBook.badge && (
-                    <span className="product-badge gold">{featuredBook.badge}</span>
+                    <span className="product-badge gold">
+                      {featuredBook.badge}
+                    </span>
                   )}
                 </div>
                 <div className="featured-product-body">
@@ -1318,10 +1398,27 @@ const handleAddToCart = async (id) => {
                   </p>
                   <div className="featured-specs">
                     {[
-                      { label: "Độ tuổi", val: featuredBook.ageRange || "4 – 10 tuổi" },
-                      { label: "Ngôn ngữ", val: featuredBook.language || "Tiếng Việt" },
-                      { label: "Danh mục", val: featuredBook.category?.name || featuredBook.category || "—" },
-                      { label: "Đánh giá", val: featuredBook.rating ? `${featuredBook.rating}★` : "—" },
+                      {
+                        label: "Độ tuổi",
+                        val: featuredBook.ageRange || "4 – 10 tuổi",
+                      },
+                      {
+                        label: "Ngôn ngữ",
+                        val: featuredBook.language || "Tiếng Việt",
+                      },
+                      {
+                        label: "Danh mục",
+                        val:
+                          featuredBook.category?.name ||
+                          featuredBook.category ||
+                          "—",
+                      },
+                      {
+                        label: "Đánh giá",
+                        val: featuredBook.rating
+                          ? `${featuredBook.rating}★`
+                          : "—",
+                      },
                     ].map((spec) => (
                       <div className="featured-spec-item" key={spec.label}>
                         <div className="featured-spec-label">{spec.label}</div>
@@ -1336,7 +1433,16 @@ const handleAddToCart = async (id) => {
                       disabled={addingIds.has(featuredBook.hashId)}
                     >
                       <CartIcon />
-                     Thêm vào giỏ — {displayPrice(featuredBook.price) || displayPrice(featuredBook.salePrice)}
+                      Thêm vào giỏ —{" "}
+                      {featuredBook.salePrice &&
+                      featuredBook.salePrice < featuredBook.price ? (
+                        <CountdownPrice
+                          from={featuredBook.price}
+                          to={featuredBook.salePrice}
+                        />
+                      ) : (
+                        displayPrice(featuredBook.price)
+                      )}
                     </button>
                     <button className="btn-ar-preview">
                       <svg
@@ -1493,75 +1599,79 @@ const handleAddToCart = async (id) => {
           }}
         />
         <div style={{ position: "relative", zIndex: 2 }}>
-        <div
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%,-50%)",
-            width: "600px",
-            height: "600px",
-            border: "0.5px solid rgba(255,255,255,0.04)",
-            borderRadius: "50%",
-            pointerEvents: "none",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%,-50%)",
-            width: "350px",
-            height: "350px",
-            border: "0.5px solid rgba(74,158,63,0.08)",
-            borderRadius: "50%",
-            pointerEvents: "none",
-          }}
-        />
-        <div className="cta-bg-text">Earthoria</div>
-        <span className="cta-eyebrow reveal">
-          Chưa tìm thấy sản phẩm ưng ý?
-        </span>
-        <h2 className="cta-headline reveal">
-          Tham gia cộng đồng —<br />
-          <em>Nhận thông báo sản phẩm mới</em>
-        </h2>
-        <p className="cta-sub reveal">
-          Đăng ký nhận bản tin để được ưu tiên thông báo khi bộ sưu tập mới ra
-          mắt và nhận mã giảm giá độc quyền.
-        </p>
-        <div
-          className="cta-btns reveal"
-          style={{ flexDirection: "column", alignItems: "center", gap: "20px" }}
-        >
-          <div style={{ display: "flex", maxWidth: "420px", width: "100%" }}>
-            <input
-              type="email"
-              placeholder="Email của bạn"
-              style={{
-                flex: 1,
-                background: "rgba(255,255,255,0.06)",
-                border: "0.5px solid rgba(255,255,255,0.15)",
-                borderRight: "none",
-                padding: "14px 18px",
-                fontSize: "13px",
-                color: "rgba(255,255,255,0.7)",
-                fontFamily: "'Be Vietnam Pro',sans-serif",
-                outline: "none",
-              }}
-            />
-            <button
-              className="cta-btn-main"
-              style={{ padding: "14px 28px", whiteSpace: "nowrap" }}
-            >
-              Đăng ký →
-            </button>
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%,-50%)",
+              width: "600px",
+              height: "600px",
+              border: "0.5px solid rgba(255,255,255,0.04)",
+              borderRadius: "50%",
+              pointerEvents: "none",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%,-50%)",
+              width: "350px",
+              height: "350px",
+              border: "0.5px solid rgba(74,158,63,0.08)",
+              borderRadius: "50%",
+              pointerEvents: "none",
+            }}
+          />
+          <div className="cta-bg-text">Earthoria</div>
+          <span className="cta-eyebrow reveal">
+            Chưa tìm thấy sản phẩm ưng ý?
+          </span>
+          <h2 className="cta-headline reveal">
+            Tham gia cộng đồng —<br />
+            <em>Nhận thông báo sản phẩm mới</em>
+          </h2>
+          <p className="cta-sub reveal">
+            Đăng ký nhận bản tin để được ưu tiên thông báo khi bộ sưu tập mới ra
+            mắt và nhận mã giảm giá độc quyền.
+          </p>
+          <div
+            className="cta-btns reveal"
+            style={{
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "20px",
+            }}
+          >
+            <div style={{ display: "flex", maxWidth: "420px", width: "100%" }}>
+              <input
+                type="email"
+                placeholder="Email của bạn"
+                style={{
+                  flex: 1,
+                  background: "rgba(255,255,255,0.06)",
+                  border: "0.5px solid rgba(255,255,255,0.15)",
+                  borderRight: "none",
+                  padding: "14px 18px",
+                  fontSize: "13px",
+                  color: "rgba(255,255,255,0.7)",
+                  fontFamily: "'Be Vietnam Pro',sans-serif",
+                  outline: "none",
+                }}
+              />
+              <button
+                className="cta-btn-main"
+                style={{ padding: "14px 28px", whiteSpace: "nowrap" }}
+              >
+                Đăng ký →
+              </button>
+            </div>
+            <Link to="/">
+              <button className="cta-btn-out">Về trang chủ</button>
+            </Link>
           </div>
-          <Link to="/">
-            <button className="cta-btn-out">Về trang chủ</button>
-          </Link>
-        </div>
         </div>
       </section>
     </>

@@ -20,6 +20,58 @@ import { lazy, Suspense } from "react";
 const SproutModel = lazy(() => import("../components/SproutModel"));
 
 /* ─────────────────────────────────────────────────────────────
+   COUNTDOWN PRICE — đếm số chạy giảm dần từ giá gốc xuống giá sale,
+   chỉ bắt đầu chạy khi lướt tới viewport, chạy đúng 1 lần
+───────────────────────────────────────────────────────────── */
+function CountdownPrice({ from, to, duration = 1200 }) {
+  const [display, setDisplay] = useState(from);
+  const rafRef = useRef(null);
+  const wrapRef = useRef(null);
+  const hasPlayedRef = useRef(false);
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !hasPlayedRef.current) {
+          hasPlayedRef.current = true;
+
+          if (from === to) {
+            setDisplay(to);
+            observer.disconnect();
+            return;
+          }
+
+          const start = performance.now();
+          const tick = (now) => {
+            const progress = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = Math.round(from - (from - to) * eased);
+            setDisplay(current);
+            if (progress < 1) {
+              rafRef.current = requestAnimationFrame(tick);
+            }
+          };
+          rafRef.current = requestAnimationFrame(tick);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 },
+    );
+
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, [from, to, duration]);
+
+  return <span ref={wrapRef}>{formatPrice(display)}</span>;
+}
+
+/* ─────────────────────────────────────────────────────────────
    PRODUCT CARD COMPONENT
 ───────────────────────────────────────────────────────────── */
 function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
@@ -282,7 +334,7 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
         {/* Footer — giá + giỏ hàng */}
         <div className="product-footer" style={{ alignItems: "center" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-            {book.originalPrice && book.originalPrice > book.salePrice ? (
+            {book.price && book.salePrice && book.price > book.salePrice ? (
               <div
                 style={{ display: "flex", alignItems: "center", gap: "8px" }}
               >
@@ -294,7 +346,7 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
                     lineHeight: 1,
                   }}
                 >
-                  {formatPrice(book.originalPrice)}
+                  {formatPrice(book.price)}
                 </span>
                 <span
                   style={{
@@ -305,7 +357,7 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
                     padding: "2px 6px",
                   }}
                 >
-                  -{Math.round((1 - book.salePrice / book.originalPrice) * 100)}
+                  -{Math.round((1 - book.salePrice / book.price) * 100)}
                   %
                 </span>
               </div>
@@ -313,7 +365,11 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
               <div style={{ height: "16px" }} />
             )}
             <span className="product-price">
-              {formatPrice(book.salePrice || book.price)}
+              {book.price && book.salePrice && book.price > book.salePrice ? (
+                <CountdownPrice from={book.price} to={book.salePrice} />
+              ) : (
+                formatPrice(book.salePrice || book.price)
+              )}
             </span>
           </div>
 
@@ -1355,7 +1411,10 @@ function FlashDealSection({ books, onAddCart }) {
                   lineHeight: 1,
                 }}
               >
-                {formatPrice(discountedPrice)}
+                <CountdownPrice
+                  from={book.salePrice || book.price}
+                  to={discountedPrice}
+                />
               </div>
               <div
                 style={{
