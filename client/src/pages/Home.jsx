@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { bookService } from "../services/bookService";
 import { useCartStore } from "../store/cartStore";
+import { useAuthStore } from "../store/authStore";
+import { useWishlistStore } from "../store/wishlistStore";
 import { formatPrice, getBookUrl } from "../utils/helpers";
 import toast from "react-hot-toast";
 import {
@@ -75,8 +77,19 @@ function CountdownPrice({ from, to, duration = 1200 }) {
    PRODUCT CARD COMPONENT
 ───────────────────────────────────────────────────────────── */
 function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
-  const [wishlisted, setWishlisted] = useState(false);
   const [added, setAdded] = useState(false);
+  const { isAuthenticated } = useAuthStore();
+  const { isInWishlist, toggleWishlist } = useWishlistStore();
+  const wishlisted = isInWishlist(book.hashId);
+
+  const handleWishlist = async () => {
+    if (!isAuthenticated) {
+      toast.error("Vui lòng đăng nhập để lưu yêu thích");
+      return;
+    }
+    if (!book.slug || !book.hashId) return;
+    await toggleWishlist(book.slug, book.hashId);
+  };
 
   const handleAddClick = () => {
     if (isAdding) return;
@@ -136,7 +149,7 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
         >
           <button
             className={`card-wishlist ${wishlisted ? "active" : ""}`}
-            onClick={() => setWishlisted((w) => !w)}
+            onClick={handleWishlist}
             style={{
               opacity: 1,
               transform: "translateY(0)",
@@ -357,8 +370,7 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
                     padding: "2px 6px",
                   }}
                 >
-                  -{Math.round((1 - book.salePrice / book.price) * 100)}
-                  %
+                  -{Math.round((1 - book.salePrice / book.price) * 100)}%
                 </span>
               </div>
             ) : (
@@ -433,6 +445,9 @@ function BookScrollRow({ books, onAddCart, badgeLabel, badgeType, addingIds }) {
   const rowRef = useRef(null);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(true);
+  const rafIdRef = useRef(null);
+  const autoplayTimerRef = useRef(null);
+  const isPausedRef = useRef(false);
 
   const scroll = (dir) => {
     const el = rowRef.current;
@@ -440,23 +455,60 @@ function BookScrollRow({ books, onAddCart, badgeLabel, badgeType, addingIds }) {
     el.scrollBy({ left: dir * 340, behavior: "smooth" });
   };
 
-  const checkScroll = () => {
+  const checkScroll = useCallback(() => {
     const el = rowRef.current;
     if (!el) return;
     setCanLeft(el.scrollLeft > 10);
     setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 10);
-  };
+  }, []);
 
   useEffect(() => {
     const el = rowRef.current;
     if (!el) return;
-    el.addEventListener("scroll", checkScroll);
+
+    const onScroll = () => {
+      if (rafIdRef.current) return;
+      rafIdRef.current = requestAnimationFrame(() => {
+        checkScroll();
+        rafIdRef.current = null;
+      });
+    };
+
+    el.addEventListener("scroll", onScroll, { passive: true });
     checkScroll();
-    return () => el.removeEventListener("scroll", checkScroll);
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+    };
+  }, [books, checkScroll]);
+
+  // Auto-đẩy mỗi 5s, tự dừng khi người dùng hover hoặc đang kéo tay
+  useEffect(() => {
+    if (!books || books.length === 0) return;
+
+    autoplayTimerRef.current = setInterval(() => {
+      const el = rowRef.current;
+      if (!el || isPausedRef.current) return;
+
+      const maxScroll = el.scrollWidth - el.clientWidth;
+      if (maxScroll <= 0) return;
+
+      if (el.scrollLeft >= maxScroll - 10) {
+        el.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        el.scrollBy({ left: 340, behavior: "smooth" });
+      }
+    }, 5000);
+
+    return () => clearInterval(autoplayTimerRef.current);
   }, [books]);
 
   return (
-    <div style={{ position: "relative" }}>
+    <div
+      style={{ position: "relative" }}
+      onMouseEnter={() => (isPausedRef.current = true)}
+      onMouseLeave={() => (isPausedRef.current = false)}
+    >
       {/* Fade edges */}
       {canLeft && (
         <div
@@ -568,22 +620,62 @@ function BookScrollRow({ books, onAddCart, badgeLabel, badgeType, addingIds }) {
           scrollbarWidth: "none",
           msOverflowStyle: "none",
           cursor: "grab",
+          touchAction: "pan-y",
         }}
-        onMouseDown={(e) => {
+        onPointerDown={(e) => {
+          if (e.pointerType !== "mouse") return;
+
           const el = rowRef.current;
-          let startX = e.pageX - el.offsetLeft;
-          let scrollLeft = el.scrollLeft;
-          el.style.cursor = "grabbing";
-          const onMove = (ev) => {
-            el.scrollLeft = scrollLeft - (ev.pageX - el.offsetLeft - startX);
+          if (!el) return;
+          isPausedRef.current = true;
+          const startX = e.clientX;
+          const startY = e.clientY;
+          const startScrollLeft = el.scrollLeft;
+          const pointerId = e.pointerId;
+          let decided = false;
+          let isHorizontalDrag = false;
+          let pendingDx = 0;
+          let dragRafId = null;
+
+          const applyScroll = () => {
+            el.scrollLeft = startScrollLeft - pendingDx;
+            dragRafId = null;
           };
+
+          const onMove = (ev) => {
+            const dx = ev.clientX - startX;
+            const dy = ev.clientY - startY;
+
+            if (!decided) {
+              if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+              decided = true;
+              isHorizontalDrag = Math.abs(dx) > Math.abs(dy) * 1.3;
+              if (isHorizontalDrag) {
+                el.style.cursor = "grabbing";
+                el.setPointerCapture?.(pointerId);
+              }
+            }
+
+            if (isHorizontalDrag) {
+              ev.preventDefault();
+              pendingDx = dx;
+              if (!dragRafId) dragRafId = requestAnimationFrame(applyScroll);
+            }
+          };
+
           const onUp = () => {
             el.style.cursor = "grab";
-            window.removeEventListener("mousemove", onMove);
-            window.removeEventListener("mouseup", onUp);
+            el.releasePointerCapture?.(pointerId);
+            if (dragRafId) cancelAnimationFrame(dragRafId);
+            isPausedRef.current = false;
+            window.removeEventListener("pointermove", onMove);
+            window.removeEventListener("pointerup", onUp);
+            window.removeEventListener("pointercancel", onUp);
           };
-          window.addEventListener("mousemove", onMove);
-          window.addEventListener("mouseup", onUp);
+
+          window.addEventListener("pointermove", onMove);
+          window.addEventListener("pointerup", onUp);
+          window.addEventListener("pointercancel", onUp);
         }}
       >
         {books.map((book) => (
@@ -2150,8 +2242,13 @@ export default function Home() {
   }, [featuredBooks, newBooks, bestsellerBooks]);
 
   const [addingIds, setAddingIds] = useState(new Set());
+  const { isAuthenticated } = useAuthStore();
 
   const handleAddToCart = async (hashId) => {
+    if (!isAuthenticated) {
+      toast.error("Vui lòng đăng nhập để mua hàng");
+      return;
+    }
     if (addingIds.has(hashId)) return;
     setAddingIds((prev) => new Set(prev).add(hashId));
     toast.success("Đã thêm vào giỏ hàng");
