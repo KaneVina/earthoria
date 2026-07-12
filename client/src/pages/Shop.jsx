@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { bookService } from "../services/bookService";
 import { useCartStore } from "../store/cartStore";
 import { formatPrice, getBookUrl } from "../utils/helpers";
@@ -217,6 +217,29 @@ const STATIC_PRODUCTS = [
     img: "https://images.unsplash.com/photo-1530983822321-fcac2d3c0f06?w=500&q=80",
   },
 ];
+
+// Sinh danh sách số trang có rút gọn kiểu: 1 2 3 ... 8 9
+// - Nếu tổng số trang nhỏ (<=7): hiện đủ tất cả, không rút gọn
+// - Nếu nhiều: luôn giữ trang đầu, trang cuối, trang hiện tại +-1, còn lại thay bằng "..."
+function getPageNumbers(current, total) {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  const pages = new Set([1, 2, total - 1, total, current - 1, current, current + 1]);
+  const sorted = [...pages]
+    .filter((p) => p >= 1 && p <= total)
+    .sort((a, b) => a - b);
+
+  const result = [];
+  let prev = 0;
+  for (const p of sorted) {
+    if (prev && p - prev > 1) result.push("...");
+    result.push(p);
+    prev = p;
+  }
+  return result;
+}
 
 function CartIcon() {
   return (
@@ -773,8 +796,10 @@ const handleAddToCart = async (id) => {
     });
   }
 };
-  const { data: books = [], isLoading } = useQuery({
-    queryKey: ["shop-books", activeCategory, sortValue],
+  const PAGE_SIZE = 12;
+
+  const { data: shopData, isLoading } = useQuery({
+    queryKey: ["shop-books", activeCategory, sortValue, activePage],
     queryFn: () =>
       bookService
         .getBooks({
@@ -784,9 +809,25 @@ const handleAddToCart = async (id) => {
               ? "price"
               : "createdAt",
           order: sortValue === "Giá tăng dần" ? "asc" : "desc",
+          page: activePage,
+          limit: PAGE_SIZE,
         })
-        .then((r) => r.data.data.books || []),
+        .then((r) => r.data.data),
+    placeholderData: keepPreviousData, // v5: giữ danh sách cũ khi đang tải trang mới, tránh nháy trắng
   });
+
+  const books = shopData?.books || [];
+  const pagination = shopData?.pagination || {
+    page: 1,
+    limit: PAGE_SIZE,
+    total: books.length,
+    totalPages: 1,
+  };
+
+  // Đổi category hoặc sắp xếp thì quay về trang 1, tránh đứng ở trang trống
+  useEffect(() => {
+    setActivePage(1);
+  }, [activeCategory, sortValue]);
 
   const { data: featuredBook } = useQuery({
     queryKey: ["shop-featured-book"],
@@ -832,7 +873,20 @@ const handleAddToCart = async (id) => {
     return () => observer.disconnect();
   }, [books]);
 
-  const displayBooks = books.length > 0 ? books : STATIC_PRODUCTS;
+  const usingFallback = !isLoading && books.length === 0;
+  const displayBooks = usingFallback ? STATIC_PRODUCTS : books;
+  // Nếu đang dùng dữ liệu tĩnh fallback (API chưa có sách) thì chỉ có 1 trang
+  const totalPages = usingFallback ? 1 : Math.max(1, pagination.totalPages || 1);
+
+  const goToPage = (p) => {
+    const next = Math.min(Math.max(1, p), totalPages);
+    if (next === activePage) return;
+    setActivePage(next);
+    // Cuộn nhẹ lên đầu khu vực toolbar/sản phẩm, không giật lên tận top trang
+    document
+      .querySelector(".shop-toolbar")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <>
@@ -1327,47 +1381,71 @@ const handleAddToCart = async (id) => {
           </div>
 
           {/* PAGINATION */}
-          <div className="shop-pagination reveal">
-            <button className="page-btn prev-next">
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              >
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
-              Trước
-            </button>
-            {[1, 2, 3].map((p) => (
+          {totalPages > 1 && (
+            <div className="shop-pagination reveal">
               <button
-                key={p}
-                className={`page-btn${activePage === p ? " active" : ""}`}
-                onClick={() => setActivePage(p)}
+                className="page-btn prev-next"
+                disabled={activePage <= 1}
+                style={
+                  activePage <= 1
+                    ? { opacity: 0.35, cursor: "not-allowed" }
+                    : undefined
+                }
+                onClick={() => goToPage(activePage - 1)}
               >
-                {p}
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <path d="M15 18l-6-6 6-6" />
+                </svg>
+                Trước
               </button>
-            ))}
-            <span className="page-dots">···</span>
-            <button className="page-btn" onClick={() => setActivePage(9)}>
-              9
-            </button>
-            <button className="page-btn prev-next">
-              Tiếp
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
+
+              {getPageNumbers(activePage, totalPages).map((p, i) =>
+                p === "..." ? (
+                  <span className="page-dots" key={`dots-${i}`}>
+                    ···
+                  </span>
+                ) : (
+                  <button
+                    key={p}
+                    className={`page-btn${activePage === p ? " active" : ""}`}
+                    onClick={() => goToPage(p)}
+                  >
+                    {p}
+                  </button>
+                ),
+              )}
+
+              <button
+                className="page-btn prev-next"
+                disabled={activePage >= totalPages}
+                style={
+                  activePage >= totalPages
+                    ? { opacity: 0.35, cursor: "not-allowed" }
+                    : undefined
+                }
+                onClick={() => goToPage(activePage + 1)}
               >
-                <path d="M9 18l6-6-6-6" />
-              </svg>
-            </button>
-          </div>
+                Tiếp
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </button>
+            </div>
+          )}
         </main>
       </div>
 
