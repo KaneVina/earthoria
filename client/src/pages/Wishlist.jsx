@@ -14,7 +14,7 @@ import toast from 'react-hot-toast'
 function SkeletonCard() {
   return (
     <div className="wl-card">
-      <div className="skeleton wl-card-img-wrap" />
+      <div className="skeleton wl-card-img-wrap" style={{ background: 'none' }} />
       <div className="wl-card-body">
         <div className="skeleton" style={{ width: '60px', height: '10px', marginBottom: '10px' }} />
         <div className="skeleton" style={{ width: '80%', height: '20px', marginBottom: '6px' }} />
@@ -676,6 +676,16 @@ export default function Wishlist() {
         <div className="wl-divider" />
 
         {/* ── SUMMARY BAR ── */}
+        {loading && (
+          <div className="wl-summary-bar reveal">
+            {[1, 2, 3].map((i) => (
+              <div className="wl-summary-stat" key={i}>
+                <div className="skeleton" style={{ width: '70px', height: '9px', marginBottom: '8px' }} />
+                <div className="skeleton" style={{ width: '50px', height: '22px' }} />
+              </div>
+            ))}
+          </div>
+        )}
         {!loading && items.length > 0 && (
           <div className="wl-summary-bar reveal">
             <div className="wl-summary-stat">

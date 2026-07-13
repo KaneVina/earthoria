@@ -1944,3 +1944,22 @@ body.dark-mode .search-result-row {
 .search-panel {
   overflow: hidden;
 }
+/* ── New Arrivals / Bestseller sections (Home.jsx) ── */
+.new-arrivals-section,
+.bestseller-section {
+  padding: 100px 100px;
+}
+
+@media (max-width: 768px) {
+  .new-arrivals-section,
+  .bestseller-section {
+    padding: 64px 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .new-arrivals-section,
+  .bestseller-section {
+    padding: 48px 16px;
+  }
+}

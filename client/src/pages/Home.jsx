@@ -19,6 +19,7 @@ import {
 import StickyScrollTransition from "./StickyScrollTransition";
 import HeroBanner from "../components/HeroBanner";
 import { lazy, Suspense } from "react";
+import { SkeletonProductGrid } from "../components/skeletons/SkeletonShop";
 const SproutModel = lazy(() => import("../components/SproutModel"));
 
 /* ─────────────────────────────────────────────────────────────
@@ -2026,12 +2027,12 @@ export default function Home() {
   const ctaRef = useRef(null);
   const { addToCart } = useCartStore();
 
-  const { data: featuredBooks = [] } = useQuery({
+  const { data: featuredBooks = [], isLoading: isFeaturedLoading } = useQuery({
     queryKey: ["featured-books"],
     queryFn: () => bookService.getFeatured().then((r) => r.data.data),
   });
 
-  const { data: newBooks = [] } = useQuery({
+  const { data: newBooks = [], isLoading: isNewLoading } = useQuery({
     queryKey: ["new-books"],
     queryFn: () =>
       bookService
@@ -2040,7 +2041,7 @@ export default function Home() {
         .catch(() => featuredBooks) ?? Promise.resolve(featuredBooks),
   });
 
-  const { data: bestsellerBooks = [] } = useQuery({
+  const { data: bestsellerBooks = [], isLoading: isBestsellerLoading } = useQuery({
     queryKey: ["bestseller-books"],
     queryFn: () =>
       bookService
@@ -2452,24 +2453,28 @@ export default function Home() {
             </Link>
           </div>
           <div className="products-grid">
-            {displayFeatured.slice(0, 3).map((book) => (
-              <BookCard
-                key={book.id}
-                book={book}
-                onAddCart={handleAddToCart}
-                badge={book.isFeatured ? "Nổi Bật" : undefined}
-                badgeType="gold"
-                isAdding={addingIds.has(book.hashId)}
-              />
-            ))}
+            {isFeaturedLoading ? (
+              <SkeletonProductGrid count={3} />
+            ) : (
+              displayFeatured.slice(0, 3).map((book) => (
+                <BookCard
+                  key={book.id}
+                  book={book}
+                  onAddCart={handleAddToCart}
+                  badge={book.isFeatured ? "Nổi Bật" : undefined}
+                  badgeType="gold"
+                  isAdding={addingIds.has(book.hashId)}
+                />
+              ))
+            )}
           </div>
         </div>
       </section>
 
       {/* ═══ MỚI NHẤT — Horizontal Scroll ═══ */}
       <section
+        className="new-arrivals-section"
         style={{
-          padding: "100px 100px",
           background: "var(--ivory)",
           borderTop: "0.5px solid var(--border)",
         }}
@@ -2545,13 +2550,23 @@ export default function Home() {
               ),
             )}
           </div>
-          <BookScrollRow
-            books={displayNew}
-            onAddCart={handleAddToCart}
-            badgeLabel="Mới"
-            badgeType="forest"
-            addingIds={addingIds}
-          />
+          {isNewLoading ? (
+            <div style={{ display: "flex", gap: "24px", overflow: "hidden" }}>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} style={{ flex: "0 0 280px", minWidth: 0 }}>
+                  <SkeletonProductGrid count={1} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <BookScrollRow
+              books={displayNew}
+              onAddCart={handleAddToCart}
+              badgeLabel="Mới"
+              badgeType="forest"
+              addingIds={addingIds}
+            />
+          )}
         </div>
       </section>
 
@@ -2743,7 +2758,10 @@ export default function Home() {
       </section>
 
       {/* ═══ BÁN CHẠY — Horizontal Scroll ═══ */}
-      <section style={{ padding: "100px 100px", background: "var(--cream)" }}>
+      <section
+        className="bestseller-section"
+        style={{ background: "var(--cream)" }}
+      >
         <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
           <div
             className="reveal"
@@ -2795,7 +2813,18 @@ export default function Home() {
           </div>
 
           {/* Bestseller rank podium — fixed */}
-          {displayBest.length > 0 && (
+          {isBestsellerLoading ? (
+            <div
+              className="reveal"
+              style={{ display: "flex", gap: "16px", marginBottom: "48px" }}
+            >
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} style={{ flex: 1, minWidth: 0 }}>
+                  <SkeletonProductGrid count={1} />
+                </div>
+              ))}
+            </div>
+          ) : displayBest.length > 0 && (
             <div
               className="reveal bestseller-podium"
               style={{
@@ -2940,13 +2969,15 @@ export default function Home() {
             </div>
           )}
 
-          <BookScrollRow
-            books={displayBest}
-            onAddCart={handleAddToCart}
-            badgeLabel="Bán Chạy"
-            badgeType="gold"
-            addingIds={addingIds}
-          />
+          {!isBestsellerLoading && (
+            <BookScrollRow
+              books={displayBest}
+              onAddCart={handleAddToCart}
+              badgeLabel="Bán Chạy"
+              badgeType="gold"
+              addingIds={addingIds}
+            />
+          )}
         </div>
       </section>
 
