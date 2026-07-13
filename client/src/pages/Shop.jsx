@@ -8,6 +8,7 @@ import { formatPrice, getBookUrl } from "../utils/helpers";
 import { useAuthStore } from "../store/authStore";
 import { useWishlistStore } from "../store/wishlistStore";
 import toast from "react-hot-toast";
+import { SkeletonProductGrid } from "../components/skeletons/SkeletonShop";
 
 const CATEGORIES = [
   { key: "all", label: "Tất cả sản phẩm", count: 18 },
@@ -1456,16 +1457,20 @@ export default function Shop() {
               <button className="promo-btn">Mua ngay →</button>
             </div>
 
-            {/* PRODUCT CARDS */}
-            {displayBooks.map((book, i) => (
-              <ProductCard
-                key={book.id || book.slug || i}
-                book={book}
-                onAddToCart={handleAddToCart}
-                delay={(i % 3) + 1}
-                isAdding={addingIds.has(book.hashId)}
-              />
-            ))}
+            {/* PRODUCT CARDS hoặc SKELETON khi đang tải */}
+            {isLoading ? (
+              <SkeletonProductGrid count={PAGE_SIZE} />
+            ) : (
+              displayBooks.map((book, i) => (
+                <ProductCard
+                  key={book.id || book.slug || i}
+                  book={book}
+                  onAddToCart={handleAddToCart}
+                  delay={(i % 3) + 1}
+                  isAdding={addingIds.has(book.hashId)}
+                />
+              ))
+            )}
           </div>
 
           {/* PAGINATION */}
