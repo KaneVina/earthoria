@@ -2,11 +2,12 @@ const cloudinary = require('../config/cloudinary')
 
 function uploadGlbBuffer(buffer, code) {
   return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
+    const stream = cloudinary.uploader.upload_large_stream(
       {
         resource_type: 'raw',
         public_id: `ar-models/${code}.glb`,
         overwrite: true,
+        chunk_size: 6 * 1024 * 1024, // upload theo từng phần 6MB để vượt giới hạn 10MB/request của Cloudinary
       },
       (err, result) => (err ? reject(err) : resolve(result))
     )
