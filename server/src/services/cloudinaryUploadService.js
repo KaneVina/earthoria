@@ -1,17 +1,30 @@
 const cloudinary = require('../config/cloudinary')
+const fs = require('fs')
+const os = require('os')
+const path = require('path')
 
 function uploadGlbBuffer(buffer, code) {
   return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_large_stream(
-      {
-        resource_type: 'raw',
-        public_id: `ar-models/${code}.glb`,
-        overwrite: true,
-        chunk_size: 6 * 1024 * 1024, // upload theo từng phần 6MB để vượt giới hạn 10MB/request của Cloudinary
-      },
-      (err, result) => (err ? reject(err) : resolve(result))
-    )
-    stream.end(buffer)
+    const tmpPath = path.join(os.tmpdir(), `${code}-${Date.now()}.glb`)
+
+    fs.writeFile(tmpPath, buffer, (writeErr) => {
+      if (writeErr) return reject(writeErr)
+
+      cloudinary.uploader.upload_large(
+        tmpPath,
+        {
+          resource_type: 'raw',
+          public_id: `ar-models/${code}.glb`,
+          overwrite: true,
+          chunk_size: 6 * 1024 * 1024,
+        },
+        (uploadErr, result) => {
+          fs.unlink(tmpPath, () => {})
+          if (uploadErr) return reject(uploadErr)
+          resolve(result)
+        },
+      )
+    })
   })
 }
 
