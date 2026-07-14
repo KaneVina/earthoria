@@ -1,8 +1,5 @@
 const multer = require('multer')
 
-// Dùng memoryStorage — nhận file vào buffer trong RAM rồi đẩy thẳng lên
-// Cloudinary qua upload_stream, KHÔNG ghi ra ổ đĩa server (đỡ phải dọn
-// file tạm, và phù hợp môi trường serverless/ephemeral filesystem).
 const storage = multer.memoryStorage()
 
 function fileFilter(req, file, cb) {
@@ -19,7 +16,7 @@ function fileFilter(req, file, cb) {
 const uploadGlb = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB — model chi tiết vẫn nằm trong ngưỡng này
+  limits: { fileSize: 250 * 1024 * 1024 }, // 250MB
 })
 
 module.exports = uploadGlb
