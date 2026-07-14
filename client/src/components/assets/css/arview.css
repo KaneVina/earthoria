@@ -1598,3 +1598,10 @@
   aspect-ratio: 2.35 / 1;
   min-height: 220px;
 }
+/* ── Fix tên sách luôn 1 hàng ── */
+.ar-panel__book {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 16px);
+}
