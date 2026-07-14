@@ -553,7 +553,7 @@ export default function HeroBanner() {
                 className="hb-btn-ghost"
                 onClick={() =>
                   window.open(
-                    "https://www.earthoria.id.vn/ar/dai-duong-huyen-bi/bF_D6JVr6B1vocFkZo8eqbCZ2nk_-YN7",
+                    "https://www.earthoria.id.vn/ar/kham-pha-va-bao-ve-he-sinh-thai-rung/SxjhEwMB5MKJBUtESWISMTL541AB-sto",
                     "_blank",
                     "noopener,noreferrer",
                   )
