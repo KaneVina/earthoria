@@ -1115,6 +1115,7 @@ exports.toggleCoupon = async (req, res) => {
 /* ══════════════════════════════════════════════
    AR CODE MANAGEMENT (staff)
 ══════════════════════════════════════════════ */
+const cloudinary = require("../config/cloudinary");
 const crypto = require("crypto");
 const {
   uploadGlbBuffer,
@@ -1862,5 +1863,38 @@ exports.setProductCover = async (req, res) => {
     return res.json({ success: true, data: updated });
   } catch (err) {
     return serverError(res, err, "setProductCover");
+  }
+};
+exports.deleteArCode = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const existing = await prisma.arCode.findUnique({ where: { id } });
+    if (!existing) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy mã AR" });
+    }
+
+    // modelUrl dạng: https://res.cloudinary.com/.../raw/upload/v123/ar-models/xxx.glb
+    // resource_type phải khớp đúng 'raw' như lúc upload, nếu không Cloudinary
+    // sẽ báo "not found" dù file vẫn còn tồn tại (do tìm sai loại resource).
+    const publicId = extractPublicId(existing.modelUrl);
+    if (publicId) {
+      await cloudinary.uploader
+        .destroy(publicId, { resource_type: "raw" })
+        .catch((err) =>
+          console.error(
+            "[deleteArCode] Xóa file Cloudinary thất bại, có thể còn rác:",
+            err,
+          ),
+        );
+    }
+
+    await prisma.arCode.delete({ where: { id } });
+
+    return res.json({ success: true, message: "Đã xóa mã AR" });
+  } catch (err) {
+    return serverError(res, err, "deleteArCode");
   }
 };

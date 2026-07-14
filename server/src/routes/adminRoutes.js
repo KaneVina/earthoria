@@ -30,6 +30,7 @@ const {
   createArCode,
   updateArCode,
   toggleArCode,
+  deleteArCode,
   getArCodesGroupedAll,
   updateArCodeAccess,
   getArCodeById,
@@ -132,5 +133,5 @@ router.get("/server-status", async (req, res) => {
     res.status(500).json({ stat: "fail", message: err.message });
   }
 });
-
+router.delete("/ar-codes/:id", staffOrAdmin, deleteArCode);
 module.exports = router;

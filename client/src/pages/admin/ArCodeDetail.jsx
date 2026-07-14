@@ -18,6 +18,7 @@ import {
   Building2,
   Shield,
   Award,
+  Trash2,
 } from "lucide-react";
 import api from "../../services/api";
 import toast from "react-hot-toast";
@@ -226,6 +227,17 @@ export default function ArCodeDetail() {
       qc.invalidateQueries(["admin-ar-code-detail", id]);
     },
     onError: () => toast.error("Thao tác thất bại!"),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: () => api.delete(`/admin/ar-codes/${id}`),
+    onSuccess: () => {
+      toast.success("Đã xóa mã AR");
+      qc.invalidateQueries(["admin-ar-codes-all"]);
+      navigate("/dashboard/ar-codes");
+    },
+    onError: (e) =>
+      toast.error(e.response?.data?.message || "Xóa thất bại!"),
   });
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
@@ -589,6 +601,26 @@ export default function ArCodeDetail() {
                           <CheckCircle2 size={12} /> Kích hoạt lại
                         </>
                       )}
+                    </button>
+                  )}
+
+                  {isEditMode && arCode && (
+                    <button
+                      type="button"
+                      className="a-btn-ghost"
+                      style={{ color: "#e34948" }}
+                      onClick={() => {
+                        if (
+                          window.confirm(
+                            "Xóa vĩnh viễn mã AR này? Không thể hoàn tác.",
+                          )
+                        ) {
+                          deleteMutation.mutate();
+                        }
+                      }}
+                      disabled={deleteMutation.isPending}
+                    >
+                      <Trash2 size={12} /> Xóa vĩnh viễn
                     </button>
                   )}
                 </div>
