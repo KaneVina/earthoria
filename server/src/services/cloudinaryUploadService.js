@@ -4,8 +4,8 @@ function uploadGlbBuffer(buffer, code) {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
-        resource_type: 'video',
-        public_id: `ar-models/${code}`,
+        resource_type: 'raw',
+        public_id: `ar-models/${code}.glb`,
         overwrite: true,
       },
       (err, result) => (err ? reject(err) : resolve(result))
