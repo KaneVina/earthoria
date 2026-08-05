@@ -1244,6 +1244,50 @@ const FALLBACK_DATA = {
 };
 // ──────────────────────────────────────────────────────────────────────────
 
+// ─── DỮ LIỆU RIÊNG THEO MÃ AR CỤ THỂ ─────────────────────────────────
+// Một số mã AR gắn với nội dung đặc biệt trong sách (VD: Hang Sơn Đoòng)
+// thay vì loại cây/con vật chung chung. Khi `code` trên URL khớp với
+// khoá trong bảng CODE_OVERRIDES, dữ liệu tương ứng sẽ ĐÈ LÊN
+// FALLBACK_DATA, còn field thật từ API (nếu backend đã có) vẫn luôn
+// được ưu tiên cao nhất — xem chỗ ghép dữ liệu trong fetchArCode().
+const SON_DOONG_DATA = {
+  label: "Hang Sơn Đoòng",
+  modelUrl: "/models/Untitled.glb", // TODO: thay model 3D thật của Sơn Đoòng khi có
+  book: {
+    title: "Khám Phá & Bảo Vệ Hệ Sinh Thái Rừng",
+    slug: "kham-pha-va-bao-ve-he-sinh-thai-rung",
+  },
+  specs: [
+    { label: "Chiều dài", value: "~9 km (khoang chính ~5 km)" },
+    { label: "Chiều cao trần hang", value: "~200 m (chỗ cao nhất)" },
+    { label: "Chiều rộng", value: "~150 m" },
+    { label: "Thể tích", value: "~38,5 triệu m³" },
+    { label: "Vị trí", value: "VQG Phong Nha - Kẻ Bàng, Quảng Bình" },
+    { label: "Tuổi hang", value: "~2-5 triệu năm" },
+    { label: "Năm phát hiện lối vào", value: "1990 (Hồ Khanh)" },
+    { label: "Năm khảo sát chính thức", value: "2009" },
+  ],
+  description:
+    "Sơn Đoòng là hang động tự nhiên lớn nhất thế giới đã được biết đến, ẩn mình sâu trong lòng núi đá vôi của Vườn quốc gia Phong Nha - Kẻ Bàng. Được hình thành bởi dòng nước ngầm bào mòn đá vôi qua hàng triệu năm, hang có kích thước lớn đến mức có thể chứa trọn cả một tòa nhà 40 tầng bên trong lòng nó. Điều đặc biệt nhất là ở hai vị trí trần hang từng bị sụp đổ, ánh sáng mặt trời lọt xuống tạo thành các 'giếng trời' khổng lồ, đủ để nuôi dưỡng cả một khu rừng nhiệt đới nguyên sinh mọc lên ngay bên trong hang, với những thân cây cao tới vài chục mét vươn lên đón nắng. Nhờ hệ sinh thái độc đáo và cảnh quan hùng vĩ hiếm có, Sơn Đoòng được coi là một trong những kỳ quan thiên nhiên ấn tượng nhất hành tinh và niềm tự hào của người Việt Nam.",
+  funFacts: [
+    "Sơn Đoòng đủ rộng để chứa trọn một tòa nhà chọc trời 40 tầng ngay trong lòng hang mà vẫn còn khoảng trống.",
+    "Bên trong hang có một khu rừng nguyên sinh thực thụ mọc lên từ hai hố sụt 'giếng trời', được các nhà thám hiểm đặt tên là 'Vườn Địa Đàng' (Garden of Edam).",
+    "Hang có khí hậu riêng biệt: mây và sương mù có thể hình thành ngay bên trong lòng hang do sự chênh lệch nhiệt độ giữa không khí trong và ngoài hang.",
+    "Sơn Đoòng sở hữu một dòng sông ngầm chảy xuyên suốt chiều dài hang, cùng những cột thạch nhũ cao tới 70 mét — được xem là cao nhất thế giới trong các hang động đã biết.",
+    "Hang được đặt tên theo bản Đoòng, ngôi làng nhỏ gần đó nơi những người dân địa phương sinh sống, và tên gọi 'Sơn Đoòng' nghĩa là 'núi của bản Đoòng'.",
+  ],
+  habitatRegion: "asia",
+  habitatCountries: {
+    Vietnam: 1,
+  },
+};
+
+// Khoá là `code` lấy từ URL /ar/:slug/:code
+const CODE_OVERRIDES = {
+  J8HADMYTY5Hi_6KSsj0ci_PzWsyfpC7q: SON_DOONG_DATA,
+};
+// ──────────────────────────────────────────────────────────────────────────
+
 const SCAN_DURATION_MS = 2400;
 
 export default function ArView() {
@@ -1300,18 +1344,22 @@ export default function ArView() {
 
         // Ghép dữ liệu thật với dữ liệu mẫu cho các field API chưa có
         // (specs / description / habitatCountries) để UI luôn có nội
-        // dung hiển thị.
+        // dung hiển thị. Nếu mã AR nằm trong CODE_OVERRIDES (VD: Sơn
+        // Đoòng), ưu tiên dùng bộ dữ liệu riêng đó thay cho fallback
+        // chung, nhưng field thật từ API vẫn luôn được ưu tiên cao nhất.
+        const baseData = CODE_OVERRIDES[code] || FALLBACK_DATA;
+
         setState({
           status: "ready",
           data: {
-            ...FALLBACK_DATA,
+            ...baseData,
             ...data,
-            specs: data.specs || FALLBACK_DATA.specs,
-            description: data.description || FALLBACK_DATA.description,
-            funFacts: data.funFacts || FALLBACK_DATA.funFacts,
-            habitatRegion: data.habitatRegion || FALLBACK_DATA.habitatRegion,
+            specs: data.specs || baseData.specs,
+            description: data.description || baseData.description,
+            funFacts: data.funFacts || baseData.funFacts,
+            habitatRegion: data.habitatRegion || baseData.habitatRegion,
             habitatCountries:
-              data.habitatCountries || FALLBACK_DATA.habitatCountries,
+              data.habitatCountries || baseData.habitatCountries,
           },
         });
       } catch (err) {
