@@ -3,7 +3,7 @@ const prisma = require("../config/db");
 const { generateProductCode } = require("../utils/generateProductCode");
 const bcrypt = require("bcryptjs");
 const { sendAccountProvisionedEmail } = require("../services/emailService");
-const { uploadGlbFile } = require("../services/cloudinaryService");
+const { uploadGlbFile } = require("../services/cloudinaryUploadService");
 
 /* ─── Helpers ─── */
 const CHART_COLORS = {
