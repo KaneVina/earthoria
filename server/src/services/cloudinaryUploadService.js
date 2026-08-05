@@ -1,31 +1,25 @@
 const cloudinary = require('../config/cloudinary')
 const fs = require('fs')
-const os = require('os')
-const path = require('path')
 
-function uploadGlbBuffer(buffer, code) {
+function uploadGlbFile(filePath, code) {
   return new Promise((resolve, reject) => {
-    const tmpPath = path.join(os.tmpdir(), `${code}-${Date.now()}.glb`)
+    cloudinary.uploader.upload_large(
+      filePath,
+      {
+        resource_type: "raw",
+        public_id: `ar-models/${code}.glb`,
+        overwrite: true,
+        chunk_size: 20 * 1024 * 1024,
+      },
+      (err, result) => {
+        fs.unlink(filePath, () => {});
 
-    fs.writeFile(tmpPath, buffer, (writeErr) => {
-      if (writeErr) return reject(writeErr)
+        if (err) return reject(err);
 
-      cloudinary.uploader.upload_large(
-        tmpPath,
-        {
-          resource_type: 'raw',
-          public_id: `ar-models/${code}.glb`,
-          overwrite: true,
-          chunk_size:	500 * 1024 * 1024,
-        },
-        (uploadErr, result) => {
-          fs.unlink(tmpPath, () => {})
-          if (uploadErr) return reject(uploadErr)
-          resolve(result)
-        },
-      )
-    })
-  })
+        resolve(result);
+      }
+    );
+  });
 }
 
 function uploadImageBuffer(buffer, bookId) {
@@ -53,4 +47,4 @@ function extractPublicId(url) {
   return m ? m[1] : null
 }
 
-module.exports = { uploadGlbBuffer, uploadImageBuffer, deleteImageByPublicId, extractPublicId }
+module.exports = { uploadGlbFile, uploadImageBuffer, deleteImageByPublicId, extractPublicId }

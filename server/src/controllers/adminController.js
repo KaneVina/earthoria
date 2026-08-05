@@ -3,6 +3,7 @@ const prisma = require("../config/db");
 const { generateProductCode } = require("../utils/generateProductCode");
 const bcrypt = require("bcryptjs");
 const { sendAccountProvisionedEmail } = require("../services/emailService");
+const { uploadGlbFile } = require("../services/cloudinaryService");
 
 /* ─── Helpers ─── */
 const CHART_COLORS = {
@@ -1232,7 +1233,7 @@ exports.createArCode = async (req, res) => {
       accessType === "PUBLIC" ? "PUBLIC" : "CUSTOMER_ONLY";
 
     const code = generateArCode();
-    const uploadResult = await uploadGlbBuffer(req.file.buffer, code);
+    const uploadResult = await uploadGlbFile(req.file.path, code);
 
     const arCode = await prisma.arCode.create({
       data: {
