@@ -19,6 +19,7 @@
   "description": "",
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "axios": "^1.19.0",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.10.0",
@@ -28,6 +29,7 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
     "express-validator": "^7.3.2",
+    "form-data": "^4.0.6",
     "hashids": "^2.3.0",
     "helmet": "^8.2.0",
     "ioredis": "^5.11.1",

@@ -1,9 +1,9 @@
-// src/controllers/adminController.js
 const prisma = require("../config/db");
 const { generateProductCode } = require("../utils/generateProductCode");
 const bcrypt = require("bcryptjs");
 const { sendAccountProvisionedEmail } = require("../services/emailService");
-const { uploadGlbFile } = require("../services/cloudinaryUploadService");
+const { uploadGlbFile } = require("../services/catboxService");
+// const { uploadGlbFile } = require("../services/cloudinaryUploadService");
 
 /* ─── Helpers ─── */
 const CHART_COLORS = {
@@ -652,7 +652,10 @@ exports.deleteProduct = async (req, res) => {
     // (Cloudinary timeout...) chỉ để lại rác ảnh mồ côi, không ảnh hưởng tính
     // toàn vẹn dữ liệu — chấp nhận được, không rollback record vừa xóa.
     await deleteAllBookImages(book).catch((err) =>
-      console.error("[deleteProduct] Xóa ảnh Cloudinary thất bại, có thể còn rác:", err),
+      console.error(
+        "[deleteProduct] Xóa ảnh Cloudinary thất bại, có thể còn rác:",
+        err,
+      ),
     );
 
     return res.json({ success: true, message: "Đã xóa sách vĩnh viễn" });
@@ -671,7 +674,10 @@ exports.deleteProduct = async (req, res) => {
         err.meta?.field_name ?? err.meta,
       );
       try {
-        await prisma.book.update({ where: { id: req.params.id }, data: { isActive: false } });
+        await prisma.book.update({
+          where: { id: req.params.id },
+          data: { isActive: false },
+        });
       } catch (_) {}
       return res.status(409).json({
         success: false,
@@ -1233,13 +1239,14 @@ exports.createArCode = async (req, res) => {
       accessType === "PUBLIC" ? "PUBLIC" : "CUSTOMER_ONLY";
 
     const code = generateArCode();
-    const uploadResult = await uploadGlbFile(req.file.path, code);
-
+    // const uploadResult = await uploadGlbFile(req.file.path, code);
+    const url = await uploadGlbFile(req.file.path);
     const arCode = await prisma.arCode.create({
       data: {
         code,
         label,
-        modelUrl: uploadResult.secure_url,
+        modelUrl: url,
+        // modelUrl: uploadResult.secure_url,
         bookId,
         accessType: finalAccessType,
       },
