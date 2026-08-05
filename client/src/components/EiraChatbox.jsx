@@ -15,6 +15,8 @@ import {
   Trash2,
   WifiOff,
   ArrowUpRight,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "./assets/css/EiraChatbox.css";
@@ -237,6 +239,21 @@ function parseMessageTokens(raw) {
   }
   return tokens;
 }
+/** Chuyển nội dung tin nhắn (có thể chứa markdown link, ký hiệu) thành văn bản thuần để đọc */
+function toSpeakableText(raw) {
+  return raw
+    .replace(/\[([^\]]+)\]\(\/[^\s)]*\)/g, "$1") // [Nhãn](/path) -> Nhãn
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\*(.*?)\*/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\n+/g, ". ")
+    .trim();
+}
+
+let msgIdCounter = 0;
+function makeMsg(role, text, isError = false) {
+  return { id: ++msgIdCounter, role, text, isError, time: nowTime() };
+}
 
 let msgIdCounter = 0;
 function makeMsg(role, text, isError = false) {
@@ -257,6 +274,7 @@ function fetchWithTimeout(url, options, timeoutMs) {
    ═══════════════════════════════════════════════════════════════ */
 function ActionButtons({ msg, onRegenerate }) {
   const [copied, setCopied] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const handleCopy = async () => {
     try {
@@ -279,6 +297,43 @@ function ActionButtons({ msg, onRegenerate }) {
     }
   };
 
+  const handleSpeak = () => {
+    if (!("speechSynthesis" in window)) return;
+
+    // Nếu đang đọc -> bấm lại để dừng
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    // Dừng mọi câu đang đọc trước đó (chỉ 1 tin nhắn đọc cùng lúc)
+    window.speechSynthesis.cancel();
+
+    const utter = new SpeechSynthesisUtterance(toSpeakableText(msg.text));
+    utter.lang = "vi-VN";
+    utter.rate = 1;
+    utter.pitch = 1;
+
+    // Ưu tiên chọn giọng tiếng Việt nếu trình duyệt có sẵn
+    const voices = window.speechSynthesis.getVoices();
+    const viVoice = voices.find((v) => v.lang?.toLowerCase().startsWith("vi"));
+    if (viVoice) utter.voice = viVoice;
+
+    utter.onend = () => setIsSpeaking(false);
+    utter.onerror = () => setIsSpeaking(false);
+
+    window.speechSynthesis.speak(utter);
+    setIsSpeaking(true);
+  };
+
+  // Dừng đọc nếu component unmount (VD: người dùng xóa hội thoại giữa chừng)
+  useEffect(() => {
+    return () => {
+      if (isSpeaking) window.speechSynthesis.cancel();
+    };
+  }, [isSpeaking]);
+
   return (
     <div className="em-actions">
       <button
@@ -294,6 +349,22 @@ function ActionButtons({ msg, onRegenerate }) {
           <Copy size={12} strokeWidth={2} />
         )}
       </button>
+
+      {msg.role === "bot" && !msg.isError && (
+        <button
+          type="button"
+          className={`em-action-btn${isSpeaking ? " speaking" : ""}`}
+          title={isSpeaking ? "Dừng đọc" : "Đọc to"}
+          onClick={handleSpeak}
+          aria-label={isSpeaking ? "Dừng đọc tin nhắn" : "Đọc to tin nhắn"}
+        >
+          {isSpeaking ? (
+            <VolumeX size={12} strokeWidth={2} />
+          ) : (
+            <Volume2 size={12} strokeWidth={2} />
+          )}
+        </button>
+      )}
 
       {msg.role === "bot" && !msg.isError && onRegenerate && (
         <button
