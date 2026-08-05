@@ -255,11 +255,6 @@ function makeMsg(role, text, isError = false) {
   return { id: ++msgIdCounter, role, text, isError, time: nowTime() };
 }
 
-let msgIdCounter = 0;
-function makeMsg(role, text, isError = false) {
-  return { id: ++msgIdCounter, role, text, isError, time: nowTime() };
-}
-
 /** Gọi fetch kèm timeout, tránh treo UI vô thời hạn khi mạng chập chờn */
 function fetchWithTimeout(url, options, timeoutMs) {
   const controller = new AbortController();
