@@ -270,6 +270,11 @@ function fetchWithTimeout(url, options, timeoutMs) {
 function ActionButtons({ msg, onRegenerate }) {
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  // Giữ tham chiếu utterance trong ref — bắt buộc trên Chrome/Edge, nếu
+  // không object này có thể bị garbage-collected giữa chừng khi đang
+  // đọc, khiến giọng đọc bị dừng đột ngột, lẫn giọng, hoặc phát ra
+  // audio "rác" không khớp với text đã truyền vào.
+  const utterRef = useRef(null);
 
   const handleCopy = async () => {
     try {
@@ -298,25 +303,42 @@ function ActionButtons({ msg, onRegenerate }) {
     // Nếu đang đọc -> bấm lại để dừng
     if (isSpeaking) {
       window.speechSynthesis.cancel();
+      utterRef.current = null;
       setIsSpeaking(false);
       return;
     }
 
-    // Dừng mọi câu đang đọc trước đó (chỉ 1 tin nhắn đọc cùng lúc)
+    // Dừng triệt để mọi câu đang đọc / còn nằm trong hàng đợi trước đó,
+    // tránh việc utterance cũ bị đọc chồng hoặc đọc sai ngữ cảnh.
     window.speechSynthesis.cancel();
 
-    const utter = new SpeechSynthesisUtterance(toSpeakableText(msg.text));
+    const cleanText = toSpeakableText(msg.text);
+    if (!cleanText) return;
+
+    const utter = new SpeechSynthesisUtterance(cleanText);
     utter.lang = "vi-VN";
     utter.rate = 1;
     utter.pitch = 1;
 
-    // Ưu tiên chọn giọng tiếng Việt nếu trình duyệt có sẵn
+    // Ưu tiên chọn giọng tiếng Việt nếu trình duyệt có sẵn, tránh rơi
+    // vào giọng mặc định tiếng Anh khi hệ thống không detect đúng "lang"
     const voices = window.speechSynthesis.getVoices();
     const viVoice = voices.find((v) => v.lang?.toLowerCase().startsWith("vi"));
-    if (viVoice) utter.voice = viVoice;
+    if (viVoice) {
+      utter.voice = viVoice;
+    }
 
-    utter.onend = () => setIsSpeaking(false);
-    utter.onerror = () => setIsSpeaking(false);
+    utter.onend = () => {
+      utterRef.current = null;
+      setIsSpeaking(false);
+    };
+    utter.onerror = () => {
+      utterRef.current = null;
+      setIsSpeaking(false);
+    };
+
+    // Giữ tham chiếu để tránh bị garbage-collected giữa chừng
+    utterRef.current = utter;
 
     window.speechSynthesis.speak(utter);
     setIsSpeaking(true);
@@ -325,7 +347,10 @@ function ActionButtons({ msg, onRegenerate }) {
   // Dừng đọc nếu component unmount (VD: người dùng xóa hội thoại giữa chừng)
   useEffect(() => {
     return () => {
-      if (isSpeaking) window.speechSynthesis.cancel();
+      if (isSpeaking) {
+        window.speechSynthesis.cancel();
+        utterRef.current = null;
+      }
     };
   }, [isSpeaking]);
 
