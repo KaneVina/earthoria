@@ -600,7 +600,7 @@
 /* ─── PANEL PHẢI: Đặc điểm / bảng thông số / mô tả ─── */
 .ar-panel--right {
   right: 0;
-  justify-content: center;
+  justify-content: safe center;
   align-items: flex-end;
   overflow-y: auto;
   scrollbar-width: thin;
@@ -1613,10 +1613,29 @@
   aspect-ratio: 2.35 / 1;
   min-height: 220px;
 }
-/* ── Fix tên sách luôn 1 hàng ── */
+/* ── Tên sách: 1 hàng, tự chạy chữ (marquee) khi dài ── */
 .ar-panel__book {
-  white-space: nowrap;
+  position: relative;
+  display: flex;
   overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: nowrap;
   max-width: calc(100% - 16px);
+}
+
+.ar-panel__book-track {
+  display: inline-block;
+  padding-left: 100%;
+  animation: ar-book-marquee 11s linear infinite;
+}
+
+@keyframes ar-book-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ar-panel__book-track {
+    animation: none;
+    padding-left: 0;
+  }
 }

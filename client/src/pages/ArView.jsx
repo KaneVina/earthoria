@@ -1567,7 +1567,9 @@ export default function ArView() {
           isExpanded ? " is-info-expanded" : ""
         }`}
       >
-        <span className="ar-panel__book">{book.title}</span>
+        <span className="ar-panel__book">
+          <span className="ar-panel__book-track">{book.title}</span>
+        </span>
         <h1 className="ar-panel__name">{label}</h1>
 
         <div className="ar-hint">
