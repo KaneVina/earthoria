@@ -185,11 +185,11 @@ CÁCH TƯ VẤN VÀ VĂN PHONG:
 - Nếu không biết thông tin, hướng dẫn liên hệ earthoriavn@gmail.com`;
 
 const SUGGESTIONS = [
-  { Icon: BookOpen, label: "Sách bán chạy nhất?" },
-  { Icon: Baby, label: "Tư vấn bé 7 tuổi" },
-  { Icon: Tag, label: "Mã giảm giá?" },
-  { Icon: Smartphone, label: "App dùng thế nào?" },
-  { Icon: GitCompare, label: "So sánh 2 cuốn sách" },
+  { Icon: BookOpen, label: "Gợi ý sách cho bé" },
+  { Icon: Baby, label: "Bé nhà mình mấy tuổi" },
+  { Icon: Tag, label: "Có ưu đãi gì không?" },
+  { Icon: Smartphone, label: "Trải nghiệm AR thế nào?" },
+  { Icon: GitCompare, label: "So sánh sách" },
 ];
 
 /* ═══════════════════════════════════════════════════════════════
@@ -390,9 +390,9 @@ function ActionButtons({ msg, onRegenerate }) {
         <button
           type="button"
           className="em-action-btn"
-          title="Hỏi lại"
+          title="Thử cách giải thích khác"
           onClick={onRegenerate}
-          aria-label="Hỏi lại câu này"
+          aria-label="Thử cách giải thích khác"
         >
           <RotateCcw size={12} strokeWidth={2} />
         </button>
@@ -572,7 +572,8 @@ function EiraUI() {
     const dy = e.clientY - ds.startY;
 
     if (!ds.moved) {
-      if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
+      if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD)
+        return;
       ds.moved = true;
       setIsDragging(true);
     }
@@ -866,10 +867,7 @@ function EiraUI() {
           <>
             <div className="eira-fab-mascot-glow" aria-hidden="true" />
             <span className="eira-firefly eira-firefly-1" aria-hidden="true" />
-            <span className="eira-firefly eira-firefly-2" aria-hidden="true" />
             <span className="eira-firefly eira-firefly-3" aria-hidden="true" />
-            <span className="eira-firefly eira-firefly-4" aria-hidden="true" />
-            <span className="eira-firefly eira-firefly-5" aria-hidden="true" />
             <img
               className="eira-fab-mascot-img"
               src="/eira/eira-sayhi.png"
@@ -927,7 +925,7 @@ function EiraUI() {
           </div>
           <div className="eira-hdr-info">
             <div className="eira-hdr-name">Eira</div>
-            <div className="eira-hdr-sub">Trực tuyến · Hỗ trợ 24/7</div>
+            <div className="eira-hdr-sub">Người bạn khám phá</div>
           </div>
           <div className="eira-hdr-actions">
             {messages.length > 0 && (
@@ -955,11 +953,37 @@ function EiraUI() {
 
         <div id="eira-msgs" ref={msgsWrapRef} aria-live="polite">
           <div className="eira-welcome">
-            Xin chào! Mình là <strong>Eira</strong> 🌿 — trợ lý ảo của
-            Earthoria.
-            <br />
-            Mình có thể tư vấn sách AR, so sánh sản phẩm và giải đáp mọi thắc
-            mắc!
+            <div className="eira-welcome-avatar">
+              <img src="/eira/avatar.png" alt="" />
+            </div>
+            <div className="eira-welcome-title">
+              Chào bạn, mình là <strong>Eira</strong> 🌿
+            </div>
+            <p className="eira-welcome-desc">
+              Người bạn khám phá của Earthoria. Mình có thể giúp bạn tìm cuốn
+              sách phù hợp, khám phá AR hoặc giải đáp những điều bé nhà mình tò
+              mò.
+            </p>
+            <div className="eira-welcome-actions">
+              <button
+                type="button"
+                className="eira-welcome-card"
+                onClick={() => sendMessage("Gợi ý sách phù hợp cho bé")}
+              >
+                <BookOpen size={16} strokeWidth={2} />
+                <span>Tìm sách phù hợp</span>
+              </button>
+              <button
+                type="button"
+                className="eira-welcome-card"
+                onClick={() =>
+                  sendMessage("Công nghệ AR của Earthoria hoạt động thế nào?")
+                }
+              >
+                <Smartphone size={16} strokeWidth={2} />
+                <span>Khám phá AR</span>
+              </button>
+            </div>
           </div>
 
           {messages.map((msg, idx) =>
@@ -1029,7 +1053,7 @@ function EiraUI() {
             <textarea
               id="eira-inp"
               ref={inpRef}
-              placeholder="Nhắn tin với Eira..."
+              placeholder="Hỏi Eira điều gì đó..."
               rows={1}
               maxLength={MAX_INPUT_LEN}
               value={input}
