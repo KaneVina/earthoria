@@ -16,7 +16,7 @@ function uploadGlbBuffer(buffer, code) {
           resource_type: 'raw',
           public_id: `ar-models/${code}.glb`,
           overwrite: true,
-          chunk_size: 6 * 1024 * 1024,
+          chunk_size:	500 * 1024 * 1024,
         },
         (uploadErr, result) => {
           fs.unlink(tmpPath, () => {})
