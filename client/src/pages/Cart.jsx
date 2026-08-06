@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Trash2,
@@ -35,20 +35,33 @@ export default function Cart() {
     fetchCart();
   }, []);
 
-  const handleQtyChange = async (item, newQty) => {
-    if (pendingItemId === item.id) return; // đang xử lý, chặn double click
-    setPendingItemId(item.id);
-    try {
-      if (newQty < 1) {
-        await removeItem(item.id);
-      } else {
-        await updateItem(item.id, newQty);
-      }
-    } catch (err) {
-      toast.error(err?.response?.data?.message || "Không thể cập nhật giỏ hàng");
-    } finally {
-      setPendingItemId(null);
+  const qtyDebounceRef = useRef({});
+
+  useEffect(() => {
+    return () => {
+      Object.values(qtyDebounceRef.current).forEach(clearTimeout);
+    };
+  }, []);
+
+  const handleQtyChange = (item, newQty) => {
+    if (pendingItemId === item.id) return; // đang xóa item này, chặn thao tác
+
+    if (newQty < 1) {
+      handleRemove(item);
+      return;
     }
+
+    // Update UI ngay, không chờ API — cho phép bấm liên tục
+    useCartStore.getState().setLocalQuantity(item.id, newQty);
+
+    clearTimeout(qtyDebounceRef.current[item.id]);
+    qtyDebounceRef.current[item.id] = setTimeout(async () => {
+      try {
+        await useCartStore.getState().updateItem(item.id, newQty);
+      } catch (err) {
+        toast.error(err?.response?.data?.message || "Không thể cập nhật giỏ hàng");
+      }
+    }, 400);
   };
 
   const handleRemove = async (item) => {
@@ -397,13 +410,11 @@ export default function Cart() {
                   <div style={{ display: "flex", justifyContent: "center" }}>
                     <div style={{ display: "flex", alignItems: "center", border: "0.5px solid var(--border)" }}>
                       <button
-                        disabled={pendingItemId === item.id}
                         onClick={() => handleQtyChange(item, item.quantity - 1)}
                         style={{
                           width: "32px", height: "36px",
                           background: "transparent", border: "none",
-                          cursor: pendingItemId === item.id ? "not-allowed" : "pointer",
-                          opacity: pendingItemId === item.id ? 0.4 : 1,
+                          cursor: "pointer",
                           color: "var(--text-muted)",
                           display: "flex", alignItems: "center", justifyContent: "center",
                         }}
@@ -420,13 +431,11 @@ export default function Cart() {
                         {item.quantity}
                       </span>
                       <button
-                        disabled={pendingItemId === item.id}
                         onClick={() => handleQtyChange(item, item.quantity + 1)}
                         style={{
                           width: "32px", height: "36px",
                           background: "transparent", border: "none",
-                          cursor: pendingItemId === item.id ? "not-allowed" : "pointer",
-                          opacity: pendingItemId === item.id ? 0.4 : 1,
+                          cursor: "pointer",
                           color: "var(--text-muted)",
                           display: "flex", alignItems: "center", justifyContent: "center",
                         }}

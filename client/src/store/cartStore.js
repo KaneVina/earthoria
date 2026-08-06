@@ -52,18 +52,18 @@ export const useCartStore = create((set, get) => ({
     }
   },
 
-  updateItem: async (itemId, quantity) => {
+  // Chỉ cập nhật UI, không gọi API — dùng khi debounce ở component
+  setLocalQuantity: (itemId, quantity) => {
     const prev = get().cart
+    if (!prev) return
+    const newItems = prev.items.map((i) =>
+      i.id === itemId ? { ...i, quantity } : i
+    )
+    set({ cart: { ...prev, items: newItems }, itemCount: calcCount(newItems) })
+  },
 
-    // Optimistic: cập nhật số lượng ngay
-    if (prev) {
-      const newItems = prev.items.map((i) =>
-        i.id === itemId ? { ...i, quantity } : i
-      )
-      const newCart = { ...prev, items: newItems }
-      set({ cart: newCart, itemCount: calcCount(newItems) })
-    }
-
+  // Gọi API thật, dùng sau debounce. Giữ nguyên số đang hiển thị nếu lỗi (không rollback về prev cũ)
+  updateItem: async (itemId, quantity) => {
     try {
       const res = await cartService.updateItem(itemId, quantity)
       const cart = res.data.data
