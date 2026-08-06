@@ -4,9 +4,9 @@ import { ArrowLeft, Home, Compass, BookOpen, Newspaper, Mail } from 'lucide-reac
 
 const quickLinks = [
   { label: 'Trang chủ', to: '/', icon: Home },
-  { label: 'Khóa học', to: '/khoa-hoc', icon: BookOpen },
-  { label: 'Tin tức', to: '/tin-tuc', icon: Newspaper },
-  { label: 'Liên hệ', to: '/lien-he', icon: Mail },
+  { label: 'Cửa hàng', to: '/shop', icon: BookOpen },
+  { label: 'Blog', to: '/blog', icon: Newspaper },
+  { label: 'Liên hệ', to: '/contact', icon: Mail },
 ]
 
 // Hand-drawn compass illustration in the Earthoria palette.
