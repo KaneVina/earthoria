@@ -24,7 +24,7 @@ import { formatPrice, formatDate } from "../../utils/helpers";
 import AdminLayout from "./AdminLayout";
 import ServerStatus from "./ServerStatus";
 
-/* ── Design tokens (mirror admin.css vars) ── */
+/*  Design tokens (mirror admin.css vars)  */
 const T = {
   forest: "#0D3330",
   green:  "#4a9e3f",
@@ -37,7 +37,7 @@ const T = {
   surface:"#FAFAF7",
 };
 
-/* ── Order status display config ── */
+/*  Order status display config  */
 const ORDER_META = {
   PENDING:   { label: "Chờ xử lý",   cls: "warning" },
   CONFIRMED: { label: "Đã xác nhận", cls: "info"    },
@@ -47,7 +47,7 @@ const ORDER_META = {
   REFUNDED:  { label: "Hoàn tiền",   cls: "danger"  },
 };
 
-/* ── Custom Tooltip for BarChart ── */
+/*  Custom Tooltip for BarChart  */
 const RevenueTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
@@ -85,7 +85,7 @@ const RevenueTooltip = ({ active, payload, label }) => {
   );
 };
 
-/* ── Custom label for Pie ── */
+/*  Custom label for Pie  */
 const renderPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
   if (percent < 0.06) return null;
   const RADIAN = Math.PI / 180;
@@ -114,7 +114,7 @@ export default function Dashboard() {
 
   const stats = data?.stats;
 
-  /* ── Fallback data khi chưa có API hoặc đang tải ── */
+  /*  Fallback data khi chưa có API hoặc đang tải  */
   const revenueData = data?.revenueChart ?? [
     { month: "T1", revenue: 0, orders: 0 },
     { month: "T2", revenue: 0, orders: 0 },
@@ -167,7 +167,7 @@ export default function Dashboard() {
 
   return (
     <AdminLayout>
-      {/* ── Page header ── */}
+      {/*  Page header  */}
       <div style={{ marginBottom: 26 }}>
         <p className="a-page-eyebrow">Tổng quan</p>
         <h1 className="a-page-title">
@@ -175,7 +175,7 @@ export default function Dashboard() {
         </h1>
       </div>
 
-      {/* ── KPI Cards ── */}
+      {/*  KPI Cards  */}
       <div className="a-kpi-grid">
         {kpiCards.map((card, i) => {
           const Icon = card.icon;
@@ -208,7 +208,7 @@ export default function Dashboard() {
 
       <ServerStatus />
 
-      {/* ── Charts row 1: Revenue + Donut ── */}
+      {/*  Charts row 1: Revenue + Donut  */}
       <div className="a-chart-grid-2">
         {/* Revenue Bar Chart */}
         <div className="a-chart-card">
@@ -318,7 +318,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Charts row 2: Top books + Activity ── */}
+      {/*  Charts row 2: Top books + Activity  */}
       <div className="a-chart-grid-2" style={{ marginBottom: 24 }}>
         {/* Top books horizontal bar */}
         <div className="a-chart-card">
@@ -397,7 +397,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ── Recent orders table ── */}
+      {/*  Recent orders table  */}
       <div className="a-table-card">
         <div className="a-table-head">
           <h3 className="a-table-title">

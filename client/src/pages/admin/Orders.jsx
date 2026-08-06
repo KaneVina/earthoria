@@ -7,7 +7,7 @@ import { formatPrice, formatDate } from '../../utils/helpers'
 import toast from 'react-hot-toast'
 import AdminLayout from './AdminLayout'
 
-/* ── Constants ── */
+/*  Constants  */
 export const ORDER_STATUS = {
   PENDING:   'Chờ xử lý',
   CONFIRMED: 'Đã xác nhận',
@@ -40,7 +40,7 @@ const PAY_BADGE = {
   REFUNDED: 'warning',
 }
 
-/* ── Order detail drawer (mini) ── */
+/*  Order detail drawer (mini)  */
 function OrderDrawer({ order, onClose }) {
   if (!order) return null
   return (
@@ -164,7 +164,7 @@ export default function Orders() {
   const [status, setStatus]     = useState('')
   const [selected, setSelected] = useState(null)
 
-  /* ── Data ── */
+  /*  Data  */
   const { data, isLoading } = useQuery({
     queryKey: ['admin-orders', page, status],
     queryFn:  () => api.get('/admin/orders', { params: { page, limit: 15, status } }).then(r => r.data.data),
@@ -187,7 +187,7 @@ export default function Orders() {
   return (
     <AdminLayout>
 
-      {/* ── Header ── */}
+      {/*  Header  */}
       <div className="a-page-header">
         <div>
           <p className="a-page-eyebrow">Quản lý</p>
@@ -198,7 +198,7 @@ export default function Orders() {
         </div>
       </div>
 
-      {/* ── Status filter pills ── */}
+      {/*  Status filter pills  */}
       <div className="a-pills">
         <button
           className={`a-pill${!status ? ' active' : ''}`}
@@ -217,7 +217,7 @@ export default function Orders() {
         ))}
       </div>
 
-      {/* ── Table ── */}
+      {/*  Table  */}
       <div className="a-table-card">
         <div className="a-table-wrap">
           <table className="a-table">
@@ -309,7 +309,7 @@ export default function Orders() {
         </div>
       </div>
 
-      {/* ── Order detail drawer ── */}
+      {/*  Order detail drawer  */}
       <OrderDrawer order={selected} onClose={() => setSelected(null)} />
 
     </AdminLayout>

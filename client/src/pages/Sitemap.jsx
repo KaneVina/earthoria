@@ -59,7 +59,7 @@ const SECTIONS = [
   },
 ]
 
-// ─── COMPONENT ───────────────────────────────────────────────────────────────
+// ─ COMPONENT ─────────────────────────────────────────────────────────────
 
 export default function Sitemap() {
   useEffect(() => {
@@ -73,7 +73,7 @@ export default function Sitemap() {
 
   return (
     <>
-      {/* ── BREADCRUMB ── */}
+      {/*  BREADCRUMB  */}
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '100px 100px 0' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '60px' }}>
           <Link to="/" style={{
@@ -91,7 +91,7 @@ export default function Sitemap() {
           }}>Sơ Đồ Website</span>
         </div>
 
-        {/* ── HERO TITLE ── */}
+        {/*  HERO TITLE  */}
         <div className="reveal" style={{ marginBottom: '80px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
             <div style={{ width: '40px', height: '0.5px', background: 'var(--gold)' }} />
@@ -118,7 +118,7 @@ export default function Sitemap() {
           </p>
         </div>
 
-        {/* ── SECTIONS ── */}
+        {/*  SECTIONS  */}
         {SECTIONS.map((sec, si) => (
           <section
             key={sec.id}
@@ -157,7 +157,7 @@ export default function Sitemap() {
           </section>
         ))}
 
-        {/* ── BOTTOM NOTE ── */}
+        {/*  BOTTOM NOTE  */}
         <div className="reveal" style={{
           display: 'flex', alignItems: 'center', gap: '20px',
           padding: '32px 0', marginBottom: '80px',
@@ -194,7 +194,7 @@ export default function Sitemap() {
   )
 }
 
-// ─── LINK ROW ITEM ────────────────────────────────────────────────────────────
+// ─ LINK ROW ITEM ──────────────────────────────────────────────────────────
 
 function LinkRow({ link, color }) {
   return (

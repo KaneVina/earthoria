@@ -975,7 +975,7 @@
   flex-direction: row-reverse;
 }
 
-/* ── BUBBLES ── */
+/*  BUBBLES  */
 #eira-root .em-bubble {
   padding: 10px 14px;
   font-size: 14px;
@@ -1042,7 +1042,7 @@
   box-shadow: none !important;
 }
 
-/* ── Action buttons ── */
+/*  Action buttons  */
 .em-actions {
   display: flex;
   flex-direction: column;
@@ -1106,7 +1106,7 @@
   }
 }
 
-/* ── Typing ── */
+/*  Typing  */
 .eira-typing {
   animation: msg-in 0.24s var(--ease-out);
   margin-bottom: 10px;
@@ -1161,7 +1161,7 @@
   }
 }
 
-/* ── Suggestion chips ── */
+/*  Suggestion chips  */
 #eira-sugg {
   padding: 8px 13px 9px;
   display: flex;
@@ -1221,7 +1221,7 @@
   transition-duration: 0.07s !important;
 }
 
-/* ── Input ── */
+/*  Input  */
 #eira-input-wrap {
   padding: 10px 13px 11px;
   border-top: 1px solid var(--c-border);
@@ -1308,7 +1308,7 @@
   background: #b8b8b8;
 }
 
-/* ── Footer ── */
+/*  Footer  */
 #eira-foot {
   padding: 5px 14px 8px;
   font-size: 10px;

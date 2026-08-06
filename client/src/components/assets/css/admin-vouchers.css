@@ -6,7 +6,7 @@
      import "../../components/assets/css/admin-vouchers.css";
    ═══════════════════════════════════════════════════════════ */
 
-/* ── Toolbar: search + filter pills + create ── */
+/*  Toolbar: search + filter pills + create  */
 .a-vc-toolbar {
   display: flex;
   align-items: center;
@@ -32,7 +32,7 @@
   margin-bottom: 0;
 }
 
-/* ── Result count ── */
+/*  Result count  */
 .a-vc-count {
   font-size: 11px;
   color: var(--a-ink-40);
@@ -44,14 +44,14 @@
   font-weight: 600;
 }
 
-/* ── Grid ── */
+/*  Grid  */
 .a-voucher-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 18px;
 }
 
-/* ── Ticket card ── */
+/*  Ticket card  */
 .a-voucher-card {
   position: relative;
   display: flex;
@@ -333,7 +333,7 @@
   z-index: 4;
 }
 
-/* ── Empty state ── */
+/*  Empty state  */
 .a-vc-empty {
   grid-column: 1 / -1;
   display: flex;
@@ -371,13 +371,13 @@
   max-width: 280px;
 }
 
-/* ── Skeleton grid while loading ── */
+/*  Skeleton grid while loading  */
 .a-voucher-skeleton {
   height: 128px;
   border-radius: 14px;
 }
 
-/* ── Delete confirm modal ── */
+/*  Delete confirm modal  */
 .a-vc-confirm-icon {
   width: 44px;
   height: 44px;
@@ -400,7 +400,7 @@
   color: var(--a-ink);
 }
 
-/* ── Responsive ── */
+/*  Responsive  */
 @media (max-width: 640px) {
   .a-voucher-grid {
     grid-template-columns: 1fr;
@@ -414,7 +414,7 @@
   }
 }
 
-/* ── Dark mode ── */
+/*  Dark mode  */
 .admin-root.dark .a-voucher-card {
   background: var(--a-white);
   border-color: var(--a-ink-08);

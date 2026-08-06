@@ -23,7 +23,7 @@ import { useAuthStore } from "../../store/authStore";
 import { useAdminTheme } from "../../hooks/useAdminTheme";
 import AdminLayout from "./AdminLayout";
 
-/* ── Ẩn bớt email dạng "khang****@edu.vn" ── */
+/*  Ẩn bớt email dạng "khang****@edu.vn"  */
 function maskEmail(email) {
   if (!email) return email;
   const atIndex = email.indexOf("@");
@@ -34,7 +34,7 @@ function maskEmail(email) {
   return `${visible}${"*".repeat(4)}@${domain}`;
 }
 
-/* ── Trường thông tin có thể sửa inline (bấm bút chì → input → lưu) ── */
+/*  Trường thông tin có thể sửa inline (bấm bút chì → input → lưu)  */
 function EditableField({
   label,
   value,
@@ -261,7 +261,7 @@ const handleLogout = async () => {
         </h1>
       </div>
 
-      {/* ── 1. THÔNG TIN CÁ NHÂN ── */}
+      {/*  1. THÔNG TIN CÁ NHÂN  */}
       <div className="a-chart-card" style={{ marginBottom: 20 }}>
         <div className="a-chart-card-header">
           <h3 className="a-chart-title">
@@ -325,7 +325,7 @@ const handleLogout = async () => {
         </div>
       </div>
 
-      {/* ── 2. GIAO DIỆN (DARK/LIGHT) ── */}
+      {/*  2. GIAO DIỆN (DARK/LIGHT)  */}
       <div className="a-chart-card" style={{ marginBottom: 20 }}>
         <div className="a-chart-card-header">
           <h3 className="a-chart-title">
@@ -352,7 +352,7 @@ const handleLogout = async () => {
         </div>
       </div>
 
-      {/* ── 3. ĐĂNG XUẤT ── */}
+      {/*  3. ĐĂNG XUẤT  */}
       <div className="a-chart-card">
         <div className="a-chart-card-header">
           <h3 className="a-chart-title">

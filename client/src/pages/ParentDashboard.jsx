@@ -274,7 +274,7 @@ export default function ParentDashboard() {
     }));
   };
 
-  /* ── Autosave feedback ── */
+  /*  Autosave feedback  */
   const [saveStatus, setSaveStatus] = useState("idle"); // idle | saving | saved
   const saveTimers = useRef({ toSaved: null, toIdle: null });
 
@@ -310,7 +310,7 @@ export default function ParentDashboard() {
     }, 180);
   };
 
-  /* ── Lock / unlock ── */
+  /*  Lock / unlock  */
   const [lockConfirmOpen, setLockConfirmOpen] = useState(false);
   const [unlockPinOpen, setUnlockPinOpen] = useState(false);
 
@@ -354,7 +354,7 @@ export default function ParentDashboard() {
   const trendDeltaPct = weekAvg > 0 ? Math.round(((todayMinutes - weekAvg) / weekAvg) * 100) : 0;
   const trendDirection = trendDeltaPct <= -5 ? "down" : trendDeltaPct >= 5 ? "up" : "flat";
 
-  /* ── PIN change modal ── */
+  /*  PIN change modal  */
   const [pinModal, setPinModal] = useState(null); // null | 'old' | 'otp' | 'new' | 'confirm'
   const [isForgotFlow, setIsForgotFlow] = useState(false);
   const [oldPin, setOldPin] = useState("");
@@ -464,7 +464,7 @@ export default function ParentDashboard() {
     closePinModal();
   };
 
-  /* ── Unlock PIN attempt (mini flow) ── */
+  /*  Unlock PIN attempt (mini flow)  */
   const [unlockPinDigits, setUnlockPinDigits] = useState(["", "", "", ""]);
   const [unlockAttempts, setUnlockAttempts] = useState(0);
   const [unlockError, setUnlockError] = useState("");
@@ -498,7 +498,7 @@ export default function ParentDashboard() {
     confirmUnlock();
   };
 
-  /* ── Scrollspy: mục lục tự nhận diện section đang xem + trạng thái "dính" ── */
+  /*  Scrollspy: mục lục tự nhận diện section đang xem + trạng thái "dính"  */
   useEffect(() => {
     const sectionEls = SECTIONS.map((s) => document.getElementById(s.id)).filter(Boolean);
     if (!sectionEls.length) return;
@@ -552,7 +552,7 @@ export default function ParentDashboard() {
 
   return (
     <div className="pkd-page">
-      {/* ── Header ── */}
+      {/*  Header  */}
       <div className="pkd-header">
         <div className="pkd-header-inner">
           <Link to="/profile" className="pkd-back-link">

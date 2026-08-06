@@ -1,14 +1,5 @@
-// Pagination.jsx — Shared smart pagination for admin pages
-// Usage:
-//   <Pagination page={page} totalPages={totalPages} onPageChange={setPage} total={total} label="người dùng" />
-
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
-/**
- * Generates the page window to display.
- * Always shows: first, last, current ±2, with "…" gaps.
- * e.g. totalPages=20, page=8  →  [1, '…', 6, 7, 8, 9, 10, '…', 20]
- */
 function buildPageWindow(page, totalPages) {
   if (totalPages <= 7) {
     return Array.from({ length: totalPages }, (_, i) => i + 1)

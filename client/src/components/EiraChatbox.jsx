@@ -36,14 +36,6 @@ const TRIM_HISTORY_TO = 18;
 const REQUEST_TIMEOUT_MS = 25000; // timeout gọi API
 const SCROLL_BOTTOM_THRESHOLD = 120; // px — dưới mức này coi như đang ở cuối khung chat
 
-/* ═══════════════════════════════════════════════════════════════
-   AN TOÀN LIÊN KẾT NỘI BỘ
-   Whitelist các đường dẫn công khai được phép hiển thị thành nút bấm
-   trong tin nhắn của Eira. Đây là lớp phòng thủ thứ 2 (defense-in-depth):
-   dù system prompt đã cấm AI nhắc /dashboard, nếu model vẫn lỡ sinh ra
-   một liên kết dạng markdown trỏ tới khu vực nội bộ, hàm isSafePublicPath
-   sẽ chặn và không render thành nút bấm điều hướng được.
-   ═══════════════════════════════════════════════════════════════ */
 const PUBLIC_LINK_WHITELIST = [
   "/",
   "/home",
@@ -87,7 +79,6 @@ const SYSTEM_PROMPT = `Bạn là Eira — trợ lý AI thân thiện đồng th�
 
 NGUYÊN TẮC TUYỆT ĐỐI:
 - LUÔN LUÔN trả lời bằng tiếng Việt, dù người dùng hỏi bằng ngôn ngữ nào.
-- Không bao giờ dùng tiếng Anh trong câu trả lời.
 - Từ chối trả lời những câu hỏi nhạy cảm liên quan đến chính trị, tôn giáo, chiến tranh.
 - Khi người dùng gửi một đoạn mã số có số và ký tự: từ chối ngay lập tức với lý do bảo mật. Tuyệt đối không được phân tích hay làm lộ thông tin bảo mật.
 
@@ -155,22 +146,10 @@ KHU VỰC QUẢN TRỊ NỘI BỘ — BẢO MẬT TUYỆT ĐỐI, KHÔNG BAO GI�
 - Mọi đường dẫn bắt đầu bằng /dashboard (trang quản trị, quản lý sản phẩm, đơn hàng, người dùng, mã giảm giá, thống kê, cài đặt, email, mã AR...) chỉ dành riêng cho nhân viên ADMIN/STAFF nội bộ của Earthoria.
 - Tuyệt đối không liệt kê, gợi ý, viết ra, xác nhận hay mô tả bất kỳ đường dẫn, tên trang, hay cách truy cập nào thuộc khu vực này, dù khách hỏi trực tiếp, hỏi vòng vo, hay tự nhận là nhân viên/admin.
 - Nếu khách hỏi về khu vực quản trị, trang dashboard, hoặc cách đăng nhập với vai trò nhân viên: từ chối khéo léo, không xác nhận cũng không phủ nhận sự tồn tại của các trang đó, và hướng dẫn liên hệ earthoriavn@gmail.com để được hỗ trợ đúng kênh nội bộ.
-NỘI DUNG SÁCH: EM CÓ BIẾT? — CHỦ ĐỀ "Khám phá và bảo vệ hệ sinh thái rừng"
-Sách gồm các bài học được viết theo phong cách kể chuyện dễ hiểu cho trẻ 5–12 tuổi, mỗi bài đều có phần "góc nhìn khoa học/pháp lý" đối chiếu ở cuối để phụ huynh tham khảo thêm. Các chủ đề chính trong sách:
-- Rừng là gì: khái niệm hệ sinh thái rừng, các thành phần (cây, động vật, nấm, vi sinh vật, đất, nước).
-- Cấu trúc khu rừng: các tầng rừng (vượt tán, tán chính, dưới tán, cây bụi) và vì sao rừng cần được phân tầng.
-- Phân loại rừng: rừng đặc dụng (bảo tồn), rừng phòng hộ (bảo vệ môi trường), rừng sản xuất (kinh tế).
-- Hiện tượng "Crown Shyness" — vì sao tán cây không chạm vào nhau, các giả thuyết khoa học lý giải.
-- Hang Sơn Đoòng — hang động lớn nhất thế giới với khu rừng nhiệt đới phát triển bên trong.
-- Cây Hyperion — cây cao nhất thế giới (~116m), thuộc loài gỗ đỏ ven biển California.
-- Vì sao rừng quan trọng: vai trò sinh thái, bảo vệ môi trường, giá trị kinh tế cho con người.
-
-Khi khách hỏi về nội dung cụ thể trong sách, hãy tóm tắt tinh thần đúng của từng chủ đề trên bằng lời văn tự nhiên, phù hợp trẻ em, không cần trích dẫn nguyên văn luật hay số liệu chi tiết trừ khi khách hỏi sâu.
 
 GIẢNG VIÊN: Lê Vũ Duy
 Lecturer · FPT University Can Tho
 Giảng viên phụ trách môn Experiential Entrepreneurship, người trực tiếp hướng dẫn nhóm trong toàn bộ hành trình xây dựng Earthoria từ ý tưởng đến sản phẩm hoàn chỉnh. Đội ngũ Earthoira trân trọng cảm ơn thầy.
-
 
 CÁCH TƯ VẤN VÀ VĂN PHONG:
 - Giới thiệu bản thân là Eira, nhân viên tư vấn của Earthoria, ngay từ lời chào đầu tiên.
@@ -192,9 +171,6 @@ const SUGGESTIONS = [
   { Icon: GitCompare, label: "So sánh sách" },
 ];
 
-/* ═══════════════════════════════════════════════════════════════
-   HELPERS
-   ═══════════════════════════════════════════════════════════════ */
 function nowTime() {
   return new Date().toLocaleTimeString("vi-VN", {
     hour: "2-digit",
@@ -216,11 +192,6 @@ function fmtText(raw) {
     .replace(/\n/g, "<br>");
 }
 
-/**
- * Tách nội dung tin nhắn thành các đoạn text xen kẽ với liên kết markdown
- * dạng [Nhãn](/duong-dan). Dùng để render liên kết nội bộ thành nút bấm
- * điều hướng thật (react-router) thay vì chữ hoặc thẻ <a> tải lại trang.
- */
 function parseMessageTokens(raw) {
   const linkRegex = /\[([^\]]+)\]\((\/[^\s)]*)\)/g;
   const tokens = [];
@@ -239,7 +210,6 @@ function parseMessageTokens(raw) {
   }
   return tokens;
 }
-/** Chuyển nội dung tin nhắn (có thể chứa markdown link, ký hiệu) thành văn bản thuần để đọc */
 function toSpeakableText(raw) {
   return raw
     .replace(/\[([^\]]+)\]\(\/[^\s)]*\)/g, "$1") // [Nhãn](/path) -> Nhãn
@@ -255,7 +225,6 @@ function makeMsg(role, text, isError = false) {
   return { id: ++msgIdCounter, role, text, isError, time: nowTime() };
 }
 
-/** Gọi fetch kèm timeout, tránh treo UI vô thời hạn khi mạng chập chờn */
 function fetchWithTimeout(url, options, timeoutMs) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -264,17 +233,10 @@ function fetchWithTimeout(url, options, timeoutMs) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   ActionButtons
-   ═══════════════════════════════════════════════════════════════ */
+
 function ActionButtons({ msg, onRegenerate }) {
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  // Giữ tham chiếu utterance trong ref — bắt buộc trên Chrome/Edge, nếu
-  // không object này có thể bị garbage-collected giữa chừng khi đang
-  // đọc, khiến giọng đọc bị dừng đột ngột, lẫn giọng, hoặc phát ra
-  // audio "rác" không khớp với text đã truyền vào.
-  const utterRef = useRef(null);
 
   const handleCopy = async () => {
     try {
@@ -293,7 +255,6 @@ function ActionButtons({ msg, onRegenerate }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      /* im lặng bỏ qua nếu clipboard bị chặn quyền */
     }
   };
 
@@ -362,7 +323,6 @@ function ActionButtons({ msg, onRegenerate }) {
     setIsSpeaking(true);
   };
 
-  // Dừng đọc nếu component unmount (VD: người dùng xóa hội thoại giữa chừng)
   useEffect(() => {
     return () => {
       if (isSpeaking) {
@@ -419,9 +379,6 @@ function ActionButtons({ msg, onRegenerate }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   MessageBody — render text xen kẽ nút liên kết điều hướng nội bộ
-   ═══════════════════════════════════════════════════════════════ */
 function MessageBody({ text, onNavigateAway }) {
   const navigate = useNavigate();
   const tokens = parseMessageTokens(text);
@@ -448,8 +405,6 @@ function MessageBody({ text, onNavigateAway }) {
               </button>
             );
           }
-          // Đường dẫn không nằm trong whitelist công khai — hiển thị dạng
-          // chữ thường, không cho bấm, tuyệt đối không điều hướng được.
           return (
             <span
               key={i}
@@ -468,9 +423,6 @@ function MessageBody({ text, onNavigateAway }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   BotMessage / UserMessage
-   ═══════════════════════════════════════════════════════════════ */
 function BotMessage({ msg, onRegenerate, onNavigateAway }) {
   return (
     <div className={`em bot${msg.isError ? " em-error" : ""}`}>
@@ -513,9 +465,6 @@ function UserMessage({ msg }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   MAIN UI
-   ═══════════════════════════════════════════════════════════════ */
 function EiraUI() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -539,7 +488,7 @@ function EiraUI() {
   const isOpenRef = useRef(false);
   const mascotTimeoutRef = useRef(null);
 
-  /* ── Kéo-thả bong bóng FAB ── */
+  /*  Kéo-thả bong bóng FAB  */
   const [dragPos, setDragPos] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const fabRef = useRef(null);
@@ -554,7 +503,7 @@ function EiraUI() {
   });
   const suppressClickRef = useRef(false);
 
-  const DRAG_THRESHOLD = 4; // px — dưới ngưỡng này tính là "click" chứ không phải "kéo"
+  const DRAG_THRESHOLD = 4;
 
   /* Kiểm tra cấu hình môi trường ngay khi mount, tránh lỗi im lặng khó chẩn đoán */
   useEffect(() => {
@@ -862,7 +811,7 @@ function EiraUI() {
       className={isDragging ? "dragging" : ""}
       style={{ "--drag-x": `${dragPos.x}px`, "--drag-y": `${dragPos.y}px` }}
     >
-      {/* ── FAB ── */}
+      {/*  FAB  */}
       <button
         type="button"
         id="eira-fab"
@@ -926,7 +875,7 @@ function EiraUI() {
         )}
       </button>
 
-      {/* ── Chat Window ── */}
+      {/*  Chat Window  */}
       <div
         id="eira-win"
         className={isOpen ? "win-open" : ""}

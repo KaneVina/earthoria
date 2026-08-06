@@ -9,6 +9,8 @@ const quickLinks = [
   { label: 'Liên hệ', to: '/lien-he', icon: Mail },
 ]
 
+// Hand-drawn compass illustration in the Earthoria palette.
+// The needle drifts slowly to suggest "lost", not broken.
 function LostCompass() {
   return (
     <motion.svg
@@ -18,6 +20,7 @@ function LostCompass() {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
+      {/* faint wandering trail */}
       <motion.path
         d="M10 118 C 34 108, 40 86, 60 90 S 96 108, 122 88"
         stroke="var(--border)"
@@ -30,9 +33,11 @@ function LostCompass() {
         transition={{ duration: 1.4, ease: 'easeOut', delay: 0.3 }}
       />
 
+      {/* outer ring */}
       <circle cx="66" cy="56" r="46" fill="var(--surface)" stroke="var(--border)" strokeWidth="1.5" />
       <circle cx="66" cy="56" r="38" fill="none" stroke="var(--border)" strokeWidth="1" opacity="0.6" />
 
+      {/* tick marks */}
       {Array.from({ length: 12 }).map((_, i) => {
         const angle = (i * 30 * Math.PI) / 180
         const x1 = 66 + Math.sin(angle) * 40
@@ -56,9 +61,10 @@ function LostCompass() {
       <text x="20" y="59" textAnchor="middle" fontSize="8" fill="var(--text-muted)" fontFamily="Playfair Display, serif" opacity="0.5">T</text>
       <text x="112" y="59" textAnchor="middle" fontSize="8" fill="var(--text-muted)" fontFamily="Playfair Display, serif" opacity="0.5">Đ</text>
 
-      {/* drifting needle */}
+      {/* drifting needle — rotates around its own center (fill-box),
+          so it stays pinned to the pivot dot regardless of coordinates */}
       <motion.g
-        style={{ originX: '66px', originY: '56px' }}
+        style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
         animate={{ rotate: [-8, 10, -6, 8, -8] }}
         transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
       >

@@ -1,4 +1,3 @@
-// Topbar.jsx — Thanh trên cùng: breadcrumb + nút menu mobile + actions
 import { Fragment } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, Menu, Search, Bell } from "lucide-react";
@@ -7,7 +6,6 @@ export default function Topbar({ breadcrumbItems, onOpenMobileMenu }) {
   return (
     <header className="a-topbar">
       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        {/* Mobile menu trigger — chỉ hiện khi màn hình <= 768px (xem .a-menu-trigger trong admin.css) */}
         <button
           onClick={onOpenMobileMenu}
           className="a-topbar-btn a-menu-trigger"

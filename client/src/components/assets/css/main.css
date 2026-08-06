@@ -46,7 +46,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ─── SCROLLBAR ─── */
+/* ─ SCROLLBAR ─ */
 ::-webkit-scrollbar {
   width: 4px;
 }
@@ -58,7 +58,7 @@ body {
   border-radius: 2px;
 }
 
-/* ─── PROGRESS ─── */
+/* ─ PROGRESS ─ */
 #progress {
   position: fixed;
   top: 0;
@@ -70,7 +70,7 @@ body {
   transition: width 0.1s linear;
 }
 
-/* ─── NAV ─── */
+/* ─ NAV ─ */
 nav {
   position: fixed;
   top: 0;
@@ -209,7 +209,7 @@ nav {
   color: var(--gold);
 }
 
-/* ─── HERO ─── */
+/* ─ HERO ─ */
 .hero {
   min-height: 100vh;
   background: var(--ivory);
@@ -427,7 +427,7 @@ nav {
   }
 }
 
-/* ─── MARQUEE ─── */
+/* ─ MARQUEE ─ */
 .marquee-section {
   background: var(--forest);
   padding: 18px 0;
@@ -469,7 +469,7 @@ nav {
   }
 }
 
-/* ─── STATS ─── */
+/* ─ STATS ─ */
 .stats-section {
   background: var(--forest);
   padding: 80px 100px;
@@ -590,7 +590,7 @@ nav {
   width: var(--bar-width);
 }
 
-/* ─── SECTION HEADERS ─── */
+/* ─ SECTION HEADERS ─ */
 .section-header {
   text-align: center;
   margin-bottom: 80px;
@@ -636,7 +636,7 @@ nav {
   font-weight: 300;
 }
 
-/* ─── HOW IT WORKS ─── */
+/* ─ HOW IT WORKS ─ */
 .how-section {
   padding: 120px 100px;
   background: url("/natura2.png") center center / cover no-repeat;
@@ -744,7 +744,7 @@ nav {
   color: rgba(250, 248, 243, 0.65);
 }
 
-/* ─── PRODUCTS ─── */
+/* ─ PRODUCTS ─ */
 .products-section {
   padding: 120px 100px;
   background: var(--cream);
@@ -958,7 +958,7 @@ nav {
   color: var(--ivory);
 }
 
-/* ─── TECH SECTION ─── */
+/* ─ TECH SECTION ─ */
 .tech-section {
   padding: 0;
   background: var(--forest);
@@ -1217,7 +1217,7 @@ nav {
   font-family: "Be Vietnam Pro", sans-serif;
 }
 
-/* ─── VALUES ─── */
+/* ─ VALUES ─ */
 .values-section {
   padding: 120px 100px;
   background: var(--ivory);
@@ -1283,7 +1283,7 @@ nav {
   font-weight: 300;
 }
 
-/* ─── JOURNEY ─── */
+/* ─ JOURNEY ─ */
 .journey-section {
   padding: 120px 100px;
   background: var(--parchment);
@@ -1373,7 +1373,7 @@ nav {
   border-radius: 50%;
   z-index: 2;
 }
-/* ─── TESTIMONIALS ─── */
+/* ─ TESTIMONIALS ─ */
 .reviews-section {
   padding: 120px 100px;
   background: var(--white);
@@ -1513,7 +1513,7 @@ nav {
   color: rgba(250, 248, 243, 0.45);
 }
 
-/* ─── CTA BANNER ─── */
+/* ─ CTA BANNER ─ */
 .cta-section {
   background: var(--forest);
   padding: 140px 100px;
@@ -1601,7 +1601,7 @@ nav {
   border-color: var(--ivory);
 }
 
-/* ─── FOOTER ─── */
+/* ─ FOOTER ─ */
 footer {
   background: var(--ink);
   padding: 80px 100px 48px;
@@ -1714,7 +1714,7 @@ footer {
   background: var(--forest-mid);
 }
 
-/* ─── REVEAL ─── */
+/* ─ REVEAL ─ */
 .reveal {
   opacity: 0;
   transform: translateY(24px);
@@ -1734,7 +1734,7 @@ footer {
   transition-delay: 0.3s;
 }
 
-/* ─── ORNAMENTAL DIVIDER ─── */
+/* ─ ORNAMENTAL DIVIDER ─ */
 .ornament-divider {
   display: flex;
   align-items: center;
@@ -1755,7 +1755,7 @@ footer {
   transform: rotate(45deg);
 }
 
-/* ─── TRUSTED ─── */
+/* ─ TRUSTED ─ */
 .trusted-section {
   background: var(--ivory);
   padding: 60px 100px;
@@ -1794,7 +1794,7 @@ footer {
   color: var(--forest);
 }
 
-/* ─── RESPONSIVE ─── */
+/* ─ RESPONSIVE ─ */
 @media (max-width: 1100px) {
   nav {
     padding: 0 40px;
@@ -1894,7 +1894,7 @@ footer {
     align-items: center;
   }
 }
-/* ─── FIREFLIES ─── */
+/* ─ FIREFLIES ─ */
 .firefly {
   position: absolute;
   width: 4px;
@@ -1946,7 +1946,7 @@ footer {
     opacity: 0;
   }
 }
-/* ─── DARK MODE ─── */
+/* ─ DARK MODE ─ */
 body.dark-mode {
   --ink: #e8e4dc;
   --ink-2: #d0ccc4;
@@ -2136,7 +2136,7 @@ body.dark-mode #back-top {
   transform: scaleY(0.55);
 }
 
-/* ─── MISSION SECTION ─── */
+/* ─ MISSION SECTION ─ */
 .mission-section {
   padding: 120px 100px;
   background: var(--ivory);
@@ -2271,7 +2271,7 @@ body.dark-mode #back-top {
   font-weight: 300;
 }
 
-/* ─── ADVISOR / MENTOR SECTION ─── */
+/* ─ ADVISOR / MENTOR SECTION ─ */
 .advisor-section {
   padding: 120px 100px;
   background: var(--parchment);
@@ -2391,7 +2391,7 @@ body.dark-mode #back-top {
   border-left: 2px solid var(--gold);
 }
 
-/* ─── CONTACT SECTION ─── */
+/* ─ CONTACT SECTION ─ */
 .contact-section {
   padding: 120px 100px;
   background: var(--white);
@@ -2585,7 +2585,7 @@ body.dark-mode #back-top {
   margin-top: -8px;
 }
 
-/* ─── SOCIAL / COMMUNITY ─── */
+/* ─ SOCIAL / COMMUNITY ─ */
 .community-section {
   padding: 120px 100px;
   background: var(--forest);
@@ -2697,7 +2697,7 @@ body.dark-mode #back-top {
   transform: translate(4px, -4px);
 }
 
-/* ─── DARK MODE — about us ─── */
+/* ─ DARK MODE — about us ─ */
 body.dark-mode .mission-section {
   background: #121a16;
 }
@@ -2765,7 +2765,7 @@ body.dark-mode .community-section {
   background: #0a0f0c;
 }
 
-/* ─── RESPONSIVE — about us ─── */
+/* ─ RESPONSIVE — about us ─ */
 @media (max-width: 1100px) {
   .about-hero-left {
     padding: 140px 60px 80px 60px;
@@ -2866,7 +2866,7 @@ body.dark-mode .community-section {
   grid-template-columns: 1fr 1fr;
 }
 
-/* ── Left panel — visual ── */
+/*  Left panel — visual  */
 .auth-visual {
   background: var(--forest);
   position: relative;
@@ -3069,7 +3069,7 @@ body.dark-mode .community-section {
   }
 }
 
-/* ── Right panel — form ── */
+/*  Right panel — form  */
 .auth-form-panel {
   background: var(--ivory);
   display: flex;
@@ -3443,7 +3443,7 @@ body.dark-mode .auth-forgot-link:hover {
   animation: flashSuccess 0.5s ease;
 }
 
-/* ── Dark mode ── */
+/*  Dark mode  */
 body.dark-mode .auth-form-panel {
   background: #0a0f0c;
 }
@@ -3609,7 +3609,7 @@ body.dark-mode .trusted-label {
   color: rgba(180, 200, 188, 0.35);
 }
 
-/* ─── DARK MODE — About Us bổ sung ─── */
+/* ─ DARK MODE — About Us bổ sung ─ */
 
 /* Mission */
 body.dark-mode .mission-desc {
@@ -3720,7 +3720,7 @@ body.dark-mode .social-card-name {
 body.dark-mode .social-card-handle {
   color: rgba(180, 200, 188, 0.4);
 }
-/* ── Responsive ── */
+/*  Responsive  */
 @media (max-width: 960px) {
   .auth-page {
     grid-template-columns: 1fr;
@@ -3748,7 +3748,7 @@ body.dark-mode .social-card-handle {
 }
 
 
-/* ── Auth page visual trust badge ── */
+/*  Auth page visual trust badge  */
 .auth-trust-badge {
   display: flex;
   align-items: center;
@@ -3773,7 +3773,7 @@ body.dark-mode .social-card-handle {
   font-weight: 400;
 }
 
-/* ── Shop Hero ── */
+/*  Shop Hero  */
 .shop-hero {
   padding: 160px 100px 80px;
   max-width: 1400px;
@@ -3841,7 +3841,7 @@ body.dark-mode .social-card-handle {
   margin-top: 4px;
 }
 
-/* ── Breadcrumb ── */
+/*  Breadcrumb  */
 .breadcrumb {
   max-width: 1400px;
   margin: 0 auto;
@@ -3872,7 +3872,7 @@ body.dark-mode .social-card-handle {
   font-weight: 400;
 }
 
-/* ── Trust Strip ── */
+/*  Trust Strip  */
 .trust-strip {
   background: var(--parchment);
   border-top: 0.5px solid var(--border);
@@ -3921,7 +3921,7 @@ body.dark-mode .social-card-handle {
   font-weight: 300;
 }
 
-/* ── Category Banner ── */
+/*  Category Banner  */
 .cat-banner-section {
   padding: 60px 100px;
   max-width: 1400px;
@@ -4010,7 +4010,7 @@ body.dark-mode .social-card-handle {
   transform: translateY(0);
 }
 
-/* ── Shop Layout: Sidebar + Grid ── */
+/*  Shop Layout: Sidebar + Grid  */
 .shop-layout {
   max-width: 1400px;
   margin: 0 auto;
@@ -4025,7 +4025,7 @@ body.dark-mode .social-card-handle {
   top: 100px;
 }
 
-/* ── Sidebar ── */
+/*  Sidebar  */
 .sidebar-section {
   margin-bottom: 44px;
 }
@@ -4130,7 +4130,7 @@ body.dark-mode .social-card-handle {
   border-color: var(--forest);
 }
 
-/* ── Shop Toolbar ── */
+/*  Shop Toolbar  */
  .shop-toolbar {
   display: flex;
   justify-content: flex-end;
@@ -4212,7 +4212,7 @@ body.dark-mode .social-card-handle {
   transform: scale(1);
 }
 
-/* ── Grid variants ── */
+/*  Grid variants  */
 .products-grid.grid-2 {
   grid-template-columns: repeat(2, 1fr);
 }
@@ -4220,7 +4220,7 @@ body.dark-mode .social-card-handle {
   grid-template-columns: repeat(3, 1fr);
 }
 
-/* ── Product extras (rating, tags, price variants, wishlist) ── */
+/*  Product extras (rating, tags, price variants, wishlist)  */
 .product-rating {
   display: flex;
   align-items: center;
@@ -4323,7 +4323,7 @@ body.dark-mode .social-card-handle {
   transform: translateY(0) !important;
 }
 
-/* ── Featured product (wide card) ── */
+/*  Featured product (wide card)  */
  .featured-product-card {
   grid-column: 1 / -1;
   display: grid;
@@ -4447,7 +4447,7 @@ body.dark-mode .social-card-handle {
   color: var(--gold);
 }
 
-/* ── Promo Strip ── */
+/*  Promo Strip  */
 .promo-strip {
   grid-column: 1 / -1;
   background: var(--forest);
@@ -4507,7 +4507,7 @@ body.dark-mode .social-card-handle {
   background: var(--gold-light);
 }
 
-/* ── Pagination ── */
+/*  Pagination  */
 .shop-pagination {
   display: flex;
   justify-content: center;
@@ -4552,7 +4552,7 @@ body.dark-mode .social-card-handle {
   font-size: 14px;
 }
 
-/* ── Dark mode — Shop ── */
+/*  Dark mode — Shop  */
 body.dark-mode .shop-hero-title,
 body.dark-mode .featured-title {
   color: #c8d4cc;
@@ -4635,7 +4635,7 @@ body.dark-mode .promo-strip {
   border-color: rgba(74, 158, 63, 0.15);
 }
 
-/* ── Responsive — Shop ── */
+/*  Responsive — Shop  */
 @media (max-width: 1100px) {
   .shop-hero,
   .cat-banner-section,
@@ -4739,7 +4739,7 @@ body.dark-mode .promo-strip {
    (supplement to main.css)
 ══════════════════════════════ */
 
-/* ── Reveal variants ── */
+/*  Reveal variants  */
 .reveal-left {
   opacity: 0;
   transform: translateX(-30px);
@@ -4760,7 +4760,7 @@ body.dark-mode .promo-strip {
   transform: translateX(0);
 }
 
-/* ── Breadcrumb ── */
+/*  Breadcrumb  */
 .breadcrumb {
   max-width: 1400px;
   margin: 0 auto;
@@ -4804,7 +4804,7 @@ body.dark-mode .promo-strip {
   align-items: start;
 }
 
-/* ── Gallery ── */
+/*  Gallery  */
 .gallery-wrap {
   position: sticky;
   top: 100px;
@@ -4926,7 +4926,7 @@ body.dark-mode .promo-strip {
   filter: saturate(1);
 }
 
-/* ── Product Info ── */
+/*  Product Info  */
 .product-info {
   padding-top: 8px;
 }
@@ -6084,12 +6084,12 @@ body.dark-mode .chapter-title {
   }
 }
 
-/* ── Hover màu, không gạch chân ── */
+/*  Hover màu, không gạch chân  */
 .nav-links a:hover:not(.active) {
   color: var(--forest);
 }
 
-/* ── Badge số lượng (giỏ hàng / wishlist) ── */
+/*  Badge số lượng (giỏ hàng / wishlist)  */
 .nav-badge {
   position: absolute;
   top: 6px;
@@ -6108,7 +6108,7 @@ body.dark-mode .chapter-title {
   font-family: "Be Vietnam Pro", sans-serif;
 }
 
-/* ── Menu người dùng: "Xin chào, {tên}" + avatar ── */
+/*  Menu người dùng: "Xin chào, {tên}" + avatar  */
 .user-menu {
   position: relative;
 }
@@ -6296,7 +6296,7 @@ body.dark-mode .chapter-title {
   }
 }
 
-/* ── Dark mode ── */
+/*  Dark mode  */
 body.dark-mode .user-avatar {
   background: linear-gradient(135deg, #1a5c52 0%, #2d7a6e 100%);
   border-color: rgba(74, 158, 63, 0.3);
@@ -6333,7 +6333,7 @@ body.dark-mode .user-dropdown-item:hover {
   background: rgba(74, 158, 63, 0.1);
 }
 
-/* ─── BACKDROP ─── */
+/* ─ BACKDROP ─ */
 .search-overlay-backdrop {
   position: fixed;
   inset: 0;
@@ -6357,7 +6357,7 @@ body.dark-mode .user-dropdown-item:hover {
   pointer-events: auto;
 }
 
-/* ─── PANEL ─── */
+/* ─ PANEL ─ */
 .search-panel {
   width: 100%;
   max-width: 760px;
@@ -6379,7 +6379,7 @@ body.dark-mode .user-dropdown-item:hover {
   opacity: 1;
 }
 
-/* ─── HEADER ─── */
+/* ─ HEADER ─ */
 .search-panel-header {
   display: flex;
   align-items: center;
@@ -6482,7 +6482,7 @@ body.dark-mode .user-dropdown-item:hover {
   font-weight: 400;
 }
 
-/* ─── CATEGORY TABS ─── */
+/* ─ CATEGORY TABS ─ */
 .search-category-tabs {
   display: flex;
   gap: 8px;
@@ -6502,7 +6502,7 @@ body.dark-mode .user-dropdown-item:hover {
   align-items: center;
 }
 
-/* ─── BODY ─── */
+/* ─ BODY ─ */
 .search-panel-body {
   flex: 1;
   overflow-y: auto;
@@ -6759,7 +6759,7 @@ body.dark-mode .user-dropdown-item:hover {
   white-space: nowrap;
 }
 
-/* ─── FOOTER ─── */
+/* ─ FOOTER ─ */
 .search-panel-footer {
   flex-shrink: 0;
   padding: 18px 28px;
@@ -6807,7 +6807,7 @@ body.dark-mode .user-dropdown-item:hover {
   color: var(--forest);
 }
 
-/* ─── DARK MODE ─── */
+/* ─ DARK MODE ─ */
 body.dark-mode .search-overlay-backdrop {
   background: rgba(5, 10, 7, 0.7);
 }
@@ -6880,7 +6880,7 @@ body.dark-mode .search-result-age {
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-/* ─── RESPONSIVE ─── */
+/* ─ RESPONSIVE ─ */
 @media (max-width: 720px) {
   .search-overlay-backdrop {
     padding: 84px 12px 24px;
@@ -6920,7 +6920,7 @@ body.dark-mode .search-result-age {
   }
 }
 
-/* ─── REDUCED MOTION ─── */
+/* ─ REDUCED MOTION ─ */
 @media (prefers-reduced-motion: reduce) {
   .search-overlay-backdrop,
   .search-panel,
@@ -6993,7 +6993,7 @@ body.dark-mode .search-result-age {
 .footer-bottom-link:hover::after {
   width: 100%;
 }
-/* ─── CARD ACTION TOOLTIP ─── */
+/* ─ CARD ACTION TOOLTIP ─ */
 .card-action-wrap,
 .card-wishlist-wrap {
   position: relative;
@@ -7035,7 +7035,7 @@ body.dark-mode .search-result-age {
   transform: translateX(-50%) translateY(0);
 }
 
-/* ─── PRODUCT CARD equal height ─── */
+/* ─ PRODUCT CARD equal height ─ */
 .products-grid .product-card,
 div[style*="flex: 0 0 280px"] .product-card {
   height: 100%;
@@ -7072,7 +7072,7 @@ body.dark-mode .skeleton {
   background-size: 600px 100%;
 }
 
-/* ── Skeleton Cart Item ── */
+/*  Skeleton Cart Item  */
 .skeleton-cart-item {
   display: grid;
   grid-template-columns: 1fr 100px 140px 44px;
@@ -7132,7 +7132,7 @@ body.dark-mode .skeleton {
   margin-left: auto;
 }
 
-/* ── Skeleton Cart Summary (sidebar) ── */
+/*  Skeleton Cart Summary (sidebar)  */
 .skeleton-summary {
   background: var(--white);
   border: 0.5px solid var(--border);
@@ -7175,7 +7175,7 @@ body.dark-mode .skeleton {
   margin-top: 8px;
 }
 
-/* ── Skeleton Product Card (Shop) ── */
+/*  Skeleton Product Card (Shop)  */
 .skeleton-product-card {
   background: var(--white);
   border: 0.5px solid var(--border);
@@ -7240,7 +7240,7 @@ body.dark-mode .skeleton {
   height: 40px;
 }
 
-/* ── BACK TO TOP ── */
+/*  BACK TO TOP  */
 .back-top-btn {
   position: fixed;
   bottom: 24px;
@@ -7534,7 +7534,7 @@ body.dark-mode .otp-input {
 body.dark-mode .otp-input.filled {
   border-color: var(--gold);
 }
-/* ─── TRUST NUMBERS (nâng cấp) ─── */
+/* ─ TRUST NUMBERS (nâng cấp) ─ */
 .trust-numbers-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -7610,7 +7610,7 @@ body.dark-mode .trust-num-item {
 }
 body.dark-mode .trust-num-item:hover { background: #222e28; }
 body.dark-mode .trust-num-value { color: #c8d4cc; }
-/* ─── TRUST METRICS STRIP ─── */
+/* ─ TRUST METRICS STRIP ─ */
 .trust-metrics-wrap {
   position: relative;
   margin-top: 64px;

@@ -62,7 +62,7 @@ export default function ProductsCategories() {
 
   return (
     <>
-      {/* ── Search + nút thêm mới ── */}
+      {/*  Search + nút thêm mới  */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", justifyContent: "space-between" }}>
         <div className="a-search-wrap" style={{ marginBottom: 0, flex: "1 1 260px", maxWidth: 360 }}>
           <Search size={13} className="a-search-icon" />
@@ -81,7 +81,7 @@ export default function ProductsCategories() {
         </button>
       </div>
 
-      {/* ── Table ── */}
+      {/*  Table  */}
       <div className="a-table-card" style={{ marginTop: 16 }}>
         <div className="a-table-wrap">
           <table className="a-table">

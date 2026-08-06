@@ -27,7 +27,7 @@ import {
 } from "recharts";
 import AdminLayout from "./AdminLayout";
 
-// ─── CONFIG ──────────────────────────────────────────────────────────────────
+// ─ CONFIG ────────────────────────────────────────────────────────────────
 const UMAMI_URL = import.meta.env.VITE_UMAMI_URL || "";
 const SITE_ID = import.meta.env.VITE_UMAMI_SITE_ID || "";
 const UMAMI_USER = import.meta.env.VITE_UMAMI_USER || "admin";
@@ -39,7 +39,7 @@ const PERIOD_OPTIONS = [
   { label: "3 tháng", value: "90d", unit: "month" },
 ];
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
+// ─ HELPERS ───────────────────────────────────────────────────────────────
 function getRange(period) {
   const end = Date.now();
   const days = parseInt(period);
@@ -60,7 +60,7 @@ function fmtDur(ms) {
   return m > 0 ? `${m}p ${s % 60}s` : `${s}s`;
 }
 
-// ─── TOKEN MANAGER ────────────────────────────────────────────────────────────
+// ─ TOKEN MANAGER ──────────────────────────────────────────────────────────
 // Token được lấy tự động qua POST /api/auth/login và cache 23 giờ.
 // Tự động login lại nếu gặp 401 (ví dụ do server Umami restart).
 let _token = null;
@@ -80,7 +80,7 @@ async function getToken() {
   return _token;
 }
 
-// ─── API FETCH ────────────────────────────────────────────────────────────────
+// ─ API FETCH ──────────────────────────────────────────────────────────────
 async function umamiGet(path, params = {}) {
   if (!UMAMI_URL || !SITE_ID || !UMAMI_PASS) return null;
 
@@ -116,7 +116,7 @@ async function umamiGet(path, params = {}) {
   return res.json();
 }
 
-// ─── SUB-COMPONENTS ───────────────────────────────────────────────────────────
+// ─ SUB-COMPONENTS ─────────────────────────────────────────────────────────
 
 function StatCard({ icon: Icon, label, value, sub, accent }) {
   return (
@@ -398,7 +398,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-// ─── NOT CONFIGURED STATE ─────────────────────────────────────────────────────
+// ─ NOT CONFIGURED STATE ───────────────────────────────────────────────────
 function NotConfigured() {
   return (
     <div
@@ -490,7 +490,7 @@ function NotConfigured() {
   );
 }
 
-// ─── MAIN PAGE ────────────────────────────────────────────────────────────────
+// ─ MAIN PAGE ──────────────────────────────────────────────────────────────
 export default function Analytics() {
   const [period, setPeriod] = useState("7d");
   const [loading, setLoading] = useState(false);
@@ -603,7 +603,7 @@ export default function Analytics() {
 
   return (
     <AdminLayout>
-      {/* ── Header ── */}
+      {/*  Header  */}
       <div className="a-page-header">
         <div>
           <p className="a-page-eyebrow">Analytics</p>
@@ -661,10 +661,10 @@ export default function Analytics() {
         </div>
       </div>
 
-      {/* ── Not configured ── */}
+      {/*  Not configured  */}
       {!isConfigured && <NotConfigured />}
 
-      {/* ── Error ── */}
+      {/*  Error  */}
       {isConfigured && error && (
         <div
           style={{
@@ -686,7 +686,7 @@ export default function Analytics() {
 
       {isConfigured && (
         <>
-          {/* ── Realtime badge ── */}
+          {/*  Realtime badge  */}
           <div style={{ marginBottom: 24 }}>
             <div
               style={{
@@ -726,7 +726,7 @@ export default function Analytics() {
             </div>
           </div>
 
-          {/* ── Stat cards ── */}
+          {/*  Stat cards  */}
           <div
             style={{
               display: "grid",
@@ -775,7 +775,7 @@ export default function Analytics() {
             />
           </div>
 
-          {/* ── Pageviews chart ── */}
+          {/*  Pageviews chart  */}
           <SectionTitle>Lượt xem theo thời gian</SectionTitle>
           <div
             style={{
@@ -854,7 +854,7 @@ export default function Analytics() {
             )}
           </div>
 
-          {/* ── Top pages + Referrers ── */}
+          {/*  Top pages + Referrers  */}
           <SectionTitle>Trang & Nguồn truy cập</SectionTitle>
           <div
             style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}
@@ -873,7 +873,7 @@ export default function Analytics() {
             />
           </div>
 
-          {/* ── Countries + Cities + Devices ── */}
+          {/*  Countries + Cities + Devices  */}
           <SectionTitle>Địa lý & Thiết bị</SectionTitle>
           <div
             style={{
@@ -897,7 +897,7 @@ export default function Analytics() {
             <DeviceDonut data={devices} />
           </div>
 
-          {/* ── Countries bar chart ── */}
+          {/*  Countries bar chart  */}
           {countries.length > 0 && (
             <>
               <SectionTitle>Top quốc gia</SectionTitle>

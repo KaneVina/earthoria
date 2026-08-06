@@ -148,7 +148,7 @@ export default function ArCodeDetail() {
     accessType: "CUSTOMER_ONLY",
   });
 
-  /* ── Chế độ sửa: tải chi tiết mã AR + sách ── */
+  /*  Chế độ sửa: tải chi tiết mã AR + sách  */
   const { data: arCode, isLoading: loadingAr } = useQuery({
     queryKey: ["admin-ar-code-detail", id],
     queryFn: () => api.get(`/admin/ar-codes/${id}`).then((r) => r.data.data),
@@ -166,7 +166,7 @@ export default function ArCodeDetail() {
     }
   }, [arCode]);
 
-  /* ── Chế độ tạo mới, kèm ?bookId= từ trang Chi tiết sách ── */
+  /*  Chế độ tạo mới, kèm ?bookId= từ trang Chi tiết sách  */
   const { data: preselectBook } = useQuery({
     queryKey: ["admin-product-preselect", preselectBookId],
     queryFn: () =>
@@ -332,7 +332,7 @@ export default function ArCodeDetail() {
       </div>
 
       <div className="a-chart-grid-2 a-ar-layout">
-        {/* ── Cột trái: chọn sách + form ── */}
+        {/*  Cột trái: chọn sách + form  */}
         <div className="a-chart-card">
           {!isEditMode && !selectedBook && (
             <div style={{ position: "relative" }}>
@@ -629,7 +629,7 @@ export default function ArCodeDetail() {
           )}
         </div>
 
-        {/* ── Cột phải: QR ── */}
+        {/*  Cột phải: QR  */}
         <div className="a-ar-side">
           <div className="a-chart-card">
             <div className="a-chart-card-header">

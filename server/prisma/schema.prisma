@@ -8,7 +8,7 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// ─── USER ───
+// ─ USER ─
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -61,7 +61,7 @@ enum Gender {
   OTHER
 }
 
-// ─── PENDING USER (chờ xác thực OTP khi đăng ký) ───
+// ─ PENDING USER (chờ xác thực OTP khi đăng ký) ─
 model PendingUser {
   id          String   @id @default(uuid())
   email       String   @unique
@@ -74,7 +74,7 @@ model PendingUser {
   createdAt   DateTime @default(now())
 }
 
-// ─── ADDRESS ───
+// ─ ADDRESS ─
 model Address {
   id        String  @id @default(uuid())
   userId    String
@@ -128,7 +128,7 @@ model InventoryImportItem {
   @@index([bookId])
 }
 
-// ─── CATEGORY ───
+// ─ CATEGORY ─
 model Category {
   id          String  @id @default(uuid())
   name        String
@@ -140,7 +140,7 @@ model Category {
   books Book[]
 }
 
-// ─── BOOK ───
+// ─ BOOK ─
 model Book {
   id            String   @id @default(uuid())
   title         String
@@ -190,7 +190,7 @@ model Book {
    @@index([productCode])
 }
 
-// ─── AUTHOR ───
+// ─ AUTHOR ─
 // 1 sách có thể có nhiều tác giả, 1 tác giả có thể viết nhiều sách -> quan hệ n-n qua BookAuthor
 model Author {
   id    String       @id @default(uuid())
@@ -212,7 +212,7 @@ model BookAuthor {
   @@index([authorId])
 }
 
-// ─── AR CODE ───
+// ─ AR CODE ─
 // Mỗi sách có thể có nhiều mã AR (vd: sách về động vật -> mã riêng cho
 // con voi, con heo...). Mỗi mã gắn với 1 model 3D và được in thành 1 QR
 // cố định trong sách giấy, nên `code` không bao giờ được đổi sau khi in.
@@ -245,7 +245,7 @@ model ArCode {
   @@index([bookId])
 }
 
-// ─── CART ───
+// ─ CART ─
 model Cart {
   id        String   @id @default(uuid())
   userId    String   @unique
@@ -269,7 +269,7 @@ model CartItem {
   @@index([bookId])
 }
 
-// ─── ORDER ───
+// ─ ORDER ─
 model Order {
   id              String        @id @default(uuid())
   userId          String
@@ -324,7 +324,7 @@ enum PaymentStatus {
   REFUNDED
 }
 
-// ─── REVIEW ───
+// ─ REVIEW ─
 model Review {
   id        String   @id @default(uuid())
   userId    String
@@ -339,7 +339,7 @@ model Review {
   book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
 }
 
-// ─── WISHLIST ───
+// ─ WISHLIST ─
 model Wishlist {
   id        String   @id @default(uuid())
   userId    String
@@ -352,7 +352,7 @@ model Wishlist {
   @@unique([userId, bookId])
 }
 
-// ─── COUPON ───
+// ─ COUPON ─
 model Coupon {
   id          String     @id @default(uuid())
   code        String     @unique
@@ -372,7 +372,7 @@ enum CouponType {
   FIXED
 }
 
-// ─── REFRESH TOKEN ───
+// ─ REFRESH TOKEN ─
 // Không lưu token gốc, chỉ lưu hash (SHA-256). Hỗ trợ rotation +
 // reuse detection: khi 1 token đã revoke mà vẫn bị dùng lại => dấu
 // hiệu bị đánh cắp => revoke toàn bộ các token cùng chain của user.

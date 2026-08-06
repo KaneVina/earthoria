@@ -148,7 +148,7 @@ export default function HeroBanner() {
   return (
     <>
       <style>{`
-        /* ── keyframes ── */
+        /*  keyframes  */
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(28px); }
           to   { opacity: 1; transform: translateY(0); }
@@ -158,7 +158,7 @@ export default function HeroBanner() {
           to   { width: 100%; }
         }
 
-        /* ── wrapper ── */
+        /*  wrapper  */
         .hb-wrap {
           position: relative;
           width: 100%;
@@ -168,7 +168,7 @@ export default function HeroBanner() {
           background: #0d2b1e;
         }
 
-        /* ── video layer ── */
+        /*  video layer  */
         .hb-bg {
           position: absolute; inset: 0; z-index: 0;
           overflow: hidden;
@@ -184,7 +184,7 @@ export default function HeroBanner() {
         .hb-bg video.hb-bg-active { opacity: 1; }
         .hb-bg video.hb-bg-exit   { opacity: 0; }
 
-        /* ── overlays ── */
+        /*  overlays  */
        .hb-overlay-left {
   position: absolute; inset: 0; z-index: 1;
   background: linear-gradient(
@@ -208,7 +208,7 @@ export default function HeroBanner() {
           pointer-events: none;
         }
 
-        /* ── content ── */
+        /*  content  */
         .hb-content {
           position: absolute; inset: 0; z-index: 3;
           display: flex; flex-direction: column; justify-content: flex-start;
@@ -293,13 +293,13 @@ export default function HeroBanner() {
           color: #fff;
         }
 
-        /* ── slide content fade animations ── */
+        /*  slide content fade animations  */
         .hb-slide-active .hb-eyebrow   { animation: fadeUp 0.75s 0.05s both cubic-bezier(0.16,1,0.3,1); }
         .hb-slide-active .hb-headline  { animation: fadeUp 0.75s 0.18s both cubic-bezier(0.16,1,0.3,1); }
         .hb-slide-active .hb-sub       { animation: fadeUp 0.75s 0.30s both cubic-bezier(0.16,1,0.3,1); }
         .hb-slide-active .hb-cta-row   { animation: fadeUp 0.75s 0.42s both cubic-bezier(0.16,1,0.3,1); }
 
-        /* ── Controls bar (bottom-left) ── */
+        /*  Controls bar (bottom-left)  */
         .hb-controls {
           position: absolute;
           bottom: 110px; left: 100px;
@@ -344,7 +344,7 @@ export default function HeroBanner() {
           color: var(--gold);
         }
 
-        /* ── Thumbnail strip (right side) ── */
+        /*  Thumbnail strip (right side)  */
         .hb-thumbs {
           position: absolute;
           right: 52px; top: 50%;
@@ -380,7 +380,7 @@ export default function HeroBanner() {
         }
         .hb-thumb.active .hb-thumb-label { opacity: 1; }
 
-        /* ── Progress bar ── */
+        /*  Progress bar  */
         .hb-progress-rail {
           position: absolute; top: 0; left: 0; right: 0;
           height: 1.5px; background: rgba(255,255,255,0.08); z-index: 5;
@@ -390,7 +390,7 @@ export default function HeroBanner() {
           background: linear-gradient(90deg, var(--gold), var(--gold-light));
         }
 
-        /* ── Vertical slide label ── */
+        /*  Vertical slide label  */
         .hb-slide-label {
           position: absolute;
           right: 148px; bottom: 56px;
@@ -403,7 +403,7 @@ export default function HeroBanner() {
           transition: color 0.4s;
         }
 
-        /* ── Scroll hint ── */
+        /*  Scroll hint  */
         .hb-scroll {
           position: absolute; bottom: 56px;
           left: 50%; transform: translateX(-50%);
@@ -425,7 +425,7 @@ export default function HeroBanner() {
           color: rgba(255,255,255,0.3);
         }
 
-        /* ── Mute button ── */
+        /*  Mute button  */
         .hb-mute-btn {
           position: absolute; top: 100px; right: 52px; z-index: 4;
           width: 40px; height: 40px;

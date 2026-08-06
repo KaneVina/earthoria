@@ -16,7 +16,7 @@
   // thể gây khó chịu; bật khi cần cho mục tiêu conversion cụ thể.
   const AUTO_DISMISS_SECONDS = null; // ví dụ: 20
 
-  /* ── Định nghĩa các nhóm cookie ──
+  /*  Định nghĩa các nhóm cookie
      essential: locked = true → luôn true, không hiển thị toggle tương tác được
      Các nhóm khác mặc định false cho tới khi người dùng đồng ý */
   const COOKIE_GROUPS = [
@@ -50,7 +50,7 @@
     },
   ];
 
-  /* ── Helpers lưu trữ ── */
+  /*  Helpers lưu trữ  */
   function loadConsent() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -81,7 +81,7 @@
     // Cookie thiết yếu luôn chạy — không cần xử lý gì thêm ở đây.
   }
 
-  // ── Đồng bộ đa tab ──
+  //  Đồng bộ đa tab
   // Khi tab A ghi vào localStorage, trình duyệt tự bắn sự kiện "storage"
   // tới các tab KHÁC đang mở cùng origin (tab hiện tại không nhận sự kiện
   // của chính nó — đây là hành vi chuẩn của Web Storage API, không cần
@@ -105,7 +105,7 @@
     });
   }
 
-  /* ── Xây dựng DOM ── */
+  /*  Xây dựng DOM  */
   function buildBanner() {
     const el = document.createElement("div");
     el.className = "cc-banner";
@@ -232,7 +232,7 @@
     return el;
   }
 
-  /* ── Controller chính ── */
+  /*  Controller chính  */
   function init() {
     let banner, bannerBackdrop, overlay, modal, reopenBtn, countdownTimer;
 
@@ -387,7 +387,7 @@
       showBanner();
     }
 
-    // ── Đồng bộ đa tab ──
+    //  Đồng bộ đa tab
     watchCrossTabSync((payload) => {
       if (payload === null) {
         // Tab khác vừa reset toàn bộ lựa chọn — quay lại trạng thái ban đầu
@@ -411,7 +411,7 @@
       syncModalToggles(payload.choices);
     });
 
-    /* ── API công khai để phần khác của site dùng ── */
+    /*  API công khai để phần khác của site dùng  */
     window.EarthoriaCookies = {
       getConsent: () => loadConsent(),
       hasConsent: (key) => {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import FacebookSection from "./FacebookSection";
 
-/* ─── TOKENS ─── */
+/* ─ TOKENS ─ */
 const T = {
   ink: "#080c0a", forest: "#0a2e28", forestMid: "#174f46", forestLight: "#256b5e",
   pale: "#c8dfd0", cream: "#f3f0e8", parchment: "#e9e3d4", ivory: "#faf7f1",
@@ -10,7 +10,7 @@ const T = {
   border: "rgba(10,46,40,0.10)", borderGold: "rgba(61,145,50,0.28)",
 };
 
-/* ─── NAV HEIGHT — chỉnh con số này nếu nav project khác ─── */
+/* ─ NAV HEIGHT — chỉnh con số này nếu nav project khác ─ */
 const NAV_H = 70;
 
 const globalCSS = `

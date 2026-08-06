@@ -5,7 +5,7 @@ import { useCompareStore } from "../store/compareStore";
 import { formatPrice } from "../utils/helpers";
 import toast from "react-hot-toast";
 
-// ── Icons ──
+//  Icons
 function IconCheck() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -164,7 +164,7 @@ export default function CompareModal({ open, onClose, currentBook }) {
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div className="search-panel" style={{ maxWidth: "860px" }}>
-        {/* ── Header ── */}
+        {/*  Header  */}
         <div className="search-panel-header" style={{ padding: "26px 28px 0" }}>
           <div style={{ flex: 1 }}>
             <div className="info-eyebrow" style={{ marginBottom: "8px" }}>
@@ -193,7 +193,7 @@ export default function CompareModal({ open, onClose, currentBook }) {
           Chọn tối đa <em>{maxCompare} sản phẩm</em> để so sánh chi tiết giá, thông số và tính năng.
         </p>
 
-        {/* ── Search input ── */}
+        {/*  Search input  */}
         <div className="search-panel-header" style={{ padding: "18px 28px 0" }}>
           <div className="search-input-wrap" style={{ height: "48px" }}>
             <span className="search-input-icon"><IconSearchIco /></span>
@@ -213,7 +213,7 @@ export default function CompareModal({ open, onClose, currentBook }) {
           </div>
         </div>
 
-        {/* ── Category tabs ── */}
+        {/*  Category tabs  */}
         <div className="search-category-tabs" style={{ padding: "16px 28px" }}>
           <button
             className={`pill search-cat-pill${activeCategory === "all" ? " active" : ""}`}
@@ -232,7 +232,7 @@ export default function CompareModal({ open, onClose, currentBook }) {
           ))}
         </div>
 
-        {/* ── Selected strip ── */}
+        {/*  Selected strip  */}
         {items.length > 0 && (
           <div
             style={{
@@ -298,7 +298,7 @@ export default function CompareModal({ open, onClose, currentBook }) {
           </div>
         )}
 
-        {/* ── Body: product list ── */}
+        {/*  Body: product list  */}
         {/* FIX: bỏ inline minHeight cố định (từng gây khóa cứng 320px, làm nội dung dài hơn bị tràn ra ngoài panel).
             Chiều cao/scroll giờ do class .search-panel-body trong CSS kiểm soát hoàn toàn. */}
         <div className="search-panel-body">
@@ -392,7 +392,7 @@ export default function CompareModal({ open, onClose, currentBook }) {
           )}
         </div>
 
-        {/* ── Footer ── */}
+        {/*  Footer  */}
         <div className="search-panel-footer">
           <span className="search-footer-hint">
             Đã chọn <strong style={{ color: "var(--forest)" }}>{items.length}</strong> / {maxCompare} sản phẩm

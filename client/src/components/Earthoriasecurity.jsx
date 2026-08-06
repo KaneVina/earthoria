@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback } from "react";
 
-/* ─── helpers ─────────────────────────────────────────────── */
+/* ─ helpers ───────────────────────────────────────────── */
 const IS_DEV =
   typeof import.meta !== "undefined"
     ? import.meta.env?.DEV === true          // Vite
@@ -16,7 +16,7 @@ const isMobileDevice = (() => {
 
 const POLL_MS = isMobileDevice ? 1500 : 800;
 
-/* ─── styles (injected once) ──────────────────────────────── */
+/* ─ styles (injected once) ────────────────────────────── */
 const CSS = `
 #content-guard { display: none !important; }
 #main-content  { display: block !important; }
@@ -215,7 +215,7 @@ input, textarea, [contenteditable] {
 }
 `;
 
-/* ─── DevTools detection ───────────────────────────────────── */
+/* ─ DevTools detection ─────────────────────────────────── */
 
 // Đếm số lần detect liên tiếp — tránh false positive từ React DevTools extension
 let _consecutiveHits = 0;
@@ -276,7 +276,7 @@ export default function EarthoriaSecurity() {
     pollTimer:           null,
   });
 
-  /* ── inject CSS once ── */
+  /*  inject CSS once  */
   useEffect(() => {
     if (document.getElementById("eth-sec-styles")) return;
     const style = document.createElement("style");
@@ -285,7 +285,7 @@ export default function EarthoriaSecurity() {
     document.head.appendChild(style);
   }, []);
 
-  /* ── overlay helpers ── */
+  /*  overlay helpers  */
   const getOverlay = () => document.getElementById("eth-overlay");
 
   const showOverlay = useCallback(() => {
@@ -305,7 +305,7 @@ export default function EarthoriaSecurity() {
     document.body.style.overflow = "";
   }, []);
 
-  /* ── poll tick ── */
+  /*  poll tick  */
   const tick = useCallback(() => {
     const S = stateRef.current;
     if (S.tabHidden || S.orientationChanging) return;
@@ -321,7 +321,7 @@ export default function EarthoriaSecurity() {
     }
   }, [showOverlay, hideOverlay]);
 
-  /* ── start / stop polling ── */
+  /*  start / stop polling  */
   const startPolling = useCallback(() => {
     const S = stateRef.current;
     if (S.pollTimer) clearInterval(S.pollTimer);
@@ -333,7 +333,7 @@ export default function EarthoriaSecurity() {
     stateRef.current.pollTimer = null;
   }, []);
 
-  /* ── boot effects ── */
+  /*  boot effects  */
   useEffect(() => {
     /* initial devtools check */
     setTimeout(tick, 300);
@@ -373,7 +373,7 @@ export default function EarthoriaSecurity() {
     };
   }, [tick, startPolling, stopPolling, showOverlay]);
 
-  /* ── keyboard & context-menu blocking (desktop only) ── */
+  /*  keyboard & context-menu blocking (desktop only)  */
   useEffect(() => {
     if (isMobileDevice) return;
 
@@ -413,7 +413,7 @@ export default function EarthoriaSecurity() {
     };
   }, []);
 
-  /* ── render overlay DOM ── */
+  /*  render overlay DOM  */
   return (
     <div id="eth-overlay" role="alertdialog" aria-modal="true" aria-labelledby="eth-title">
       <div className="eth-card">
@@ -451,7 +451,7 @@ export default function EarthoriaSecurity() {
             </svg>
           </div>
 
-          {/* ── DEVTOOLS content ── */}
+          {/*  DEVTOOLS content  */}
           <div id="eth-dt-content">
             <div className="eth-eyebrow">
               <div className="eth-eyebrow-line" style={{ background: "#e07a5f" }} />

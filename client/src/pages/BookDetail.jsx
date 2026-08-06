@@ -8,7 +8,7 @@ import { formatPrice, formatDate } from "../utils/helpers";
 import toast from "react-hot-toast";
 import CompareModal from "../components/CompareModal";
 
-// ── Fallback images khi chưa có ảnh từ API ──
+//  Fallback images khi chưa có ảnh từ API
 const FALLBACK_IMGS = [
   "https://images.unsplash.com/photo-1474511320723-9a56873867b5?w=900&q=80",
   "https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=900&q=80",
@@ -78,7 +78,7 @@ const FAQS = [
   },
 ];
 
-// ── SVG Icons ──
+//  SVG Icons
 const IconCart = ({ size = 15 }) => (
   <svg
     width={size}
@@ -170,7 +170,7 @@ const IconChevronUp = () => (
 );
 const IconStar = () => <span className="star">★</span>;
 
-// ── Stars component ──
+//  Stars component
 function Stars({ rating = 5, max = 5 }) {
   return (
     <div className="stars">
@@ -186,8 +186,8 @@ function Stars({ rating = 5, max = 5 }) {
   );
 }
 
-// ── Countdown price — đếm số chạy giảm dần từ giá gốc xuống giá sale,
-// chỉ chạy khi lướt tới viewport, chạy đúng 1 lần ──
+//  Countdown price — đếm số chạy giảm dần từ giá gốc xuống giá sale,
+// chỉ chạy khi lướt tới viewport, chạy đúng 1 lần
 function CountdownPrice({ from, to, duration = 1200 }) {
   const [display, setDisplay] = useState(from);
   const rafRef = useRef(null);
@@ -244,7 +244,7 @@ export default function BookDetail() {
   const { isAuthenticated } = useAuthStore();
   const heroRef = useRef(null);
 
-  // ── State ──
+  //  State
   const [activeThumb, setActiveThumb] = useState(0);
   const [imgFading, setImgFading] = useState(false);
   const [qty, setQty] = useState(1);
@@ -261,7 +261,7 @@ export default function BookDetail() {
   });
   const [compareOpen, setCompareOpen] = useState(false);
 
-  // ── Fetch book ──
+  //  Fetch book
   const {
     data: book,
     isLoading,
@@ -272,7 +272,7 @@ export default function BookDetail() {
     retry: 1,
   });
 
-  // ── Add review mutation ──
+  //  Add review mutation
   const reviewMutation = useMutation({
     mutationFn: (data) => bookService.addReview(slug, hashId, data),
     onSuccess: () => {
@@ -284,7 +284,7 @@ export default function BookDetail() {
       toast.error(err.response?.data?.message || "Đánh giá thất bại!"),
   });
 
-  // ── Scroll effects ──
+  //  Scroll effects
   useEffect(() => {
     const revObserver = new IntersectionObserver(
       (entries) =>
@@ -313,12 +313,12 @@ export default function BookDetail() {
     };
   }, [book]);
 
-  // ── Sync wishlist from book data ──
+  //  Sync wishlist from book data
   useEffect(() => {
     if (book?.isWishlisted !== undefined) setWishlist(book.isWishlisted);
   }, [book]);
 
-  // ── Derived data ──
+  //  Derived data
   const images = book
     ? [book.coverImage, ...(book.images || [])].filter(Boolean)
     : FALLBACK_IMGS;
@@ -334,7 +334,7 @@ export default function BookDetail() {
     ? Math.round((1 - book.salePrice / book.price) * 100)
     : 0;
 
-  // ── Tên tác giả (hỗ trợ 1 hoặc nhiều tác giả) ──
+  //  Tên tác giả (hỗ trợ 1 hoặc nhiều tác giả)
   const authorNames = book?.authors?.length
     ? book.authors
         .map((a) => a?.name || a)
@@ -342,7 +342,7 @@ export default function BookDetail() {
         .join(", ")
     : book?.author?.name || book?.author || book?.authorName || "Đang cập nhật";
 
-  // ── Handlers ──
+  //  Handlers
   const changeImg = (idx) => {
     if (idx === activeThumb) return;
     setImgFading(true);
@@ -400,7 +400,7 @@ export default function BookDetail() {
 
   const toggleFaq = (i) => setOpenFaq(openFaq === i ? null : i);
 
-  // ── Loading state ──
+  //  Loading state
   if (isLoading)
     return (
       <div
@@ -431,7 +431,7 @@ export default function BookDetail() {
       </div>
     );
 
-  // ── Error state ──
+  //  Error state
   if (isError || !book)
     return (
       <div
@@ -1357,7 +1357,7 @@ export default function BookDetail() {
   );
 }
 
-// ── Related Card component ──
+//  Related Card component
 function RelatedCard({
   img,
   badge,

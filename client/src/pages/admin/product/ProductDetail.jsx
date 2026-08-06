@@ -119,7 +119,7 @@ export default function ProductDetail() {
         </div>
       ) : (
         <>
-          {/* ── Header ── */}
+          {/*  Header  */}
           <div className="a-page-header">
             <div style={{ display: "flex", gap: 16 }}>
               <div className="a-book-thumb" style={{ width: 64, height: 88 }}>
@@ -214,7 +214,7 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          {/* ── Mini stats (read-only) ── */}
+          {/*  Mini stats (read-only)  */}
           <div className="a-mini-stats">
             <div className="a-mini-stat">
               <div className="a-mini-stat-label">Giá gốc</div>
@@ -250,7 +250,7 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          {/* ── Form sửa trực tiếp (view + edit gộp làm 1) ── */}
+          {/*  Form sửa trực tiếp (view + edit gộp làm 1)  */}
           <div className="a-chart-card" style={{ marginBottom: 20 }}>
             <div className="a-chart-card-header">
               <h3 className="a-chart-title">
@@ -290,7 +290,7 @@ export default function ProductDetail() {
             </form>
           </div>
 
-          {/* ── Danh sách mã AR (read-only) ── */}
+          {/*  Danh sách mã AR (read-only)  */}
           <div className="a-table-card">
             <div className="a-table-head">
               <h3 className="a-table-title">
@@ -370,7 +370,7 @@ export default function ProductDetail() {
         </>
       )}
 
-      {/* ── Modal xác nhận xóa (giữ modal chỉ cho hành động xác nhận ngắn, không phải form) ── */}
+      {/*  Modal xác nhận xóa (giữ modal chỉ cho hành động xác nhận ngắn, không phải form)  */}
       {confirmDelete && (
         <div
           className="a-modal-overlay"

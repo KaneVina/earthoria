@@ -22,7 +22,7 @@ import { lazy, Suspense } from "react";
 import { SkeletonProductGrid } from "../components/skeletons/SkeletonShop";
 const SproutModel = lazy(() => import("../components/SproutModel"));
 
-/* ─────────────────────────────────────────────────────────────
+/* ───────────────────────────────────────────────────────────
    COUNTDOWN PRICE — đếm số chạy giảm dần từ giá gốc xuống giá sale,
    chỉ bắt đầu chạy khi lướt tới viewport, chạy đúng 1 lần
 ───────────────────────────────────────────────────────────── */
@@ -74,7 +74,7 @@ function CountdownPrice({ from, to, duration = 1200 }) {
   return <span ref={wrapRef}>{formatPrice(display)}</span>;
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* ───────────────────────────────────────────────────────────
    PRODUCT CARD COMPONENT
 ───────────────────────────────────────────────────────────── */
 function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
@@ -439,7 +439,7 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* ───────────────────────────────────────────────────────────
    HORIZONTAL SCROLL BOOK ROW
 ───────────────────────────────────────────────────────────── */
 function BookScrollRow({ books, onAddCart, badgeLabel, badgeType, addingIds }) {
@@ -696,7 +696,7 @@ function BookScrollRow({ books, onAddCart, badgeLabel, badgeType, addingIds }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* ───────────────────────────────────────────────────────────
    NEWSLETTER SECTION
 ───────────────────────────────────────────────────────────── */
 function NewsletterSection() {
@@ -882,7 +882,7 @@ function NewsletterSection() {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* ───────────────────────────────────────────────────────────
    APP SHOWCASE (MOBILE AR PREVIEW)
 ───────────────────────────────────────────────────────────── */
 function AppShowcase() {
@@ -1047,7 +1047,7 @@ function CountUpMetric({
     </div>
   );
 }
-/* ─────────────────────────────────────────────────────────────
+/* ───────────────────────────────────────────────────────────
    TESTIMONIALS SECTION (enhanced)
 ───────────────────────────────────────────────────────────── */
 const REVIEWS = [
@@ -1074,7 +1074,7 @@ const REVIEWS = [
   },
 ];
 
-/* ─────────────────────────────────────────────────────────────
+/* ───────────────────────────────────────────────────────────
    FLASH DEAL — TRI ÂM NGƯỜI DÙNG (countdown + single book)
 ───────────────────────────────────────────────────────────── */
 function FlashDealSection({ books, onAddCart }) {
@@ -1632,7 +1632,7 @@ function FlashDealSection({ books, onAddCart }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* ───────────────────────────────────────────────────────────
    TOP RATED — sách được vote / đánh giá cao nhất
 ───────────────────────────────────────────────────────────── */
 function TopRatedSection({ books, onAddCart }) {
@@ -2020,7 +2020,7 @@ function TopRatedSection({ books, onAddCart }) {
   );
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* ───────────────────────────────────────────────────────────
    MAIN HOME COMPONENT
 ───────────────────────────────────────────────────────────── */
 export default function Home() {

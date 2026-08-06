@@ -349,7 +349,7 @@ export default function Maintenance() {
   );
 }
 
-/* ─────────────────────────────────────────
+/* ───────────────────────────────────────
    PALETTE — copied 1:1 from main.css :root
 ───────────────────────────────────────── */
 const INK = "#0a0e0c";
@@ -442,12 +442,12 @@ html, body, #root { height: 100%; margin: 0; }
 .em-reasons-scroll::-webkit-scrollbar-track { background: transparent; }
 .em-reasons-scroll::-webkit-scrollbar-thumb { background: rgba(74,158,63,0.28); border-radius: 3px; }
 
-/* ── Tablet / small desktop: tighten panel ── */
+/*  Tablet / small desktop: tighten panel  */
 @media (max-width: 1180px) {
   .em-panel-wrap { max-width: 480px !important; }
 }
 
-/* ── Mobile: stack to single column, hide visual panel, allow scroll ── */
+/*  Mobile: stack to single column, hide visual panel, allow scroll  */
 @media (max-width: 980px) {
   .em-visual-hide { display: none !important; }
   .em-panel {

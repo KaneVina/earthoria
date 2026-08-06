@@ -39,7 +39,7 @@
 .pkd-title em { font-style: italic; color: var(--gold); }
 .pkd-sub { font-size: 14px; color: rgba(250,248,243,0.55); font-weight: 300; max-width: 480px; line-height: 1.7; }
 
-/* ── Sync / autosave status (top right of header) ── */
+/*  Sync / autosave status (top right of header)  */
 .pkd-sync-wrap {
   display: flex;
   flex-direction: column;
@@ -139,7 +139,7 @@
 }
 .pkd-pills .pill:hover, .pkd-pills .pill.active { background: var(--gold); color: var(--ink); border-color: var(--gold); }
 
-/* ── Body layout ── */
+/*  Body layout  */
 .pkd-body { max-width: 1100px; margin: 0 auto; padding: 48px 48px 100px; display: flex; flex-direction: column; gap: 56px; }
 .pkd-section { scroll-margin-top: 88px; }
 .pkd-section-head { margin-bottom: 22px; }
@@ -199,7 +199,7 @@
 .pkd-locked-banner strong { color: #6f3530; display: block; margin-bottom: 2px; }
 .pkd-locked-banner > div:nth-child(2) { flex: 1; }
 
-/* ── Cards ── */
+/*  Cards  */
 .pkd-card {
   background: var(--white); border: 0.5px solid var(--border); border-radius: 8px;
   padding: 26px 28px; margin-bottom: 16px;
@@ -449,7 +449,7 @@
   border-radius: 2px;
 }
 
-/* ── Responsive ── */
+/*  Responsive  */
 @media (max-width: 900px) {
   .pkd-header-inner, .pkd-body { padding-left: 24px; padding-right: 24px; }
   .pkd-pills-wrap { margin: 30px -24px 0; padding: 12px 24px; }

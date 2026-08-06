@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
-/* ─── CONFIG ─── */
+/* ─ CONFIG ─ */
 const FB_PAGE_ID = import.meta.env.VITE_FB_PAGE_ID  || "1173249219198136";
 const FB_TOKEN   = import.meta.env.VITE_FB_TOKEN    || "EAAdmI3uGZATEBR8YoZBizZCTEqFFHvFXV01xZA6B0WTh5ur3oYNByOuo5pjWe7iERYYEIv6TGzVSSwCmpZCrO5iQDyPNcUxN7C4a4QfnmOdoZCazZC44raFYCwNdf7qaDHIBdrep3XT6UgmeftUnZACCKahklaavZAoMrSg7ZAitB33zkZBxCRYnfIdd425o3Mbgo14VvzOZChxJlqRmIKtagCFee81O";
 const CARD_WIDTH = 276; // px — bao gồm gap
 const GAP        = 16;
 const AUTO_MS    = 3200;
 
-/* ─── TOKENS ─── */
+/* ─ TOKENS ─ */
 const T = {
   forest:      "#0d3330",
   forestMid:   "#1a5c52",
@@ -33,7 +33,7 @@ const GRADIENTS = [
   "linear-gradient(135deg,#0a2e1a 0%,#1a5c38 60%,#4a9e3f 100%)",
 ];
 
-/* ─── MOCK DATA (fallback khi API lỗi) ─── */
+/* ─ MOCK DATA (fallback khi API lỗi) ─ */
 const MOCK_POSTS = [
   { id:"1", message:"🌿 Đất là mẹ của vạn vật. Mỗi sản phẩm Earthoria là một lời tri ân thiên nhiên — được tạo ra từ những vùng đất nguyên sinh, chắt lọc từ bàn tay thủ công của các nghệ nhân địa phương.", permalink_url:"https://www.facebook.com/Earthoriavn", full_picture:null, created_time:"2025-06-20T08:00:00Z" },
   { id:"2", message:"Khám phá bộ sưu tập mới nhất — lấy cảm hứng từ rừng nhiệt đới và hệ sinh thái đa dạng của Việt Nam. Mỗi sản phẩm kể câu chuyện về sự bền vững và vẻ đẹp tự nhiên 🍃", permalink_url:"https://www.facebook.com/Earthoriavn", full_picture:null, created_time:"2025-06-18T10:30:00Z" },
@@ -43,7 +43,7 @@ const MOCK_POSTS = [
   { id:"6", message:"Thiên nhiên là người thầy vĩ đại nhất. Mỗi ngày chúng tôi học từ đất, từ cây, từ con người — để tạo ra những giá trị trường tồn cùng thời gian.", permalink_url:"https://www.facebook.com/Earthoriavn", full_picture:null, created_time:"2025-06-08T11:00:00Z" },
 ];
 
-/* ─── HELPERS ─── */
+/* ─ HELPERS ─ */
 function fmtDate(iso) {
   if (!iso) return "";
   return new Date(iso).toLocaleDateString("vi-VN", {
@@ -58,7 +58,7 @@ function trimMsg(str, n = 130) {
   return str.length > n ? str.slice(0, n) + "…" : str;
 }
 
-/* ─── ICONS ─── */
+/* ─ ICONS ─ */
 const FbIcon = ({ size = 15, color = "#fff" }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
     <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
@@ -82,7 +82,7 @@ const ShareIcon = () => (
   </svg>
 );
 
-/* ─── SKELETON ─── */
+/* ─ SKELETON ─ */
 function SkeletonCard() {
   return (
     <div style={{
@@ -108,7 +108,7 @@ function SkeletonCard() {
   );
 }
 
-/* ─── CARD ─── */
+/* ─ CARD ─ */
 function FbCard({ post, index }) {
   const reactions = (post.id.charCodeAt(0) * 7) % 200 + 18;
   const comments  = (post.id.charCodeAt(1) * 3) % 52 + 3;
@@ -141,7 +141,7 @@ function FbCard({ post, index }) {
         cursor: "pointer",
       }}
     >
-      {/* ── IMAGE ── */}
+      {/*  IMAGE  */}
       <div style={{ position: "relative", height: 150, overflow: "hidden", flexShrink: 0 }}>
         {post.full_picture ? (
           <img
@@ -179,7 +179,7 @@ function FbCard({ post, index }) {
         )}
       </div>
 
-      {/* ── BODY ── */}
+      {/*  BODY  */}
       <div style={{ padding: "14px 16px 13px", flex: 1, display: "flex", flexDirection: "column" }}>
         {/* meta row */}
         <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 10 }}>
@@ -248,7 +248,7 @@ export default function FacebookSection() {
   const dragStartOffset = useRef(0);
   const hovered   = useRef(false);
 
-  /* ── fetch ── */
+  /*  fetch  */
   useEffect(() => {
     const CACHE_KEY = "ef_fb_v1";
     const CACHE_TTL = 1000 * 60 * 30;
@@ -275,7 +275,7 @@ export default function FacebookSection() {
       .finally(() => setLoading(false));
   }, []);
 
-  /* ── inject keyframe ── */
+  /*  inject keyframe  */
   useEffect(() => {
     const id = "fb-carousel-kf";
     if (!document.getElementById(id)) {
@@ -310,7 +310,7 @@ export default function FacebookSection() {
     });
   }, [total]);
 
-  /* ── auto play ── */
+  /*  auto play  */
   const startAuto = useCallback(() => {
     if (timerRef.current) clearInterval(timerRef.current);
     timerRef.current = setInterval(() => {
@@ -327,7 +327,7 @@ export default function FacebookSection() {
     return stopAuto;
   }, [total, loading, goTo, startAuto, stopAuto]);
 
-  /* ── drag (mouse) ── */
+  /*  drag (mouse)  */
   const onMouseDown = (e) => {
     isDragging.current = true;
     dragStartX.current = e.clientX;
@@ -352,7 +352,7 @@ export default function FacebookSection() {
     startAuto();
   };
 
-  /* ── drag (touch) ── */
+  /*  drag (touch)  */
   const touchStartX = useRef(0);
   const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; stopAuto(); };
   const onTouchEnd   = (e) => {
@@ -361,7 +361,7 @@ export default function FacebookSection() {
     startAuto();
   };
 
-  /* ── layout ── */
+  /*  layout  */
   const displayedPosts = loading ? [] : [...posts, ...posts];
 
   return (

@@ -558,12 +558,12 @@ export default function ARGuide() {
   return (
     <div id="ar-guide-main" style={{ background: '#050e0a', minHeight: '100vh', color: '#faf8f3', fontFamily: "'Be Vietnam Pro', sans-serif", overflowX: 'hidden' }}>
 
-      {/* ── Reading progress ── */}
+      {/*  Reading progress  */}
       <div style={{ position: 'fixed', top: 0, left: 0, height: '2px', width: `${scrollProgress * 100}%`, background: 'linear-gradient(90deg, #4a9e3f, #5cb84f)', zIndex: 250, transition: 'width 0.1s linear' }} />
 
       <LiveDemoModal open={showDemo} onClose={() => setShowDemo(false)} />
 
-      {/* ── Hero ── */}
+      {/*  Hero  */}
       <div style={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
         <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 0 }} />
 
@@ -629,7 +629,7 @@ export default function ARGuide() {
         </div>
       </div>
 
-      {/* ── Step Navigation bar (sticky) ── */}
+      {/*  Step Navigation bar (sticky)  */}
       <div style={{ position: 'sticky', top: '0', zIndex: 100, background: 'rgba(5,14,10,0.95)', backdropFilter: 'blur(20px)', borderBottom: '0.5px solid rgba(74,158,63,0.15)', padding: '0 100px' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', alignItems: 'center', height: '60px', gap: '0' }}>
           {STEPS.map((step, i) => (
@@ -655,7 +655,7 @@ export default function ARGuide() {
         </div>
       </div>
 
-      {/* ── Steps ── */}
+      {/*  Steps  */}
       {STEPS.map((step, idx) => (
         <section
           key={step.id}
@@ -740,7 +740,7 @@ export default function ARGuide() {
         </section>
       ))}
 
-      {/* ── Features Grid ── */}
+      {/*  Features Grid  */}
       <section style={{ background: '#071210', padding: '120px 100px', borderTop: '0.5px solid rgba(74,158,63,0.1)' }}>
         <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
           <Reveal>
@@ -765,7 +765,7 @@ export default function ARGuide() {
         </div>
       </section>
 
-      {/* ── FAQ ── */}
+      {/*  FAQ  */}
       <section style={{ background: '#050e0a', padding: '120px 100px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <Reveal>
@@ -790,7 +790,7 @@ export default function ARGuide() {
         </div>
       </section>
 
-      {/* ── CTA ── */}
+      {/*  CTA  */}
       <section style={{ background: '#0d3330', padding: '140px 100px', textAlign: 'center', position: 'relative', overflow: 'hidden', borderTop: '0.5px solid rgba(74,158,63,0.15)' }}>
         <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '600px', height: '600px', border: '0.5px solid rgba(74,158,63,0.06)', borderRadius: '50%', pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '400px', height: '400px', border: '0.5px solid rgba(74,158,63,0.1)', borderRadius: '50%', pointerEvents: 'none' }} />
@@ -863,7 +863,7 @@ export default function ARGuide() {
   )
 }
 
-// ── Hero "watch the demo" trigger ──
+//  Hero "watch the demo" trigger
 function DemoTrigger({ onClick }) {
   const [hover, setHover] = useState(false)
   return (
@@ -882,7 +882,7 @@ function DemoTrigger({ onClick }) {
   )
 }
 
-// ── Auto-playing live demo modal (scan → reveal → AI answer, on loop) ──
+//  Auto-playing live demo modal (scan → reveal → AI answer, on loop)
 function LiveDemoModal({ open, onClose }) {
   const [phase, setPhase] = useState('scan')
   const [scanOn, setScanOn] = useState(false)
@@ -1006,7 +1006,7 @@ function LiveDemoModal({ open, onClose }) {
   )
 }
 
-// ── Download Demo ──
+//  Download Demo
 function DownloadDemo({ color }) {
   const [platform, setPlatform] = useState(null)
   const [mode, setMode] = useState('app') // 'app' | 'noapp'
@@ -1070,7 +1070,7 @@ function DownloadDemo({ color }) {
   )
 }
 
-// ── Book Demo ──
+//  Book Demo
 function BookDemo({ color }) {
   const [hoveredPage, setHoveredPage] = useState(null)
   const wrapRef = useRef(null)
@@ -1147,7 +1147,7 @@ function BookDemo({ color }) {
   )
 }
 
-// ── Scan Demo ──
+//  Scan Demo
 function ScanDemo({ color, scanning, progress, onScan, modelVisible }) {
   const [sparkles, setSparkles] = useState([])
   const [mode, setMode] = useState('app') // 'app' | 'camera'
@@ -1271,7 +1271,7 @@ function ScanDemo({ color, scanning, progress, onScan, modelVisible }) {
   )
 }
 
-// ── Model Demo ──
+//  Model Demo
 function ModelDemo({ color, modelVisible }) {
   const [rotation, setRotation] = useState({ x: 0, y: 0 })
   const [dragging, setDragging] = useState(false)
@@ -1392,7 +1392,7 @@ function ModelDemo({ color, modelVisible }) {
   )
 }
 
-// ── AI Demo ──
+//  AI Demo
 function AIDemo({ color, onAsk, typing, text }) {
   const [listening, setListening] = useState(false)
   const [speaking, setSpeaking] = useState(false)
@@ -1484,7 +1484,7 @@ function AIDemo({ color, onAsk, typing, text }) {
   )
 }
 
-// ── Feature card with cursor-tilt ──
+//  Feature card with cursor-tilt
 function FeatureCard({ f }) {
   const ref = useRef(null)
   const handleMove = (e) => {
@@ -1519,7 +1519,7 @@ function FeatureCard({ f }) {
   )
 }
 
-// ── FAQ Item ──
+//  FAQ Item
 function FAQItem({ q, a, color }) {
   const [open, setOpen] = useState(false)
   return (

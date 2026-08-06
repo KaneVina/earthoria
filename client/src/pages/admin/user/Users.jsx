@@ -10,14 +10,14 @@ import AdminLayout from '../AdminLayout'
 import Pagination from '../../../components/Pagination'
 import { useAuthStore } from '../../../store/authStore'
 
-/* ─── Avatar color pool (deterministic by first char) ─── */
+/* ─ Avatar color pool (deterministic by first char) ─ */
 const AVATAR_COLORS = [
   '#0D3330', '#2a78d6', '#4a3aa7', '#4a9e3f', '#eda100', '#e34948',
 ]
 const avatarColor = (name = '') =>
   AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length]
 
-/* ─── Role badge config ─── */
+/* ─ Role badge config ─ */
 const ROLE_CONFIG = {
   ADMIN:    { label: 'Admin',    cls: 'dark'    },
   STAFF:    { label: 'Staff',    cls: 'blue'    },
@@ -25,7 +25,7 @@ const ROLE_CONFIG = {
   CUSTOMER: { label: 'Customer', cls: 'neutral' },
 }
 
-/* ─── UserCodeBadge ─── */
+/* ─ UserCodeBadge ─ */
 function UserCodeBadge({ code }) {
   const [copied, setCopied] = useState(false)
 
@@ -81,7 +81,7 @@ function UserCodeBadge({ code }) {
   )
 }
 
-/* ─── FilterSelect ─── */
+/* ─ FilterSelect ─ */
 function FilterSelect({ value, onChange, options, placeholder }) {
   return (
     <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
@@ -206,7 +206,7 @@ export default function Users() {
   const totalPages = data?.totalPages ?? 1
   const total      = data?.total      ?? 0
 
-  /* ── Phân quyền theo role người đang xem ── */
+  /*  Phân quyền theo role người đang xem  */
   // Staff: xem staff (read-only), xem+sửa customer/dealer
   // Admin: xem+sửa customer/dealer/staff
   const canPromote = (targetRole) => ['CUSTOMER', 'DEALER'].includes(targetRole)
@@ -234,7 +234,7 @@ export default function Users() {
   return (
     <AdminLayout>
 
-      {/* ── Header ── */}
+      {/*  Header  */}
       <div className="a-page-header">
         <div>
           <p className="a-page-eyebrow">Quản lý</p>
@@ -257,7 +257,7 @@ export default function Users() {
         </div>
       </div>
 
-      {/* ── Search & Filters ── */}
+      {/*  Search & Filters  */}
       <div style={{
         display: 'flex',
         flexWrap: 'wrap',
@@ -339,7 +339,7 @@ export default function Users() {
         )}
       </div>
 
-      {/* ── Table ── */}
+      {/*  Table  */}
       <div className="a-table-card">
         <div className="a-table-wrap">
           <table className="a-table">
@@ -456,7 +456,7 @@ export default function Users() {
         />
       </div>
 
-      {/* ── Confirm lock/unlock modal ── */}
+      {/*  Confirm lock/unlock modal  */}
       {confirmUser && (
         <div
           className="a-modal-overlay"
@@ -514,7 +514,7 @@ export default function Users() {
         </div>
       )}
 
-      {/* ── Confirm promote/demote modal ── */}
+      {/*  Confirm promote/demote modal  */}
       {promoteUser && (
         <div
           className="a-modal-overlay"

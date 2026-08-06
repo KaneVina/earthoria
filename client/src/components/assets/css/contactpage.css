@@ -3,7 +3,7 @@
    Requires CSS variables from main.css to be loaded
    ═══════════════════════════════════════════════ */
 
-/* ─── WRAPPER ─── */
+/* ─ WRAPPER ─ */
 .contact-wrapper {
   position: relative;
 }
@@ -63,7 +63,7 @@
   50%       { transform: translateY(-28px); }
 }
 
-/* ─── Floating stat cards ─── */
+/* ─ Floating stat cards ─ */
 .intro-stats {
   position: absolute;
   inset: 0;
@@ -103,7 +103,7 @@
   margin-top: 5px;
 }
 
-/* ─── Main intro content ─── */
+/* ─ Main intro content ─ */
 .intro-content {
   position: relative;
   z-index: 2;
@@ -204,7 +204,7 @@
   font-family: "Be Vietnam Pro", sans-serif;
 }
 
-/* ─── Scroll spacer ─── */
+/* ─ Scroll spacer ─ */
 .scroll-spacer {
   height: 150vh;
   position: relative;
@@ -231,7 +231,7 @@
   align-items: start;
 }
 
-/* ─── Left: Info panel ─── */
+/* ─ Left: Info panel ─ */
 .contact-info-panel {
   position: sticky;
   top: 120px;
@@ -365,7 +365,7 @@
   opacity: 1;
 }
 
-/* ─── Right: Form ─── */
+/* ─ Right: Form ─ */
 .contact-form-wrap {
   padding-top: 8px;
 }
@@ -900,7 +900,7 @@ body.dark-mode .ci-social-btn:hover {
     transform: none !important;
   }
 }
-/* ─── Scroll chevron bounce ─── */
+/* ─ Scroll chevron bounce ─ */
 .scroll-chevron {
   color: rgba(255,255,255,0.4);
   animation: ciChevronBounce 1.6s ease-in-out infinite;
@@ -910,7 +910,7 @@ body.dark-mode .ci-social-btn:hover {
   50%       { transform: translateY(5px); opacity: 0.9; }
 }
 
-/* ─── Subject pills with icon ─── */
+/* ─ Subject pills with icon ─ */
 .subject-pill {
   display: inline-flex;
   align-items: center;
@@ -925,7 +925,7 @@ body.dark-mode .ci-social-btn:hover {
   transform: scale(1.15);
 }
 
-/* ─── Lucide icons inherit color correctly ─── */
+/* ─ Lucide icons inherit color correctly ─ */
 .card-icon svg,
 .map-info-item svg,
 .form-note svg,
@@ -1177,7 +1177,7 @@ body.dark-mode .ci-social-btn:hover {
   font-weight: 300;
 }
 
-/* ─── Scroll chevron ─── */
+/* ─ Scroll chevron ─ */
 .scroll-chevron {
   color: rgba(255,255,255,0.4);
   animation: ciChevronBounce 1.6s ease-in-out infinite;
@@ -1187,7 +1187,7 @@ body.dark-mode .ci-social-btn:hover {
   50%       { transform: translateY(5px); opacity: 0.9; }
 }
 
-/* ─── Subject pills icon ─── */
+/* ─ Subject pills icon ─ */
 .subject-pill {
   display: inline-flex;
   align-items: center;
@@ -1197,7 +1197,7 @@ body.dark-mode .ci-social-btn:hover {
 .subject-pill.active svg,
 .subject-pill:hover svg { transform: scale(1.15); }
 
-/* ─── map-info link ─── */
+/* ─ map-info link ─ */
 .map-info-item a {
   color: var(--gold);
   text-decoration: none;
@@ -1208,12 +1208,12 @@ body.dark-mode .ci-social-btn:hover {
 }
 .map-info-item a:hover { opacity: 0.75; }
 
-/* ─── Responsive method cards ─── */
+/* ─ Responsive method cards ─ */
 @media (max-width: 600px) {
   .method-cards { grid-template-columns: 1fr; }
 }
 
-/* ─── Dark mode extras ─── */
+/* ─ Dark mode extras ─ */
 body.dark-mode .extra-fields-block {
   background: rgba(74,158,63,0.06);
   border-color: rgba(74,158,63,0.2);

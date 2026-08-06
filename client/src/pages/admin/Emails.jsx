@@ -10,7 +10,7 @@ import api from '../../services/api'
 import { formatDate } from '../../utils/helpers'
 import AdminLayout from './AdminLayout'
 
-/* ── Status badge config ── */
+/*  Status badge config  */
 const STATUS_CLS = {
   delivered: 'success',
   opened:    'success',
@@ -48,12 +48,12 @@ function ComposeModal({ onClose, onSent }) {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const suggestTimer = useRef(null)
 
-  // ── Xem trước email ──
+  //  Xem trước email
   const [previewHtml, setPreviewHtml] = useState('')
   const [previewLoading, setPreviewLoading] = useState(false)
   const previewTimer = useRef(null)
 
-  // ── Lấy thông tin tài khoản đang đăng nhập để tự điền chữ ký ──
+  //  Lấy thông tin tài khoản đang đăng nhập để tự điền chữ ký
   const { data: profile } = useQuery({
     queryKey: ['admin-email-sender-profile'],
     queryFn: () => api.get('/admin/emails/me').then(r => r.data.data),
@@ -83,7 +83,7 @@ function ComposeModal({ onClose, onSent }) {
     setLockedFields((prev) => ({ ...prev, [field]: !prev[field] }))
   }
 
-  /* ── Autocomplete cho ô "to": gõ tới đâu gợi ý khách hàng tới đó (từ 1 ký tự) ── */
+  /*  Autocomplete cho ô "to": gõ tới đâu gợi ý khách hàng tới đó (từ 1 ký tự)  */
   const handleToChange = (e) => {
     const value = e.target.value
     setForm({ ...form, to: value })
@@ -118,7 +118,7 @@ function ComposeModal({ onClose, onSent }) {
     setToSuggestions([])
   }
 
-  /* ── Xem trước email: debounce gọi API preview mỗi khi nội dung liên quan thay đổi ── */
+  /*  Xem trước email: debounce gọi API preview mỗi khi nội dung liên quan thay đổi  */
   useEffect(() => {
     clearTimeout(previewTimer.current)
     previewTimer.current = setTimeout(async () => {
@@ -228,7 +228,7 @@ function ComposeModal({ onClose, onSent }) {
         </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0 }}>
-          {/* ── 2 cột: trái = form, phải = xem trước email ── */}
+          {/*  2 cột: trái = form, phải = xem trước email  */}
           <div style={{ display: 'flex', flex: 1, minHeight: 0, borderTop: '1px solid var(--a-ink-08)' }}>
 
             {/* CỘT TRÁI — FORM */}
@@ -240,7 +240,7 @@ function ComposeModal({ onClose, onSent }) {
                 borderRight: '1px solid var(--a-ink-08)',
               }}
             >
-              {/* ── Người nhận (có autocomplete) ── */}
+              {/*  Người nhận (có autocomplete)  */}
               <div className="a-form-group" style={{ position: 'relative' }}>
                 <label className="a-form-label">Người nhận (to) *</label>
                 <input
@@ -286,7 +286,7 @@ function ComposeModal({ onClose, onSent }) {
                 </div>
               </div>
 
-              {/* ── Tiêu đề & Nội dung ── */}
+              {/*  Tiêu đề & Nội dung  */}
               <div className="a-form-group">
                 <label className="a-form-label">Tiêu đề *</label>
                 <input
@@ -315,7 +315,7 @@ function ComposeModal({ onClose, onSent }) {
                 </p>
               </div>
 
-              {/* ── Chữ ký người gửi ── */}
+              {/*  Chữ ký người gửi  */}
               <div style={{ borderTop: '1px solid var(--a-ink-08)', paddingTop: 14 }}>
                 <label className="a-form-label" style={{ marginBottom: 4, display: 'block' }}>
                   Chữ ký người gửi

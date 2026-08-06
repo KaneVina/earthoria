@@ -5,7 +5,6 @@ export default function ScrollToTop() {
   const [visible, setVisible] = useState(false);
   const { pathname } = useLocation();
 
-  // Fix: scroll lên đầu khi chuyển route
   useEffect(() => {
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual";

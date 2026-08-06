@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 export default function Footer() {
   return (
     <footer>
-      {/* ── Lớp ánh sáng luxury */}
+      {/*  Lớp ánh sáng luxury */}
       <div className="footer-top-accent" aria-hidden="true" />
       <div className="footer-luxury-ambient" aria-hidden="true" />
 

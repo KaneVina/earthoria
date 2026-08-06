@@ -537,7 +537,7 @@ const Icon = {
   ),
 };
 
-// ─── Reveal-on-scroll ───
+// ─ Reveal-on-scroll ─
 function useReveal(deps = []) {
   const ref = useRef(null);
   useEffect(() => {
@@ -555,7 +555,7 @@ function useReveal(deps = []) {
   return ref;
 }
 
-// ─── Count-up ───
+// ─ Count-up ─
 function useCountUp(end, duration = 900, enabled = true) {
   const [value, setValue] = useState(0);
   useEffect(() => {
@@ -578,7 +578,7 @@ function useCountUp(end, duration = 900, enabled = true) {
   }, [end, duration, enabled]);
   return value;
 }
-// ─── Passport 3D interaction: tilt theo chuột + parallax nền + holo sheen ───
+// ─ Passport 3D interaction: tilt theo chuột + parallax nền + holo sheen ─
 // zoneRef bọc toàn bộ hero (điều khiển parallax nền: watermark, glow blobs)
 // cardRef bọc riêng tấm thẻ (điều khiển tilt 3D + holographic sheen)
 function usePassportInteraction(maxTilt = 5, parallax = 16) {
@@ -629,7 +629,7 @@ function usePassportInteraction(maxTilt = 5, parallax = 16) {
 
   return { zoneRef, cardRef, onMouseMove, onMouseLeave };
 }
-// ─── Pointer-reactive "sheen" — tracks the cursor over a card and exposes
+// ─ Pointer-reactive "sheen" — tracks the cursor over a card and exposes
 function useSheen() {
   const ref = useRef(null);
   const onMouseMove = useCallback((e) => {
@@ -650,7 +650,7 @@ function useSheen() {
   return { ref, onMouseMove, onMouseEnter, onMouseLeave };
 }
 
-// ─── Confirm dialog ───
+// ─ Confirm dialog ─
 function useConfirm() {
   const [state, setState] = useState(null);
   const confirm = (opts) =>
@@ -691,7 +691,7 @@ function useConfirm() {
   return { confirm, dialog };
 }
 
-// ─── Copy button ───
+// ─ Copy button ─
 function CopyButton({ text, label = "Sao Chép", compact = false }) {
   const [copied, setCopied] = useState(false);
   const handleCopy = async (e) => {
@@ -718,7 +718,7 @@ function CopyButton({ text, label = "Sao Chép", compact = false }) {
   );
 }
 
-// ─── Inline-editable field ───
+// ─ Inline-editable field ─
 // Click pencil → field becomes an input; Enter/blur-check saves, Esc cancels.
 function EditableField({
   label,
@@ -2378,7 +2378,7 @@ const EMPTY_ADDR_FORM = {
   isDefault: false,
 };
 
-// ─── Autocomplete combobox for Province / Ward (step-by-step) ───
+// ─ Autocomplete combobox for Province / Ward (step-by-step) ─
 // Type to filter, click or arrow+Enter to select. `disabled` locks the field
 // until its prerequisite (province) is chosen — enforces the step order.
 function LocationCombobox({
@@ -2495,7 +2495,7 @@ function stripDiacritics(str) {
     .toLowerCase();
 }
 
-// ─── Hook: fetch + cache the 34-province list (new 2-tier model) ───
+// ─ Hook: fetch + cache the 34-province list (new 2-tier model) ─
 function useProvinces() {
   const [provinces, setProvinces] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -2521,7 +2521,7 @@ function useProvinces() {
   return { provinces, loading };
 }
 
-// ─── Hook: fetch wards for a given province code ───
+// ─ Hook: fetch wards for a given province code ─
 function useWards(provinceCode) {
   const [wards, setWards] = useState([]);
   const [loading, setLoading] = useState(false);

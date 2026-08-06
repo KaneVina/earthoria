@@ -72,7 +72,7 @@ export default function InventoryImport() {
   };
   const addRow = () => setRows((prev) => [...prev, makeEmptyRow()]);
 
-  /* ── Gợi ý sách theo tên khi chọn "sách có sẵn" cho 1 dòng ── */
+  /*  Gợi ý sách theo tên khi chọn "sách có sẵn" cho 1 dòng  */
   const bookSuggestQueryKey = (rowId, q) => ["admin-products-quick-search", rowId, q];
 
   const pickBookForRow = (rowId, book) => {
@@ -96,12 +96,12 @@ export default function InventoryImport() {
     }
   };
 
-  /* ── Tải file mẫu ── */
+  /*  Tải file mẫu  */
   const handleDownloadTemplate = () => {
     downloadImportTemplate();
   };
 
-  /* ── Import file Excel ── */
+  /*  Import file Excel  */
   const handleImportFile = async (e) => {
     const file = e.target.files?.[0];
     e.target.value = ""; // cho phép chọn lại cùng 1 file lần sau
@@ -173,7 +173,7 @@ export default function InventoryImport() {
     }
   };
 
-  /* ── Tính toán từng dòng + tổng ── */
+  /*  Tính toán từng dòng + tổng  */
   const computedRows = useMemo(
     () =>
       rows.map((r) => {
@@ -193,7 +193,7 @@ export default function InventoryImport() {
   const grandTotalAmount = computedRows.reduce((s, r) => s + r.amount, 0);
   const mismatchCount = computedRows.filter((r) => r.mismatch).length;
 
-  /* ── Lưu phiếu ── */
+  /*  Lưu phiếu  */
   const saveMutation = useMutation({
     mutationFn: () =>
       api.post("/admin/inventory/imports", {
@@ -250,7 +250,7 @@ export default function InventoryImport() {
         </div>
       </div>
 
-      {/* ── Thông tin phiếu ── */}
+      {/*  Thông tin phiếu  */}
       <div className="a-chart-card" style={{ marginBottom: 20 }}>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 24 }}>
           <div>
@@ -275,7 +275,7 @@ export default function InventoryImport() {
         </div>
       </div>
 
-      {/* ── 2 nút: tải mẫu / import ── */}
+      {/*  2 nút: tải mẫu / import  */}
       <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
         <button type="button" className="a-btn-ghost" onClick={handleDownloadTemplate}>
           <Download size={13} /> Tải file mẫu Excel
@@ -318,7 +318,7 @@ export default function InventoryImport() {
         </div>
       )}
 
-      {/* ── Bảng nhập liệu ── */}
+      {/*  Bảng nhập liệu  */}
       <div className="a-table-card">
         <div className="a-table-wrap">
           <table className="a-table">
@@ -550,7 +550,7 @@ export default function InventoryImport() {
   );
 }
 
-/* ── Danh sách gợi ý sách cho 1 dòng (autocomplete nhỏ) ── */
+/*  Danh sách gợi ý sách cho 1 dòng (autocomplete nhỏ)  */
 function BookSuggestList({ query, onPick }) {
   const { data: suggestions = [] } = useQuery({
     queryKey: ["admin-products-quick-search-row", query],

@@ -1,6 +1,6 @@
 /**
  * SearchOverlay — command-palette style search
- * ─────────────────────────────────────────────
+ * ───────────────────────────────────────────
  * • Tìm kiếm sản phẩm thật từ API: GET /api/v1/books?search=...&category=...&limit=7
  * • Tìm kiếm trang / chức năng (Hồ sơ, Đơn hàng, Giỏ hàng...) ngay lập tức
  * • Debounce 280ms, skeleton loading, highlight match tiếng Việt
@@ -211,7 +211,7 @@ export default function SearchOverlay({
 
   const hasQuery = query.trim().length > 0;
 
-  /* ─── Danh sách trang theo auth ─── */
+  /* ─ Danh sách trang theo auth ─ */
   const availablePages = useMemo(() => {
     const pages = [...PUBLIC_PAGES];
     if (isAuthenticated) {
@@ -238,7 +238,7 @@ export default function SearchOverlay({
     ...results.map(r => ({ ...r, _type: "product" })),
   ], [matchedPages, results]);
 
-  /* ─── Khóa scroll + focus + load history khi mở ─── */
+  /* ─ Khóa scroll + focus + load history khi mở ─ */
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -249,7 +249,7 @@ export default function SearchOverlay({
     document.body.style.overflow = "";
   }, [isOpen]);
 
-  /* ─── Reset khi đóng ─── */
+  /* ─ Reset khi đóng ─ */
   useEffect(() => {
     if (!isOpen) {
       const t = setTimeout(() => {
@@ -263,7 +263,7 @@ export default function SearchOverlay({
     }
   }, [isOpen]);
 
-  /* ─── Tìm kiếm sản phẩm qua API thật — debounce 280ms ─── */
+  /* ─ Tìm kiếm sản phẩm qua API thật — debounce 280ms ─ */
   useEffect(() => {
     if (!hasQuery) {
       setResults([]);
@@ -306,10 +306,10 @@ export default function SearchOverlay({
     };
   }, [query, activeCategory, hasQuery]);
 
-  /* ─── Reset activeIndex khi query/category thay đổi ─── */
+  /* ─ Reset activeIndex khi query/category thay đổi ─ */
   useEffect(() => { setActiveIndex(-1); }, [query, activeCategory]);
 
-  /* ─── Activate một item ─── */
+  /* ─ Activate một item ─ */
   const handleActivate = useCallback((item) => {
     if (!item) return;
     if (item._type === "page") {
@@ -324,7 +324,7 @@ export default function SearchOverlay({
     onClose();
   }, [query, navigate, getProductLink, onClose, onLogout]);
 
-  /* ─── Submit → tới /shop?search=...&category=... ─── */
+  /* ─ Submit → tới /shop?search=...&category=... ─ */
   const handleSubmit = useCallback(() => {
     if (!hasQuery) return;
     setHistory(saveHistory(query));
@@ -334,7 +334,7 @@ export default function SearchOverlay({
     onClose();
   }, [hasQuery, query, activeCategory, navigate, onClose]);
 
-  /* ─── Keyboard ─── */
+  /* ─ Keyboard ─ */
   useEffect(() => {
     function onKey(e) {
       const tag = document.activeElement?.tagName;
@@ -362,7 +362,7 @@ export default function SearchOverlay({
     return () => window.removeEventListener("keydown", onKey);
   }, [isOpen, activeIndex, flatItems, hasQuery, handleActivate, handleSubmit, onClose, onOpen]);
 
-  /* ─── Helper ─── */
+  /* ─ Helper ─ */
   const removeHistoryItem = (e, term) => {
     e.stopPropagation();
     setHistory(removeFromHistory(term));
@@ -375,7 +375,7 @@ export default function SearchOverlay({
      ════════════════════════════════════════════════ */
   return (
     <>
-      {/* ── CSS toàn cục ── */}
+      {/*  CSS toàn cục  */}
       <style>{CSS}</style>
 
       <div
@@ -390,7 +390,7 @@ export default function SearchOverlay({
           aria-modal="true"
           aria-label="Tìm kiếm"
         >
-          {/* ── HEADER ── */}
+          {/*  HEADER  */}
           <div className="so-header">
             <div className="so-input-wrap">
               <Search size={18} className="so-input-icon" />
@@ -421,7 +421,7 @@ export default function SearchOverlay({
             </button>
           </div>
 
-          {/* ── CATEGORY PILLS ── */}
+          {/*  CATEGORY PILLS  */}
           <div className="so-pills" role="tablist">
             {CATEGORIES.map(cat => (
               <button
@@ -437,7 +437,7 @@ export default function SearchOverlay({
             ))}
           </div>
 
-          {/* ── BODY ── */}
+          {/*  BODY  */}
           <div className="so-body">
             {!hasQuery ? (
               /* ══ MÀN HÌNH MẶC ĐỊNH ══ */
@@ -671,7 +671,7 @@ export default function SearchOverlay({
             )}
           </div>
 
-          {/* ── FOOTER ── */}
+          {/*  FOOTER  */}
           {hasQuery && !loading && results.length > 0 && (
             <div className="so-footer">
               <button type="button" className="so-view-all" onClick={handleSubmit}>
@@ -696,7 +696,7 @@ export default function SearchOverlay({
    ════════════════════════════════════════════════ */
 
 const CSS = `
-/* ── Variables ── */
+/*  Variables  */
 .so-backdrop {
   --so-bg:          rgba(10, 14, 20, 0.72);
   --so-panel-bg:    #0e1117;
@@ -714,7 +714,7 @@ const CSS = `
   --so-transition:  0.18s cubic-bezier(.4,0,.2,1);
 }
 
-/* ── Backdrop ── */
+/*  Backdrop  */
 .so-backdrop {
   position: fixed;
   inset: 0;
@@ -735,7 +735,7 @@ const CSS = `
   pointer-events: all;
 }
 
-/* ── Panel ── */
+/*  Panel  */
 .so-panel {
   width: 100%;
   max-width: 660px;
@@ -758,7 +758,7 @@ const CSS = `
   transform: translateY(0) scale(1);
 }
 
-/* ── Header ── */
+/*  Header  */
 .so-header {
   display: flex;
   align-items: center;
@@ -827,7 +827,7 @@ const CSS = `
 }
 .so-close-btn:hover { color: var(--so-text-1); background: var(--so-surface-hov); }
 
-/* ── Category pills ── */
+/*  Category pills  */
 .so-pills {
   display: flex;
   gap: 6px;
@@ -858,7 +858,7 @@ const CSS = `
   color: var(--so-accent);
 }
 
-/* ── Body ── */
+/*  Body  */
 .so-body {
   overflow-y: auto;
   overflow-x: hidden;
@@ -869,7 +869,7 @@ const CSS = `
 .so-body::-webkit-scrollbar { width: 4px; }
 .so-body::-webkit-scrollbar-thumb { background: var(--so-surface-hov); border-radius: 4px; }
 
-/* ── Section ── */
+/*  Section  */
 .so-section { padding: 14px 14px 4px; }
 .so-section + .so-section { padding-top: 2px; }
 .so-section-title {
@@ -884,7 +884,7 @@ const CSS = `
   margin-bottom: 8px;
 }
 
-/* ── History ── */
+/*  History  */
 .so-history-list { display: flex; flex-direction: column; gap: 1px; }
 .so-history-row {
   display: flex;
@@ -918,7 +918,7 @@ const CSS = `
 }
 .so-history-remove:hover { color: var(--so-red); background: rgba(239,68,68,0.1); }
 
-/* ── Quick access grid ── */
+/*  Quick access grid  */
 .so-quick-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -961,7 +961,7 @@ const CSS = `
 }
 .so-quick-label { font-size: 13px; font-weight: 500; color: var(--so-text-1); }
 
-/* ── Login prompt ── */
+/*  Login prompt  */
 .so-login-prompt {
   display: flex;
   align-items: center;
@@ -992,7 +992,7 @@ const CSS = `
 }
 .so-login-prompt button:hover { opacity: 0.88; }
 
-/* ── Chips / Trending ── */
+/*  Chips / Trending  */
 .so-chip-row {
   display: flex;
   flex-wrap: wrap;
@@ -1016,7 +1016,7 @@ const CSS = `
   background: var(--so-accent-dim);
 }
 
-/* ── Category rows ── */
+/*  Category rows  */
 .so-cat-list { display: flex; flex-direction: column; gap: 2px; }
 .so-cat-row {
   display: flex;
@@ -1050,7 +1050,7 @@ const CSS = `
 .so-cat-arrow { color: var(--so-text-3); flex-shrink: 0; transition: transform var(--so-transition); }
 .so-cat-row:hover .so-cat-arrow { transform: translateX(3px); color: var(--so-accent); }
 
-/* ── Page results ── */
+/*  Page results  */
 .so-page-list { display: flex; flex-direction: column; gap: 1px; }
 .so-page-row {
   display: flex;
@@ -1088,7 +1088,7 @@ const CSS = `
 .so-page-row:hover .so-row-arrow,
 .so-row-active .so-row-arrow { opacity: 1; transform: translateX(2px); color: var(--so-accent); }
 
-/* ── Badges ── */
+/*  Badges  */
 .so-badge-current {
   font-size: 10px;
   font-weight: 600;
@@ -1100,7 +1100,7 @@ const CSS = `
   white-space: nowrap;
 }
 
-/* ── Product results ── */
+/*  Product results  */
 .so-product-list { display: flex; flex-direction: column; gap: 1px; }
 .so-product-row {
   display: flex;
@@ -1155,7 +1155,7 @@ const CSS = `
   flex-shrink: 0;
 }
 
-/* ── Mark highlight ── */
+/*  Mark highlight  */
 .so-mark {
   background: rgba(62,207,77,0.22);
   color: var(--so-accent);
@@ -1163,7 +1163,7 @@ const CSS = `
   padding: 0 1px;
 }
 
-/* ── Loading ── */
+/*  Loading  */
 .so-loading-label {
   display: flex;
   align-items: center;
@@ -1203,7 +1203,7 @@ const CSS = `
   50% { opacity: 0.45; }
 }
 
-/* ── Empty / Error ── */
+/*  Empty / Error  */
 .so-empty {
   display: flex;
   flex-direction: column;
@@ -1248,7 +1248,7 @@ const CSS = `
   margin: 0;
 }
 
-/* ── Footer ── */
+/*  Footer  */
 .so-footer {
   display: flex;
   align-items: center;
@@ -1297,21 +1297,21 @@ const CSS = `
   color: var(--so-text-2);
 }
 
-/* ── Default state wrapper ── */
+/*  Default state wrapper  */
 .so-default { padding-bottom: 12px; }
 
-/* ── Focus visible ── */
+/*  Focus visible  */
 .so-panel button:focus-visible {
   outline: 2px solid var(--so-accent);
   outline-offset: 2px;
 }
 
-/* ── Reduced motion ── */
+/*  Reduced motion  */
 @media (prefers-reduced-motion: reduce) {
   .so-panel, .so-backdrop, .so-spinner { transition: none; animation: none; }
 }
 
-/* ── Mobile ── */
+/*  Mobile  */
 @media (max-width: 480px) {
   .so-backdrop { padding: 0; align-items: flex-end; }
   .so-panel {

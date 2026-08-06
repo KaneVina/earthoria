@@ -22,7 +22,7 @@ export default function ForgotPassword() {
   const [errors, setErrors] = useState({});
   const otpRefs = useRef([]);
 
-  // ── Resend OTP timer ──
+  //  Resend OTP timer
   useEffect(() => {
     if (resendTimer <= 0) return;
     const t = setInterval(() => setResendTimer((s) => s - 1), 1000);
@@ -324,7 +324,7 @@ export default function ForgotPassword() {
             ))}
           </div>
 
-          {/* ─── STEP 1: Email ─── */}
+          {/* ─ STEP 1: Email ─ */}
           {step === 1 && (
             <div style={S.stepFade} key="step1">
               <div style={S.formHeader}>
@@ -423,7 +423,7 @@ export default function ForgotPassword() {
             </div>
           )}
 
-          {/* ─── STEP 2: OTP ─── */}
+          {/* ─ STEP 2: OTP ─ */}
           {step === 2 && (
             <div style={S.stepFade} key="step2">
               <div style={S.formHeader}>
@@ -531,7 +531,7 @@ export default function ForgotPassword() {
             </div>
           )}
 
-          {/* ─── STEP 3: New password ─── */}
+          {/* ─ STEP 3: New password ─ */}
           {step === 3 && (
             <div style={S.stepFade} key="step3">
               <div style={S.formHeader}>
@@ -751,7 +751,7 @@ const S = {
     fontFamily: "'Be Vietnam Pro', sans-serif",
   },
 
-  // ── Visual panel ──
+  //  Visual panel
   visual: {
     background: "var(--forest)",
     position: "relative",
@@ -890,7 +890,7 @@ const S = {
     opacity: 0.8,
   },
 
-  // ── Form panel ──
+  //  Form panel
   formPanel: {
     background: "var(--ivory)",
     display: "flex",

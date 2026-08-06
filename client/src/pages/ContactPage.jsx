@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import "../components/assets/css/contactpage.css";
 
-/* ─── Thông tin thực Earthoria ─── */
+/* ─ Thông tin thực Earthoria ─ */
 const CONTACT_CARDS = [
   {
     icon: Phone, type: "Điện thoại",
@@ -35,7 +35,7 @@ const CONTACT_CARDS = [
   },
 ];
 
-/* ─── Chủ đề + field bổ sung khi chọn ─── */
+/* ─ Chủ đề + field bổ sung khi chọn ─ */
 const SUBJECTS = [
   {
     label: "Tư vấn sản phẩm",
@@ -75,7 +75,7 @@ const SUBJECTS = [
   },
 ];
 
-/* ─── Phương thức liên lạc ─── */
+/* ─ Phương thức liên lạc ─ */
 const CONTACT_METHODS = [
   { id: "phone",    label: "Điện thoại",  icon: PhoneCall,     hint: "083 286 2229 / 0849 324 423" },
   { id: "zalo",     label: "Zalo",        icon: MessageSquare, hint: "Zalo: 0849 324 423" },
@@ -97,7 +97,7 @@ const MAP_INFO = [
   { Icon: Link2,   text: "facebook.com/Earthoriavn", href: "https://www.facebook.com/Earthoriavn" },
 ];
 
-/* ─── Rating stars helper ─── */
+/* ─ Rating stars helper ─ */
 function StarRating({ value, onChange }) {
   return (
     <div className="star-rating">
@@ -157,7 +157,7 @@ export default function ContactPage() {
     );
   };
 
-  /* ── GSAP ── */
+  /*  GSAP  */
   useEffect(() => {
     let gsap, ScrollTrigger, lenis;
 
@@ -266,7 +266,7 @@ export default function ContactPage() {
     <>
       <div className="contact-wrapper">
 
-        {/* ── PANEL 1: INTRO ── */}
+        {/*  PANEL 1: INTRO  */}
         <section className="panel-intro" ref={panelIntroRef}>
           <div className="ci-bg-grid" />
           <div className="ci-orb ci-orb-1" />
@@ -304,11 +304,11 @@ export default function ContactPage() {
 
         <div className="scroll-spacer" />
 
-        {/* ── PANEL 2: FORM ── */}
+        {/*  PANEL 2: FORM  */}
         <section className="panel-form">
           <div className="form-section-inner">
 
-            {/* ── LEFT: Info panel ── */}
+            {/*  LEFT: Info panel  */}
             <div className="contact-info-panel" ref={infoPanelRef}>
               <div className="info-eyebrow">
                 <span className="info-eyebrow-line" />
@@ -382,7 +382,7 @@ export default function ContactPage() {
               </div>
             </div>
 
-            {/* ── RIGHT: Form ── */}
+            {/*  RIGHT: Form  */}
             <div className="contact-form-wrap" ref={formWrapRef}>
               <div className="form-header" ref={(el) => (fieldsRef.current[0] = el)}>
                 <div className="form-label-eyebrow">Gửi Yêu Cầu</div>
@@ -396,7 +396,7 @@ export default function ContactPage() {
 
               <form className="contact-form" onSubmit={handleSubmit}>
 
-                {/* ── Họ tên + Email ── */}
+                {/*  Họ tên + Email  */}
                 <div className="form-row-grid" ref={(el) => (fieldsRef.current[1] = el)}>
                   <div className="f-group">
                     <label htmlFor="ci-name">Họ và tên *</label>
@@ -410,7 +410,7 @@ export default function ContactPage() {
                   </div>
                 </div>
 
-                {/* ── SĐT + Công ty ── */}
+                {/*  SĐT + Công ty  */}
                 <div className="form-row-grid" ref={(el) => (fieldsRef.current[2] = el)}>
                   <div className="f-group">
                     <label htmlFor="ci-phone">Số điện thoại</label>
@@ -424,7 +424,7 @@ export default function ContactPage() {
                   </div>
                 </div>
 
-                {/* ── Chủ đề ── */}
+                {/*  Chủ đề  */}
                 <div className="f-group" ref={(el) => (fieldsRef.current[3] = el)}>
                   <label>Chủ đề yêu cầu *</label>
                   <div className="subject-pills">
@@ -441,7 +441,7 @@ export default function ContactPage() {
                   </div>
                 </div>
 
-                {/* ── Fields động theo chủ đề ── */}
+                {/*  Fields động theo chủ đề  */}
                 {currentSubject.extraFields.length > 0 && (
                   <div className="extra-fields-block" ref={(el) => (fieldsRef.current[4] = el)}>
                     <div className="extra-fields-label">
@@ -482,7 +482,7 @@ export default function ContactPage() {
                   <span className="form-divider-line" />
                 </div>
 
-                {/* ── Tin nhắn ── */}
+                {/*  Tin nhắn  */}
                 <div className="f-group" ref={(el) => (fieldsRef.current[6] = el)}>
                   <label htmlFor="ci-message">Tin nhắn *</label>
                   <textarea id="ci-message" name="message"
@@ -490,7 +490,7 @@ export default function ContactPage() {
                     value={form.message} onChange={handleChange} required />
                 </div>
 
-                {/* ── Phương thức liên lạc ── */}
+                {/*  Phương thức liên lạc  */}
                 <div className="f-group contact-method-group" ref={(el) => (fieldsRef.current[7] = el)}>
                   <label>
                     Chúng tôi có thể liên hệ với bạn bằng cách nào? *
@@ -524,7 +524,7 @@ export default function ContactPage() {
                   )}
                 </div>
 
-                {/* ── Privacy + Submit ── */}
+                {/*  Privacy + Submit  */}
                 <p className="form-note" ref={(el) => (fieldsRef.current[8] = el)}>
                   <ShieldCheck size={13} strokeWidth={1.8} />
                   Thông tin của bạn được bảo mật tuyệt đối. Không spam.
@@ -544,7 +544,7 @@ export default function ContactPage() {
 
           </div>
 
-          {/* ── MAP ── */}
+          {/*  MAP  */}
           <div className="map-section" ref={mapSectionRef}>
             <div className="map-section-header">
               <div className="info-eyebrow" style={{ marginBottom: "8px" }}>
@@ -555,7 +555,7 @@ export default function ContactPage() {
             </div>
 
             <div className="map-inner">
-              {/* ── Google Maps iframe ── */}
+              {/*  Google Maps iframe  */}
               <div className="map-visual" ref={mapPinRef}>
                 <iframe
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1964.524998215646!2d105.73088664236549!3d10.0127291326702!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31a0882139720a77%3A0x3916a227d0b95a64!2sFPT%20University!5e0!3m2!1svi!2s!4v1782624966323!5m2!1svi!2s"
@@ -578,7 +578,7 @@ export default function ContactPage() {
                 </a>
               </div>
 
-              {/* ── Info panel ── */}
+              {/*  Info panel  */}
               <div className="map-info">
                 <div className="map-info-title">Thông tin liên hệ</div>
                 {MAP_INFO.map(({ Icon, text, href }, i) => (
@@ -607,7 +607,7 @@ export default function ContactPage() {
         </section>
       </div>
 
-      {/* ── SUCCESS OVERLAY ── */}
+      {/*  SUCCESS OVERLAY  */}
       <div className={`success-overlay${showSuccess ? " show" : ""}`}>
         <div className="success-icon"><CheckCheck size={36} strokeWidth={1.5} /></div>
         <h2 className="success-title">Đã gửi <em>thành công!</em></h2>

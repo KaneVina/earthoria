@@ -31,19 +31,19 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // ── Stores ──────────────────────────────────────────
+  //  Stores ────────────────────────────────────────
   const { user, isAuthenticated, logout } = useAuthStore();
   const { itemCount, fetchCart } = useCartStore();
   const { wishlistCount, fetchWishlist } = useWishlistStore();
   const { isDark, toggleTheme } = useTheme();
 
-  // ── State ────────────────────────────────────────────
+  //  State ──────────────────────────────────────────
   const [scrolled, setScrolled] = useState(false);
   const [progress, setProgress] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
-  // ── Effects ──────────────────────────────────────────
+  //  Effects ────────────────────────────────────────
   useEffect(() => {
     if (isAuthenticated) {
       fetchCart();
@@ -70,7 +70,7 @@ export default function Navbar() {
     setSearchOpen(false);
   }, [location.pathname, location.search]);
 
-  // ── Helpers ───────────────────────────────────────────
+  //  Helpers ─────────────────────────────────────────
 const handleLogout = async () => {
   try {
     await authService.logout(); // gọi POST /auth/logout — clear cookie + revoke token ở DB
@@ -136,7 +136,7 @@ const handleLogout = async () => {
         border: "rgba(74,158,63,0.22)",
       };
 
-  // ── Render ────────────────────────────────────────────
+  //  Render ──────────────────────────────────────────
   return (
     <>
       {/* Progress bar */}

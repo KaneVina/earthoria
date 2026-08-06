@@ -1,18 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
-/**
- * SproutModel — ambient 3D background for the "Giá Trị Cốt Lõi" (Core Values) section.
- * A crystalline knowledge-network: faceted nodes connected by lines that stay
- * perfectly locked to each node's live position every frame (no drift/desync).
- * Sits BEHIND content (low opacity, z-index 0); colors read from CSS variables
- * so it adapts automatically to light/dark mode.
- */
 export default function SproutModel({ className = "" }) {
   const mountRef = useRef(null);
   const [inView, setInView] = useState(false);
 
-  /* Chỉ khởi tạo Three.js scene khi section gần vào viewport, tránh tốn main thread lúc trang vừa mount */
   useEffect(() => {
     const el = mountRef.current;
     if (!el || typeof IntersectionObserver === "undefined") {
@@ -40,7 +32,7 @@ export default function SproutModel({ className = "" }) {
     const W = el.clientWidth || 1200;
     const H = el.clientHeight || 600;
 
-    /* ── Theme colors from CSS variables (auto light/dark) ── */
+    /*  Theme colors from CSS variables (auto light/dark)  */
     const rootStyles = getComputedStyle(document.documentElement);
     const goldHex = rootStyles.getPropertyValue("--gold").trim() || "#4a9e3f";
     const forestHex = rootStyles.getPropertyValue("--forest").trim() || "#0d3330";
@@ -51,20 +43,20 @@ export default function SproutModel({ className = "" }) {
     const forestColor = new THREE.Color(forestHex);
     const goldLightColor = new THREE.Color(goldLightHex);
 
-    /* ── Renderer ── */
+    /*  Renderer  */
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(W, H);
     renderer.setClearColor(0x000000, 0);
     el.appendChild(renderer.domElement);
 
-    /* ── Scene & Camera ── */
+    /*  Scene & Camera  */
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(40, W / H, 0.1, 50);
     camera.position.set(0, 0.4, 8.5);
     camera.lookAt(0, 0, 0);
 
-    /* ── Lights ── */
+    /*  Lights  */
     scene.add(new THREE.AmbientLight(0xffffff, isDark ? 0.6 : 0.9));
     const key = new THREE.DirectionalLight(0xffffff, isDark ? 0.55 : 0.65);
     key.position.set(3, 5, 5);
@@ -73,7 +65,7 @@ export default function SproutModel({ className = "" }) {
     fill.position.set(-4, -2, 3);
     scene.add(fill);
 
-    /* ── Procedural soft-glow sprite texture (for node halos) ── */
+    /*  Procedural soft-glow sprite texture (for node halos)  */
     function makeGlowTexture(hex) {
       const size = 128;
       const canvas = document.createElement("canvas");
@@ -90,7 +82,7 @@ export default function SproutModel({ className = "" }) {
     }
     const glowTexGold = makeGlowTexture(`rgba(${Math.round(goldColor.r*255)},${Math.round(goldColor.g*255)},${Math.round(goldColor.b*255)},1)`);
 
-    /* ── Materials ── */
+    /*  Materials  */
     const nodeMat = new THREE.MeshStandardMaterial({
       color: goldColor, roughness: 0.25, metalness: 0.55,
       transparent: true, opacity: isDark ? 0.65 : 0.5,
@@ -102,7 +94,7 @@ export default function SproutModel({ className = "" }) {
       flatShading: true,
     });
 
-    /* ── Generate node positions (loose cloud, several depth layers) ── */
+    /*  Generate node positions (loose cloud, several depth layers)  */
     const nodeCount = 22;
     const spread = { x: 9, y: 3.4, z: 4 };
     const basePositions = [];
@@ -116,7 +108,7 @@ export default function SproutModel({ className = "" }) {
       );
     }
 
-    /* ── Build edge list: connect each node to its nearest 2-3 neighbors ── */
+    /*  Build edge list: connect each node to its nearest 2-3 neighbors  */
     const maxDist = 2.8;
     const maxLinksPerNode = 3;
     const linkCounts = new Array(nodeCount).fill(0);
@@ -142,7 +134,7 @@ export default function SproutModel({ className = "" }) {
       }
     }
 
-    /* ── Line geometry: positions + per-vertex color (fades with depth) ── */
+    /*  Line geometry: positions + per-vertex color (fades with depth)  */
     const lineVertexCount = edges.length * 2;
     const linePosArray = new Float32Array(lineVertexCount * 3);
     const lineColorArray = new Float32Array(lineVertexCount * 3);
@@ -158,7 +150,7 @@ export default function SproutModel({ className = "" }) {
     const lattice = new THREE.LineSegments(lineGeo, lineMat);
     scene.add(lattice);
 
-    /* ── Node meshes (faceted icosahedrons, varied size) + glow sprites ── */
+    /*  Node meshes (faceted icosahedrons, varied size) + glow sprites  */
     const geoSmall = new THREE.IcosahedronGeometry(0.055, 0);
     const geoMed = new THREE.IcosahedronGeometry(0.085, 0);
     const geoLarge = new THREE.IcosahedronGeometry(0.115, 0);
@@ -204,7 +196,7 @@ export default function SproutModel({ className = "" }) {
     latticeGroup.add(nodeGroup);
     scene.add(latticeGroup);
 
-    /* ── Color helper: fade line color toward background tone by depth ── */
+    /*  Color helper: fade line color toward background tone by depth  */
     const nearColor = goldLightColor;
     const farColor = forestColor;
     const tmpColor = new THREE.Color();
@@ -214,7 +206,7 @@ export default function SproutModel({ className = "" }) {
       return THREE.MathUtils.clamp((z + 2.5) / 4, 0, 1);
     }
 
-    /* ── Animate ── */
+    /*  Animate  */
     let raf;
     let t = 0;
     const animate = () => {
@@ -267,7 +259,7 @@ export default function SproutModel({ className = "" }) {
     };
     animate();
 
-    /* ── Resize ── */
+    /*  Resize  */
     const onResize = () => {
       const w = el.clientWidth, h = el.clientHeight;
       camera.aspect = w / h;

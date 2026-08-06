@@ -211,7 +211,7 @@ export default function ProductFormFields({ form, setForm, categories = [] }) {
         </div>
       </div>
 
-      {/* ── Section: Thông số kỹ thuật ── */}
+      {/*  Section: Thông số kỹ thuật  */}
       <div
         className="a-form-group span-2"
         style={{ borderTop: "1px solid #e8e5de", paddingTop: 14, marginTop: 4 }}

@@ -4,7 +4,7 @@
    Import: @import './admin.css' trong AdminLayout.jsx hoặc admin entry
    ═══════════════════════════════════════════════════════════ */
 
-/* ── 1. TOKENS ──────────────────────────────────────────── */
+/*  1. TOKENS ────────────────────────────────────────── */
 :root {
   /* Brand */
   --a-forest: #0d3330;
@@ -73,7 +73,7 @@
   --a-trans-luxury: 0.42s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ── 2. RESET (scoped to admin) ─────────────────────────── */
+/*  2. RESET (scoped to admin) ───────────────────────── */
 .admin-root *,
 .admin-root *::before,
 .admin-root *::after {
@@ -106,7 +106,7 @@
   background: var(--a-bg);
 }
 
-/* ── 3. LAYOUT ──────────────────────────────────────────── */
+/*  3. LAYOUT ────────────────────────────────────────── */
 .admin-root {
   display: flex;
   min-height: 100vh;
@@ -385,7 +385,7 @@
   padding: 0 var(--a-page-pad);
   flex-shrink: 0;
 }
-/* ── Breadcrumb ── */
+/*  Breadcrumb  */
 .a-breadcrumb {
   display: flex;
   align-items: center;
@@ -474,7 +474,7 @@
   padding: var(--a-page-pad-top) var(--a-page-pad);
 }
 
-/* ── 4. PAGE HEADER ─────────────────────────────────────── */
+/*  4. PAGE HEADER ───────────────────────────────────── */
 .a-page-eyebrow {
   font-size: 10px;
   letter-spacing: 0.22em;
@@ -504,7 +504,7 @@
   margin-bottom: 24px;
 }
 
-/* ── 5. KPI CARDS ───────────────────────────────────────── */
+/*  5. KPI CARDS ─────────────────────────────────────── */
 .a-kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -613,7 +613,7 @@
   color: var(--a-danger-text);
 }
 
-/* ── 6. CHART CARDS ─────────────────────────────────────── */
+/*  6. CHART CARDS ───────────────────────────────────── */
 .a-chart-grid-2 {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -688,7 +688,7 @@
   flex-shrink: 0;
 }
 
-/* ── 7. TABLE CARD ──────────────────────────────────────── */
+/*  7. TABLE CARD ────────────────────────────────────── */
 .a-table-card {
   background: var(--a-white);
   border-radius: var(--a-radius-lg);
@@ -878,7 +878,7 @@
   border-color: var(--a-forest);
 }
 
-/* ── 8. BADGES ──────────────────────────────────────────── */
+/*  8. BADGES ────────────────────────────────────────── */
 .a-badge {
   display: inline-flex;
   align-items: center;
@@ -934,7 +934,7 @@
   letter-spacing: 0.04em;
 }
 
-/* ── 9. BUTTONS ─────────────────────────────────────────── */
+/*  9. BUTTONS ───────────────────────────────────────── */
 .a-btn-primary {
   display: inline-flex;
   align-items: center;
@@ -1032,7 +1032,7 @@
   color: var(--a-ink-40);
 }
 
-/* ── 10. FORM ELEMENTS ──────────────────────────────────── */
+/*  10. FORM ELEMENTS ────────────────────────────────── */
 .a-input {
   background: var(--a-bg);
   border: 1px solid var(--a-ink-20);
@@ -1175,7 +1175,7 @@
   border-color: var(--a-forest);
 }
 
-/* ── 11. MODAL ───────────────────────────────────────────── */
+/*  11. MODAL ─────────────────────────────────────────── */
 .a-modal-overlay {
   position: fixed;
   inset: 0;
@@ -1251,7 +1251,7 @@
   gap: 8px;
 }
 
-/* ── 12. MINI STATS (Coupons) ───────────────────────────── */
+/*  12. MINI STATS (Coupons) ─────────────────────────── */
 .a-mini-stats {
   display: flex;
   gap: 12px;
@@ -1287,7 +1287,7 @@
   color: var(--a-green);
 }
 
-/* ── 13. ACTIVITY FEED ──────────────────────────────────── */
+/*  13. ACTIVITY FEED ────────────────────────────────── */
 .a-activity {
   display: flex;
   flex-direction: column;
@@ -1339,7 +1339,7 @@
   margin-top: 2px;
 }
 
-/* ── 14. INLINE SELECT (Orders update) ──────────────────── */
+/*  14. INLINE SELECT (Orders update) ────────────────── */
 .a-inline-select {
   font-size: 11px;
   border: 1px solid var(--a-ink-20);
@@ -1357,7 +1357,7 @@
   border-color: var(--a-green);
 }
 
-/* ── 15. LOADING STATES ─────────────────────────────────── */
+/*  15. LOADING STATES ───────────────────────────────── */
 @keyframes a-shimmer {
   0% {
     background-position: -600px 0;
@@ -1379,7 +1379,7 @@
   border-radius: 4px;
 }
 
-/* ── 16. TOAST (override react-hot-toast for admin) ─────── */
+/*  16. TOAST (override react-hot-toast for admin) ───── */
 .a-toast-success {
   background: var(--a-forest) !important;
   color: #ede8dc !important;
@@ -1388,7 +1388,7 @@
   border-radius: var(--a-radius) !important;
 }
 
-/* ── 17. RESPONSIVE ─────────────────────────────────────── */
+/*  17. RESPONSIVE ───────────────────────────────────── */
 @media (max-width: 768px) {
   .a-sidebar {
     transform: translateX(-100%);
@@ -1499,7 +1499,7 @@
   color: var(--a-ink);
 }
 
-/* ── Sidebar: giữ forest tối nhưng đậm hơn 1 chút để phân lớp với bg ── */
+/*  Sidebar: giữ forest tối nhưng đậm hơn 1 chút để phân lớp với bg  */
 .admin-root.dark .a-sidebar {
   background: #0a2624;
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.35);
@@ -1546,7 +1546,7 @@
   color: #ede8dc;
 }
 
-/* ── Topbar ── */
+/*  Topbar  */
 .admin-root.dark .a-topbar {
   background: rgba(15, 21, 18, 0.92);
   border-bottom: 1px solid var(--a-ink-08);
@@ -1567,7 +1567,7 @@
   color: var(--a-green-light);
 }
 
-/* ── KPI cards ── */
+/*  KPI cards  */
 .admin-root.dark .a-kpi {
   background: var(--a-white);
   border: 1px solid var(--a-ink-08);
@@ -1587,7 +1587,7 @@
   background: rgba(139, 122, 224, 0.14);
 }
 
-/* ── Chart / table cards ── */
+/*  Chart / table cards  */
 .admin-root.dark .a-chart-card,
 .admin-root.dark .a-table-card,
 .admin-root.dark .a-mini-stat {
@@ -1614,7 +1614,7 @@
   border-bottom: 1px solid var(--a-ink-05);
 }
 
-/* ── Buttons ── */
+/*  Buttons  */
 .admin-root.dark .a-btn-primary {
   background: var(--a-forest-mid);
   color: #ede8dc;
@@ -1634,7 +1634,7 @@
   border-color: var(--a-ink-40);
 }
 
-/* ── Form elements ── */
+/*  Form elements  */
 .admin-root.dark .a-input,
 .admin-root.dark .a-inline-select {
   background: var(--a-surface);
@@ -1655,7 +1655,7 @@
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23EDE8DC' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
 }
 
-/* ── Pills / badges ── */
+/*  Pills / badges  */
 .admin-root.dark .a-pill {
   border: 1px solid var(--a-ink-20);
   color: var(--a-ink-60);
@@ -1676,7 +1676,7 @@
   color: var(--a-green-light);
 }
 
-/* ── Modal ── */
+/*  Modal  */
 .admin-root.dark .a-modal-overlay {
   background: rgba(0, 0, 0, 0.65);
 }
@@ -1696,7 +1696,7 @@
   color: var(--a-ink);
 }
 
-/* ── Book thumb / avatar ── */
+/*  Book thumb / avatar  */
 .admin-root.dark .a-book-thumb {
   background: #26302a;
   border: 1px solid var(--a-ink-08);
@@ -1708,7 +1708,7 @@
   color: var(--a-green-light);
 }
 
-/* ── Pagination ── */
+/*  Pagination  */
 .admin-root.dark .a-page-btn {
   border: 1px solid var(--a-ink-20);
   color: var(--a-ink-60);
@@ -1724,7 +1724,7 @@
   color: #ede8dc;
 }
 
-/* ── Skeleton loading (shimmer tối) ── */
+/*  Skeleton loading (shimmer tối)  */
 .admin-root.dark .a-skeleton {
   background: linear-gradient(
     90deg,
@@ -1735,7 +1735,7 @@
   background-size: 600px 100%;
 }
 
-/* ── Toast override ── */
+/*  Toast override  */
 .admin-root.dark .a-toast-success {
   background: var(--a-forest-mid) !important;
   color: #ede8dc !important;
@@ -1794,7 +1794,7 @@
 .a-menu-trigger {
   display: none;
 }
-/* ── EditableField (Settings) ── */
+/*  EditableField (Settings)  */
 .a-fields-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1905,7 +1905,7 @@
   }
 }
 
-/* ── Theme toggle row ── */
+/*  Theme toggle row  */
 .a-theme-row {
   display: flex;
   align-items: center;
@@ -1981,7 +1981,7 @@
   background: var(--a-ink-08);
   border-color: var(--a-ink-08);
 }
-/* ── Thêm vào admin.css: style cho nhóm menu có thể thu gọn ── */
+/*  Thêm vào admin.css: style cho nhóm menu có thể thu gọn  */
 
 .a-nav-group {
   margin-bottom: 4px;
@@ -2106,7 +2106,7 @@
   }
 }
 
-/* ── Dark mode ── */
+/*  Dark mode  */
 .admin-root.dark .a-tab.active {
   color: var(--a-green-light);
 }
@@ -2119,7 +2119,7 @@
   background: rgba(92, 184, 79, 0.16);
 }
 
-/* ── Responsive ── */
+/*  Responsive  */
 @media (max-width: 640px) {
   .a-tab {
     margin: 0 10px;
@@ -2159,7 +2159,7 @@
   }
 }
 
-/* ── Dropzone: chọn file .glb bằng kéo-thả hoặc bấm chọn ── */
+/*  Dropzone: chọn file .glb bằng kéo-thả hoặc bấm chọn  */
 .a-dropzone {
   display: flex;
   flex-direction: column;
@@ -2216,7 +2216,7 @@
   color: var(--a-ink-40);
 }
 
-/* ── File đã chọn: hiện tên / dung lượng, nút xóa ── */
+/*  File đã chọn: hiện tên / dung lượng, nút xóa  */
 .a-drop-file {
   display: flex;
   align-items: center;
@@ -2278,7 +2278,7 @@
   color: var(--a-danger-text);
 }
 
-/* ── Dark mode ── */
+/*  Dark mode  */
 .admin-root.dark .a-dropzone {
   background: var(--a-surface);
   border-color: var(--a-ink-20);
@@ -2350,7 +2350,7 @@
 .admin-root.dark .a-ar-book-cell-inner {
   background: var(--a-white);
 }
-/* ── Ma trận quyền xem (ArCodeDetail) ───────────────────── */
+/*  Ma trận quyền xem (ArCodeDetail) ─────────────────── */
 .a-access-row {
   display: flex;
   gap: 16px;
@@ -2497,7 +2497,7 @@
   }
 }
 
-/* ── Dark mode ── */
+/*  Dark mode  */
 .admin-root.dark .a-access-toggle-btn {
   background: var(--a-surface);
   border-color: var(--a-ink-20);

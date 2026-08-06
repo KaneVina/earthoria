@@ -40,7 +40,7 @@ L.Icon.Default.mergeOptions({
   iconUrl:       'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 })
-// ── helpers ──
+//  helpers
 function stripDiacritics(str) {
   return (str || "")
     .normalize("NFD")
@@ -49,7 +49,7 @@ function stripDiacritics(str) {
     .toLowerCase();
 }
 
-// ── hooks địa chỉ 2 cấp ──
+//  hooks địa chỉ 2 cấp
 function useProvinces() {
   const [provinces, setProvinces] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -87,7 +87,7 @@ function useWards(provinceCode) {
   return { wards, loading };
 }
 
-// ── LocationCombobox ──
+//  LocationCombobox
 function LocationCombobox({
   label,
   placeholder,
@@ -304,7 +304,7 @@ function LocationCombobox({
     </div>
   );
 }
-/* ─────────────────────────────────────────
+/* ───────────────────────────────────────
    CONSTANTS
 ───────────────────────────────────────── */
 const FREE_SHIP_THRESHOLD = 300_000;
@@ -343,7 +343,7 @@ const PAYMENT_OPTIONS = [
   },
 ];
 
-/* ─────────────────────────────────────────
+/* ───────────────────────────────────────
    PROVINCE API  (provinces.open-api.vn)
 ───────────────────────────────────────── */
 const API = "https://provinces.open-api.vn/api";
@@ -370,7 +370,7 @@ const fetchWards = (code) =>
     })
     .then((d) => d.wards || []);
 
-/* ─────────────────────────────────────────
+/* ───────────────────────────────────────
    VALIDATION
 ───────────────────────────────────────── */
 function validateShipping(f, mode = 'shipping') {
@@ -406,7 +406,7 @@ function validatePayment(method, card) {
   return e;
 }
 
-/* ─────────────────────────────────────────
+/* ───────────────────────────────────────
    TINY HELPERS
 ───────────────────────────────────────── */
 const fmtCard = (v) =>
@@ -747,7 +747,7 @@ function ReviewBlock({ title, icon: Icon, onEdit, rows, children }) {
   );
 }
 
-/* ─────────────────────────────────────────
+/* ───────────────────────────────────────
    ORDER SUMMARY SIDEBAR
    (luôn hiển thị bên phải, sync với cart)
 ───────────────────────────────────────── */
@@ -1167,17 +1167,17 @@ function MapClickHandler({ onPick }) {
   useMapEvents({ click(e) { onPick({ lat: e.latlng.lat, lng: e.latlng.lng }) } })
   return null
 }
-/* ─────────────────────────────────────────
+/* ───────────────────────────────────────
    MAIN COMPONENT
 ───────────────────────────────────────── */
 export default function Checkout() {
   const navigate = useNavigate();
   const { cart, fetchCart } = useCartStore();
 
-  /* ── step state ── */
+  /*  step state  */
   const [step, setStep] = useState(1);
 
-  /* ── shipping form ── */
+  /*  shipping form  */
   const [ship, setShip] = useState({
     fullName: "",
     phone: "",
@@ -1192,7 +1192,7 @@ export default function Checkout() {
   const [shipErr, setShipErr] = useState({});
   const { provinces, loading: provincesLoading } = useProvinces();
   const { wards, loading: wardsLoading } = useWards(ship.provinceCode);
-  /* ── payment ── */
+  /*  payment  */
   const [method, setMethod] = useState("");
   const [card, setCard] = useState({
     number: "",
@@ -1204,11 +1204,11 @@ export default function Checkout() {
   const [showCvc, setShowCvc] = useState(false);
   const [payErr, setPayErr] = useState({});
 
-  /* ── coupon ── */
+  /*  coupon  */
   const [couponInput, setCouponInput] = useState("");
   const [couponApplied, setCouponApplied] = useState(null);
 
-  /* ── submission ── */
+  /*  submission  */
   const [placing, setPlacing] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [requestInvoice, setRequestInvoice] = useState(false);
@@ -1228,17 +1228,17 @@ const [savingAddr, setSavingAddr] = useState(false)
     lat: null,
     lng: null,
   });
-  /* ── scroll helper ── */
+  /*  scroll helper  */
   const topRef = useRef(null);
   const scrollTop = () =>
     topRef.current?.scrollIntoView({ behavior: "smooth" });
 
-  /* ── fetch cart on mount ── */
+  /*  fetch cart on mount  */
   useEffect(() => {
     fetchCart();
   }, [fetchCart]);
 
-  /* ── chặn back để sửa lại thông tin sau khi đã xác nhận đặt hàng ── */
+  /*  chặn back để sửa lại thông tin sau khi đã xác nhận đặt hàng  */
   useEffect(() => {
     if (!orderPlaced) return;
     window.history.pushState(null, "", window.location.href);
@@ -1283,7 +1283,7 @@ useEffect(() => {
     .catch(() => {})
 }, [])
 
-  /* ── items & totals ── */
+  /*  items & totals  */
   const items = cart?.items || [];
   const subtotal = items.reduce(
     (s, i) => s + (i.book?.salePrice || i.book?.price || 0) * i.quantity,
@@ -1360,7 +1360,7 @@ useEffect(() => {
     }
   };
 
-  /* ── coupon ── */
+  /*  coupon  */
   const applyCoupon = () => {
     const key = couponInput.trim().toUpperCase();
     if (COUPONS[key]) {
@@ -1371,7 +1371,7 @@ useEffect(() => {
     }
   };
 
-  /* ── step navigation ── */
+  /*  step navigation  */
   const goToStep2 = () => {
     const e = validateShipping(ship, deliveryMode);
     setShipErr(e);
@@ -1428,7 +1428,7 @@ useEffect(() => {
     }
   };
 
-  /* ── empty cart guard ── */
+  /*  empty cart guard  */
   if (!cart || items.length === 0) {
     return (
       <div
@@ -1489,15 +1489,15 @@ useEffect(() => {
     );
   }
 
-  /* ─────────────────────────────────────────
+  /* ───────────────────────────────────────
      RENDER
-  ───────────────────────────────────────── */
+  ─────────────────────────────────────── */
   return (
     <div
       ref={topRef}
       style={{ minHeight: "100vh", paddingTop: 80, background: "var(--ivory)" }}
     >
-      {/* ── keyframes (inline so no external CSS needed) ── */}
+      {/*  keyframes (inline so no external CSS needed)  */}
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
@@ -1581,7 +1581,7 @@ useEffect(() => {
             <div className="co-step">
               <SectionHead icon={MapPin} title="Thiết lập đơn hàng" />
 
-              {/* ── Tile chọn hình thức ── */}
+              {/*  Tile chọn hình thức  */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 28 }}>
                 {[
                   { id: 'pickup', icon: Package, label: 'Lấy tại shop', sub: '600 Nguyễn Văn Cừ, An Bình, Cần Thơ', fee: 'Miễn phí' },
@@ -1619,7 +1619,7 @@ useEffect(() => {
                 })}
               </div>
 
-              {/* ── PICKUP ── */}
+              {/*  PICKUP  */}
               {deliveryMode === 'pickup' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
                   <div style={{
@@ -1671,7 +1671,7 @@ useEffect(() => {
                 </div>
               )}
 
-              {/* ── SHIPPING ── */}
+              {/*  SHIPPING  */}
               {deliveryMode === 'shipping' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
@@ -1883,7 +1883,7 @@ useEffect(() => {
                         </div>
                       </>
                     ) : (
-                      /* ── Bước confirm: điền thông tin ── */
+                      /*  Bước confirm: điền thông tin  */
                       <div style={{ padding: 24, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
                         <div style={{ padding: '12px 16px', background: 'rgba(74,158,63,0.06)', border: '0.5px solid rgba(74,158,63,0.25)', fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 8 }}>
                           <MapPin size={13} style={{ color: 'var(--gold)', flexShrink: 0 }} />
@@ -2070,7 +2070,7 @@ useEffect(() => {
                 </div>
               )}
 
-              {/* ── Card form ── */}
+              {/*  Card form  */}
               {method === "card" && (
                 <div
                   style={{
@@ -2210,7 +2210,7 @@ useEffect(() => {
                 </div>
               )}
 
-              {/* ── COD info ── */}
+              {/*  COD info  */}
               {method === "cod" && (
                 <div
                   style={{
@@ -2257,7 +2257,7 @@ useEffect(() => {
                 </div>
               )}
 
-              {/* ── MoMo / VNPay placeholder ── */}
+              {/*  MoMo / VNPay placeholder  */}
               {(method === "momo" || method === "vnpay") && (
                 <div
                   style={{
@@ -2347,7 +2347,7 @@ useEffect(() => {
             <div className="co-step">
               <SectionHead icon={ShieldCheck} title="Xác nhận đơn hàng" />
 
-              {/* ── Review: shipping ── */}
+              {/*  Review: shipping  */}
               <ReviewBlock
                 title="Địa chỉ giao hàng"
                 icon={MapPin}
@@ -2373,7 +2373,7 @@ useEffect(() => {
                 ].filter(Boolean)}
               />
 
-              {/* ── Review: payment ── */}
+              {/*  Review: payment  */}
               <ReviewBlock
                 title="Thanh toán"
                 icon={CreditCard}
@@ -2403,7 +2403,7 @@ useEffect(() => {
                 ].filter(Boolean)}
               />
 
-              {/* ── Review: items ── */}
+              {/*  Review: items  */}
               <ReviewBlock title="Sản phẩm" icon={Package}>
                 {items.map((item, i) => {
                   const price = item.book?.salePrice || item.book?.price || 0;
@@ -2469,7 +2469,7 @@ useEffect(() => {
                 })}
               </ReviewBlock>
 
-              {/* ── Big confirm CTA ── */}
+              {/*  Big confirm CTA  */}
               <div
                 style={{
                   marginTop: 24,

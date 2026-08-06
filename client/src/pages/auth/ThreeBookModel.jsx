@@ -11,7 +11,7 @@ export default function ThreeBookModel() {
     const W = el.clientWidth || 400;
     const H = el.clientHeight || 300;
 
-    /* ── Renderer ── */
+    /*  Renderer  */
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: true,
@@ -25,7 +25,7 @@ export default function ThreeBookModel() {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     el.appendChild(renderer.domElement);
 
-    /* ── Scene & fog (adds depth/luxury haze) ── */
+    /*  Scene & fog (adds depth/luxury haze)  */
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x0a2420, 0.045);
 
@@ -33,7 +33,7 @@ export default function ThreeBookModel() {
     camera.position.set(0, 3.6, 6.8);
     camera.lookAt(0, 0, 0);
 
-    /* ── Lights ── */
+    /*  Lights  */
     scene.add(new THREE.AmbientLight(0x0d3330, 0.35));
 
     const sunLight = new THREE.PointLight(0xffd98a, 7, 22, 1.8);
@@ -52,7 +52,7 @@ export default function ThreeBookModel() {
     rimGold.position.set(-3, 2, 4);
     scene.add(rimGold);
 
-    /* ── Soft circular glow sprite texture (procedural, no external assets) ── */
+    /*  Soft circular glow sprite texture (procedural, no external assets)  */
     function makeGlowTexture(innerHex, outerHex) {
       const size = 256;
       const canvas = document.createElement("canvas");
@@ -72,7 +72,7 @@ export default function ThreeBookModel() {
     const sunGlowTex = makeGlowTexture("rgba(255,235,170,1)", "rgba(245,195,77,0.55)");
     const starGlowTex = makeGlowTexture("rgba(220,240,210,1)", "rgba(150,200,140,0)");
 
-    /* ── Starfield (sprites = soft round points, not square pixels) ── */
+    /*  Starfield (sprites = soft round points, not square pixels)  */
     const starCount = 260;
     const starGeo = new THREE.BufferGeometry();
     const starPos = new Float32Array(starCount * 3);
@@ -99,7 +99,7 @@ export default function ThreeBookModel() {
     const stars = new THREE.Points(starGeo, starMat);
     scene.add(stars);
 
-    /* ── Sun: layered for richness ── */
+    /*  Sun: layered for richness  */
     const sunGeo = new THREE.SphereGeometry(0.5, 64, 64);
     const sunMat = new THREE.MeshStandardMaterial({
       color: 0xffd98a,
@@ -125,7 +125,7 @@ export default function ThreeBookModel() {
     sunSprite2.scale.set(5.2, 5.2, 1);
     scene.add(sunSprite2);
 
-    /* ── Materials: physical for a premium, glassy/metallic look ── */
+    /*  Materials: physical for a premium, glassy/metallic look  */
     function makePlanetMat(color, opts = {}) {
       return new THREE.MeshPhysicalMaterial({
         color,
@@ -139,7 +139,7 @@ export default function ThreeBookModel() {
       });
     }
 
-    /* ── Elliptical orbit path (returns point on ellipse) ── */
+    /*  Elliptical orbit path (returns point on ellipse)  */
     function ellipsePoint(a, b, angle) {
       return new THREE.Vector3(Math.cos(angle) * a, 0, Math.sin(angle) * b);
     }
@@ -158,7 +158,7 @@ export default function ThreeBookModel() {
       return new THREE.LineLoop(geo, mat);
     }
 
-    /* ── Planet definitions: elliptical orbits (a, b semi-axes) ── */
+    /*  Planet definitions: elliptical orbits (a, b semi-axes)  */
     const planetDefs = [
       { a: 1.15, b: 1.0,  size: 0.075, color: 0x9c8d77, speed: 1.5,  tilt: 0.05, roughness: 0.6, metalness: 0.15 },
       { a: 1.55, b: 1.4,  size: 0.12,  color: 0xc9a84c, speed: 1.1,  tilt: 0.08, roughness: 0.25, metalness: 0.55, clearcoat: 0.8 },
@@ -203,7 +203,7 @@ export default function ThreeBookModel() {
       return { pivot, mesh, trailSprite, def, angle: Math.random() * Math.PI * 2 };
     });
 
-    /* ── Moon orbiting the teal giant ── */
+    /*  Moon orbiting the teal giant  */
     const moonMat = makePlanetMat(0xe8e2d4, { roughness: 0.7, metalness: 0.1 });
     const moon = new THREE.Mesh(new THREE.SphereGeometry(0.05, 20, 20), moonMat);
     const moonPivot = new THREE.Group();
@@ -211,10 +211,10 @@ export default function ThreeBookModel() {
     moonPivot.add(moon);
     moon.position.x = 0.4;
 
-    /* ── Easing helper for smooth camera drift ── */
+    /*  Easing helper for smooth camera drift  */
     const easeInOutSine = (x) => -(Math.cos(Math.PI * x) - 1) / 2;
 
-    /* ── Animate ── */
+    /*  Animate  */
     let raf;
     let t = 0;
     let targetMx = 0, targetMy = 0, curMx = 0, curMy = 0;
@@ -252,7 +252,7 @@ export default function ThreeBookModel() {
     };
     animate();
 
-    /* ── Resize ── */
+    /*  Resize  */
     const onResize = () => {
       const w = el.clientWidth, h = el.clientHeight;
       camera.aspect = w / h;
@@ -261,7 +261,7 @@ export default function ThreeBookModel() {
     };
     window.addEventListener("resize", onResize);
 
-    /* ── Mouse parallax target ── */
+    /*  Mouse parallax target  */
     const onMouse = (e) => {
       const r = el.getBoundingClientRect();
       targetMx = ((e.clientX - r.left) / r.width  - 0.5) * 2;

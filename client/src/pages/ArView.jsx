@@ -49,7 +49,7 @@
 //  *   tên sách + tên con vật, chỉ ẩn phần hướng dẫn kéo/zoom cho đỡ rối.
 //  */
 
-// // ─── BẢN ĐỒ THẾ GIỚI THẬT (ECharts + GeoJSON) ───────────────────────────
+// // ─ BẢN ĐỒ THẾ GIỚI THẬT (ECharts + GeoJSON) ─────────────────────────
 // // GeoJSON thế giới công khai, tải qua CDN 1 lần rồi cache lại cho cả
 // // session — không cần tự host file trong dự án. Tên thuộc tính quốc gia
 // // trong file này là tiếng Anh (VD "Vietnam", "Canada", "Greenland"),
@@ -95,7 +95,7 @@
 //   return ready;
 // }
 
-// // ─── TƯƠNG THÍCH NGƯỢC ──────────────────────────────────────────────
+// // ─ TƯƠNG THÍCH NGƯỢC ────────────────────────────────────────────
 // // Nếu backend chưa kịp trả `habitatCountries` (tên quốc gia -> mật độ
 // // 0..1) mà chỉ có `habitatRegion` kiểu cũ, quy đổi tạm sang một vài
 // // quốc gia đại diện cho vùng đó với mật độ mặc định. Đây chỉ là
@@ -332,7 +332,7 @@
 //   );
 // }
 
-// // ─── DỮ LIỆU MẪU (HARDCODE) — thay bằng dữ liệu thật từ API khi sẵn sàng ───
+// // ─ DỮ LIỆU MẪU (HARDCODE) — thay bằng dữ liệu thật từ API khi sẵn sàng ─
 // const FALLBACK_DATA = {
 //   label: "Gấu Bắc Cực",
 //   modelUrl: "/models/Untitled.glb",
@@ -366,7 +366,7 @@
 //     Iceland: 0.15,
 //   },
 // };
-// // ──────────────────────────────────────────────────────────────────────────
+// // ────────────────────────────────────────────────────────────────────────
 
 // const SCAN_DURATION_MS = 2400;
 
@@ -605,7 +605,7 @@
 //         />
 //       </div>
 
-//       {/* ── Hiệu ứng quét công nghệ — chỉ hiện ở stage "scanning" ── */}
+//       {/*  Hiệu ứng quét công nghệ — chỉ hiện ở stage "scanning"  */}
 //       <div
 //         className={`ar-scan${isScanning ? " is-active" : ""}`}
 //         aria-hidden="true"
@@ -627,9 +627,9 @@
 //       {/* Vignette để chữ overlay luôn đọc được dù model sáng/tối */}
 //       <div className="ar-view__vignette" aria-hidden="true" />
 
-//       {/* ── Overlay trái: tên sách nhỏ / tên nhân vật to / hướng dẫn ──
+//       {/*  Overlay trái: tên sách nhỏ / tên nhân vật to / hướng dẫn
 //           Khi panel phải "kéo dài" (isExpanded), phần hướng dẫn kéo/zoom
-//           bị ẩn cho đỡ rối, nhưng tên sách + tên con vật luôn còn. ── */}
+//           bị ẩn cho đỡ rối, nhưng tên sách + tên con vật luôn còn.  */}
 //       <section
 //         className={`ar-panel ar-panel--left${
 //           isImmersive ? " is-collapsed" : ""
@@ -787,8 +787,8 @@
 //         )}
 //       </section>
 
-//       {/* ── Nút điều khiển preview <-> immersive — ẩn khi panel phải
-//           đang kéo dài để khỏi đè lên phần thông tin ── */}
+//       {/*  Nút điều khiển preview <-> immersive — ẩn khi panel phải
+//           đang kéo dài để khỏi đè lên phần thông tin  */}
 //       {isPreview && !isExpanded && (
 //         <button
 //           type="button"
@@ -905,7 +905,7 @@ import * as echarts from "echarts/core";
  *   tên sách + tên con vật, chỉ ẩn phần hướng dẫn kéo/zoom cho đỡ rối.
  */
 
-// ─── BẢN ĐỒ THẾ GIỚI THẬT (ECharts + GeoJSON) ───────────────────────────
+// ─ BẢN ĐỒ THẾ GIỚI THẬT (ECharts + GeoJSON) ─────────────────────────
 // GeoJSON thế giới công khai, tải qua CDN 1 lần rồi cache lại cho cả
 // session — không cần tự host file trong dự án. Tên thuộc tính quốc gia
 // trong file này là tiếng Anh (VD "Vietnam", "Canada", "Greenland"),
@@ -952,7 +952,7 @@ function useWorldMapRegistered() {
   return ready;
 }
 
-// ─── TƯƠNG THÍCH NGƯỢC ──────────────────────────────────────────────
+// ─ TƯƠNG THÍCH NGƯỢC ────────────────────────────────────────────
 // Nếu backend chưa kịp trả `habitatCountries` (tên quốc gia -> mật độ
 // 0..1) mà chỉ có `habitatRegion` kiểu cũ, quy đổi tạm sang một vài
 // quốc gia đại diện cho vùng đó với mật độ mặc định. Đây chỉ là
@@ -1197,7 +1197,7 @@ function WorldMapCard({ habitatCountries, habitatRegion }) {
   );
 }
 
-// ─── DỮ LIỆU MẪU (HARDCODE) — thay bằng dữ liệu thật từ API khi sẵn sàng ───
+// ─ DỮ LIỆU MẪU (HARDCODE) — thay bằng dữ liệu thật từ API khi sẵn sàng ─
 const FALLBACK_DATA = {
   label: "Cây Đại Thụ Rừng Nhiệt Đới",
   modelUrl: "/models/Untitled.glb",
@@ -1242,9 +1242,9 @@ const FALLBACK_DATA = {
     Madagascar: 0.5,
   },
 };
-// ──────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────
 
-// ─── DỮ LIỆU RIÊNG THEO MÃ AR CỤ THỂ ─────────────────────────────────
+// ─ DỮ LIỆU RIÊNG THEO MÃ AR CỤ THỂ ───────────────────────────────
 // Một số mã AR gắn với nội dung đặc biệt trong sách (VD: Hang Sơn Đoòng)
 // thay vì loại cây/con vật chung chung. Khi `code` trên URL khớp với
 // khoá trong bảng CODE_OVERRIDES, dữ liệu tương ứng sẽ ĐÈ LÊN
@@ -1286,7 +1286,7 @@ const SON_DOONG_DATA = {
 const CODE_OVERRIDES = {
   J8HADMYTY5Hi_6KSsj0ci_PzWsyfpC7q: SON_DOONG_DATA,
 };
-// ──────────────────────────────────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────
 
 const SCAN_DURATION_MS = 2400;
 
@@ -1535,7 +1535,7 @@ export default function ArView() {
         />
       </div>
 
-      {/* ── Hiệu ứng quét công nghệ — chỉ hiện ở stage "scanning" ── */}
+      {/*  Hiệu ứng quét công nghệ — chỉ hiện ở stage "scanning"  */}
       <div
         className={`ar-scan${isScanning ? " is-active" : ""}`}
         aria-hidden="true"
@@ -1557,9 +1557,9 @@ export default function ArView() {
       {/* Vignette để chữ overlay luôn đọc được dù model sáng/tối */}
       <div className="ar-view__vignette" aria-hidden="true" />
 
-      {/* ── Overlay trái: tên sách nhỏ / tên nhân vật to / hướng dẫn ──
+      {/*  Overlay trái: tên sách nhỏ / tên nhân vật to / hướng dẫn
           Khi panel phải "kéo dài" (isExpanded), phần hướng dẫn kéo/zoom
-          bị ẩn cho đỡ rối, nhưng tên sách + tên con vật luôn còn. ── */}
+          bị ẩn cho đỡ rối, nhưng tên sách + tên con vật luôn còn.  */}
       <section
         className={`ar-panel ar-panel--left${
           isImmersive ? " is-collapsed" : ""
@@ -1749,8 +1749,8 @@ export default function ArView() {
         )}
       </section>
 
-      {/* ── Nút điều khiển preview <-> immersive — ẩn khi panel phải
-          đang kéo dài để khỏi đè lên phần thông tin ── */}
+      {/*  Nút điều khiển preview <-> immersive — ẩn khi panel phải
+          đang kéo dài để khỏi đè lên phần thông tin  */}
       {isPreview && !isExpanded && (
         <button
           type="button"

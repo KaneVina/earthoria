@@ -78,7 +78,7 @@ const WORD_ORDER = [
   { def: GREEN_LETTERS[3], color: GREEN_COLOR, offsetKey: "A2" },
 ];
 
-// ─── Đèn "theo con trỏ" — quét một điểm sáng vàng ấm qua bề mặt logo khi
+// ─ Đèn "theo con trỏ" — quét một điểm sáng vàng ấm qua bề mặt logo khi
 // người dùng di chuột, giống ánh phản chiếu trên huy hiệu kim loại thật
 // thay vì ánh sáng tĩnh. Dùng lerp để chuyển động mượt, không giật khung.
 function PointerLight({ pointer }) {

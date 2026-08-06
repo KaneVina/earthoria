@@ -45,7 +45,7 @@ const TABS = [
 export default function Products() {
   const [activeTab, setActiveTab] = useState("books");
 
-  /* ── Sliding underline indicator ── */
+  /*  Sliding underline indicator  */
   const tabRefs = useRef({});
   const [indicator, setIndicator] = useState({ left: 0, width: 0 });
 
@@ -68,7 +68,7 @@ export default function Products() {
 
   return (
     <AdminLayout>
-      {/* ── Breadcrumb ── */}
+      {/*  Breadcrumb  */}
       <div className="a-breadcrumb" style={{ marginBottom: 14 }}>
         <span>Quản lý</span>
         <span className="a-breadcrumb-sep">/</span>
@@ -79,7 +79,7 @@ export default function Products() {
         <span className="a-breadcrumb-current">{activeCrumb}</span>
       </div>
 
-      {/* ── Page header ── */}
+      {/*  Page header  */}
       <div className="a-page-header">
         <div>
           <p className="a-page-eyebrow">Quản lý</p>
@@ -95,7 +95,7 @@ export default function Products() {
         )}
       </div>
 
-      {/* ── Tab bar ── */}
+      {/*  Tab bar  */}
       <div className="a-tabbar">
         {TABS.map((tab) => (
           <button
@@ -117,7 +117,7 @@ export default function Products() {
         />
       </div>
 
-      {/* ── Tab panels ── */}
+      {/*  Tab panels  */}
       {activeTab === "books" && (
         <div className="a-tab-panel" key="books">
           <BooksTab />
@@ -182,7 +182,7 @@ function BooksTab() {
   };
   const hasActiveFilters = Object.values(filters).some((v) => v !== "");
 
-  /* ── Queries ──
+  /*  Queries
      `search` khớp theo tên sách, nhà xuất bản, VÀ mã sách (productCode) — xử lý ở backend. */
   const { data, isLoading } = useQuery({
     queryKey: ["admin-products", page, search, filters],
@@ -224,7 +224,7 @@ function BooksTab() {
 
   return (
     <>
-      {/* ── Search + Filters (gộp chung 1 hàng, wrap khi hẹp) ── */}
+      {/*  Search + Filters (gộp chung 1 hàng, wrap khi hẹp)  */}
       <div
         style={{
           display: "flex",
@@ -313,7 +313,7 @@ function BooksTab() {
         )}
       </div>
 
-      {/* ── Table ── */}
+      {/*  Table  */}
       <div className="a-table-card" style={{ marginTop: 16 }}>
         <div className="a-table-wrap">
           <table className="a-table">

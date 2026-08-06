@@ -3,7 +3,7 @@
    Tách biệt: essential (luôn bật) vs. các nhóm khác
    ═══════════════════════════════════════════════ */
 
-/* ── Overlay nhẹ khi mở modal tùy chỉnh ── */
+/*  Overlay nhẹ khi mở modal tùy chỉnh  */
 .cc-modal-overlay {
   position: fixed; inset: 0;
   background: rgba(10, 14, 12, 0.55);
@@ -15,7 +15,7 @@
 }
 .cc-modal-overlay.show { opacity: 1; pointer-events: all; }
 
-/* ── Backdrop mờ phía sau banner cookie đầu tiên ──
+/*  Backdrop mờ phía sau banner cookie đầu tiên
    Nhẹ hơn overlay của modal (không blur mạnh, không chặn tương tác toàn
    trang) — chỉ đủ để mắt người dùng dồn về banner, giống cảm giác
    "ưu tiên nhẹ nhàng" của Stripe/Notion thay vì banner nổi trơ trên nền. */
@@ -30,7 +30,7 @@
 }
 .cc-banner-backdrop.show { opacity: 1; }
 
-/* ── Banner chính (dưới cùng màn hình) ── */
+/*  Banner chính (dưới cùng màn hình)  */
 .cc-banner {
   position: fixed;
   left: 24px; right: 24px; bottom: 24px;
@@ -52,7 +52,7 @@
 }
 .cc-banner.show { transform: translateY(0) scale(1); opacity: 1; }
 
-/* ── Thanh đếm ngược (chỉ render khi AUTO_DISMISS_SECONDS được bật trong JS) ── */
+/*  Thanh đếm ngược (chỉ render khi AUTO_DISMISS_SECONDS được bật trong JS)  */
 .cc-banner-progress {
   position: absolute; left: 0; right: 0; bottom: 0;
   height: 2.5px;
@@ -128,7 +128,7 @@
 }
 .cc-btn-customize:hover { color: var(--forest-mid, #1a5c52); }
 
-/* ── Nút mở lại cài đặt cookie (floating, sau khi đã có lựa chọn) ── */
+/*  Nút mở lại cài đặt cookie (floating, sau khi đã có lựa chọn)  */
 .cc-reopen-btn {
   position: fixed; bottom: 24px; left: 24px;
   width: 44px; height: 44px;
@@ -144,7 +144,7 @@
 .cc-reopen-btn.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
 .cc-reopen-btn:hover { background: var(--forest-mid, #1a5c52); }
 
-/* ── MODAL TÙY CHỈNH ── */
+/*  MODAL TÙY CHỈNH  */
 .cc-modal {
   position: fixed;
   top: 50%; left: 50%;
@@ -280,7 +280,7 @@
 }
 .cc-modal-footer .cc-btn { flex: 1; padding: 14px 18px; }
 
-/* ── Dark mode ── */
+/*  Dark mode  */
 body.dark-mode .cc-banner-backdrop { background: rgba(0,0,0,0.4); }
 body.dark-mode .cc-banner { background: #141a17; border-color: rgba(74,158,63,0.25); }
 body.dark-mode .cc-banner-title { color: #c8d4cc; }
@@ -310,7 +310,7 @@ body.cc-lock-scroll { overflow: hidden; height: 100%; }
 
 @media (max-width: 860px) {
 
-  /* ── Banner: gọn lại, dán sát mép, chừa vùng an toàn phía dưới ── */
+  /*  Banner: gọn lại, dán sát mép, chừa vùng an toàn phía dưới  */
   .cc-banner {
     grid-template-columns: 1fr;
     left: 12px; right: 12px;
@@ -338,14 +338,14 @@ body.cc-lock-scroll { overflow: hidden; height: 100%; }
   /* Backdrop nhẹ tay hơn trên màn hình nhỏ, tránh cảm giác nặng nề */
   .cc-banner-backdrop { background: rgba(10,14,12,0.3); }
 
-  /* ── Nút mở lại cài đặt: né home-indicator, dễ bấm bằng ngón cái ── */
+  /*  Nút mở lại cài đặt: né home-indicator, dễ bấm bằng ngón cái  */
   .cc-reopen-btn {
     left: 16px;
     bottom: calc(16px + env(safe-area-inset-bottom, 0px));
     width: 46px; height: 46px;
   }
 
-  /* ── Modal → Bottom sheet: trượt lên từ đáy màn hình ──
+  /*  Modal → Bottom sheet: trượt lên từ đáy màn hình
      Quen thuộc với thao tác một tay, mượt hơn centered-modal khi nội
      dung dài phải cuộn, và không bị "nhảy" theo bàn phím ảo. */
   .cc-modal {
@@ -402,7 +402,7 @@ body.cc-lock-scroll { overflow: hidden; height: 100%; }
   .cc-modal-footer .cc-btn { min-height: 48px; }
 }
 
-/* ── Điện thoại nhỏ / rất hẹp (≤ 380px) ── */
+/*  Điện thoại nhỏ / rất hẹp (≤ 380px)  */
 @media (max-width: 380px) {
   .cc-banner { left: 8px; right: 8px; padding: 18px 16px; }
   .cc-banner-title { font-size: 15.5px; }
@@ -412,11 +412,11 @@ body.cc-lock-scroll { overflow: hidden; height: 100%; }
   .cc-reopen-btn { width: 44px; height: 44px; }
 }
 
-/* ── Landscape trên di động: modal thấp hơn, không chiếm hết màn hình ── */
+/*  Landscape trên di động: modal thấp hơn, không chiếm hết màn hình  */
 @media (max-width: 860px) and (orientation: landscape) {
   .cc-modal { max-height: 96vh; border-radius: 16px 16px 0 0; }
   .cc-banner { bottom: 8px; padding: 16px 20px; }
 }
 
-/* ── Dark mode bổ sung cho phần mobile ── */
+/*  Dark mode bổ sung cho phần mobile  */
 body.dark-mode .cc-modal-header::before { background: rgba(255,255,255,0.16); }

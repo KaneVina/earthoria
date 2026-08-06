@@ -11,7 +11,7 @@
    1. DARK MODE — BỔ SUNG
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Nav chung ── */
+/*  Nav chung  */
 body.dark-mode .nav-links a {
   color: rgba(180, 200, 188, 0.6);
 }
@@ -56,7 +56,7 @@ body.dark-mode .nav-icon[data-tooltip]::after {
   color: #c8d4cc;
 }
 
-/* ── Hero ── */
+/*  Hero  */
 body.dark-mode .hero-sub {
   color: rgba(180, 200, 188, 0.55);
 }
@@ -84,7 +84,7 @@ body.dark-mode .scroll-hint {
   color: rgba(180, 200, 188, 0.35);
 }
 
-/* ── Stats ── */
+/*  Stats  */
 body.dark-mode .stat-label {
   color: rgba(180, 200, 188, 0.35);
 }
@@ -93,7 +93,7 @@ body.dark-mode .stat-icon {
   opacity: 0.8;
 }
 
-/* ── Section headers ── */
+/*  Section headers  */
 body.dark-mode .section-subtitle {
   color: rgba(180, 200, 188, 0.5);
 }
@@ -107,7 +107,7 @@ body.dark-mode .ornament-divider-mark {
   border-color: rgba(74, 158, 63, 0.4);
 }
 
-/* ── Trusted ── */
+/*  Trusted  */
 body.dark-mode .trusted-label {
   color: rgba(180, 200, 188, 0.35);
 }
@@ -118,7 +118,7 @@ body.dark-mode .trusted-logo:hover {
   color: #c8d4cc;
 }
 
-/* ── How It Works ── */
+/*  How It Works  */
 body.dark-mode .how-step {
   background: #1a2420;
   border-color: rgba(255, 255, 255, 0.07);
@@ -133,7 +133,7 @@ body.dark-mode .step-icon {
   border-color: rgba(74, 158, 63, 0.25);
 }
 
-/* ── Products section ── */
+/*  Products section  */
 body.dark-mode .products-section .section-title {
   color: #d0ccc4;
 }
@@ -157,7 +157,7 @@ body.dark-mode .pill.active {
   border-color: #2a5c3a;
 }
 
-/* ── Reviews ── */
+/*  Reviews  */
 body.dark-mode .review-text {
   color: rgba(180, 200, 188, 0.55);
 }
@@ -174,7 +174,7 @@ body.dark-mode .review-quote-mark {
   color: rgba(74, 158, 63, 0.25);
 }
 
-/* ── Values section ── */
+/*  Values section  */
 body.dark-mode .value-num {
   color: rgba(74, 158, 63, 0.3);
 }
@@ -185,7 +185,7 @@ body.dark-mode .value-item {
   border-color: rgba(255, 255, 255, 0.07);
 }
 
-/* ── Journey / Timeline ── */
+/*  Journey / Timeline  */
 body.dark-mode .journey-step {
   border-color: rgba(255, 255, 255, 0.07);
 }
@@ -196,7 +196,7 @@ body.dark-mode .journey-step-num {
   color: rgba(74, 158, 63, 0.35);
 }
 
-/* ── CTA Section ── */
+/*  CTA Section  */
 body.dark-mode .cta-sub {
   color: rgba(250, 248, 243, 0.5);
 }
@@ -209,7 +209,7 @@ body.dark-mode .cta-btn-out:hover {
   color: #faf8f3;
 }
 
-/* ── About: Mission ── */
+/*  About: Mission  */
 body.dark-mode .mission-desc {
   color: rgba(180, 200, 188, 0.5);
 }
@@ -229,7 +229,7 @@ body.dark-mode .mission-pillar:hover {
   background: #222e28;
 }
 
-/* ── About: Story / Timeline ── */
+/*  About: Story / Timeline  */
 body.dark-mode .story-event {
   border-color: rgba(255, 255, 255, 0.07);
 }
@@ -246,7 +246,7 @@ body.dark-mode .story-event-date span {
   color: var(--gold);
 }
 
-/* ── About: Values sticky ── */
+/*  About: Values sticky  */
 body.dark-mode .about-values-sticky-num {
   color: rgba(74, 158, 63, 0.25);
 }
@@ -267,7 +267,7 @@ body.dark-mode .about-value-row:hover .about-value-row-icon {
   background: rgba(74, 158, 63, 0.1);
 }
 
-/* ── About: Advisors ── */
+/*  About: Advisors  */
 body.dark-mode .advisor-desc {
   color: rgba(180, 200, 188, 0.5);
 }
@@ -278,7 +278,7 @@ body.dark-mode .advisor-card::after {
   background: linear-gradient(to bottom, var(--gold), rgba(74, 158, 63, 0.2));
 }
 
-/* ── Contact ── */
+/*  Contact  */
 body.dark-mode .contact-info-label {
   color: rgba(180, 200, 188, 0.35);
 }
@@ -311,7 +311,7 @@ body.dark-mode .form-group textarea::placeholder {
   color: rgba(180, 200, 188, 0.25);
 }
 
-/* ── Social cards ── */
+/*  Social cards  */
 body.dark-mode .social-card {
   background: rgba(255, 255, 255, 0.02);
   border-color: rgba(255, 255, 255, 0.06);
@@ -327,7 +327,7 @@ body.dark-mode .social-card-handle {
   color: rgba(180, 200, 188, 0.35);
 }
 
-/* ── Auth page ── */
+/*  Auth page  */
 body.dark-mode .auth-form-panel {
   background: #121a16;
 }
@@ -391,7 +391,7 @@ body.dark-mode .pw-req.ok {
   color: var(--gold);
 }
 
-/* ── Shop page ── */
+/*  Shop page  */
 body.dark-mode .shop-hero-title,
 body.dark-mode .featured-title {
   color: #c8d4cc;
@@ -504,7 +504,7 @@ body.dark-mode .breadcrumb-sep {
   color: rgba(180, 200, 188, 0.25);
 }
 
-/* ── Product detail page ── */
+/*  Product detail page  */
 body.dark-mode .product-hero,
 body.dark-mode .tabs-section {
   background: transparent;
@@ -650,7 +650,7 @@ body.dark-mode .rating-bar-row {
   color: rgba(180, 200, 188, 0.4);
 }
 
-/* ── OTP dark mode (fix lỗi màu sai) ── */
+/*  OTP dark mode (fix lỗi màu sai)  */
 body.dark-mode .otp-email-mask {
   background: rgba(74, 158, 63, 0.1);
   border-color: rgba(74, 158, 63, 0.25);
@@ -668,7 +668,7 @@ body.dark-mode .otp-resend {
   color: rgba(180, 200, 188, 0.4);
 }
 
-/* ── Cart / Skeleton ── */
+/*  Cart / Skeleton  */
 body.dark-mode .skeleton-summary {
   background: #1c2822;
   border-color: rgba(255, 255, 255, 0.07);
@@ -681,7 +681,7 @@ body.dark-mode .skeleton-product-card {
   border-color: rgba(255, 255, 255, 0.07);
 }
 
-/* ── Back-to-top ── */
+/*  Back-to-top  */
 body.dark-mode .back-top-btn {
   background: #1c2822;
   border-color: rgba(74, 158, 63, 0.25);
@@ -697,7 +697,7 @@ body.dark-mode .btt-tooltip::after {
   border-left-color: #1c2822;
 }
 
-/* ── Search panel (bổ sung) ── */
+/*  Search panel (bổ sung)  */
 body.dark-mode .search-section-title {
   color: rgba(180, 200, 188, 0.35);
 }
@@ -725,7 +725,7 @@ body.dark-mode .search-highlight {
    2. MOBILE RESPONSIVE — BỔ SUNG
    ═══════════════════════════════════════════════════════════════ */
 
-/* ─── Tablet: ≤ 768px ─── */
+/* ─ Tablet: ≤ 768px ─ */
 @media (max-width: 768px) {
   /* Nav */
   nav {
@@ -1086,7 +1086,7 @@ body.dark-mode .search-highlight {
   }
 }
 
-/* ─── Mobile nhỏ: ≤ 480px ─── */
+/* ─ Mobile nhỏ: ≤ 480px ─ */
 @media (max-width: 480px) {
   /* Nav */
   nav {
@@ -1251,7 +1251,7 @@ body.dark-mode .search-highlight {
   }
 }
 
-/* ─── Landscape mobile (chiều ngang) ─── */
+/* ─ Landscape mobile (chiều ngang) ─ */
 @media (max-width: 768px) and (orientation: landscape) {
   .hero {
     min-height: auto;
@@ -1268,7 +1268,7 @@ body.dark-mode .search-highlight {
   }
 }
 
-/* ─── Reduced motion ─── */
+/* ─ Reduced motion ─ */
 @media (prefers-reduced-motion: reduce) {
   .firefly,
   .marquee-track,
@@ -1290,10 +1290,10 @@ body.dark-mode .search-highlight {
              Cart / Checkout / Wishlist / GoogleAuthSuccess
    ═══════════════════════════════════════════════════════════════ */
 
-/* ─────────────────────────────────────────────────────────────
+/* ───────────────────────────────────────────────────────────
    NAVBAR — mobile panel + user dropdown dark mode
    (Navbar.jsx dùng className từ main.css + navbar.css)
-   ───────────────────────────────────────────────────────────── */
+   ─────────────────────────────────────────────────────────── */
 body.dark-mode .nav-mobile-panel {
   background: #0f1510;
   border-top-color: rgba(255, 255, 255, 0.06);
@@ -1407,12 +1407,12 @@ body.dark-mode .nav-hamburger:hover {
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* ───────────────────────────────────────────────────────────
    FOOTER — dark mode
    Footer.jsx dùng className + injected <style>.
    Background footer là var(--forest) → OK cả 2 mode.
    Bổ sung các class chưa có dark override.
-   ───────────────────────────────────────────────────────────── */
+   ─────────────────────────────────────────────────────────── */
 body.dark-mode .footer-brand-name {
   color: rgba(180, 200, 188, 0.5);
 }
@@ -1461,11 +1461,11 @@ body.dark-mode .footer-bottom {
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* ───────────────────────────────────────────────────────────
    FORGOTPASSWORD — dark mode
    Dùng JS style object S. Panel trái (visual) = var(--forest) → OK.
    Panel phải (formPanel) = var(--ivory) → cần override.
-   ───────────────────────────────────────────────────────────── */
+   ─────────────────────────────────────────────────────────── */
 
 /* ForgotPassword không có className riêng → override qua selector cha */
 body.dark-mode .fp-visual {
@@ -1500,11 +1500,11 @@ body.dark-mode input[style*="var(--ivory)"] {
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* ───────────────────────────────────────────────────────────
    BOOKDETAIL — dark mode bổ sung
    Dùng className từ main.css — phần lớn đã được patch.
    Bổ sung các class riêng của BookDetail chưa có.
-   ───────────────────────────────────────────────────────────── */
+   ─────────────────────────────────────────────────────────── */
 body.dark-mode .add-cart-mini {
   background: #2a5c3a;
   color: var(--ivory);
@@ -1593,14 +1593,14 @@ body.dark-mode .sticky-btn:hover {
   background: #336644;
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* ───────────────────────────────────────────────────────────
    CART — dark mode
    Cart.jsx dùng 100% inline style với var(--*).
    var(--forest), var(--ivory), var(--gold), var(--border),
    var(--text-muted) — tất cả tự thích nghi nếu ta override
    CSS vars trong dark mode.
    Bổ sung override CSS vars cho dark mode:
-   ───────────────────────────────────────────────────────────── */
+   ─────────────────────────────────────────────────────────── */
 body.dark-mode {
   --ivory: #121a16;
   --white: #1c2822;
@@ -1636,13 +1636,13 @@ body.dark-mode {
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* ───────────────────────────────────────────────────────────
    CHECKOUT — dark mode
    Checkout.jsx dùng inline style var(--*) + injected <style>
    cho .co-input, .pay-tile.
    CSS vars override ở trên đã cover phần lớn.
    Bổ sung .co-input và .pay-tile dark mode:
-   ───────────────────────────────────────────────────────────── */
+   ─────────────────────────────────────────────────────────── */
 body.dark-mode .co-input {
   background: #1c2822 !important;
   color: #c8d4cc !important;
@@ -1699,11 +1699,11 @@ body.dark-mode .co-step select {
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* ───────────────────────────────────────────────────────────
    WISHLIST — dark mode bổ sung
    (Wishlist.jsx đã có injected dark mode khá đủ)
    Bổ sung các selector còn thiếu:
-   ───────────────────────────────────────────────────────────── */
+   ─────────────────────────────────────────────────────────── */
 body.dark-mode .wl-page {
   background: var(--ivory);
 }
@@ -1944,7 +1944,7 @@ body.dark-mode .search-result-row {
 .search-panel {
   overflow: hidden;
 }
-/* ── New Arrivals / Bestseller sections (Home.jsx) ── */
+/*  New Arrivals / Bestseller sections (Home.jsx)  */
 .new-arrivals-section,
 .bestseller-section {
   padding: 100px 100px;

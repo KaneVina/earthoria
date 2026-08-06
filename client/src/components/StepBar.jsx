@@ -1,4 +1,3 @@
-//Mấy cái nút trên cart với checkout (mấy bước)
 import { Check } from "lucide-react";
 
 const STEPS = [

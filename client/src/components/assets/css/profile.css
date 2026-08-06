@@ -52,7 +52,7 @@
   animation: pfShimmer 1.6s ease-in-out infinite;
 }
 
-/* ── Guest state ── */
+/*  Guest state  */
 .pf-guest-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 80px 20px 40px; background: var(--cream); }
 .pf-guest-card { text-align: center; max-width: 380px; width: 100%; padding: 0 4px; }
 .pf-guest-seal {
@@ -330,7 +330,7 @@
   font-family: 'Be Vietnam Pro', sans-serif;
 }
 
-/* ── Mobile top bar + backdrop ── */
+/*  Mobile top bar + backdrop  */
 .pf-mobile-topbar { display: none; }
 .pf-mobile-menu-btn {
   width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
@@ -347,7 +347,7 @@
 }
 .pf-sidebar-backdrop.is-visible { opacity: 1; pointer-events: auto; }
 
-/* ── Main content column ── */
+/*  Main content column  */
 .pf-main { flex: 1; min-width: 0; }
 .pf-main-inner { padding: 56px 0 90px; }
 .pf-scroll-anchor { scroll-margin-top: 104px; }
@@ -667,7 +667,7 @@
   font-family: 'Be Vietnam Pro', sans-serif; font-size: 13px; outline: none; transition: border-color 0.25s ease;
 }
 
-/* ── Step hint (Province → Ward) ── */
+/*  Step hint (Province → Ward)  */
 .pf-step-hint {
   display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
   font-size: 10px; letter-spacing: 0.06em; color: var(--text-muted);
@@ -681,7 +681,7 @@
 }
 .pf-step-arrow { color: var(--gold); display: flex; }
 
-/* ── Location Combobox (Tỉnh/Phường autocomplete) ── */
+/*  Location Combobox (Tỉnh/Phường autocomplete)  */
 .pf-combobox { position: relative; }
 .pf-combobox-inner { position: relative; display: flex; align-items: center; }
 .pf-combobox-inner input { padding-right: 40px; }
@@ -733,7 +733,7 @@
 .pf-addr-action-gold { background: none; border: none; color: var(--gold); font-size: 11px; letter-spacing: 0.04em; }
 .pf-addr-action { background: none; border: none; color: var(--forest-mid); font-size: 11px; display: flex; align-items: center; gap: 7px; }
 
-/* ── AR book cards ── */
+/*  AR book cards  */
 .pf-ar-card { align-items: center; }
 .pf-ar-badge {
   width: 40px; height: 40px; border-radius: 50%;

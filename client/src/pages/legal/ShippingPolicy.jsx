@@ -22,7 +22,7 @@ import {
   BadgeCheck,
 } from "lucide-react";
 
-/* ─────────────────────────────────────────────────────────────
+/* ───────────────────────────────────────────────────────────
    META & CONTENT DATA
 ───────────────────────────────────────────────────────────── */
 const META = {
@@ -205,7 +205,7 @@ const FAQS = [
   },
 ];
 
-/* ─────────────────────────────────────────────────────────────
+/* ───────────────────────────────────────────────────────────
    COMPONENT
 ───────────────────────────────────────────────────────────── */
 export default function ShippingPolicy() {
@@ -446,7 +446,7 @@ export default function ShippingPolicy() {
           gap: 72px;
         }
 
-        /* ── Sidebar ── */
+        /*  Sidebar  */
         .legal-sidebar-sticky {
           position: sticky; top: 108px;
           max-height: calc(100vh - 128px);
@@ -519,7 +519,7 @@ export default function ShippingPolicy() {
         }
         .legal-sidebar-card-link:hover { color: var(--forest-mid); }
 
-        /* ── Content ── */
+        /*  Content  */
         .legal-content { min-width: 0; }
         .legal-section {
           padding: 44px 0; border-bottom: 0.5px solid var(--border);

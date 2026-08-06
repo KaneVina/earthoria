@@ -30,7 +30,7 @@ const TYPE_PILLS = [
   { key: 'FIXED', label: 'Cố định' },
 ]
 
-/* ── Helpers ── */
+/*  Helpers  */
 function daysUntil(dateStr) {
   if (!dateStr) return null
   const diff = new Date(dateStr).setHours(23, 59, 59, 999) - Date.now()
@@ -55,13 +55,13 @@ export default function Coupons() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [typeFilter, setTypeFilter]   = useState('all')
 
-  /* ── Queries ── */
+  /*  Queries  */
   const { data: coupons = [], isLoading } = useQuery({
     queryKey: ['admin-coupons'],
     queryFn:  () => api.get('/admin/coupons').then(r => r.data.data),
   })
 
-  /* ── Mutations ── */
+  /*  Mutations  */
   const createMutation = useMutation({
     mutationFn: (payload) => api.post('/admin/coupons', payload),
     onSuccess: () => {
@@ -104,7 +104,7 @@ export default function Coupons() {
     },
   })
 
-  /* ── Form helpers ── */
+  /*  Form helpers  */
   const closeForm = () => {
     setShowForm(false)
     setEditingId(null)
@@ -163,14 +163,14 @@ export default function Coupons() {
     }
   }
 
-  /* ── Derived: stats ── */
+  /*  Derived: stats  */
   const activeCount = coupons.filter(c => c.isActive).length
   const expiringSoonCount = coupons.filter(c => {
     const d = daysUntil(c.expiresAt)
     return c.isActive && d !== null && d >= 0 && d <= 3
   }).length
 
-  /* ── Derived: filtered list ── */
+  /*  Derived: filtered list  */
   const filteredCoupons = useMemo(() => {
     const q = search.trim().toUpperCase()
     return coupons.filter((c) => {
@@ -191,7 +191,7 @@ export default function Coupons() {
   return (
     <AdminLayout>
 
-      {/* ── Header ── */}
+      {/*  Header  */}
       <div className="a-page-header">
         <div>
           <p className="a-page-eyebrow">Quản lý</p>
@@ -203,7 +203,7 @@ export default function Coupons() {
         </button>
       </div>
 
-      {/* ── Mini stats ── */}
+      {/*  Mini stats  */}
       <div className="a-mini-stats">
         <div className="a-mini-stat">
           <div className="a-mini-stat-label">Tổng mã</div>
@@ -225,7 +225,7 @@ export default function Coupons() {
         </div>
       </div>
 
-      {/* ── Toolbar: search + filters ── */}
+      {/*  Toolbar: search + filters  */}
       <div className="a-vc-toolbar">
         <div className="a-vc-toolbar-left">
           <div className="a-search-wrap" style={{ marginBottom: 0 }}>
@@ -271,7 +271,7 @@ export default function Coupons() {
         }
       </p>
 
-      {/* ── Voucher grid ── */}
+      {/*  Voucher grid  */}
       <div className="a-voucher-grid">
         {isLoading ? (
           Array.from({ length: 6 }).map((_, i) => (

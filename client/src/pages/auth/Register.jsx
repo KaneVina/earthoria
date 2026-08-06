@@ -18,7 +18,7 @@ export default function Register() {
   const navigate = useNavigate();
   const { setAuth } = useAuthStore();
 
-  // ── Register form state ──
+  //  Register form state
   const [showPw, setShowPw] = useState(false);
   const [showPw2, setShowPw2] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -31,7 +31,7 @@ export default function Register() {
   } = useForm();
   const password = watch("password", "");
 
-  // ── OTP flow state ──
+  //  OTP flow state
   const [step, setStep] = useState("register"); // "register" | "otp"
   const [pendingData, setPendingData] = useState(null); // { user, token }
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -40,21 +40,21 @@ export default function Register() {
   const [otpError, setOtpError] = useState(null);
   const otpRefs = useRef([]);
 
-  // ── Resend countdown ──
+  //  Resend countdown
   useEffect(() => {
     if (resendCooldown <= 0) return;
     const t = setInterval(() => setResendCooldown((s) => s - 1), 1000);
     return () => clearInterval(t);
   }, [resendCooldown]);
 
-  // ── Auto-focus ô đầu khi vào màn OTP ──
+  //  Auto-focus ô đầu khi vào màn OTP
   useEffect(() => {
     if (step === "otp") {
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
     }
   }, [step]);
 
-  // ── Password strength ──
+  //  Password strength
   const checkStrength = (val) => {
     let s = 0;
     if (val.length >= 8 && val.length <= 16) s++;
@@ -287,7 +287,7 @@ export default function Register() {
           </div>
         </div>
 
-        {/* ── 3D Book Model ── lấp khoảng trống giữa perks và quote */}
+        {/*  3D Book Model  lấp khoảng trống giữa perks và quote */}
         <ThreeBookModel />
 
         <div className="auth-visual-quote">

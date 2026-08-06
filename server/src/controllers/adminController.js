@@ -5,7 +5,7 @@ const { sendAccountProvisionedEmail } = require("../services/emailService");
 const { uploadGlbFile } = require("../services/catboxService");
 // const { uploadGlbFile } = require("../services/cloudinaryUploadService");
 
-/* ─── Helpers ─── */
+/* ─ Helpers ─ */
 const CHART_COLORS = {
   PENDING: "#eda100",
   CONFIRMED: "#2a78d6",
@@ -372,7 +372,7 @@ exports.getProducts = async (req, res) => {
 
     const skip = (page - 1) * limit;
 
-    // ── Build where clause ──
+    //  Build where clause
     const conditions = [];
 
     // Tìm theo ID — cho phép nhập ID đầy đủ hoặc chỉ vài ký tự đầu

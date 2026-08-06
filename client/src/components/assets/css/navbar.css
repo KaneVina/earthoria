@@ -3,11 +3,11 @@ nav {
               border-color 0.45s ease, box-shadow 0.4s ease !important;
 }
 
-/* ──────────────────────────────────────────────────────────────
+/* ────────────────────────────────────────────────────────────
    CHIỀU CAO HEADER — thu nhỏ lại
    Mặc định height: 80px (trong main.css) → giảm xuống 64px
    Khi cuộn: thu thêm chút nữa cho gọn (60px)
-   ────────────────────────────────────────────────────────────── */
+   ──────────────────────────────────────────────────────────── */
 .nav-inner {
   height: 64px;
   transition: height 0.35s ease;
@@ -25,9 +25,9 @@ body.dark-mode nav.is-scrolled {
   background: rgba(18, 26, 22, 0.68) !important;
 }
 
-/* ──────────────────────────────────────────────────────────────
+/* ────────────────────────────────────────────────────────────
    LOGO — mặc định: logo nhỏ; khi cuộn: logo ngang
-   ────────────────────────────────────────────────────────────── */
+   ──────────────────────────────────────────────────────────── */
 .nav-logo {
   display: flex;
   align-items: center;
@@ -112,13 +112,13 @@ nav.is-scrolled .nav-logo-compact {
   .nav-logo-compact { height: 32px; width: 32px; }
 }
 
-/* ──────────────────────────────────────────────────────────────
+/* ────────────────────────────────────────────────────────────
    NAV LINKS — gradient lấy từ màu logo
    Logo: #1a4a35 (F đậm) → #2d7a4f (thân lá) → #6ab84a (đầu lá sáng)
 
    ACTIVE  : gradient đậm full + gạch chân
    HOVER   : cùng gradient, opacity 0.52 — nhạt hơn rõ, không gạch chân
-   ────────────────────────────────────────────────────────────── */
+   ──────────────────────────────────────────────────────────── */
 .nav-links a {
   position: relative;
   text-decoration: none !important;
@@ -181,13 +181,13 @@ body.dark-mode .nav-links a:hover:not(.active) {
   opacity: 0.58 !important;
 }
 
-/* ──────────────────────────────────────────────────────────────
+/* ────────────────────────────────────────────────────────────
    ICON GROUP
    - Mặc định (logo nhỏ): gap rộng
    - Khi cuộn (logo to): gap thu lại
    - Trên mobile: ẩn cả cụm, dồn hết vào nav-mobile-panel để nhường
      chỗ tuyệt đối cho hamburger (đây là phần fix chính)
-   ────────────────────────────────────────────────────────────── */
+   ──────────────────────────────────────────────────────────── */
 .nav-actions {
   display: flex;
   align-items: center;
@@ -259,9 +259,9 @@ body.dark-mode .nav-icon-group {
   border-right-color: rgba(255, 255, 255, 0.08);
 }
 
-/* ──────────────────────────────────────────────────────────────
+/* ────────────────────────────────────────────────────────────
    ẨN ICON DARK/LIGHT KHI CUỘN
-   ────────────────────────────────────────────────────────────── */
+   ──────────────────────────────────────────────────────────── */
 nav.is-scrolled .icon-theme {
   opacity: 0;
   pointer-events: none;
@@ -271,9 +271,9 @@ nav.is-scrolled .icon-theme {
   border: none;
 }
 
-/* ──────────────────────────────────────────────────────────────
+/* ────────────────────────────────────────────────────────────
    BADGE
-   ────────────────────────────────────────────────────────────── */
+   ──────────────────────────────────────────────────────────── */
 .nav-badge {
   position: absolute;
   top: -4px;
@@ -318,9 +318,9 @@ body.dark-mode .nav-badge {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45), 0 0 0 2px #121a16;
 }
 
-/* ──────────────────────────────────────────────────────────────
+/* ────────────────────────────────────────────────────────────
    TOOLTIP
-   ────────────────────────────────────────────────────────────── */
+   ──────────────────────────────────────────────────────────── */
 .nav-icon[data-tooltip]::before {
   content: attr(data-tooltip);
   position: absolute;
@@ -383,13 +383,13 @@ body.dark-mode .nav-icon[data-tooltip]::after {
   overflow: visible;
 }
 
-/* ──────────────────────────────────────────────────────────────
+/* ────────────────────────────────────────────────────────────
    HAMBURGER
    Gộp toàn bộ rule của hamburger vào 1 chỗ duy nhất (trước bị rải
    rác 3 nơi khác nhau → dễ đè nhầm nhau). Luôn ghim bên phải,
    không co lại, luôn nằm trên cùng để chắc chắn bấm trúng, kể cả
    khi panel mobile đang mở.
-   ────────────────────────────────────────────────────────────── */
+   ──────────────────────────────────────────────────────────── */
 .nav-hamburger {
   display: none;
   position: relative;
@@ -412,7 +412,7 @@ body.dark-mode .nav-hamburger {
   color: #c8d4cc;
 }
 
-/* ──────────────────────────────────────────────────────────────
+/* ────────────────────────────────────────────────────────────
    MOBILE FIX (nguyên nhân chính khiến bấm X không trúng)
    1) Ẩn cụm icon phụ (search/theme/wishlist/cart) trên mobile —
       trước đây các icon này + hamburger cùng chen chỗ trong
@@ -421,7 +421,7 @@ body.dark-mode .nav-hamburger {
    3) Panel mobile giới hạn chiều cao + cuộn được thay vì tràn
       khỏi màn hình khiến không thấy/không bấm được nút đóng.
    4) Toàn bộ chuyển động mở/đóng mượt bằng max-height.
-   ────────────────────────────────────────────────────────────── */
+   ──────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   nav {
     padding: 0 20px;
@@ -492,10 +492,10 @@ body.dark-mode .nav-hamburger {
   }
 }
 
-/* ──────────────────────────────────────────────────────────────
+/* ────────────────────────────────────────────────────────────
    NAV MOBILE LINK — style cho từng mục trong panel
    (phần này trước nằm ở main.css, đã chuyển hẳn về đây)
-   ────────────────────────────────────────────────────────────── */
+   ──────────────────────────────────────────────────────────── */
 .nav-mobile-link {
   display: flex;
   align-items: center;

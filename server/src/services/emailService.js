@@ -101,7 +101,7 @@ function wrapEmailTemplate({ preheader, bodyHtml, ctaUrl, footerDepartment = 'IT
 </html>`
 }
 
-// ─── OTP Email ───
+// ─ OTP Email ─
 async function sendOtpEmail({ to, name, otp }) {
   const bodyHtml = `
     <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
@@ -154,7 +154,7 @@ async function sendOtpEmail({ to, name, otp }) {
   })
 }
 
-// ─── Password Changed Email ───
+// ─ Password Changed Email ─
 async function sendPasswordChangedEmail({ to, name }) {
   const time = new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
 

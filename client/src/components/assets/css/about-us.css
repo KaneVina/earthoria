@@ -399,7 +399,7 @@ body.dark-mode .team-avatar { background: #222e28; border-color: rgba(74,158,63,
 /* ===== TEAM NEW GRID ===== */
 .tm-section { }
 
-/* ─── ADVISOR SECTION ─── */
+/* ─ ADVISOR SECTION ─ */
 .advisor-section {
   padding: 120px 100px;
   background: var(--cream);
@@ -776,7 +776,7 @@ body.dark-mode .team-avatar { background: #222e28; border-color: rgba(74,158,63,
   top: 80px;
   left: 100px;
 }
-/* ─── LOGO ANALYSIS SECTION ─── */
+/* ─ LOGO ANALYSIS SECTION ─ */
 .logo-section {
   padding: 120px 100px;
   background: var(--forest);
@@ -887,7 +887,7 @@ body.dark-mode .team-avatar { background: #222e28; border-color: rgba(74,158,63,
   .logo-ring-2 { width: 240px; height: 240px; }
 }
 
-/* ─── MISSION PARALLAX BANNER ─── */
+/* ─ MISSION PARALLAX BANNER ─ */
 .mission-parallax-banner {
   position: relative;
   height: 420px;
@@ -1159,7 +1159,7 @@ body.dark-mode .team-avatar { background: #222e28; border-color: rgba(74,158,63,
     padding: 48px 20px 40px;
   }
 }
-/* ─── VALUES EXTENDED (Nguyên Tắc Dẫn Đường) ─── */
+/* ─ VALUES EXTENDED (Nguyên Tắc Dẫn Đường) ─ */
 .about-values-section {
   padding: 80px 100px 120px;
   background: var(--cream);
@@ -1284,7 +1284,7 @@ body.dark-mode .about-value-row-title { color: #c8d4cc; }
 body.dark-mode .about-values-sticky-desc,
 body.dark-mode .about-value-row-desc { color: rgba(180,200,188,0.5); }
 body.dark-mode .about-value-row { border-color: rgba(255,255,255,0.07); }
-/* ─── STORY TIMELINE ─── */
+/* ─ STORY TIMELINE ─ */
 .story-section {
   padding: 120px 100px;
   background: var(--forest);
@@ -1419,7 +1419,7 @@ body.dark-mode .about-value-row { border-color: rgba(255,255,255,0.07); }
   border-radius: 50%;
 }
 
-/* ─── ADVISOR / MENTOR SECTION ─── */
+/* ─ ADVISOR / MENTOR SECTION ─ */
 .advisor-section {
   padding: 120px 100px;
   background: var(--parchment);
@@ -1539,7 +1539,7 @@ body.dark-mode .about-value-row { border-color: rgba(255,255,255,0.07); }
   border-left: 2px solid var(--gold);
 }
 
-/* ─── DARK MODE — Story & Advisor ─── */
+/* ─ DARK MODE — Story & Advisor ─ */
 body.dark-mode .story-section { background: #0a0f0c; }
 body.dark-mode .story-event { border-color: rgba(255, 255, 255, 0.05); }
 body.dark-mode .story-event-title { color: #c8d4cc; }
@@ -1561,7 +1561,7 @@ body.dark-mode .advisor-card::after {
   border-color: transparent rgba(74, 158, 63, 0.15) transparent transparent;
 }
 
-/* ─── RESPONSIVE — Story & Advisor ─── */
+/* ─ RESPONSIVE — Story & Advisor ─ */
 @media (max-width: 1100px) {
   .story-section,
   .advisor-section {
@@ -1581,7 +1581,7 @@ body.dark-mode .advisor-card::after {
   .advisor-section { padding: 80px 24px; }
   .advisor-grid { grid-template-columns: 1fr; }
 }
-/* ─── STORY TIMELINE — LUXURY UPGRADE ─── */
+/* ─ STORY TIMELINE — LUXURY UPGRADE ─ */
 
 /* Đường nền mờ tĩnh (giữ nguyên hình dáng), tách riêng khỏi đường tô dần */
 .story-timeline::before {
@@ -1640,7 +1640,7 @@ body.dark-mode .advisor-card::after {
 @media (prefers-reduced-motion: reduce) {
   .story-event.is-active .story-event-title { animation: none; }
 }
-/* ─── ORG CHART — scroll reveal, 3D tilt cards ─── */
+/* ─ ORG CHART — scroll reveal, 3D tilt cards ─ */
 
 .oc-page{
   background: radial-gradient(ellipse at 50% 0%, #123430 0%, #071714 60%);

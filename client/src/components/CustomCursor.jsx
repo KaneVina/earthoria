@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-/* ─── Vẽ lá cây bằng canvas path ─── */
+/* ─ Vẽ lá cây bằng canvas path ─ */
 function drawLeaf(ctx, x, y, size, angle, alpha, colorStr) {
   ctx.save();
   ctx.globalAlpha = alpha;
@@ -260,7 +260,7 @@ export default function CustomCursor() {
       }, 420);
     }
 
-    /* ── Sự kiện chuột (desktop) ── */
+    /*  Sự kiện chuột (desktop)  */
     const onMove = (e) => {
       tx = e.clientX;
       ty = e.clientY;
@@ -278,7 +278,7 @@ export default function CustomCursor() {
       scheduleGather();
     };
 
-    /* ── Sự kiện cảm ứng (mobile): chỉ tạo hiệu ứng "bấm", không theo dõi vị trí liên tục ── */
+    /*  Sự kiện cảm ứng (mobile): chỉ tạo hiệu ứng "bấm", không theo dõi vị trí liên tục  */
     const onTouchStart = (e) => {
       const t = e.touches[0];
       if (!t) return;

@@ -46,7 +46,7 @@
   padding: 24px;
 }
 
-/* ─── 3D STAGE (nền, full màn hình) ─── */
+/* ─ 3D STAGE (nền, full màn hình) ─ */
 .ar-view__stage {
   position: absolute;
   inset: 0;
@@ -60,7 +60,7 @@
   cursor: grabbing;
 }
 
-/* ─── GLOW NỀN — ánh sáng xanh chuyển động chậm phía sau model ───
+/* ─ GLOW NỀN — ánh sáng xanh chuyển động chậm phía sau model ─
    Hai khối glow lệch pha nhau, trôi nhẹ theo quỹ đạo riêng để cảm giác
    "sống", không lặp lại đều đặn như một animation máy móc. */
 .ar-view__glow {
@@ -138,7 +138,7 @@
     linear-gradient(180deg, rgba(10, 14, 12, 0.35) 0%, rgba(10, 14, 12, 0) 18%, rgba(10, 14, 12, 0) 75%, rgba(10, 14, 12, 0.4) 100%);
 }
 
-/* ─── HIỆU ỨNG QUÉT — chạy qua model trước khi 2 panel hiện ra ───
+/* ─ HIỆU ỨNG QUÉT — chạy qua model trước khi 2 panel hiện ra ─
    Một khung viewfinder kiểu máy quét AR: 4 góc, 1 line quét dọc lặp lại,
    lưới mờ dần, và nhãn trạng thái. Luôn render trong DOM (để fade-out
    mượt) nhưng vô hình + bất hoạt khi không phải "is-active". */
@@ -387,7 +387,7 @@
   }
 }
 
-/* ─── PANEL chung (trái/phải) ─── */
+/* ─ PANEL chung (trái/phải) ─ */
 .ar-panel {
   position: absolute;
   top: 0;
@@ -487,7 +487,7 @@
   }
 }
 
-/* ─── PANEL TRÁI: tên sách / tên nhân vật / hướng dẫn ─── */
+/* ─ PANEL TRÁI: tên sách / tên nhân vật / hướng dẫn ─ */
 .ar-panel--left {
   left: 0;
   justify-content: flex-end;
@@ -597,7 +597,7 @@
   -webkit-backdrop-filter: blur(8px);
 }
 
-/* ─── PANEL PHẢI: Đặc điểm / bảng thông số / mô tả ─── */
+/* ─ PANEL PHẢI: Đặc điểm / bảng thông số / mô tả ─ */
 .ar-panel--right {
   right: 0;
   justify-content: safe center;
@@ -902,7 +902,7 @@
   transform: translateY(0);
 }
 
-/* ─── LOADING / EMPTY STATE ─── */
+/* ─ LOADING / EMPTY STATE ─ */
 .ar-view__loading {
   display: flex;
   flex-direction: column;
@@ -1057,7 +1057,7 @@
   font-weight: 300;
 }
 
-/* ─── NÚT PHÓNG TO — nổi giữa đáy màn hình ở stage "preview" ─── */
+/* ─ NÚT PHÓNG TO — nổi giữa đáy màn hình ở stage "preview" ─ */
 .ar-expand-btn {
   position: absolute;
   left: 50%;
@@ -1134,7 +1134,7 @@
   }
 }
 
-/* ─── NÚT TRÒN NHỎ — thay panel khi ở stage "immersive" ───
+/* ─ NÚT TRÒN NHỎ — thay panel khi ở stage "immersive" ─
    Đặt cố định 2 bên, dọc giữa màn hình; bấm để mở rộng lại panel. */
 .ar-mini-btn {
   position: absolute;
@@ -1326,10 +1326,10 @@
   margin-top: 22px;
 }
 
-/* ─── Bản đồ vùng sinh sống — bản đồ thế giới thật render bằng ECharts,
+/* ─ Bản đồ vùng sinh sống — bản đồ thế giới thật render bằng ECharts,
    .ar-more-map chỉ đóng vai trò khung/khay chứa (viền, nền, bo góc);
    phần vẽ bản đồ + tô màu theo mật độ nằm trong option của ECharts,
-   không cần class .is-active / pin thủ công như bản lưới ô cũ nữa. ─── */
+   không cần class .is-active / pin thủ công như bản lưới ô cũ nữa. ─ */
 .ar-more-map {
   position: relative;
   padding: 16px;
@@ -1374,7 +1374,7 @@
   }
 }
 
-/* ─── Bảng thông số dạng lưới 2 cột — bản đầy đủ, to hơn bản rút gọn ─── */
+/* ─ Bảng thông số dạng lưới 2 cột — bản đầy đủ, to hơn bản rút gọn ─ */
 .ar-more-specs {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1402,9 +1402,9 @@
   color: var(--av-ivory);
 }
 
-/* ─── Mô tả đầy đủ — kiểu chữ giống .ar-panel__desc nhưng tách class
+/* ─ Mô tả đầy đủ — kiểu chữ giống .ar-panel__desc nhưng tách class
    riêng để KHÔNG bị dính luật line-clamp 3 dòng áp cho panel rút gọn
-   trên mobile (đây chính là bản đầy đủ, không giới hạn dòng). ─── */
+   trên mobile (đây chính là bản đầy đủ, không giới hạn dòng). ─ */
 .ar-more-desc {
   position: relative;
   font-size: 13.5px;
@@ -1426,7 +1426,7 @@
   opacity: 0.75;
 }
 
-/* ─── Có thể bạn chưa biết ─── */
+/* ─ Có thể bạn chưa biết ─ */
 .ar-more-facts ul {
   list-style: none;
   margin: 0;
@@ -1613,7 +1613,7 @@
   aspect-ratio: 2.35 / 1;
   min-height: 220px;
 }
-/* ── Tên sách: 1 hàng, tự chạy chữ (marquee) khi dài ── */
+/*  Tên sách: 1 hàng, tự chạy chữ (marquee) khi dài  */
 .ar-panel__book {
   position: relative;
   display: flex;

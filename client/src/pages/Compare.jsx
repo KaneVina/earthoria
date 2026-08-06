@@ -5,7 +5,7 @@ import { formatPrice, getBookUrl } from "../utils/helpers";
 import { useCartStore } from "../store/cartStore";
 import toast from "react-hot-toast";
 
-// ── Icons ──
+//  Icons
 function IconX({ size = 14 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -219,7 +219,7 @@ export default function Compare() {
 
   return (
     <div style={{ minHeight: "100vh", paddingTop: "60px" }}>
-      {/* ── Sticky mini header khi cuộn ── */}
+      {/*  Sticky mini header khi cuộn  */}
       {items.length >= 2 && (
         <div
           className="compare-sticky-header"

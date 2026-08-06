@@ -10,7 +10,7 @@ export default function StickyScrollTransition() {
   const [isOpen, setIsOpen] = useState(false);
   const [cardsVisible, setCardsVisible] = useState(false);
 
-  /* ── particles ── */
+  /*  particles  */
   const stopParticles = useCallback(() => {
     if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
     particlesRef.current = [];
@@ -69,7 +69,7 @@ export default function StickyScrollTransition() {
     setIsOpen(false); setCardsVisible(false); stopParticles();
   }, [stopParticles]);
 
-  /* ── Sticky scroll logic ──
+  /*  Sticky scroll logic
      wrapper cao = 100vh (collapsed) + 400px extra
      Khi scroll tới wrapper → scene ghim top:0
      progress 0→1 trong khoảng extra scroll đó
@@ -134,13 +134,13 @@ export default function StickyScrollTransition() {
   return (
     <>
       <style>{`
-        /* ── Wrapper tạo scroll height ── */
+        /*  Wrapper tạo scroll height  */
         .eb-wrap {
           position: relative;
           height: calc(100vh + 500px);
         }
 
-        /* ── Scene ghim sticky ── */
+        /*  Scene ghim sticky  */
         .eb-scene {
           position: sticky;
           top: 0;
@@ -151,7 +151,7 @@ export default function StickyScrollTransition() {
           border-bottom: 0.5px solid rgba(74,158,63,0.2);
         }
 
-        /* ── Panel nội dung — thu/phóng bằng scale+opacity ── */
+        /*  Panel nội dung — thu/phóng bằng scale+opacity  */
         .eb-panel {
           position: absolute;
           inset: 0;
@@ -228,7 +228,7 @@ export default function StickyScrollTransition() {
           user-select: none; pointer-events: none; z-index: 0;
         }
 
-        /* ── Compact bar ── */
+        /*  Compact bar  */
         .eb-bar {
           max-width: 1200px; width: 100%; padding: 0 80px;
           display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
@@ -260,7 +260,7 @@ export default function StickyScrollTransition() {
           color: rgba(255,255,255,0.2); letter-spacing: 0.04em; margin-top: 1px;
         }
 
-        /* ── Orb ── */
+        /*  Orb  */
         .eb-orb-wrap {
           position: relative; width: 56px; height: 56px;
           display: flex; align-items: center; justify-content: center; z-index: 5;
@@ -289,7 +289,7 @@ export default function StickyScrollTransition() {
           color:rgba(255,255,255,0.15);position:absolute;bottom:-22px;white-space:nowrap;
         }
 
-        /* ── Scroll hint (chỉ hiện khi đóng) ── */
+        /*  Scroll hint (chỉ hiện khi đóng)  */
         .eb-scroll-hint{
           position:absolute;bottom:24px;left:50%;transform:translateX(-50%);
           display:flex;flex-direction:column;align-items:center;gap:5px;
@@ -312,7 +312,7 @@ export default function StickyScrollTransition() {
           transform:rotate(45deg);margin-top:-4px;
         }
 
-        /* ── Bridge ── */
+        /*  Bridge  */
         .eb-bridge-head{
           display:flex;align-items:center;gap:20px;margin-bottom:20px;
           opacity:0;transform:translateY(12px);
@@ -348,7 +348,7 @@ export default function StickyScrollTransition() {
         @keyframes connPulse{0%{left:-40%;}100%{left:140%;}}
         .eb-connector-dot{width:5px;height:5px;border-radius:50%;background:#4a9e3f;box-shadow:0 0 8px rgba(74,158,63,0.6);flex-shrink:0;}
 
-        /* ── Cards ── */
+        /*  Cards  */
         .eb-cards{
           display:grid;grid-template-columns:repeat(4,1fr);
           gap:10px;max-width:1100px;width:100%;
@@ -395,7 +395,7 @@ export default function StickyScrollTransition() {
         }
         .eb-card.show .eb-card-bar-fill{width:var(--bar-w,70%);}
 
-        /* ── CTA ── */
+        /*  CTA  */
         .eb-cta{display:flex;align-items:center;gap:10px;position:relative;z-index:5;}
         .eb-btn-primary{
           font-family:'Be Vietnam Pro',sans-serif;
@@ -420,7 +420,7 @@ export default function StickyScrollTransition() {
         }
         .eb-btn-secondary:hover{background:rgba(255,255,255,0.09);border-color:rgba(255,255,255,0.35);color:#fff;}
 
-        /* ── Collapse hint ── */
+        /*  Collapse hint  */
         .eb-collapse-hint{
           position:absolute;top:12px;right:16px;z-index:10;
           font-family:'Be Vietnam Pro',sans-serif;
@@ -431,7 +431,7 @@ export default function StickyScrollTransition() {
         .open .eb-collapse-hint{opacity:1;}
         .eb-collapse-hint::before{content:'';width:14px;height:0.5px;background:rgba(74,158,63,0.3);}
 
-        /* ── Responsive ── */
+        /*  Responsive  */
         @media(max-width:1100px){.eb-bar{padding:0 40px;}.eb-cards{padding:0 40px;}.eb-hline{left:40px;right:40px;}}
         @media(max-width:768px){
           .eb-cards{grid-template-columns:repeat(2,1fr);padding:0 20px;gap:8px;}
@@ -455,7 +455,7 @@ export default function StickyScrollTransition() {
           <div className="eb-hline" />
           <div className="eb-watermark">EARTHORIA</div>
 
-          {/* ── Compact bar (khi đóng) ── */}
+          {/*  Compact bar (khi đóng)  */}
           <div className="eb-compact">
             <div className="eb-bar">
               <div className="eb-stat eb-stat-l">
@@ -486,7 +486,7 @@ export default function StickyScrollTransition() {
             <div className="eb-scroll-arrow"/>
           </div>
 
-          {/* ── Expanded (khi mở) ── */}
+          {/*  Expanded (khi mở)  */}
           <div className="eb-expanded">
             {/* Bridge */}
             <div className="eb-bridge-head">

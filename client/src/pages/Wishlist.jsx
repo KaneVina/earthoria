@@ -10,7 +10,7 @@ import { useAuthStore } from '../store/authStore'
 import { formatPrice } from '../utils/helpers'
 import toast from 'react-hot-toast'
 
-// ─── Skeleton card ────────────────────────────────────────────────────────────
+// ─ Skeleton card ──────────────────────────────────────────────────────────
 function SkeletonCard() {
   return (
     <div className="wl-card">
@@ -30,7 +30,7 @@ function SkeletonCard() {
   )
 }
 
-// ─── Wishlist item card ───────────────────────────────────────────────────────
+// ─ Wishlist item card ─────────────────────────────────────────────────────
 function WishlistCard({ book, onRemove, onMoveToCart, isRemoving, isMoving }) {
   const navigate = useNavigate()
 
@@ -103,7 +103,7 @@ function WishlistCard({ book, onRemove, onMoveToCart, isRemoving, isMoving }) {
   )
 }
 
-// ─── Empty state ──────────────────────────────────────────────────────────────
+// ─ Empty state ────────────────────────────────────────────────────────────
 function EmptyWishlist({ filtered }) {
   if (filtered) {
     return (
@@ -133,7 +133,7 @@ function EmptyWishlist({ filtered }) {
   )
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// ─ Page ───────────────────────────────────────────────────────────────────
 const SORT_OPTIONS = [
   { value: 'default',    label: 'Mặc định' },
   { value: 'price-asc',  label: 'Giá: Thấp → Cao' },
@@ -175,7 +175,7 @@ export default function Wishlist() {
     return () => observer.disconnect()
   }, [items])
 
-  // ── Derived list ──────────────────────────────────────────────────────────
+  //  Derived list ────────────────────────────────────────────────────────
   const displayedItems = useMemo(() => {
     let list = [...items]
 
@@ -196,7 +196,7 @@ export default function Wishlist() {
     return list
   }, [items, sort, filter])
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
+  //  Handlers ────────────────────────────────────────────────────────────
 
   // Xoá 1 item — optimistic từ store, smooth ngay
   const handleRemove = async (book) => {
@@ -266,7 +266,7 @@ export default function Wishlist() {
   return (
     <>
       <style>{`
-        /* ─── PAGE ─── */
+        /* ─ PAGE ─ */
         .wl-page {
           max-width: 1400px;
           margin: 0 auto;
@@ -274,7 +274,7 @@ export default function Wishlist() {
           min-height: 80vh;
         }
 
-        /* ─── HEADER ─── */
+        /* ─ HEADER ─ */
         .wl-header {
           display: flex;
           align-items: flex-end;
@@ -324,7 +324,7 @@ export default function Wishlist() {
           flex-wrap: wrap;
         }
 
-        /* ─── TOOLBAR ─── */
+        /* ─ TOOLBAR ─ */
         .wl-toolbar {
           display: flex;
           align-items: center;
@@ -380,7 +380,7 @@ export default function Wishlist() {
           white-space: nowrap;
         }
 
-        /* ─── ACTION BUTTONS ─── */
+        /* ─ ACTION BUTTONS ─ */
         .wl-btn-move-all {
           display: flex; align-items: center; gap: 10px;
           font-family: 'Be Vietnam Pro', sans-serif;
@@ -415,7 +415,7 @@ export default function Wishlist() {
         }
         .wl-btn-shop:hover { border-color: var(--gold); color: var(--gold); }
 
-        /* ─── DIVIDER ─── */
+        /* ─ DIVIDER ─ */
         .wl-divider {
           height: 0.5px; background: var(--border);
           margin-bottom: 48px; position: relative; overflow: hidden;
@@ -428,7 +428,7 @@ export default function Wishlist() {
         }
         @keyframes wlDividerFill { to { width: 100%; } }
 
-        /* ─── SUMMARY BAR ─── */
+        /* ─ SUMMARY BAR ─ */
         .wl-summary-bar {
           display: flex; align-items: center; gap: 32px;
           padding: 20px 28px;
@@ -447,7 +447,7 @@ export default function Wishlist() {
         }
         .wl-summary-sep { width: 0.5px; height: 36px; background: var(--border); flex-shrink: 0; }
 
-        /* ─── GRID ─── */
+        /* ─ GRID ─ */
         .wl-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
@@ -457,7 +457,7 @@ export default function Wishlist() {
         @media (max-width: 900px)  { .wl-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 560px)  { .wl-grid { grid-template-columns: 1fr; } }
 
-        /* ─── CARD ─── */
+        /* ─ CARD ─ */
         .wl-card {
           background: var(--white);
           border: 0.5px solid var(--border);
@@ -569,7 +569,7 @@ export default function Wishlist() {
         .wl-spin { animation: wlSpin 0.7s linear infinite; }
         @keyframes wlSpin { to { transform: rotate(360deg); } }
 
-        /* ─── EMPTY ─── */
+        /* ─ EMPTY ─ */
         .wl-empty {
           display: flex; flex-direction: column; align-items: center;
           justify-content: center; text-align: center;
@@ -597,7 +597,7 @@ export default function Wishlist() {
         }
         .wl-empty-btn:hover { background: var(--forest-mid); gap: 16px; }
 
-        /* ─── DARK MODE ─── */
+        /* ─ DARK MODE ─ */
         body.dark-mode .wl-title { color: #c8d4cc; }
         body.dark-mode .wl-empty-title { color: #c8d4cc; }
         body.dark-mode .wl-summary-bar { background: #141a16; border-color: rgba(255,255,255,0.06); }
@@ -621,7 +621,7 @@ export default function Wishlist() {
         body.dark-mode .wl-card-body { background: #1c2822; }
         body.dark-mode .wl-filter-group { border-color: rgba(255,255,255,0.08); }
 
-        /* ─── RESPONSIVE ─── */
+        /* ─ RESPONSIVE ─ */
         @media (max-width: 1100px) { .wl-page { padding: 120px 40px 80px; } }
         @media (max-width: 700px) {
           .wl-page { padding: 100px 20px 60px; }
@@ -632,7 +632,7 @@ export default function Wishlist() {
       `}</style>
 
       <div className="wl-page">
-        {/* ── HEADER ── */}
+        {/*  HEADER  */}
         <header className="wl-header reveal">
           <div>
             <div className="wl-eyebrow">
@@ -675,7 +675,7 @@ export default function Wishlist() {
 
         <div className="wl-divider" />
 
-        {/* ── SUMMARY BAR ── */}
+        {/*  SUMMARY BAR  */}
         {loading && (
           <div className="wl-summary-bar reveal">
             {[1, 2, 3].map((i) => (
@@ -705,7 +705,7 @@ export default function Wishlist() {
           </div>
         )}
 
-        {/* ── TOOLBAR (sort + filter) ── */}
+        {/*  TOOLBAR (sort + filter)  */}
         {!loading && items.length > 0 && (
           <div className="wl-toolbar">
             {/* Filter tabs */}
@@ -743,7 +743,7 @@ export default function Wishlist() {
           </div>
         )}
 
-        {/* ── CONTENT ── */}
+        {/*  CONTENT  */}
         {loading ? (
           <div className="wl-grid">
             {Array.from({ length: wishlistCount || 8 }).map((_, i) => (
