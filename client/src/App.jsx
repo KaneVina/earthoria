@@ -182,6 +182,10 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+
+          {/* Bắt mọi route không khớp bên trong Layout, để Header/Footer
+              vẫn hiển thị trên trang 404 của website. */}
+          <Route path="*" element={<NotFound />} />
         </Route>
 
         <Route
@@ -325,7 +329,6 @@ export default function App() {
         />
         <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
         <Route path="/ar/:slug/:code" element={<ArView />} />
-        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   );
