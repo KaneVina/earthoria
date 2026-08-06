@@ -79,32 +79,35 @@ const MAINTENANCE_MODE = false;
 
 export default function App() {
   const { setAuth, setAuthChecked, authChecked } = useAuthStore();
+  const [showLoader, setShowLoader] = useState(false);
 
-  // Bootstrap: mỗi lần load app (F5, mở tab mới...), accessToken trong memory đã mất — thử gọi /auth/refresh 1 lần, cookie refreshToken (HttpOnly) sẽ tự gửi kèm. Nếu còn hạn thì tự đăng nhập lại êm, không thì coi như guest.
   useEffect(() => {
     let cancelled = false;
 
+    const loaderTimer = setTimeout(() => {
+      if (!cancelled) setShowLoader(true);
+    }, 300);
+
     authService
       .refresh()
-      .then(() => {
-        if (cancelled) return;
-        setAuthChecked();
-      })
       .catch(() => {
+      })
+      .finally(() => {
+        clearTimeout(loaderTimer);
         if (cancelled) return;
         setAuthChecked();
       });
 
     return () => {
       cancelled = true;
+      clearTimeout(loaderTimer);
     };
   }, []);
 
-  // Chờ bước bootstrap xong mới render, tránh nháy trạng thái "chưa đăng nhập" rồi mới nhảy sang "đã đăng nhập" gây giật UI / redirect nhầm.
   if (!authChecked) {
-    return (
-      <FullScreenLoader message="Chờ một chút! Chúng tôi đang tiến hàng xác thực tài khoản cho bạn." />
-    );
+    return showLoader ? (
+      <FullScreenLoader message="Đang khôi phục phiên làm việc..." />
+    ) : null;
   }
 
   if (MAINTENANCE_MODE) {

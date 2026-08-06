@@ -1,18 +1,6 @@
-// src/components/FullScreenLoader.jsx
-//
-// Layered spinner (thin static ring + animated teal→green gradient ring)
-// with a breathing logo at center, ambient forest/gold glow behind it,
-// an uppercase eyebrow label, and a gradient message with a shimmering
-// progress line beneath — all set in "Be Vietnam Pro" / "Playfair Display".
-//
-// Make sure the fonts are loaded somewhere globally, e.g. in index.html:
-//   <link rel="preconnect" href="https://fonts.googleapis.com">
-//   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600&family=Playfair+Display:ital@0;1&display=swap" rel="stylesheet">
-// or install locally (npm i @fontsource/be-vietnam-pro @fontsource/playfair-display).
-
 export default function FullScreenLoader({
   eyebrow = 'Vui lòng chờ',
-  message = 'Chờ một chút! Chúng tôi đang xác thực tài khoản cho bạn.',
+  message = 'Đang khôi phục phiên làm việc...',
 }) {
   return (
     <div className="fsl-root">
@@ -47,6 +35,14 @@ export default function FullScreenLoader({
           height: 100vh;
           width: 100%;
           overflow: hidden;
+          /* Fade in cả màn hình (kể cả nền/orb) khi loader xuất hiện, thay vì
+             hiện đột ngột (pop). Vì loader này chỉ mount sau 300ms delay ở
+             App.jsx nên animation này không làm chậm trải nghiệm. */
+          animation: fsl-root-in 0.35s ease-out both;
+        }
+        @keyframes fsl-root-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
 
         /* --- ambient background glow (matches auth-orb / stats-section feel) --- */
@@ -223,6 +219,7 @@ export default function FullScreenLoader({
           .fsl-glow,
           .fsl-logo,
           .fsl-orb,
+          .fsl-root,
           .fsl-content {
             animation: none !important;
           }
