@@ -1,85 +1,106 @@
-const prisma = require('../config/db')
+  const prisma = require('../config/db')
 const { formatResponse } = require('../utils/helpers')
-const { decodeId } = require('../utils/hashids')
+const { decodeId, encodeId } = require('../utils/hashids')
+
+const CART_ITEM_INCLUDE = {
+  items: {
+    include: {
+      book: {
+        select: {
+          id: true, title: true, slug: true,
+          price: true, salePrice: true,
+          coverImage: true, stock: true
+        }
+      }
+    }
+  }
+}
+
+// Encode book.hashId + tính total. Dùng chung cho getCart và addToCart.
+const buildCartResponse = (cart) => {
+  const items = cart.items.map((item) => ({
+    ...item,
+    book: { ...item.book, hashId: encodeId(item.book.id) }
+  }))
+  const total = items.reduce((sum, item) => {
+    const price = item.book.salePrice || item.book.price
+    return sum + price * item.quantity
+  }, 0)
+  return { ...cart, items, total }
+}
 
 // Get cart
 const getCart = async (req, res) => {
   try {
     let cart = await prisma.cart.findUnique({
       where: { userId: req.user.id },
-      include: {
-        items: {
-          include: {
-            book: {
-              select: {
-                id: true, title: true, slug: true,
-                price: true, salePrice: true,
-                coverImage: true, stock: true
-              }
-            }
-          }
-        }
-      }
+      include: CART_ITEM_INCLUDE
     })
 
     if (!cart) {
       cart = await prisma.cart.create({
         data: { userId: req.user.id },
-        include: { items: { include: { book: true } } }
+        include: CART_ITEM_INCLUDE
       })
     }
 
-    const total = cart.items.reduce((sum, item) => {
-      const price = item.book.salePrice || item.book.price
-      return sum + price * item.quantity
-    }, 0)
-
-    return formatResponse(res, 200, 'OK', { ...cart, total })
+    return formatResponse(res, 200, 'OK', buildCartResponse(cart))
   } catch (error) {
     console.error(error)
     return formatResponse(res, 500, 'Lỗi server')
   }
 }
 
-// Add to cart
 const addToCart = async (req, res) => {
   try {
     const { hashId, quantity = 1 } = req.body
+    const qty = parseInt(quantity)
+    if (!qty || qty < 1) return formatResponse(res, 400, 'Số lượng không hợp lệ')
 
     const realId = decodeId(hashId)
     if (!realId) return formatResponse(res, 404, 'Không tìm thấy sách')
 
-    const book = await prisma.book.findFirst({
-      where: { id: realId, isActive: true }
-    })
-    if (!book) return formatResponse(res, 404, 'Không tìm thấy sách')
-    if (book.stock < quantity) return formatResponse(res, 400, 'Không đủ hàng trong kho')
-
-    let cart = await prisma.cart.findUnique({ where: { userId: req.user.id } })
-    if (!cart) {
-      cart = await prisma.cart.create({ data: { userId: req.user.id } })
-    }
-
-    const existingItem = await prisma.cartItem.findFirst({
-      where: { cartId: cart.id, bookId: book.id }
-    })
-
-    if (existingItem) {
-      const newQty = existingItem.quantity + parseInt(quantity)
-      if (book.stock < newQty) return formatResponse(res, 400, 'Không đủ hàng trong kho')
-
-      await prisma.cartItem.update({
-        where: { id: existingItem.id },
-        data: { quantity: newQty }
+    const updatedCart = await prisma.$transaction(async (tx) => {
+      const book = await tx.book.findFirst({
+        where: { id: realId, isActive: true }
       })
-    } else {
-      await prisma.cartItem.create({
-        data: { cartId: cart.id, bookId: book.id, quantity: parseInt(quantity) }
-      })
-    }
+      if (!book) throw Object.assign(new Error('BOOK_NOT_FOUND'), { code: 'BOOK_NOT_FOUND' })
 
-    return formatResponse(res, 200, 'Đã thêm vào giỏ hàng')
+      let cart = await tx.cart.findUnique({ where: { userId: req.user.id } })
+      if (!cart) {
+        cart = await tx.cart.create({ data: { userId: req.user.id } })
+      }
+
+      const existingItem = await tx.cartItem.findFirst({
+        where: { cartId: cart.id, bookId: book.id }
+      })
+
+      const newQty = existingItem ? existingItem.quantity + qty : qty
+      if (book.stock < newQty) {
+        throw Object.assign(new Error('OUT_OF_STOCK'), { code: 'OUT_OF_STOCK' })
+      }
+
+      if (existingItem) {
+        await tx.cartItem.update({
+          where: { id: existingItem.id },
+          data: { quantity: newQty }
+        })
+      } else {
+        await tx.cartItem.create({
+          data: { cartId: cart.id, bookId: book.id, quantity: newQty }
+        })
+      }
+
+      return tx.cart.findUnique({
+        where: { id: cart.id },
+        include: CART_ITEM_INCLUDE
+      })
+    })
+
+    return formatResponse(res, 200, 'Đã thêm vào giỏ hàng', buildCartResponse(updatedCart))
   } catch (error) {
+    if (error.code === 'BOOK_NOT_FOUND') return formatResponse(res, 404, 'Không tìm thấy sách')
+    if (error.code === 'OUT_OF_STOCK') return formatResponse(res, 400, 'Không đủ hàng trong kho')
     console.error(error)
     return formatResponse(res, 500, 'Lỗi server')
   }
