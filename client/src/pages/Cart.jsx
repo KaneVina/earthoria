@@ -28,11 +28,40 @@ export default function Cart() {
   const { cart, fetchCart, updateItem, removeItem, clearCart, loading } = useCartStore();
   const [coupon, setCoupon] = useState("");
   const [couponApplied, setCouponApplied] = useState(null);
+  const [pendingItemId, setPendingItemId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchCart();
   }, []);
+
+  const handleQtyChange = async (item, newQty) => {
+    if (pendingItemId === item.id) return; // đang xử lý, chặn double click
+    setPendingItemId(item.id);
+    try {
+      if (newQty < 1) {
+        await removeItem(item.id);
+      } else {
+        await updateItem(item.id, newQty);
+      }
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Không thể cập nhật giỏ hàng");
+    } finally {
+      setPendingItemId(null);
+    }
+  };
+
+  const handleRemove = async (item) => {
+    if (pendingItemId === item.id) return;
+    setPendingItemId(item.id);
+    try {
+      await removeItem(item.id);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Không thể xóa sản phẩm");
+    } finally {
+      setPendingItemId(null);
+    }
+  };
 
   const items = cart?.items || [];
 
@@ -368,17 +397,13 @@ export default function Cart() {
                   <div style={{ display: "flex", justifyContent: "center" }}>
                     <div style={{ display: "flex", alignItems: "center", border: "0.5px solid var(--border)" }}>
                       <button
-                        onClick={() =>
-                          (item.quantity > 1
-                            ? updateItem(item.id, item.quantity - 1)
-                            : removeItem(item.id)
-                          ).catch((err) =>
-                            toast.error(err?.response?.data?.message || 'Không thể cập nhật giỏ hàng')
-                          )
-                        }
+                        disabled={pendingItemId === item.id}
+                        onClick={() => handleQtyChange(item, item.quantity - 1)}
                         style={{
                           width: "32px", height: "36px",
-                          background: "transparent", border: "none", cursor: "pointer",
+                          background: "transparent", border: "none",
+                          cursor: pendingItemId === item.id ? "not-allowed" : "pointer",
+                          opacity: pendingItemId === item.id ? 0.4 : 1,
                           color: "var(--text-muted)",
                           display: "flex", alignItems: "center", justifyContent: "center",
                         }}
@@ -395,14 +420,13 @@ export default function Cart() {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() =>
-                          updateItem(item.id, item.quantity + 1).catch((err) =>
-                            toast.error(err?.response?.data?.message || 'Không thể cập nhật giỏ hàng')
-                          )
-                        }
+                        disabled={pendingItemId === item.id}
+                        onClick={() => handleQtyChange(item, item.quantity + 1)}
                         style={{
                           width: "32px", height: "36px",
-                          background: "transparent", border: "none", cursor: "pointer",
+                          background: "transparent", border: "none",
+                          cursor: pendingItemId === item.id ? "not-allowed" : "pointer",
+                          opacity: pendingItemId === item.id ? 0.4 : 1,
                           color: "var(--text-muted)",
                           display: "flex", alignItems: "center", justifyContent: "center",
                         }}
@@ -427,15 +451,14 @@ export default function Cart() {
                   {/* Delete */}
                   <div style={{ display: "flex", justifyContent: "flex-end" }}>
                     <button
-                      onClick={() =>
-                        removeItem(item.id).catch((err) =>
-                          toast.error(err?.response?.data?.message || 'Không thể xóa sản phẩm')
-                        )
-                      }
+                      disabled={pendingItemId === item.id}
+                      onClick={() => handleRemove(item)}
                       style={{
                         width: "32px", height: "32px",
                         border: "0.5px solid var(--border)",
-                        background: "transparent", cursor: "pointer",
+                        background: "transparent",
+                        cursor: pendingItemId === item.id ? "not-allowed" : "pointer",
+                        opacity: pendingItemId === item.id ? 0.4 : 1,
                         display: "flex", alignItems: "center", justifyContent: "center",
                         color: "var(--text-muted)",
                       }}
