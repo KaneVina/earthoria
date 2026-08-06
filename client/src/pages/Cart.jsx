@@ -66,7 +66,7 @@ export default function Cart() {
   const items = cart?.items || [];
 
   const subtotal = items.reduce((sum, item) => {
-    return sum + (item.book.salePrice || item.book.price) * item.quantity;
+    return sum + (item.book.salePrice ?? item.book.price) * item.quantity;
   }, 0);
 
   const couponDiscount = couponApplied
@@ -439,9 +439,9 @@ export default function Cart() {
                   {/* Price */}
                   <div style={{ textAlign: "right" }}>
                     <div style={{ fontFamily: "Playfair Display,serif", fontSize: "20px", color: "var(--forest)" }}>
-                      {formatPrice((item.book.salePrice || item.book.price) * item.quantity)}
+                      {formatPrice((item.book.salePrice ?? item.book.price) * item.quantity)}
                     </div>
-                    {item.book.salePrice && (
+                    {item.book.salePrice != null && (
                       <div style={{ fontSize: "12px", color: "var(--text-muted)", textDecoration: "line-through", marginTop: "2px" }}>
                         {formatPrice(item.book.price * item.quantity)}
                       </div>
@@ -538,7 +538,7 @@ export default function Cart() {
                 },
                 {
                   label: "Tiết kiệm được",
-                  val: `-${formatPrice(items.reduce((s, i) => s + (i.book.price - (i.book.salePrice || i.book.price)) * i.quantity, 0))}`,
+                  val: `-${formatPrice(items.reduce((s, i) => s + (i.book.price - (i.book.salePrice ?? i.book.price)) * i.quantity, 0))}`,
                   green: true,
                 },
                 ...(couponApplied

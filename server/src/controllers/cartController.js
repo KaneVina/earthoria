@@ -23,7 +23,7 @@ const buildCartResponse = (cart) => {
     book: { ...item.book, hashId: encodeId(item.book.id) }
   }))
   const total = items.reduce((sum, item) => {
-    const price = item.book.salePrice || item.book.price
+    const price = item.book.salePrice ?? item.book.price
     return sum + price * item.quantity
   }, 0)
   return { ...cart, items, total }
@@ -54,8 +54,8 @@ const getCart = async (req, res) => {
 const addToCart = async (req, res) => {
   try {
     const { hashId, quantity = 1 } = req.body
-    const qty = parseInt(quantity)
-    if (!qty || qty < 1) return formatResponse(res, 400, 'Số lượng không hợp lệ')
+    const qty = Number(quantity)
+    if (!Number.isInteger(qty) || qty < 1) return formatResponse(res, 400, 'Số lượng không hợp lệ')
 
     const realId = decodeId(hashId)
     if (!realId) return formatResponse(res, 404, 'Không tìm thấy sách')
@@ -75,20 +75,25 @@ const addToCart = async (req, res) => {
         where: { cartId: cart.id, bookId: book.id }
       })
 
-      const newQty = existingItem ? existingItem.quantity + qty : qty
-      if (book.stock < newQty) {
-        throw Object.assign(new Error('OUT_OF_STOCK'), { code: 'OUT_OF_STOCK' })
+      let finalQty
+      if (existingItem) {
+        const updated = await tx.cartItem.update({
+          where: { id: existingItem.id },
+          data: { quantity: { increment: qty } }
+        })
+        finalQty = updated.quantity
+      } else {
+        if (book.stock < qty) {
+          throw Object.assign(new Error('OUT_OF_STOCK'), { code: 'OUT_OF_STOCK' })
+        }
+        await tx.cartItem.create({
+          data: { cartId: cart.id, bookId: book.id, quantity: qty }
+        })
+        finalQty = qty
       }
 
-      if (existingItem) {
-        await tx.cartItem.update({
-          where: { id: existingItem.id },
-          data: { quantity: newQty }
-        })
-      } else {
-        await tx.cartItem.create({
-          data: { cartId: cart.id, bookId: book.id, quantity: newQty }
-        })
+      if (finalQty > book.stock) {
+        throw Object.assign(new Error('OUT_OF_STOCK'), { code: 'OUT_OF_STOCK' })
       }
 
       return tx.cart.findUnique({
@@ -111,8 +116,8 @@ const updateCartItem = async (req, res) => {
   try {
     const { quantity } = req.body
     const { itemId } = req.params
-    const qty = parseInt(quantity)
-    if (!qty || qty < 1) return formatResponse(res, 400, 'Số lượng không hợp lệ')
+    const qty = Number(quantity)
+    if (!Number.isInteger(qty) || qty < 1) return formatResponse(res, 400, 'Số lượng không hợp lệ')
 
     const updatedCart = await prisma.$transaction(async (tx) => {
       const cart = await tx.cart.findUnique({ where: { userId: req.user.id } })

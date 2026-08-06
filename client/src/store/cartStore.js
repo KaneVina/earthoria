@@ -20,7 +20,7 @@ export const useCartStore = create((set, get) => ({
         loading: false,
       })
     } catch {
-      set({ loading: false })
+      set({ cart: null, itemCount: 0, loading: false })
     }
   },
 
@@ -47,7 +47,7 @@ export const useCartStore = create((set, get) => ({
       const cart = res.data.data
       set({ cart, itemCount: calcCount(cart.items) })
     } catch (err) {
-      set({ cart: prev, itemCount: prev ? calcCount(prev.items) : 0 })
+      await get().fetchCart()
       throw err // để component bắt được lỗi và hiện toast.error
     }
   },
@@ -69,11 +69,7 @@ export const useCartStore = create((set, get) => ({
       const cart = res.data.data
       set({ cart, itemCount: calcCount(cart.items) })
     } catch (err) {
-      // Rollback
-      set({
-        cart: prev,
-        itemCount: prev ? calcCount(prev.items) : 0,
-      })
+      await get().fetchCart()
       throw err // để component bắt được lỗi và hiện toast.error
     }
   },
@@ -93,11 +89,7 @@ export const useCartStore = create((set, get) => ({
       const cart = res.data.data
       set({ cart, itemCount: calcCount(cart.items) })
     } catch (err) {
-      // Rollback
-      set({
-        cart: prev,
-        itemCount: prev ? calcCount(prev.items) : 0,
-      })
+      await get().fetchCart()
       throw err
     }
   },
@@ -111,7 +103,7 @@ export const useCartStore = create((set, get) => ({
       const cart = res.data.data
       set({ cart, itemCount: 0 })
     } catch (err) {
-      set({ cart: prev, itemCount: prev ? calcCount(prev.items) : 0 })
+      await get().fetchCart()
       throw err
     }
   },
