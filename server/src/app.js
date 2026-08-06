@@ -28,7 +28,9 @@ app.use(
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 500,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
     message: {
       success: false,
       message: 'Quá nhiều request, thử lại sau',
@@ -46,9 +48,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // ================= API v1 =================
-
 const v1 = express.Router()
-
 v1.use('/auth', require('./routes/authRoutes'))
 v1.use('/books', require('./routes/bookRoutes'))
 v1.use('/categories', require('./routes/categoryRoutes'))
@@ -57,7 +57,7 @@ v1.use('/orders', require('./routes/orderRoutes'))
 v1.use('/admin', require('./routes/adminRoutes'))
 v1.use('/addresses', require('./routes/addressRoutes'))
 
-// Public route — không cần đăng nhập
+// Public route
 v1.use('/ar', require('./routes/arRoutes'))
 
 app.use('/api/v1', v1)
