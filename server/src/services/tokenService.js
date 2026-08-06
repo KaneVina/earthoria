@@ -1,7 +1,6 @@
 const crypto = require('crypto')
 const prisma = require('../config/db')
 
-// ─── Parse duration string kiểu "30d", "20m", "1h" thành mili giây ───
 function parseDurationMs(str) {
   const match = /^(\d+)([smhd])$/.exec(str)
   if (!match) throw new Error(`Duration không hợp lệ: ${str}`)
@@ -22,7 +21,6 @@ function generateRawToken() {
   return crypto.randomBytes(64).toString('hex')
 }
 
-// Lỗi riêng để controller phân biệt được nguyên nhân
 class RefreshTokenError extends Error {
   constructor(code) {
     super(code)
@@ -30,7 +28,6 @@ class RefreshTokenError extends Error {
   }
 }
 
-// ─── Tạo refresh token mới cho user (dùng khi login / OAuth) ───
 async function createRefreshToken(userId, remember, meta = {}) {
   const rawToken = generateRawToken()
   const tokenHash = hashToken(rawToken)
@@ -51,7 +48,6 @@ async function createRefreshToken(userId, remember, meta = {}) {
   return { rawToken, expiresAt }
 }
 
-// ─── Verify token gửi lên từ cookie (chưa rotate, chỉ kiểm tra hợp lệ) ───
 async function verifyAndConsume(rawToken) {
   const tokenHash = hashToken(rawToken)
   const record = await prisma.refreshToken.findUnique({ where: { tokenHash } })
@@ -61,8 +57,6 @@ async function verifyAndConsume(rawToken) {
   }
 
   if (record.revokedAt) {
-    // Token đã bị revoke (đã dùng rồi hoặc đã logout) mà vẫn được gửi lên
-    // => dấu hiệu bị đánh cắp/replay. Revoke toàn bộ session của user này.
     await revokeAllForUser(record.userId)
     throw new RefreshTokenError('REUSED')
   }
@@ -74,7 +68,6 @@ async function verifyAndConsume(rawToken) {
   return record
 }
 
-// ─── Rotation: revoke token cũ, tạo token mới giữ nguyên chính sách remember ───
 async function rotateRefreshToken(oldRecord, meta = {}) {
   const rawToken = generateRawToken()
   const tokenHash = hashToken(rawToken)

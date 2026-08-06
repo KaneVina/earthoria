@@ -1,31 +1,3 @@
-/**
- * ParentDashboard.jsx
- * ────────────────────────────────────────────────────────────────
- * Trang "Bảng điều khiển phụ huynh" — tách riêng khỏi phần "Sách AR"
- * trong Profile. Cho phép phụ huynh quản lý giờ giấc xem AR của trẻ,
- * áp dụng quy tắc 20-20-20, xem báo cáo, nhắc bảo vệ mắt và khóa/mở
- * khóa từ xa bằng mã PIN + OTP.
- *
- * v2 — bản nâng cấp giao diện:
- *  - Thanh mục lục tự nhận diện mục đang xem khi cuộn (scrollspy) +
- *    chuyển sang dạng "dính" (sticky) có nền mờ khi cuộn qua header.
- *  - Từng card tự "hiện dần" khi cuộn tới (tái dùng .reveal/.reveal.in
- *    đã có sẵn trong main.css, không cần thư viện ngoài).
- *  - Chỉ báo "đã lưu" (autosave pill) phản hồi ngay khi đổi cài đặt,
- *    giống các sản phẩm SaaS chuyên nghiệp (không cần nút "Lưu").
- *  - Thẻ tổng quan có huy hiệu xu hướng (so với trung bình tuần).
- *  - Khung giờ được phép xem có thêm dải thời gian trực quan 24h.
- *  - Biểu đồ tuần có đường trung bình + tooltip tuỳ biến khi hover.
- *  - Thêm "Nhật ký hoạt động" ghi lại các lần khóa/mở khóa/đổi cài đặt.
- *  - Modal đóng được bằng phím Esc; icon focus-visible rõ ràng hơn.
- *
- * LƯU Ý: đây là bản UI dùng dữ liệu giả (mock). Mọi chỗ cần nối API
- * thật đều có comment "TODO API" kèm gợi ý endpoint/schema Prisma nên
- * bổ sung (ParentalSettings, ChildProfile, DeviceLockCommand, ...).
- * Toàn bộ state chỉ sống trong phiên làm việc (không có localStorage).
- * ────────────────────────────────────────────────────────────────
- */
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";

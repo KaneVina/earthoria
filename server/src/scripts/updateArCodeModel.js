@@ -1,13 +1,3 @@
-/**
- * Script cho admin chạy thủ công để ĐỔI model 3D của một mã AR đã tồn tại,
- * trong khi `code` (và do đó QR đã in trong sách) giữ nguyên không đổi.
- *
- * Cách dùng:
- *   node src/scripts/updateArCodeModel.js <code> <modelUrlMoi>
- *
- * Ví dụ:
- *   node src/scripts/updateArCodeModel.js xK9f...AbC /models/elephant_v2.glb
- */
 const prisma = require('../config/db')
 
 async function main() {

@@ -45,54 +45,59 @@ const {
   staffOrAdmin,
 } = require("../middlewares/authMiddleware");
 const uploadImages = require("../middlewares/uploadImages");
-const { uploadProductImages, deleteProductImage, setProductCover } = require("../controllers/adminController");
+const {
+  uploadProductImages,
+  deleteProductImage,
+  setProductCover,
+} = require("../controllers/adminController");
 
-// Chỉ xác thực đăng nhập ở đây — phân quyền admin/staff áp dụng riêng từng route bên dưới
+// Chỉ xác thực đăng nhập ở đây
 router.use(protect);
 
-// ── Dashboard ──
+//   Dashboard
 router.get("/dashboard", adminOnly, getDashboard);
 
-// ── Products (/admin/products) ──
-// Search + xem chi tiết 1 sách: staff cũng cần dùng khi tạo mã QR / xem AR
+//   Products (/admin/products)
 router.get("/products/search", staffOrAdmin, searchProductsQuick);
 router.get("/products/:id", staffOrAdmin, getProductById);
 router.get("/products", adminOnly, getProducts);
 router.post("/products", adminOnly, createProduct);
 router.put("/products/:id", adminOnly, updateProduct);
 router.delete("/products/:id", adminOnly, deleteProduct);
-router.post("/products/:id/images", adminOnly, uploadImages.array("images"), uploadProductImages);
+router.post(
+  "/products/:id/images",
+  adminOnly,
+  uploadImages.array("images"),
+  uploadProductImages,
+);
 router.delete("/products/:id/images", adminOnly, deleteProductImage);
 router.patch("/products/:id/cover", adminOnly, setProductCover);
 
-// ── Categories ──
+//   Categories
 router.get("/categories", adminOnly, getCategories);
 router.post("/categories", adminOnly, createCategory);
 router.put("/categories/:id", adminOnly, updateCategory);
 
-// ── Orders ──
+//   Orders
 router.get("/orders", adminOnly, getOrders);
 router.put("/orders/:id", adminOnly, updateOrderStatus);
 
 //Email
 router.use("/emails", adminOnly, require("./emailRoutes"));
 
-// ── Users ──
+//   Users
 router.get("/users", staffOrAdmin, getUsers);
 router.post("/users", staffOrAdmin, createManagedUser);
 router.put("/users/:id/toggle", staffOrAdmin, toggleUser);
-// Chạy 1 lần sau migration để gắn mã cho user cũ
 router.post("/users/backfill-codes", adminOnly, backfillUserCodes);
 router.put("/users/:id/role", staffOrAdmin, updateUserRole);
 
-// ── Coupons ──
+//   Coupons
 router.get("/coupons", adminOnly, getCoupons);
 router.post("/coupons", adminOnly, createCoupon);
 router.put("/coupons/:id/toggle", adminOnly, toggleCoupon);
 
-// ── AR Codes (staff + admin đều được quản lý) ──
-// LƯU Ý: '/ar-codes' (gộp toàn hệ thống) và '/products/:bookId/ar-codes'
-// (theo 1 sách) là 2 path khác nhau hoàn toàn — không đụng độ thứ tự.
+//   AR Codes (staff + admin đều được quản lý)
 router.get("/ar-codes", staffOrAdmin, getArCodesGroupedAll);
 router.get("/ar-codes/:id", staffOrAdmin, getArCodeById);
 router.patch("/ar-codes/:id/access", staffOrAdmin, updateArCodeAccess);
@@ -111,10 +116,10 @@ router.put(
 );
 router.put("/ar-codes/:id/toggle", staffOrAdmin, toggleArCode);
 
-// ── Nhập kho ──
+//   Nhập kho
 router.post("/inventory/imports", staffOrAdmin, createInventoryImport);
 
-// ── UptimeRobot proxy ──
+//   UptimeRobot proxy
 router.get("/server-status", async (req, res) => {
   try {
     const response = await fetch("https://api.uptimerobot.com/v2/getMonitors", {

@@ -1,4 +1,3 @@
-// src/scripts/printArCodes.js
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 

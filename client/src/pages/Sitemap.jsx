@@ -1,8 +1,5 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-
-// ─── DATA: các section người dùng thấy được ─────────────────────────────────
-
 const SECTIONS = [
   {
     id: 'kham-pha',

@@ -1,28 +1,3 @@
-/**
- * Script tạo nhanh 1 đơn hàng ở trạng thái DELIVERED cho 1 user, gắn với
- * cuốn sách chứa 1 mã AR cụ thể — dùng để TEST luồng xem AR (arController
- * yêu cầu user phải có OrderItem thuộc Order status=DELIVERED cho đúng
- * bookId của ArCode thì mới được xem model).
- *
- * Đặt file này vào cùng thư mục `src/scripts/` với createArCode.js /
- * printArCodes.js (để dùng chung cách import prisma), rồi chạy:
- *
- *   node src/scripts/seedTestOrder.js <email_user> <arCode>
- *
- * Ví dụ:
- *   node src/scripts/seedTestOrder.js khach_test@example.com aBcD1234...
- *
- * Script sẽ:
- *   1. Tìm user theo email (báo lỗi nếu chưa có tài khoản này).
- *   2. Tìm ArCode theo code -> suy ra bookId cần "sở hữu".
- *   3. Nếu user chưa có Address nào -> tự tạo 1 địa chỉ giả để Order có
- *      thể tạo được (Order.addressId là bắt buộc theo schema).
- *   4. Tạo 1 Order mới: status=DELIVERED, paymentStatus=PAID,
- *      paymentMethod=COD, kèm 1 OrderItem đúng bookId đó, quantity=1,
- *      price lấy theo giá sách hiện tại (ưu tiên salePrice nếu có).
- *   5. In ra id đơn hàng vừa tạo để bạn tiện xoá/kiểm tra lại sau khi
- *      test xong (đây chỉ là data test, không nên để lẫn trong data thật).
- */
 const prisma = require('../config/db')
 
 async function main() {

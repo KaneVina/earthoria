@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const passport = require("../config/passport"); // ← import passport config
-const {
+const passport = require("../config/passport");
   register,
   login,
   getMe,
@@ -43,7 +42,7 @@ router.get("/me", protect, getMe);
 router.put("/update-profile", protect, updateProfile);
 router.put("/change-password", protect, changePassword);
 
-// ─── Google OAuth ───
+// Google OAuth
 router.get("/google", googleAuth);
 router.get(
   "/google/callback",

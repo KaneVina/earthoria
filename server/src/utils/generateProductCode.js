@@ -9,17 +9,6 @@ function randomLetters(len) {
   return s
 }
 
-/**
- * Sinh mã sách dạng EB-{YY}{MM}{DD}{SEQ4}{rand2}, vd EB-2607070012AB.
- * SEQ tăng dần ATOMIC theo ngày (bảng ProductCodeSeq, giống UserCodeSeq)
- * để tránh đụng độ khi nhiều admin cùng tạo sách 1 lúc; 2 ký tự random
- * cuối chỉ tăng thêm entropy, không phải cơ chế chống trùng chính.
- *
- * Vẫn kiểm tra unique thật trong DB trước khi trả về, phòng trường hợp
- * mã trùng với 1 mã đã tồn tại (vd admin từng tạo tay 1 mã cùng định dạng).
- *
- * @param {import('@prisma/client').PrismaClient} client - truyền `tx` khi gọi bên trong 1 transaction
- */
 async function generateProductCode(client = defaultPrisma) {
   const now = new Date()
   const yy = String(now.getFullYear()).slice(-2)
