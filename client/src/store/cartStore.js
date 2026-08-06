@@ -7,6 +7,7 @@ export const useCartStore = create((set, get) => ({
   cart: null,
   itemCount: 0,
   loading: false,
+  _updateSeq: {}, // itemId -> số thứ tự request update mới nhất
 
   // Giữ nguyên — chỉ gọi 1 lần lúc mount
   fetchCart: async () => {
@@ -64,29 +65,25 @@ export const useCartStore = create((set, get) => ({
 
   // Gọi API thật, dùng sau debounce. Giữ nguyên số đang hiển thị nếu lỗi (không rollback về prev cũ)
  updateItem: async (itemId, quantity) => {
-  try {
-    console.log("SEND:", quantity)
+    // Đánh version cho lần gọi này, để phát hiện nếu có request mới hơn gửi đi trong lúc chờ
+    const seq = get()._updateSeq
+    const mySeq = (seq[itemId] || 0) + 1
+    set({ _updateSeq: { ...seq, [itemId]: mySeq } })
 
-    const res = await cartService.updateItem(itemId, quantity)
-    const cart = res.data.data
+    try {
+      const res = await cartService.updateItem(itemId, quantity)
+      const cart = res.data.data
 
-    console.log(
-      "FRONTEND RECEIVE:",
-      cart.items.map(i => ({
-        id: i.id,
-        qty: i.quantity
-      }))
-    )
+      // Nếu đã có request mới hơn gửi đi sau request này => bỏ qua, không ghi đè state
+      if (get()._updateSeq[itemId] !== mySeq) return
 
-    set({
-      cart,
-      itemCount: calcCount(cart.items)
-    })
-  } catch (err) {
-    await get().fetchCart()
-    throw err
-  }
-},
+      set({ cart, itemCount: calcCount(cart.items) })
+    } catch (err) {
+      if (get()._updateSeq[itemId] !== mySeq) return
+      await get().fetchCart()
+      throw err
+    }
+  },
 
   removeItem: async (itemId) => {
     const prev = get().cart

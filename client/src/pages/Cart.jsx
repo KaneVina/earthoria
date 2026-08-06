@@ -43,8 +43,15 @@ export default function Cart() {
     };
   }, []);
 
-  const handleQtyChange = (item, newQty) => {
+  const handleQtyChange = (item, delta) => {
     if (pendingItemId === item.id) return; // đang xóa item này, chặn thao tác
+
+    // Luôn lấy quantity mới nhất từ store, không dùng item.quantity của lần render cũ (stale closure)
+    const currentCart = useCartStore.getState().cart;
+    const currentItem = currentCart?.items.find((i) => i.id === item.id);
+    const currentQty = currentItem?.quantity ?? item.quantity;
+
+    const newQty = currentQty + delta;
 
     if (newQty < 1) {
       handleRemove(item);
@@ -410,7 +417,7 @@ export default function Cart() {
                   <div style={{ display: "flex", justifyContent: "center" }}>
                     <div style={{ display: "flex", alignItems: "center", border: "0.5px solid var(--border)" }}>
                       <button
-                        onClick={() => handleQtyChange(item, item.quantity - 1)}
+                        onClick={() => handleQtyChange(item, -1)}
                         style={{
                           width: "32px", height: "36px",
                           background: "transparent", border: "none",
@@ -431,7 +438,7 @@ export default function Cart() {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() => handleQtyChange(item, item.quantity + 1)}
+                        onClick={() => handleQtyChange(item, +1)}
                         style={{
                           width: "32px", height: "36px",
                           background: "transparent", border: "none",
