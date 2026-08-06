@@ -369,9 +369,12 @@ export default function Cart() {
                     <div style={{ display: "flex", alignItems: "center", border: "0.5px solid var(--border)" }}>
                       <button
                         onClick={() =>
-                          item.quantity > 1
+                          (item.quantity > 1
                             ? updateItem(item.id, item.quantity - 1)
                             : removeItem(item.id)
+                          ).catch((err) =>
+                            toast.error(err?.response?.data?.message || 'Không thể cập nhật giỏ hàng')
+                          )
                         }
                         style={{
                           width: "32px", height: "36px",
@@ -392,7 +395,11 @@ export default function Cart() {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() => updateItem(item.id, item.quantity + 1)}
+                        onClick={() =>
+                          updateItem(item.id, item.quantity + 1).catch((err) =>
+                            toast.error(err?.response?.data?.message || 'Không thể cập nhật giỏ hàng')
+                          )
+                        }
                         style={{
                           width: "32px", height: "36px",
                           background: "transparent", border: "none", cursor: "pointer",
@@ -420,7 +427,11 @@ export default function Cart() {
                   {/* Delete */}
                   <div style={{ display: "flex", justifyContent: "flex-end" }}>
                     <button
-                      onClick={() => removeItem(item.id)}
+                      onClick={() =>
+                        removeItem(item.id).catch((err) =>
+                          toast.error(err?.response?.data?.message || 'Không thể xóa sản phẩm')
+                        )
+                      }
                       style={{
                         width: "32px", height: "32px",
                         border: "0.5px solid var(--border)",

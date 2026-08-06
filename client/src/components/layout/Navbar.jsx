@@ -33,7 +33,8 @@ export default function Navbar() {
 
   //  Stores ────────────────────────────────────────
   const { user, isAuthenticated, logout } = useAuthStore();
-  const { itemCount, fetchCart } = useCartStore();
+  const itemCount = useCartStore((s) => s.itemCount);
+  const fetchCart = useCartStore((s) => s.fetchCart);
   const { wishlistCount, fetchWishlist } = useWishlistStore();
   const { isDark, toggleTheme } = useTheme();
 
@@ -71,18 +72,18 @@ export default function Navbar() {
   }, [location.pathname, location.search]);
 
   //  Helpers ─────────────────────────────────────────
-const handleLogout = async () => {
-  try {
-    await authService.logout(); // gọi POST /auth/logout — clear cookie + revoke token ở DB
-  } catch (err) {
-    console.error("Logout API failed:", err);
-    // vẫn tiếp tục clear local state dù API lỗi, tránh kẹt UI
-  }
-  logout();          // clear Zustand state
-  queryClient.clear();
-  toast.success("Đã đăng xuất");
-  navigate("/");
-};
+  const handleLogout = async () => {
+    try {
+      await authService.logout(); // gọi POST /auth/logout — clear cookie + revoke token ở DB
+    } catch (err) {
+      console.error("Logout API failed:", err);
+      // vẫn tiếp tục clear local state dù API lỗi, tránh kẹt UI
+    }
+    logout(); // clear Zustand state
+    queryClient.clear();
+    toast.success("Đã đăng xuất");
+    navigate("/");
+  };
 
   const isHome = location.pathname === "/" || location.pathname === "/home";
 
@@ -116,25 +117,25 @@ const handleLogout = async () => {
         border: "rgba(184,134,46,0.25)",
       }
     : isStaff
-    ? {
-        label: "Nhân Viên",
-        color: "#2a78d6",
-        bg: "rgba(42,120,214,0.08)",
-        border: "rgba(42,120,214,0.25)",
-      }
-    : isDealer
-    ? {
-        label: "Đại Lý",
-        color: "#7a4fb5",
-        bg: "rgba(122,79,181,0.08)",
-        border: "rgba(122,79,181,0.25)",
-      }
-    : {
-        label: "Thành Viên",
-        color: "#4a9e3f",
-        bg: "rgba(74,158,63,0.08)",
-        border: "rgba(74,158,63,0.22)",
-      };
+      ? {
+          label: "Nhân Viên",
+          color: "#2a78d6",
+          bg: "rgba(42,120,214,0.08)",
+          border: "rgba(42,120,214,0.25)",
+        }
+      : isDealer
+        ? {
+            label: "Đại Lý",
+            color: "#7a4fb5",
+            bg: "rgba(122,79,181,0.08)",
+            border: "rgba(122,79,181,0.25)",
+          }
+        : {
+            label: "Thành Viên",
+            color: "#4a9e3f",
+            bg: "rgba(74,158,63,0.08)",
+            border: "rgba(74,158,63,0.22)",
+          };
 
   //  Render ──────────────────────────────────────────
   return (

@@ -111,26 +111,34 @@ const updateCartItem = async (req, res) => {
   try {
     const { quantity } = req.body
     const { itemId } = req.params
+    const qty = parseInt(quantity)
+    if (!qty || qty < 1) return formatResponse(res, 400, 'Số lượng không hợp lệ')
 
-    if (quantity < 1) return formatResponse(res, 400, 'Số lượng không hợp lệ')
+    const updatedCart = await prisma.$transaction(async (tx) => {
+      const cart = await tx.cart.findUnique({ where: { userId: req.user.id } })
+      if (!cart) throw Object.assign(new Error('CART_NOT_FOUND'), { code: 'CART_NOT_FOUND' })
 
-    const cart = await prisma.cart.findUnique({ where: { userId: req.user.id } })
-    if (!cart) return formatResponse(res, 404, 'Giỏ hàng không tồn tại')
+      const item = await tx.cartItem.findFirst({
+        where: { id: itemId, cartId: cart.id },
+        include: { book: true }
+      })
+      if (!item) throw Object.assign(new Error('ITEM_NOT_FOUND'), { code: 'ITEM_NOT_FOUND' })
+      if (item.book.stock < qty) throw Object.assign(new Error('OUT_OF_STOCK'), { code: 'OUT_OF_STOCK' })
 
-    const item = await prisma.cartItem.findFirst({
-      where: { id: itemId, cartId: cart.id },
-      include: { book: true }
+      await tx.cartItem.update({
+        where: { id: itemId },
+        data: { quantity: qty }
+      })
+
+      return tx.cart.findUnique({ where: { id: cart.id }, include: CART_ITEM_INCLUDE })
     })
-    if (!item) return formatResponse(res, 404, 'Không tìm thấy sản phẩm trong giỏ')
-    if (item.book.stock < quantity) return formatResponse(res, 400, 'Không đủ hàng trong kho')
 
-    await prisma.cartItem.update({
-      where: { id: itemId },
-      data: { quantity: parseInt(quantity) }
-    })
-
-    return formatResponse(res, 200, 'Đã cập nhật giỏ hàng')
+    return formatResponse(res, 200, 'Đã cập nhật giỏ hàng', buildCartResponse(updatedCart))
   } catch (error) {
+    if (error.code === 'CART_NOT_FOUND') return formatResponse(res, 404, 'Giỏ hàng không tồn tại')
+    if (error.code === 'ITEM_NOT_FOUND') return formatResponse(res, 404, 'Không tìm thấy sản phẩm trong giỏ')
+    if (error.code === 'OUT_OF_STOCK') return formatResponse(res, 400, 'Không đủ hàng trong kho')
+    console.error(error)
     return formatResponse(res, 500, 'Lỗi server')
   }
 }
@@ -139,15 +147,22 @@ const updateCartItem = async (req, res) => {
 const removeCartItem = async (req, res) => {
   try {
     const { itemId } = req.params
-    const cart = await prisma.cart.findUnique({ where: { userId: req.user.id } })
-    if (!cart) return formatResponse(res, 404, 'Giỏ hàng không tồn tại')
 
-    await prisma.cartItem.deleteMany({
-      where: { id: itemId, cartId: cart.id }
+    const updatedCart = await prisma.$transaction(async (tx) => {
+      const cart = await tx.cart.findUnique({ where: { userId: req.user.id } })
+      if (!cart) throw Object.assign(new Error('CART_NOT_FOUND'), { code: 'CART_NOT_FOUND' })
+
+      const deleted = await tx.cartItem.deleteMany({ where: { id: itemId, cartId: cart.id } })
+      if (deleted.count === 0) throw Object.assign(new Error('ITEM_NOT_FOUND'), { code: 'ITEM_NOT_FOUND' })
+
+      return tx.cart.findUnique({ where: { id: cart.id }, include: CART_ITEM_INCLUDE })
     })
 
-    return formatResponse(res, 200, 'Đã xóa sản phẩm khỏi giỏ')
+    return formatResponse(res, 200, 'Đã xóa sản phẩm khỏi giỏ', buildCartResponse(updatedCart))
   } catch (error) {
+    if (error.code === 'CART_NOT_FOUND') return formatResponse(res, 404, 'Giỏ hàng không tồn tại')
+    if (error.code === 'ITEM_NOT_FOUND') return formatResponse(res, 404, 'Không tìm thấy sản phẩm trong giỏ')
+    console.error(error)
     return formatResponse(res, 500, 'Lỗi server')
   }
 }
@@ -155,12 +170,19 @@ const removeCartItem = async (req, res) => {
 // Clear cart
 const clearCart = async (req, res) => {
   try {
-    const cart = await prisma.cart.findUnique({ where: { userId: req.user.id } })
-    if (!cart) return formatResponse(res, 404, 'Giỏ hàng không tồn tại')
+    const updatedCart = await prisma.$transaction(async (tx) => {
+      const cart = await tx.cart.findUnique({ where: { userId: req.user.id } })
+      if (!cart) throw Object.assign(new Error('CART_NOT_FOUND'), { code: 'CART_NOT_FOUND' })
 
-    await prisma.cartItem.deleteMany({ where: { cartId: cart.id } })
-    return formatResponse(res, 200, 'Đã xóa giỏ hàng')
+      await tx.cartItem.deleteMany({ where: { cartId: cart.id } })
+
+      return tx.cart.findUnique({ where: { id: cart.id }, include: CART_ITEM_INCLUDE })
+    })
+
+    return formatResponse(res, 200, 'Đã xóa giỏ hàng', buildCartResponse(updatedCart))
   } catch (error) {
+    if (error.code === 'CART_NOT_FOUND') return formatResponse(res, 404, 'Giỏ hàng không tồn tại')
+    console.error(error)
     return formatResponse(res, 500, 'Lỗi server')
   }
 }

@@ -65,14 +65,16 @@ export const useCartStore = create((set, get) => ({
     }
 
     try {
-      await cartService.updateItem(itemId, quantity)
-      // Không cần fetchCart — UI đã đúng rồi
-    } catch {
+      const res = await cartService.updateItem(itemId, quantity)
+      const cart = res.data.data
+      set({ cart, itemCount: calcCount(cart.items) })
+    } catch (err) {
       // Rollback
       set({
         cart: prev,
         itemCount: prev ? calcCount(prev.items) : 0,
       })
+      throw err // để component bắt được lỗi và hiện toast.error
     }
   },
 
@@ -87,24 +89,30 @@ export const useCartStore = create((set, get) => ({
     }
 
     try {
-      await cartService.removeItem(itemId)
-    } catch {
+      const res = await cartService.removeItem(itemId)
+      const cart = res.data.data
+      set({ cart, itemCount: calcCount(cart.items) })
+    } catch (err) {
       // Rollback
       set({
         cart: prev,
         itemCount: prev ? calcCount(prev.items) : 0,
       })
+      throw err
     }
   },
 
   clearCart: async () => {
     const prev = get().cart
-    set({ cart: { ...prev, items: [] }, itemCount: 0 })
+    set({ cart: prev ? { ...prev, items: [], total: 0 } : prev, itemCount: 0 })
 
     try {
-      await cartService.clearCart()
-    } catch {
+      const res = await cartService.clearCart()
+      const cart = res.data.data
+      set({ cart, itemCount: 0 })
+    } catch (err) {
       set({ cart: prev, itemCount: prev ? calcCount(prev.items) : 0 })
+      throw err
     }
   },
 }))
