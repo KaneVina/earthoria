@@ -63,16 +63,30 @@ export const useCartStore = create((set, get) => ({
   },
 
   // Gọi API thật, dùng sau debounce. Giữ nguyên số đang hiển thị nếu lỗi (không rollback về prev cũ)
-  updateItem: async (itemId, quantity) => {
-    try {
-      const res = await cartService.updateItem(itemId, quantity)
-      const cart = res.data.data
-      set({ cart, itemCount: calcCount(cart.items) })
-    } catch (err) {
-      await get().fetchCart()
-      throw err // để component bắt được lỗi và hiện toast.error
-    }
-  },
+ updateItem: async (itemId, quantity) => {
+  try {
+    console.log("SEND:", quantity)
+
+    const res = await cartService.updateItem(itemId, quantity)
+    const cart = res.data.data
+
+    console.log(
+      "FRONTEND RECEIVE:",
+      cart.items.map(i => ({
+        id: i.id,
+        qty: i.quantity
+      }))
+    )
+
+    set({
+      cart,
+      itemCount: calcCount(cart.items)
+    })
+  } catch (err) {
+    await get().fetchCart()
+    throw err
+  }
+},
 
   removeItem: async (itemId) => {
     const prev = get().cart

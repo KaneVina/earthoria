@@ -136,7 +136,20 @@ const updateCartItem = async (req, res) => {
         data: { quantity: qty }
       })
 
-      return tx.cart.findUnique({ where: { id: cart.id }, include: CART_ITEM_INCLUDE })
+      const cartData = await tx.cart.findUnique({
+        where: { id: cart.id },
+        include: CART_ITEM_INCLUDE
+      })
+
+      console.log(
+        'BACKEND RETURN:',
+        cartData.items.map(i => ({
+          id: i.id,
+          qty: i.quantity
+        }))
+      )
+
+      return cartData
     })
 
     return formatResponse(res, 200, 'Đã cập nhật giỏ hàng', buildCartResponse(updatedCart))
