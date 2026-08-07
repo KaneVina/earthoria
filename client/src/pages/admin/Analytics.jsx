@@ -1,4 +1,4 @@
-// Analytics.jsx — Trang theo dõi lưu lượng truy cập (Umami)
+// Analytics.jsx gộp vô dashboard
 import { useState, useEffect, useCallback } from "react";
 import {
   Users,
@@ -25,7 +25,6 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
-import AdminLayout from "./AdminLayout";
 
 // ─ CONFIG ────────────────────────────────────────────────────────────────
 const UMAMI_URL = import.meta.env.VITE_UMAMI_URL || "";
@@ -602,7 +601,7 @@ export default function Analytics() {
   }, [fetchAll]);
 
   return (
-    <AdminLayout>
+    <>
       {/*  Header  */}
       <div className="a-page-header">
         <div>
@@ -952,6 +951,6 @@ export default function Analytics() {
           50%       { box-shadow: 0 0 0 6px rgba(74,158,63,0.08) }
         }
       `}</style>
-    </AdminLayout>
+    </>
   );
 }

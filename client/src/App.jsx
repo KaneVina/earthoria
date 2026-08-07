@@ -34,7 +34,6 @@ import EiraChatbox from "./components/EiraChatbox";
 import Wishlist from "./pages/Wishlist";
 import EarthoriaSecurity from "./components/Earthoriasecurity";
 import ContactPage from "./pages/ContactPage";
-import Analytics from "./pages/admin/Analytics";
 import Maintenance from "./pages/Maintenance";
 import Logo3D from "./components/Logo3D";
 import ArView from "./pages/ArView";
@@ -287,14 +286,6 @@ export default function App() {
           element={
             <AdminRoute>
               <ArCodeDetail />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/dashboard/analytics"
-          element={
-            <AdminRoute>
-              <Analytics />
             </AdminRoute>
           }
         />

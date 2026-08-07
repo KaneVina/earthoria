@@ -112,7 +112,7 @@ model InventoryImport {
 model InventoryImportItem {
   id          String  @id @default(uuid())
   importId    String
-  bookId      String
+  variantId   String
   title       String
   productCode String?
   unit        String
@@ -121,11 +121,11 @@ model InventoryImportItem {
   qtyActual   Int
   unitPrice   Float
 
-  import InventoryImport @relation(fields: [importId], references: [id], onDelete: Cascade)
-  book   Book             @relation(fields: [bookId], references: [id])
+  import  InventoryImport @relation(fields: [importId], references: [id], onDelete: Cascade)
+  variant BookVariant     @relation(fields: [variantId], references: [id])
 
   @@index([importId])
-  @@index([bookId])
+  @@index([variantId])
 }
 
 // ─ CATEGORY ─
@@ -145,14 +145,7 @@ model Book {
   id            String   @id @default(uuid())
   title         String
   slug          String   @unique
-  productCode   String?  @unique
-  unit          String   @default("Cuốn")
   description   String?
-  price         Float
-  salePrice     Float?
-  dealerPrice   Float?
-  stock         Int      @default(0)
-  sold          Int      @default(0)
   ageMin        Int?
   ageMax        Int?
   language      String   @default("VI")
@@ -175,19 +168,74 @@ model Book {
   categoryId    String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-  inventoryImportItems InventoryImportItem[]
-  category   Category     @relation(fields: [categoryId], references: [id])
-  cartItems  CartItem[]
-  orderItems OrderItem[]
-  reviews    Review[]
-  wishlist   Wishlist[]
-  arCodes    ArCode[]
-  authors    BookAuthor[]
+
+  category Category     @relation(fields: [categoryId], references: [id])
+  variants BookVariant[]
+  reviews  Review[]
+  wishlist Wishlist[]
+  arCodes  ArCode[]
+  authors  BookAuthor[]
+  tags     BookTag[]
 
   @@index([categoryId])
   @@index([language])
   @@index([isActive])
-   @@index([productCode])
+}
+
+enum BookFormat {
+  PHYSICAL
+  DIGITAL
+}
+
+// ─ BOOK VARIANT ─
+model BookVariant {
+  id               String     @id @default(uuid())
+  bookId           String
+  format           BookFormat
+  productCode      String?    @unique
+  unit             String     @default("Cuốn")
+  price            Float
+  salePrice        Float?
+  dealerPrice      Float?
+  stock            Int        @default(0)
+  sold             Int        @default(0)
+  isUnlimitedStock Boolean    @default(false)
+  isActive         Boolean    @default(true)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  book                 Book                   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  cartItems            CartItem[]
+  orderItems           OrderItem[]
+  inventoryImportItems InventoryImportItem[]
+
+  // 1 Book chỉ có 1 variant PHYSICAL và 1 variant DIGITAL — không cho tạo trùng format
+  @@unique([bookId, format])
+  @@index([bookId])
+  @@index([productCode])
+}
+
+// ─ TAG ─
+model Tag {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  books BookTag[]
+}
+
+model BookTag {
+  bookId String
+  tagId  String
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([bookId, tagId])
+  @@index([tagId])
 }
 
 // ─ AUTHOR ─
@@ -257,16 +305,18 @@ model Cart {
 }
 
 model CartItem {
-  id       String @id @default(uuid())
-  cartId   String
-  bookId   String
-  quantity Int    @default(1)
+  id        String @id @default(uuid())
+  cartId    String
+  variantId String
+  quantity  Int    @default(1)
 
-  cart Cart @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  book Book @relation(fields: [bookId], references: [id])
+  cart    Cart        @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant BookVariant @relation(fields: [variantId], references: [id])
 
+  // Chặn cứng ở tầng DB: 1 giỏ hàng không thể có 2 dòng cùng variant
+  @@unique([cartId, variantId])
   @@index([cartId])
-  @@index([bookId])
+  @@index([variantId])
 }
 
 // ─ ORDER ─
@@ -293,14 +343,14 @@ model Order {
 }
 
 model OrderItem {
-  id       String @id @default(uuid())
-  orderId  String
-  bookId   String
-  quantity Int
-  price    Float
+  id        String @id @default(uuid())
+  orderId   String
+  variantId String
+  quantity  Int
+  price     Float
 
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  book  Book  @relation(fields: [bookId], references: [id])
+  order   Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant BookVariant @relation(fields: [variantId], references: [id])
 }
 
 enum OrderStatus {

@@ -6,20 +6,10 @@ import {
   Tag,
   Users,
   QrCode,
-  BarChart2,
   Mail,
 } from "lucide-react";
 
-/**
- * NAV_GROUPS
- *
- * Mỗi nhóm có:
- * - id: khoá dùng để lưu trạng thái collapsed (localStorage / state)
- * - label: tên nhóm hiển thị, bấm vào để thu gọn/mở rộng
- * - items: danh sách menu con trong nhóm
- *
- * Muốn thêm/bớt mục chỉ cần sửa ở đây, không cần đụng vào Sidebar.jsx
- */
+
 export const NAV_GROUPS = [
   {
     id: "overview",
@@ -38,14 +28,13 @@ export const NAV_GROUPS = [
   {
     id: "people",
     label: "Người dùng",
-    items: [{ label: "Người dùng", href: "/dashboard/users", icon: Users }],
+    items: [{ label: "Tài khoản", href: "/dashboard/users", icon: Users }],
   },
   {
     id: "tools",
     label: "Công cụ",
     items: [
       { label: "Tạo mã QR", href: "/dashboard/ar-codes", icon: QrCode },
-      { label: "Analytics", href: "/dashboard/analytics", icon: BarChart2 },
       { label: "Email", href: "/dashboard/emails", icon: Mail },
     ],
   },

@@ -10,15 +10,6 @@ import Sidebar from "../../components/Sidebar";
 import Topbar from "../../components/Topbar";
 import { ALL_NAV_ITEMS } from "./navConfig";
 
-/**
- * AdminLayout
- *
- * `crumbs` (optional): mảng breadcrumb tùy biến cho từng trang, vd trang
- * chi tiết sách muốn hiện "Sản phẩm / Doraemon tập 1" thay vì chỉ "Dashboard".
- * Format: [{ label: "Sản phẩm", to: "/dashboard/products" }, { label: "Doraemon tập 1" }]
- * Mục cuối cùng (không có `to`) là trang hiện tại, hiển thị đậm.
- * Nếu không truyền, tự suy ra 1 mục duy nhất từ danh sách nav như cũ.
- */
 export default function AdminLayout({ children, crumbs }) {
   const location = useLocation();
   const navigate = useNavigate();
