@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const TARGET_DATE = new Date("2026-07-12T18:00:00+07:00");
+const TARGET_DATE = new Date("2026-09-05T18:00:00+07:00");
 
 function useCountdown(target) {
   const [time, setTime] = useState(() => calc());
@@ -32,12 +32,20 @@ function pad(n) {
 
 const REASONS = [
   {
-    title: "Cập nhật chính sách vận hành",
-    body: "Đồng bộ lại các điều khoản dịch vụ, chính sách đổi trả và bảo mật dữ liệu người dùng theo quy định mới nhất.",
+    title: "Tích hợp sách điện tử lên hệ thống",
+    body: "Bổ sung kho sách điện tử (ebook) để người dùng đọc trực tiếp trên nền tảng, không cần chờ giao sách giấy.",
   },
   {
-    title: "Nâng cấp hiệu năng xem AR",
-    body: "Tối ưu tốc độ dựng hình và độ mượt khi xem sách ở chế độ thực tế tăng cường (AR), giảm thời gian tải mô hình 3D.",
+    title: "Thêm các trò chơi tương tác",
+    body: "Tích hợp mini-game tương tác gắn liền với nội dung sách, giúp trải nghiệm đọc trở nên sinh động và hấp dẫn hơn.",
+  },
+  {
+    title: "Nâng cấp hệ thống AR và AI",
+    body: "AR nâng cao độ trực quan, đổ bóng, phối màu và âm thanh chân thực hơn. AI tích hợp công nghệ nhận diện giọng nói và phản hồi người dùng thông minh hơn.",
+  },
+  {
+    title: "Cập nhật chính sách vận hành",
+    body: "Đồng bộ lại các điều khoản dịch vụ, chính sách đổi trả và bảo mật dữ liệu người dùng theo quy định mới nhất.",
   },
   {
     title: "Nâng cấp hệ thống nhận diện địa chỉ giao hàng",
@@ -91,19 +99,20 @@ export default function Maintenance() {
 
         <div className="em-rise-1" style={styles.vCenter}>
           <div style={styles.bookMark}>
-            <svg width="34" height="34" viewBox="0 0 56 56" fill="none">
+            <span style={styles.bookMarkRing} />
+            <svg width="38" height="38" viewBox="0 0 56 56" fill="none">
               <g className="em-page-fold">
                 <path
                   d="M28 8L48 18V46L28 38V8Z"
                   stroke="#5cb84f"
                   strokeWidth="1"
-                  fill="rgba(92,184,79,0.07)"
+                  fill="rgba(92,184,79,0.09)"
                 />
                 <path
                   d="M28 8L8 18V46L28 38V8Z"
                   stroke="#5cb84f"
                   strokeWidth="1"
-                  fill="rgba(92,184,79,0.13)"
+                  fill="rgba(92,184,79,0.16)"
                 />
                 <line
                   x1="28"
@@ -112,7 +121,7 @@ export default function Maintenance() {
                   y2="38"
                   stroke="#5cb84f"
                   strokeWidth="0.75"
-                  opacity="0.6"
+                  opacity="0.65"
                 />
               </g>
             </svg>
@@ -148,200 +157,194 @@ export default function Maintenance() {
         </div>
       </div>
 
-      {/* ══ RIGHT — Announcement panel ══ */}
+      {/* Spine — the crease between the two "pages" of the book */}
+      <div className="em-visual-hide" style={styles.spine}>
+        <span style={styles.spineHighlight} />
+      </div>
+
+      {/* ══ RIGHT — Announcement panel (reads like an open page) ══ */}
       <div className="em-panel" style={styles.panel}>
         <div style={styles.panelRing} />
 
         <div className="em-rise-1 em-panel-wrap" style={styles.panelWrap}>
-          <div style={styles.card}>
-            <span style={styles.cardEdge} />
+          {/* Header row — eyebrow left, logo right, same line, no boxes */}
+          <div style={styles.headerRow}>
+            <div style={styles.badge}>
+              <span style={styles.badgeDot} />
+              <span style={styles.badgeText}>Thông báo bảo trì hệ thống</span>
+            </div>
+            <div className="em-logo-wrap" style={styles.logoWrapHeader}>
+              <img
+                src="/logo-footer.png"
+                alt="Earthoria"
+                style={styles.headerLogo}
+              />
+            </div>
+          </div>
 
-            {/* Header row — badge left, logo right, same line */}
-            <div style={styles.headerRow}>
-              <div style={styles.badge}>
-                <span style={styles.badgeDot} />
-                <span style={styles.badgeText}>Thông báo bảo trì hệ thống</span>
-              </div>
-              <div className="em-logo-wrap" style={styles.logoWrapHeader}>
-                <img
-                  src="/logo-footer.png"
-                  alt="Earthoria"
-                  style={styles.headerLogo}
-                />
-              </div>
+          {/* Title */}
+          <h1 className="em-title" style={styles.title}>
+            Chúng tôi đang <em style={styles.titleEm}>nâng cấp</em>
+            <br className="em-title-br" /> trải nghiệm của bạn
+          </h1>
+
+          <p style={styles.desc}>
+            Đội ngũ vận hành và phát triển Earthoria xin phép được thông báo
+            tạm ngưng phục vụ trong thời gian này để thực hiện các nâng cấp và
+            bảo trì hệ thống nhằm mang đến trải nghiệm ổn định và tốt hơn cho
+            người dùng.
+          </p>
+          <p style={styles.desc}>
+            Trong thời gian bảo trì, bạn có thể tạm thời không truy cập được
+            một số tính năng của hệ thống. Toàn bộ dữ liệu, đơn hàng và tủ
+            sách của bạn vẫn được lưu trữ an toàn và không bị ảnh hưởng.
+          </p>
+          <p style={{ ...styles.desc, marginBottom: 0 }}>
+            Chúng tôi chân thành xin lỗi vì sự gián đoạn này và cảm ơn bạn đã
+            kiên nhẫn đồng hành cùng Earthoria. Chúng tôi hứa sẽ mang lại một
+            Earthoria mới không những là tủ sách mà còn là thế giới của bạn!
+          </p>
+
+          <div style={styles.noteRow}>
+            <span style={styles.plannedNote}>
+              “Đây là hành động đã được lên kế hoạch trước, không phải sự cố.”
+            </span>
+            <span style={styles.signOff}>— Đội ngũ Quản lý Earthoria</span>
+          </div>
+
+          {/* Countdown — the ONE bold element: a dark plaque that echoes
+              the left page, so the whole spread reads as one book */}
+          <div className="em-countdown-card" style={styles.countdownCard}>
+            <span style={styles.countdownGlow} />
+            <span style={styles.countdownCorner} />
+            <div style={styles.countdownLabel}>
+              Dự kiến hoạt động trở lại sau
             </div>
 
-            {/* Title */}
-            <h1 className="em-title" style={styles.title}>
-              Chúng tôi đang <em style={styles.titleEm}>nâng cấp</em>
-              <br className="em-title-br" /> trải nghiệm của bạn
-            </h1>
-
-            <p style={styles.desc}>
-              Earthoria xin phép được tạm ngưng phục vụ trong thời gian ngắn để
-              thực hiện các nâng cấp và bảo trì hệ thống nhằm mang đến trải
-              nghiệm ổn định và tốt hơn cho người dùng.
-            </p>
-            <p style={styles.desc}>
-              Chúng tôi thành thật xin lỗi vì sự bất tiện này. Toàn bộ dữ liệu,
-              đơn hàng và tủ sách của bạn vẫn được lưu trữ an toàn và sẽ không
-              bị ảnh hưởng trong quá trình bảo trì.
-            </p>
-
-            <div style={styles.noteRow}>
-              <span style={styles.plannedNote}>
-                “Đây là hành động đã được lên kế hoạch trước, không phải sự cố.”
-              </span>
-              <span style={styles.signOff}>— Đội ngũ Quản lý Earthoria</span>
-            </div>
-
-            {/* Countdown — signature element */}
-            <div className="em-countdown-card" style={styles.countdownCard}>
-              <div style={styles.countdownLabel}>
-                Dự kiến hoạt động trở lại sau
+            {done ? (
+              <div style={styles.doneBox}>
+                <span className="em-spinner" style={styles.spinner} />
+                <span>Đã hoàn tất — đang tự động tải lại trang…</span>
               </div>
-
-              {done ? (
-                <div style={styles.doneBox}>
-                  <span className="em-spinner" style={styles.spinner} />
-                  <span>Đã hoàn tất — đang tự động tải lại trang…</span>
-                </div>
-              ) : (
-                <div className="em-units" style={styles.units}>
-                  {[
-                    { v: d, l: "Ngày" },
-                    { v: h, l: "Giờ" },
-                    { v: m, l: "Phút" },
-                    { v: s, l: "Giây" },
-                  ].map((u, i) => (
-                    <div
-                      key={u.l}
-                      style={{ display: "flex", alignItems: "flex-start" }}
-                    >
-                      <div style={styles.unit}>
-                        <span
-                          key={u.v}
-                          className="em-num-tick"
-                          style={styles.unitNum}
-                        >
-                          {pad(u.v)}
-                        </span>
-                        <span style={styles.unitLabel}>{u.l}</span>
-                      </div>
-                      {i < 3 && <span style={styles.colon}>:</span>}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div style={styles.countdownFoot}>
-                <span style={styles.countdownFootLine} />
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#5a6b60"
-                  strokeWidth="1.5"
-                  style={{ flexShrink: 0 }}
-                >
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M12 7v5l3 3" />
-                </svg>
-                <span>
-                  Thời gian dự kiến hoàn tất:{" "}
-                  <strong style={styles.timePillStrong}>
-                    18:00 · 12/07/2026
-                  </strong>
-                </span>
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div style={styles.divider}>
-              <span style={styles.dividerLine} />
-              <span style={styles.dividerText}>Liên hệ hỗ trợ</span>
-              <span style={styles.dividerLine} />
-            </div>
-
-            {/* Contact list */}
-            <div className="em-contact-grid" style={styles.contactGrid}>
-              <a
-                href="mailto:earthoriavn@gmail.com"
-                style={styles.contactRow}
-                className="em-contact-card"
-              >
-                <div style={styles.contactIcon}>
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#4a9e3f"
-                    strokeWidth="1.5"
+            ) : (
+              <div className="em-units" style={styles.units}>
+                {[
+                  { v: d, l: "Ngày" },
+                  { v: h, l: "Giờ" },
+                  { v: m, l: "Phút" },
+                  { v: s, l: "Giây" },
+                ].map((u, i) => (
+                  <div
+                    key={u.l}
+                    style={{ display: "flex", alignItems: "flex-start" }}
                   >
-                    <rect x="2" y="4" width="20" height="16" rx="2" />
-                    <path d="M22 7l-10 6L2 7" />
-                  </svg>
-                </div>
-                <div style={{ minWidth: 0 }}>
-                  <div style={styles.contactLabel}>Email chính thức</div>
-                  <div style={styles.contactValue}>earthoriavn@gmail.com</div>
-                </div>
-              </a>
-
-              <span className="em-contact-sep" style={styles.contactSep} />
-
-              <a
-                href="mailto:helpdesk.earthoria@gmail.com"
-                style={styles.contactRow}
-                className="em-contact-card"
-              >
-                <div style={styles.contactIcon}>
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="#4a9e3f"
-                    strokeWidth="1.5"
-                  >
-                    <path d="M12 2a10 10 0 1 0 10 10" />
-                    <path d="M12 2a10 10 0 0 1 10 10" strokeDasharray="2 3" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                </div>
-                <div style={{ minWidth: 0 }}>
-                  <div style={styles.contactLabel}>Email phòng IT</div>
-                  <div style={styles.contactValue}>
-                    helpdesk.earthoria@gmail.com
-                  </div>
-                </div>
-              </a>
-            </div>
-
-            {/* Reasons */}
-            <div
-              className="em-reasons-card"
-              style={{
-                ...styles.reasonsCard,
-                marginTop: 24,
-                marginBottom: 0,
-              }}
-            >
-              <div style={styles.reasonsLabel}>Nội dung nâng cấp lần này</div>
-              <div className="em-reasons-scroll" style={styles.reasonsScroll}>
-                {REASONS.map((r, i) => (
-                  <div key={r.title} style={styles.reasonRow}>
-                    <span style={styles.reasonIndex}>{pad(i + 1)}</span>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={styles.reasonTitle}>{r.title}</div>
-                      <div style={styles.reasonBody}>{r.body}</div>
+                    <div style={styles.unit}>
+                      <span
+                        key={u.v}
+                        className="em-num-tick"
+                        style={styles.unitNum}
+                      >
+                        {pad(u.v)}
+                      </span>
+                      <span style={styles.unitLabel}>{u.l}</span>
                     </div>
+                    {i < 3 && <span style={styles.colon}>:</span>}
                   </div>
                 ))}
               </div>
+            )}
+
+            <div style={styles.countdownFoot}>
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="rgba(250,248,243,0.55)"
+                strokeWidth="1.5"
+                style={{ flexShrink: 0 }}
+              >
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 3" />
+              </svg>
+              <span>
+                Thời gian dự kiến hoàn tất:{" "}
+                <strong style={styles.timePillStrong}>
+                  18:00 · 05/09/2026
+                </strong>
+              </span>
             </div>
+          </div>
+
+          {/* Contact — plain rows, hairline rhythm, no boxes */}
+          <div style={styles.sectionLabel}>Liên hệ hỗ trợ</div>
+          <div className="em-contact-grid" style={styles.contactGrid}>
+            <a
+              href="mailto:earthoriavn@gmail.com"
+              style={styles.contactRow}
+              className="em-contact-card"
+            >
+              <div style={styles.contactIcon}>
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#4a9e3f"
+                  strokeWidth="1.5"
+                >
+                  <rect x="2" y="4" width="20" height="16" rx="2" />
+                  <path d="M22 7l-10 6L2 7" />
+                </svg>
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div style={styles.contactLabel}>Email chính thức</div>
+                <div style={styles.contactValue}>earthoriavn@gmail.com</div>
+              </div>
+            </a>
+
+            <a
+              href="mailto:helpdesk.earthoria@gmail.com"
+              style={styles.contactRow}
+              className="em-contact-card"
+            >
+              <div style={styles.contactIcon}>
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#4a9e3f"
+                  strokeWidth="1.5"
+                >
+                  <path d="M12 2a10 10 0 1 0 10 10" />
+                  <path d="M12 2a10 10 0 0 1 10 10" strokeDasharray="2 3" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div style={styles.contactLabel}>Email phòng IT</div>
+                <div style={styles.contactValue}>
+                  helpdesk.earthoria@gmail.com
+                </div>
+              </div>
+            </a>
+          </div>
+
+          {/* Reasons — read like a table of contents / colophon, no scroll box */}
+          <div style={{ ...styles.sectionLabel, marginTop: 34 }}>
+            Nội dung nâng cấp lần này
+          </div>
+          <div style={styles.reasonsList}>
+            {REASONS.map((r, i) => (
+              <div key={r.title} style={styles.reasonRow} className="em-reason-row">
+                <span className="em-reason-index" style={styles.reasonIndex}>{pad(i + 1)}</span>
+                <div style={{ minWidth: 0 }}>
+                  <div style={styles.reasonTitle}>{r.title}</div>
+                  <div style={styles.reasonBody}>{r.body}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -350,7 +353,7 @@ export default function Maintenance() {
 }
 
 /* ───────────────────────────────────────
-   PALETTE — copied 1:1 from main.css :root
+   PALETTE — unchanged, copied 1:1 from main.css :root
 ───────────────────────────────────────── */
 const INK = "#0a0e0c";
 const FOREST = "#0d3330";
@@ -403,17 +406,17 @@ html, body, #root { height: 100%; margin: 0; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @keyframes logoGlow {
-  0%,100% { opacity: 0.3; transform: translate(-50%,-50%) scale(0.94); }
-  50%     { opacity: 0.55; transform: translate(-50%,-50%) scale(1.04); }
+  0%,100% { opacity: 0.35; transform: translate(-50%,-50%) scale(0.94); }
+  50%     { opacity: 0.65; transform: translate(-50%,-50%) scale(1.06); }
 }
 .em-logo-wrap::before {
   content: "";
   position: absolute;
   top: 50%; left: 50%;
-  width: 60px; height: 60px;
+  width: 96px; height: 96px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(74,158,63,0.18) 0%, transparent 72%);
-  filter: blur(6px);
+  background: radial-gradient(circle, rgba(74,158,63,0.22) 0%, transparent 72%);
+  filter: blur(8px);
   animation: logoGlow 5s ease-in-out infinite;
   z-index: 1;
   pointer-events: none;
@@ -421,33 +424,35 @@ html, body, #root { height: 100%; margin: 0; }
 .em-logo-wrap img {
   position: relative;
   z-index: 2;
-  transition: transform 0.4s cubic-bezier(.16,1,.3,1), filter 0.4s ease;
+  transition: transform 0.45s cubic-bezier(.16,1,.3,1), filter 0.45s ease;
 }
 .em-logo-wrap:hover img {
-  transform: scale(1.05);
-  filter: drop-shadow(0 4px 10px rgba(74,158,63,0.22));
+  transform: scale(1.06);
+  filter: drop-shadow(0 8px 18px rgba(74,158,63,0.28));
 }
 
-.em-contact-card { transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease; }
-.em-contact-card:hover { background: rgba(212,237,207,0.32); transform: translateY(-1px); }
+.em-contact-card { transition: background 0.25s ease, transform 0.25s ease; border-radius: 8px; }
+.em-contact-card:hover {
+  background: rgba(74,158,63,0.06);
+  transform: translateX(2px);
+}
 
-/* thin, quiet scrollbars for the panel and the reasons box */
+.em-reason-row { transition: transform 0.25s ease; }
+.em-reason-row:hover { transform: translateX(3px); }
+.em-reason-row:hover .em-reason-index { color: #4a9e3f; }
+
+/* thin, quiet scrollbar for the page */
 .em-panel { scrollbar-width: thin; scrollbar-color: rgba(74,158,63,0.35) transparent; }
 .em-panel::-webkit-scrollbar { width: 6px; }
 .em-panel::-webkit-scrollbar-track { background: transparent; }
 .em-panel::-webkit-scrollbar-thumb { background: rgba(74,158,63,0.25); border-radius: 3px; }
-
-.em-reasons-scroll { scrollbar-width: thin; scrollbar-color: rgba(74,158,63,0.35) transparent; }
-.em-reasons-scroll::-webkit-scrollbar { width: 5px; }
-.em-reasons-scroll::-webkit-scrollbar-track { background: transparent; }
-.em-reasons-scroll::-webkit-scrollbar-thumb { background: rgba(74,158,63,0.28); border-radius: 3px; }
 
 /*  Tablet / small desktop: tighten panel  */
 @media (max-width: 1180px) {
   .em-panel-wrap { max-width: 480px !important; }
 }
 
-/*  Mobile: stack to single column, hide visual panel, allow scroll  */
+/*  Mobile: stack to single column, hide visual panel & spine, allow scroll  */
 @media (max-width: 980px) {
   .em-visual-hide { display: none !important; }
   .em-panel {
@@ -461,9 +466,8 @@ html, body, #root { height: 100%; margin: 0; }
   .em-title-br { display: none; }
   .em-units { gap: 2px !important; }
   .em-contact-grid { grid-template-columns: 1fr !important; gap: 4px !important; }
-  .em-contact-sep { display: none !important; }
-  .em-logo-wrap { width: 40px !important; height: 40px !important; }
-  .em-logo-wrap img { width: 34px !important; height: 34px !important; }
+  .em-logo-wrap { width: 60px !important; height: 60px !important; }
+  .em-logo-wrap img { width: 48px !important; height: 48px !important; }
 }
 
 @media (max-width: 420px) {
@@ -474,6 +478,7 @@ html, body, #root { height: 100%; margin: 0; }
 
 const styles = {
   page: {
+    position: "relative",
     height: "100vh",
     width: "100%",
     fontFamily: "'Be Vietnam Pro', sans-serif",
@@ -481,6 +486,29 @@ const styles = {
     gridTemplateColumns: "0.6fr 1.4fr",
     overflow: "hidden",
     WebkitFontSmoothing: "antialiased",
+  },
+
+  /* The crease between the two "pages" of the book */
+  spine: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: "30%",
+    width: 26,
+    marginLeft: -13,
+    zIndex: 5,
+    pointerEvents: "none",
+    background:
+      "linear-gradient(90deg, rgba(0,0,0,0.16) 0%, rgba(0,0,0,0.05) 30%, transparent 55%, rgba(255,255,255,0.35) 78%, transparent 100%)",
+  },
+  spineHighlight: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 13,
+    width: 1,
+    background:
+      "linear-gradient(180deg, transparent 0%, rgba(212,237,207,0.45) 15%, rgba(212,237,207,0.45) 85%, transparent 100%)",
   },
 
   /* ══ LEFT VISUAL PANEL ══ */
@@ -519,14 +547,21 @@ const styles = {
   },
   bookMark: {
     position: "relative",
-    width: 56,
-    height: 56,
+    width: 60,
+    height: 60,
     margin: "0 auto 24px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    border: "0.5px solid rgba(92,184,79,0.28)",
+    border: "0.5px solid rgba(92,184,79,0.32)",
     borderRadius: "50%",
+    background: "rgba(92,184,79,0.04)",
+  },
+  bookMarkRing: {
+    position: "absolute",
+    inset: -6,
+    borderRadius: "50%",
+    border: "0.5px solid rgba(92,184,79,0.16)",
   },
 
   vEyebrow: {
@@ -619,59 +654,35 @@ const styles = {
   panelWrap: {
     position: "relative",
     zIndex: 2,
-    maxWidth: 620,
+    maxWidth: 600,
     width: "100%",
     margin: "auto",
-  },
-
-  /* Letterpress-style card that frames the whole announcement */
-  card: {
-    position: "relative",
-    background: "rgba(255,255,255,0.55)",
-    border: `0.5px solid ${BORDER}`,
-    borderRadius: 4,
-    padding: "clamp(28px, 3.4vw, 44px) clamp(28px, 4vw, 48px)",
-    boxShadow:
-      "0 30px 70px -30px rgba(13,51,48,0.16), 0 2px 0 rgba(255,255,255,0.6) inset",
-    backdropFilter: "blur(6px)",
-    overflow: "hidden",
-  },
-  cardEdge: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    background: `linear-gradient(90deg, ${GOLD} 0%, ${GOLD_LIGHT} 45%, ${GOLD_PALE} 100%)`,
   },
 
   headerRow: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 22,
+    marginBottom: 34,
+    gap: 16,
   },
   badge: {
     display: "inline-flex",
     alignItems: "center",
-    gap: 8,
-    padding: "6px 14px 6px 12px",
-    border: `0.5px solid ${BORDER_GOLD}`,
-    borderRadius: 2,
-    background: "rgba(255,255,255,0.6)",
+    gap: 9,
   },
   badgeDot: {
-    width: 4,
-    height: 4,
+    width: 5,
+    height: 5,
     borderRadius: "50%",
     background: GOLD,
     animation: "badgePulse 2.4s ease-in-out infinite",
   },
   badgeText: {
-    fontSize: 9.5,
-    letterSpacing: "0.18em",
+    fontSize: 10,
+    letterSpacing: "0.2em",
     textTransform: "uppercase",
-    color: FOREST,
+    color: TEXT_MUTED,
     fontWeight: 500,
   },
 
@@ -680,103 +691,95 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    width: 68,
-    height: 68,
+    width: 88,
+    height: 88,
     flexShrink: 0,
   },
   headerLogo: {
     position: "relative",
     zIndex: 2,
-    width: 36,
-    height: 36,
+    width: 68,
+    height: 68,
     objectFit: "contain",
   },
 
   title: {
     fontFamily: "'Playfair Display', serif",
     fontWeight: 400,
-    fontSize: "clamp(27px, 2.5vw, 36px)",
-    lineHeight: 1.22,
+    fontSize: "clamp(32px, 3vw, 44px)",
+    lineHeight: 1.2,
     color: FOREST,
-    margin: "0 0 16px",
-    letterSpacing: "-0.005em",
+    margin: "0 0 22px",
+    letterSpacing: "-0.008em",
   },
   titleEm: { fontStyle: "italic", color: GOLD },
 
   desc: {
-    fontSize: 13.5,
-    lineHeight: 1.8,
+    fontSize: 14.5,
+    lineHeight: 1.9,
     color: TEXT_MUTED,
     fontWeight: 300,
     margin: "0 0 18px",
-    maxWidth: 480,
+    maxWidth: "100%",
   },
 
-  /* Fixed-height reasons box — content scrolls internally so the page
-     frame never grows past the viewport regardless of how much copy
-     is added later. */
-  reasonsCard: {
-    background: `linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.35) 100%)`,
-    border: `0.5px solid ${BORDER}`,
-    borderRadius: 3,
-    padding: "16px clamp(16px, 3vw, 22px) 6px",
-    marginBottom: 18,
-  },
-  reasonsLabel: {
-    fontSize: 9.5,
-    letterSpacing: "0.18em",
-    textTransform: "uppercase",
-    color: TEXT_MUTED,
-    fontWeight: 500,
-    marginBottom: 12,
-  },
-  reasonsScroll: {
-    maxHeight: 156,
-    overflowY: "auto",
-    paddingRight: 6,
+  reasonsList: {
     display: "flex",
     flexDirection: "column",
-    gap: 14,
-    marginBottom: 10,
+    borderBottom: `0.5px solid ${BORDER}`,
   },
   reasonRow: {
     display: "flex",
-    gap: 12,
+    gap: 18,
     alignItems: "flex-start",
+    padding: "18px 0",
+    borderTop: `0.5px solid ${BORDER}`,
   },
   reasonIndex: {
     fontFamily: "'Playfair Display', serif",
-    fontSize: 13,
-    color: GOLD,
+    fontStyle: "italic",
+    fontSize: 15,
+    color: BORDER_GOLD,
     fontWeight: 500,
     lineHeight: 1.5,
     flexShrink: 0,
-    minWidth: 18,
+    minWidth: 22,
+    transition: "color 0.25s ease",
   },
   reasonTitle: {
-    fontSize: 13,
+    fontSize: 13.5,
     color: FOREST,
     fontWeight: 500,
-    marginBottom: 3,
+    marginBottom: 4,
     lineHeight: 1.4,
   },
   reasonBody: {
-    fontSize: 12,
+    fontSize: 12.5,
     color: TEXT_MUTED,
     fontWeight: 300,
-    lineHeight: 1.65,
+    lineHeight: 1.75,
+    maxWidth: 460,
+  },
+
+  sectionLabel: {
+    fontSize: 10,
+    letterSpacing: "0.2em",
+    textTransform: "uppercase",
+    color: GOLD,
+    fontWeight: 500,
+    marginBottom: 16,
   },
 
   noteRow: {
     display: "flex",
     flexDirection: "column",
-    gap: 4,
-    marginBottom: 26,
-    paddingLeft: 16,
+    gap: 5,
+    margin: "30px 0 34px",
+    paddingLeft: 20,
     borderLeft: `2px solid ${BORDER_GOLD}`,
   },
   plannedNote: {
-    fontSize: 13,
+    fontSize: 14.5,
     lineHeight: 1.6,
     color: FOREST,
     fontWeight: 500,
@@ -791,22 +794,47 @@ const styles = {
     letterSpacing: "0.02em",
   },
 
-  /* Countdown treated as the page's signature element: its own quiet panel */
+  /* Countdown — the ONE bold, dark element on the page. It echoes the
+     left panel's palette so the whole spread reads as a single book. */
   countdownCard: {
-    background: `linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0.35) 100%)`,
-    border: `0.5px solid ${BORDER}`,
-    borderRadius: 3,
-    padding: "20px clamp(18px, 3vw, 30px) 18px",
-    marginBottom: 26,
+    position: "relative",
+    background: `linear-gradient(160deg, ${FOREST} 0%, #0a2622 65%, ${INK} 100%)`,
+    borderRadius: 16,
+    padding: "30px clamp(22px, 3.4vw, 40px) 24px",
+    marginBottom: 40,
+    boxShadow:
+      "0 30px 60px -24px rgba(13,51,48,0.45), 0 2px 0 rgba(255,255,255,0.04) inset",
+    overflow: "hidden",
+  },
+  countdownGlow: {
+    position: "absolute",
+    top: -80,
+    left: "50%",
+    transform: "translateX(-50%)",
+    width: 320,
+    height: 220,
+    background: "radial-gradient(ellipse, rgba(92,184,79,0.22) 0%, transparent 70%)",
+    pointerEvents: "none",
+  },
+  countdownCorner: {
+    position: "absolute",
+    top: 16,
+    right: 16,
+    width: 26,
+    height: 26,
+    borderTop: `0.5px solid ${BORDER_GOLD}`,
+    borderRight: `0.5px solid ${BORDER_GOLD}`,
+    opacity: 0.6,
   },
   countdownLabel: {
-    fontSize: 9.5,
-    letterSpacing: "0.18em",
+    fontSize: 10,
+    letterSpacing: "0.2em",
     textTransform: "uppercase",
-    color: TEXT_MUTED,
+    color: "rgba(212,237,207,0.65)",
     fontWeight: 500,
-    marginBottom: 16,
+    marginBottom: 20,
     textAlign: "center",
+    position: "relative",
   },
   units: {
     display: "flex",
@@ -814,19 +842,20 @@ const styles = {
     justifyContent: "center",
     gap: 0,
     flexWrap: "wrap",
+    position: "relative",
   },
   unit: {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    gap: 6,
-    minWidth: 56,
+    gap: 8,
+    minWidth: 58,
   },
   unitNum: {
     fontFamily: "'Playfair Display', serif",
     fontWeight: 500,
-    fontSize: "clamp(32px, 4vw, 42px)",
-    color: FOREST,
+    fontSize: "clamp(36px, 4.4vw, 48px)",
+    color: IVORY,
     fontVariantNumeric: "tabular-nums",
     lineHeight: 1,
   },
@@ -834,14 +863,14 @@ const styles = {
     fontSize: 8.5,
     letterSpacing: "0.16em",
     textTransform: "uppercase",
-    color: TEXT_MUTED,
+    color: "rgba(212,237,207,0.5)",
     fontWeight: 400,
   },
   colon: {
     fontFamily: "'Playfair Display', serif",
     fontSize: "clamp(22px, 2.8vw, 30px)",
-    color: BORDER_GOLD,
-    margin: "0 8px",
+    color: "rgba(92,184,79,0.45)",
+    margin: "0 9px",
     lineHeight: 1,
     fontWeight: 300,
   },
@@ -851,16 +880,15 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     gap: 7,
-    marginTop: 18,
-    paddingTop: 16,
-    borderTop: `0.5px solid ${BORDER}`,
+    marginTop: 22,
+    paddingTop: 18,
+    borderTop: "0.5px solid rgba(255,255,255,0.1)",
     fontSize: 11,
-    color: TEXT_MUTED,
+    color: "rgba(250,248,243,0.55)",
     fontWeight: 300,
     position: "relative",
   },
-  countdownFootLine: { display: "none" },
-  timePillStrong: { color: FOREST, fontWeight: 500 },
+  timePillStrong: { color: GOLD_LIGHT, fontWeight: 500 },
 
   doneBox: {
     display: "flex",
@@ -869,58 +897,40 @@ const styles = {
     gap: 10,
     padding: "16px 18px",
     fontSize: 13,
-    color: FOREST,
+    color: IVORY,
   },
   spinner: {
     width: 14,
     height: 14,
     borderRadius: "50%",
-    border: `2px solid ${BORDER_GOLD}`,
-    borderTopColor: GOLD,
+    border: "2px solid rgba(255,255,255,0.2)",
+    borderTopColor: GOLD_LIGHT,
     display: "inline-block",
     animation: "spin 0.8s linear infinite",
   },
 
-  divider: { display: "flex", alignItems: "center", gap: 14, marginBottom: 16 },
-  dividerLine: { flex: 1, height: 0.5, background: BORDER },
-  dividerText: {
-    fontSize: 9.5,
-    letterSpacing: "0.18em",
-    textTransform: "uppercase",
-    color: TEXT_MUTED,
-    whiteSpace: "nowrap",
-  },
-
   contactGrid: {
     display: "grid",
-    gridTemplateColumns: "1fr auto 1fr",
-    alignItems: "center",
+    gridTemplateColumns: "1fr 1fr",
     gap: 4,
-  },
-  contactSep: {
-    width: 0.5,
-    height: 34,
-    background: BORDER,
-    justifySelf: "center",
   },
   contactRow: {
     display: "flex",
     alignItems: "center",
-    gap: 12,
-    padding: "10px 12px",
-    borderRadius: 3,
+    gap: 13,
+    padding: "10px 10px",
     textDecoration: "none",
   },
   contactIcon: {
-    width: 28,
-    height: 28,
+    width: 32,
+    height: 32,
     flexShrink: 0,
     border: `0.5px solid ${BORDER_GOLD}`,
     borderRadius: "50%",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "rgba(74,158,63,0.04)",
+    background: "rgba(74,158,63,0.05)",
   },
   contactLabel: {
     fontSize: 9,
