@@ -221,6 +221,65 @@ exports.getDashboard = async (req, res) => {
       },
     });
 
+    //  Sách sắp hết hàng (còn <= 10 cuốn, đang hiển thị)
+    const lowStockBooks = await prisma.book.findMany({
+      where: { isActive: true, stock: { lte: 10 } },
+      orderBy: { stock: "asc" },
+      take: 6,
+      select: { id: true, title: true, stock: true },
+    });
+
+    //  Người dùng mới đăng ký — 7 ngày gần nhất
+    const newUsersRangeStart = new Date(now);
+    newUsersRangeStart.setDate(now.getDate() - 6);
+    newUsersRangeStart.setHours(0, 0, 0, 0);
+
+    const newUsersRows = await prisma.$queryRaw`
+      SELECT
+        date_trunc('day', "createdAt") AS day,
+        COUNT(*)::int AS count
+      FROM "User"
+      WHERE "createdAt" >= ${newUsersRangeStart}
+        AND role = 'CUSTOMER'
+      GROUP BY 1
+      ORDER BY 1
+    `;
+    const newUsersMap = new Map(
+      newUsersRows.map((r) => [r.day.toISOString().slice(0, 10), r.count]),
+    );
+    const WEEKDAY_LABEL = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+    const newUsersChart = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(newUsersRangeStart);
+      d.setDate(d.getDate() + i);
+      const key = d.toISOString().slice(0, 10);
+      return {
+        day: WEEKDAY_LABEL[d.getDay()],
+        count: newUsersMap.get(key) ?? 0,
+      };
+    });
+
+    //  Doanh thu theo danh mục sách — trong tháng hiện tại, đơn đã thanh toán
+    const categoryRevenueRaw = await prisma.$queryRaw`
+      SELECT
+        COALESCE(c.name, 'Chưa phân loại') AS name,
+        COALESCE(SUM(oi.quantity * oi.price), 0)::float AS value
+      FROM "OrderItem" oi
+      JOIN "Order" o ON o.id = oi."orderId"
+      JOIN "Book" b ON b.id = oi."bookId"
+      LEFT JOIN "Category" c ON c.id = b."categoryId"
+      WHERE o."paymentStatus" = 'PAID'
+        AND o."createdAt" >= ${monthStart}
+      GROUP BY c.name
+      ORDER BY value DESC
+      LIMIT 6
+    `;
+    const CATEGORY_COLORS = ["#0D3330", "#4a9e3f", "#2a78d6", "#eda100", "#4a3aa7", "#e34948"];
+    const categoryRevenueChart = categoryRevenueRaw.map((r, i) => ({
+      name: r.name,
+      value: Math.round((r.value / 1_000_000) * 10) / 10,
+      color: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
+    }));
+
     const [latestOrders, latestUsers] = await Promise.all([
       prisma.order.findMany({
         take: 5,
@@ -275,6 +334,9 @@ exports.getDashboard = async (req, res) => {
         topBooks,
         recentOrders,
         activity,
+        lowStockBooks,
+        newUsersChart,
+        categoryRevenueChart,
       },
     });
   } catch (err) {
