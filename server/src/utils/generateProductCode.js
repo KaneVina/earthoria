@@ -26,7 +26,7 @@ async function generateProductCode(client = defaultPrisma) {
     const rand = randomLetters(2)
     const code = `EB-${yy}${mm}${dd}${seq}${rand}`
 
-    const existing = await client.book.findUnique({ where: { productCode: code } })
+    const existing = await client.bookVariant.findUnique({ where: { productCode: code } })
     if (!existing) return code
   }
 
