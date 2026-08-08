@@ -2518,3 +2518,127 @@
 .admin-root.dark .a-role-chip.lit .a-role-chip-icon {
   box-shadow: 0 0 0 3px rgba(92, 184, 79, 0.16);
 }
+.a-spin { animation: a-spin-rotate 0.8s linear infinite; }
+@keyframes a-spin-rotate { to { transform: rotate(360deg); } }
+
+@media (max-width: 900px) {
+  .a-product-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+/* create book */
+.a-pf-grid {
+  display: grid;
+  grid-template-columns: 2.1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.a-pf-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: calc(var(--a-topbar-h) + 16px);
+}
+
+@media (max-width: 1100px) {
+  .a-pf-grid { grid-template-columns: 1fr; }
+  .a-pf-side { position: static; }
+}
+
+/* Preview card */
+.a-pf-cover {
+  width: 52px;
+  height: 68px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  border: 1px solid var(--a-ink-08);
+  background: var(--a-green-pale);
+  color: var(--a-forest);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--a-font-serif);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.a-pf-preview-title {
+  font-family: var(--a-font-serif);
+  font-size: 15px;
+  color: var(--a-ink);
+  line-height: 1.3;
+  margin-bottom: 3px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.a-pf-preview-author {
+  font-size: 11px;
+  color: var(--a-ink-40);
+  margin-bottom: 7px;
+}
+
+.a-pf-preview-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-top: 1px solid var(--a-ink-05);
+  font-size: 12px;
+}
+.a-pf-preview-label { color: var(--a-ink-40); }
+.a-pf-preview-value { color: var(--a-ink); font-weight: 500; text-align: right; }
+
+.a-pf-preview-desc {
+  font-size: 11px;
+  color: var(--a-ink-60);
+  line-height: 1.5;
+  padding: 10px 0;
+  border-top: 1px solid var(--a-ink-05);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.a-pf-variant-list {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding-top: 10px;
+  border-top: 1px solid var(--a-ink-05);
+}
+.a-pf-variant-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.a-pf-variant-price {
+  font-family: var(--a-font-serif);
+  font-size: 14px;
+  color: var(--a-ink);
+}
+
+.a-pf-preview-empty {
+  font-size: 11px;
+  color: var(--a-ink-40);
+  font-style: italic;
+  padding-top: 10px;
+  border-top: 1px dashed var(--a-ink-08);
+}
+.a-pf-image-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 640px) { .a-pf-image-grid { grid-template-columns: repeat(2, 1fr); } }
+.a-pf-image-slot { position: relative; aspect-ratio: 3/4; border-radius: var(--a-radius); overflow: hidden; }
+.a-pf-image-slot.filled { border: 1px solid var(--a-ink-08); }
+.a-pf-image-slot.filled img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.a-pf-image-overlay { position: absolute; inset: 0; display: flex; align-items: flex-start; justify-content: flex-end; padding: 6px; background: linear-gradient(180deg, rgba(13,51,48,0.35) 0%, transparent 35%); opacity: 0; transition: var(--a-trans-fast); }
+.a-pf-image-slot.filled:hover .a-pf-image-overlay { opacity: 1; }
+.a-pf-image-trash { width: 24px; height: 24px; border-radius: 6px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(255,255,255,0.92); color: var(--a-ink-60); }
+.a-pf-image-trash:hover:not(:disabled) { color: var(--a-danger-text); }
+.a-pf-image-cover-badge { position: absolute; bottom: 6px; left: 6px; font-size: 9px; font-weight: 600; text-transform: uppercase; background: var(--a-forest); color: #ede8dc; padding: 2px 7px; border-radius: 20px; }
+.a-pf-image-add { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 1.5px dashed var(--a-ink-20); background: var(--a-surface); color: var(--a-ink-40); cursor: pointer; font-family: var(--a-font-sans); font-size: 11px; font-weight: 500; }
+.a-pf-image-add:hover:not(:disabled) { border-color: var(--a-green); background: var(--a-green-pale); color: var(--a-forest); }
+.a-pf-image-hint { font-size: 9px; color: var(--a-ink-40); font-weight: 400; }

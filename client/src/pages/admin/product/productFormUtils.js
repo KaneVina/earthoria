@@ -1,17 +1,19 @@
-// productFormUtils.js — dùng chung giữa ProductCreate.jsx và ProductDetail.jsx
-// để 2 trang này luôn đồng bộ cấu trúc field, không lệch nhau khi sửa sau này.
+// productFormUtils.js — dùng chung giữa ProductCreate.jsx và ProductDetail.jsx.
+// Sau khi tách price/stock/productCode ra BookVariant, 1 sách (Book) có thể
+// bán ở nhiều "định dạng" (PHYSICAL - sách giấy / DIGITAL - sách điện tử),
+// mỗi định dạng có giá/tồn kho/mã sách riêng -> nằm trong form.variants[].
+
+let keySeq = 0;
+const clientKey = () => `v_${Date.now()}_${keySeq++}`;
+
+export const FORMAT_LABEL = {
+  PHYSICAL: "Sách giấy",
+  DIGITAL: "Sách điện tử",
+};
 
 export const EMPTY_FORM = {
   title: "",
   authors: "",
-  price: "",
-  saleMode: "direct",
-  salePrice: "",
-  salePercent: "",
-  dealerMode: "direct",
-  dealerPrice: "",
-  dealerPercent: "",
-  stock: "",
   categoryId: "",
   description: "",
   isVisible: true,
@@ -25,9 +27,29 @@ export const EMPTY_FORM = {
   weightGrams: "",
   coverType: "",
   paperType: "",
+  variants: [],
 };
 
-/* % giảm hiển thị dạng badge, vd giá gốc 420.000 -> giá bán 260.400 => -38% */
+export const emptyVariant = (format) => ({
+  _key: clientKey(),
+  id: null,
+  format,
+  productCode: null, // chỉ có sau khi lưu, do server sinh
+  unit: format === "DIGITAL" ? "Bản" : "Cuốn",
+  price: "",
+  stock: "",
+  isUnlimitedStock: format === "DIGITAL",
+  saleMode: "direct",
+  salePrice: "",
+  salePercent: "",
+  dealerMode: "direct",
+  dealerPrice: "",
+  dealerPercent: "",
+  isActive: true,
+  sold: 0,
+});
+
+/* % giảm hiển thị dạng badge */
 export const calcDiscountPercent = (base, sale) => {
   const b = Number(base), s = Number(sale);
   if (!b || !s || s >= b) return 0;
@@ -47,19 +69,11 @@ export const computeModePrice = (mode, percent, direct, basePrice) => {
     : null;
 };
 
-/* book (từ API) -> form state, dùng khi mở trang chi tiết để edit */
+/* book (từ API, đã có variants[]) -> form state */
 export const bookToForm = (product) => ({
   title: product.title ?? "",
   authors: (product.authors ?? []).join(", "),
-  price: product.price ?? "",
-  saleMode: "direct",
-  salePrice: product.salePrice ?? "",
-  salePercent: "",
-  dealerMode: "direct",
-  dealerPrice: product.dealerPrice ?? "",
-  dealerPercent: "",
-  stock: product.stock ?? "",
-  categoryId: product.categoryId ?? "",
+  categoryId: product.categoryId ?? product.category?.id ?? "",
   description: product.description ?? "",
   isVisible: product.isVisible ?? true,
   publisher: product.publisher ?? "",
@@ -72,43 +86,55 @@ export const bookToForm = (product) => ({
   weightGrams: product.weightGrams ?? "",
   coverType: product.coverType ?? "",
   paperType: product.paperType ?? "",
+  variants: (product.variants ?? []).map((v) => ({
+    _key: clientKey(),
+    id: v.id,
+    format: v.format,
+    productCode: v.productCode ?? null,
+    unit: v.unit ?? "Cuốn",
+    price: v.price ?? "",
+    stock: v.stock ?? "",
+    isUnlimitedStock: v.isUnlimitedStock ?? false,
+    saleMode: "direct",
+    salePrice: v.salePrice ?? "",
+    salePercent: "",
+    dealerMode: "direct",
+    dealerPrice: v.dealerPrice ?? "",
+    dealerPercent: "",
+    isActive: v.isActive ?? true,
+    sold: v.sold ?? 0,
+  })),
 });
 
 /* form state -> payload gửi API */
-export const formToPayload = (form) => {
-  const basePrice = Number(form.price) || 0;
-  const finalSalePrice = computeModePrice(
-    form.saleMode,
-    form.salePercent,
-    form.salePrice,
-    basePrice
-  );
-  const finalDealerPrice = computeModePrice(
-    form.dealerMode,
-    form.dealerPercent,
-    form.dealerPrice,
-    basePrice
-  );
-
-  return {
-    title: form.title,
-    authors: form.authors,
-    price: basePrice,
-    salePrice: finalSalePrice,
-    dealerPrice: finalDealerPrice,
-    stock: Number(form.stock) || 0,
-    categoryId: form.categoryId,
-    description: form.description,
-    isVisible: form.isVisible,
-    publisher: form.publisher,
-    pages: form.pages ? Number(form.pages) : null,
-    language: form.language,
-    ageMin: form.ageMin !== "" ? Number(form.ageMin) : null,
-    ageMax: form.ageMax !== "" ? Number(form.ageMax) : null,
-    publishYear: form.publishYear ? Number(form.publishYear) : null,
-    dimensions: form.dimensions,
-    weightGrams: form.weightGrams ? Number(form.weightGrams) : null,
-    coverType: form.coverType,
-    paperType: form.paperType,
-  };
-};
+export const formToPayload = (form) => ({
+  title: form.title,
+  authors: form.authors,
+  categoryId: form.categoryId,
+  description: form.description,
+  isVisible: form.isVisible,
+  publisher: form.publisher,
+  pages: form.pages ? Number(form.pages) : null,
+  language: form.language,
+  ageMin: form.ageMin !== "" ? Number(form.ageMin) : null,
+  ageMax: form.ageMax !== "" ? Number(form.ageMax) : null,
+  publishYear: form.publishYear ? Number(form.publishYear) : null,
+  dimensions: form.dimensions,
+  weightGrams: form.weightGrams ? Number(form.weightGrams) : null,
+  coverType: form.coverType,
+  paperType: form.paperType,
+  variants: form.variants.map((v) => {
+    const basePrice = Number(v.price) || 0;
+    return {
+      ...(v.id ? { id: v.id } : {}),
+      format: v.format,
+      price: basePrice,
+      salePrice: computeModePrice(v.saleMode, v.salePercent, v.salePrice, basePrice),
+      dealerPrice: computeModePrice(v.dealerMode, v.dealerPercent, v.dealerPrice, basePrice),
+      stock: Number(v.stock) || 0,
+      unit: v.unit || "Cuốn",
+      isUnlimitedStock: !!v.isUnlimitedStock,
+      isActive: v.isActive !== false,
+    };
+  }),
+});

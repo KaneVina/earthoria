@@ -1,6 +1,3 @@
-// Products.jsx — Admin: khu vực "Sản phẩm" với 3 tab ngang: Sách / Phụ kiện / Danh mục.
-// Tab "Sách" giữ nguyên logic danh sách + tìm kiếm + lọc cũ (chỉ chuyển vào trong 1 tab-panel).
-// 2 tab mới (Phụ kiện, Danh mục) được tách thành 2 file riêng, import ngang hàng và render vào đây.
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -19,6 +16,7 @@ import toast from "react-hot-toast";
 import AdminLayout from "../AdminLayout";
 import ProductsAccessories from "./ProductsAccessories";
 import ProductsCategories from "./ProductsCategories";
+import { calcDiscountPercent } from "./productFormUtils";
 
 const EMPTY_FILTERS = {
   categoryId: "",
@@ -26,14 +24,6 @@ const EMPTY_FILTERS = {
   status: "",
   ageMin: "",
   ageMax: "",
-};
-
-/* % giảm hiển thị dạng badge, vd giá gốc 420.000 -> giá bán 260.400 => -38% */
-const calcDiscountPercent = (base, sale) => {
-  const b = Number(base),
-    s = Number(sale);
-  if (!b || !s || s >= b) return 0;
-  return Math.round((1 - s / b) * 100);
 };
 
 const TABS = [
@@ -362,8 +352,17 @@ function BooksTab() {
                 </tr>
               ) : (
                 products.map((p) => {
-                  const discount = calcDiscountPercent(p.price, p.salePrice);
-                  const mainPrice = p.salePrice ?? p.price;
+                  const variants = p.variants ?? [];
+                  const totalStock = variants.reduce(
+                    (s, v) => (v.isUnlimitedStock ? s : s + v.stock),
+                    0,
+                  );
+                  const hasUnlimited = variants.some((v) => v.isUnlimitedStock);
+                  const totalSold = variants.reduce(
+                    (s, v) => s + (v.sold ?? 0),
+                    0,
+                  );
+
                   return (
                     <tr
                       key={p.id}
@@ -371,7 +370,6 @@ function BooksTab() {
                       onClick={() => navigate(`/dashboard/products/${p.id}`)}
                       style={{ cursor: "pointer" }}
                     >
-                      {/* Book info */}
                       <td>
                         <div
                           style={{
@@ -401,93 +399,102 @@ function BooksTab() {
                               {(p.authors ?? []).join(", ") || "—"}
                             </div>
                             <div
-                              style={{
-                                fontFamily: "monospace",
-                                fontSize: 9,
-                                color: "rgba(13,51,48,0.4)",
-                                marginTop: 1,
-                              }}
+                              style={{ display: "flex", gap: 6, marginTop: 2 }}
                             >
-                              {p.productCode ?? "—"}
+                              {variants.map((v) => (
+                                <span
+                                  key={v.id}
+                                  style={{
+                                    fontFamily: "monospace",
+                                    fontSize: 9,
+                                    color: "rgba(13,51,48,0.4)",
+                                  }}
+                                >
+                                  {v.productCode ?? "—"}
+                                </span>
+                              ))}
                             </div>
                           </div>
                         </div>
                       </td>
 
-                      {/* Category */}
                       <td>
                         <span className="a-badge neutral">
                           {p.category?.name ?? "—"}
                         </span>
                       </td>
 
-                      {/* Price */}
                       <td>
-                        <div className="a-td-sans">
-                          {formatPrice(mainPrice)}
-                        </div>
-                        {p.salePrice ? (
-                          <div
+                        {variants.length === 0 ? (
+                          <span
                             style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 6,
+                              color: "rgba(13,51,48,0.3)",
                               fontSize: 11,
-                              marginTop: 1,
                             }}
                           >
-                            <span
-                              style={{
-                                color: "rgba(13,51,48,0.35)",
-                                textDecoration: "line-through",
-                              }}
-                            >
-                              {formatPrice(p.price)}
-                            </span>
-                            {discount > 0 && (
-                              <span
-                                className="a-badge danger"
-                                style={{ fontSize: 9, padding: "1px 5px" }}
+                            Chưa có định dạng
+                          </span>
+                        ) : (
+                          variants.map((v) => {
+                            const mainPrice = v.salePrice ?? v.price;
+                            const discount = calcDiscountPercent(
+                              v.price,
+                              v.salePrice,
+                            );
+                            return (
+                              <div
+                                key={v.id}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 6,
+                                  marginBottom: 2,
+                                }}
                               >
-                                -{discount}%
-                              </span>
-                            )}
-                          </div>
-                        ) : null}
-                        {p.dealerPrice ? (
-                          <div
-                            style={{
-                              fontSize: 10,
-                              color: "rgba(13,51,48,0.4)",
-                              marginTop: 2,
-                            }}
-                          >
-                            Đại lý: {formatPrice(p.dealerPrice)}
-                          </div>
-                        ) : null}
+                                <span
+                                  className="a-badge neutral"
+                                  style={{ fontSize: 9, padding: "1px 5px" }}
+                                >
+                                  {v.format === "DIGITAL" ? "Điện tử" : "Giấy"}
+                                </span>
+                                <span className="a-td-sans">
+                                  {formatPrice(mainPrice)}
+                                </span>
+                                {discount > 0 && (
+                                  <span
+                                    className="a-badge danger"
+                                    style={{ fontSize: 9, padding: "1px 5px" }}
+                                  >
+                                    -{discount}%
+                                  </span>
+                                )}
+                              </div>
+                            );
+                          })
+                        )}
                       </td>
 
-                      {/* Stock */}
                       <td>
                         <span
-                          className={p.stock <= 10 ? "a-td-danger" : ""}
+                          className={
+                            !hasUnlimited && totalStock <= 10
+                              ? "a-td-danger"
+                              : ""
+                          }
                           style={{ fontWeight: 600 }}
                         >
-                          {p.stock}
+                          {hasUnlimited ? `${totalStock}+` : totalStock}
                         </span>
                       </td>
 
-                      {/* Sold */}
-                      <td className="a-td-muted">
-                        {p._count?.orderItems ?? 0}
-                      </td>
-                      {/* AR codes count */}
+                      <td className="a-td-muted">{totalSold}</td>
+
                       <td>
                         <span className="a-badge info" style={{ fontSize: 10 }}>
                           {p._count?.arCodes ?? 0} mã
                         </span>
                       </td>
-                      {/* Status */}
+
                       <td>
                         <span
                           className={`a-badge ${p.isVisible ? "success" : "neutral"}`}
@@ -496,7 +503,6 @@ function BooksTab() {
                         </span>
                       </td>
 
-                      {/* Actions — chỉ còn 1 nút Chi tiết (xem + sửa gộp chung) + nút Xóa */}
                       <td onClick={(e) => e.stopPropagation()}>
                         <div style={{ display: "flex", gap: 6 }}>
                           <button

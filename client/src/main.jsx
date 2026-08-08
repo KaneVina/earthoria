@@ -9,9 +9,6 @@ import './components/assets/css/navbar.css'
 import './components/assets/css/cookie-consent.css'
 import './components/assets/js/cookie-consent.js'
 
-// import './assets/js/main.js'
-
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

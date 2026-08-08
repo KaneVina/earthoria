@@ -7,9 +7,8 @@ export const useCartStore = create((set, get) => ({
   cart: null,
   itemCount: 0,
   loading: false,
-  _updateSeq: {}, // itemId -> số thứ tự request update mới nhất
+  _updateSeq: {},
 
-  // Giữ nguyên — chỉ gọi 1 lần lúc mount
   fetchCart: async () => {
     try {
       set({ loading: true })
@@ -53,7 +52,6 @@ export const useCartStore = create((set, get) => ({
     }
   },
 
-  // Chỉ cập nhật UI, không gọi API — dùng khi debounce ở component
   setLocalQuantity: (itemId, quantity) => {
     const prev = get().cart
     if (!prev) return
@@ -63,9 +61,7 @@ export const useCartStore = create((set, get) => ({
     set({ cart: { ...prev, items: newItems }, itemCount: calcCount(newItems) })
   },
 
-  // Gọi API thật, dùng sau debounce. Giữ nguyên số đang hiển thị nếu lỗi (không rollback về prev cũ)
  updateItem: async (itemId, quantity) => {
-    // Đánh version cho lần gọi này, để phát hiện nếu có request mới hơn gửi đi trong lúc chờ
     const seq = get()._updateSeq
     const mySeq = (seq[itemId] || 0) + 1
     set({ _updateSeq: { ...seq, [itemId]: mySeq } })

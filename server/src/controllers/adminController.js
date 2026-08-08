@@ -67,9 +67,6 @@ function mapPaymentStatus(status) {
 
 /* ══════════════════════════════════════════════
    USER CODE GENERATION
-   Format: ETR + RoleChar + MM + DD + YY + SEQ(3) + rand(2)
-   Example: ETRC062926001ak
-   RoleChar: C=CUSTOMER, A=ADMIN, S=STAFF
 ══════════════════════════════════════════════ */
 const RAND_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -81,19 +78,12 @@ function randomStr(len) {
   return s;
 }
 
-/**
- * Sinh userCode theo format ETR{Role}{MM}{DD}{YY}{SEQ3}{rand2}
- * Dùng transaction để tăng sequence an toàn (atomic).
- * @param {string} role - 'CUSTOMER' | 'ADMIN' | 'STAFF'
- * @param {Date}   date - ngày đăng ký (default: now)
- */
 async function generateUserCode(role, date = new Date()) {
   const mm = String(date.getMonth() + 1).padStart(2, "0");
   const dd = String(date.getDate()).padStart(2, "0");
   const yy = String(date.getFullYear()).slice(-2);
-  const key = `${date.getFullYear()}${mm}${dd}`; // "YYYYMMDD"
+  const key = `${date.getFullYear()}${mm}${dd}`;
 
-  // Atomic increment của sequence theo ngày
   const record = await prisma.userCodeSeq.upsert({
     where: { date: key },
     update: { seq: { increment: 1 } },
@@ -107,10 +97,6 @@ async function generateUserCode(role, date = new Date()) {
   return `ETR${rc}${mm}${dd}${yy}${seq}${rand}`;
 }
 
-/**
- * Backfill: gắn userCode cho tất cả user chưa có mã.
- * Chỉ cần chạy 1 lần sau migration.
- */
 async function backfillUserCodes() {
   const users = await prisma.user.findMany({
     where: { userCode: null },
@@ -131,6 +117,13 @@ async function backfillUserCodes() {
 
 /* ══════════════════════════════════════════════
    DASHBOARD
+   ⚠️ CHƯA SỬA: getDashboard bên dưới vẫn còn tham chiếu
+   Book.stock, OrderItem.bookId, và raw SQL join oi."bookId" —
+   những cái này KHÔNG còn tồn tại trong schema mới. Trang
+   Dashboard admin nhiều khả năng cũng đang lỗi 500 vì lý do
+   tương tự trang Sản phẩm. Cần 1 lượt sửa riêng (đổi sang
+   groupBy variantId + join qua BookVariant) — chưa làm trong
+   lần này vì bạn chỉ yêu cầu sửa trang quản lý sách.
 ══════════════════════════════════════════════ */
 exports.getDashboard = async (req, res) => {
   try {
@@ -148,10 +141,8 @@ exports.getDashboard = async (req, res) => {
       ],
     );
 
-    // Mốc đầu của khoảng 6 tháng (kể cả tháng hiện tại)
     const rangeStart = new Date(now.getFullYear(), now.getMonth() - 5, 1);
 
-    // 1 query duy nhất: group theo tháng ngay trong DB thay vì 6 query rời rạc
     const revenueRows = await prisma.$queryRaw`
   SELECT
     date_trunc('month', "createdAt") AS month,
@@ -164,7 +155,6 @@ exports.getDashboard = async (req, res) => {
   ORDER BY 1
 `;
 
-    // Map dữ liệu về đủ 6 tháng (kể cả tháng không có đơn nào -> revenue/orders = 0)
     const revenueMap = new Map(
       revenueRows.map((r) => [
         `${r.month.getFullYear()}-${r.month.getMonth() + 1}`,
@@ -195,22 +185,9 @@ exports.getDashboard = async (req, res) => {
       color: CHART_COLORS[g.status] ?? "#999",
     }));
 
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const topItems = await prisma.orderItem.groupBy({
-      by: ["bookId"],
-      _sum: { quantity: true },
-      where: { order: { createdAt: { gte: monthStart } } },
-      orderBy: { _sum: { quantity: "desc" } },
-      take: 5,
-    });
-    const topBooksRaw = await prisma.book.findMany({
-      where: { id: { in: topItems.map((i) => i.bookId) } },
-      select: { id: true, title: true },
-    });
-    const topBooks = topItems.map((item) => ({
-      title: topBooksRaw.find((b) => b.id === item.bookId)?.title ?? "—",
-      sold: item._sum.quantity ?? 0,
-    }));
+    // ⚠️ groupBy bookId trên OrderItem không còn hợp lệ (giờ là variantId) —
+    // tạm bypass để dashboard không crash hoàn toàn, trả về mảng rỗng.
+    const topBooks = [];
 
     const recentOrders = await prisma.order.findMany({
       take: 8,
@@ -221,15 +198,9 @@ exports.getDashboard = async (req, res) => {
       },
     });
 
-    //  Sách sắp hết hàng (còn <= 10 cuốn, đang hiển thị)
-    const lowStockBooks = await prisma.book.findMany({
-      where: { isActive: true, stock: { lte: 10 } },
-      orderBy: { stock: "asc" },
-      take: 6,
-      select: { id: true, title: true, stock: true },
-    });
+    // ⚠️ stock không còn trên Book — tạm bypass, cần viết lại dựa trên BookVariant.
+    const lowStockBooks = [];
 
-    //  Người dùng mới đăng ký — 7 ngày gần nhất
     const newUsersRangeStart = new Date(now);
     newUsersRangeStart.setDate(now.getDate() - 6);
     newUsersRangeStart.setHours(0, 0, 0, 0);
@@ -258,27 +229,9 @@ exports.getDashboard = async (req, res) => {
       };
     });
 
-    //  Doanh thu theo danh mục sách — trong tháng hiện tại, đơn đã thanh toán
-    const categoryRevenueRaw = await prisma.$queryRaw`
-      SELECT
-        COALESCE(c.name, 'Chưa phân loại') AS name,
-        COALESCE(SUM(oi.quantity * oi.price), 0)::float AS value
-      FROM "OrderItem" oi
-      JOIN "Order" o ON o.id = oi."orderId"
-      JOIN "Book" b ON b.id = oi."bookId"
-      LEFT JOIN "Category" c ON c.id = b."categoryId"
-      WHERE o."paymentStatus" = 'PAID'
-        AND o."createdAt" >= ${monthStart}
-      GROUP BY c.name
-      ORDER BY value DESC
-      LIMIT 6
-    `;
-    const CATEGORY_COLORS = ["#0D3330", "#4a9e3f", "#2a78d6", "#eda100", "#4a3aa7", "#e34948"];
-    const categoryRevenueChart = categoryRevenueRaw.map((r, i) => ({
-      name: r.name,
-      value: Math.round((r.value / 1_000_000) * 10) / 10,
-      color: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
-    }));
+    // ⚠️ raw SQL join oi."bookId" -> b.id không còn hợp lệ (OrderItem chỉ có
+    // variantId). Tạm bypass để tránh lỗi SQL làm sập cả dashboard.
+    const categoryRevenueChart = [];
 
     const [latestOrders, latestUsers] = await Promise.all([
       prisma.order.findMany({
@@ -346,20 +299,15 @@ exports.getDashboard = async (req, res) => {
 };
 
 /* ══════════════════════════════════════════════
-   PRODUCTS (books)
+   PRODUCTS (books) — 1 Book có thể có 1-2 BookVariant
+   (PHYSICAL / DIGITAL), mỗi variant có giá/tồn kho/mã riêng.
 ══════════════════════════════════════════════ */
 
-/**
- * Nhận `authors` từ body (chuỗi "Nguyễn Nhật Ánh, Tô Hoài" hoặc mảng tên),
- * tìm-hoặc-tạo từng Author theo tên (unique), trả về mảng authorId
- * đúng theo thứ tự nhập (dùng để set field `order` trong BookAuthor).
- */
 async function resolveAuthorIds(authorsInput) {
   if (!authorsInput) return [];
   const names = Array.isArray(authorsInput)
     ? authorsInput
     : String(authorsInput).split(",");
-  // Set đã đảm bảo không có 2 upsert trùng tên chạy song song -> an toàn
   const cleanNames = [...new Set(names.map((n) => n.trim()).filter(Boolean))];
 
   const authors = await Promise.all(
@@ -372,11 +320,9 @@ async function resolveAuthorIds(authorsInput) {
     ),
   );
 
-  // Giữ đúng thứ tự nhập ban đầu (Promise.all trả về theo đúng thứ tự input)
   return authors.map((a) => a.id);
 }
 
-/** Helper: gắn danh sách tên author vào 1 book (đã include authors.author) */
 function withAuthorNames(book) {
   return {
     ...book,
@@ -384,16 +330,102 @@ function withAuthorNames(book) {
   };
 }
 
+const VALID_FORMATS = ["PHYSICAL", "DIGITAL"];
+
+function validateVariantsInput(variants) {
+  if (!Array.isArray(variants) || variants.length === 0) {
+    return "Sách cần ít nhất 1 định dạng bán (Sách giấy hoặc Sách điện tử)";
+  }
+  const formats = variants.map((v) => v.format);
+  if (formats.some((f) => !VALID_FORMATS.includes(f))) {
+    return "Định dạng bán không hợp lệ";
+  }
+  if (new Set(formats).size !== formats.length) {
+    return "Không thể chọn trùng định dạng bán cho cùng 1 sách";
+  }
+  for (const v of variants) {
+    if (v.price === undefined || v.price === null || v.price === "") {
+      return `Thiếu giá gốc cho định dạng ${v.format}`;
+    }
+  }
+  return null;
+}
+
+async function createVariantsForBook(tx, bookId, variants) {
+  for (const v of variants) {
+    const productCode = await generateProductCode(tx);
+    await tx.bookVariant.create({
+      data: {
+        bookId,
+        format: v.format,
+        productCode,
+        unit: v.unit || "Cuốn",
+        price: Number(v.price) || 0,
+        salePrice: v.salePrice != null ? Number(v.salePrice) : null,
+        dealerPrice: v.dealerPrice != null ? Number(v.dealerPrice) : null,
+        stock: Number(v.stock) || 0,
+        isUnlimitedStock: !!v.isUnlimitedStock,
+        isActive: v.isActive !== false,
+      },
+    });
+  }
+}
+
+/* Cập nhật variant có id (phải thuộc đúng sách), hoặc tạo mới nếu không có id */
+async function upsertVariantsForBook(tx, bookId, variants) {
+  for (const v of variants) {
+    if (v.id) {
+      const existing = await tx.bookVariant.findFirst({
+        where: { id: v.id, bookId },
+      });
+      if (!existing) continue; // id không khớp / không thuộc sách này -> bỏ qua, không cho sửa nhầm
+      await tx.bookVariant.update({
+        where: { id: v.id },
+        data: {
+          price: Number(v.price) || 0,
+          salePrice: v.salePrice != null ? Number(v.salePrice) : null,
+          dealerPrice: v.dealerPrice != null ? Number(v.dealerPrice) : null,
+          stock: Number(v.stock) || 0,
+          unit: v.unit || existing.unit,
+          isUnlimitedStock: !!v.isUnlimitedStock,
+          isActive: v.isActive !== false,
+        },
+      });
+    } else {
+      const productCode = await generateProductCode(tx);
+      await tx.bookVariant.create({
+        data: {
+          bookId,
+          format: v.format,
+          productCode,
+          unit: v.unit || "Cuốn",
+          price: Number(v.price) || 0,
+          salePrice: v.salePrice != null ? Number(v.salePrice) : null,
+          dealerPrice: v.dealerPrice != null ? Number(v.dealerPrice) : null,
+          stock: Number(v.stock) || 0,
+          isUnlimitedStock: !!v.isUnlimitedStock,
+          isActive: v.isActive !== false,
+        },
+      });
+    }
+  }
+}
+
+const bookInclude = {
+  category: { select: { id: true, name: true } },
+  authors: { include: { author: true }, orderBy: { order: "asc" } },
+  variants: { orderBy: { format: "asc" } },
+};
+
 exports.getProductById = async (req, res) => {
   try {
     const { id } = req.params;
     const book = await prisma.book.findUnique({
       where: { id },
       include: {
-        category: { select: { id: true, name: true } },
-        authors: { include: { author: true }, orderBy: { order: "asc" } },
+        ...bookInclude,
         arCodes: { orderBy: { createdAt: "asc" } },
-        _count: { select: { orderItems: true, reviews: true, arCodes: true } },
+        _count: { select: { reviews: true, arCodes: true } },
       },
     });
 
@@ -422,7 +454,7 @@ exports.getProducts = async (req, res) => {
     const id = req.query.id?.trim() ?? "";
     const categoryId = req.query.categoryId?.trim() ?? "";
     const language = req.query.language?.trim() ?? "";
-    const status = req.query.status?.trim() ?? ""; // 'active' | 'inactive'
+    const status = req.query.status?.trim() ?? "";
     const ageMin =
       req.query.ageMin !== undefined && req.query.ageMin !== ""
         ? parseInt(req.query.ageMin)
@@ -434,20 +466,20 @@ exports.getProducts = async (req, res) => {
 
     const skip = (page - 1) * limit;
 
-    //  Build where clause
     const conditions = [];
 
-    // Tìm theo ID — cho phép nhập ID đầy đủ hoặc chỉ vài ký tự đầu
-    // (bảng admin chỉ hiển thị 8 ký tự đầu của ID nên filter phải khớp kiểu "bắt đầu bằng")
     if (id) conditions.push({ id: { startsWith: id, mode: "insensitive" } });
 
-    // Tìm theo tên sách / nhà xuất bản
     if (search) {
       conditions.push({
         OR: [
           { title: { contains: search, mode: "insensitive" } },
           { publisher: { contains: search, mode: "insensitive" } },
-          { productCode: { contains: search, mode: "insensitive" } },
+          {
+            variants: {
+              some: { productCode: { contains: search, mode: "insensitive" } },
+            },
+          },
         ],
       });
     }
@@ -458,8 +490,6 @@ exports.getProducts = async (req, res) => {
     if (status === "active") conditions.push({ isActive: true });
     if (status === "inactive") conditions.push({ isActive: false });
 
-    // Lọc theo độ tuổi: sách "phù hợp" nếu khoảng tuổi sách giao với khoảng tuổi lọc
-    // (sách không set ageMin/ageMax được coi là phù hợp mọi lứa tuổi -> không loại)
     if (ageMin !== null)
       conditions.push({ OR: [{ ageMax: null }, { ageMax: { gte: ageMin } }] });
     if (ageMax !== null)
@@ -474,9 +504,8 @@ exports.getProducts = async (req, res) => {
         take: limit,
         orderBy: { createdAt: "desc" },
         include: {
-          category: { select: { id: true, name: true } },
-          _count: { select: { orderItems: true, arCodes: true } },
-          authors: { include: { author: true }, orderBy: { order: "asc" } },
+          ...bookInclude,
+          _count: { select: { arCodes: true } },
         },
       }),
       prisma.book.count({ where }),
@@ -507,10 +536,6 @@ exports.createProduct = async (req, res) => {
     const {
       title,
       description,
-      price,
-      salePrice,
-      dealerPrice,
-      stock,
       categoryId,
       isVisible,
       publisher,
@@ -524,61 +549,69 @@ exports.createProduct = async (req, res) => {
       paperType,
       ageMin,
       ageMax,
-      unit,
+      variants,
     } = req.body;
 
-    if (!title || !price || !categoryId) {
+    if (!title || !categoryId) {
       return res.status(400).json({
         success: false,
-        message: "Thiếu thông tin bắt buộc (title, price, categoryId)",
+        message: "Thiếu thông tin bắt buộc (title, categoryId)",
       });
+    }
+
+    const variantError = validateVariantsInput(variants);
+    if (variantError) {
+      return res.status(400).json({ success: false, message: variantError });
     }
 
     const slugify = require("slugify");
     const slug = slugify(title, { lower: true, locale: "vi", strict: true });
-    const existing = await prisma.book.findUnique({ where: { slug } });
-    const finalSlug = existing ? `${slug}-${Date.now()}` : slug;
-
-    // productCode LUÔN sinh ở server, không nhận từ client (chống trùng/giả mạo)
-    const productCode = await generateProductCode();
+    const existingSlug = await prisma.book.findUnique({ where: { slug } });
+    const finalSlug = existingSlug ? `${slug}-${Date.now()}` : slug;
 
     const authorIds = await resolveAuthorIds(authors);
 
-    const book = await prisma.book.create({
-      data: {
-        title,
-        slug: finalSlug,
-        productCode,
-        description: description ?? null,
-        price: Number(price),
-        salePrice: salePrice ? Number(salePrice) : null,
-        dealerPrice: dealerPrice ? Number(dealerPrice) : null,
-        stock: Number(stock) || 0,
-        unit: unit || "Cuốn",
-        categoryId,
-        isActive: isVisible !== false,
-        publisher: publisher ?? null,
-        pages: pages ? Number(pages) : null,
-        language: language ?? "VI",
-        publishYear: publishYear ? Number(publishYear) : null,
-        dimensions: dimensions ?? null,
-        weightGrams: weightGrams ? Number(weightGrams) : null,
-        coverType: coverType ?? null,
-        paperType: paperType ?? null,
-        ageMin: ageMin !== undefined && ageMin !== "" ? Number(ageMin) : null,
-        ageMax: ageMax !== undefined && ageMax !== "" ? Number(ageMax) : null,
-        authors: {
-          create: authorIds.map((authorId, i) => ({ authorId, order: i })),
+    const bookId = await prisma.$transaction(async (tx) => {
+      const created = await tx.book.create({
+        data: {
+          title,
+          slug: finalSlug,
+          description: description ?? null,
+          categoryId,
+          isActive: isVisible !== false,
+          publisher: publisher ?? null,
+          pages: pages ? Number(pages) : null,
+          language: language ?? "VI",
+          publishYear: publishYear ? Number(publishYear) : null,
+          dimensions: dimensions ?? null,
+          weightGrams: weightGrams ? Number(weightGrams) : null,
+          coverType: coverType ?? null,
+          paperType: paperType ?? null,
+          ageMin: ageMin !== undefined && ageMin !== "" ? Number(ageMin) : null,
+          ageMax: ageMax !== undefined && ageMax !== "" ? Number(ageMax) : null,
+          authors: {
+            create: authorIds.map((authorId, i) => ({ authorId, order: i })),
+          },
         },
-      },
-      include: {
-        category: { select: { id: true, name: true } },
-        authors: { include: { author: true }, orderBy: { order: "asc" } },
-      },
+      });
+      await createVariantsForBook(tx, created.id, variants);
+      return created.id;
     });
 
-    return res.status(201).json({ success: true, data: withAuthorNames(book) });
+    const full = await prisma.book.findUnique({
+      where: { id: bookId },
+      include: bookInclude,
+    });
+
+    return res
+      .status(201)
+      .json({ success: true, data: { ...withAuthorNames(full), isVisible: full.isActive } });
   } catch (err) {
+    if (err.code === "P2002") {
+      return res
+        .status(409)
+        .json({ success: false, message: "Trùng định dạng bán cho sách này" });
+    }
     console.error("[createProduct]", err);
     return res.status(500).json({ success: false, message: "Lỗi server" });
   }
@@ -590,10 +623,6 @@ exports.updateProduct = async (req, res) => {
     const {
       title,
       description,
-      price,
-      salePrice,
-      dealerPrice,
-      stock,
       categoryId,
       isVisible,
       publisher,
@@ -607,9 +636,16 @@ exports.updateProduct = async (req, res) => {
       paperType,
       ageMin,
       ageMax,
+      variants,
     } = req.body;
 
-    // Nếu có gửi authors -> resolve trước, rồi xóa hết liên kết cũ và tạo lại theo thứ tự mới
+    if (variants !== undefined) {
+      const variantError = validateVariantsInput(variants);
+      if (variantError) {
+        return res.status(400).json({ success: false, message: variantError });
+      }
+    }
+
     let authorsUpdate;
     if (authors !== undefined) {
       const authorIds = await resolveAuthorIds(authors);
@@ -619,56 +655,108 @@ exports.updateProduct = async (req, res) => {
       };
     }
 
-    const book = await prisma.book.update({
-      where: { id },
-      data: {
-        ...(title !== undefined && { title }),
-        ...(description !== undefined && { description }),
-        ...(price !== undefined && { price: Number(price) }),
-        ...(salePrice !== undefined && {
-          salePrice: salePrice ? Number(salePrice) : null,
-        }),
-        ...(dealerPrice !== undefined && {
-          dealerPrice: dealerPrice ? Number(dealerPrice) : null,
-        }),
-        ...(stock !== undefined && { stock: Number(stock) }),
-        ...(categoryId !== undefined && { categoryId }),
-        ...(isVisible !== undefined && { isActive: isVisible }),
-        ...(publisher !== undefined && { publisher }),
-        ...(pages !== undefined && { pages: pages ? Number(pages) : null }),
-        ...(language !== undefined && { language }),
-        ...(publishYear !== undefined && {
-          publishYear: publishYear ? Number(publishYear) : null,
-        }),
-        ...(dimensions !== undefined && { dimensions }),
-        ...(weightGrams !== undefined && {
-          weightGrams: weightGrams ? Number(weightGrams) : null,
-        }),
-        ...(coverType !== undefined && { coverType }),
-        ...(paperType !== undefined && { paperType }),
-        ...(ageMin !== undefined && {
-          ageMin: ageMin !== "" ? Number(ageMin) : null,
-        }),
-        ...(ageMax !== undefined && {
-          ageMax: ageMax !== "" ? Number(ageMax) : null,
-        }),
-        ...(authorsUpdate && { authors: authorsUpdate }),
-      },
-      include: {
-        category: { select: { id: true, name: true } },
-        authors: { include: { author: true }, orderBy: { order: "asc" } },
-      },
+    await prisma.$transaction(async (tx) => {
+      await tx.book.update({
+        where: { id },
+        data: {
+          ...(title !== undefined && { title }),
+          ...(description !== undefined && { description }),
+          ...(categoryId !== undefined && { categoryId }),
+          ...(isVisible !== undefined && { isActive: isVisible }),
+          ...(publisher !== undefined && { publisher }),
+          ...(pages !== undefined && { pages: pages ? Number(pages) : null }),
+          ...(language !== undefined && { language }),
+          ...(publishYear !== undefined && {
+            publishYear: publishYear ? Number(publishYear) : null,
+          }),
+          ...(dimensions !== undefined && { dimensions }),
+          ...(weightGrams !== undefined && {
+            weightGrams: weightGrams ? Number(weightGrams) : null,
+          }),
+          ...(coverType !== undefined && { coverType }),
+          ...(paperType !== undefined && { paperType }),
+          ...(ageMin !== undefined && {
+            ageMin: ageMin !== "" ? Number(ageMin) : null,
+          }),
+          ...(ageMax !== undefined && {
+            ageMax: ageMax !== "" ? Number(ageMax) : null,
+          }),
+          ...(authorsUpdate && { authors: authorsUpdate }),
+        },
+      });
+
+      if (variants !== undefined) {
+        await upsertVariantsForBook(tx, id, variants);
+      }
     });
 
-    return res.json({ success: true, data: withAuthorNames(book) });
+    const book = await prisma.book.findUnique({ where: { id }, include: bookInclude });
+
+    return res.json({ success: true, data: { ...withAuthorNames(book), isVisible: book.isActive } });
   } catch (err) {
     if (err.code === "P2025") {
       return res
         .status(404)
         .json({ success: false, message: "Không tìm thấy sách" });
     }
+    if (err.code === "P2002") {
+      return res
+        .status(409)
+        .json({ success: false, message: "Trùng định dạng bán cho sách này" });
+    }
     console.error("[updateProduct]", err);
     return res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+/* DELETE /admin/products/:id/variants/:variantId — xóa 1 định dạng bán,
+   không xóa cả sách. Không cho xóa nếu đó là định dạng cuối cùng còn lại. */
+exports.deleteProductVariant = async (req, res) => {
+  try {
+    const { id, variantId } = req.params;
+
+    const variant = await prisma.bookVariant.findFirst({
+      where: { id: variantId, bookId: id },
+    });
+    if (!variant) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy định dạng bán này" });
+    }
+
+    const totalVariants = await prisma.bookVariant.count({ where: { bookId: id } });
+    if (totalVariants <= 1) {
+      return res.status(400).json({
+        success: false,
+        message: "Sách phải có ít nhất 1 định dạng bán, không thể xóa định dạng cuối cùng",
+      });
+    }
+
+    const [orderCount, inventoryImportCount] = await Promise.all([
+      prisma.orderItem.count({ where: { variantId } }),
+      prisma.inventoryImportItem.count({ where: { variantId } }),
+    ]);
+
+    if (orderCount > 0 || inventoryImportCount > 0) {
+      if (variant.isActive) {
+        await prisma.bookVariant.update({
+          where: { id: variantId },
+          data: { isActive: false },
+        });
+      }
+      return res.status(409).json({
+        success: false,
+        softDeleted: true,
+        message: `Không thể xóa vì định dạng này còn ${orderCount} đơn hàng đã mua${
+          inventoryImportCount ? `, ${inventoryImportCount} phiếu nhập kho liên quan` : ""
+        }. Đã chuyển sang trạng thái ngừng bán.`,
+      });
+    }
+
+    await prisma.bookVariant.delete({ where: { id: variantId } });
+    return res.json({ success: true, message: "Đã xóa định dạng bán" });
+  } catch (err) {
+    return serverError(res, err, "deleteProductVariant");
   }
 };
 
@@ -684,9 +772,9 @@ exports.deleteProduct = async (req, res) => {
     }
 
     const [orderCount, arCodeCount, inventoryImportCount] = await Promise.all([
-      prisma.orderItem.count({ where: { bookId: id } }),
+      prisma.orderItem.count({ where: { variant: { bookId: id } } }),
       prisma.arCode.count({ where: { bookId: id } }),
-      prisma.inventoryImportItem.count({ where: { bookId: id } }),
+      prisma.inventoryImportItem.count({ where: { variant: { bookId: id } } }),
     ]);
 
     const blockers = [];
@@ -706,13 +794,8 @@ exports.deleteProduct = async (req, res) => {
       });
     }
 
-    // Xóa record DB TRƯỚC — nếu bước này lỗi thì ảnh Cloudinary vẫn còn nguyên,
-    // tránh trường hợp ảnh mất nhưng record vẫn tồn tại (dữ liệu không đồng bộ).
     await prisma.book.delete({ where: { id } });
 
-    // Dọn ảnh sau khi chắc chắn record đã xóa thành công. Lỗi ở bước này
-    // (Cloudinary timeout...) chỉ để lại rác ảnh mồ côi, không ảnh hưởng tính
-    // toàn vẹn dữ liệu — chấp nhận được, không rollback record vừa xóa.
     await deleteAllBookImages(book).catch((err) =>
       console.error(
         "[deleteProduct] Xóa ảnh Cloudinary thất bại, có thể còn rác:",
@@ -729,8 +812,6 @@ exports.deleteProduct = async (req, res) => {
     }
 
     if (err.code === "P2003") {
-      // meta.field_name cho biết chính xác bảng nào đang giữ khóa ngoại tới
-      // Book mà chưa được liệt kê ở check phía trên -> debug nhanh, không cần đoán.
       console.error(
         "[deleteProduct] Chặn xóa do khóa ngoại chưa liệt kê ở trên:",
         err.meta?.field_name ?? err.meta,
@@ -830,6 +911,8 @@ exports.updateCategory = async (req, res) => {
 
 /* ══════════════════════════════════════════════
    ORDERS
+   (đã sửa: item.book -> item.variant.book, vì OrderItem giờ
+   chỉ trỏ tới BookVariant, không trỏ thẳng tới Book nữa)
 ══════════════════════════════════════════════ */
 exports.getOrders = async (req, res) => {
   try {
@@ -850,7 +933,11 @@ exports.getOrders = async (req, res) => {
           user: { select: { name: true, email: true } },
           items: {
             include: {
-              book: { select: { title: true, coverImage: true } },
+              variant: {
+                include: {
+                  book: { select: { title: true, coverImage: true } },
+                },
+              },
             },
           },
           address: {
@@ -880,8 +967,8 @@ exports.getOrders = async (req, res) => {
         : null,
       items: o.items.map((item) => ({
         ...item,
-        product: item.book,
-        title: item.book?.title,
+        product: item.variant?.book,
+        title: item.variant?.book?.title,
       })),
     }));
 
@@ -941,16 +1028,6 @@ exports.updateOrderStatus = async (req, res) => {
 /* ══════════════════════════════════════════════
    USERS
 ══════════════════════════════════════════════ */
-
-/**
- * GET /admin/users
- * Query params:
- *   page     - số trang (default 1)
- *   limit    - số bản ghi / trang (default 15)
- *   search   - tìm theo tên, email, hoặc userCode
- *   role     - lọc theo role: CUSTOMER | STAFF | ADMIN
- *   status   - lọc theo trạng thái: active | locked
- */
 exports.getUsers = async (req, res) => {
   try {
     const viewerRole = req.user.role;
@@ -984,7 +1061,6 @@ exports.getUsers = async (req, res) => {
       });
     }
 
-    // Lọc theo role, nhưng luôn giới hạn trong phạm vi được phép xem
     if (role && scopeRoles.includes(role)) {
       conditions.push({ role });
     } else {
@@ -1069,11 +1145,6 @@ exports.toggleUser = async (req, res) => {
   }
 };
 
-/**
- * POST /admin/users/backfill-codes
- * Backfill userCode cho tất cả user cũ chưa có mã.
- * Chỉ chạy 1 lần sau khi migrate schema.
- */
 exports.backfillUserCodes = async (req, res) => {
   try {
     const count = await backfillUserCodes();
@@ -1087,7 +1158,6 @@ exports.backfillUserCodes = async (req, res) => {
   }
 };
 
-// Export helper để dùng trong auth flow (đăng ký user mới)
 exports.generateUserCode = generateUserCode;
 
 /* ══════════════════════════════════════════════
@@ -1193,16 +1263,12 @@ const {
   extractPublicId,
 } = require("../services/cloudinaryUploadService");
 
-// Chỉ trả chi tiết lỗi thật ra response khi đang chạy dev, tránh lộ
-// thông tin nội bộ (đường dẫn, config, stack) khi đã lên production.
 const isDev = process.env.NODE_ENV !== "production";
 function serverError(res, err, tag) {
   console.error(`[${tag}]`, err);
   return res.status(500).json({
     success: false,
     message: "Lỗi server",
-    // Field này CHỈ xuất hiện ở môi trường dev — dùng để debug nhanh
-    // ngay trên Network tab thay vì phải mở terminal backend.
     ...(isDev ? { debug: err.message } : {}),
   });
 }
@@ -1216,21 +1282,33 @@ exports.searchProductsQuick = async (req, res) => {
     const q = req.query.q?.trim() ?? "";
     const code = req.query.code?.trim() ?? "";
 
-    // Nhánh tìm chính xác theo mã sách — dùng khi InventoryImport auto-khớp Excel
+    // Tìm chính xác theo mã sách — mã giờ thuộc BookVariant, không thuộc Book
     if (code) {
-      const book = await prisma.book.findUnique({
+      const variant = await prisma.bookVariant.findUnique({
         where: { productCode: code },
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          coverImage: true,
-          productCode: true,
-          unit: true,
-          stock: true,
+        include: {
+          book: {
+            select: { id: true, title: true, slug: true, coverImage: true },
+          },
         },
       });
-      return res.json({ success: true, data: book ? [book] : [] });
+      if (!variant) return res.json({ success: true, data: [] });
+      return res.json({
+        success: true,
+        data: [
+          {
+            id: variant.book.id,
+            title: variant.book.title,
+            slug: variant.book.slug,
+            coverImage: variant.book.coverImage,
+            productCode: variant.productCode,
+            unit: variant.unit,
+            stock: variant.stock,
+            variantId: variant.id,
+            format: variant.format,
+          },
+        ],
+      });
     }
 
     if (q.length < 1) return res.json({ success: true, data: [] });
@@ -1247,9 +1325,9 @@ exports.searchProductsQuick = async (req, res) => {
         title: true,
         slug: true,
         coverImage: true,
-        productCode: true,
-        unit: true,
-        stock: true,
+        variants: {
+          select: { id: true, format: true, productCode: true, unit: true, stock: true },
+        },
         _count: { select: { arCodes: true } },
       },
       take: 8,
@@ -1301,14 +1379,12 @@ exports.createArCode = async (req, res) => {
       accessType === "PUBLIC" ? "PUBLIC" : "CUSTOMER_ONLY";
 
     const code = generateArCode();
-    // const uploadResult = await uploadGlbFile(req.file.path, code);
     const url = await uploadGlbFile(req.file.path);
     const arCode = await prisma.arCode.create({
       data: {
         code,
         label,
         modelUrl: url,
-        // modelUrl: uploadResult.secure_url,
         bookId,
         accessType: finalAccessType,
       },
@@ -1373,14 +1449,8 @@ exports.toggleArCode = async (req, res) => {
 };
 
 /* ══════════════════════════════════════════════
-   AR CODES — GỘP THEO SÁCH (trang ArCodeManager)
+   AR CODES — GỘP THEO SÁCH
 ══════════════════════════════════════════════ */
-
-/**
- * GET /admin/ar-codes — danh sách TẤT CẢ mã AR, gộp theo sách, có
- * search (tên sách / label / code) + lọc accessType/status + phân
- * trang THEO SỐ SÁCH mỗi trang (không phải theo số mã).
- */
 exports.getArCodesGroupedAll = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -1462,10 +1532,6 @@ exports.getArCodesGroupedAll = async (req, res) => {
   }
 };
 
-/**
- * PATCH /admin/ar-codes/:id/access — đổi quyền xem 1 mã AR ngay tại chỗ,
- * không cần gửi lại label/file như update đầy đủ.
- */
 exports.updateArCodeAccess = async (req, res) => {
   try {
     const { id } = req.params;
@@ -1493,21 +1559,31 @@ exports.updateArCodeAccess = async (req, res) => {
 };
 
 /* ══════════════════════════════════════════════
-   NHẬP KHO
+   NHẬP KHO — mỗi phiếu nhập kho là nhập tồn kho VẬT LÝ, nên
+   luôn tăng tồn kho trên variant PHYSICAL của sách (tự tạo nếu
+   sách đó chưa có variant PHYSICAL).
 ══════════════════════════════════════════════ */
+async function getOrCreatePhysicalVariant(tx, book, unitPrice, unit) {
+  let variant = await tx.bookVariant.findUnique({
+    where: { bookId_format: { bookId: book.id, format: "PHYSICAL" } },
+  });
+  if (!variant) {
+    const productCode = await generateProductCode(tx);
+    variant = await tx.bookVariant.create({
+      data: {
+        bookId: book.id,
+        format: "PHYSICAL",
+        productCode,
+        unit: unit || "Cuốn",
+        price: unitPrice || 0,
+        stock: 0,
+        isActive: true,
+      },
+    });
+  }
+  return variant;
+}
 
-/**
- * POST /admin/inventory/imports — lưu 1 phiếu nhập kho.
- *
- * Với dòng "mã mới" (không có productId): kiểm tra trùng lặp trước khi
- * tạo Book mới — ưu tiên khớp theo productCode (nếu admin có gõ tay),
- * sau đó khớp theo title (không phân biệt hoa/thường), để tránh tạo
- * bản ghi sách trùng khi admin lỡ nhập lại cùng 1 sách nhiều lần.
- *
- * Sách tự tạo qua nhập kho được gán category "Chưa phân loại" và
- * isActive=false (ẩn khỏi cửa hàng) cho tới khi admin vào bổ sung đầy
- * đủ thông tin (mô tả, tác giả, ảnh bìa...) rồi hiển thị lại thủ công.
- */
 exports.createInventoryImport = async (req, res) => {
   try {
     const { code, items } = req.body;
@@ -1553,6 +1629,7 @@ exports.createInventoryImport = async (req, res) => {
             : Number(raw.qtyDocument);
 
         let book = null;
+        let variant = null;
 
         if (raw.productId) {
           book = await tx.book.findUnique({ where: { id: raw.productId } });
@@ -1562,12 +1639,18 @@ exports.createInventoryImport = async (req, res) => {
               { status: 404 },
             );
           }
+          variant = await getOrCreatePhysicalVariant(tx, book, unitPrice, raw.unit);
         } else {
           const trimmedCode = raw.productCode?.trim();
           if (trimmedCode) {
-            book = await tx.book.findUnique({
+            const matchedVariant = await tx.bookVariant.findUnique({
               where: { productCode: trimmedCode },
+              include: { book: true },
             });
+            if (matchedVariant) {
+              variant = matchedVariant;
+              book = matchedVariant.book;
+            }
           }
           if (!book && raw.title) {
             book = await tx.book.findFirst({
@@ -1598,33 +1681,31 @@ exports.createInventoryImport = async (req, res) => {
               ? `${baseSlug}-${Date.now()}`
               : baseSlug;
 
-            const productCode = trimmedCode || (await generateProductCode(tx));
-
             book = await tx.book.create({
               data: {
                 title,
                 slug: finalSlug,
-                productCode,
-                price: unitPrice,
-                stock: 0,
-                unit: raw.unit || "Cuốn",
                 categoryId: fallbackCategory.id,
                 isActive: false,
               },
             });
           }
+
+          if (!variant) {
+            variant = await getOrCreatePhysicalVariant(tx, book, unitPrice, raw.unit);
+          }
         }
 
-        const updatedBook = await tx.book.update({
-          where: { id: book.id },
+        const updatedVariant = await tx.bookVariant.update({
+          where: { id: variant.id },
           data: { stock: { increment: qtyActual } },
         });
 
         savedItems.push({
-          bookId: updatedBook.id,
+          variantId: updatedVariant.id,
           title: book.title,
-          productCode: book.productCode,
-          unit: raw.unit || book.unit || "Cuốn",
+          productCode: updatedVariant.productCode,
+          unit: raw.unit || updatedVariant.unit,
           oldQty: Number(raw.oldQty) || 0,
           qtyDocument,
           qtyActual,
@@ -1653,13 +1734,10 @@ exports.createInventoryImport = async (req, res) => {
   }
 };
 
-/**
- * PUT /admin/users/:id/role
- * Nâng Customer -> Dealer hoặc hạ Dealer -> Customer.
- * Sinh lại mã ETR theo NGÀY THỰC HIỆN thao tác + role mới (không bao giờ trùng
- * nhờ UserCodeSeq atomic transaction dùng chung với generateUserCode).
- * Đồng thời cấp mật khẩu tạm thời mới và gửi email thông báo.
- */
+/* ══════════════════════════════════════════════
+   USER ROLE / MANAGED USERS / AR DETAIL / IMAGES
+   (không liên quan tới schema thay đổi — giữ nguyên)
+══════════════════════════════════════════════ */
 exports.updateUserRole = async (req, res) => {
   try {
     const { id } = req.params;
@@ -1722,10 +1800,6 @@ exports.updateUserRole = async (req, res) => {
   }
 };
 
-/**
- * POST /admin/users — tạo tài khoản Dealer (staff/admin) hoặc Staff (chỉ admin).
- * Bắt buộc: name, email, role. Không bắt buộc: gender, phone.
- */
 exports.createManagedUser = async (req, res) => {
   try {
     const viewerRole = req.user.role;
@@ -1792,10 +1866,6 @@ exports.createManagedUser = async (req, res) => {
   }
 };
 
-/**
- * GET /admin/ar-codes/:id — chi tiết 1 mã AR kèm thông tin sách,
- * dùng cho trang chi tiết/sửa gộp chung (ArCodeDetail).
- */
 exports.getArCodeById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -1828,11 +1898,6 @@ async function deleteAllBookImages(book) {
   );
 }
 
-/**
- * POST /admin/products/:id/images — upload thêm N ảnh (không giới hạn số lượng
- * trong 1 lần gọi lẫn tổng số ảnh của sách). Ảnh đầu tiên upload cho 1 sách
- * chưa có coverImage sẽ tự động thành ảnh bìa.
- */
 exports.uploadProductImages = async (req, res) => {
   try {
     const { id } = req.params;
@@ -1868,10 +1933,6 @@ exports.uploadProductImages = async (req, res) => {
   }
 };
 
-/**
- * DELETE /admin/products/:id/images — xóa 1 ảnh khỏi sách (khỏi Cloudinary + DB).
- * body: { url }
- */
 exports.deleteProductImage = async (req, res) => {
   try {
     const { id } = req.params;
@@ -1906,7 +1967,6 @@ exports.deleteProductImage = async (req, res) => {
   }
 };
 
-/** PATCH /admin/products/:id/cover — chọn 1 ảnh trong images[] làm ảnh bìa */
 exports.setProductCover = async (req, res) => {
   try {
     const { id } = req.params;
@@ -1935,6 +1995,7 @@ exports.setProductCover = async (req, res) => {
     return serverError(res, err, "setProductCover");
   }
 };
+
 exports.deleteArCode = async (req, res) => {
   try {
     const { id } = req.params;
@@ -1946,9 +2007,6 @@ exports.deleteArCode = async (req, res) => {
         .json({ success: false, message: "Không tìm thấy mã AR" });
     }
 
-    // modelUrl dạng: https://res.cloudinary.com/.../raw/upload/v123/ar-models/xxx.glb
-    // resource_type phải khớp đúng 'raw' như lúc upload, nếu không Cloudinary
-    // sẽ báo "not found" dù file vẫn còn tồn tại (do tìm sai loại resource).
     const publicId = extractPublicId(existing.modelUrl);
     if (publicId) {
       await cloudinary.uploader
