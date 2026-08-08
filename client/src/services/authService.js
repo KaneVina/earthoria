@@ -13,4 +13,6 @@ export const authService = {
   verifyRegisterOtp: (data) => api.post('/auth/verify-register-otp', data),
   verifyOtp: (data) => api.post('/auth/verify-otp', data),
   resetPassword: (data) => api.post('/auth/reset-password', data),
+  sendCreatePasswordOtp: () => api.post('/auth/send-create-password-otp'),
+  createPassword: (data) => api.post('/auth/create-password', data),
 }

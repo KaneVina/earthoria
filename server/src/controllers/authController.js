@@ -3,6 +3,7 @@ const prisma = require("../config/db");
 const { generateAccessToken, formatResponse } = require("../utils/helpers");
 const tokenService = require("../services/tokenService");
 const passport = require("passport");
+const { validatePasswordPolicy } = require("../utils/passwordPolicy");
 
 const REFRESH_COOKIE_NAME = "refreshToken";
 const REFRESH_COOKIE_PATH = "/";
@@ -43,8 +44,9 @@ const register = async (req, res) => {
       return formatResponse(res, 400, "Email đã được sử dụng");
     }
 
-    if (password.length < 6) {
-      return formatResponse(res, 400, "Mật khẩu phải ít nhất 6 ký tự");
+    const passwordPolicyError = validatePasswordPolicy(password);
+    if (passwordPolicyError) {
+      return formatResponse(res, 400, passwordPolicyError);
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
@@ -149,9 +151,18 @@ const getMe = async (req, res) => {
         role: true,
         userCode: true,
         createdAt: true, // + userCode, gender
+        password: true, // chỉ dùng để tính hasPassword, không trả về raw bên dưới
       },
     });
-    return formatResponse(res, 200, "OK", user);
+
+    if (!user) {
+      return formatResponse(res, 404, "Không tìm thấy người dùng");
+    }
+
+    const { password, ...safeUser } = user;
+    // hasPassword: tài khoản đăng nhập Google chưa từng tạo mật khẩu sẽ là false
+    // → client dùng cờ này để hiển thị "Tạo mật khẩu" (kèm OTP) thay vì "Đổi mật khẩu"
+    return formatResponse(res, 200, "OK", { ...safeUser, hasPassword: !!password });
   } catch (error) {
     return formatResponse(res, 500, "Lỗi server");
   }
@@ -210,8 +221,9 @@ const changePassword = async (req, res) => {
       return formatResponse(res, 400, "Mật khẩu hiện tại không đúng");
     }
 
-    if (newPassword.length < 6) {
-      return formatResponse(res, 400, "Mật khẩu mới phải ít nhất 6 ký tự");
+    const passwordPolicyError = validatePasswordPolicy(newPassword);
+    if (passwordPolicyError) {
+      return formatResponse(res, 400, passwordPolicyError);
     }
 
     const hashed = await bcrypt.hash(newPassword, 12);

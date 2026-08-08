@@ -10,6 +10,31 @@ const STEPS = [
   { id: 3, label: "Mật khẩu mới" },
 ];
 
+// BR mật khẩu — PHẢI giống hệt Register.jsx và Profile.jsx (SecurityTab) để
+// thống nhất quy tắc giữa 3 luồng: đăng ký / quên mật khẩu / đổi mật khẩu.
+const PASSWORD_CHECKS = [
+  {
+    key: "len",
+    label: "8 – 16 ký tự",
+    test: (v) => v.length >= 8 && v.length <= 16,
+  },
+  {
+    key: "upper",
+    label: "Ít nhất 1 chữ HOA (A-Z)",
+    test: (v) => /[A-Z]/.test(v),
+  },
+  {
+    key: "lower",
+    label: "Ít nhất 1 chữ thường (a-z)",
+    test: (v) => /[a-z]/.test(v),
+  },
+  {
+    key: "special",
+    label: "Ít nhất 1 ký tự đặc biệt (!@#…)",
+    test: (v) => /[^A-Za-z0-9]/.test(v),
+  },
+];
+
 export default function ForgotPassword() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -18,7 +43,7 @@ export default function ForgotPassword() {
   const [resendTimer, setResendTimer] = useState(0);
   const [showPw, setShowPw] = useState({ new: false, confirm: false });
   const [form, setForm] = useState({ newPassword: "", confirmPassword: "" });
-  const [strength, setStrength] = useState(0);
+  const [touchedPw, setTouchedPw] = useState(false);
   const [errors, setErrors] = useState({});
   const otpRefs = useRef([]);
 
@@ -113,18 +138,20 @@ export default function ForgotPassword() {
   };
 
   // ════════ Step 3: Reset password ════════
-  const checkStrength = (val) => {
-    let score = 0;
-    if (val.length >= 8) score++;
-    if (/[A-Z]/.test(val)) score++;
-    if (/[0-9]/.test(val)) score++;
-    if (/[^A-Za-z0-9]/.test(val)) score++;
-    return score;
-  };
+  const checksResult = PASSWORD_CHECKS.map((c) => ({
+    ...c,
+    ok: c.test(form.newPassword),
+  }));
+  const strength = checksResult.filter((c) => c.ok).length;
+  const isStrongEnough =
+    form.newPassword.length > 0 && checksResult.every((c) => c.ok);
+  const confirmMatches =
+    form.confirmPassword.length > 0 &&
+    form.confirmPassword === form.newPassword;
 
   const handlePwChange = (field, val) => {
     setForm((f) => ({ ...f, [field]: val }));
-    if (field === "newPassword") setStrength(checkStrength(val));
+    if (field === "newPassword") setTouchedPw(true);
     setErrors((e) => ({ ...e, [field]: null }));
   };
 
@@ -145,12 +172,13 @@ export default function ForgotPassword() {
   const handleReset = (e) => {
     e.preventDefault();
     const newErrors = {};
-    if (form.newPassword.length < 8)
-      newErrors.newPassword = "Mật khẩu tối thiểu 8 ký tự.";
-    if (form.newPassword !== form.confirmPassword)
+    if (!isStrongEnough)
+      newErrors.newPassword = "Mật khẩu mới chưa đạt đủ các tiêu chí bên dưới.";
+    if (!confirmMatches)
       newErrors.confirmPassword = "Mật khẩu xác nhận không khớp.";
     if (Object.keys(newErrors).length) {
       setErrors(newErrors);
+      setTouchedPw(true);
       return;
     }
     resetMutation.mutate({
@@ -159,6 +187,9 @@ export default function ForgotPassword() {
       newPassword: form.newPassword,
     });
   };
+
+  const canSubmitReset =
+    !resetMutation.isPending && isStrongEnough && confirmMatches;
 
   const strengthMeta = [
     { label: "", color: "var(--border)" },
@@ -558,9 +589,9 @@ export default function ForgotPassword() {
                     show={showPw.new}
                     toggle={() => setShowPw((s) => ({ ...s, new: !s.new }))}
                     error={errors.newPassword}
-                    placeholder="Tối thiểu 8 ký tự"
+                    placeholder="8–16 ký tự, chữ hoa, ký tự đặc biệt"
                   />
-                  {form.newPassword && (
+                  {touchedPw && form.newPassword && (
                     <div style={{ marginTop: "10px" }}>
                       <div
                         style={{
@@ -598,6 +629,58 @@ export default function ForgotPassword() {
                       </div>
                     </div>
                   )}
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "6px",
+                      marginTop: "12px",
+                    }}
+                  >
+                    {checksResult.map((c) => (
+                      <div
+                        key={c.key}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          fontSize: "11px",
+                          color: c.ok ? "var(--forest)" : "var(--text-muted)",
+                          fontWeight: c.ok ? 500 : 300,
+                          transition: "color 0.2s",
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: "14px",
+                            height: "14px",
+                            borderRadius: "50%",
+                            border: `1px solid ${c.ok ? "var(--gold)" : "var(--border)"}`,
+                            background: c.ok ? "var(--gold)" : "transparent",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                            transition: "all 0.2s",
+                          }}
+                        >
+                          {c.ok && (
+                            <svg
+                              width="8"
+                              height="8"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="var(--ivory)"
+                              strokeWidth="3"
+                            >
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          )}
+                        </span>
+                        {c.label}
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 <div style={S.fieldGroup}>
@@ -616,10 +699,14 @@ export default function ForgotPassword() {
 
                 <button
                   type="submit"
-                  disabled={resetMutation.isPending}
-                  style={S.submitBtn}
+                  disabled={!canSubmitReset}
+                  style={{
+                    ...S.submitBtn,
+                    opacity: canSubmitReset ? 1 : 0.55,
+                    cursor: canSubmitReset ? "pointer" : "not-allowed",
+                  }}
                   onMouseEnter={(e) => {
-                    if (!resetMutation.isPending) {
+                    if (canSubmitReset) {
                       e.currentTarget.style.background = "var(--forest-mid)";
                       e.currentTarget.style.gap = "20px";
                     }

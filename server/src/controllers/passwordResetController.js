@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs')
 const prisma = require('../config/db')
 const { sendOtpEmail, sendPasswordChangedEmail } = require('../services/emailService')
 const { formatResponse } = require('../utils/helpers')
+const { validatePasswordPolicy } = require('../utils/passwordPolicy')
 
 const OTP_LENGTH = 6
 const OTP_EXPIRY_MINUTES = 10
@@ -16,9 +17,7 @@ function hashOtp(otp) {
   return crypto.createHash('sha256').update(otp).digest('hex')
 }
 
-// ════════════════════════════════════════════
 // POST /api/v1/auth/forgot-password
-// ════════════════════════════════════════════
 async function forgotPassword(req, res) {
   try {
     const { email } = req.body
@@ -129,8 +128,9 @@ async function resetPassword(req, res) {
     if (!email || !otp || !/^\d{6}$/.test(otp)) {
       return formatResponse(res, 400, 'Thông tin xác thực không hợp lệ.')
     }
-    if (!newPassword || newPassword.length < 8) {
-      return formatResponse(res, 400, 'Mật khẩu mới phải có tối thiểu 8 ký tự.')
+    const policyError = validatePasswordPolicy(newPassword)
+    if (policyError) {
+      return formatResponse(res, 400, policyError)
     }
 
     const normalizedEmail = email.trim().toLowerCase()

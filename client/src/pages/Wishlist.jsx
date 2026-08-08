@@ -1,14 +1,17 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   Heart, ShoppingCart, Trash2, ArrowRight,
   PackageOpen, Loader2, ArrowUpDown, Share2, Check,
+  Search, X, CheckSquare, Square, AlertTriangle, ListChecks, Undo2,
 } from 'lucide-react'
 import { useWishlistStore } from '../store/wishlistStore'
 import { useCartStore } from '../store/cartStore'
 import { useAuthStore } from '../store/authStore'
 import { formatPrice } from '../utils/helpers'
 import toast from 'react-hot-toast'
+
+const PAGE_SIZE = 12
 
 // ─ Skeleton card ──────────────────────────────────────────────────────────
 function SkeletonCard() {
@@ -31,7 +34,7 @@ function SkeletonCard() {
 }
 
 // ─ Wishlist item card ─────────────────────────────────────────────────────
-function WishlistCard({ book, onRemove, onMoveToCart, isRemoving, isMoving }) {
+function WishlistCard({ book, onRemove, onMoveToCart, isRemoving, isMoving, selectMode, selected, onToggleSelect }) {
   const navigate = useNavigate()
 
   const displayPrice = book.salePrice ? formatPrice(book.salePrice) : formatPrice(book.price)
@@ -39,13 +42,29 @@ function WishlistCard({ book, onRemove, onMoveToCart, isRemoving, isMoving }) {
   const discount = originalPrice ? `-${Math.round((1 - book.salePrice / book.price) * 100)}%` : null
 
   const handleCardClick = () => {
+    if (selectMode) { onToggleSelect(book.hashId); return }
     if (book.slug && book.hashId) navigate(`/books/${book.slug}/${book.hashId}`)
   }
 
+  const handleCheckboxClick = (e) => {
+    e.stopPropagation()
+    onToggleSelect(book.hashId)
+  }
+
   return (
-    <div className={`wl-card${isRemoving ? ' wl-card--removing' : ''}`}>
+    <div className={`wl-card${isRemoving ? ' wl-card--removing' : ''}${selected ? ' wl-card--selected' : ''}`}>
       {/* Image */}
       <div className="wl-card-img-wrap" onClick={handleCardClick}>
+        {selectMode && (
+          <button
+            className={`wl-select-check${selected ? ' checked' : ''}`}
+            onClick={handleCheckboxClick}
+            aria-label={selected ? 'Bỏ chọn' : 'Chọn sản phẩm'}
+            aria-pressed={selected}
+          >
+            {selected ? <CheckSquare size={17} strokeWidth={1.8} /> : <Square size={17} strokeWidth={1.8} />}
+          </button>
+        )}
         {book.coverImage ? (
           <img src={book.coverImage} alt={book.title} className="wl-card-img" />
         ) : (
@@ -104,7 +123,7 @@ function WishlistCard({ book, onRemove, onMoveToCart, isRemoving, isMoving }) {
 }
 
 // ─ Empty state ────────────────────────────────────────────────────────────
-function EmptyWishlist({ filtered }) {
+function EmptyWishlist({ filtered, onReset }) {
   if (filtered) {
     return (
       <div className="wl-empty">
@@ -112,7 +131,10 @@ function EmptyWishlist({ filtered }) {
           <ArrowUpDown size={32} strokeWidth={1} color="var(--gold)" />
         </div>
         <h3 className="wl-empty-title">Không có sản phẩm nào</h3>
-        <p className="wl-empty-sub">Thử thay đổi bộ lọc để xem thêm sản phẩm.</p>
+        <p className="wl-empty-sub">Thử thay đổi bộ lọc hoặc từ khoá tìm kiếm để xem thêm sản phẩm.</p>
+        <button className="wl-empty-btn wl-empty-btn--ghost" onClick={onReset}>
+          Xoá bộ lọc
+        </button>
       </div>
     )
   }
@@ -133,18 +155,43 @@ function EmptyWishlist({ filtered }) {
   )
 }
 
+// ─ Confirm dialog ─────────────────────────────────────────────────────────
+function ConfirmDialog({ open, title, message, confirmLabel, onConfirm, onCancel, loading }) {
+  if (!open) return null
+  return (
+    <div className="wl-modal-overlay" onClick={onCancel}>
+      <div className="wl-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="wl-modal-icon">
+          <AlertTriangle size={22} strokeWidth={1.4} color="var(--gold)" />
+        </div>
+        <h3 className="wl-modal-title">{title}</h3>
+        <p className="wl-modal-msg">{message}</p>
+        <div className="wl-modal-actions">
+          <button className="wl-modal-btn-cancel" onClick={onCancel} disabled={loading}>Huỷ</button>
+          <button className="wl-modal-btn-confirm" onClick={onConfirm} disabled={loading}>
+            {loading ? <Loader2 size={14} className="wl-spin" /> : confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─ Page ───────────────────────────────────────────────────────────────────
 const SORT_OPTIONS = [
-  { value: 'default',    label: 'Mặc định' },
-  { value: 'price-asc',  label: 'Giá: Thấp → Cao' },
-  { value: 'price-desc', label: 'Giá: Cao → Thấp' },
-  { value: 'name-asc',   label: 'Tên: A → Z' },
-  { value: 'stock-first',label: 'Còn hàng trước' },
+  { value: 'default',       label: 'Mặc định' },
+  { value: 'price-asc',     label: 'Giá: Thấp → Cao' },
+  { value: 'price-desc',    label: 'Giá: Cao → Thấp' },
+  { value: 'name-asc',      label: 'Tên: A → Z' },
+  { value: 'name-desc',     label: 'Tên: Z → A' },
+  { value: 'discount-desc', label: 'Giảm giá nhiều nhất' },
+  { value: 'stock-first',   label: 'Còn hàng trước' },
 ]
 
 const FILTER_OPTIONS = [
   { value: 'all',      label: 'Tất cả' },
   { value: 'in-stock', label: 'Còn hàng' },
+  { value: 'on-sale',  label: 'Đang giảm giá' },
   { value: 'out',      label: 'Hết hàng' },
 ]
 
@@ -159,6 +206,17 @@ export default function Wishlist() {
   const [sort,        setSort]        = useState('default')
   const [filter,      setFilter]      = useState('all')
   const [copied,      setCopied]      = useState(false)
+  const [search,      setSearch]      = useState('')
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+
+  const [selectMode,  setSelectMode]  = useState(false)
+  const [selectedIds, setSelectedIds] = useState(new Set())
+  const [bulkRemoving, setBulkRemoving] = useState(false)
+  const [bulkMoving,   setBulkMoving]   = useState(false)
+  const [confirmClearAll, setConfirmClearAll] = useState(false)
+  const [clearingAll, setClearingAll] = useState(false)
+
+  const searchInputRef = useRef(null)
 
   useEffect(() => {
     if (!isAuthenticated) { navigate('/login', { replace: true }); return }
@@ -175,13 +233,23 @@ export default function Wishlist() {
     return () => observer.disconnect()
   }, [items])
 
+  // Reset pagination whenever the visible set changes shape
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE)
+  }, [filter, sort, search])
+
   //  Derived list ────────────────────────────────────────────────────────
   const displayedItems = useMemo(() => {
     let list = [...items]
 
+    // Search
+    const q = search.trim().toLocaleLowerCase('vi')
+    if (q) list = list.filter((b) => (b.title || '').toLocaleLowerCase('vi').includes(q))
+
     // Filter
     if (filter === 'in-stock') list = list.filter((b) => b.stock > 0)
     if (filter === 'out')      list = list.filter((b) => b.stock === 0)
+    if (filter === 'on-sale')  list = list.filter((b) => b.salePrice && b.salePrice < b.price)
 
     // Sort
     if (sort === 'price-asc')
@@ -190,24 +258,58 @@ export default function Wishlist() {
       list.sort((a, b) => (b.salePrice || b.price) - (a.salePrice || a.price))
     else if (sort === 'name-asc')
       list.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'vi'))
+    else if (sort === 'name-desc')
+      list.sort((a, b) => (b.title || '').localeCompare(a.title || '', 'vi'))
+    else if (sort === 'discount-desc')
+      list.sort((a, b) => {
+        const da = a.salePrice && a.price ? 1 - a.salePrice / a.price : 0
+        const db = b.salePrice && b.price ? 1 - b.salePrice / b.price : 0
+        return db - da
+      })
     else if (sort === 'stock-first')
       list.sort((a, b) => (b.stock > 0 ? 1 : 0) - (a.stock > 0 ? 1 : 0))
 
     return list
-  }, [items, sort, filter])
+  }, [items, sort, filter, search])
+
+  const pagedItems = useMemo(
+    () => displayedItems.slice(0, visibleCount),
+    [displayedItems, visibleCount]
+  )
 
   //  Handlers ────────────────────────────────────────────────────────────
 
-  // Xoá 1 item — optimistic từ store, smooth ngay
+  // Xoá 1 item — optimistic từ store, kèm tuỳ chọn hoàn tác
   const handleRemove = async (book) => {
     setRemovingIds((prev) => new Set(prev).add(book.hashId))
     try {
       await toggleWishlist(book.slug, book.hashId)
-      toast.success('Đã xoá khỏi yêu thích')
+      setSelectedIds((prev) => { const s = new Set(prev); s.delete(book.hashId); return s })
+      const shortTitle = book.title?.length > 34 ? book.title.slice(0, 34) + '…' : book.title
+      toast((t) => (
+        <span className="wl-undo-toast">
+          <span>Đã xoá "{shortTitle}"</span>
+          <button
+            className="wl-undo-btn"
+            onClick={() => { toast.dismiss(t.id); handleUndoRemove(book) }}
+          >
+            <Undo2 size={12} strokeWidth={2} /> Hoàn tác
+          </button>
+        </span>
+      ), { duration: 4500 })
     } catch {
       toast.error('Có lỗi, vui lòng thử lại')
     } finally {
       setRemovingIds((prev) => { const s = new Set(prev); s.delete(book.hashId); return s })
+    }
+  }
+
+  const handleUndoRemove = async (book) => {
+    try {
+      await toggleWishlist(book.slug, book.hashId)
+      toast.success('Đã khôi phục sản phẩm')
+    } catch {
+      toast.error('Không thể khôi phục, vui lòng thử lại')
     }
   }
 
@@ -218,6 +320,7 @@ export default function Wishlist() {
     try {
       await addToCart(book.hashId, 1)
       await toggleWishlist(book.slug, book.hashId)   // xoá khỏi wishlist
+      setSelectedIds((prev) => { const s = new Set(prev); s.delete(book.hashId); return s })
       toast.success(`Đã thêm "${book.title}" vào giỏ hàng`)
     } catch {
       toast.error('Không thể thêm vào giỏ, vui lòng thử lại')
@@ -234,11 +337,10 @@ export default function Wishlist() {
     const ids = new Set(inStockItems.map((b) => b.hashId))
     setMovingIds(ids)
     try {
-      // Add tất cả vào cart trước
       await Promise.all(inStockItems.map((b) => addToCart(b.hashId, 1)))
-      // Sau đó xoá từng cái khỏi wishlist
       await Promise.all(inStockItems.map((b) => toggleWishlist(b.slug, b.hashId)))
       toast.success(`Đã chuyển ${inStockItems.length} sản phẩm vào giỏ hàng`)
+      setSelectedIds(new Set())
     } catch {
       toast.error('Có lỗi xảy ra, vui lòng thử lại')
     } finally {
@@ -259,9 +361,96 @@ export default function Wishlist() {
     }
   }
 
+  //  Selection handlers ────────────────────────────────────────────────
+  const handleToggleSelectMode = () => {
+    setSelectMode((prev) => !prev)
+    setSelectedIds(new Set())
+  }
+
+  const handleToggleSelectItem = (hashId) => {
+    setSelectedIds((prev) => {
+      const s = new Set(prev)
+      s.has(hashId) ? s.delete(hashId) : s.add(hashId)
+      return s
+    })
+  }
+
+  const isAllPagedSelected = pagedItems.length > 0 && pagedItems.every((b) => selectedIds.has(b.hashId))
+
+  const handleToggleSelectAllVisible = () => {
+    setSelectedIds((prev) => {
+      const s = new Set(prev)
+      if (isAllPagedSelected) {
+        pagedItems.forEach((b) => s.delete(b.hashId))
+      } else {
+        pagedItems.forEach((b) => s.add(b.hashId))
+      }
+      return s
+    })
+  }
+
+  const handleBulkRemove = async () => {
+    const targets = items.filter((b) => selectedIds.has(b.hashId))
+    if (targets.length === 0) return
+    setBulkRemoving(true)
+    try {
+      await Promise.all(targets.map((b) => toggleWishlist(b.slug, b.hashId)))
+      toast.success(`Đã xoá ${targets.length} sản phẩm khỏi yêu thích`)
+      setSelectedIds(new Set())
+    } catch {
+      toast.error('Có lỗi xảy ra, vui lòng thử lại')
+    } finally {
+      setBulkRemoving(false)
+    }
+  }
+
+  const handleBulkMoveToCart = async () => {
+    const targets = items.filter((b) => selectedIds.has(b.hashId) && b.stock > 0)
+    if (targets.length === 0) { toast.error('Không có sản phẩm còn hàng trong lựa chọn'); return }
+    setBulkMoving(true)
+    try {
+      await Promise.all(targets.map((b) => addToCart(b.hashId, 1)))
+      await Promise.all(targets.map((b) => toggleWishlist(b.slug, b.hashId)))
+      toast.success(`Đã thêm ${targets.length} sản phẩm vào giỏ hàng`)
+      setSelectedIds(new Set())
+    } catch {
+      toast.error('Có lỗi xảy ra, vui lòng thử lại')
+    } finally {
+      setBulkMoving(false)
+    }
+  }
+
+  const handleClearAll = async () => {
+    setClearingAll(true)
+    const ids = new Set(items.map((b) => b.hashId))
+    setRemovingIds(ids)
+    try {
+      await Promise.all(items.map((b) => toggleWishlist(b.slug, b.hashId)))
+      toast.success('Đã xoá toàn bộ danh sách yêu thích')
+      setSelectedIds(new Set())
+      setSelectMode(false)
+    } catch {
+      toast.error('Có lỗi xảy ra, vui lòng thử lại')
+    } finally {
+      setRemovingIds(new Set())
+      setClearingAll(false)
+      setConfirmClearAll(false)
+    }
+  }
+
+  const handleResetFilters = () => {
+    setSearch('')
+    setFilter('all')
+    setSort('default')
+  }
+
   const inStockCount = items.filter((b) => b.stock > 0).length
   const totalValue   = items.reduce((sum, b) => sum + (b.salePrice || b.price || 0), 0)
-  const isFiltered   = filter !== 'all' || sort !== 'default'
+  const totalSavings = items.reduce((sum, b) => (
+    b.salePrice && b.price > b.salePrice ? sum + (b.price - b.salePrice) : sum
+  ), 0)
+  const isFiltered   = filter !== 'all' || sort !== 'default' || search.trim() !== ''
+  const selectedCount = selectedIds.size
 
   return (
     <>
@@ -329,9 +518,44 @@ export default function Wishlist() {
           display: flex;
           align-items: center;
           gap: 12px;
-          margin-bottom: 32px;
+          margin-bottom: 24px;
           flex-wrap: wrap;
         }
+        .wl-search {
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+        .wl-search-icon {
+          position: absolute;
+          left: 13px;
+          color: var(--text-muted);
+          pointer-events: none;
+        }
+        .wl-search-input {
+          width: 220px;
+          padding: 9px 32px 9px 34px;
+          font-size: 12px;
+          font-family: 'Be Vietnam Pro', sans-serif;
+          background: var(--white);
+          border: 0.5px solid var(--border);
+          color: var(--forest);
+          outline: none;
+          transition: border-color 0.2s, width 0.25s ease;
+        }
+        .wl-search-input::placeholder { color: var(--text-muted); font-weight: 300; }
+        .wl-search-input:focus { border-color: var(--gold); width: 260px; }
+        .wl-search-clear {
+          position: absolute;
+          right: 8px;
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: var(--text-muted);
+          display: flex;
+          padding: 4px;
+        }
+        .wl-search-clear:hover { color: var(--gold); }
         .wl-filter-group {
           display: flex;
           border: 0.5px solid var(--border);
@@ -372,6 +596,20 @@ export default function Wishlist() {
           background-repeat: no-repeat;
           background-position: right 10px center;
         }
+        .wl-select-toggle {
+          display: flex; align-items: center; gap: 7px;
+          padding: 9px 16px;
+          font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+          font-family: 'Be Vietnam Pro', sans-serif;
+          background: transparent;
+          border: 0.5px solid var(--border);
+          color: var(--text-muted);
+          cursor: pointer;
+          transition: all 0.2s;
+          white-space: nowrap;
+        }
+        .wl-select-toggle:hover { border-color: var(--gold); color: var(--gold); }
+        .wl-select-toggle.active { background: var(--forest); color: var(--ivory); border-color: var(--forest); }
         .wl-toolbar-spacer { flex: 1; }
         .wl-result-count {
           font-size: 11px;
@@ -403,6 +641,17 @@ export default function Wishlist() {
         }
         .wl-btn-share:hover { border-color: var(--gold); color: var(--gold); }
         .wl-btn-share.copied { border-color: var(--gold); color: var(--gold); }
+
+        .wl-btn-clear {
+          display: flex; align-items: center; gap: 8px;
+          font-family: 'Be Vietnam Pro', sans-serif;
+          font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+          background: transparent; color: #a85d5d;
+          border: 0.5px solid var(--border);
+          padding: 13px 20px; cursor: pointer;
+          transition: all 0.3s ease; white-space: nowrap;
+        }
+        .wl-btn-clear:hover { border-color: #c05050; color: #c05050; background: rgba(192,80,80,0.05); }
 
         .wl-btn-shop {
           display: flex; align-items: center; gap: 8px;
@@ -445,7 +694,51 @@ export default function Wishlist() {
           font-family: 'Playfair Display', serif;
           font-size: 22px; font-weight: 400; color: var(--forest); line-height: 1;
         }
+        .wl-summary-val--gold { color: var(--gold); }
         .wl-summary-sep { width: 0.5px; height: 36px; background: var(--border); flex-shrink: 0; }
+
+        /* ─ BULK ACTION BAR ─ */
+        .wl-bulk-bar {
+          display: flex; align-items: center; gap: 20px;
+          padding: 16px 24px;
+          background: var(--forest);
+          color: var(--ivory);
+          margin-bottom: 28px; flex-wrap: wrap;
+          animation: wlSlideDown 0.25s ease;
+        }
+        @keyframes wlSlideDown { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+        .wl-bulk-select-all {
+          display: flex; align-items: center; gap: 8px;
+          background: none; border: none; cursor: pointer;
+          color: var(--ivory); font-family: 'Be Vietnam Pro', sans-serif;
+          font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+        }
+        .wl-bulk-count {
+          font-family: 'Be Vietnam Pro', sans-serif;
+          font-size: 12px; color: var(--ivory); opacity: 0.85;
+        }
+        .wl-bulk-spacer { flex: 1; }
+        .wl-bulk-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .wl-bulk-btn {
+          display: flex; align-items: center; gap: 7px;
+          font-family: 'Be Vietnam Pro', sans-serif;
+          font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+          background: var(--ivory); color: var(--forest);
+          border: none; padding: 9px 16px; cursor: pointer;
+          transition: all 0.2s; white-space: nowrap;
+        }
+        .wl-bulk-btn:hover:not(:disabled) { background: var(--gold); color: var(--ivory); }
+        .wl-bulk-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .wl-bulk-btn--danger {
+          background: transparent; color: var(--ivory);
+          border: 0.5px solid rgba(255,255,255,0.35);
+        }
+        .wl-bulk-btn--danger:hover:not(:disabled) { background: #c05050; border-color: #c05050; color: var(--ivory); }
+        .wl-bulk-cancel {
+          background: none; border: none; color: var(--ivory); opacity: 0.7;
+          cursor: pointer; display: flex; align-items: center; padding: 6px;
+        }
+        .wl-bulk-cancel:hover { opacity: 1; }
 
         /* ─ GRID ─ */
         .wl-grid {
@@ -477,6 +770,10 @@ export default function Wishlist() {
           pointer-events: none;
           transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
         }
+        .wl-card--selected {
+          border-color: var(--gold);
+          box-shadow: 0 0 0 1px var(--gold);
+        }
 
         /* Image */
         .wl-card-img-wrap {
@@ -493,6 +790,20 @@ export default function Wishlist() {
           width: 100%; height: 100%;
           display: flex; align-items: center; justify-content: center;
         }
+
+        /* Select checkbox */
+        .wl-select-check {
+          position: absolute; top: 14px; right: 14px; z-index: 2;
+          width: 30px; height: 30px;
+          display: flex; align-items: center; justify-content: center;
+          background: rgba(250,248,244,0.92);
+          border: 0.5px solid var(--border);
+          color: var(--forest);
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .wl-select-check:hover { border-color: var(--gold); }
+        .wl-select-check.checked { background: var(--gold); border-color: var(--gold); color: var(--ivory); }
 
         /* Badges */
         .wl-badge {
@@ -569,6 +880,19 @@ export default function Wishlist() {
         .wl-spin { animation: wlSpin 0.7s linear infinite; }
         @keyframes wlSpin { to { transform: rotate(360deg); } }
 
+        /* ─ LOAD MORE ─ */
+        .wl-load-more-wrap { display: flex; justify-content: center; margin-top: 44px; }
+        .wl-load-more-btn {
+          display: flex; align-items: center; gap: 10px;
+          font-family: 'Be Vietnam Pro', sans-serif;
+          font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+          background: transparent; color: var(--forest);
+          border: 0.5px solid var(--border);
+          padding: 14px 36px; cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        .wl-load-more-btn:hover { border-color: var(--gold); color: var(--gold); }
+
         /* ─ EMPTY ─ */
         .wl-empty {
           display: flex; flex-direction: column; align-items: center;
@@ -596,6 +920,72 @@ export default function Wishlist() {
           text-decoration: none; margin-top: 8px; transition: all 0.3s ease;
         }
         .wl-empty-btn:hover { background: var(--forest-mid); gap: 16px; }
+        .wl-empty-btn--ghost {
+          background: transparent; color: var(--forest);
+          border: 0.5px solid var(--border);
+        }
+        .wl-empty-btn--ghost:hover { background: transparent; border-color: var(--gold); color: var(--gold); gap: 10px; }
+
+        /* ─ MODAL ─ */
+        .wl-modal-overlay {
+          position: fixed; inset: 0; z-index: 1000;
+          background: rgba(13,43,30,0.45);
+          display: flex; align-items: center; justify-content: center;
+          padding: 24px;
+          animation: wlFadeIn 0.2s ease;
+        }
+        @keyframes wlFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .wl-modal {
+          background: var(--white);
+          border: 0.5px solid var(--border-gold);
+          padding: 40px 36px 32px;
+          max-width: 400px; width: 100%;
+          text-align: center;
+          animation: wlModalIn 0.25s cubic-bezier(0.16,1,0.3,1);
+        }
+        @keyframes wlModalIn { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .wl-modal-icon {
+          width: 56px; height: 56px; margin: 0 auto 18px;
+          border: 0.5px solid var(--border-gold);
+          display: flex; align-items: center; justify-content: center;
+        }
+        .wl-modal-title {
+          font-family: 'Playfair Display', serif; font-size: 22px;
+          font-weight: 400; color: var(--forest); margin: 0 0 10px;
+        }
+        .wl-modal-msg {
+          font-size: 13px; line-height: 1.7; color: var(--text-muted);
+          font-weight: 300; margin: 0 0 28px;
+        }
+        .wl-modal-actions { display: flex; gap: 10px; }
+        .wl-modal-btn-cancel {
+          flex: 1; font-family: 'Be Vietnam Pro', sans-serif;
+          font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+          background: transparent; color: var(--forest);
+          border: 0.5px solid var(--border);
+          padding: 13px; cursor: pointer; transition: all 0.2s;
+        }
+        .wl-modal-btn-cancel:hover:not(:disabled) { border-color: var(--forest); }
+        .wl-modal-btn-confirm {
+          flex: 1; display: flex; align-items: center; justify-content: center;
+          font-family: 'Be Vietnam Pro', sans-serif;
+          font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+          background: #c05050; color: var(--ivory);
+          border: none; padding: 13px; cursor: pointer; transition: all 0.2s;
+        }
+        .wl-modal-btn-confirm:hover:not(:disabled) { background: #a84343; }
+        .wl-modal-btn-cancel:disabled, .wl-modal-btn-confirm:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        /* ─ UNDO TOAST ─ */
+        .wl-undo-toast { display: flex; align-items: center; gap: 14px; font-family: 'Be Vietnam Pro', sans-serif; font-size: 13px; }
+        .wl-undo-btn {
+          display: flex; align-items: center; gap: 5px;
+          background: none; border: none; cursor: pointer;
+          color: var(--gold); font-weight: 600; font-size: 12px;
+          letter-spacing: 0.04em; text-transform: uppercase;
+          white-space: nowrap;
+        }
+        .wl-undo-btn:hover { text-decoration: underline; }
 
         /* ─ DARK MODE ─ */
         body.dark-mode .wl-title { color: #c8d4cc; }
@@ -604,6 +994,7 @@ export default function Wishlist() {
         body.dark-mode .wl-summary-val { color: #c8d4cc; }
         body.dark-mode .wl-card { background: #1c2822; border-color: rgba(255,255,255,0.07); }
         body.dark-mode .wl-card:hover { border-color: rgba(74,158,63,0.3); }
+        body.dark-mode .wl-card--selected { border-color: var(--gold); }
         body.dark-mode .wl-card-title { color: #c8d4cc; }
         body.dark-mode .wl-card-price { color: #c8d4cc; }
         body.dark-mode .wl-card-img-placeholder { background: #141a16; }
@@ -612,14 +1003,26 @@ export default function Wishlist() {
         body.dark-mode .wl-filter-btn { color: #8a9e94; border-color: rgba(255,255,255,0.08); }
         body.dark-mode .wl-filter-btn.active { background: #2a4035; color: #c8d4cc; }
         body.dark-mode .wl-sort-select { background-color: #1c2822; color: #c8d4cc; border-color: rgba(255,255,255,0.08); }
+        body.dark-mode .wl-search-input { background-color: #1c2822; color: #c8d4cc; border-color: rgba(255,255,255,0.08); }
+        body.dark-mode .wl-select-toggle { color: #8a9e94; border-color: rgba(255,255,255,0.08); }
+        body.dark-mode .wl-select-toggle.active { background: #2a4035; color: #c8d4cc; border-color: #2a4035; }
         body.dark-mode .wl-btn-share { color: #8a9e94; border-color: rgba(255,255,255,0.08); }
         body.dark-mode .wl-btn-share:hover,
         body.dark-mode .wl-btn-share.copied { color: var(--gold); border-color: var(--gold); }
+        body.dark-mode .wl-btn-clear { border-color: rgba(255,255,255,0.08); }
         body.dark-mode .wl-btn-shop { color: #8a9e94; border-color: rgba(255,255,255,0.08); }
         body.dark-mode .wl-btn-shop:hover { color: var(--gold); border-color: var(--gold); }
+        body.dark-mode .wl-load-more-btn { color: #8a9e94; border-color: rgba(255,255,255,0.08); }
+        body.dark-mode .wl-load-more-btn:hover { color: var(--gold); border-color: var(--gold); }
         body.dark-mode .wl-empty-icon { border-color: rgba(255,255,255,0.08); }
+        body.dark-mode .wl-empty-btn--ghost { color: #c8d4cc; border-color: rgba(255,255,255,0.08); }
         body.dark-mode .wl-card-body { background: #1c2822; }
         body.dark-mode .wl-filter-group { border-color: rgba(255,255,255,0.08); }
+        body.dark-mode .wl-modal { background: #1c2822; border-color: rgba(255,255,255,0.1); }
+        body.dark-mode .wl-modal-title { color: #c8d4cc; }
+        body.dark-mode .wl-modal-icon { border-color: rgba(255,255,255,0.1); }
+        body.dark-mode .wl-modal-btn-cancel { color: #c8d4cc; border-color: rgba(255,255,255,0.1); }
+        body.dark-mode .wl-select-check { background: rgba(28,40,34,0.9); border-color: rgba(255,255,255,0.15); color: #c8d4cc; }
 
         /* ─ RESPONSIVE ─ */
         @media (max-width: 1100px) { .wl-page { padding: 120px 40px 80px; } }
@@ -628,6 +1031,10 @@ export default function Wishlist() {
           .wl-header { flex-direction: column; align-items: flex-start; }
           .wl-summary-bar { gap: 20px; }
           .wl-toolbar { gap: 8px; }
+          .wl-search-input, .wl-search-input:focus { width: 100%; }
+          .wl-search { width: 100%; }
+          .wl-bulk-bar { gap: 12px; }
+          .wl-bulk-actions { width: 100%; }
         }
       `}</style>
 
@@ -658,6 +1065,14 @@ export default function Wishlist() {
                   ? <><Check size={14} strokeWidth={1.6} /> Đã sao chép</>
                   : <><Share2 size={14} strokeWidth={1.6} /> Chia sẻ</>
                 }
+              </button>
+              <button
+                className="wl-btn-clear"
+                onClick={() => setConfirmClearAll(true)}
+                title="Xoá toàn bộ danh sách yêu thích"
+              >
+                <Trash2 size={14} strokeWidth={1.6} />
+                Xoá tất cả
               </button>
               <button
                 className="wl-btn-move-all"
@@ -702,12 +1117,40 @@ export default function Wishlist() {
               <span className="wl-summary-label">Tổng giá trị</span>
               <span className="wl-summary-val">{formatPrice(totalValue)}</span>
             </div>
+            {totalSavings > 0 && (
+              <>
+                <div className="wl-summary-sep" />
+                <div className="wl-summary-stat">
+                  <span className="wl-summary-label">Tiết kiệm được</span>
+                  <span className="wl-summary-val wl-summary-val--gold">{formatPrice(totalSavings)}</span>
+                </div>
+              </>
+            )}
           </div>
         )}
 
-        {/*  TOOLBAR (sort + filter)  */}
+        {/*  TOOLBAR (search + sort + filter + select)  */}
         {!loading && items.length > 0 && (
           <div className="wl-toolbar">
+            {/* Search */}
+            <div className="wl-search">
+              <Search size={14} strokeWidth={1.8} className="wl-search-icon" />
+              <input
+                ref={searchInputRef}
+                className="wl-search-input"
+                type="text"
+                placeholder="Tìm trong danh sách…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                aria-label="Tìm kiếm trong danh sách yêu thích"
+              />
+              {search && (
+                <button className="wl-search-clear" onClick={() => setSearch('')} aria-label="Xoá tìm kiếm">
+                  <X size={13} strokeWidth={1.8} />
+                </button>
+              )}
+            </div>
+
             {/* Filter tabs */}
             <div className="wl-filter-group">
               {FILTER_OPTIONS.map((opt) => (
@@ -733,6 +1176,15 @@ export default function Wishlist() {
               ))}
             </select>
 
+            {/* Select mode toggle */}
+            <button
+              className={`wl-select-toggle${selectMode ? ' active' : ''}`}
+              onClick={handleToggleSelectMode}
+            >
+              <ListChecks size={14} strokeWidth={1.6} />
+              {selectMode ? 'Xong' : 'Chọn nhiều'}
+            </button>
+
             <div className="wl-toolbar-spacer" />
 
             {isFiltered && (
@@ -740,6 +1192,31 @@ export default function Wishlist() {
                 Hiển thị {displayedItems.length} / {items.length} sản phẩm
               </span>
             )}
+          </div>
+        )}
+
+        {/*  BULK ACTION BAR  */}
+        {selectMode && selectedCount > 0 && (
+          <div className="wl-bulk-bar">
+            <button className="wl-bulk-select-all" onClick={handleToggleSelectAllVisible}>
+              {isAllPagedSelected ? <CheckSquare size={16} strokeWidth={1.8} /> : <Square size={16} strokeWidth={1.8} />}
+              Chọn tất cả trên trang
+            </button>
+            <span className="wl-bulk-count">Đã chọn {selectedCount} sản phẩm</span>
+            <div className="wl-bulk-spacer" />
+            <div className="wl-bulk-actions">
+              <button className="wl-bulk-btn" onClick={handleBulkMoveToCart} disabled={bulkMoving || bulkRemoving}>
+                {bulkMoving ? <Loader2 size={13} className="wl-spin" /> : <ShoppingCart size={13} strokeWidth={1.8} />}
+                Thêm vào giỏ
+              </button>
+              <button className="wl-bulk-btn wl-bulk-btn--danger" onClick={handleBulkRemove} disabled={bulkMoving || bulkRemoving}>
+                {bulkRemoving ? <Loader2 size={13} className="wl-spin" /> : <Trash2 size={13} strokeWidth={1.8} />}
+                Xoá
+              </button>
+              <button className="wl-bulk-cancel" onClick={() => setSelectedIds(new Set())} aria-label="Bỏ chọn tất cả">
+                <X size={16} strokeWidth={1.8} />
+              </button>
+            </div>
           </div>
         )}
 
@@ -753,22 +1230,48 @@ export default function Wishlist() {
         ) : items.length === 0 ? (
           <EmptyWishlist filtered={false} />
         ) : displayedItems.length === 0 ? (
-          <EmptyWishlist filtered={true} />
+          <EmptyWishlist filtered={true} onReset={handleResetFilters} />
         ) : (
-          <div className="wl-grid">
-            {displayedItems.map((book) => (
-              <WishlistCard
-                key={book.hashId || book.id}
-                book={book}
-                onRemove={handleRemove}
-                onMoveToCart={handleMoveToCart}
-                isRemoving={removingIds.has(book.hashId)}
-                isMoving={movingIds.has(book.hashId)}
-              />
-            ))}
-          </div>
+          <>
+            <div className="wl-grid">
+              {pagedItems.map((book) => (
+                <WishlistCard
+                  key={book.hashId || book.id}
+                  book={book}
+                  onRemove={handleRemove}
+                  onMoveToCart={handleMoveToCart}
+                  isRemoving={removingIds.has(book.hashId)}
+                  isMoving={movingIds.has(book.hashId)}
+                  selectMode={selectMode}
+                  selected={selectedIds.has(book.hashId)}
+                  onToggleSelect={handleToggleSelectItem}
+                />
+              ))}
+            </div>
+
+            {displayedItems.length > pagedItems.length && (
+              <div className="wl-load-more-wrap">
+                <button
+                  className="wl-load-more-btn"
+                  onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}
+                >
+                  Xem thêm {Math.min(PAGE_SIZE, displayedItems.length - pagedItems.length)} sản phẩm
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmClearAll}
+        title="Xoá toàn bộ danh sách?"
+        message={`Bạn sắp xoá ${items.length} sản phẩm khỏi danh sách yêu thích. Hành động này không thể hoàn tác.`}
+        confirmLabel="Xoá tất cả"
+        onConfirm={handleClearAll}
+        onCancel={() => setConfirmClearAll(false)}
+        loading={clearingAll}
+      />
     </>
   )
 }

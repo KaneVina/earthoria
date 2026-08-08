@@ -14,6 +14,15 @@ const CHART_COLORS = {
   CANCELLED: "#e34948",
   REFUNDED: "#e34948",
 };
+const CATEGORY_COLORS = [
+  "#0D3330",
+  "#2a78d6",
+  "#eda100",
+  "#4a3aa7",
+  "#4a9e3f",
+  "#e34948",
+  "#8a9990",
+];
 const ROLE_CHAR = { CUSTOMER: "C", DEALER: "D", ADMIN: "A", STAFF: "S" };
 
 const STATUS_LABEL = {
@@ -115,16 +124,6 @@ async function backfillUserCodes() {
   return users.length;
 }
 
-/* ══════════════════════════════════════════════
-   DASHBOARD
-   ⚠️ CHƯA SỬA: getDashboard bên dưới vẫn còn tham chiếu
-   Book.stock, OrderItem.bookId, và raw SQL join oi."bookId" —
-   những cái này KHÔNG còn tồn tại trong schema mới. Trang
-   Dashboard admin nhiều khả năng cũng đang lỗi 500 vì lý do
-   tương tự trang Sản phẩm. Cần 1 lượt sửa riêng (đổi sang
-   groupBy variantId + join qua BookVariant) — chưa làm trong
-   lần này vì bạn chỉ yêu cầu sửa trang quản lý sách.
-══════════════════════════════════════════════ */
 exports.getDashboard = async (req, res) => {
   try {
     const now = new Date();
@@ -185,9 +184,46 @@ exports.getDashboard = async (req, res) => {
       color: CHART_COLORS[g.status] ?? "#999",
     }));
 
-    // ⚠️ groupBy bookId trên OrderItem không còn hợp lệ (giờ là variantId) —
-    // tạm bypass để dashboard không crash hoàn toàn, trả về mảng rỗng.
-    const topBooks = [];
+    // Sách bán chạy + doanh thu theo danh mục — cùng dùng 1 query OrderItem
+    // của tháng này (đã sửa: OrderItem không còn bookId trực tiếp, phải lấy
+    // qua variant.bookId / variant.book.categoryId)
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthlyPaidItems = await prisma.orderItem.findMany({
+      where: {
+        order: { createdAt: { gte: monthStart }, paymentStatus: "PAID" },
+      },
+      select: {
+        quantity: true,
+        price: true,
+        variant: {
+          select: {
+            bookId: true,
+            book: {
+              select: {
+                title: true,
+                categoryId: true,
+                category: { select: { name: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // PHYSICAL và DIGITAL, không muốn hiện trùng 2 dòng cho cùng 1 sách.
+    const bookSoldMap = new Map();
+    for (const item of monthlyPaidItems) {
+      const bookId = item.variant.bookId;
+      const prev = bookSoldMap.get(bookId) ?? {
+        title: item.variant.book.title,
+        sold: 0,
+      };
+      prev.sold += item.quantity;
+      bookSoldMap.set(bookId, prev);
+    }
+    const topBooks = [...bookSoldMap.values()]
+      .sort((a, b) => b.sold - a.sold)
+      .slice(0, 5);
 
     const recentOrders = await prisma.order.findMany({
       take: 8,
@@ -198,8 +234,32 @@ exports.getDashboard = async (req, res) => {
       },
     });
 
-    // ⚠️ stock không còn trên Book — tạm bypass, cần viết lại dựa trên BookVariant.
-    const lowStockBooks = [];
+    const stockVariants = await prisma.bookVariant.findMany({
+      where: {
+        isActive: true,
+        isUnlimitedStock: false,
+        book: { isActive: true },
+      },
+      select: {
+        bookId: true,
+        stock: true,
+        book: { select: { title: true } },
+      },
+    });
+    const bookStockMap = new Map();
+    for (const v of stockVariants) {
+      const prev = bookStockMap.get(v.bookId) ?? {
+        id: v.bookId,
+        title: v.book.title,
+        stock: 0,
+      };
+      prev.stock += v.stock;
+      bookStockMap.set(v.bookId, prev);
+    }
+    const lowStockBooks = [...bookStockMap.values()]
+      .filter((b) => b.stock <= 10)
+      .sort((a, b) => a.stock - b.stock)
+      .slice(0, 10);
 
     const newUsersRangeStart = new Date(now);
     newUsersRangeStart.setDate(now.getDate() - 6);
@@ -229,9 +289,23 @@ exports.getDashboard = async (req, res) => {
       };
     });
 
-    // ⚠️ raw SQL join oi."bookId" -> b.id không còn hợp lệ (OrderItem chỉ có
-    // variantId). Tạm bypass để tránh lỗi SQL làm sập cả dashboard.
-    const categoryRevenueChart = [];
+    const categoryRevenueMap = new Map();
+    for (const item of monthlyPaidItems) {
+      const key = item.variant.book.categoryId;
+      const prev = categoryRevenueMap.get(key) ?? {
+        name: item.variant.book.category?.name ?? "Chưa phân loại",
+        revenue: 0,
+      };
+      prev.revenue += item.price * item.quantity;
+      categoryRevenueMap.set(key, prev);
+    }
+    const categoryRevenueChart = [...categoryRevenueMap.values()]
+      .sort((a, b) => b.revenue - a.revenue)
+      .map((c, i) => ({
+        name: c.name,
+        value: Math.round((c.revenue / 1_000_000) * 10) / 10,
+        color: CATEGORY_COLORS[i % CATEGORY_COLORS.length],
+      }));
 
     const [latestOrders, latestUsers] = await Promise.all([
       prisma.order.findMany({

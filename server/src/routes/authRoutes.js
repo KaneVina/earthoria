@@ -22,11 +22,17 @@ const {
   verifyRegisterOtp,
 } = require("../controllers/registerOtpController");
 const {
+  sendCreatePasswordOtp,
+  createPassword,
+} = require("../controllers/passwordCreateController");
+const {
   forgotPasswordLimiter,
   verifyOtpLimiter,
   resetPasswordLimiter,
   loginLimiter,
   registerLimiter,
+  createPasswordOtpLimiter,
+  createPasswordLimiter,
 } = require("../middlewares/rateLimiters");
 const { protect } = require("../middlewares/authMiddleware");
 
@@ -42,6 +48,20 @@ router.post("/reset-password", resetPasswordLimiter, resetPassword);
 router.get("/me", protect, getMe);
 router.put("/update-profile", protect, updateProfile);
 router.put("/change-password", protect, changePassword);
+
+// Tạo mật khẩu lần đầu cho tài khoản đăng nhập bằng Google (chưa có mật khẩu) — có xác thực OTP
+router.post(
+  "/send-create-password-otp",
+  protect,
+  createPasswordOtpLimiter,
+  sendCreatePasswordOtp,
+);
+router.post(
+  "/create-password",
+  protect,
+  createPasswordLimiter,
+  createPassword,
+);
 
 // Google OAuth
 router.get("/google", googleAuth);

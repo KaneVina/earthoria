@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs')
 const prisma = require('../config/db')
 const { sendOtpEmail } = require('../services/emailService')
 const { generateToken, formatResponse } = require('../utils/helpers')
+const { validatePasswordPolicy } = require('../utils/passwordPolicy')
 
 const OTP_LENGTH = 6
 const OTP_EXPIRY_MINUTES = 10
@@ -16,11 +17,7 @@ function hashOtp(otp) {
   return crypto.createHash('sha256').update(otp).digest('hex')
 }
 
-// ════════════════════════════════════════════
 // POST /api/v1/auth/send-register-otp
-// Validate → hash password → lưu PendingUser → gửi OTP
-// KHÔNG tạo User thật ở bước này
-// ════════════════════════════════════════════
 async function sendRegisterOtp(req, res) {
   try {
     const { name, email, password } = req.body
@@ -33,8 +30,9 @@ async function sendRegisterOtp(req, res) {
       return formatResponse(res, 400, 'Email không hợp lệ.')
     }
 
-    if (password.length < 6) {
-      return formatResponse(res, 400, 'Mật khẩu phải ít nhất 6 ký tự.')
+    const passwordPolicyError = validatePasswordPolicy(password)
+    if (passwordPolicyError) {
+      return formatResponse(res, 400, passwordPolicyError)
     }
 
     const normalizedEmail = email.trim().toLowerCase()

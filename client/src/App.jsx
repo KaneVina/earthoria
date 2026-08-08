@@ -48,7 +48,7 @@ import ProductCreate from "./pages/admin/product/ProductCreate";
 import ArCodeDetail from "./pages/admin/ArCodeDetail";
 import Compare from "./pages/Compare";
 import FloatingCompareBar from "./components/FloatingCompareBar";
-// import ParentDashboard from "./pages/ParentDashboard";
+import ParentDashboard from "./pages/ParentDashboard";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -152,14 +152,14 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-          {/* <Route
+          <Route
             path="/parent-dashboard"
             element={
               <ProtectedRoute>
                 <ParentDashboard />
               </ProtectedRoute>
             }
-          /> */}
+          />
           <Route
             path="/profile"
             element={
@@ -185,8 +185,6 @@ export default function App() {
             }
           />
 
-          {/* Bắt mọi route không khớp bên trong Layout, để Header/Footer
-              vẫn hiển thị trên trang 404 của website. */}
           <Route path="*" element={<NotFound />} />
         </Route>
 

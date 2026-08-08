@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Upload, Trash2, X, Copy } from "lucide-react";
+import { ArrowLeft, Upload, Trash2, X, Copy, ImagePlus, Star, Loader2 } from "lucide-react";
 import api from "../../../services/api";
 import toast from "react-hot-toast";
 import AdminLayout from "../AdminLayout";
@@ -12,6 +12,8 @@ const ACCESS_LABEL = {
   PUBLIC: { label: "Công khai", cls: "info" },
   CUSTOMER_ONLY: { label: "Chỉ khách đã mua", cls: "warning" },
 };
+
+const MAX_IMAGES = 4;
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -93,6 +95,65 @@ export default function ProductDetail() {
   });
 
   const handleDeleteVariant = (variant) => deleteVariantMutation.mutateAsync(variant.id);
+
+  // ── Ảnh sách — thao tác lưu ngay qua API, không phụ thuộc nút "Lưu thay đổi" ──
+  const imageInputRef = useRef(null);
+  const [pendingImageUrl, setPendingImageUrl] = useState(null);
+
+  const invalidateBook = () => {
+    qc.invalidateQueries(["admin-product-detail", id]);
+    qc.invalidateQueries(["admin-products"]);
+  };
+
+  const uploadImagesMutation = useMutation({
+    mutationFn: (files) => {
+      const fd = new FormData();
+      files.forEach((file) => fd.append("images", file));
+      return api.post(`/admin/products/${id}/images`, fd);
+    },
+    onSuccess: () => {
+      toast.success("Đã thêm ảnh");
+      invalidateBook();
+    },
+    onError: (e) => toast.error(e.response?.data?.message || "Tải ảnh thất bại"),
+  });
+
+  const deleteImageMutation = useMutation({
+    mutationFn: (url) => api.delete(`/admin/products/${id}/images`, { data: { url } }),
+    onMutate: (url) => setPendingImageUrl(url),
+    onSuccess: () => {
+      toast.success("Đã xóa ảnh");
+      invalidateBook();
+    },
+    onError: (e) => toast.error(e.response?.data?.message || "Xóa ảnh thất bại"),
+    onSettled: () => setPendingImageUrl(null),
+  });
+
+  const setCoverMutation = useMutation({
+    mutationFn: (url) => api.patch(`/admin/products/${id}/cover`, { url }),
+    onMutate: (url) => setPendingImageUrl(url),
+    onSuccess: () => {
+      toast.success("Đã đặt làm ảnh bìa");
+      invalidateBook();
+    },
+    onError: (e) => toast.error(e.response?.data?.message || "Đặt ảnh bìa thất bại"),
+    onSettled: () => setPendingImageUrl(null),
+  });
+
+  const bookImages = book?.images ?? [];
+  const roomForImages = MAX_IMAGES - bookImages.length;
+
+  const handleImagesPicked = (e) => {
+    const picked = Array.from(e.target.files || []);
+    e.target.value = "";
+    if (!picked.length) return;
+    if (picked.length > roomForImages) {
+      toast.error(`Chỉ còn ${roomForImages} chỗ trống — tối đa ${MAX_IMAGES} ảnh`);
+    }
+    const accepted = picked.slice(0, roomForImages);
+    if (!accepted.length) return;
+    uploadImagesMutation.mutate(accepted);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -182,6 +243,90 @@ export default function ProductDetail() {
               <div className="a-mini-stat-label">Mã AR</div>
               <div className="a-mini-stat-value">{book._count?.arCodes ?? 0}</div>
             </div>
+          </div>
+
+          {/* ẢNH SÁCH — mỗi thao tác gọi API ngay lập tức, tách khỏi nút "Lưu thay đổi" bên dưới */}
+          <div className="a-chart-card" style={{ marginBottom: 20 }}>
+            <div className="a-chart-card-header">
+              <h3 className="a-chart-title">Ảnh <em>sách</em></h3>
+              <p className="a-chart-sub">
+                Tối đa {MAX_IMAGES} ảnh · bấm ngôi sao để đặt làm ảnh bìa · thao tác lưu ngay lập tức
+              </p>
+            </div>
+
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              multiple
+              hidden
+              onChange={handleImagesPicked}
+              disabled={uploadImagesMutation.isPending || roomForImages <= 0}
+            />
+
+            <div className="a-pf-image-grid">
+              {bookImages.map((url) => {
+                const isCover = url === book.coverImage;
+                const busyThis = pendingImageUrl === url;
+                return (
+                  <div className="a-pf-image-slot filled" key={url}>
+                    <img src={url} alt="Ảnh sách" />
+                    <div className="a-pf-image-overlay">
+                      {!isCover && (
+                        <button
+                          type="button"
+                          className="a-pf-image-trash"
+                          onClick={() => setCoverMutation.mutate(url)}
+                          disabled={busyThis}
+                          title="Đặt làm ảnh bìa"
+                          style={{ marginRight: 6 }}
+                        >
+                          {busyThis && setCoverMutation.isPending ? <Loader2 size={13} className="a-spin" /> : <Star size={13} />}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className="a-pf-image-trash"
+                        onClick={() => deleteImageMutation.mutate(url)}
+                        disabled={busyThis}
+                        title="Xóa ảnh"
+                      >
+                        {busyThis && deleteImageMutation.isPending ? <Loader2 size={13} className="a-spin" /> : <Trash2 size={13} />}
+                      </button>
+                    </div>
+                    {isCover && <span className="a-pf-image-cover-badge">Bìa</span>}
+                  </div>
+                );
+              })}
+
+              {roomForImages > 0 && (
+                <button
+                  type="button"
+                  className="a-pf-image-slot a-pf-image-add"
+                  onClick={() => imageInputRef.current?.click()}
+                  disabled={uploadImagesMutation.isPending}
+                >
+                  {uploadImagesMutation.isPending ? <Loader2 size={18} className="a-spin" /> : <ImagePlus size={18} />}
+                  <span>{uploadImagesMutation.isPending ? "Đang tải..." : "Thêm ảnh"}</span>
+                  <span className="a-pf-image-hint">Còn {roomForImages} chỗ</span>
+                </button>
+              )}
+            </div>
+
+            {bookImages.length === 0 && (
+              <div
+                style={{
+                  padding: "16px 14px",
+                  fontSize: 12,
+                  color: "rgba(13,51,48,0.5)",
+                  border: "1px dashed #e8e5de",
+                  borderRadius: 10,
+                  marginTop: 10,
+                }}
+              >
+                Sách này chưa có ảnh nào.
+              </div>
+            )}
           </div>
 
           <div className="a-chart-card" style={{ marginBottom: 20 }}>
