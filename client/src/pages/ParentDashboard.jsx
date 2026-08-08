@@ -32,56 +32,53 @@ import {
   Wifi,
   WifiOff,
   Settings2,
+  UserPlus,
+  Trash2,
+  BookMarked,
+  Smile,
 } from "lucide-react";
 
 import "../components/assets/css/profile.css";
 import "../components/assets/css/parentDashboard.css";
-
-/* ═══════════════════════ MOCK DATA ═══════════════════════ */
-
-const MOCK_CHILDREN = [
-  { id: "c1", name: "Bống", age: 7, letter: "B" },
-  { id: "c2", name: "Tôm", age: 10, letter: "T" },
-];
-
-const MOCK_TODAY_MINUTES = { c1: 42, c2: 78 };
-
-const MOCK_DEVICE_STATUS = {
-  c1: { online: true, lastActiveLabel: "đang hoạt động" },
-  c2: { online: false, lastActiveLabel: "hoạt động lần cuối 54 phút trước" },
-};
+import { useAuthStore } from "../store/authStore";
+import { childService } from "../services/childService";
+import { parentPinService } from "../services/parentPinService";
+import CreateChildWizard from "../components/parent/CreateChildWizard";
 
 const WEEK_LABELS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
-const TODAY_INDEX = 5; // demo cố định — thứ Bảy, để cột "hôm nay" có gì đó để nổi bật
+// getDay(): 0=CN,1=T2,...,6=T7 → WEEK_LABELS bắt đầu từ T2 nên phải lùi
+// Chủ nhật (0) xuống cuối mảng (index 6).
+const TODAY_INDEX = (new Date().getDay() + 6) % 7;
 
-const MOCK_WEEKLY_MINUTES = {
-  c1: [30, 45, 20, 60, 50, 42, 25],
-  c2: [70, 80, 60, 90, 85, 78, 30],
+// Ánh xạ ChildAuditType (server, viết hoa) -> icon key dùng ở FE (viết thường)
+const AUDIT_TYPE_MAP = {
+  LOCK: "lock",
+  UNLOCK: "unlock",
+  SETTINGS_UPDATE: "settings",
+  BOOK_VISIBILITY: "settings",
+  CHILD_CREATED: "settings",
+  CHILD_UPDATED: "settings",
+  CHILD_ARCHIVED: "settings",
+  PARENT_PIN_SET: "settings",
+  PARENT_PIN_CHANGED: "settings",
+  PARENT_PIN_RESET: "settings",
 };
 
-const MOCK_SESSIONS = {
-  c1: [
-    { id: "s1", title: "Thế Giới Đại Dương", letter: "Đ", minutes: 18, date: "Hôm nay, 16:20" },
-    { id: "s2", title: "Khu Rừng Nhiệt Đới", letter: "K", minutes: 24, date: "Hôm qua, 19:05" },
-    { id: "s3", title: "Hệ Mặt Trời Của Bé", letter: "H", minutes: 15, date: "18/06, 20:10" },
-  ],
-  c2: [
-    { id: "s4", title: "Khủng Long Kỷ Jura", letter: "K", minutes: 33, date: "Hôm nay, 20:02" },
-    { id: "s5", title: "Thế Giới Đại Dương", letter: "Đ", minutes: 45, date: "Hôm qua, 18:40" },
-  ],
-};
+function formatRelativeTime(iso) {
+  const date = new Date(iso);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMin = Math.floor(diffMs / 60000);
 
-const MOCK_AUDIT_LOG = {
-  c1: [
-    { id: "a1", type: "unlock", text: "Bạn đã mở khóa AR", time: "Hôm qua, 19:32" },
-    { id: "a2", type: "settings", text: "Đã đổi giới hạn ngày thành 60 phút", time: "2 ngày trước" },
-    { id: "a3", type: "lock", text: "Bạn đã khóa AR (giờ ăn tối)", time: "3 ngày trước" },
-  ],
-  c2: [
-    { id: "a4", type: "settings", text: "Đã bật quy tắc 20-20-20", time: "Hôm qua, 08:15" },
-    { id: "a5", type: "unlock", text: "Bạn đã mở khóa AR", time: "4 ngày trước" },
-  ],
-};
+  if (diffMin < 1) return "Vừa xong";
+  if (diffMin < 60) return `${diffMin} phút trước`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `Hôm nay, ${date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}`;
+  const diffDays = Math.floor(diffH / 24);
+  if (diffDays === 1) return `Hôm qua, ${date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}`;
+  if (diffDays < 7) return `${diffDays} ngày trước`;
+  return date.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
+}
 
 const EYE_TIPS = [
   { Icon: Timer, text: "Giữ màn hình cách mắt 50–70cm nhé!" },
@@ -114,14 +111,15 @@ const SECTIONS = [
   { id: "overview", label: "Tổng quan" },
   { id: "time-rules", label: "Giờ giấc" },
   { id: "reports", label: "Báo cáo" },
+  { id: "books", label: "Sách của bé" },
   { id: "eye-care", label: "Bảo vệ mắt" },
   { id: "security", label: "Bảo mật & khóa" },
 ];
 
-// PIN mock — thực tế PIN không bao giờ được lưu dạng plaintext, phải
-// hash bằng Argon2/bcrypt ở backend và so khớp qua API, không so trực
-// tiếp ở client như bản mock này.
-const MOCK_CORRECT_PIN = "1234";
+// PIN được hash bằng bcrypt và xác thực qua API (/api/v1/parent-pin/*,
+// /api/v1/children/:id/unlock) — client không bao giờ biết hay so PIN.
+// MAX_PIN_ATTEMPTS chỉ dùng để đồng bộ hiển thị UI với giới hạn thật ở
+// server (xem utils/parentPin.js).
 const MAX_PIN_ATTEMPTS = 5;
 
 /* ═══════════════════════ HELPERS ═══════════════════════ */
@@ -249,48 +247,140 @@ function RevealCard({ as: Tag = "div", className = "", delay, children, ...rest 
 /* ═══════════════════════ MAIN COMPONENT ═══════════════════════ */
 
 export default function ParentDashboard() {
-  const [activeChildId, setActiveChildId] = useState(MOCK_CHILDREN[0].id);
+  const [children, setChildren] = useState([]);
+  const [childrenLoading, setChildrenLoading] = useState(true);
+  const [activeChildId, setActiveChildId] = useState(null);
   const [activeSection, setActiveSection] = useState("overview");
   const [pillsStuck, setPillsStuck] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [hasPin, setHasPin] = useState(true); // mặc định true để tránh nháy UI trước khi biết chắc
 
-  const [settingsByChild, setSettingsByChild] = useState(() =>
-    Object.fromEntries(MOCK_CHILDREN.map((c) => [c.id, { ...DEFAULT_SETTINGS }]))
-  );
-  const [lockByChild, setLockByChild] = useState(() =>
-    Object.fromEntries(MOCK_CHILDREN.map((c) => [c.id, { isLocked: false, lockedAt: null }]))
-  );
-  const [auditByChild, setAuditByChild] = useState(() =>
-    Object.fromEntries(MOCK_CHILDREN.map((c) => [c.id, [...(MOCK_AUDIT_LOG[c.id] ?? [])]]))
-  );
+  const [dashboard, setDashboard] = useState(null); // { child, todayMinutes, weeklyMinutes, sessions, auditLog }
+  const [dashboardLoading, setDashboardLoading] = useState(false);
 
-  const settings = settingsByChild[activeChildId];
-  const lockState = lockByChild[activeChildId];
-  const auditLog = auditByChild[activeChildId] ?? [];
+  const [books, setBooks] = useState([]);
+  const [booksLoading, setBooksLoading] = useState(false);
 
-  const pushAuditEntry = (childId, entry) => {
-    setAuditByChild((prev) => ({
-      ...prev,
-      [childId]: [{ id: `a${Date.now()}`, time: "Vừa xong", ...entry }, ...(prev[childId] ?? [])].slice(0, 8),
-    }));
+  const loadChildren = useCallback(async () => {
+    setChildrenLoading(true);
+    try {
+      const res = await childService.list();
+      const list = res.data.data.children;
+      setChildren(list);
+      setActiveChildId((prev) => (prev && list.some((c) => c.id === prev) ? prev : list[0]?.id ?? null));
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Không thể tải danh sách hồ sơ trẻ em");
+    } finally {
+      setChildrenLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadChildren();
+    parentPinService
+      .status()
+      .then((res) => setHasPin(!!res.data.data.hasPin))
+      .catch(() => {});
+  }, [loadChildren]);
+
+  const loadDashboard = useCallback(async (childId) => {
+    if (!childId) return;
+    setDashboardLoading(true);
+    try {
+      const res = await childService.getDashboard(childId);
+      setDashboard(res.data.data);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Không thể tải dữ liệu bảng điều khiển");
+    } finally {
+      setDashboardLoading(false);
+    }
+  }, []);
+
+  const loadBooks = useCallback(async (childId) => {
+    if (!childId) return;
+    setBooksLoading(true);
+    try {
+      const res = await childService.getBooks(childId);
+      setBooks(res.data.data.books);
+    } catch (err) {
+      // Im lặng: không để lỗi tải sách chặn phần còn lại của dashboard
+    } finally {
+      setBooksLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeChildId) {
+      loadDashboard(activeChildId);
+      loadBooks(activeChildId);
+    } else {
+      setDashboard(null);
+      setBooks([]);
+    }
+  }, [activeChildId, loadDashboard, loadBooks]);
+
+  const handleChildCreated = (child) => {
+    setChildren((prev) => [...prev, { ...child, todayMinutes: 0 }]);
+    setActiveChildId(child.id);
   };
+
+  const toggleBookVisibility = async (bookId, visible) => {
+    setBooks((prev) => prev.map((b) => (b.id === bookId ? { ...b, visible } : b)));
+    try {
+      await childService.setBookVisibility(activeChildId, bookId, visible);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Không thể cập nhật hiển thị sách");
+      loadBooks(activeChildId);
+    }
+  };
+
+  const activeChild = dashboard?.child ?? null;
+  const settings = activeChild ?? DEFAULT_SETTINGS;
+  const lockState = { isLocked: !!activeChild?.isLocked, lockedAt: activeChild?.lockedAt ?? null };
+  const auditLog = (dashboard?.auditLog ?? []).map((a) => ({
+    id: a.id,
+    type: AUDIT_TYPE_MAP[a.type] || "settings",
+    text: a.text,
+    time: formatRelativeTime(a.time),
+  }));
+  const todayMinutes = dashboard?.todayMinutes ?? 0;
+  const weeklyMinutes = dashboard?.weeklyMinutes ?? [0, 0, 0, 0, 0, 0, 0];
+  const sessions = (dashboard?.sessions ?? []).map((s) => ({
+    id: s.id,
+    title: s.title,
+    letter: (s.title || "?").trim().charAt(0).toUpperCase() || "?",
+    minutes: s.minutes,
+    date: formatRelativeTime(s.date),
+  }));
+  const weekMax = Math.max(...weeklyMinutes, settings.dailyLimitMinutes || 60, 1);
+  const weekTotal = weeklyMinutes.reduce((a, b) => a + b, 0);
+  const weekAvg = weeklyMinutes.length ? weekTotal / weeklyMinutes.length : 0;
+
+  // Xu hướng hôm nay so với trung bình tuần — quy ra badge tăng/giảm
+  const trendDeltaPct = weekAvg > 0 ? Math.round(((todayMinutes - weekAvg) / weekAvg) * 100) : 0;
+  const trendDirection = trendDeltaPct <= -5 ? "down" : trendDeltaPct >= 5 ? "up" : "flat";
 
   /*  Autosave feedback  */
   const [saveStatus, setSaveStatus] = useState("idle"); // idle | saving | saved
   const saveTimers = useRef({ toSaved: null, toIdle: null });
 
-  const updateSettings = (patch) => {
-    setSettingsByChild((prev) => ({
-      ...prev,
-      [activeChildId]: { ...prev[activeChildId], ...patch },
-    }));
-    // TODO API: PATCH /api/v1/parental/children/:childId/settings { ...patch }
-    // → cần model Prisma `ParentalSettings` (1-1 với ChildProfile), lưu server-side
-    // để chống lách bằng cách đổi giờ máy/thoát app/gỡ cài lại.
+  const updateSettings = async (patch) => {
+    if (!activeChildId) return;
+    // Optimistic update để UI mượt, rollback bằng cách tải lại nếu API lỗi
+    setDashboard((prev) => (prev ? { ...prev, child: { ...prev.child, ...patch } } : prev));
     clearTimeout(saveTimers.current.toSaved);
     clearTimeout(saveTimers.current.toIdle);
     setSaveStatus("saving");
-    saveTimers.current.toSaved = setTimeout(() => setSaveStatus("saved"), 450);
-    saveTimers.current.toIdle = setTimeout(() => setSaveStatus("idle"), 2600);
+    try {
+      await childService.updateSettings(activeChildId, patch);
+      setChildren((prev) => prev.map((c) => (c.id === activeChildId ? { ...c, ...patch } : c)));
+      saveTimers.current.toSaved = setTimeout(() => setSaveStatus("saved"), 350);
+      saveTimers.current.toIdle = setTimeout(() => setSaveStatus("idle"), 2600);
+    } catch (err) {
+      setSaveStatus("idle");
+      toast.error(err.response?.data?.message || "Không thể lưu thay đổi, đang tải lại...");
+      loadDashboard(activeChildId);
+    }
   };
 
   useEffect(() => {
@@ -315,44 +405,30 @@ export default function ParentDashboard() {
   const [unlockPinOpen, setUnlockPinOpen] = useState(false);
 
   const requestLock = () => setLockConfirmOpen(true);
-  const confirmLock = () => {
-    setLockByChild((prev) => ({
-      ...prev,
-      [activeChildId]: { isLocked: true, lockedAt: new Date() },
-    }));
-    pushAuditEntry(activeChildId, { type: "lock", text: `Bạn đã khóa AR cho ${activeChild.name}` });
-    setLockConfirmOpen(false);
-    toast.success(`Đã khóa AR trên thiết bị của ${activeChild.name}`);
-    // TODO API: POST /api/v1/parental/children/:childId/lock
-    // → nên đẩy qua push notification (FCM/APNs) tới thiết bị con để có
-    // hiệu lực ngay cả khi app không mở; nếu thiết bị mất mạng, lệnh cần
-    // được xếp hàng đợi và áp dụng ngay khi có mạng trở lại.
+  const confirmLock = async () => {
+    if (!activeChildId || !activeChild) return;
+    try {
+      const res = await childService.lock(activeChildId);
+      setDashboard((prev) => ({ ...prev, child: res.data.data.child }));
+      setChildren((prev) => prev.map((c) => (c.id === activeChildId ? { ...c, isLocked: true } : c)));
+      toast.success(res.data.message);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Không thể khóa AR");
+    } finally {
+      setLockConfirmOpen(false);
+    }
   };
 
   const requestUnlock = () => setUnlockPinOpen(true);
-  const confirmUnlock = () => {
-    setLockByChild((prev) => ({
-      ...prev,
-      [activeChildId]: { isLocked: false, lockedAt: null },
-    }));
-    pushAuditEntry(activeChildId, { type: "unlock", text: `Bạn đã mở khóa AR cho ${activeChild.name}` });
+  // Gọi API thật, xác thực PIN ở server (bcrypt + chống brute-force) —
+  // trả về lỗi cụ thể (sai PIN/còn mấy lần thử/đã bị khóa tạm) để hiển thị.
+  const confirmUnlock = async (pin) => {
+    const res = await childService.unlock(activeChildId, pin);
+    setDashboard((prev) => ({ ...prev, child: res.data.data.child }));
+    setChildren((prev) => prev.map((c) => (c.id === activeChildId ? { ...c, isLocked: false } : c)));
     setUnlockPinOpen(false);
-    toast.success("Đã mở khóa");
-    // TODO API: POST /api/v1/parental/children/:childId/unlock (kèm PIN đã xác thực)
+    toast.success(res.data.message);
   };
-
-  const activeChild = MOCK_CHILDREN.find((c) => c.id === activeChildId);
-  const deviceStatus = MOCK_DEVICE_STATUS[activeChildId] ?? { online: false, lastActiveLabel: "" };
-  const todayMinutes = MOCK_TODAY_MINUTES[activeChildId] ?? 0;
-  const weeklyMinutes = MOCK_WEEKLY_MINUTES[activeChildId] ?? [];
-  const sessions = MOCK_SESSIONS[activeChildId] ?? [];
-  const weekMax = Math.max(...weeklyMinutes, settings.dailyLimitMinutes, 1);
-  const weekTotal = weeklyMinutes.reduce((a, b) => a + b, 0);
-  const weekAvg = weeklyMinutes.length ? weekTotal / weeklyMinutes.length : 0;
-
-  // Xu hướng hôm nay so với trung bình tuần — quy ra badge tăng/giảm
-  const trendDeltaPct = weekAvg > 0 ? Math.round(((todayMinutes - weekAvg) / weekAvg) * 100) : 0;
-  const trendDirection = trendDeltaPct <= -5 ? "down" : trendDeltaPct >= 5 ? "up" : "flat";
 
   /*  PIN change modal  */
   const [pinModal, setPinModal] = useState(null); // null | 'old' | 'otp' | 'new' | 'confirm'
@@ -363,8 +439,16 @@ export default function ParentDashboard() {
   const [pinError, setPinError] = useState("");
   const [otpValues, setOtpValues] = useState(Array(6).fill(""));
   const [otpSending, setOtpSending] = useState(false);
+  const [pinSubmitting, setPinSubmitting] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [maskedEmail, setMaskedEmail] = useState("");
   const otpRefs = useRef([]);
+
+  // Các bước hiển thị phụ thuộc vào 2 trường hợp:
+  // - Chưa từng đặt PIN (!hasPin): chỉ cần "new" → "confirm" (không có PIN cũ để xác thực, không cần OTP)
+  // - Quên PIN (isForgotFlow): "otp" → "new" → "confirm" (xác thực qua email)
+  // - Đổi PIN bình thường: "old" → "new" → "confirm" (PIN cũ chính là yếu tố xác thực)
+  const pinFlowSteps = !hasPin ? ["new", "confirm"] : isForgotFlow ? ["otp", "new", "confirm"] : ["old", "new", "confirm"];
 
   useEffect(() => {
     if (resendCooldown <= 0) return;
@@ -376,13 +460,13 @@ export default function ParentDashboard() {
     setIsForgotFlow(false);
     setOldPin("");
     setPinError("");
-    setPinModal("old");
+    setPinModal(hasPin ? "old" : "new");
   };
   const openForgotPin = () => {
     setIsForgotFlow(true);
     setPinError("");
-    sendOtp();
     setPinModal("otp");
+    sendOtp();
   };
   const closePinModal = () => {
     setPinModal(null);
@@ -391,29 +475,39 @@ export default function ParentDashboard() {
     setConfirmPin("");
     setOtpValues(Array(6).fill(""));
     setPinError("");
+    setPinSubmitting(false);
   };
 
-  const submitOldPin = () => {
-    // TODO API: POST /api/v1/parental/pin/verify { pin: oldPin }
-    if (oldPin !== MOCK_CORRECT_PIN) {
-      setPinError("Mã PIN cũ không đúng.");
+  const submitOldPin = async () => {
+    if (!/^[0-9]{4}$/.test(oldPin)) {
+      setPinError("Mã PIN gồm đúng 4 chữ số.");
       return;
     }
-    setPinError("");
-    sendOtp();
-    setPinModal("otp");
+    setPinSubmitting(true);
+    try {
+      await parentPinService.verify(oldPin);
+      setPinError("");
+      setPinModal("new");
+    } catch (err) {
+      setPinError(err.response?.data?.message || "Mã PIN cũ không đúng.");
+    } finally {
+      setPinSubmitting(false);
+    }
   };
 
-  const sendOtp = () => {
+  const sendOtp = async () => {
     setOtpSending(true);
     setOtpValues(Array(6).fill(""));
-    // TODO API: POST /api/v1/parental/pin/otp/send — dùng lại sendOtpEmail() ở
-    // emailService.js hiện có, TTL 10 phút, one-time-use, rate-limit số lần gửi.
-    setTimeout(() => {
-      setOtpSending(false);
+    try {
+      const res = await parentPinService.sendForgotOtp();
+      setMaskedEmail(res.data.data?.maskedEmail || "");
       setResendCooldown(60);
       toast.success("Đã gửi mã OTP tới email của bạn");
-    }, 700);
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Không thể gửi mã OTP");
+    } finally {
+      setOtpSending(false);
+    }
   };
 
   const handleOtpChange = (idx, val) => {
@@ -430,13 +524,15 @@ export default function ParentDashboard() {
       otpRefs.current[idx - 1]?.focus();
     }
   };
+  // Với luồng quên PIN, việc xác thực OTP thật sự diễn ra ở bước cuối cùng
+  // (submitConfirmPin gọi /parent-pin/forgot/reset kèm cả OTP lẫn PIN mới)
+  // — bước này chỉ kiểm tra đã nhập đủ 6 số trước khi cho qua bước tiếp theo.
   const submitOtp = () => {
     const code = otpValues.join("");
     if (code.length < 6) {
       setPinError("Vui lòng nhập đủ 6 số.");
       return;
     }
-    // TODO API: POST /api/v1/parental/pin/otp/verify { code }
     setPinError("");
     setPinModal("new");
   };
@@ -449,27 +545,37 @@ export default function ParentDashboard() {
     setPinError("");
     setPinModal("confirm");
   };
-  const submitConfirmPin = () => {
+  const submitConfirmPin = async () => {
     if (confirmPin !== newPin) {
       setPinError("Hai mã PIN không khớp, thử lại nhé.");
       return;
     }
-    // TODO API: POST /api/v1/parental/pin/change { newPinHash }
-    // → hash Argon2/bcrypt ở backend trước khi lưu, KHÔNG BAO GIỜ lưu plaintext.
-    pushAuditEntry(activeChildId, {
-      type: "settings",
-      text: isForgotFlow ? "Bạn đã đặt lại mã PIN mới" : "Bạn đã đổi mã PIN",
-    });
-    toast.success(isForgotFlow ? "Đã đặt lại mã PIN mới" : "Đã đổi mã PIN thành công");
-    closePinModal();
+    setPinSubmitting(true);
+    try {
+      if (isForgotFlow) {
+        await parentPinService.resetWithOtp(otpValues.join(""), newPin);
+      } else if (!hasPin) {
+        await parentPinService.set(newPin);
+      } else {
+        await parentPinService.change(oldPin, newPin);
+      }
+      setHasPin(true);
+      toast.success(isForgotFlow ? "Đã đặt lại mã PIN mới" : "Đã đổi mã PIN thành công");
+      closePinModal();
+    } catch (err) {
+      setPinError(err.response?.data?.message || "Không thể lưu mã PIN, thử lại nhé.");
+    } finally {
+      setPinSubmitting(false);
+    }
   };
 
   /*  Unlock PIN attempt (mini flow)  */
   const [unlockPinDigits, setUnlockPinDigits] = useState(["", "", "", ""]);
-  const [unlockAttempts, setUnlockAttempts] = useState(0);
+  const [unlockSubmitting, setUnlockSubmitting] = useState(false);
+  const [unlockLockedUntil, setUnlockLockedUntil] = useState(null);
   const [unlockError, setUnlockError] = useState("");
   const unlockRefs = useRef([]);
-  const isLockedOut = unlockAttempts >= MAX_PIN_ATTEMPTS;
+  const isLockedOut = !!unlockLockedUntil && unlockLockedUntil > Date.now();
 
   const handleUnlockDigit = (idx, val) => {
     const digit = val.replace(/[^0-9]/g, "").slice(-1);
@@ -480,22 +586,25 @@ export default function ParentDashboard() {
     });
     if (digit && idx < 3) unlockRefs.current[idx + 1]?.focus();
   };
-  const submitUnlockPin = () => {
+  const submitUnlockPin = async () => {
     const pin = unlockPinDigits.join("");
     if (pin.length < 4) return;
-    if (pin !== MOCK_CORRECT_PIN) {
-      // TODO API: giới hạn số lần nhập sai PIN/OTP ở backend, sau nhiều lần
-      // sai thì tạm khóa (không chỉ chặn ở client như bản mock này).
-      setUnlockAttempts((n) => n + 1);
-      setUnlockError("Mã PIN không đúng.");
+    setUnlockSubmitting(true);
+    try {
+      await confirmUnlock(pin);
+      setUnlockError("");
+      setUnlockPinDigits(["", "", "", ""]);
+    } catch (err) {
+      const data = err.response?.data;
+      setUnlockError(data?.message || "Mã PIN không đúng.");
+      if (data?.data?.code === "LOCKED_OUT") {
+        setUnlockLockedUntil(Date.now() + 15 * 60 * 1000);
+      }
       setUnlockPinDigits(["", "", "", ""]);
       unlockRefs.current[0]?.focus();
-      return;
+    } finally {
+      setUnlockSubmitting(false);
     }
-    setUnlockError("");
-    setUnlockAttempts(0);
-    setUnlockPinDigits(["", "", "", ""]);
-    confirmUnlock();
   };
 
   /*  Scrollspy: mục lục tự nhận diện section đang xem + trạng thái "dính"  */
@@ -550,6 +659,68 @@ export default function ParentDashboard() {
     return <Settings2 size={13} />;
   };
 
+  /* ── Trạng thái tải/rỗng: chưa có hồ sơ con nào, hoặc đang tải ── */
+  if (childrenLoading) {
+    return (
+      <div className="pkd-page">
+        <div className="pkd-empty-state" style={{ minHeight: "70vh", justifyContent: "center" }}>
+          <Loader2 size={26} className="pkd-spin" />
+          <p>Đang tải bảng điều khiển phụ huynh…</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (children.length === 0) {
+    return (
+      <div className="pkd-page">
+        <div className="pkd-header">
+          <div className="pkd-header-inner">
+            <Link to="/profile" className="pkd-back-link">
+              <ArrowLeft size={14} /> Quay lại hồ sơ
+            </Link>
+            <div className="page-eyebrow">
+              <span className="page-eyebrow-line" />
+              <span className="page-eyebrow-text">Earthoria · Gia đình</span>
+            </div>
+            <h1 className="pkd-title">
+              Bảng điều khiển <em>phụ huynh</em>
+            </h1>
+          </div>
+        </div>
+        <div className="pkd-empty-state">
+          <Smile size={40} strokeWidth={1.2} />
+          <h3>Chưa có hồ sơ trẻ em nào</h3>
+          <p>
+            Tạo hồ sơ riêng cho từng bé — như YouTube Kids — để quản lý sách, giờ xem AR và bảo vệ
+            mắt cho con bạn.
+          </p>
+          <button className="pf-confirm-ok pf-btn-tactile" onClick={() => setWizardOpen(true)}>
+            <UserPlus size={15} /> Tạo hồ sơ đầu tiên cho bé
+          </button>
+        </div>
+        <CreateChildWizard
+          isOpen={wizardOpen}
+          onClose={() => setWizardOpen(false)}
+          onCreated={handleChildCreated}
+        />
+      </div>
+    );
+  }
+
+  if (!activeChild || dashboardLoading) {
+    return (
+      <div className="pkd-page">
+        <div className="pkd-empty-state" style={{ minHeight: "70vh", justifyContent: "center" }}>
+          <Loader2 size={26} className="pkd-spin" />
+          <p>Đang tải dữ liệu của bé…</p>
+        </div>
+      </div>
+    );
+  }
+
+  const lastSessionLabel = sessions[0]?.date || "Chưa có hoạt động";
+
   return (
     <div className="pkd-page">
       {/*  Header  */}
@@ -574,9 +745,9 @@ export default function ParentDashboard() {
 
             <div className="pkd-sync-wrap">
               <span className="pkd-device-status">
-                <span className={`pkd-status-dot ${deviceStatus.online ? "" : "is-offline"}`} />
-                {deviceStatus.online ? <Wifi size={12} /> : <WifiOff size={12} />}
-                Thiết bị của {activeChild.name}: {deviceStatus.lastActiveLabel}
+                <span className="pkd-status-dot" />
+                <Wifi size={12} />
+                Hoạt động gần nhất của {activeChild.name}: {lastSessionLabel}
               </span>
               <span className={`pkd-autosave ${saveStatus !== "idle" ? "is-visible" : ""} is-${saveStatus}`} aria-live="polite">
                 {saveStatus === "saving" ? (
@@ -594,12 +765,10 @@ export default function ParentDashboard() {
 
           {/* Child switcher */}
           <div className="pkd-child-row">
-            {MOCK_CHILDREN.map((child) => {
-              const mins = MOCK_TODAY_MINUTES[child.id] ?? 0;
-              const limit = settingsByChild[child.id]?.dailyLimitMinutes ?? 60;
+            {children.map((child) => {
+              const mins = child.todayMinutes ?? 0;
+              const limit = child.dailyLimitMinutes ?? 60;
               const pct = clamp((mins / limit) * 100, 0, 100);
-              const locked = lockByChild[child.id]?.isLocked;
-              const status = MOCK_DEVICE_STATUS[child.id];
               return (
                 <button
                   key={child.id}
@@ -608,21 +777,20 @@ export default function ParentDashboard() {
                   type="button"
                 >
                   <span className="pkd-child-avatar-wrap">
-                    <span className="pkd-child-avatar">{child.letter}</span>
-                    <span className={`pkd-child-status-dot ${status?.online ? "" : "is-offline"}`} />
+                    <span className="pkd-child-avatar" style={{ background: child.avatarColor }}>
+                      {child.avatarEmoji}
+                    </span>
                   </span>
                   <span className="pkd-child-info">
                     <span className="pkd-child-name">
                       {child.name}
-                      {locked && (
+                      {child.isLocked && (
                         <span className="pkd-child-lock-tag">
                           <Lock size={9} /> Đã khóa
                         </span>
                       )}
                     </span>
-                    <span className="pkd-child-meta">
-                      {child.age} tuổi <span className="pkd-child-meta-sep">·</span> {status?.online ? "Đang hoạt động" : "Ngoại tuyến"}
-                    </span>
+                    <span className="pkd-child-meta">{child.age} tuổi</span>
                     <span className="pkd-child-bar">
                       <span className={`pkd-child-bar-fill ${pct >= 100 ? "is-over" : ""}`} style={{ width: `${pct}%` }} />
                     </span>
@@ -633,6 +801,11 @@ export default function ParentDashboard() {
                 </button>
               );
             })}
+
+            <button className="pkd-add-child-card" onClick={() => setWizardOpen(true)} type="button">
+              <UserPlus size={20} />
+              <span>Thêm hồ sơ cho bé</span>
+            </button>
           </div>
         </div>
 
@@ -1025,6 +1198,62 @@ export default function ParentDashboard() {
           </RevealCard>
         </section>
 
+        {/* ═══════════ SÁCH CỦA BÉ ═══════════ */}
+        <section id="books" className="pkd-section">
+          <RevealCard as="div" className="pkd-section-head">
+            <span className="pkd-section-eyebrow">Thư viện riêng</span>
+            <h2 className="pkd-section-title">Sách của {activeChild.name}</h2>
+            <p className="pkd-section-sub">
+              {activeChild.name} chỉ có thể xem những sách bạn đã mua VÀ bật hiển thị ở đây. Ẩn
+              bớt để lọc theo độ tuổi hoặc chủ đề bạn muốn con tập trung.
+            </p>
+          </RevealCard>
+
+          <RevealCard as="div" className="pkd-card">
+            {booksLoading ? (
+              <div className="pkd-empty-state" style={{ padding: "32px 0" }}>
+                <Loader2 size={20} className="pkd-spin" />
+              </div>
+            ) : books.length === 0 ? (
+              <div className="pkd-empty-state" style={{ padding: "32px 0" }}>
+                <BookMarked size={28} strokeWidth={1.2} />
+                <p>Bạn chưa mua sách nào. Sách sau khi mua sẽ tự động xuất hiện ở đây.</p>
+                <Link to="/products" className="pf-confirm-ok pf-btn-tactile">
+                  Khám phá sách
+                </Link>
+              </div>
+            ) : (
+              books.map((book) => (
+                <div key={book.id} className="pkd-book-visible-row">
+                  <div className="pkd-book-visible-info">
+                    {book.coverImage && (
+                      <img src={book.coverImage} alt={book.title} className="pkd-book-visible-cover" />
+                    )}
+                    <div>
+                      <div className="pkd-book-visible-title">{book.title}</div>
+                      {(book.ageMin || book.ageMax) && (
+                        <div className="pkd-child-meta">
+                          {book.ageMin ?? 0}–{book.ageMax ?? "∞"} tuổi
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <label className="pf-switch">
+                    <input
+                      type="checkbox"
+                      checked={book.visible}
+                      onChange={(e) => toggleBookVisibility(book.id, e.target.checked)}
+                    />
+                    <span className="pf-switch-track">
+                      <span className="pf-switch-thumb" />
+                    </span>
+                  </label>
+                </div>
+              ))
+            )}
+          </RevealCard>
+        </section>
+
         {/* ═══════════ EYE CARE ═══════════ */}
         <section id="eye-care" className="pkd-section">
           <RevealCard as="div" className="pkd-section-head">
@@ -1211,8 +1440,8 @@ export default function ParentDashboard() {
               Hủy
             </button>
             {!isLockedOut && (
-              <button className="pf-confirm-ok pf-btn-tactile" onClick={submitUnlockPin}>
-                Xác nhận
+              <button className="pf-confirm-ok pf-btn-tactile" onClick={submitUnlockPin} disabled={unlockSubmitting}>
+                {unlockSubmitting ? <Loader2 size={14} className="pkd-spin" /> : "Xác nhận"}
               </button>
             )}
           </div>
@@ -1224,11 +1453,9 @@ export default function ParentDashboard() {
         <ModalShell onClose={closePinModal} wide>
           {/* Step indicator */}
           <div className="pkd-pin-steps">
-            {(isForgotFlow ? ["otp", "new", "confirm"] : ["old", "otp", "new", "confirm"]).map(
-              (step) => (
-                <span key={step} className={`pkd-pin-step-dot ${pinModal === step ? "is-active" : ""}`} />
-              )
-            )}
+            {pinFlowSteps.map((step) => (
+              <span key={step} className={`pkd-pin-step-dot ${pinModal === step ? "is-active" : ""}`} />
+            ))}
           </div>
 
           {pinModal === "old" && (
@@ -1254,8 +1481,8 @@ export default function ParentDashboard() {
                 <button className="pf-confirm-cancel pf-btn-tactile" onClick={closePinModal}>
                   Hủy
                 </button>
-                <button className="pf-confirm-ok pf-btn-tactile" onClick={submitOldPin}>
-                  Tiếp tục
+                <button className="pf-confirm-ok pf-btn-tactile" onClick={submitOldPin} disabled={pinSubmitting}>
+                  {pinSubmitting ? <Loader2 size={14} className="pkd-spin" /> : "Tiếp tục"}
                 </button>
               </div>
             </div>
@@ -1268,7 +1495,7 @@ export default function ParentDashboard() {
               </div>
               <h3 className="pf-confirm-title">Nhập mã OTP</h3>
               <p className="pf-confirm-msg">Mã xác thực đã được gửi tới email của bạn.</p>
-              <div className="otp-email-mask">p•••••@earthoria.id.vn</div>
+              <div className="otp-email-mask">{maskedEmail || "email của bạn"}</div>
               <div className="otp-inputs">
                 {otpValues.map((d, i) => (
                   <input
@@ -1355,14 +1582,20 @@ export default function ParentDashboard() {
                 <button className="pf-confirm-cancel pf-btn-tactile" onClick={closePinModal}>
                   Hủy
                 </button>
-                <button className="pf-confirm-ok pf-btn-tactile" onClick={submitConfirmPin}>
-                  <Check size={14} /> Lưu mã PIN
+                <button className="pf-confirm-ok pf-btn-tactile" onClick={submitConfirmPin} disabled={pinSubmitting}>
+                  {pinSubmitting ? <Loader2 size={14} className="pkd-spin" /> : (<><Check size={14} /> Lưu mã PIN</>)}
                 </button>
               </div>
             </div>
           )}
         </ModalShell>
       )}
+
+      <CreateChildWizard
+        isOpen={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        onCreated={handleChildCreated}
+      />
     </div>
   );
 }

@@ -1129,7 +1129,12 @@ export default function Profile() {
                 onBack={() => setSelectedOrderId(null)}
               />
             )}
-            {activeTab === "security" && <SecurityTab />}
+            {activeTab === "security" && (
+              <SecurityTab
+                hasPassword={profile?.hasPassword}
+                email={profile?.email}
+              />
+            )}
             {activeTab === "addresses" && (
               <AddressesTab profile={profile} confirm={confirm} />
             )}
@@ -2090,7 +2095,380 @@ const PASSWORD_CHECKS = [
   },
 ];
 
-function SecurityTab() {
+function SecurityTab({ hasPassword, email }) {
+  // Tài khoản Google chưa từng tạo mật khẩu → hiển thị luồng "Tạo Mật Khẩu" (có OTP)
+  // thay vì form "Đổi Mật Khẩu" thông thường (vốn cần mật khẩu hiện tại — chưa từng có).
+  if (hasPassword === false) {
+    return <CreatePasswordFlow email={email} />;
+  }
+
+  return <ChangePasswordFlow />;
+}
+
+// ─ Google "G" glyph — dùng làm icon minh hoạ cho tài khoản đăng nhập Google ─
+function GoogleGlyph() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+      <path
+        fill="#FFC107"
+        d="M43.6 20.5H42V20H24v8h11.3C33.7 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l6-6C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.2-.1-2.4-.4-3.5z"
+      />
+      <path
+        fill="#FF3D00"
+        d="M6.3 14.7l6.6 4.8C14.7 15.4 19 12 24 12c3.1 0 5.9 1.2 8 3.1l6-6C34.6 5.1 29.6 3 24 3c-7.4 0-13.7 4.2-17 10.4z"
+      />
+      <path
+        fill="#4CAF50"
+        d="M24 45c5.5 0 10.4-1.9 14.3-5.1l-6.6-5.6C29.6 36 26.9 37 24 37c-5.3 0-9.7-3.4-11.3-8.1l-6.6 5.1C9.6 40.7 16.2 45 24 45z"
+      />
+      <path
+        fill="#1976D2"
+        d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.3 5.7l6.6 5.6C41.5 36.4 45 30.7 45 24c0-1.2-.1-2.4-.4-3.5z"
+      />
+    </svg>
+  );
+}
+
+const CREATE_PW_OTP_LEN = 6;
+
+// ════════ Tạo mật khẩu lần đầu cho tài khoản Google (bắt buộc xác thực OTP) ════════
+function CreatePasswordFlow({ email }) {
+  const queryClient = useQueryClient();
+  const [stage, setStage] = useState("intro"); // 'intro' | 'form'
+  const [otp, setOtp] = useState(Array(CREATE_PW_OTP_LEN).fill(""));
+  const [resendTimer, setResendTimer] = useState(0);
+  const [showPw, setShowPw] = useState({ new: false, confirm: false });
+  const [form, setForm] = useState({ newPassword: "", confirmPassword: "" });
+  const [touchedPw, setTouchedPw] = useState(false);
+  const [errors, setErrors] = useState({});
+  const otpRefs = useRef([]);
+
+  useEffect(() => {
+    if (resendTimer <= 0) return;
+    const t = setInterval(() => setResendTimer((s) => s - 1), 1000);
+    return () => clearInterval(t);
+  }, [resendTimer]);
+
+  const sendOtpMutation = useMutation({
+    mutationFn: () => authService.sendCreatePasswordOtp(),
+    onSuccess: () => {
+      toast.success("Mã xác thực đã được gửi đến email của bạn!");
+      setStage("form");
+      setResendTimer(60);
+      setTimeout(() => otpRefs.current[0]?.focus(), 100);
+    },
+    onError: (err) => {
+      toast.error(
+        err.response?.data?.message || "Không thể gửi mã xác thực.",
+      );
+    },
+  });
+
+  const handleResend = () => {
+    if (resendTimer > 0) return;
+    sendOtpMutation.mutate();
+  };
+
+  const handleOtpChange = (idx, val) => {
+    if (!/^\d?$/.test(val)) return;
+    const next = [...otp];
+    next[idx] = val;
+    setOtp(next);
+    setErrors((e) => ({ ...e, otp: null }));
+    if (val && idx < CREATE_PW_OTP_LEN - 1) otpRefs.current[idx + 1]?.focus();
+  };
+
+  const handleOtpKeyDown = (idx, e) => {
+    if (e.key === "Backspace" && !otp[idx] && idx > 0)
+      otpRefs.current[idx - 1]?.focus();
+  };
+
+  const handleOtpPaste = (e) => {
+    e.preventDefault();
+    const pasted = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, CREATE_PW_OTP_LEN);
+    if (!pasted) return;
+    const next = pasted
+      .split("")
+      .concat(Array(CREATE_PW_OTP_LEN).fill(""))
+      .slice(0, CREATE_PW_OTP_LEN);
+    setOtp(next);
+    otpRefs.current[Math.min(pasted.length, CREATE_PW_OTP_LEN - 1)]?.focus();
+  };
+
+  const checksResult = PASSWORD_CHECKS.map((c) => ({
+    ...c,
+    ok: c.test(form.newPassword),
+  }));
+  const strength = checksResult.filter((c) => c.ok).length;
+  const isStrongEnough =
+    form.newPassword.length > 0 && checksResult.every((c) => c.ok);
+  const confirmMatches =
+    form.confirmPassword.length > 0 &&
+    form.confirmPassword === form.newPassword;
+  const otpValue = otp.join("");
+  const otpComplete = otpValue.length === CREATE_PW_OTP_LEN;
+
+  const handleChange = (field, val) => {
+    setForm((f) => ({ ...f, [field]: val }));
+    if (field === "newPassword") setTouchedPw(true);
+    setErrors((e) => ({ ...e, [field]: null }));
+  };
+
+  const createMutation = useMutation({
+    mutationFn: (data) => authService.createPassword(data),
+    onSuccess: () => {
+      toast.success("Tạo mật khẩu thành công!");
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    },
+    onError: (err) => {
+      const msg = err.response?.data?.message || "Tạo mật khẩu thất bại!";
+      toast.error(msg);
+      setErrors({ otp: msg });
+      setOtp(Array(CREATE_PW_OTP_LEN).fill(""));
+      otpRefs.current[0]?.focus();
+    },
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newErrors = {};
+    if (!otpComplete) newErrors.otp = "Vui lòng nhập đủ 6 số.";
+    if (!isStrongEnough)
+      newErrors.newPassword = "Mật khẩu mới chưa đạt đủ các tiêu chí bên dưới";
+    if (!confirmMatches)
+      newErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
+    if (Object.keys(newErrors).length) {
+      setErrors(newErrors);
+      setTouchedPw(true);
+      return;
+    }
+    createMutation.mutate({ otp: otpValue, newPassword: form.newPassword });
+  };
+
+  const strengthMeta = [
+    { label: "", color: "var(--border)" },
+    { label: "Yếu", color: "#e05c5c" },
+    { label: "Trung Bình", color: "#e0a840" },
+    { label: "Tốt", color: "var(--sage)" },
+    { label: "Mạnh", color: "var(--gold)" },
+  ][strength];
+
+  const canSubmit =
+    !createMutation.isPending && otpComplete && isStrongEnough && confirmMatches;
+
+  return (
+    <div>
+      <SectionHeader
+        chapter="III"
+        eyebrow="Bảo Mật Tài Khoản"
+        title="Bảo Mật"
+        emphasis="Tài Khoản"
+        sub="Quản lý mật khẩu và các tùy chọn bảo mật đăng nhập"
+      />
+
+      <div className="pf-security-layout">
+        <div className="pf-security-form-card">
+          <div
+            style={{
+              marginBottom: "8px",
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
+            }}
+          >
+            <div className="pf-lock-icon-wrap">
+              <GoogleGlyph />
+            </div>
+            <h3 className="pf-security-title">Tạo Mật Khẩu</h3>
+          </div>
+          <p className="pf-security-sub">
+            Tài khoản {email ? <strong>{email}</strong> : "của bạn"} hiện đang
+            đăng nhập bằng Google và chưa có mật khẩu riêng. Tạo mật khẩu để
+            có thêm cách đăng nhập bằng email, phòng khi bạn không đăng nhập
+            được bằng Google.
+          </p>
+
+          {stage === "intro" && (
+            <button
+              type="button"
+              onClick={() => sendOtpMutation.mutate()}
+              disabled={sendOtpMutation.isPending}
+              className="pf-btn-tactile pf-btn-shine pf-pw-submit"
+              style={{ maxWidth: "300px" }}
+            >
+              {sendOtpMutation.isPending ? (
+                "Đang gửi mã..."
+              ) : (
+                <>Gửi Mã Xác Thực {Icon.arrowRight}</>
+              )}
+            </button>
+          )}
+
+          {stage === "form" && (
+            <form onSubmit={handleSubmit} className="pf-pw-form">
+              <div>
+                <label className="pf-pw-label">Mã Xác Thực (OTP)</label>
+                <div className="pf-otp-row">
+                  {otp.map((d, i) => (
+                    <input
+                      key={i}
+                      ref={(el) => (otpRefs.current[i] = el)}
+                      className={`pf-otp-input ${errors.otp ? "has-error" : ""}`}
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      maxLength={1}
+                      value={d}
+                      onChange={(e) => handleOtpChange(i, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                      onPaste={handleOtpPaste}
+                    />
+                  ))}
+                </div>
+                {errors.otp && <div className="pf-field-error">{errors.otp}</div>}
+                <div className="pf-otp-resend-row">
+                  <span>Không nhận được mã?</span>
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    disabled={resendTimer > 0 || sendOtpMutation.isPending}
+                    className="pf-otp-resend-btn"
+                  >
+                    {resendTimer > 0
+                      ? `Gửi lại sau ${resendTimer}s`
+                      : "Gửi lại mã"}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <PasswordField
+                  label="Mật Khẩu Mới"
+                  value={form.newPassword}
+                  onChange={(v) => handleChange("newPassword", v)}
+                  show={showPw.new}
+                  toggle={() => setShowPw((s) => ({ ...s, new: !s.new }))}
+                  error={errors.newPassword}
+                  placeholder="8–16 ký tự, chữ hoa, ký tự đặc biệt"
+                />
+                {touchedPw && form.newPassword && (
+                  <div className="pf-strength-zone">
+                    <div className="pf-strength-bar">
+                      {[0, 1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          className={`pf-strength-seg ${i < strength ? "is-filled" : ""}`}
+                          style={{
+                            background:
+                              i < strength ? strengthMeta.color : "var(--border)",
+                            transitionDelay: `${i * 0.05}s`,
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <div
+                      className="pf-strength-label"
+                      style={{ color: strengthMeta.color }}
+                    >
+                      {strengthMeta.label}
+                    </div>
+                  </div>
+                )}
+                <div className="pf-pw-checklist">
+                  {checksResult.map((c) => (
+                    <div
+                      key={c.key}
+                      className={`pf-pw-check-item ${c.ok ? "met" : ""}`}
+                    >
+                      <span className="pf-pw-dot">
+                        {c.ok ? Icon.checkSm : ""}
+                      </span>
+                      {c.label}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <PasswordField
+                  label="Xác Nhận Mật Khẩu Mới"
+                  value={form.confirmPassword}
+                  onChange={(v) => handleChange("confirmPassword", v)}
+                  show={showPw.confirm}
+                  toggle={() => setShowPw((s) => ({ ...s, confirm: !s.confirm }))}
+                  error={errors.confirmPassword}
+                  placeholder="Nhập lại mật khẩu mới"
+                />
+                {form.confirmPassword && (
+                  <div
+                    className={`pf-pw-check-item ${confirmMatches ? "met" : ""}`}
+                    style={{ marginTop: "8px" }}
+                  >
+                    <span className="pf-pw-dot">
+                      {confirmMatches ? Icon.checkSm : ""}
+                    </span>
+                    Khớp với mật khẩu mới
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={!canSubmit}
+                className="pf-btn-tactile pf-btn-shine pf-pw-submit"
+              >
+                {createMutation.isPending ? (
+                  "Đang Xử Lý..."
+                ) : (
+                  <>Tạo Mật Khẩu {Icon.arrowRight}</>
+                )}
+              </button>
+            </form>
+          )}
+        </div>
+
+        <div className="pf-tips-card">
+          <div className="pf-tips-glow" />
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                marginBottom: "24px",
+              }}
+            >
+              <div className="pf-lock-icon-wrap">{Icon.shield}</div>
+              <span className="pf-tips-eyebrow">Vì Sao Nên Tạo Mật Khẩu?</span>
+            </div>
+            {[
+              "Đăng nhập được kể cả khi không truy cập được vào tài khoản Google.",
+              "Thêm một lớp bảo vệ độc lập cho tài khoản Earthoria của bạn.",
+              "Mã OTP xác thực đảm bảo chỉ chính bạn mới có thể tạo mật khẩu mới.",
+              "Sau khi tạo, bạn vẫn có thể tiếp tục đăng nhập bằng Google như bình thường.",
+            ].map((tip, i, arr) => (
+              <div
+                key={i}
+                className="pf-tip-row"
+                style={{ marginBottom: i < arr.length - 1 ? "18px" : 0 }}
+              >
+                <span className="pf-tip-num">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                {tip}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChangePasswordFlow() {
   const [showPw, setShowPw] = useState({
     old: false,
     new: false,

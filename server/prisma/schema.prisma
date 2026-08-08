@@ -30,6 +30,15 @@ model User {
   resetOtpHash      String?
   resetOtpExpires   DateTime?
   resetOtpAttempts  Int       @default(0)
+
+  // ─ Parental PIN (bảo vệ trang Bảng điều khiển phụ huynh) ─
+  parentPinHash          String?
+  parentPinAttempts      Int       @default(0)
+  parentPinLockedUntil   DateTime?
+  parentPinResetOtpHash    String?
+  parentPinResetOtpExpires DateTime?
+  parentPinResetOtpAttempts Int    @default(0)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -40,6 +49,9 @@ model User {
   wishlist      Wishlist[]
   refreshTokens RefreshToken[]
   inventoryImports InventoryImport[]
+
+  children      ChildProfile[]
+  childAuditLogs ChildAuditLog[]
 }
 
 // Bảng đếm số thứ tự theo ngày để sinh userCode
@@ -176,6 +188,9 @@ model Book {
   arCodes  ArCode[]
   authors  BookAuthor[]
   tags     BookTag[]
+
+  childAccess     ChildBookAccess[]
+  childActivities ChildActivityLog[]
 
   @@index([categoryId])
   @@index([language])
@@ -441,4 +456,114 @@ model RefreshToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+model ChildProfile {
+  id        String   @id @default(uuid())
+  parentId  String
+  name      String
+  dob       DateTime
+  avatarEmoji String @default("🦊")
+  avatarColor String @default("#4a9e3f")
+  isActive  Boolean  @default(true) // xoá mềm — ẩn hồ sơ thay vì xoá vĩnh viễn
+
+  // ─ Khoá AR tức thời ─
+  isLocked  Boolean   @default(false)
+  lockedAt  DateTime?
+
+  // ─ Giới hạn giờ & quy tắc bảo vệ mắt (đồng bộ với DEFAULT_SETTINGS ở FE) ─
+  dailyLimitMinutes     Int     @default(60)
+  ruleEnabled           Boolean @default(true)
+  ruleIntervalMinutes   Int     @default(20)
+  ruleRestSeconds       Int     @default(20)
+  allowWindowEnabled    Boolean @default(true)
+  allowStart            String  @default("07:00") // "HH:mm"
+  allowEnd              String  @default("20:30")
+  mandatoryBreakEnabled Boolean @default(true)
+  breakAfterMinutes     Int     @default(45)
+  breakDurationMinutes  Int     @default(10)
+  tipsEnabled           Boolean @default(true)
+  tipsFrequency         String  @default("rest") // 'open' | 'interval' | 'rest'
+  notifyPush            Boolean @default(true)
+  notifyEmail           Boolean @default(false)
+  notifyOnLimitExceeded Boolean @default(true)
+  notifyOnSkippedRest   Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent      User               @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  bookAccess  ChildBookAccess[]
+  activities  ChildActivityLog[]
+  auditLogs   ChildAuditLog[]
+
+  @@index([parentId])
+}
+
+// Bật/tắt hiển thị cho từng sách đã mua theo từng con. Chỉ những sách nằm
+// trong đơn hàng đã thanh toán của phụ huynh mới có thể được bật hiển thị —
+// việc này được kiểm tra ở tầng service, bảng này chỉ lưu lựa chọn bật/tắt.
+// Không có dòng cho (childId, bookId) ⇒ mặc định là HIỂN THỊ (opt-out model),
+// vì mặc định trẻ nên thấy toàn bộ sách cha mẹ đã mua cho tới khi cha mẹ ẩn đi.
+model ChildBookAccess {
+  id       String  @id @default(uuid())
+  childId  String
+  bookId   String
+  visible  Boolean @default(true)
+
+  updatedAt DateTime @updatedAt
+
+  child ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  book  Book         @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([childId, bookId])
+  @@index([childId])
+  @@index([bookId])
+}
+
+// Nhật ký phiên đọc/xem AR của trẻ — nguồn dữ liệu thật cho biểu đồ
+// "hôm nay", "7 ngày qua" và danh sách phiên gần đây trên dashboard.
+model ChildActivityLog {
+  id         String   @id @default(uuid())
+  childId    String
+  bookId     String?
+  minutes    Int
+  occurredOn DateTime @default(now()) // dùng để gom nhóm theo ngày (UTC date)
+  createdAt  DateTime @default(now())
+
+  child ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  book  Book?         @relation(fields: [bookId], references: [id], onDelete: SetNull)
+
+  @@index([childId, occurredOn])
+}
+
+enum ChildAuditType {
+  CHILD_CREATED
+  CHILD_UPDATED
+  CHILD_ARCHIVED
+  LOCK
+  UNLOCK
+  SETTINGS_UPDATE
+  BOOK_VISIBILITY
+  PARENT_PIN_SET
+  PARENT_PIN_CHANGED
+  PARENT_PIN_RESET
+}
+
+// Nhật ký hành động của phụ huynh — mọi thao tác nhạy cảm (khoá/mở khoá,
+// đổi giờ giấc, đổi PIN, ẩn/hiện sách...) đều được ghi lại kèm ai
+// (parentId), làm gì (type), với con nào.
+model ChildAuditLog {
+  id        String         @id @default(uuid())
+  childId   String?
+  parentId  String
+  type      ChildAuditType
+  message   String
+  metadata  Json?
+  createdAt DateTime       @default(now())
+
+  child  ChildProfile? @relation(fields: [childId], references: [id], onDelete: SetNull)
+  parent User          @relation(fields: [parentId], references: [id], onDelete: Cascade)
+
+  @@index([childId])
+  @@index([parentId, createdAt])
 }
