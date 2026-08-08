@@ -44,13 +44,14 @@ import { useAuthStore } from "../store/authStore";
 import { childService } from "../services/childService";
 import { parentPinService } from "../services/parentPinService";
 import CreateChildWizard from "../components/parent/CreateChildWizard";
+import FullScreenLoader from "../components/FullScreenLoader";
+import KidLinkCard from "../components/parent/KidLinkCard";
+import DeleteChildModal from "../components/parent/DeleteChildModal";
 
 const WEEK_LABELS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
-// getDay(): 0=CN,1=T2,...,6=T7 → WEEK_LABELS bắt đầu từ T2 nên phải lùi
 // Chủ nhật (0) xuống cuối mảng (index 6).
 const TODAY_INDEX = (new Date().getDay() + 6) % 7;
 
-// Ánh xạ ChildAuditType (server, viết hoa) -> icon key dùng ở FE (viết thường)
 const AUDIT_TYPE_MAP = {
   LOCK: "lock",
   UNLOCK: "unlock",
@@ -114,15 +115,10 @@ const SECTIONS = [
   { id: "books", label: "Sách của bé" },
   { id: "eye-care", label: "Bảo vệ mắt" },
   { id: "security", label: "Bảo mật & khóa" },
+  { id: "kid-link", label: "Link cho bé" },
 ];
 
-// PIN được hash bằng bcrypt và xác thực qua API (/api/v1/parent-pin/*,
-// /api/v1/children/:id/unlock) — client không bao giờ biết hay so PIN.
-// MAX_PIN_ATTEMPTS chỉ dùng để đồng bộ hiển thị UI với giới hạn thật ở
-// server (xem utils/parentPin.js).
 const MAX_PIN_ATTEMPTS = 5;
-
-/* ═══════════════════════ HELPERS ═══════════════════════ */
 
 function clamp(n, min, max) {
   return Math.max(min, Math.min(max, n));
@@ -141,7 +137,6 @@ function timeToMinutes(hhmm) {
   return h * 60 + m;
 }
 
-/* ═══════════════════════ SMALL UI PIECES ═══════════════════════ */
 
 function Stepper({ value, onChange, min = 5, max = 240, step = 5, suffix = "phút" }) {
   return (
@@ -404,6 +399,14 @@ export default function ParentDashboard() {
   const [lockConfirmOpen, setLockConfirmOpen] = useState(false);
   const [unlockPinOpen, setUnlockPinOpen] = useState(false);
 
+  /*  Xoá vĩnh viễn hồ sơ con  */
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const handleChildDeleted = () => {
+    toast.success(`Đã xoá vĩnh viễn hồ sơ của ${activeChild.name}`);
+    setDeleteModalOpen(false);
+    loadChildren(); // tải lại danh sách — activeChildId sẽ tự chuyển sang bé còn lại (xem loadChildren)
+  };
+
   const requestLock = () => setLockConfirmOpen(true);
   const confirmLock = async () => {
     if (!activeChildId || !activeChild) return;
@@ -662,12 +665,10 @@ export default function ParentDashboard() {
   /* ── Trạng thái tải/rỗng: chưa có hồ sơ con nào, hoặc đang tải ── */
   if (childrenLoading) {
     return (
-      <div className="pkd-page">
-        <div className="pkd-empty-state" style={{ minHeight: "70vh", justifyContent: "center" }}>
-          <Loader2 size={26} className="pkd-spin" />
-          <p>Đang tải bảng điều khiển phụ huynh…</p>
-        </div>
-      </div>
+      <FullScreenLoader
+        eyebrow="Vui lòng chờ"
+        message="Đang tải bảng điều khiển phụ huynh…"
+      />
     );
   }
 
@@ -710,12 +711,10 @@ export default function ParentDashboard() {
 
   if (!activeChild || dashboardLoading) {
     return (
-      <div className="pkd-page">
-        <div className="pkd-empty-state" style={{ minHeight: "70vh", justifyContent: "center" }}>
-          <Loader2 size={26} className="pkd-spin" />
-          <p>Đang tải dữ liệu của bé…</p>
-        </div>
-      </div>
+      <FullScreenLoader
+        eyebrow="Vui lòng chờ"
+        message="Đang tải dữ liệu của bé…"
+      />
     );
   }
 
@@ -724,7 +723,24 @@ export default function ParentDashboard() {
   return (
     <div className="pkd-page">
       {/*  Header  */}
-      <div className="pkd-header">
+      <div
+        className="pkd-header"
+        onMouseMove={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          e.currentTarget.style.setProperty("--mx", `${e.clientX - rect.left}px`);
+          e.currentTarget.style.setProperty("--my", `${e.clientY - rect.top}px`);
+        }}
+      >
+        <div className="pkd-header-bg" aria-hidden="true">
+          <div className="pkd-header-bg-sharp" />
+          <span className="pkd-firefly" />
+          <span className="pkd-firefly" />
+          <span className="pkd-firefly" />
+          <span className="pkd-firefly" />
+          <span className="pkd-firefly" />
+          <span className="pkd-firefly" />
+          <span className="pkd-firefly" />
+        </div>
         <div className="pkd-header-inner">
           <Link to="/profile" className="pkd-back-link">
             <ArrowLeft size={14} /> Quay lại hồ sơ
@@ -1365,6 +1381,41 @@ export default function ParentDashboard() {
               </button>
             </div>
           </RevealCard>
+
+          <RevealCard className="pkd-card pkd-card-danger">
+            <div className="pkd-card-title-row">
+              <Trash2 size={16} />
+              <span>Xoá hồ sơ vĩnh viễn</span>
+            </div>
+            <p className="pkd-section-sub" style={{ marginBottom: 18 }}>
+              Khác với việc ẩn hồ sơ, thao tác này xoá <b>vĩnh viễn</b> toàn bộ dữ liệu của{" "}
+              {activeChild.name} (cài đặt, nhật ký, link riêng) và không thể khôi phục.
+            </p>
+            <button
+              className="pkd-lock-btn is-lock pf-btn-tactile"
+              onClick={() => setDeleteModalOpen(true)}
+              type="button"
+            >
+              <Trash2 size={16} /> Xoá vĩnh viễn hồ sơ của {activeChild.name}
+            </button>
+          </RevealCard>
+        </section>
+
+        {/* ═══════════ LINK CHO BÉ (Kiosk mode) ═══════════ */}
+        <section id="kid-link" className="pkd-section">
+          <RevealCard as="div" className="pkd-section-head">
+            <span className="pkd-section-eyebrow">Chế độ Kiosk</span>
+            <h2 className="pkd-section-title">Link & QR riêng cho {activeChild.name}</h2>
+            <p className="pkd-section-sub">
+              Mở trên thiết bị/tablet riêng của bé — vào thẳng thư viện của bé, không cần đăng
+              nhập tài khoản phụ huynh trên thiết bị đó. Vẫn tôn trọng khoá AR và giờ giấc bạn đã
+              đặt ở trên.
+            </p>
+          </RevealCard>
+
+          <RevealCard className="pkd-card">
+            <KidLinkCard childId={activeChildId} childName={activeChild.name} />
+          </RevealCard>
         </section>
       </div>
 
@@ -1589,6 +1640,15 @@ export default function ParentDashboard() {
             </div>
           )}
         </ModalShell>
+      )}
+
+      {deleteModalOpen && (
+        <DeleteChildModal
+          childId={activeChildId}
+          childName={activeChild.name}
+          onClose={() => setDeleteModalOpen(false)}
+          onDeleted={handleChildDeleted}
+        />
       )}
 
       <CreateChildWizard

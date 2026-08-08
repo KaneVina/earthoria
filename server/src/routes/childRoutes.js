@@ -10,6 +10,9 @@ const {
   unlockChild,
   getChildBooks,
   toggleChildBookVisibility,
+  getKidLink,
+  regenerateKidLink,
+  deleteChildPermanently,
 } = require("../controllers/childController");
 const { protect } = require("../middlewares/authMiddleware");
 const { parentPinLimiter } = require("../middlewares/rateLimiters");
@@ -21,7 +24,11 @@ router.post("/", createChild);
 
 router.get("/:childId/dashboard", getChildDashboard);
 router.patch("/:childId/settings", updateChildSettings);
-router.delete("/:childId", archiveChild);
+router.delete("/:childId", archiveChild); // xoá mềm (ẩn hồ sơ)
+router.delete("/:childId/permanent", deleteChildPermanently); // xoá vĩnh viễn, cần gõ đúng tên
+
+router.get("/:childId/kid-link", getKidLink);
+router.post("/:childId/kid-link/regenerate", parentPinLimiter, regenerateKidLink);
 
 router.post("/:childId/lock", lockChild);
 router.post("/:childId/unlock", parentPinLimiter, unlockChild);

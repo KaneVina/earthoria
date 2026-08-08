@@ -2,6 +2,7 @@ const prisma = require("../config/db");
 const { formatResponse } = require("../utils/helpers");
 const { calculateAge, isValidChildDob } = require("../utils/age");
 const { verifyParentPin } = require("../utils/parentPin");
+const { generateKidLinkToken, buildKidLinkUrl } = require("../utils/kidLink");
 
 const MAX_CHILDREN_PER_PARENT = 10;
 
@@ -341,10 +342,7 @@ const lockChild = async (req, res) => {
   }
 };
 
-// ════════════════════════════════════════════
 // POST /api/v1/children/:childId/unlock — mở khoá, bắt buộc xác thực PIN
-// Body: { pin }
-// ════════════════════════════════════════════
 const unlockChild = async (req, res) => {
   try {
     const child = await findOwnChild(req.user.id, req.params.childId);
@@ -378,12 +376,7 @@ const unlockChild = async (req, res) => {
   }
 };
 
-// ════════════════════════════════════════════
 // GET /api/v1/children/:childId/books
-// Danh sách sách trẻ ĐƯỢC PHÉP thấy = sách nằm trong đơn hàng đã thanh toán
-// của phụ huynh, kèm cờ `visible` (bật/tắt hiển thị cho riêng bé này).
-// Không có dòng ChildBookAccess ⇒ mặc định visible = true (opt-out).
-// ════════════════════════════════════════════
 const getChildBooks = async (req, res) => {
   try {
     const child = await findOwnChild(req.user.id, req.params.childId);
@@ -431,10 +424,7 @@ const getChildBooks = async (req, res) => {
   }
 };
 
-// ════════════════════════════════════════════
 // PATCH /api/v1/children/:childId/books/:bookId — bật/tắt hiển thị 1 sách
-// Body: { visible: boolean }
-// ════════════════════════════════════════════
 const toggleChildBookVisibility = async (req, res) => {
   try {
     const child = await findOwnChild(req.user.id, req.params.childId);
@@ -485,6 +475,190 @@ const toggleChildBookVisibility = async (req, res) => {
   }
 };
 
+// GET /api/v1/children/:childId/kid-link — lấy link + QR riêng cho bé
+const getKidLink = async (req, res) => {
+  try {
+    const child = await prisma.childProfile.findFirst({
+      where: { id: req.params.childId, parentId: req.user.id, isActive: true },
+      select: { id: true, name: true, kidLinkToken: true },
+    });
+    if (!child) return formatResponse(res, 404, "Không tìm thấy hồ sơ trẻ");
+
+    let token = child.kidLinkToken;
+    if (!token) {
+      token = generateKidLinkToken();
+      await prisma.childProfile.update({
+        where: { id: child.id },
+        data: { kidLinkToken: token },
+      });
+    }
+
+    const url = buildKidLinkUrl(process.env.CLIENT_URL || "", child.name, token);
+    return formatResponse(res, 200, "OK", { url, token });
+  } catch (error) {
+    console.error(error);
+    return formatResponse(res, 500, "Lỗi server");
+  }
+};
+
+// POST /api/v1/children/:childId/kid-link/regenerate
+const regenerateKidLink = async (req, res) => {
+  try {
+    const child = await findOwnChild(req.user.id, req.params.childId);
+    if (!child) return formatResponse(res, 404, "Không tìm thấy hồ sơ trẻ");
+
+    const token = generateKidLinkToken();
+    await prisma.childProfile.update({
+      where: { id: child.id },
+      data: { kidLinkToken: token },
+    });
+
+    await pushAudit({
+      parentId: req.user.id,
+      childId: child.id,
+      type: "KID_LINK_REGENERATED",
+      message: `Đã tạo lại link riêng cho ${child.name}, link cũ đã bị huỷ`,
+    });
+
+    const url = buildKidLinkUrl(process.env.CLIENT_URL || "", child.name, token);
+    return formatResponse(res, 200, "Đã tạo lại link mới", { url, token });
+  } catch (error) {
+    console.error(error);
+    return formatResponse(res, 500, "Lỗi server");
+  }
+};
+
+// DELETE /api/v1/children/:childId/permanent — XOÁ VĨNH VIỄN
+const deleteChildPermanently = async (req, res) => {
+  try {
+    const child = await prisma.childProfile.findFirst({
+      where: { id: req.params.childId, parentId: req.user.id },
+      select: { id: true, name: true },
+    });
+    if (!child) return formatResponse(res, 404, "Không tìm thấy hồ sơ trẻ");
+
+    const { confirmName } = req.body;
+    if (typeof confirmName !== "string" || confirmName.trim() !== child.name) {
+      return formatResponse(
+        res,
+        400,
+        "Tên xác nhận không khớp. Vui lòng nhập chính xác tên của bé để xoá vĩnh viễn.",
+      );
+    }
+
+    // Ghi log trước khi xoá
+    await prisma.childAuditLog.create({
+      data: {
+        parentId: req.user.id,
+        childId: child.id,
+        type: "CHILD_DELETED",
+        message: `Đã xoá VĨNH VIỄN hồ sơ và toàn bộ dữ liệu của ${child.name}`,
+      },
+    });
+    await prisma.childProfile.delete({ where: { id: child.id } });
+
+    return formatResponse(res, 200, "Đã xoá vĩnh viễn hồ sơ của bé");
+  } catch (error) {
+    console.error(error);
+    return formatResponse(res, 500, "Lỗi server");
+  }
+};
+
+// [PUBLIC — không cần đăng nhập] GET dữ liệu đọc-only cho trang Kiosk
+const getKidPublicProfile = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const child = await prisma.childProfile.findFirst({
+      where: { kidLinkToken: token, isActive: true },
+      select: {
+        id: true,
+        name: true,
+        avatarEmoji: true,
+        avatarColor: true,
+        isLocked: true,
+        dailyLimitMinutes: true,
+        ruleEnabled: true,
+        ruleIntervalMinutes: true,
+        ruleRestSeconds: true,
+        allowWindowEnabled: true,
+        allowStart: true,
+        allowEnd: true,
+        mandatoryBreakEnabled: true,
+        breakAfterMinutes: true,
+        breakDurationMinutes: true,
+        tipsEnabled: true,
+        tipsFrequency: true,
+      },
+    });
+    if (!child) return formatResponse(res, 404, "Link không hợp lệ hoặc đã bị thu hồi");
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const todayAgg = await prisma.childActivityLog.aggregate({
+      where: { childId: child.id, occurredOn: { gte: startOfToday } },
+      _sum: { minutes: true },
+    });
+
+    return formatResponse(res, 200, "OK", {
+      child: { ...serializeChild(child), todayMinutes: todayAgg._sum.minutes || 0 },
+    });
+  } catch (error) {
+    console.error(error);
+    return formatResponse(res, 500, "Lỗi server");
+  }
+};
+
+// [PUBLIC] GET /api/v1/kid-access/:token/books — danh sách sách bé được
+const getKidPublicBooks = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const child = await prisma.childProfile.findFirst({
+      where: { kidLinkToken: token, isActive: true },
+      select: { id: true, parentId: true },
+    });
+    if (!child) return formatResponse(res, 404, "Link không hợp lệ hoặc đã bị thu hồi");
+
+    const purchasedItems = await prisma.orderItem.findMany({
+      where: {
+        order: {
+          userId: child.parentId,
+          paymentStatus: "PAID",
+          status: { in: ["CONFIRMED", "SHIPPING", "DELIVERED"] },
+        },
+      },
+      select: {
+        variant: {
+          select: {
+            book: {
+              select: { id: true, title: true, slug: true, coverImage: true, ageMin: true, ageMax: true },
+            },
+          },
+        },
+      },
+    });
+
+    const bookMap = new Map();
+    for (const item of purchasedItems) {
+      const book = item.variant?.book;
+      if (book) bookMap.set(book.id, book);
+    }
+
+    const access = await prisma.childBookAccess.findMany({
+      where: { childId: child.id, bookId: { in: [...bookMap.keys()] } },
+    });
+    const visibilityMap = Object.fromEntries(access.map((a) => [a.bookId, a.visible]));
+
+    const books = [...bookMap.values()]
+      .map((book) => ({ ...book, visible: visibilityMap[book.id] ?? true }))
+      .filter((b) => b.visible);
+
+    return formatResponse(res, 200, "OK", { books });
+  } catch (error) {
+    console.error(error);
+    return formatResponse(res, 500, "Lỗi server");
+  }
+};
+
 module.exports = {
   listChildren,
   createChild,
@@ -495,4 +669,9 @@ module.exports = {
   unlockChild,
   getChildBooks,
   toggleChildBookVisibility,
+  getKidLink,
+  regenerateKidLink,
+  deleteChildPermanently,
+  getKidPublicProfile,
+  getKidPublicBooks,
 };

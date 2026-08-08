@@ -49,6 +49,7 @@ import ArCodeDetail from "./pages/admin/ArCodeDetail";
 import Compare from "./pages/Compare";
 import FloatingCompareBar from "./components/FloatingCompareBar";
 import ParentDashboard from "./pages/ParentDashboard";
+import KidAccess from "./pages/kid/KidAccess";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -73,8 +74,8 @@ const GuestRoute = ({ children }) => {
   return !isAuthenticated ? children : <Navigate to="/" replace />;
 };
 // Khởi động trang bảo trì
-// const MAINTENANCE_MODE = false;
-const MAINTENANCE_MODE = true;
+const MAINTENANCE_MODE = false;
+// const MAINTENANCE_MODE = true;
 
 export default function App() {
   const { setAuth, setAuthChecked, authChecked } = useAuthStore();
@@ -321,6 +322,7 @@ export default function App() {
         />
         <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
         <Route path="/ar/:slug/:code" element={<ArView />} />
+        <Route path="/e-kid/:slug/:token" element={<KidAccess />} />
       </Routes>
     </BrowserRouter>
   );

@@ -24,7 +24,7 @@ model User {
   role      Role     @default(CUSTOMER)
   isActive  Boolean  @default(true)
 
-  // Mã định danh người dùng: ETR-Role-MMDDYY-SEQ-rand (vd: ETRC062926001ak)
+  // Mã định danh người dùng
   userCode  String?  @unique
 
   resetOtpHash      String?
@@ -254,15 +254,12 @@ model BookTag {
 }
 
 // ─ AUTHOR ─
-// 1 sách có thể có nhiều tác giả, 1 tác giả có thể viết nhiều sách -> quan hệ n-n qua BookAuthor
 model Author {
   id    String       @id @default(uuid())
   name  String       @unique
   books BookAuthor[]
 }
 
-// Bảng nối Book <-> Author, có `order` để giữ đúng thứ tự tác giả khi hiển thị
-// (vd: "Tác giả chính, Đồng tác giả" thay vì bị xáo trộn)
 model BookAuthor {
   bookId   String
   authorId String
@@ -276,15 +273,6 @@ model BookAuthor {
 }
 
 // ─ AR CODE ─
-// Mỗi sách có thể có nhiều mã AR (vd: sách về động vật -> mã riêng cho
-// con voi, con heo...). Mỗi mã gắn với 1 model 3D và được in thành 1 QR
-// cố định trong sách giấy, nên `code` không bao giờ được đổi sau khi in.
-//
-// BẢO MẬT: `code` PHẢI là chuỗi ngẫu nhiên sinh bằng CSPRNG (crypto.randomBytes),
-// KHÔNG được là số đếm tăng dần hay encode/decode được (vd hashids), vì đó
-// chỉ là obfuscation hai chiều, không chống được việc đoán mã giữa các sách.
-// `code` là chìa khóa tra cứu duy nhất — `slug` trong URL chỉ để hiển thị
-// tên sách đẹp mắt, KHÔNG được dùng để xác thực hay tra cứu.
 enum ArAccessType {
   CUSTOMER_ONLY
   PUBLIC
@@ -438,9 +426,6 @@ enum CouponType {
 }
 
 // ─ REFRESH TOKEN ─
-// Không lưu token gốc, chỉ lưu hash (SHA-256). Hỗ trợ rotation +
-// reuse detection: khi 1 token đã revoke mà vẫn bị dùng lại => dấu
-// hiệu bị đánh cắp => revoke toàn bộ các token cùng chain của user.
 model RefreshToken {
   id         String    @id @default(uuid())
   userId     String
@@ -464,7 +449,9 @@ model ChildProfile {
   dob       DateTime
   avatarEmoji String @default("🦊")
   avatarColor String @default("#4a9e3f")
-  isActive  Boolean  @default(true) // xoá mềm — ẩn hồ sơ thay vì xoá vĩnh viễn
+  isActive  Boolean  @default(true) // xoá mềm
+
+  kidLinkToken String? @unique
 
   // ─ Khoá AR tức thời ─
   isLocked  Boolean   @default(false)
@@ -499,11 +486,6 @@ model ChildProfile {
   @@index([parentId])
 }
 
-// Bật/tắt hiển thị cho từng sách đã mua theo từng con. Chỉ những sách nằm
-// trong đơn hàng đã thanh toán của phụ huynh mới có thể được bật hiển thị —
-// việc này được kiểm tra ở tầng service, bảng này chỉ lưu lựa chọn bật/tắt.
-// Không có dòng cho (childId, bookId) ⇒ mặc định là HIỂN THỊ (opt-out model),
-// vì mặc định trẻ nên thấy toàn bộ sách cha mẹ đã mua cho tới khi cha mẹ ẩn đi.
 model ChildBookAccess {
   id       String  @id @default(uuid())
   childId  String
@@ -521,7 +503,6 @@ model ChildBookAccess {
 }
 
 // Nhật ký phiên đọc/xem AR của trẻ — nguồn dữ liệu thật cho biểu đồ
-// "hôm nay", "7 ngày qua" và danh sách phiên gần đây trên dashboard.
 model ChildActivityLog {
   id         String   @id @default(uuid())
   childId    String
@@ -547,11 +528,11 @@ enum ChildAuditType {
   PARENT_PIN_SET
   PARENT_PIN_CHANGED
   PARENT_PIN_RESET
+  CHILD_DELETED
+  KID_LINK_REGENERATED
 }
 
-// Nhật ký hành động của phụ huynh — mọi thao tác nhạy cảm (khoá/mở khoá,
-// đổi giờ giấc, đổi PIN, ẩn/hiện sách...) đều được ghi lại kèm ai
-// (parentId), làm gì (type), với con nào.
+// Nhật ký hành động của phụ huynh
 model ChildAuditLog {
   id        String         @id @default(uuid())
   childId   String?

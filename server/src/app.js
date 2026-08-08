@@ -61,6 +61,7 @@ v1.use('/parent-pin', require('./routes/parentPinRoutes'))
 
 // Public route
 v1.use('/ar', require('./routes/arRoutes'))
+v1.use('/kid-access', require('./routes/kidAccessRoutes'))
 
 app.use('/api/v1', v1)
 

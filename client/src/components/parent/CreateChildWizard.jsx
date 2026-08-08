@@ -10,12 +10,15 @@ import {
   Sparkles,
   ShieldCheck,
   Smile,
+  X,
+  Lock,
+  FileText,
 } from "lucide-react";
 
 import { useAuthStore } from "../../store/authStore";
 import { childService } from "../../services/childService";
 
-const STEPS = ["email", "info", "terms"];
+const STEPS = ["intro", "email", "info", "terms"];
 
 const AVATAR_CHOICES = [
   { emoji: "🦊", color: "#c9793f" },
@@ -41,13 +44,61 @@ function calcAge(dobStr) {
   return age >= 0 ? age : null;
 }
 
+// Vector minh họa nhỏ, dễ thương, tông xanh lá — dùng cho bước giới thiệu.
+// Vẽ thuần bằng shape cơ bản, không phụ thuộc ảnh ngoài.
+function IntroIllustration() {
+  return (
+    <svg
+      viewBox="0 0 220 170"
+      width="180"
+      height="140"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="pkd-wizard-illustration"
+      aria-hidden="true"
+    >
+      <ellipse cx="110" cy="150" rx="72" ry="10" fill="var(--gold-pale)" />
+      <circle cx="110" cy="76" r="58" fill="var(--gold-pale)" />
+      <circle cx="110" cy="90" r="34" fill="var(--forest-light)" />
+      <circle cx="110" cy="90" r="34" fill="var(--forest-light)" opacity="0.001" />
+      {/* Thân mascot lá cây */}
+      <path
+        d="M110 56C130 56 146 72 146 92C146 112 130 128 110 128C90 128 74 112 74 92C74 72 90 56 110 56Z"
+        fill="var(--forest)"
+      />
+      {/* Hai lá trên đầu */}
+      <path d="M96 54C90 40 96 26 110 22C108 38 106 48 96 54Z" fill="var(--gold)" />
+      <path d="M124 54C130 40 124 26 110 22C112 38 114 48 124 54Z" fill="var(--gold)" />
+      {/* Mắt */}
+      <circle cx="98" cy="94" r="5" fill="var(--ivory)" />
+      <circle cx="122" cy="94" r="5" fill="var(--ivory)" />
+      <circle cx="99" cy="95" r="2.4" fill="var(--forest)" />
+      <circle cx="123" cy="95" r="2.4" fill="var(--forest)" />
+      {/* Má hồng */}
+      <circle cx="90" cy="104" r="4" fill="var(--gold)" opacity="0.5" />
+      <circle cx="130" cy="104" r="4" fill="var(--gold)" opacity="0.5" />
+      {/* Miệng cười */}
+      <path d="M100 108C104 114 116 114 120 108" stroke="var(--ivory)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+      {/* Tay vẫy */}
+      <circle cx="150" cy="80" r="9" fill="var(--forest)" />
+      <path d="M150 71V52" stroke="var(--forest)" strokeWidth="8" strokeLinecap="round" />
+      {/* Sparkles xung quanh */}
+      <circle cx="40" cy="50" r="4" fill="var(--gold)" />
+      <circle cx="176" cy="46" r="3" fill="var(--gold)" />
+      <circle cx="182" cy="112" r="4" fill="var(--forest-light)" />
+      <circle cx="34" cy="112" r="3" fill="var(--forest-light)" />
+    </svg>
+  );
+}
+
 export default function CreateChildWizard({ isOpen, onClose, onCreated }) {
   const user = useAuthStore((s) => s.user);
   const [stepIdx, setStepIdx] = useState(0);
   const [name, setName] = useState("");
   const [dob, setDob] = useState("");
   const [avatar, setAvatar] = useState(AVATAR_CHOICES[0]);
-  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [agreeGuardian, setAgreeGuardian] = useState(false);
+  const [agreePolicy, setAgreePolicy] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
@@ -65,7 +116,8 @@ export default function CreateChildWizard({ isOpen, onClose, onCreated }) {
       setName("");
       setDob("");
       setAvatar(AVATAR_CHOICES[0]);
-      setAgreeTerms(false);
+      setAgreeGuardian(false);
+      setAgreePolicy(false);
       setError("");
     }
   }, [isOpen]);
@@ -99,7 +151,8 @@ export default function CreateChildWizard({ isOpen, onClose, onCreated }) {
   };
 
   const handleCreate = async () => {
-    if (!agreeTerms) return setError("Bạn cần đồng ý với điều khoản để tiếp tục.");
+    if (!agreeGuardian) return setError("Bạn cần đồng ý với điều khoản công bố phía trên để tiếp tục.");
+    if (!agreePolicy) return setError("Bạn cần đồng ý với Chính sách quyền riêng tư & Điều khoản dịch vụ.");
     setSubmitting(true);
     setError("");
     try {
@@ -130,11 +183,38 @@ export default function CreateChildWizard({ isOpen, onClose, onCreated }) {
       }}
     >
       <div className="pf-confirm pkd-modal pkd-modal-wide" role="dialog" aria-modal="true">
-        <div className="pkd-pin-steps">
-          {STEPS.map((s, i) => (
-            <span key={s} className={`pkd-pin-step-dot ${i === stepIdx ? "is-active" : ""}`} />
-          ))}
-        </div>
+        <button className="pkd-wizard-close" onClick={onClose} type="button" aria-label="Đóng">
+          <X size={16} />
+        </button>
+
+        {step !== "intro" && (
+          <div className="pkd-pin-steps">
+            {STEPS.filter((s) => s !== "intro").map((s, i) => (
+              <span
+                key={s}
+                className={`pkd-pin-step-dot ${STEPS.indexOf(s) === stepIdx ? "is-active" : ""}`}
+              />
+            ))}
+          </div>
+        )}
+
+        {step === "intro" && (
+          <div className="auth-otp-step pkd-wizard-intro">
+            <IntroIllustration />
+            <h3 className="pf-confirm-title">
+              Hãy nhờ cha mẹ đăng ký tài khoản <em>E-Kid</em> cho bạn
+            </h3>
+            <p className="pf-confirm-msg">
+              Chỉ mất khoảng 1 phút. Cha mẹ sẽ tạo hồ sơ riêng, giới hạn giờ xem AR và bật các quy
+              tắc bảo vệ mắt phù hợp với độ tuổi của bé.
+            </p>
+            <div className="pf-confirm-actions" style={{ justifyContent: "center" }}>
+              <button className="pf-confirm-ok pf-btn-tactile" onClick={goNext}>
+                Bắt đầu <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+        )}
 
         {step === "email" && (
           <div className="auth-otp-step">
@@ -143,13 +223,17 @@ export default function CreateChildWizard({ isOpen, onClose, onCreated }) {
             </div>
             <h3 className="pf-confirm-title">Xác nhận email phụ huynh</h3>
             <p className="pf-confirm-msg">
-              Tài khoản trẻ em sẽ được gắn với email đăng ký hiện tại của bạn. Mọi thông báo và
-              quyền quản lý sẽ gửi về email này.
+              Tài khoản trẻ em sẽ được gắn với email đăng ký hiện tại của bạn.
             </p>
             <div className="pkd-wizard-email-box">
               <Mail size={14} />
               <span>{user?.email || "—"}</span>
             </div>
+            <p className="pkd-wizard-email-note">
+              Mọi thông báo quan trọng — cảnh báo vượt giờ xem, yêu cầu mở khóa, đặt lại mã PIN,
+              và các cập nhật liên quan đến tài khoản của bé — đều sẽ được gửi về đúng địa chỉ
+              email này. Vui lòng kiểm tra kỹ trước khi tiếp tục để không bỏ lỡ thông báo.
+            </p>
             <div className="pf-confirm-actions">
               <button className="pf-confirm-cancel pf-btn-tactile" onClick={onClose}>
                 Hủy
@@ -169,32 +253,37 @@ export default function CreateChildWizard({ isOpen, onClose, onCreated }) {
             <h3 className="pf-confirm-title">Thông tin của bé</h3>
             <p className="pf-confirm-msg">Nhập tên và ngày sinh — hệ thống sẽ tự tính tuổi cho bé.</p>
 
-            <div className="pkd-wizard-avatar-row">
-              {AVATAR_CHOICES.map((a) => (
-                <button
-                  key={a.emoji}
-                  type="button"
-                  className={`pkd-wizard-avatar-btn ${avatar.emoji === a.emoji ? "is-active" : ""}`}
-                  style={{ "--avatar-color": a.color }}
-                  onClick={() => setAvatar(a)}
-                  aria-label={`Chọn biểu tượng ${a.emoji}`}
-                >
-                  {a.emoji}
-                </button>
-              ))}
-            </div>
+            <div className="pkd-wizard-row">
+              <div className="pkd-wizard-avatar-group">
+                <label>Biểu tượng</label>
+                <div className="pkd-wizard-avatar-row">
+                  {AVATAR_CHOICES.map((a) => (
+                    <button
+                      key={a.emoji}
+                      type="button"
+                      className={`pkd-wizard-avatar-btn ${avatar.emoji === a.emoji ? "is-active" : ""}`}
+                      style={{ "--avatar-color": a.color }}
+                      onClick={() => setAvatar(a)}
+                      aria-label={`Chọn biểu tượng ${a.emoji}`}
+                    >
+                      {a.emoji}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-            <div className="pkd-wizard-field">
-              <label>Tên của bé</label>
-              <input
-                type="text"
-                className="pf-pw-input pkd-wizard-input"
-                placeholder="VD: Bống"
-                value={name}
-                maxLength={50}
-                onChange={(e) => setName(e.target.value)}
-                autoFocus
-              />
+              <div className="pkd-wizard-field pkd-wizard-field-name">
+                <label>Tên của bé</label>
+                <input
+                  type="text"
+                  className="pf-pw-input pkd-wizard-input"
+                  placeholder="VD: Bống"
+                  value={name}
+                  maxLength={50}
+                  onChange={(e) => setName(e.target.value)}
+                  autoFocus
+                />
+              </div>
             </div>
 
             <div className="pkd-wizard-field">
@@ -214,6 +303,12 @@ export default function CreateChildWizard({ isOpen, onClose, onCreated }) {
               )}
             </div>
 
+            <p className="pkd-wizard-note">
+              <Sparkles size={13} />
+              Chúng tôi sẽ tự động tuỳ chỉnh trải nghiệm tài khoản E-Kid theo đúng độ tuổi của con
+              bạn. Chỉ bạn và con bạn thấy được những thông tin này.
+            </p>
+
             {error && <p className="pf-field-error">{error}</p>}
 
             <div className="pf-confirm-actions">
@@ -229,34 +324,52 @@ export default function CreateChildWizard({ isOpen, onClose, onCreated }) {
 
         {step === "terms" && (
           <div className="auth-otp-step">
-            <div className="pf-confirm-icon">
-              <ShieldCheck size={18} />
-            </div>
-            <h3 className="pf-confirm-title">Đồng ý điều khoản</h3>
+            <h3 className="pf-confirm-title">Điều khoản công bố</h3>
             <p className="pf-confirm-msg">
-              Bạn xác nhận là phụ huynh/người giám hộ hợp pháp của <strong>{name || "bé"}</strong>{" "}
-              ({age !== null ? `${age} tuổi` : "—"}) và đồng ý để Earthoria tạo hồ sơ, lưu tiến
-              trình đọc và áp dụng các quy tắc bảo vệ mắt do bạn thiết lập.
+              Trước khi tạo hồ sơ cho <strong>{name || "bé"}</strong>{" "}
+              ({age !== null ? `${age} tuổi` : "—"}), bạn cần xác nhận là phụ huynh/người giám hộ
+              hợp pháp và đồng ý để Earthoria tạo hồ sơ, lưu tiến trình đọc, cũng như áp dụng các
+              quy tắc bảo vệ mắt và giới hạn thời gian do chính bạn thiết lập cho bé.
             </p>
 
-            <label className="pkd-wizard-terms-row">
-              <input
-                type="checkbox"
-                checked={agreeTerms}
-                onChange={(e) => setAgreeTerms(e.target.checked)}
-              />
-              <span>
-                Tôi đã đọc và đồng ý với{" "}
-                <Link to="/legal/terms" target="_blank" rel="noopener noreferrer">
-                  Điều khoản sử dụng
-                </Link>{" "}
-                và{" "}
-                <Link to="/legal/privacy" target="_blank" rel="noopener noreferrer">
-                  Chính sách quyền riêng tư trẻ em
-                </Link>
-                .
-              </span>
-            </label>
+            <div className="pkd-wizard-terms-group">
+              <label className="pkd-wizard-terms-row">
+                <input
+                  type="checkbox"
+                  checked={agreeGuardian}
+                  onChange={(e) => setAgreeGuardian(e.target.checked)}
+                />
+                <span className="pkd-wizard-terms-icon">
+                  <FileText size={14} />
+                </span>
+                <span className="pkd-wizard-terms-text">
+                  Tôi xác nhận là phụ huynh/người giám hộ hợp pháp của bé và đồng ý với{" "}
+                  <strong>điều khoản công bố</strong> nêu trên.
+                </span>
+              </label>
+
+              <label className="pkd-wizard-terms-row">
+                <input
+                  type="checkbox"
+                  checked={agreePolicy}
+                  onChange={(e) => setAgreePolicy(e.target.checked)}
+                />
+                <span className="pkd-wizard-terms-icon">
+                  <Lock size={14} />
+                </span>
+                <span className="pkd-wizard-terms-text">
+                  Tôi đồng ý với{" "}
+                  <Link to="/legal/privacy" target="_blank" rel="noopener noreferrer">
+                    Chính sách quyền riêng tư
+                  </Link>{" "}
+                  và{" "}
+                  <Link to="/legal/terms" target="_blank" rel="noopener noreferrer">
+                    Điều khoản dịch vụ
+                  </Link>{" "}
+                  của Earthoria.
+                </span>
+              </label>
+            </div>
 
             {error && <p className="pf-field-error">{error}</p>}
 
@@ -267,7 +380,7 @@ export default function CreateChildWizard({ isOpen, onClose, onCreated }) {
               <button
                 className="pf-confirm-ok pf-btn-tactile"
                 onClick={handleCreate}
-                disabled={submitting || !agreeTerms}
+                disabled={submitting || !agreeGuardian || !agreePolicy}
               >
                 {submitting ? <Loader2 size={14} className="pkd-spin" /> : <Check size={14} />}
                 Tạo tài khoản cho bé
