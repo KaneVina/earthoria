@@ -34,7 +34,10 @@ const flattenOrderItems = (order) => {
     items: (order.items || []).map((item) => ({
       ...item,
       book: item.variant?.book
-        ? { title: item.variant.book.title, coverImage: item.variant.book.coverImage }
+        ? {
+            title: item.variant.book.title,
+            coverImage: item.variant.book.coverImage,
+          }
         : null,
     })),
   };
@@ -70,14 +73,14 @@ const createOrder = async (req, res) => {
     for (const item of cart.items) {
       const v = item.variant;
       if (!v.isActive || !v.book) {
-        return formatResponse(res, 400, `Sản phẩm trong giỏ không còn khả dụng`);
-      }
-      if (!v.isUnlimitedStock && v.stock < item.quantity) {
         return formatResponse(
           res,
           400,
-          `Sách "${v.book.title}" không đủ hàng`,
+          `Sản phẩm trong giỏ không còn khả dụng`,
         );
+      }
+      if (!v.isUnlimitedStock && v.stock < item.quantity) {
+        return formatResponse(res, 400, `Sách "${v.book.title}" không đủ hàng`);
       }
     }
 
@@ -96,7 +99,11 @@ const createOrder = async (req, res) => {
       });
       const result = validateAndComputeDiscount(coupon, subtotal);
       if (!result.ok) {
-        return formatResponse(res, 400, result.reason || "Mã giảm giá không hợp lệ");
+        return formatResponse(
+          res,
+          400,
+          result.reason || "Mã giảm giá không hợp lệ",
+        );
       }
       discount = result.discount;
       appliedCoupon = coupon;
@@ -104,9 +111,11 @@ const createOrder = async (req, res) => {
 
     const afterDiscount = subtotal - discount;
 
-     // 5. Tính phí ship theo km (dùng cùng hàm calcFee với endpoint xem trước /orders/shipping-fee)
+    // 5. Tính phí ship theo km (dùng cùng hàm calcFee với endpoint xem trước /orders/shipping-fee)
     let shippingFee;
-    if (afterDiscount >= FREE_SHIP_THRESHOLD) {
+    if (shipping.deliveryMode === "pickup") {
+      shippingFee = 0;
+    } else if (afterDiscount >= FREE_SHIP_THRESHOLD) {
       shippingFee = 0;
     } else if (shipping.lat != null && shipping.lng != null) {
       const result = calcFee(shipping.lat, shipping.lng);
