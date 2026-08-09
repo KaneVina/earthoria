@@ -26,18 +26,27 @@ export const useCartStore = create((set, get) => ({
 
   addToCart: async (hashId, quantity = 1) => {
     const prev = get().cart
-    const existing = prev?.items?.find((i) => i.book?.hashId === hashId)
+    const existing = prev?.items?.find((i) => i.variant?.book?.hashId === hashId)
 
     if (prev) {
       const newItems = existing
         ? prev.items.map((i) =>
-            i.book?.hashId === hashId
+            i.variant?.book?.hashId === hashId
               ? { ...i, quantity: i.quantity + quantity }
               : i
           )
         : [
             ...prev.items,
-            { id: `temp-${hashId}`, quantity, book: { hashId, title: '', price: 0, coverImage: '' } },
+            {
+              id: `temp-${hashId}`,
+              quantity,
+              variant: {
+                price: 0,
+                salePrice: null,
+                format: 'PHYSICAL',
+                book: { hashId, title: '', coverImage: '' },
+              },
+            },
           ]
       set({ cart: { ...prev, items: newItems }, itemCount: calcCount(newItems) })
     }
