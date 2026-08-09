@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { createPortal } from "react-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { bookService } from "../services/bookService";
 import { useCartStore } from "../store/cartStore";
@@ -77,13 +78,231 @@ function CountdownPrice({ from, to, duration = 1200 }) {
 /* ───────────────────────────────────────────────────────────
    PRODUCT CARD COMPONENT
 ───────────────────────────────────────────────────────────── */
-function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
+function CartIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <circle cx="9" cy="21" r="1" />
+      <circle cx="20" cy="21" r="1" />
+      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
+function HeartIcon({ filled }) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </svg>
+  );
+}
+
+function StarRating({ rating, count }) {
+  return (
+    <div className="product-rating">
+      <div className="product-rating-stars">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <span
+            key={i}
+            className="star"
+            style={i > rating ? { color: "var(--border)" } : {}}
+          >
+            ★
+          </span>
+        ))}
+      </div>
+      <span className="product-rating-count">({count})</span>
+    </div>
+  );
+}
+
+function AddToCartBtn({ onAdd, disabled }) {
   const [added, setAdded] = useState(false);
+  const btnRef = useRef(null);
+  const [hovered, setHovered] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+
+  const handleClick = (e) => {
+    e.stopPropagation();
+    if (disabled) return;
+    setAdded(true);
+    onAdd && onAdd();
+    setTimeout(() => setAdded(false), 1400);
+  };
+
+  const handleMouseEnter = () => {
+    if (btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      setPos({
+        top: r.bottom + window.scrollY + 8,
+        left: r.left + window.scrollX + r.width / 2,
+      });
+    }
+    setHovered(true);
+  };
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        className="add-cart"
+        onClick={handleClick}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={() => setHovered(false)}
+        disabled={disabled}
+        style={{
+          ...(added
+            ? { background: "var(--forest)", color: "var(--ivory)" }
+            : {}),
+          ...(disabled ? { opacity: 0.5, cursor: "not-allowed" } : {}),
+        }}
+      >
+        {added ? <CheckIcon /> : <CartIcon />}
+      </button>
+      {hovered &&
+        !added &&
+        createPortal(
+          <span
+            style={{
+              position: "absolute",
+              top: pos.top,
+              left: pos.left,
+              transform: "translateX(-50%)",
+              background: "var(--forest, #0d2b1e)",
+              color: "var(--ivory, #faf8f3)",
+              fontFamily: "'Be Vietnam Pro', sans-serif",
+              fontSize: "11px",
+              fontWeight: 300,
+              letterSpacing: "0.06em",
+              padding: "6px 12px",
+              border: "0.5px solid rgba(180,150,80,0.3)",
+              pointerEvents: "none",
+              zIndex: 99999,
+              whiteSpace: "nowrap",
+            }}
+          >
+            <span
+              style={{
+                position: "absolute",
+                bottom: "100%",
+                left: "50%",
+                transform: "translateX(-50%)",
+                border: "5px solid transparent",
+                borderBottomColor: "var(--forest, #0d2b1e)",
+              }}
+            />
+            Thêm vào giỏ hàng
+          </span>,
+          document.body,
+        )}
+    </>
+  );
+}
+
+function WishlistBtn({ wishlisted, onToggle }) {
+  const btnRef = useRef(null);
+  const [hovered, setHovered] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+
+  const handleMouseEnter = () => {
+    if (btnRef.current) {
+      const r = btnRef.current.getBoundingClientRect();
+      setPos({
+        top: r.bottom + window.scrollY + 8,
+        left: r.left + window.scrollX + r.width / 2,
+      });
+    }
+    setHovered(true);
+  };
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        className={`card-wishlist${wishlisted ? " active" : ""}`}
+        onClick={onToggle}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={() => setHovered(false)}
+        style={{ opacity: 1, transform: "translateY(0)", position: "relative" }}
+        aria-label="Yêu thích"
+      >
+        <HeartIcon filled={wishlisted} />
+      </button>
+      {hovered &&
+        createPortal(
+          <span
+            style={{
+              position: "absolute",
+              top: pos.top,
+              left: pos.left,
+              transform: "translateX(-50%)",
+              background: "var(--forest, #0d2b1e)",
+              color: "var(--ivory, #faf8f3)",
+              fontFamily: "'Be Vietnam Pro', sans-serif",
+              fontSize: "11px",
+              fontWeight: 300,
+              letterSpacing: "0.06em",
+              padding: "6px 12px",
+              border: "0.5px solid rgba(180,150,80,0.3)",
+              pointerEvents: "none",
+              zIndex: 99999,
+              whiteSpace: "nowrap",
+            }}
+          >
+            <span
+              style={{
+                position: "absolute",
+                bottom: "100%",
+                left: "50%",
+                transform: "translateX(-50%)",
+                border: "5px solid transparent",
+                borderBottomColor: "var(--forest, #0d2b1e)",
+              }}
+            />
+            {wishlisted ? "Bỏ yêu thích" : "Thêm yêu thích"}
+          </span>,
+          document.body,
+        )}
+    </>
+  );
+}
+
+function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding, delay }) {
+  const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const { isInWishlist, toggleWishlist } = useWishlistStore();
   const wishlisted = isInWishlist(book.hashId);
 
-  const handleWishlist = async () => {
+  const handleWishlist = async (e) => {
+    e.stopPropagation();
     if (!isAuthenticated) {
       toast.error("Vui lòng đăng nhập để lưu yêu thích");
       return;
@@ -92,12 +311,8 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
     await toggleWishlist(book.slug, book.hashId);
   };
 
-  const handleAddClick = () => {
-    if (isAdding) return;
-    setAdded(true);
-    onAddCart(book.hashId);
-    setTimeout(() => setAdded(false), 1400);
-  };
+  const desc =
+    book.desc || (book.description ? book.description.slice(0, 100) + "…" : "");
   const DEMO_TAGS = [
     "Khám phá",
     "Thiên nhiên",
@@ -109,74 +324,68 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
     book.tags || DEMO_TAGS.slice(0, Math.floor(Math.random() * 3) + 2);
   const ageLabel = book.ageRange || "4 – 10 tuổi";
   const langLabel = book.language || "Tiếng Việt";
+
+  const handleCardClick = () => {
+    if (!book.slug || !book.hashId) return;
+    navigate(getBookUrl(book.slug, book.hashId));
+  };
+
   return (
     <div
-      className="product-card reveal"
-      style={{ display: "flex", flexDirection: "column" }}
+      className={`product-card reveal${delay ? ` reveal-delay-${delay}` : ""}`}
+      onClick={handleCardClick}
+      style={{
+        cursor: "pointer",
+        display: "flex",
+        flexDirection: "column",
+        position: "relative",
+      }}
     >
       <div className="product-img-wrap">
         <img
           src={
+            book.img ||
             book.coverImage ||
             "https://placehold.co/400x320/0d3330/faf8f3?text=Earthoria"
           }
           alt={book.title}
         />
         <div className="product-img-overlay">
-          <Link to={getBookUrl(book.slug, book.hashId)}>
-            <button className="overlay-btn primary">Xem chi tiết</button>
-          </Link>
           <button
-            className="overlay-btn"
-            onClick={handleAddClick}
-            disabled={isAdding}
-            style={isAdding ? { opacity: 0.5, cursor: "not-allowed" } : {}}
+            className="overlay-btn primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCardClick();
+            }}
           >
-            {added ? "Đã thêm ✓" : "Thêm vào giỏ"}
+            Xem chi tiết
+          </button>
+          <button className="overlay-btn" onClick={(e) => e.stopPropagation()}>
+            Demo AR
           </button>
         </div>
         {badge && (
-          <span
-            className={`product-badge ${badgeType === "gold" ? "gold" : ""}`}
-          >
+          <span className={`product-badge${badgeType === "gold" ? " gold" : ""}`}>
             {badge}
           </span>
         )}
-        <span className="product-category">{book.category?.name}</span>
-        {/* Wishlist */}
-        <div
-          style={{ position: "relative", display: "inline-block" }}
-          className="card-wishlist-wrap"
-        >
-          <button
-            className={`card-wishlist ${wishlisted ? "active" : ""}`}
-            onClick={handleWishlist}
-            style={{
-              opacity: 1,
-              transform: "translateY(0)",
-              position: "absolute",
-              top: 0,
-              right: 0,
-            }}
-            aria-label="Yêu thích"
-          >
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill={wishlisted ? "currentColor" : "none"}
-              stroke="currentColor"
-              strokeWidth="1.5"
-            >
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-            </svg>
-          </button>
-          <span
-            className="card-action-tooltip"
-            style={{ right: "44px", top: "20px" }}
-          >
-            {wishlisted ? "Bỏ yêu thích" : "Thêm yêu thích"}
+        {book.category && (
+          <span className="product-category">
+            {book.category?.name || book.category}
           </span>
+        )}
+        {/* Wishlist + tooltip portal */}
+        <div
+          className="card-wishlist-wrap"
+          style={{
+            position: "absolute",
+            top: "16px",
+            right: "16px",
+            zIndex: 10,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <WishlistBtn wishlisted={wishlisted} onToggle={handleWishlist} />
         </div>
       </div>
 
@@ -186,33 +395,10 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
         style={{ display: "flex", flexDirection: "column", flex: 1 }}
       >
         {/* Rating */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "5px",
-            marginBottom: "8px",
-          }}
-        >
-          {[...Array(5)].map((_, i) => (
-            <span
-              key={i}
-              className="star"
-              style={{
-                fontSize: "11px",
-                color: i < (book.rating || 5) ? "var(--gold)" : "var(--pale)",
-              }}
-            >
-              ★
-            </span>
-          ))}
-          <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>
-            ({book.reviewCount || Math.floor(Math.random() * 200) + 50})
-          </span>
-        </div>
+        <StarRating rating={book.rating} count={book.reviewCount} />
 
         {/* Title — fixed height 2 lines */}
-        <h3
+        <div
           className="product-title"
           style={{
             display: "-webkit-box",
@@ -221,12 +407,13 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
             overflow: "hidden",
             minHeight: "2.4em",
             lineHeight: "1.2em",
+            flex: "0 0 auto",
           }}
         >
           {book.title}
-        </h3>
+        </div>
 
-        {/* Desc */}
+        {/* Desc — cố định 2 dòng */}
         <p
           className="product-desc"
           style={{
@@ -235,9 +422,10 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
             WebkitBoxOrient: "vertical",
             overflow: "hidden",
             minHeight: "calc(1.7em * 2)",
+            flex: "0 0 auto",
           }}
         >
-          {book.description?.slice(0, 90)}...
+          {desc}
         </p>
 
         {/* Age + Language */}
@@ -248,6 +436,7 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
             gap: "10px",
             marginBottom: "10px",
             flexWrap: "wrap",
+            flex: "0 0 auto",
           }}
         >
           <span
@@ -318,6 +507,7 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
             marginBottom: "12px",
             lineHeight: "26px",
             minHeight: "52px",
+            flex: "0 0 auto",
           }}
         >
           {tags.map((tag, idx) => (
@@ -387,51 +577,15 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding }) {
           </div>
 
           {/* Cart button + tooltip */}
-          <div style={{ position: "relative" }} className="card-action-wrap">
-            <button
-              className="add-cart"
-              onClick={handleAddClick}
-              aria-label="Thêm vào giỏ hàng"
+          <div
+            className="card-action-wrap"
+            style={{ position: "relative" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <AddToCartBtn
+              onAdd={() => onAddCart && onAddCart(book.hashId)}
               disabled={isAdding}
-              style={{
-                ...(added
-                  ? { background: "var(--forest)", color: "var(--ivory)" }
-                  : {}),
-                ...(isAdding ? { opacity: 0.5, cursor: "not-allowed" } : {}),
-              }}
-            >
-              {added ? (
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              ) : (
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <circle cx="9" cy="21" r="1" />
-                  <circle cx="20" cy="21" r="1" />
-                  <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-                </svg>
-              )}
-            </button>
-            <span
-              className="card-action-tooltip"
-              style={{ right: "44px", bottom: "0" }}
-            >
-              Thêm vào giỏ hàng
-            </span>
+            />
           </div>
         </div>
       </div>
