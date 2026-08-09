@@ -5,6 +5,7 @@ const morgan = require('morgan')
 const cookieParser = require('cookie-parser')
 const rateLimit = require('express-rate-limit')
 const passport = require('./config/passport')
+const maintenanceGuard = require('./middlewares/maintenanceGuard')
 
 const app = express()
 
@@ -47,9 +48,13 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'))
 }
 
+// Chặn request khi web đang bảo trì (trừ các đường dẫn luôn được phép — xem trong file middleware)
+app.use(maintenanceGuard)
+
 // ================= API v1 =================
 const v1 = express.Router()
 v1.use('/auth', require('./routes/authRoutes'))
+v1.use('/settings', require('./routes/settingsRoutes'))
 v1.use('/books', require('./routes/bookRoutes'))
 v1.use('/categories', require('./routes/categoryRoutes'))
 v1.use('/cart', require('./routes/cartRoutes'))

@@ -1,0 +1,31 @@
+-- CreateTable
+CREATE TABLE "SiteSetting" (
+    "id" TEXT NOT NULL DEFAULT 'singleton',
+    "maintenanceEnabled" BOOLEAN NOT NULL DEFAULT false,
+    "maintenanceStart" TIMESTAMP(3),
+    "maintenanceEnd" TIMESTAMP(3),
+    "maintenanceMessage" TEXT,
+    "siteName" TEXT DEFAULT 'Earthoria',
+    "siteTagline" TEXT,
+    "contactEmail" TEXT,
+    "contactPhone" TEXT,
+    "contactAddress" TEXT,
+    "facebookUrl" TEXT,
+    "instagramUrl" TEXT,
+    "tiktokUrl" TEXT,
+    "youtubeUrl" TEXT,
+    "bannerEnabled" BOOLEAN NOT NULL DEFAULT false,
+    "bannerText" TEXT,
+    "bannerLink" TEXT,
+    "allowRegistration" BOOLEAN NOT NULL DEFAULT true,
+    "allowGuestCheckout" BOOLEAN NOT NULL DEFAULT true,
+    "codEnabled" BOOLEAN NOT NULL DEFAULT true,
+    "stripeEnabled" BOOLEAN NOT NULL DEFAULT true,
+    "freeShippingThreshold" DOUBLE PRECISION,
+    "maxCartItems" INTEGER,
+    "updatedById" TEXT,
+    "updatedByName" TEXT,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "SiteSetting_pkey" PRIMARY KEY ("id")
+);

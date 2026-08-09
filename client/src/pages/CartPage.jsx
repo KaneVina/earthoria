@@ -86,7 +86,7 @@ export default function Cart() {
   const items = cart?.items || [];
 
   const subtotal = items.reduce((sum, item) => {
-    return sum + (item.book.salePrice ?? item.book.price) * item.quantity;
+    return sum + (item.variant.salePrice ?? item.variant.price) * item.quantity;
   }, 0);
 
   const couponDiscount = couponApplied
@@ -383,8 +383,8 @@ export default function Cart() {
                       }}
                     >
                       <img
-                        src={item.book.coverImage || "https://placehold.co/88x112/0d3330/faf8f3?text=E"}
-                        alt={item.book.title}
+                        src={item.variant.book.coverImage || "https://placehold.co/88x112/0d3330/faf8f3?text=E"}
+                        alt={item.variant.book.title}
                         style={{ width: "100%", height: "100%", objectFit: "cover" }}
                       />
                     </div>
@@ -398,7 +398,7 @@ export default function Cart() {
                           marginBottom: "6px",
                         }}
                       >
-                        Sách AR
+                        {item.variant.format === "DIGITAL" ? "Sách điện tử" : "Sách giấy"}
                       </div>
                       <div
                         style={{
@@ -408,7 +408,7 @@ export default function Cart() {
                           marginBottom: "12px",
                         }}
                       >
-                        {item.book.title}
+                        {item.variant.book.title}
                       </div>
                     </div>
                   </div>
@@ -455,11 +455,11 @@ export default function Cart() {
                   {/* Price */}
                   <div style={{ textAlign: "right" }}>
                     <div style={{ fontFamily: "Playfair Display,serif", fontSize: "20px", color: "var(--forest)" }}>
-                      {formatPrice((item.book.salePrice ?? item.book.price) * item.quantity)}
+                      {formatPrice((item.variant.salePrice ?? item.variant.price) * item.quantity)}
                     </div>
-                    {item.book.salePrice != null && (
+                    {item.variant.salePrice != null && (
                       <div style={{ fontSize: "12px", color: "var(--text-muted)", textDecoration: "line-through", marginTop: "2px" }}>
-                        {formatPrice(item.book.price * item.quantity)}
+                        {formatPrice(item.variant.price * item.quantity)}
                       </div>
                     )}
                   </div>
@@ -554,7 +554,7 @@ export default function Cart() {
                 },
                 {
                   label: "Tiết kiệm được",
-                  val: `-${formatPrice(items.reduce((s, i) => s + (i.book.price - (i.book.salePrice ?? i.book.price)) * i.quantity, 0))}`,
+                  val: `-${formatPrice(items.reduce((s, i) => s + (i.variant.price - (i.variant.salePrice ?? i.variant.price)) * i.quantity, 0))}`,
                   green: true,
                 },
                 ...(couponApplied

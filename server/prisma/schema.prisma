@@ -559,6 +559,53 @@ model ChildAuditLog {
   @@index([parentId, createdAt])
 }
 
+// ─ SITE SETTING ─
+// Bảng cấu hình toàn hệ thống, chỉ có DUY NHẤT 1 dòng (id = "singleton").
+// Chỉ ADMIN được xem/sửa (route được bảo vệ ở adminRoutes.js).
+model SiteSetting {
+  id String @id @default("singleton")
+
+  // ─ Bảo trì ─
+  maintenanceEnabled Boolean   @default(false) // Công tắc bật/tắt thủ công, có hiệu lực ngay
+  maintenanceStart   DateTime? // Lịch tự động: bắt đầu
+  maintenanceEnd     DateTime? // Lịch tự động: kết thúc
+  maintenanceMessage String?   @db.Text
+
+  // ─ Thông tin trang web ─
+  siteName    String? @default("Earthoria")
+  siteTagline String?
+
+  // ─ Liên hệ ─
+  contactEmail   String?
+  contactPhone   String?
+  contactAddress String?
+
+  // ─ Mạng xã hội ─
+  facebookUrl  String?
+  instagramUrl String?
+  tiktokUrl    String?
+  youtubeUrl   String?
+
+  // ─ Banner thông báo trên toàn trang ─
+  bannerEnabled Boolean @default(false)
+  bannerText    String?
+  bannerLink    String?
+
+  // ─ Tính năng bật/tắt ─
+  allowRegistration  Boolean @default(true)
+  allowGuestCheckout Boolean @default(true)
+  codEnabled         Boolean @default(true)
+  stripeEnabled      Boolean @default(true)
+
+  // ─ Vận chuyển & giỏ hàng ─
+  freeShippingThreshold Float?
+  maxCartItems           Int?
+
+  updatedById   String?
+  updatedByName String?
+  updatedAt     DateTime @updatedAt
+}
+
 // ─ TICKET (form Liên hệ /contact) ─
 enum TicketStatus {
   NEW         // Mới gửi, chưa ai xử lý

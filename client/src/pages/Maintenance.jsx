@@ -53,8 +53,11 @@ const REASONS = [
   },
 ];
 
-export default function Maintenance() {
-  const { d, h, m, s, done } = useCountdown(TARGET_DATE);
+export default function Maintenance({ until, message }) {
+  // Nếu admin đặt lịch bảo trì có giờ kết thúc cụ thể thì đếm ngược theo giờ đó,
+  // ngược lại (bật thủ công, không có lịch) thì dùng mốc mặc định cũ.
+  const target = until ? new Date(until) : TARGET_DATE;
+  const { d, h, m, s, done } = useCountdown(target);
 
   // As soon as the countdown finishes, refresh automatically so the
   // person sees the live site without needing to reload by hand.
@@ -189,10 +192,8 @@ export default function Maintenance() {
           </h1>
 
           <p style={styles.desc}>
-            Đội ngũ vận hành và phát triển Earthoria xin phép được thông báo
-            tạm ngưng phục vụ trong thời gian này để thực hiện các nâng cấp và
-            bảo trì hệ thống nhằm mang đến trải nghiệm ổn định và tốt hơn cho
-            người dùng.
+            {message ||
+              "Đội ngũ vận hành và phát triển Earthoria xin phép được thông báo tạm ngưng phục vụ trong thời gian này để thực hiện các nâng cấp và bảo trì hệ thống nhằm mang đến trải nghiệm ổn định và tốt hơn cho người dùng."}
           </p>
           <p style={styles.desc}>
             Trong thời gian bảo trì, bạn có thể tạm thời không truy cập được

@@ -39,6 +39,10 @@ const {
   adminOnly,
   staffOrAdmin,
 } = require("../middlewares/authMiddleware");
+const {
+  getAdminSettings,
+  updateAdminSettings,
+} = require("../controllers/settingsController");
 const uploadImages = require("../middlewares/uploadImages");
 const {
   uploadProductImages,
@@ -49,6 +53,10 @@ const {
 router.use(protect);
 
 router.get("/dashboard", adminOnly, getDashboard);
+
+// Cài đặt hệ thống (bảo trì + cấu hình chung) — chỉ ADMIN, STAFF không có quyền
+router.get("/settings", adminOnly, getAdminSettings);
+router.put("/settings", adminOnly, updateAdminSettings);
 
 router.get("/products/search", staffOrAdmin, searchProductsQuick);
 router.get("/products/:id", staffOrAdmin, getProductById);

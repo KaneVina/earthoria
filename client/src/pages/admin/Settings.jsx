@@ -19,9 +19,12 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { authService } from "../../services/authService";
+import { settingsService } from "../../services/settingsService";
 import { useAuthStore } from "../../store/authStore";
 import { useAdminTheme } from "../../hooks/useAdminTheme";
 import AdminLayout from "./AdminLayout";
+import MaintenancePanel from "./settings/MaintenancePanel";
+import GeneralSettingsPanel from "./settings/GeneralSettingsPanel";
 
 /*  Ẩn bớt email dạng "khang****@edu.vn"  */
 function maskEmail(email) {
@@ -239,6 +242,27 @@ export default function Settings() {
     },
     [updateProfileMutation]
   );
+
+  // Cài đặt hệ thống (bảo trì + cấu hình chung) — chỉ ADMIN mới thấy trang này
+  // (route /dashboard/settings đã được bọc AdminRoute, STAFF không vào được)
+  const { data: siteSettings } = useQuery({
+    queryKey: ["admin-site-settings"],
+    queryFn: () => settingsService.getAdmin().then((r) => r.data.data),
+  });
+
+  const updateSiteSettingsMutation = useMutation({
+    mutationFn: (patch) => settingsService.updateAdmin(patch),
+    onSuccess: (res) => {
+      queryClient.setQueryData(["admin-site-settings"], res.data.data);
+      toast.success("Đã lưu cài đặt hệ thống");
+    },
+  });
+
+  const saveSiteSettings = useCallback(
+    (patch) => updateSiteSettingsMutation.mutateAsync(patch).then((res) => res.data.data),
+    [updateSiteSettingsMutation]
+  );
+
 const handleLogout = async () => {
   try {
     await authService.logout();
@@ -324,6 +348,22 @@ const handleLogout = async () => {
           />
         </div>
       </div>
+
+      {/*  1b. BẢO TRÌ + CÀI ĐẶT CHUNG — chỉ ADMIN thấy được trang này  */}
+      {siteSettings && (
+        <>
+          <MaintenancePanel
+            settings={siteSettings}
+            saving={updateSiteSettingsMutation.isPending}
+            onSave={saveSiteSettings}
+          />
+          <GeneralSettingsPanel
+            settings={siteSettings}
+            saving={updateSiteSettingsMutation.isPending}
+            onSave={saveSiteSettings}
+          />
+        </>
+      )}
 
       {/*  2. GIAO DIỆN (DARK/LIGHT)  */}
       <div className="a-chart-card" style={{ marginBottom: 20 }}>

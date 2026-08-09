@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "./store/authStore";
 import { authService } from "./services/authService";
+import { settingsService } from "./services/settingsService";
 import Layout from "./components/layout/Layout";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
 import BookDetail from "./pages/BookDetail";
-import Cart from "./pages/Cart";
+import Cart from "./pages/CartPage";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import AboutUs from "./pages/AboutUs";
@@ -74,13 +76,26 @@ const GuestRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
   return !isAuthenticated ? children : <Navigate to="/" replace />;
 };
-// Khởi động trang bảo trì
+// Khởi động trang bảo trì (test tay — luôn ưu tiên cao nhất, ghi đè cả lịch/tự động của admin)
 // const MAINTENANCE_MODE = false;
 const MAINTENANCE_MODE = true;
 
 export default function App() {
-  const { setAuth, setAuthChecked, authChecked } = useAuthStore();
+  const { setAuth, setAuthChecked, authChecked, user, isAuthenticated } = useAuthStore();
   const [showLoader, setShowLoader] = useState(false);
+
+  // Trạng thái bảo trì lấy từ dashboard admin (bật tay hoặc theo lịch tự động).
+  const { data: siteSettings } = useQuery({
+    queryKey: ["public-site-settings"],
+    queryFn: () => settingsService.getPublic().then((r) => r.data.data),
+    staleTime: 30 * 1000,
+    refetchInterval: 60 * 1000,
+    retry: 1,
+  });
+
+  // Admin đã đăng nhập thì không bao giờ bị chặn bởi bảo trì (kể cả trang ngoài lẫn dashboard)
+  const isAdminUser = isAuthenticated && user?.role === "ADMIN";
+  const maintenanceActive = MAINTENANCE_MODE || Boolean(siteSettings?.maintenanceActive);
 
   useEffect(() => {
     let cancelled = false;
@@ -111,11 +126,28 @@ export default function App() {
     ) : null;
   }
 
-  if (MAINTENANCE_MODE) {
+  if (maintenanceActive && !isAdminUser) {
     return (
       <BrowserRouter>
         <Routes>
-          <Route path="*" element={<Maintenance />} />
+          {/* Vẫn cho vào /login để admin đăng nhập được, từ đó vượt qua trang bảo trì */}
+          <Route
+            path="/login"
+            element={
+              <GuestRoute>
+                <Login />
+              </GuestRoute>
+            }
+          />
+          <Route
+            path="*"
+            element={
+              <Maintenance
+                until={siteSettings?.maintenanceEnd}
+                message={siteSettings?.maintenanceMessage}
+              />
+            }
+          />
         </Routes>
       </BrowserRouter>
     );
