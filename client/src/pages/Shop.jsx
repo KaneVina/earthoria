@@ -831,9 +831,9 @@ export default function Shop() {
   const { addToCart } = useCartStore();
 
   const [activeCategory, setActiveCategory] = useState("all");
-  const [activeFeatures, setActiveFeatures] = useState(["Có AR"]);
-  const [priceRange, setPriceRange] = useState([150000, 450000]);
-  const [ageRange, setAgeRange] = useState([3, 12]);
+const [activeFeatures, setActiveFeatures] = useState([]);
+const [priceRange, setPriceRange] = useState([PRICE_BOUNDS[0], PRICE_BOUNDS[1]]);
+const [ageRange, setAgeRange] = useState([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
   const [minRating, setMinRating] = useState(0);
   const [gridCols, setGridCols] = useState(3);
   const [sortValue, setSortValue] = useState("Nổi bật");
@@ -936,17 +936,17 @@ export default function Shop() {
 
   const hasActiveFilters =
     activeCategory !== "all" ||
-    priceRange[0] !== 150000 ||
-    priceRange[1] !== 450000 ||
-    ageRange[0] !== 3 ||
-    ageRange[1] !== 12 ||
+    priceRange[0] !== PRICE_BOUNDS[0] ||
+    priceRange[1] !== PRICE_BOUNDS[1] ||
+    ageRange[0] !== AGE_BOUNDS[0] ||
+    ageRange[1] !== AGE_BOUNDS[1] ||
     minRating !== 0 ||
     activeFeatures.length > 0;
 
   const clearAllFilters = () => {
     setActiveCategory("all");
-    setPriceRange([150000, 450000]);
-    setAgeRange([3, 12]);
+    setPriceRange([PRICE_BOUNDS[0], PRICE_BOUNDS[1]]);
+    setAgeRange([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
     setMinRating(0);
     setActiveFeatures([]);
   };
