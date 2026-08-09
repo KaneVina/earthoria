@@ -28,6 +28,11 @@ class RefreshTokenError extends Error {
   }
 }
 
+// Cho phép nhiều tab/request dùng chung 1 token vừa bị rotate trong khoảng thời gian ngắn,
+// tránh việc mở 2 tab cùng lúc bị coi là tấn công replay và bị logout oan.
+// Token bị dùng lại sau khi hết grace period vẫn bị coi là REUSED như cũ (chống đánh cắp token).
+const REUSE_GRACE_MS = 10_000
+
 async function createRefreshToken(userId, remember, meta = {}) {
   const rawToken = generateRawToken()
   const tokenHash = hashToken(rawToken)
@@ -57,6 +62,22 @@ async function verifyAndConsume(rawToken) {
   }
 
   if (record.revokedAt) {
+    const withinGrace = Date.now() - record.revokedAt.getTime() < REUSE_GRACE_MS
+
+    if (withinGrace && record.replacedBy) {
+      // Đi theo chuỗi replacedBy để tìm bản ghi còn sống mới nhất (tab khác đã rotate trước đó)
+      let current = record
+      while (current.replacedBy) {
+        const next = await prisma.refreshToken.findUnique({ where: { id: current.replacedBy } })
+        if (!next) break
+        current = next
+        if (!current.revokedAt) break
+      }
+      if (!current.revokedAt && current.expiresAt >= new Date()) {
+        return current
+      }
+    }
+
     await revokeAllForUser(record.userId)
     throw new RefreshTokenError('REUSED')
   }
