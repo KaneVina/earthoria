@@ -1,4 +1,4 @@
-  const prisma = require('../config/db')
+const prisma = require('../config/db')
 const { formatResponse } = require('../utils/helpers')
 const { decodeId, encodeId } = require('../utils/hashids')
 
@@ -6,11 +6,14 @@ const CART_ITEM_INCLUDE = {
   items: {
     orderBy: { id: 'asc' }, // TODO: đổi sang { createdAt: 'asc' } nếu CartItem có field này
     include: {
-      book: {
-        select: {
-          id: true, title: true, slug: true,
-          price: true, salePrice: true,
-          coverImage: true, stock: true
+      variant: {
+        include: {
+          book: {
+            select: {
+              id: true, title: true, slug: true,
+              coverImage: true
+            }
+          }
         }
       }
     }
@@ -21,10 +24,13 @@ const CART_ITEM_INCLUDE = {
 const buildCartResponse = (cart) => {
   const items = cart.items.map((item) => ({
     ...item,
-    book: { ...item.book, hashId: encodeId(item.book.id) }
+    variant: {
+      ...item.variant,
+      book: { ...item.variant.book, hashId: encodeId(item.variant.book.id) }
+    }
   }))
   const total = items.reduce((sum, item) => {
-    const price = item.book.salePrice ?? item.book.price
+    const price = item.variant.salePrice ?? item.variant.price
     return sum + price * item.quantity
   }, 0)
   return { ...cart, items, total }
@@ -54,18 +60,21 @@ const getCart = async (req, res) => {
 
 const addToCart = async (req, res) => {
   try {
-    const { hashId, quantity = 1 } = req.body
+    // hashId ở đây giờ là hashId của BOOK, không phải variant.
+    // Client cần gửi kèm `format` ("PHYSICAL" | "DIGITAL") để biết chọn variant nào.
+    const { hashId, quantity = 1, format = 'PHYSICAL' } = req.body
     const qty = Number(quantity)
     if (!Number.isInteger(qty) || qty < 1) return formatResponse(res, 400, 'Số lượng không hợp lệ')
+    if (!['PHYSICAL', 'DIGITAL'].includes(format)) return formatResponse(res, 400, 'Định dạng không hợp lệ')
 
     const realId = decodeId(hashId)
     if (!realId) return formatResponse(res, 404, 'Không tìm thấy sách')
 
     const updatedCart = await prisma.$transaction(async (tx) => {
-      const book = await tx.book.findFirst({
-        where: { id: realId, isActive: true }
+      const variant = await tx.bookVariant.findFirst({
+        where: { bookId: realId, format, isActive: true, book: { isActive: true } }
       })
-      if (!book) throw Object.assign(new Error('BOOK_NOT_FOUND'), { code: 'BOOK_NOT_FOUND' })
+      if (!variant) throw Object.assign(new Error('BOOK_NOT_FOUND'), { code: 'BOOK_NOT_FOUND' })
 
       let cart = await tx.cart.findUnique({ where: { userId: req.user.id } })
       if (!cart) {
@@ -73,7 +82,7 @@ const addToCart = async (req, res) => {
       }
 
       const existingItem = await tx.cartItem.findFirst({
-        where: { cartId: cart.id, bookId: book.id }
+        where: { cartId: cart.id, variantId: variant.id }
       })
 
       let finalQty
@@ -84,16 +93,16 @@ const addToCart = async (req, res) => {
         })
         finalQty = updated.quantity
       } else {
-        if (book.stock < qty) {
+        if (!variant.isUnlimitedStock && variant.stock < qty) {
           throw Object.assign(new Error('OUT_OF_STOCK'), { code: 'OUT_OF_STOCK' })
         }
         await tx.cartItem.create({
-          data: { cartId: cart.id, bookId: book.id, quantity: qty }
+          data: { cartId: cart.id, variantId: variant.id, quantity: qty }
         })
         finalQty = qty
       }
 
-      if (finalQty > book.stock) {
+      if (!variant.isUnlimitedStock && finalQty > variant.stock) {
         throw Object.assign(new Error('OUT_OF_STOCK'), { code: 'OUT_OF_STOCK' })
       }
 
@@ -126,10 +135,12 @@ const updateCartItem = async (req, res) => {
 
       const item = await tx.cartItem.findFirst({
         where: { id: itemId, cartId: cart.id },
-        include: { book: true }
+        include: { variant: true }
       })
       if (!item) throw Object.assign(new Error('ITEM_NOT_FOUND'), { code: 'ITEM_NOT_FOUND' })
-      if (item.book.stock < qty) throw Object.assign(new Error('OUT_OF_STOCK'), { code: 'OUT_OF_STOCK' })
+      if (!item.variant.isUnlimitedStock && item.variant.stock < qty) {
+        throw Object.assign(new Error('OUT_OF_STOCK'), { code: 'OUT_OF_STOCK' })
+      }
 
       await tx.cartItem.update({
         where: { id: itemId },
@@ -140,14 +151,6 @@ const updateCartItem = async (req, res) => {
         where: { id: cart.id },
         include: CART_ITEM_INCLUDE
       })
-
-      console.log(
-        'BACKEND RETURN:',
-        cartData.items.map(i => ({
-          id: i.id,
-          qty: i.quantity
-        }))
-      )
 
       return cartData
     })
