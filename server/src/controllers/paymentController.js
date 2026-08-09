@@ -4,9 +4,15 @@ const vnpay = require("../utils/vnpayUtil");
 const momo = require("../utils/momoUtil");
 const { genPaymentRef } = require("./orderController");
 
-// CLIENT_URL trong .env của dự án này đôi khi được set thành danh sách nhiều domain
-// phân tách bởi dấu phẩy (dùng cho CORS ở chỗ khác) — ở đây chỉ cần 1 origin để build redirect URL.
-const clientOrigin = () => (process.env.CLIENT_URL || "").split(",")[0].trim();
+const clientOrigin = (req) => {
+  const allowed = (process.env.CLIENT_URL || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const reqOrigin = req?.headers?.origin;
+  if (reqOrigin && allowed.includes(reqOrigin)) return reqOrigin;
+  return allowed[0] || "";
+};
 
 // Đơn phải thuộc về user hiện tại, đúng phương thức thanh toán online, và CHƯA thanh toán.
 async function findPayableOrder({ orderId, userId, method }) {
@@ -162,7 +168,7 @@ const createMomoPaymentUrl = async (req, res) => {
       orderId: paymentRef,
       amount: order.total,
       orderInfo: `Thanh toan don hang Earthoria ${order.id.slice(0, 8)}`,
-      redirectUrl: `${clientOrigin()}/payment/momo/return`,
+      redirectUrl: `${clientOrigin(req)}/payment/momo/return`,
       ipnUrl: `${serverBaseUrl}/api/v1/payments/momo/ipn`,
     });
 

@@ -1437,6 +1437,8 @@ useEffect(() => {
           wardCode: ship.wardCode,
           street: ship.street,
           note: ship.note,
+          lat: deliveryCoords.lat,
+          lng: deliveryCoords.lng,
         },
         paymentMethod: method,
         couponCode: couponApplied?.code || null,

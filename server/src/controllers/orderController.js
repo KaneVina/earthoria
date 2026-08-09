@@ -1,7 +1,6 @@
 const crypto = require("crypto");
 const prisma = require("../config/db");
 const { formatResponse } = require("../utils/helpers");
-const { getShippingFee } = require("../utils/shipping");
 const { validateAndComputeDiscount } = require("../utils/couponUtil");
 
 const FREE_SHIP_THRESHOLD = 300_000;
@@ -105,13 +104,16 @@ const createOrder = async (req, res) => {
 
     const afterDiscount = subtotal - discount;
 
-    // 5. Tính phí ship theo km
+     // 5. Tính phí ship theo km (dùng cùng hàm calcFee với endpoint xem trước /orders/shipping-fee)
     let shippingFee;
     if (afterDiscount >= FREE_SHIP_THRESHOLD) {
       shippingFee = 0;
-    } else {
-      const result = getShippingFee(shipping.ward);
+    } else if (shipping.lat != null && shipping.lng != null) {
+      const result = calcFee(shipping.lat, shipping.lng);
       shippingFee = result.fee;
+    } else {
+      // Không có tọa độ (geocode lúc chọn phường/xã lỗi) → phí mặc định, khớp fallback bên FE
+      shippingFee = 30_000;
     }
 
     const total = afterDiscount + shippingFee;
