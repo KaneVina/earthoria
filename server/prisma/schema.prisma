@@ -347,12 +347,20 @@ model Order {
   note            String?
   stripePaymentId String?
   couponCode      String?
+  // Mã tham chiếu giao dịch gửi cho cổng thanh toán (VNPay vnp_TxnRef / MoMo orderId).
+  // Sinh mới mỗi lần bấm "thanh toán lại" vì VNPay yêu cầu TxnRef không được trùng.
+  paymentRef      String?
+  // Mã giao dịch cổng thanh toán trả về sau khi thành công, dùng để đối soát.
+  gatewayTxnId    String?
+  paidAt          DateTime?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
   user    User        @relation(fields: [userId], references: [id])
   address Address     @relation(fields: [addressId], references: [id])
   items   OrderItem[]
+
+  @@index([paymentRef])
 }
 
 model OrderItem {
@@ -379,6 +387,7 @@ enum PaymentMethod {
   COD
   STRIPE
   VNPAY
+  MOMO
 }
 
 enum PaymentStatus {
