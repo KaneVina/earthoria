@@ -1,7 +1,11 @@
 const prisma = require("../config/db");
 const { generateProductCode } = require("../utils/generateProductCode");
 const bcrypt = require("bcryptjs");
-const { sendAccountProvisionedEmail } = require("../services/emailService");
+const {
+  sendAccountProvisionedEmail,
+  sendAccountLockedEmail,
+  sendAccountUnlockedEmail,
+} = require("../services/emailService");
 const { uploadGlbFile } = require("../services/catboxService");
 // const { uploadGlbFile } = require("../services/cloudinaryUploadService");
 
@@ -1180,6 +1184,7 @@ exports.toggleUser = async (req, res) => {
   try {
     const { id } = req.params;
     const viewerRole = req.user.role;
+    const { email, reason } = req.body;
 
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) {
@@ -1208,13 +1213,155 @@ exports.toggleUser = async (req, res) => {
         .json({ success: false, message: "Không có quyền" });
     }
 
+    const willLock = user.isActive; // đang active -> hành động là khóa
+
+    // Vô hiệu hóa (khóa) tài khoản: bắt buộc xác nhận đúng email + lý do
+    if (willLock) {
+      if (!email || email.trim().toLowerCase() !== user.email.toLowerCase()) {
+        return res.status(400).json({
+          success: false,
+          message: "Email xác nhận không khớp với email tài khoản",
+        });
+      }
+      const trimmedReason = (reason || "").trim();
+      if (!trimmedReason || trimmedReason.length < 10) {
+        return res.status(400).json({
+          success: false,
+          message: "Vui lòng nhập lý do khóa tài khoản (tối thiểu 10 ký tự)",
+        });
+      }
+    }
+
     const updated = await prisma.user.update({
       where: { id },
-      data: { isActive: !user.isActive },
+      data: willLock
+        ? {
+            isActive: false,
+            lockReason: reason.trim(),
+            lockedAt: new Date(),
+            lockedBy: req.user.id,
+          }
+        : {
+            isActive: true,
+            lockReason: null,
+            lockedAt: null,
+            lockedBy: null,
+          },
     });
+
+    if (willLock) {
+      sendAccountLockedEmail({
+        to: updated.email,
+        name: updated.name,
+        reason: updated.lockReason,
+        dateLocked: updated.lockedAt,
+      }).catch((err) => console.error("[toggleUser lock email]", err));
+    } else {
+      sendAccountUnlockedEmail({
+        to: updated.email,
+        name: updated.name,
+        dateUnlocked: new Date(),
+      }).catch((err) => console.error("[toggleUser unlock email]", err));
+    }
+
     return res.json({ success: true, data: updated });
   } catch (err) {
     console.error("[toggleUser]", err);
+    return res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+exports.getUserDetail = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const viewerRole = req.user.role;
+
+    const scopeRoles =
+      viewerRole === "STAFF"
+        ? ["STAFF", "CUSTOMER", "DEALER"]
+        : viewerRole === "ADMIN"
+          ? ["CUSTOMER", "DEALER", "STAFF", "ADMIN"]
+          : null;
+
+    if (!scopeRoles) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Không có quyền truy cập" });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        gender: true,
+        dob: true,
+        role: true,
+        isActive: true,
+        userCode: true,
+        createdAt: true,
+        updatedAt: true,
+        lockReason: true,
+        lockedAt: true,
+        _count: { select: { orders: true, children: true } },
+        children: {
+          select: {
+            id: true,
+            name: true,
+            dob: true,
+            avatarEmoji: true,
+            avatarColor: true,
+            isActive: true,
+            isLocked: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: "desc" },
+        },
+        orders: {
+          select: {
+            id: true,
+            status: true,
+            paymentStatus: true,
+            total: true,
+            createdAt: true,
+          },
+          orderBy: { createdAt: "desc" },
+          take: 10,
+        },
+      },
+    });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy người dùng" });
+    }
+
+    if (!scopeRoles.includes(user.role)) {
+      return res
+        .status(403)
+        .json({ success: false, message: "Không có quyền xem tài khoản này" });
+    }
+
+    const totalSpent = await prisma.order.aggregate({
+      where: { userId: id, paymentStatus: "PAID" },
+      _sum: { total: true },
+    });
+
+    return res.json({
+      success: true,
+      data: {
+        ...user,
+        // Mật khẩu được băm một chiều (bcrypt) — không thể và không nên hiển thị
+        // dưới dạng văn bản gốc. Chỉ trả về trạng thái để FE hiển thị.
+        passwordProtected: true,
+        totalSpent: totalSpent._sum.total ?? 0,
+      },
+    });
+  } catch (err) {
+    console.error("[getUserDetail]", err);
     return res.status(500).json({ success: false, message: "Lỗi server" });
   }
 };

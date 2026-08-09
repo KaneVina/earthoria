@@ -513,6 +513,110 @@ async function sendAccountProvisionedEmail({ to, role, name, userCode, password,
   })
 }
 
+async function sendAccountLockedEmail({ to, name, reason, dateLocked }) {
+  const dateStr = (dateLocked || new Date()).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
+
+  const bodyHtml = `
+    <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Thông báo hệ thống
+    </div>
+    <h1 style="font-size:26px;font-weight:600;color:#0b2e2b;line-height:1.3;margin:0 0 28px;text-align:center;letter-spacing:1px;text-transform:uppercase;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Tài Khoản Đã Bị Khóa
+    </h1>
+
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(192,80,80,0.08);border:1px solid rgba(192,80,80,0.25);display:inline-block;line-height:52px;font-size:20px;color:#b23a30;text-align:center;">
+        !
+      </div>
+    </div>
+
+    <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Xin chào, ${name || 'bạn'}.
+    </p>
+    <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 24px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Tài khoản Earthoria của bạn vừa bị <strong style="color:#0b2e2b;font-weight:500;">khóa</strong> vào lúc
+      <strong style="color:#0b2e2b;font-weight:500;">${dateStr}</strong>. Bạn sẽ không thể đăng nhập cho đến khi tài khoản được mở khóa trở lại.
+    </p>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+      <tr>
+        <td style="background:#fff;border:1px solid rgba(11,46,43,0.09);border-radius:10px;overflow:hidden;">
+          <div style="background:#faf1ef;padding:14px 28px;border-bottom:1px solid rgba(11,46,43,0.06);">
+            <div style="font-size:9.5px;letter-spacing:2.5px;text-transform:uppercase;color:#b23a30;font-weight:600;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+              Lý do khóa tài khoản
+            </div>
+          </div>
+          <div style="padding:16px 28px;font-size:13px;color:#0b2e2b;line-height:1.8;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+            ${reason}
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <div style="background:rgba(192,80,80,0.05);border:1px solid rgba(192,80,80,0.18);border-radius:8px;padding:16px 20px;margin-bottom:8px;">
+      <p style="font-size:12px;color:#7a4440;line-height:1.85;font-weight:300;margin:0;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+        <strong style="color:#5a2820;font-weight:500;">Bạn nghĩ đây là nhầm lẫn?</strong>
+        Liên hệ ngay
+        <a href="mailto:helpdesk.earthoria@gmail.com" style="color:#b25450;text-decoration:none;font-weight:500;">helpdesk.earthoria@gmail.com</a>
+        để được hỗ trợ.
+      </p>
+    </div>
+
+    ${buildSystemSignatureBlock()}
+  `
+
+  return resend.emails.send({
+    from: `Earthoria System <noreply@earthoria.id.vn>`,
+    to,
+    subject: 'Tài khoản Earthoria của bạn đã bị khóa',
+    html: wrapEmailTemplate({
+      preheader: 'Tài khoản của bạn vừa bị khóa — xem lý do chi tiết.',
+      bodyHtml,
+      footerDepartment: 'ITD',
+    }),
+  })
+}
+
+async function sendAccountUnlockedEmail({ to, name, dateUnlocked }) {
+  const dateStr = (dateUnlocked || new Date()).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
+
+  const bodyHtml = `
+    <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Thông báo hệ thống
+    </div>
+    <h1 style="font-size:26px;font-weight:600;color:#0b2e2b;line-height:1.3;margin:0 0 28px;text-align:center;letter-spacing:1px;text-transform:uppercase;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Tài Khoản Đã Được Mở Khóa
+    </h1>
+
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(74,158,63,0.08);border:1px solid rgba(74,158,63,0.25);display:inline-block;line-height:52px;font-size:20px;color:#4a9e3f;text-align:center;">
+        ✓
+      </div>
+    </div>
+
+    <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Xin chào, ${name || 'bạn'}.
+    </p>
+    <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 24px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Tài khoản Earthoria của bạn đã được <strong style="color:#0b2e2b;font-weight:500;">mở khóa</strong> vào lúc
+      <strong style="color:#0b2e2b;font-weight:500;">${dateStr}</strong>. Bạn có thể đăng nhập và sử dụng bình thường trở lại.
+    </p>
+
+    ${buildSystemSignatureBlock()}
+  `
+
+  return resend.emails.send({
+    from: `Earthoria System <noreply@earthoria.id.vn>`,
+    to,
+    subject: 'Tài khoản Earthoria của bạn đã được mở khóa',
+    html: wrapEmailTemplate({
+      preheader: 'Tài khoản của bạn vừa được mở khóa.',
+      bodyHtml,
+      footerDepartment: 'ITD',
+    }),
+  })
+}
+
 module.exports = {
   verifyEmailTransport,
   sendOtpEmail,
@@ -521,4 +625,6 @@ module.exports = {
   renderCustomEmailHtml,
   nameFromEmail,
   sendAccountProvisionedEmail,
+  sendAccountLockedEmail,
+  sendAccountUnlockedEmail,
 }

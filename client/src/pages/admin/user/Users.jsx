@@ -2,13 +2,14 @@
 import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Search, Lock, Unlock, X, ChevronDown, Copy, Check, ArrowUpCircle, ArrowDownCircle, UserPlus } from 'lucide-react'
+import { Search, Lock, Unlock, X, ChevronDown, Copy, Check, ArrowUpCircle, ArrowDownCircle, UserPlus, Eye } from 'lucide-react'
 import api from "../../../services/api";
 import { formatDate } from "../../../utils/helpers";
 import toast from 'react-hot-toast'
 import AdminLayout from '../AdminLayout'
 import Pagination from '../../../components/Pagination'
 import { useAuthStore } from '../../../store/authStore'
+import UserDetailDrawer from './UserDetailDrawer'
 
 /* ─ Avatar color pool (deterministic by first char) ─ */
 const AVATAR_COLORS = [
@@ -17,7 +18,7 @@ const AVATAR_COLORS = [
 const avatarColor = (name = '') =>
   AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length]
 
-/* ─ Role badge config ─ */
+/* ─ Role badge config — mỗi vai trò một màu, đều bo tròn (đồng bộ .a-badge) ─ */
 const ROLE_CONFIG = {
   ADMIN:    { label: 'Admin',    cls: 'dark'    },
   STAFF:    { label: 'Staff',    cls: 'blue'    },
@@ -137,6 +138,11 @@ export default function Users() {
   const [statusFilter, setStatusFilter] = useState('')
   const [confirmUser, setConfirmUser]   = useState(null) // lock/unlock
   const [promoteUser, setPromoteUser]   = useState(null) // upgrade/downgrade
+  const [viewUserId, setViewUserId]     = useState(null) // xem chi tiết
+
+  // State cho form xác nhận khóa (email + lý do)
+  const [lockEmailInput, setLockEmailInput] = useState('')
+  const [lockReason, setLockReason]         = useState('')
 
   // Debounce search để tránh gọi API liên tục khi gõ
   const handleSearchChange = useCallback((val) => {
@@ -182,12 +188,23 @@ export default function Users() {
     keepPreviousData: true,
   })
 
+  const closeLockModal = useCallback(() => {
+    setConfirmUser(null)
+    setLockEmailInput('')
+    setLockReason('')
+  }, [])
+
   const toggleMutation = useMutation({
-    mutationFn: (id) => api.put(`/admin/users/${id}/toggle`),
+    mutationFn: ({ id, email, reason }) => api.put(`/admin/users/${id}/toggle`, { email, reason }),
     onSuccess: () => {
-      toast.success('Cập nhật tài khoản thành công!')
+      toast.success(
+        confirmUser?.action === 'lock'
+          ? 'Đã khóa tài khoản! Email thông báo kèm lý do đã được gửi.'
+          : 'Đã mở khóa tài khoản!'
+      )
       qc.invalidateQueries(['admin-users'])
-      setConfirmUser(null)
+      qc.invalidateQueries(['admin-user-detail'])
+      closeLockModal()
     },
     onError: (err) => toast.error(err?.response?.data?.message || 'Cập nhật thất bại!'),
   })
@@ -230,6 +247,15 @@ export default function Users() {
         { value: 'DEALER',   label: 'Dealer'    },
         { value: 'STAFF',    label: 'Staff'     },
       ]
+
+  // Điều kiện để xác nhận khóa: email nhập đúng + lý do đủ dài (đồng bộ với BE, tối thiểu 10 ký tự)
+  const lockEmailMatches = confirmUser?.action === 'lock'
+    ? lockEmailInput.trim().toLowerCase() === confirmUser.user.email.toLowerCase()
+    : true
+  const lockReasonValid = confirmUser?.action === 'lock'
+    ? lockReason.trim().length >= 10
+    : true
+  const canSubmitLock = confirmUser?.action === 'unlock' || (lockEmailMatches && lockReasonValid)
 
   return (
     <AdminLayout>
@@ -370,9 +396,13 @@ export default function Users() {
                 const showPromote = canPromote(user.role)
                 const showToggle = canToggle(user.role)
                 return (
-                  <tr key={user.id}>
+                  <tr
+                    key={user.id}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => setViewUserId(user.id)}
+                  >
                     {/* User code */}
-                    <td style={{ minWidth: 160 }}>
+                    <td style={{ minWidth: 160 }} onClick={e => e.stopPropagation()}>
                       <UserCodeBadge code={user.userCode} />
                     </td>
 
@@ -413,8 +443,16 @@ export default function Users() {
                     </td>
 
                     {/* Action */}
-                    <td>
+                    <td onClick={e => e.stopPropagation()}>
                       <div style={{ display: 'flex', gap: 6 }}>
+                        <button
+                          className="a-btn-icon"
+                          onClick={() => setViewUserId(user.id)}
+                          title="Xem chi tiết"
+                          aria-label="Xem chi tiết"
+                        >
+                          <Eye size={13} />
+                        </button>
                         {showPromote && (
                           <button
                             className="a-btn-icon"
@@ -433,9 +471,6 @@ export default function Users() {
                           >
                             {user.isActive ? <Lock size={12} /> : <Unlock size={12} />}
                           </button>
-                        )}
-                        {!showPromote && !showToggle && (
-                          <span className="a-td-muted" style={{ fontSize: 11 }}>—</span>
                         )}
                       </div>
                     </td>
@@ -456,18 +491,23 @@ export default function Users() {
         />
       </div>
 
+      {/*  Detail drawer  */}
+      {viewUserId && (
+        <UserDetailDrawer userId={viewUserId} onClose={() => setViewUserId(null)} />
+      )}
+
       {/*  Confirm lock/unlock modal  */}
       {confirmUser && (
         <div
           className="a-modal-overlay"
-          onClick={e => e.target === e.currentTarget && setConfirmUser(null)}
+          onClick={e => e.target === e.currentTarget && closeLockModal()}
         >
-          <div className="a-modal" style={{ maxWidth: 420 }}>
+          <div className="a-modal" style={{ maxWidth: 440 }}>
             <div className="a-modal-header">
               <h3 className="a-modal-title">
                 {confirmUser.action === 'lock' ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}
               </h3>
-              <button className="a-modal-close" onClick={() => setConfirmUser(null)}>
+              <button className="a-modal-close" onClick={closeLockModal}>
                 <X size={16} />
               </button>
             </div>
@@ -489,26 +529,81 @@ export default function Users() {
                   <UserCodeBadge code={confirmUser.user.userCode} />
                 </div>
               )}
-              <p style={{ fontSize: 13, color: 'rgba(13,51,48,0.65)', lineHeight: 1.6 }}>
-                {confirmUser.action === 'lock'
-                  ? 'Tài khoản này sẽ bị khóa. Người dùng sẽ không thể đăng nhập cho đến khi được mở khóa.'
-                  : 'Tài khoản này sẽ được mở khóa. Người dùng có thể đăng nhập và mua hàng bình thường.'
-                }
-              </p>
+
+              {confirmUser.action === 'unlock' ? (
+                <p style={{ fontSize: 13, color: 'rgba(13,51,48,0.65)', lineHeight: 1.6 }}>
+                  Tài khoản này sẽ được mở khóa. Người dùng có thể đăng nhập và mua hàng bình thường.
+                  Email thông báo sẽ được gửi tự động.
+                </p>
+              ) : (
+                <>
+                  <p style={{ fontSize: 13, color: 'rgba(13,51,48,0.65)', lineHeight: 1.6, marginBottom: 16 }}>
+                    Tài khoản này sẽ bị khóa. Để xác nhận, vui lòng nhập đúng email của tài khoản
+                    và lý do khóa — hệ thống sẽ tự động gửi email thông báo kèm lý do cho người dùng.
+                  </p>
+
+                  <label className="a-form-label" htmlFor="lock-email-confirm">
+                    Nhập email để xác nhận
+                  </label>
+                  <input
+                    id="lock-email-confirm"
+                    className="a-input"
+                    type="email"
+                    placeholder={confirmUser.user.email}
+                    value={lockEmailInput}
+                    onChange={e => setLockEmailInput(e.target.value)}
+                    style={{ marginBottom: 4 }}
+                    autoComplete="off"
+                  />
+                  {lockEmailInput.length > 0 && !lockEmailMatches && (
+                    <div style={{ fontSize: 11, color: '#c05050', marginBottom: 10 }}>
+                      Email chưa khớp với tài khoản này
+                    </div>
+                  )}
+                  {(lockEmailInput.length === 0 || lockEmailMatches) && (
+                    <div style={{ marginBottom: 10 }} />
+                  )}
+
+                  <label className="a-form-label" htmlFor="lock-reason" style={{ marginTop: 10, display: 'block' }}>
+                    Lý do khóa tài khoản
+                  </label>
+                  <textarea
+                    id="lock-reason"
+                    className="a-input a-textarea"
+                    placeholder="Vd: Vi phạm điều khoản sử dụng, gian lận thanh toán, yêu cầu từ người dùng..."
+                    value={lockReason}
+                    onChange={e => setLockReason(e.target.value)}
+                    disabled={!lockEmailMatches}
+                  />
+                  <div style={{
+                    fontSize: 11,
+                    color: lockReason.length > 0 && !lockReasonValid ? '#c05050' : 'rgba(13,51,48,0.4)',
+                    marginTop: 5,
+                  }}>
+                    {lockReason.trim().length >= 10
+                      ? 'Lý do hợp lệ'
+                      : `Tối thiểu 10 ký tự (hiện ${lockReason.trim().length})`}
+                  </div>
+                </>
+              )}
             </div>
             <div className="a-modal-footer">
               <button
                 className="a-btn-primary"
                 style={{ background: confirmUser.action === 'lock' ? '#c05050' : '#4a9e3f' }}
-                onClick={() => toggleMutation.mutate(confirmUser.user.id)}
-                disabled={toggleMutation.isPending}
+                onClick={() => toggleMutation.mutate({
+                  id: confirmUser.user.id,
+                  email: confirmUser.action === 'lock' ? lockEmailInput.trim() : undefined,
+                  reason: confirmUser.action === 'lock' ? lockReason.trim() : undefined,
+                })}
+                disabled={toggleMutation.isPending || !canSubmitLock}
               >
                 {toggleMutation.isPending
                   ? 'Đang xử lý...'
                   : (confirmUser.action === 'lock' ? 'Khóa tài khoản' : 'Mở khóa')
                 }
               </button>
-              <button className="a-btn-ghost" onClick={() => setConfirmUser(null)}>Hủy</button>
+              <button className="a-btn-ghost" onClick={closeLockModal}>Hủy</button>
             </div>
           </div>
         </div>

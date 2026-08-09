@@ -24,6 +24,11 @@ model User {
   role      Role     @default(CUSTOMER)
   isActive  Boolean  @default(true)
 
+  // Lý do vô hiệu hóa tài khoản (bắt buộc nhập khi khóa từ trang Admin)
+  lockReason String?
+  lockedAt   DateTime?
+  lockedBy   String?
+
   // Mã định danh người dùng
   userCode  String?  @unique
 

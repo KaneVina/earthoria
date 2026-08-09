@@ -2642,3 +2642,12 @@
 .a-pf-image-add { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 1.5px dashed var(--a-ink-20); background: var(--a-surface); color: var(--a-ink-40); cursor: pointer; font-family: var(--a-font-sans); font-size: 11px; font-weight: 500; }
 .a-pf-image-add:hover:not(:disabled) { border-color: var(--a-green); background: var(--a-green-pale); color: var(--a-forest); }
 .a-pf-image-hint { font-size: 9px; color: var(--a-ink-40); font-weight: 400; }
+.a-badge.blue {
+  background: rgba(42, 120, 214, 0.12);
+  color: #2a78d6;
+}
+
+.a-badge.purple {
+  background: rgba(74, 58, 167, 0.12);
+  color: #4a3aa7;
+}

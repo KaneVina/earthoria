@@ -16,6 +16,7 @@ const {
   getOrders,
   updateOrderStatus,
   getUsers,
+  getUserDetail,
   toggleUser,
   backfillUserCodes,
   getCoupons,
@@ -75,6 +76,7 @@ router.put("/orders/:id", adminOnly, updateOrderStatus);
 router.use("/emails", adminOnly, require("./emailRoutes"));
 
 router.get("/users", staffOrAdmin, getUsers);
+router.get("/users/:id/detail", staffOrAdmin, getUserDetail);
 router.post("/users", staffOrAdmin, createManagedUser);
 router.put("/users/:id/toggle", staffOrAdmin, toggleUser);
 router.post("/users/backfill-codes", adminOnly, backfillUserCodes);
