@@ -2,11 +2,13 @@ const jwt = require('jsonwebtoken')
 const prisma = require('../config/db')
 const { getOrCreateSettings, isMaintenanceActive } = require('../services/settingsService')
 
-// Các đường dẫn luôn được phép, kể cả khi đang bảo trì:
-// - /auth: để admin còn đăng nhập được
-// - /settings/public: để frontend còn hỏi được trạng thái bảo trì
-// - /health: theo dõi uptime
-const ALWAYS_ALLOWED_PREFIXES = ['/api/v1/auth', '/api/v1/settings/public', '/api/health']
+const ALWAYS_ALLOWED_PREFIXES = [
+  '/api/v1/auth',
+  '/api/v1/settings/public',
+  '/api/health',
+  '/api/v1/payments/vnpay/ipn',
+  '/api/v1/payments/momo/ipn',
+]
 
 const maintenanceGuard = async (req, res, next) => {
   try {

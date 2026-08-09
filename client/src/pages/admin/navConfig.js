@@ -8,6 +8,7 @@ import {
   QrCode,
   Mail,
   MessageSquareText,
+  Settings as SettingsIcon,
 } from "lucide-react";
 
 
@@ -38,6 +39,7 @@ export const NAV_GROUPS = [
     items: [
       { label: "Tạo mã QR", href: "/dashboard/ar-codes", icon: QrCode },
       { label: "Email", href: "/dashboard/emails", icon: Mail },
+      { label: "Cài đặt hệ thống", href: "/dashboard/settings", icon: SettingsIcon },
     ],
   },
 ];

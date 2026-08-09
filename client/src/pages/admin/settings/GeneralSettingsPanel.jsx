@@ -4,9 +4,7 @@ import {
   Mail,
   Phone,
   MapPin,
-  Facebook,
-  Instagram,
-  Youtube,
+  Share2,
   Megaphone,
   Truck,
   Package,
@@ -144,10 +142,10 @@ export default function GeneralSettingsPanel({ settings, onSave, saving }) {
         </div>
 
         <div className="a-fields-grid">
-          <Field label="Facebook" icon={Facebook} value={form.facebookUrl} onChange={set("facebookUrl")} placeholder="https://facebook.com/..." />
-          <Field label="Instagram" icon={Instagram} value={form.instagramUrl} onChange={set("instagramUrl")} placeholder="https://instagram.com/..." />
-          <Field label="TikTok" value={form.tiktokUrl} onChange={set("tiktokUrl")} placeholder="https://tiktok.com/@..." />
-          <Field label="YouTube" icon={Youtube} value={form.youtubeUrl} onChange={set("youtubeUrl")} placeholder="https://youtube.com/..." />
+          <Field label="Facebook" icon={Share2} value={form.facebookUrl} onChange={set("facebookUrl")} placeholder="https://facebook.com/..." />
+          <Field label="Instagram" icon={Share2} value={form.instagramUrl} onChange={set("instagramUrl")} placeholder="https://instagram.com/..." />
+          <Field label="TikTok" icon={Share2} value={form.tiktokUrl} onChange={set("tiktokUrl")} placeholder="https://tiktok.com/@..." />
+          <Field label="YouTube" icon={Share2} value={form.youtubeUrl} onChange={set("youtubeUrl")} placeholder="https://youtube.com/..." />
         </div>
       </div>
 
