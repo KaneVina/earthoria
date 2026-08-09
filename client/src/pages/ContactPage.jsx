@@ -5,6 +5,8 @@ import {
   Headphones, FileText, Link2, Zap,
   PhoneCall, MessageSquare, AtSign, Globe,
 } from "lucide-react";
+import toast from "react-hot-toast";
+import { ticketService } from "../services/ticketService";
 import "../components/assets/css/contactpage.css";
 
 /* ─ Thông tin thực Earthoria ─ */
@@ -75,6 +77,15 @@ const SUBJECTS = [
   },
 ];
 
+// Enum tương ứng bên backend (Prisma TicketSubject) — theo đúng thứ tự SUBJECTS ở trên
+const SUBJECT_KEYS = [
+  "PRODUCT_ADVICE",
+  "BUSINESS",
+  "TECHNICAL_SUPPORT",
+  "FEEDBACK",
+  "OTHER",
+];
+
 /* ─ Phương thức liên lạc ─ */
 const CONTACT_METHODS = [
   { id: "phone",    label: "Điện thoại",  icon: PhoneCall,     hint: "083 286 2229 / 0849 324 423" },
@@ -126,6 +137,8 @@ export default function ContactPage() {
   const [activeSubject,  setActiveSubject]  = useState(0);
   const [submitting,     setSubmitting]     = useState(false);
   const [showSuccess,    setShowSuccess]    = useState(false);
+  const [ticketCode,     setTicketCode]     = useState("");
+  const [sentMethods,    setSentMethods]    = useState([]);
   const [contactMethods, setContactMethods] = useState([]);
   const [extraValues,    setExtraValues]    = useState({});
   const [form, setForm] = useState({
@@ -243,21 +256,38 @@ export default function ContactPage() {
   const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
   const handleExtraChange = (e) => setExtraValues((p) => ({ ...p, [e.target.name]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (contactMethods.length === 0) {
       alert("Vui lòng chọn ít nhất một phương thức liên lạc.");
       return;
     }
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
+    try {
+      const res = await ticketService.create({
+        name: form.name,
+        email: form.email,
+        phone: form.phone || undefined,
+        company: form.company || undefined,
+        subject: SUBJECT_KEYS[activeSubject],
+        extraFields: extraValues,
+        message: form.message,
+        contactMethods,
+      });
+      setTicketCode(res.data?.data?.code || "");
+      setSentMethods(contactMethods);
       setShowSuccess(true);
       setForm({ name: "", email: "", phone: "", company: "", message: "" });
       setExtraValues({});
       setActiveSubject(0);
       setContactMethods([]);
-    }, 1200);
+    } catch (err) {
+      toast.error(
+        err.response?.data?.message || "Gửi yêu cầu thất bại, vui lòng thử lại."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const currentSubject = SUBJECTS[activeSubject];
@@ -611,11 +641,17 @@ export default function ContactPage() {
       <div className={`success-overlay${showSuccess ? " show" : ""}`}>
         <div className="success-icon"><CheckCheck size={36} strokeWidth={1.5} /></div>
         <h2 className="success-title">Đã gửi <em>thành công!</em></h2>
+        {ticketCode && (
+          <div className="success-ticket-code">
+            <span className="success-ticket-code-label">Mã yêu cầu của bạn</span>
+            <span className="success-ticket-code-value">{ticketCode}</span>
+          </div>
+        )}
         <p className="success-sub">
           Chúng tôi sẽ liên hệ lại với bạn qua{" "}
-          <strong>{contactMethods.join(", ") || "email"}</strong> trong vòng 24 giờ làm việc.
+          <strong>{sentMethods.join(", ") || "email"}</strong> trong vòng 24 giờ làm việc.
         </p>
-        <button className="success-back" onClick={() => setShowSuccess(false)}>
+        <button className="success-back" onClick={() => { setShowSuccess(false); setTicketCode(""); }}>
           Quay lại trang
         </button>
       </div>

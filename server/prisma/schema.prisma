@@ -57,6 +57,11 @@ model User {
 
   children      ChildProfile[]
   childAuditLogs ChildAuditLog[]
+
+  // ─ Ticket liên hệ (Contact) ─
+  tickets         Ticket[]      @relation("TicketRequester")
+  assignedTickets Ticket[]      @relation("TicketAssignee")
+  ticketReplies   TicketReply[]
 }
 
 // Bảng đếm số thứ tự theo ngày để sinh userCode
@@ -552,4 +557,63 @@ model ChildAuditLog {
 
   @@index([childId])
   @@index([parentId, createdAt])
+}
+
+// ─ TICKET (form Liên hệ /contact) ─
+enum TicketStatus {
+  NEW         // Mới gửi, chưa ai xử lý
+  IN_PROGRESS // Staff/Admin đang xử lý
+  RESOLVED    // Đã xử lý xong
+  CLOSED      // Đã đóng (không cần theo dõi tiếp)
+}
+
+enum TicketSubject {
+  PRODUCT_ADVICE     // Tư vấn sản phẩm
+  BUSINESS           // Hợp tác kinh doanh
+  TECHNICAL_SUPPORT  // Hỗ trợ kỹ thuật
+  FEEDBACK           // Phản hồi / Góp ý
+  OTHER              // Khác
+}
+
+model Ticket {
+  id             String        @id @default(uuid())
+  code           String        @unique // vd: ETK-260809k5L
+  userId         String?       // gắn nếu người gửi đang đăng nhập, cho phép khách vãng lai gửi (null)
+  name           String
+  email          String
+  phone          String?
+  company        String?
+  subject        TicketSubject
+  extraFields    Json?         // field phụ tuỳ chủ đề (product, orderId, rating, ...)
+  message        String
+  contactMethods String[]      // phone | zalo | email | facebook
+  status         TicketStatus  @default(NEW)
+  assignedToId   String?       // staff/admin đang phụ trách vé này
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  user       User?         @relation("TicketRequester", fields: [userId], references: [id], onDelete: SetNull)
+  assignedTo User?         @relation("TicketAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  replies    TicketReply[]
+
+  @@index([status])
+  @@index([userId])
+  @@index([assignedToId])
+  @@index([email])
+  @@index([createdAt])
+}
+
+// Lịch sử phản hồi của staff/admin cho 1 ticket — mỗi bản ghi tương ứng 1 email tự động gửi cho khách
+model TicketReply {
+  id        String   @id @default(uuid())
+  ticketId  String
+  staffId   String
+  message   String
+  emailSent Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  staff  User   @relation(fields: [staffId], references: [id])
+
+  @@index([ticketId])
 }

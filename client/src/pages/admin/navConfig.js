@@ -7,6 +7,7 @@ import {
   Users,
   QrCode,
   Mail,
+  MessageSquareText,
 } from "lucide-react";
 
 
@@ -23,6 +24,7 @@ export const NAV_GROUPS = [
       { label: "Sản phẩm", href: "/dashboard/products", icon: Package },
       { label: "Đơn hàng", href: "/dashboard/orders", icon: ShoppingBag },
       { label: "Mã giảm giá", href: "/dashboard/coupons", icon: Tag },
+      { label: "Yêu cầu liên hệ", href: "/dashboard/tickets", icon: MessageSquareText },
     ],
   },
   {

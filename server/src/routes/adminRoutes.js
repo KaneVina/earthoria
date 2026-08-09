@@ -74,6 +74,7 @@ router.get("/orders", adminOnly, getOrders);
 router.put("/orders/:id", adminOnly, updateOrderStatus);
 
 router.use("/emails", adminOnly, require("./emailRoutes"));
+router.use("/tickets", staffOrAdmin, require("./adminTicketRoutes"));
 
 router.get("/users", staffOrAdmin, getUsers);
 router.get("/users/:id/detail", staffOrAdmin, getUserDetail);

@@ -58,6 +58,7 @@ v1.use('/admin', require('./routes/adminRoutes'))
 v1.use('/addresses', require('./routes/addressRoutes'))
 v1.use('/children', require('./routes/childRoutes'))
 v1.use('/parent-pin', require('./routes/parentPinRoutes'))
+v1.use('/tickets', require('./routes/ticketRoutes'))
 
 // Public route
 v1.use('/ar', require('./routes/arRoutes'))

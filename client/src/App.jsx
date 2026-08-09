@@ -50,6 +50,7 @@ import Compare from "./pages/Compare";
 import FloatingCompareBar from "./components/FloatingCompareBar";
 import ParentDashboard from "./pages/ParentDashboard";
 import KidAccess from "./pages/kid/KidAccess";
+import Tickets from "./pages/admin/Tickets";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -224,6 +225,14 @@ export default function App() {
           }
         />
         <Route path="/dashboard/emails" element={<Emails />} />
+        <Route
+          path="/dashboard/tickets"
+          element={
+            <StaffOrAdminRoute>
+              <Tickets />
+            </StaffOrAdminRoute>
+          }
+        />
         <Route
           path="/dashboard/products"
           element={

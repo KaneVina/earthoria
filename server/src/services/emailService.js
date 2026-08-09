@@ -616,6 +616,120 @@ async function sendAccountUnlockedEmail({ to, name, dateUnlocked }) {
     }),
   })
 }
+// ─ Ticket: Xác nhận đã tiếp nhận yêu cầu liên hệ ─
+const TICKET_SUBJECT_LABEL_VI = {
+  PRODUCT_ADVICE: 'Tư vấn sản phẩm',
+  BUSINESS: 'Hợp tác kinh doanh',
+  TECHNICAL_SUPPORT: 'Hỗ trợ kỹ thuật',
+  FEEDBACK: 'Phản hồi / Góp ý',
+  OTHER: 'Khác',
+}
+
+async function sendTicketCreatedEmail({ to, name, code, subject }) {
+  const subjectLabel = TICKET_SUBJECT_LABEL_VI[subject] || subject
+
+  const bodyHtml = `
+    <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Thông báo hệ thống
+    </div>
+    <h1 style="font-size:26px;font-weight:600;color:#0b2e2b;line-height:1.3;margin:0 0 28px;text-align:center;letter-spacing:1px;text-transform:uppercase;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Đã Tiếp Nhận Yêu Cầu
+    </h1>
+
+    <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Xin chào, ${name || 'bạn'}.
+    </p>
+    <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 28px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Chúng tôi đã nhận được yêu cầu liên hệ của bạn về chủ đề
+      <strong style="color:#0b2e2b;font-weight:500;">${subjectLabel}</strong>.
+      Đội ngũ Earthoria sẽ phản hồi trong vòng 24 giờ làm việc.
+    </p>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+      <tr>
+        <td style="background:#fff;border:1px solid rgba(11,46,43,0.09);border-radius:10px;padding:28px;text-align:center;">
+          <div style="font-size:9.5px;letter-spacing:3px;text-transform:uppercase;color:#a0b8a8;font-weight:500;margin-bottom:16px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+            Mã yêu cầu của bạn
+          </div>
+          <div style="font-size:26px;font-weight:600;color:#0b2e2b;letter-spacing:2px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+            ${code}
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <div style="background:rgba(74,158,63,0.04);border:1px solid rgba(74,158,63,0.14);border-radius:8px;padding:16px 20px;margin-bottom:8px;">
+      <p style="font-size:12px;color:#5a6b60;line-height:1.85;font-weight:300;margin:0;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+        <strong style="color:#0b2e2b;font-weight:500;">Lưu ý:</strong>
+        Vui lòng lưu lại mã trên để tiện tra cứu khi cần trao đổi thêm với chúng tôi.
+      </p>
+    </div>
+  `
+
+  return resend.emails.send({
+    from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
+    to,
+    subject: `[${code}] Đã tiếp nhận yêu cầu liên hệ của bạn`,
+    html: wrapEmailTemplate({
+      preheader: `Mã yêu cầu của bạn: ${code}. Chúng tôi sẽ phản hồi trong 24 giờ.`,
+      bodyHtml,
+    }),
+  })
+}
+
+// ─ Ticket: Thông báo staff/admin vừa phản hồi ─
+async function sendTicketReplyEmail({ to, name, code, subject, message, staff }) {
+  const subjectLabel = TICKET_SUBJECT_LABEL_VI[subject] || subject
+  const messageHtml = String(message || '')
+    .split(/\n{2,}/)
+    .map(p => p.trim())
+    .filter(Boolean)
+    .map(p => `<p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 14px;font-family:'Be Vietnam Pro',Arial,sans-serif;">${p.replace(/\n/g, '<br>')}</p>`)
+    .join('')
+
+  const bodyHtml = `
+    <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Thông báo hệ thống
+    </div>
+    <h1 style="font-size:26px;font-weight:600;color:#0b2e2b;line-height:1.3;margin:0 0 28px;text-align:center;letter-spacing:1px;text-transform:uppercase;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Earthoria Đã Phản Hồi
+    </h1>
+
+    <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Xin chào, ${name || 'bạn'}.
+    </p>
+    <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 24px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Yêu cầu <strong style="color:#0b2e2b;font-weight:500;">${code}</strong>
+      (${subjectLabel}) của bạn vừa nhận được phản hồi mới từ đội ngũ Earthoria:
+    </p>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+      <tr>
+        <td style="background:#faf8f2;border-left:3px solid #4a9e3f;border-radius:0 8px 8px 0;padding:20px 24px;">
+          ${messageHtml}
+        </td>
+      </tr>
+    </table>
+
+    <p style="font-size:12px;color:#8a9690;line-height:1.8;font-weight:300;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Nếu cần trao đổi thêm, vui lòng phản hồi lại email này hoặc liên hệ
+      <a href="mailto:helpdesk.earthoria@gmail.com" style="color:#1a5a9e;text-decoration:none;">helpdesk.earthoria@gmail.com</a>
+      và nhắc mã yêu cầu <strong style="color:#0b2e2b;">${code}</strong>.
+    </p>
+
+    ${staff && (staff.name || staff.email) ? buildSignatureBlock(staff) : ''}
+  `
+
+  return resend.emails.send({
+    from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
+    to,
+    subject: `[${code}] Earthoria vừa phản hồi yêu cầu của bạn`,
+    html: wrapEmailTemplate({
+      preheader: `Yêu cầu ${code} của bạn vừa có phản hồi mới.`,
+      bodyHtml,
+    }),
+  })
+}
 
 module.exports = {
   verifyEmailTransport,
@@ -627,4 +741,6 @@ module.exports = {
   sendAccountProvisionedEmail,
   sendAccountLockedEmail,
   sendAccountUnlockedEmail,
+  sendTicketCreatedEmail,
+  sendTicketReplyEmail,
 }

@@ -109,6 +109,19 @@ const parentPinLimiter = rateLimit({
   keyGenerator: userIdKeyGenerator,
 })
 
+// Tối đa 5 lần gửi form liên hệ trong 15 phút, tính theo IP + email
+const ticketLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: 'Bạn đã gửi yêu cầu liên hệ quá nhiều lần. Vui lòng thử lại sau 15 phút.',
+  },
+  keyGenerator: emailIpKeyGenerator,
+})
+
 module.exports = {
   forgotPasswordLimiter,
   verifyOtpLimiter,
@@ -118,4 +131,5 @@ module.exports = {
   createPasswordOtpLimiter,
   createPasswordLimiter,
   parentPinLimiter,
+  ticketLimiter,
 }
