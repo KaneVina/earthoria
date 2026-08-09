@@ -4130,6 +4130,98 @@ body.dark-mode .social-card-handle {
   border-color: var(--forest);
 }
 
+/* Dual-thumb drag range slider (dùng chung cho Giá & Độ Tuổi) */
+.rs-wrap {
+  padding: 6px 6px 0;
+  user-select: none;
+}
+.rs-track {
+  position: relative;
+  height: 2px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 18px 3px 14px;
+  cursor: pointer;
+}
+.rs-fill {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: var(--gold);
+  border-radius: 2px;
+  transition: background 0.2s;
+}
+.rs-thumb {
+  position: absolute;
+  top: 50%;
+  width: 15px;
+  height: 15px;
+  background: var(--ivory);
+  border: 2px solid var(--gold);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  cursor: grab;
+  box-shadow: 0 1px 4px rgba(13, 51, 48, 0.18);
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.15s ease;
+  touch-action: none;
+}
+.rs-thumb:hover {
+  border-color: var(--forest);
+  transform: translate(-50%, -50%) scale(1.12);
+}
+.rs-thumb:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px var(--gold-pale);
+}
+.rs-thumb.dragging {
+  cursor: grabbing;
+  border-color: var(--forest);
+  box-shadow: 0 2px 8px rgba(13, 51, 48, 0.28);
+  transform: translate(-50%, -50%) scale(1.18);
+}
+.rs-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 300;
+}
+.rs-value {
+  color: var(--forest);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Nút xoá bộ lọc */
+.sidebar-clear-btn {
+  width: 100%;
+  margin-top: -4px;
+  margin-bottom: 44px;
+  padding: 9px 0;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: var(--text-muted);
+  background: transparent;
+  border: 0.5px solid var(--border);
+  cursor: pointer;
+  transition: all 0.3s;
+  font-family: "Be Vietnam Pro", sans-serif;
+}
+.sidebar-clear-btn:hover {
+  color: var(--forest);
+  border-color: var(--gold);
+  background: var(--gold-pale);
+}
+.sidebar-clear-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
 /*  Shop Toolbar  */
  .shop-toolbar {
   display: flex;

@@ -1,7 +1,7 @@
 // Sidebar.jsx — Sidebar admin, menu chia nhóm, mỗi nhóm bấm vào tiêu đề để thu gọn/mở rộng
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, ChevronLeft, ChevronDown, LogOut, Settings } from "lucide-react";
+import { ChevronRight, ChevronLeft, ChevronDown, LogOut, User } from "lucide-react";
 import { NAV_GROUPS } from "../pages/admin/navConfig";
 import { useAuthStore } from "../store/authStore";
 
@@ -150,12 +150,12 @@ export default function Sidebar({
       {/* Footer */}
       <div className="a-sidebar-footer">
         <Link
-          to="/dashboard/settings"
+          to="/dashboard/profile"
           className="a-nav-item"
-          title={collapsed ? "Cài đặt" : undefined}
+          title={collapsed ? "Hồ sơ cá nhân" : undefined}
         >
-          <Settings size={15} strokeWidth={1.6} className="a-nav-item-icon" />
-          <span className="a-nav-item-label">Cài đặt</span>
+          <User size={15} strokeWidth={1.6} className="a-nav-item-icon" />
+          <span className="a-nav-item-label">Hồ sơ cá nhân</span>
         </Link>
 
         <div className="a-avatar-row">

@@ -44,6 +44,7 @@ import Emails from "./pages/admin/Emails";
 import ProductDetail from "./pages/admin/product/ProductDetail";
 import ArCodeManager from "./pages/admin/ArCodeManager";
 import Settings from "./pages/admin/Settings";
+import AdminProfile from "./pages/admin/AdminProfile";
 import InventoryImport from "./pages/admin/product/InventoryImport";
 import FullScreenLoader from "./components/FullScreenLoader";
 import ProductCreate from "./pages/admin/product/ProductCreate";
@@ -53,6 +54,7 @@ import FloatingCompareBar from "./components/FloatingCompareBar";
 import ParentDashboard from "./pages/ParentDashboard";
 import KidAccess from "./pages/kid/KidAccess";
 import Tickets from "./pages/admin/Tickets";
+import PaymentReturn from "./pages/PaymentReturn";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -77,8 +79,8 @@ const GuestRoute = ({ children }) => {
   return !isAuthenticated ? children : <Navigate to="/" replace />;
 };
 // Khởi động trang bảo trì (test tay — luôn ưu tiên cao nhất, ghi đè cả lịch/tự động của admin)
-// const MAINTENANCE_MODE = false;
-const MAINTENANCE_MODE = true;
+const MAINTENANCE_MODE = false;
+// const MAINTENANCE_MODE = true;
 
 export default function App() {
   const { setAuth, setAuthChecked, authChecked, user, isAuthenticated } = useAuthStore();
@@ -186,6 +188,8 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="/payment/vnpay/return" element={<PaymentReturn method="vnpay" />} />
+          <Route path="/payment/momo/return" element={<PaymentReturn method="momo" />} />
           <Route
             path="/parent-dashboard"
             element={
@@ -286,6 +290,14 @@ export default function App() {
           element={
             <AdminRoute>
               <Settings />
+            </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/profile"
+          element={
+            <AdminRoute>
+              <AdminProfile />
             </AdminRoute>
           }
         />

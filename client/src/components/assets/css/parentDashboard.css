@@ -166,6 +166,7 @@
 /* Child switcher */
 .pkd-child-row { display: flex; gap: 14px; margin-top: 36px; flex-wrap: wrap; }
 .pkd-child-card {
+  position: relative;
   display: flex; align-items: center; gap: 14px;
   background: rgba(255,255,255,0.04); border: 0.5px solid rgba(255,255,255,0.1);
   border-radius: 10px; padding: 16px 20px; cursor: pointer; text-align: left;
@@ -200,6 +201,34 @@
 .pkd-child-bar-fill { display: block; height: 100%; background: var(--gold); border-radius: 3px; transition: width 0.5s ease; }
 .pkd-child-bar-fill.is-over { background: #e0a0a0; }
 .pkd-child-mins { font-size: 10.5px; color: rgba(250,248,243,0.35); }
+
+/* Thao tác nhanh trên thẻ bé: lấy link/QR + xoá vĩnh viễn — không cần cuộn xuống */
+.pkd-child-quick-actions {
+  position: absolute; top: 10px; right: 10px;
+  display: flex; gap: 6px;
+  opacity: 0; transform: translateY(-2px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.pkd-child-card:hover .pkd-child-quick-actions,
+.pkd-child-card:focus-within .pkd-child-quick-actions { opacity: 1; transform: translateY(0); }
+.pkd-child-quick-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 7px; cursor: pointer;
+  background: rgba(255,255,255,0.06); border: 0.5px solid rgba(255,255,255,0.12);
+  color: rgba(250,248,243,0.6);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.pkd-child-quick-btn:hover, .pkd-child-quick-btn:focus-visible {
+  background: rgba(74,158,63,0.18); border-color: rgba(74,158,63,0.4); color: var(--gold);
+  outline: none;
+}
+.pkd-child-quick-btn.is-danger:hover, .pkd-child-quick-btn.is-danger:focus-visible {
+  background: rgba(178,84,80,0.16); border-color: rgba(178,84,80,0.4); color: #e0a0a0;
+}
+@media (max-width: 640px) {
+  /* Trên mobile không có hover — hiện luôn để bấm được */
+  .pkd-child-quick-actions { opacity: 1; transform: none; position: static; margin-left: auto; align-self: flex-start; }
+}
 
 /* Section quick-nav */
 .pkd-pills-wrap {

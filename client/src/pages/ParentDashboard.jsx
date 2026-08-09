@@ -36,6 +36,7 @@ import {
   Trash2,
   BookMarked,
   Smile,
+  QrCode,
 } from "lucide-react";
 
 import "../components/assets/css/profile.css";
@@ -399,11 +400,13 @@ export default function ParentDashboard() {
   const [lockConfirmOpen, setLockConfirmOpen] = useState(false);
   const [unlockPinOpen, setUnlockPinOpen] = useState(false);
 
-  /*  Xoá vĩnh viễn hồ sơ con  */
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  /*  Xoá vĩnh viễn hồ sơ con — lưu riêng { id, name } của bé cần xoá,
+      để có thể xoá nhanh ngay từ thẻ chọn bé mà không cần đợi
+      dashboard của bé đó tải xong (khác activeChild) */
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const handleChildDeleted = () => {
-    toast.success(`Đã xoá vĩnh viễn hồ sơ của ${activeChild.name}`);
-    setDeleteModalOpen(false);
+    toast.success(`Đã xoá vĩnh viễn hồ sơ của ${deleteTarget?.name}`);
+    setDeleteTarget(null);
     loadChildren(); // tải lại danh sách — activeChildId sẽ tự chuyển sang bé còn lại (xem loadChildren)
   };
 
@@ -641,6 +644,31 @@ export default function ParentDashboard() {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  /*  Khi bấm nút "lấy link/QR" trên thẻ của MỘT bé khác bé đang chọn,
+      trang sẽ render lại màn hình loading trong lúc chuyển bé (xem
+      `if (!activeChild || dashboardLoading)` bên dưới) — nên phải đợi
+      dashboard của bé mới tải xong rồi mới cuộn tới, chứ gọi ngay sẽ
+      hụt vì section chưa kịp có trong DOM.  */
+  const [pendingScrollTo, setPendingScrollTo] = useState(null);
+  useEffect(() => {
+    if (pendingScrollTo && !dashboardLoading && activeChild) {
+      const id = pendingScrollTo;
+      setPendingScrollTo(null);
+      // đợi 1 khung hình để DOM của section kịp mount xong
+      requestAnimationFrame(() => scrollToSection(id));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingScrollTo, dashboardLoading, activeChild]);
+
+  const jumpToKidLink = (childId) => {
+    if (childId !== activeChildId) {
+      setActiveChildId(childId);
+      setPendingScrollTo("kid-link");
+    } else {
+      scrollToSection("kid-link");
+    }
+  };
+
   // Vị trí % của khung giờ được phép trên dải 24h, để vẽ timeline
   const startPct = (timeToMinutes(settings.allowStart) / (24 * 60)) * 100;
   const endPct = (timeToMinutes(settings.allowEnd) / (24 * 60)) * 100;
@@ -812,6 +840,47 @@ export default function ParentDashboard() {
                     </span>
                     <span className="pkd-child-mins">
                       {formatMinutes(mins)} / {formatMinutes(limit)} hôm nay
+                    </span>
+                  </span>
+
+                  <span className="pkd-child-quick-actions">
+                    <span
+                      className="pkd-child-quick-btn"
+                      role="button"
+                      tabIndex={0}
+                      title={`Lấy link & QR cho ${child.name}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        jumpToKidLink(child.id);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          jumpToKidLink(child.id);
+                        }
+                      }}
+                    >
+                      <QrCode size={14} />
+                    </span>
+                    <span
+                      className="pkd-child-quick-btn is-danger"
+                      role="button"
+                      tabIndex={0}
+                      title={`Xoá vĩnh viễn hồ sơ của ${child.name}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteTarget({ id: child.id, name: child.name });
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setDeleteTarget({ id: child.id, name: child.name });
+                        }
+                      }}
+                    >
+                      <Trash2 size={14} />
                     </span>
                   </span>
                 </button>
@@ -1393,7 +1462,7 @@ export default function ParentDashboard() {
             </p>
             <button
               className="pkd-lock-btn is-lock pf-btn-tactile"
-              onClick={() => setDeleteModalOpen(true)}
+              onClick={() => setDeleteTarget({ id: activeChildId, name: activeChild.name })}
               type="button"
             >
               <Trash2 size={16} /> Xoá vĩnh viễn hồ sơ của {activeChild.name}
@@ -1642,11 +1711,11 @@ export default function ParentDashboard() {
         </ModalShell>
       )}
 
-      {deleteModalOpen && (
+      {deleteTarget && (
         <DeleteChildModal
-          childId={activeChildId}
-          childName={activeChild.name}
-          onClose={() => setDeleteModalOpen(false)}
+          childId={deleteTarget.id}
+          childName={deleteTarget.name}
+          onClose={() => setDeleteTarget(null)}
           onDeleted={handleChildDeleted}
         />
       )}

@@ -1,4 +1,3 @@
-// Users.jsx — Admin user management
 import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -539,7 +538,7 @@ export default function Users() {
                 <>
                   <p style={{ fontSize: 13, color: 'rgba(13,51,48,0.65)', lineHeight: 1.6, marginBottom: 16 }}>
                     Tài khoản này sẽ bị khóa. Để xác nhận, vui lòng nhập đúng email của tài khoản
-                    và lý do khóa — hệ thống sẽ tự động gửi email thông báo kèm lý do cho người dùng.
+                    và lý do khóa.
                   </p>
 
                   <label className="a-form-label" htmlFor="lock-email-confirm">
