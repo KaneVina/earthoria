@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const {
-  getBooks, getBook, getFeaturedBooks,
+  getBooks, getBook, getFeaturedBooks, getFilterCounts,
   addReview, toggleWishlist, getWishlist
 } = require('../controllers/bookController')
 const { protect } = require('../middlewares/authMiddleware')
@@ -9,6 +9,7 @@ const { protect } = require('../middlewares/authMiddleware')
 // URL: /api/v1/books
 router.get('/',                           getBooks)
 router.get('/featured',                   getFeaturedBooks)
+router.get('/filter-counts',              getFilterCounts)
 router.get('/wishlist',        protect,   getWishlist)
 
 // URL: /api/v1/books/:slug/:hashId

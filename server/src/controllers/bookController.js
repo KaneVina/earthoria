@@ -9,35 +9,78 @@ const encodeBook = (book) => ({
   url: `/${book.slug}/${encodeId(book.id)}`
 })
 
+const FEATURE_FIELD = { ar: 'hasAR', ai: 'hasAI', '3d': 'has3DAudio' }
+
+// Sách đạt ngưỡng đánh giá trung bình >= threshold
+const getBookIdsWithMinRating = async (threshold) => {
+  const grouped = await prisma.review.groupBy({
+    by: ['bookId'],
+    _avg: { rating: true }
+  })
+  return grouped
+    .filter((g) => (g._avg.rating || 0) >= parseFloat(threshold))
+    .map((g) => g.bookId)
+}
+
+// Dựng where dùng chung cho getBooks + getFilterCounts.
+// `exclude` cho phép bỏ qua 1 chiều lọc để đếm "nếu không áp chiều đó thì còn bao nhiêu sách"
+// (kiểu facet count chuẩn của e-commerce: đếm category thì bỏ qua category đang chọn, v.v.)
+const buildWhere = async (query, exclude = {}) => {
+  const {
+    category, search, minPrice, maxPrice,
+    minAge, maxAge, minRating, features, featured
+  } = query
+
+  let ratingBookIds = null
+  if (minRating && !exclude.rating) {
+    ratingBookIds = await getBookIdsWithMinRating(minRating)
+  }
+
+  const featureList = (!exclude.features && features) ? String(features).split(',').filter(Boolean) : []
+  const featureConditions = featureList
+    .map((f) => (f === 'featured' ? { isFeatured: true } : FEATURE_FIELD[f] ? { [FEATURE_FIELD[f]]: true } : null))
+    .filter(Boolean)
+
+  const andConditions = []
+  if (search) {
+    andConditions.push({
+      OR: [
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } }
+      ]
+    })
+  }
+  // Độ tuổi: lấy sách có khoảng tuổi giao với khoảng lọc [minAge, maxAge]
+  if (minAge) {
+    andConditions.push({ OR: [{ ageMax: null }, { ageMax: { gte: parseInt(minAge) } }] })
+  }
+  if (maxAge) {
+    andConditions.push({ OR: [{ ageMin: null }, { ageMin: { lte: parseInt(maxAge) } }] })
+  }
+  andConditions.push(...featureConditions)
+
+  return {
+    isActive: true,
+    ...(!exclude.category && category && { category: { slug: category } }),
+    ...(featured === 'true' && { isFeatured: true }),
+    ...((minPrice || maxPrice) && {
+      price: {
+        ...(minPrice && { gte: parseFloat(minPrice) }),
+        ...(maxPrice && { lte: parseFloat(maxPrice) })
+      }
+    }),
+    ...(ratingBookIds && { id: { in: ratingBookIds } }),
+    ...(andConditions.length > 0 && { AND: andConditions })
+  }
+}
+
 // Get all books
 const getBooks = async (req, res) => {
   try {
-    const {
-      page = 1, limit = 12, category,
-      search, minPrice, maxPrice,
-      sort = 'createdAt', order = 'desc',
-      featured
-    } = req.query
-
+    const { page = 1, limit = 12, sort = 'createdAt', order = 'desc' } = req.query
     const skip = (parseInt(page) - 1) * parseInt(limit)
 
-    const where = {
-      isActive: true,
-      ...(category && { category: { slug: category } }),
-      ...(featured === 'true' && { isFeatured: true }),
-      ...(search && {
-        OR: [
-          { title: { contains: search, mode: 'insensitive' } },
-          { description: { contains: search, mode: 'insensitive' } }
-        ]
-      }),
-      ...((minPrice || maxPrice) && {
-        price: {
-          ...(minPrice && { gte: parseFloat(minPrice) }),
-          ...(maxPrice && { lte: parseFloat(maxPrice) })
-        }
-      })
-    }
+    const where = await buildWhere(req.query)
 
     const [books, total] = await Promise.all([
       prisma.book.findMany({
@@ -69,6 +112,60 @@ const getBooks = async (req, res) => {
         total,
         totalPages: Math.ceil(total / parseInt(limit))
       }
+    })
+  } catch (error) {
+    console.error(error)
+    return formatResponse(res, 500, 'Lỗi server')
+  }
+}
+
+// Đếm số sách thật cho từng lựa chọn filter ở sidebar (Danh Mục / Tính Năng / Đánh Giá),
+// tôn trọng các filter khác đang được áp dụng — không hardcode số nữa.
+const getFilterCounts = async (req, res) => {
+  try {
+    const [categories, whereNoCategory, whereNoFeatures, whereNoRating] = await Promise.all([
+      prisma.category.findMany({ where: { isActive: true }, select: { id: true, slug: true, name: true } }),
+      buildWhere(req.query, { category: true }),
+      buildWhere(req.query, { features: true }),
+      buildWhere(req.query, { rating: true })
+    ])
+
+    const [categoryGroups, allCount, arCount, aiCount, audioCount, featuredCount, ratingIds5, ratingIds4, ratingIds3] =
+      await Promise.all([
+        prisma.book.groupBy({ by: ['categoryId'], where: whereNoCategory, _count: { _all: true } }),
+        prisma.book.count({ where: whereNoCategory }),
+        prisma.book.count({ where: { ...whereNoFeatures, hasAR: true } }),
+        prisma.book.count({ where: { ...whereNoFeatures, hasAI: true } }),
+        prisma.book.count({ where: { ...whereNoFeatures, has3DAudio: true } }),
+        prisma.book.count({ where: { ...whereNoFeatures, isFeatured: true } }),
+        getBookIdsWithMinRating(5),
+        getBookIdsWithMinRating(4),
+        getBookIdsWithMinRating(3)
+      ])
+
+    const categoryCountMap = Object.fromEntries(
+      categoryGroups.map((g) => [g.categoryId, g._count._all])
+    )
+    const categoryCounts = {
+      all: allCount,
+      ...Object.fromEntries(
+        categories.map((c) => [c.slug, categoryCountMap[c.id] || 0])
+      )
+    }
+
+    const countWithRating = async (ids) =>
+      prisma.book.count({ where: { ...whereNoRating, id: { in: ids } } })
+
+    const [rating5, rating4, rating3] = await Promise.all([
+      countWithRating(ratingIds5),
+      countWithRating(ratingIds4),
+      countWithRating(ratingIds3)
+    ])
+
+    return formatResponse(res, 200, 'OK', {
+      categories: categoryCounts,
+      features: { ar: arCount, ai: aiCount, '3d': audioCount, featured: featuredCount },
+      ratings: { 5: rating5, 4: rating4, 3: rating3 }
     })
   } catch (error) {
     console.error(error)
@@ -226,6 +323,6 @@ const getWishlist = async (req, res) => {
 }
 
 module.exports = {
-  getBooks, getBook, getFeaturedBooks,
+  getBooks, getBook, getFeaturedBooks, getFilterCounts,
   addReview, toggleWishlist, getWishlist
 }

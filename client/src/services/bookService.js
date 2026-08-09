@@ -2,6 +2,7 @@ import api from './api'
 
 export const bookService = {
   getBooks: (params) => api.get('/books', { params }),
+  getFilterCounts: (params) => api.get('/books/filter-counts', { params }),
   getBook: (slug, hashId) => api.get(`/books/${slug}/${hashId}`),
   getFeatured: () => api.get('/books/featured'),
   addReview: (slug, hashId, data) => api.post(`/books/${slug}/${hashId}/reviews`, data),

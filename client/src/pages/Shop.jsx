@@ -9,21 +9,22 @@ import { useAuthStore } from "../store/authStore";
 import { useWishlistStore } from "../store/wishlistStore";
 import toast from "react-hot-toast";
 import { SkeletonProductGrid } from "../components/skeletons/SkeletonShop";
+import RangeSlider from "../components/RangeSlider";
 
-const CATEGORIES = [
-  { key: "all", label: "Tất cả sản phẩm", count: 18 },
-  { key: "nature", label: "Thiên Nhiên", count: 8 },
-  { key: "space", label: "Vũ Trụ", count: 5 },
-  { key: "science", label: "Khoa Học", count: 5 },
-];
+const PRICE_BOUNDS = [0, 600000];
+const AGE_BOUNDS = [0, 15];
 
-const AGE_TAGS = ["3–5 tuổi", "6–8 tuổi", "9–12 tuổi", "Mọi lứa tuổi"];
+const formatPriceLabel = (v) =>
+  v >= PRICE_BOUNDS[1] ? `${Math.round(v / 1000)}k+` : `${Math.round(v / 1000)}k`;
 
-const FEATURES = [
-  { label: "Có AR", count: 18 },
-  { label: "Có AI Chat", count: 12 },
-  { label: "Âm thanh 3D", count: 9 },
-  { label: "Bộ sưu tập", count: 4 },
+const formatAgeLabel = (v) =>
+  v >= AGE_BOUNDS[1] ? `${AGE_BOUNDS[1]}+ tuổi` : `${v} tuổi`;
+
+const FEATURE_META = [
+  { label: "Có AR", key: "ar" },
+  { label: "Có AI Chat", key: "ai" },
+  { label: "Âm thanh 3D", key: "3d" },
+  { label: "Bộ sưu tập", key: "featured" },
 ];
 
 
@@ -831,7 +832,9 @@ export default function Shop() {
 
   const [activeCategory, setActiveCategory] = useState("all");
   const [activeFeatures, setActiveFeatures] = useState(["Có AR"]);
-  const [activeTags, setActiveTags] = useState(["3–5 tuổi"]);
+  const [priceRange, setPriceRange] = useState([150000, 450000]);
+  const [ageRange, setAgeRange] = useState([3, 12]);
+  const [minRating, setMinRating] = useState(0);
   const [gridCols, setGridCols] = useState(3);
   const [sortValue, setSortValue] = useState("Nổi bật");
   const [activePage, setActivePage] = useState(1);
@@ -865,12 +868,47 @@ export default function Shop() {
   };
   const PAGE_SIZE = 12;
 
+  // Tham số filter dùng chung cho cả danh sách sách và số đếm facet (không hardcode)
+  const facetParams = {
+    category: activeCategory !== "all" ? activeCategory : undefined,
+    minPrice: priceRange[0] > PRICE_BOUNDS[0] ? priceRange[0] : undefined,
+    maxPrice: priceRange[1] < PRICE_BOUNDS[1] ? priceRange[1] : undefined,
+    minAge: ageRange[0] > AGE_BOUNDS[0] ? ageRange[0] : undefined,
+    maxAge: ageRange[1] < AGE_BOUNDS[1] ? ageRange[1] : undefined,
+    minRating: minRating > 0 ? minRating : undefined,
+    features: activeFeatures.length
+      ? FEATURE_META.filter((f) => activeFeatures.includes(f.label))
+          .map((f) => f.key)
+          .join(",")
+      : undefined,
+  };
+  const facetKey = JSON.stringify(facetParams);
+
+  // Danh mục thật từ DB (đúng slug), không hardcode key/label/count nữa
+  const { data: categoriesData } = useQuery({
+    queryKey: ["shop-categories"],
+    queryFn: () => bookService.getCategories().then((r) => r.data.data),
+    staleTime: 5 * 60 * 1000,
+  });
+  const CATEGORIES = [
+    { key: "all", label: "Tất cả sản phẩm" },
+    ...(categoriesData || []).map((c) => ({ key: c.slug, label: c.name })),
+  ];
+
+  // Số lượng thật cho từng lựa chọn filter, tính theo các filter khác đang bật
+  const { data: filterCounts } = useQuery({
+    queryKey: ["shop-filter-counts", facetKey],
+    queryFn: () =>
+      bookService.getFilterCounts(facetParams).then((r) => r.data.data),
+    placeholderData: keepPreviousData,
+  });
+
   const { data: shopData, isLoading } = useQuery({
-    queryKey: ["shop-books", activeCategory, sortValue, activePage],
+    queryKey: ["shop-books", sortValue, activePage, facetKey],
     queryFn: () =>
       bookService
         .getBooks({
-          category: activeCategory !== "all" ? activeCategory : undefined,
+          ...facetParams,
           sort:
             sortValue === "Giá tăng dần" || sortValue === "Giá giảm dần"
               ? "price"
@@ -891,10 +929,27 @@ export default function Shop() {
     totalPages: 1,
   };
 
-  // Đổi category hoặc sắp xếp thì quay về trang 1, tránh đứng ở trang trống
+  // Đổi category, sắp xếp hoặc bất kỳ bộ lọc nào thì quay về trang 1, tránh đứng ở trang trống
   useEffect(() => {
     setActivePage(1);
-  }, [activeCategory, sortValue]);
+  }, [sortValue, facetKey]);
+
+  const hasActiveFilters =
+    activeCategory !== "all" ||
+    priceRange[0] !== 150000 ||
+    priceRange[1] !== 450000 ||
+    ageRange[0] !== 3 ||
+    ageRange[1] !== 12 ||
+    minRating !== 0 ||
+    activeFeatures.length > 0;
+
+  const clearAllFilters = () => {
+    setActiveCategory("all");
+    setPriceRange([150000, 450000]);
+    setAgeRange([3, 12]);
+    setMinRating(0);
+    setActiveFeatures([]);
+  };
 
   const { data: featuredBook } = useQuery({
     queryKey: ["shop-featured-book"],
@@ -1142,7 +1197,9 @@ export default function Shop() {
                   onClick={() => setActiveCategory(cat.key)}
                 >
                   {cat.label}
-                  <span className="sidebar-pill-count">{cat.count}</span>
+                  <span className="sidebar-pill-count">
+                    {filterCounts?.categories?.[cat.key] ?? "…"}
+                  </span>
                 </button>
               ))}
             </div>
@@ -1150,42 +1207,32 @@ export default function Shop() {
 
           <div className="sidebar-section">
             <div className="sidebar-title">Giá (VNĐ)</div>
-            <div className="price-range-wrap">
-              <div className="price-range-track">
-                <div className="price-range-fill" />
-              </div>
-              <div className="price-range-labels">
-                <span className="price-range-value">150k</span>
-                <span className="price-range-value">450k</span>
-              </div>
-            </div>
+            <RangeSlider
+              min={PRICE_BOUNDS[0]}
+              max={PRICE_BOUNDS[1]}
+              step={10000}
+              value={priceRange}
+              formatLabel={formatPriceLabel}
+              onChangeCommitted={setPriceRange}
+            />
           </div>
 
           <div className="sidebar-section">
             <div className="sidebar-title">Độ Tuổi</div>
-            <div className="age-tags">
-              {AGE_TAGS.map((tag) => (
-                <button
-                  key={tag}
-                  className={`age-tag${activeTags.includes(tag) ? " active" : ""}`}
-                  onClick={() =>
-                    setActiveTags((prev) =>
-                      prev.includes(tag)
-                        ? prev.filter((t) => t !== tag)
-                        : [...prev, tag],
-                    )
-                  }
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
+            <RangeSlider
+              min={AGE_BOUNDS[0]}
+              max={AGE_BOUNDS[1]}
+              step={1}
+              value={ageRange}
+              formatLabel={formatAgeLabel}
+              onChangeCommitted={setAgeRange}
+            />
           </div>
 
           <div className="sidebar-section">
             <div className="sidebar-title">Tính Năng</div>
             <div className="sidebar-pills">
-              {FEATURES.map((feat) => (
+              {FEATURE_META.map((feat) => (
                 <button
                   key={feat.label}
                   className={`sidebar-pill${activeFeatures.includes(feat.label) ? " active" : ""}`}
@@ -1198,7 +1245,9 @@ export default function Shop() {
                   }
                 >
                   {feat.label}
-                  <span className="sidebar-pill-count">{feat.count}</span>
+                  <span className="sidebar-pill-count">
+                    {filterCounts?.features?.[feat.key] ?? "…"}
+                  </span>
                 </button>
               ))}
             </div>
@@ -1208,7 +1257,13 @@ export default function Shop() {
             <div className="sidebar-title">Đánh Giá</div>
             <div className="sidebar-pills">
               {[5, 4, 3].map((stars) => (
-                <button key={stars} className="sidebar-pill">
+                <button
+                  key={stars}
+                  className={`sidebar-pill${minRating === stars ? " active" : ""}`}
+                  onClick={() =>
+                    setMinRating((prev) => (prev === stars ? 0 : stars))
+                  }
+                >
                   <span
                     style={{
                       display: "flex",
@@ -1227,14 +1282,25 @@ export default function Shop() {
                         ★
                       </span>
                     ))}
+                    <span style={{ fontSize: "11px", marginLeft: "2px" }}>
+                      trở lên
+                    </span>
                   </span>
                   <span className="sidebar-pill-count">
-                    {stars === 5 ? 6 : stars === 4 ? 9 : 3}
+                    {filterCounts?.ratings?.[stars] ?? "…"}
                   </span>
                 </button>
               ))}
             </div>
           </div>
+
+          <button
+            className="sidebar-clear-btn"
+            disabled={!hasActiveFilters}
+            onClick={clearAllFilters}
+          >
+            Xóa tất cả bộ lọc
+          </button>
         </aside>
 
         {/* MAIN */}
