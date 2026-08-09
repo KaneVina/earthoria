@@ -1,4 +1,5 @@
 import axios from 'axios'
+import toast from 'react-hot-toast'
 import { useAuthStore } from '../store/authStore'
 
 const api = axios.create({
@@ -12,6 +13,14 @@ api.interceptors.request.use((config) => {
   return config
 })
 let refreshPromise = null
+let sessionExpiredNotified = false
+
+function notifySessionExpired(message) {
+  if (sessionExpiredNotified) return
+  sessionExpiredNotified = true
+  toast.error(message || 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại')
+  setTimeout(() => { sessionExpiredNotified = false }, 3000)
+}
 
 export function refreshSession() {
   if (!refreshPromise) {
@@ -51,6 +60,7 @@ api.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${newToken}`
         return api(originalRequest)
       } catch (refreshError) {
+        notifySessionExpired(refreshError.response?.data?.message)
         window.location.href = '/login'
         return Promise.reject(refreshError)
       }
@@ -58,6 +68,7 @@ api.interceptors.response.use(
 
     if (status === 401 && isAuthEndpoint) {
       useAuthStore.getState().logout()
+      notifySessionExpired(error.response?.data?.message)
     }
 
     return Promise.reject(error)
