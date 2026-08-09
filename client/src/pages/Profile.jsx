@@ -5,10 +5,11 @@ import {
   useRef,
   useCallback,
 } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authService } from "../services/authService";
 import { orderService } from "../services/orderService";
+import { paymentService } from "../services/paymentService";
 import { arService } from "../services/arService";
 import { useAuthStore } from "../store/authStore";
 import { formatPrice, formatDate } from "../utils/helpers";
@@ -918,10 +919,13 @@ function EditableField({
 
 export default function Profile() {
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const { user, logout, updateUser } = useAuthStore();
-  const [activeTab, setActiveTab] = useState("overview");
-  const [selectedOrderId, setSelectedOrderId] = useState(null);
+  // Cho phép điều hướng thẳng tới 1 tab (và 1 đơn hàng cụ thể) từ nơi khác,
+  // vd: navigate('/profile', { state: { tab: 'orders', orderId } }) sau khi đặt/thanh toán xong.
+  const [activeTab, setActiveTab] = useState(location.state?.tab || "overview");
+  const [selectedOrderId, setSelectedOrderId] = useState(location.state?.orderId || null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const containerRef = useReveal([activeTab, selectedOrderId]);
   const contentTopRef = useRef(null);
@@ -1877,12 +1881,30 @@ function OrderDetailSkeleton({ onBack }) {
 }
 
 function OrderDetailTab({ order, loading, onBack }) {
+  const [retrying, setRetrying] = useState(false);
   if (loading || !order) return <OrderDetailSkeleton onBack={onBack} />;
 
   const status = ORDER_STATUS_MAP[order.status] || ORDER_STATUS_MAP.PENDING;
   const isCancelled = order.status === "CANCELLED";
   const stepIdx = ORDER_STEPS.indexOf(order.status);
   const fillPct = (Math.max(0, stepIdx) / (ORDER_STEPS.length - 1)) * 100;
+  const canRetryPayment =
+    ["VNPAY", "MOMO"].includes(order.paymentMethod) &&
+    order.paymentStatus !== "PAID" &&
+    ["PENDING", "CONFIRMED"].includes(order.status);
+
+  const retryPayment = async () => {
+    setRetrying(true);
+    try {
+      const create =
+        order.paymentMethod === "VNPAY" ? paymentService.createVnpayUrl : paymentService.createMomoUrl;
+      const { data } = await create(order.id);
+      window.location.href = data.data.paymentUrl;
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Không tạo được liên kết thanh toán");
+      setRetrying(false);
+    }
+  };
   const shippingName =
     order.shippingName || order.address?.name || "Chưa cập nhật";
   const shippingPhone =
@@ -2062,8 +2084,28 @@ function OrderDetailTab({ order, loading, onBack }) {
             </div>
             <div className="pf-payment-badge">
               {Icon.shield}
-              <span>Thanh toán: {order.paymentMethod || "COD"}</span>
+              <span>
+                Thanh toán: {order.paymentMethod || "COD"}
+                {order.paymentMethod !== "COD" &&
+                  ` — ${order.paymentStatus === "PAID" ? "Đã thanh toán" : "Chưa thanh toán"}`}
+              </span>
             </div>
+            {canRetryPayment && (
+              <button
+                onClick={retryPayment}
+                disabled={retrying}
+                className="pf-btn-tactile pf-btn-shine pf-pw-submit"
+                style={{ width: "100%", marginTop: 14 }}
+              >
+                {retrying ? (
+                  <>
+                    <span className="pf-spinner-sm" /> Đang chuyển hướng…
+                  </>
+                ) : (
+                  `Thanh toán lại qua ${order.paymentMethod === "VNPAY" ? "VNPay" : "MoMo"}`
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>

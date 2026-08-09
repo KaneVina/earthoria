@@ -27,6 +27,8 @@ import { useCartStore } from "../store/cartStore";
 import { formatPrice } from "../utils/helpers";
 import toast from "react-hot-toast";
 import { orderService } from "../services/orderService";
+import { couponService } from "../services/couponService";
+import { paymentService } from "../services/paymentService";
 import api from "../services/api";
 import { addressService } from '../services/addressService'
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
@@ -309,12 +311,6 @@ function LocationCombobox({
 ───────────────────────────────────────── */
 const FREE_SHIP_THRESHOLD = 300_000;
 const SHIP_FEE = 30_000;
-
-const COUPONS = {
-  EARTH15: { label: "Giảm 15%", pct: 0.15 },
-  EARTH20: { label: "Giảm 20%", pct: 0.2 },
-  NEWUSER: { label: "Tân khách − 10%", pct: 0.1 },
-};
 
 const PAYMENT_OPTIONS = [
   {
@@ -762,6 +758,7 @@ function OrderSummary({
   setCouponInput,
   onApply,
   onRemoveCoupon,
+  couponLoading,
 }) {
   const afterDiscount = subtotal - discount;
   const pct = Math.min((afterDiscount / FREE_SHIP_THRESHOLD) * 100, 100);
@@ -976,8 +973,9 @@ function OrderSummary({
               <input
                 value={couponInput}
                 onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                onKeyDown={(e) => e.key === "Enter" && onApply()}
+                onKeyDown={(e) => e.key === "Enter" && !couponLoading && onApply()}
                 placeholder="Nhập mã tại đây"
+                disabled={couponLoading}
                 style={{
                   flex: 1,
                   background: "var(--white)",
@@ -994,11 +992,17 @@ function OrderSummary({
               />
               <button
                 onClick={onApply}
+                disabled={couponLoading}
                 style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
                   background: "var(--gold)",
                   border: "1px solid var(--gold)",
                   padding: "11px 20px",
-                  cursor: "pointer",
+                  cursor: couponLoading ? "not-allowed" : "pointer",
+                  opacity: couponLoading ? 0.7 : 1,
                   fontSize: 11,
                   letterSpacing: "0.14em",
                   textTransform: "uppercase",
@@ -1008,7 +1012,11 @@ function OrderSummary({
                   whiteSpace: "nowrap",
                 }}
               >
-                Áp dụng
+                {couponLoading ? (
+                  <Loader2 size={13} style={{ animation: "spin 0.8s linear infinite" }} />
+                ) : (
+                  "Áp dụng"
+                )}
               </button>
             </div>
           </>
@@ -1207,10 +1215,12 @@ export default function Checkout() {
   /*  coupon  */
   const [couponInput, setCouponInput] = useState("");
   const [couponApplied, setCouponApplied] = useState(null);
+  const [couponLoading, setCouponLoading] = useState(false);
 
   /*  submission  */
   const [placing, setPlacing] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [placedOrderId, setPlacedOrderId] = useState(null);
   const [requestInvoice, setRequestInvoice] = useState(false);
   const [deliveryMode, setDeliveryMode] = useState('shipping')
 const [savedAddresses, setSavedAddresses] = useState([])
@@ -1289,7 +1299,16 @@ useEffect(() => {
     (s, i) => s + (i.book?.salePrice || i.book?.price || 0) * i.quantity,
     0,
   );
-  const discount = couponApplied ? Math.round(subtotal * couponApplied.pct) : 0;
+  const discount = (() => {
+    if (!couponApplied) return 0;
+    if (subtotal < (couponApplied.minOrder || 0)) return 0; // không còn đủ điều kiện, backend sẽ chặn lúc đặt hàng
+    let d =
+      couponApplied.type === "PERCENTAGE"
+        ? Math.round((subtotal * couponApplied.value) / 100)
+        : couponApplied.value;
+    if (couponApplied.maxDiscount) d = Math.min(d, couponApplied.maxDiscount);
+    return Math.min(d, subtotal);
+  })();
   const [shipCalc, setShipCalc] = useState({
     km: null,
     fee: 30_000,
@@ -1361,13 +1380,21 @@ useEffect(() => {
   };
 
   /*  coupon  */
-  const applyCoupon = () => {
+  const applyCoupon = async () => {
     const key = couponInput.trim().toUpperCase();
-    if (COUPONS[key]) {
-      setCouponApplied({ code: key, ...COUPONS[key] });
-      toast.success(`Áp dụng ${key} thành công!`);
-    } else {
-      toast.error("Mã giảm giá không hợp lệ");
+    if (!key) return toast.error("Vui lòng nhập mã giảm giá");
+    setCouponLoading(true);
+    try {
+      const { data } = await couponService.validate(key, subtotal);
+      const c = data.data;
+      const label =
+        c.type === "PERCENTAGE" ? `Giảm ${c.value}%` : `Giảm ${formatPrice(c.value)}`;
+      setCouponApplied({ ...c, label });
+      toast.success(`Áp dụng ${c.code} thành công!`);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Mã giảm giá không hợp lệ");
+    } finally {
+      setCouponLoading(false);
     }
   };
 
@@ -1397,8 +1424,9 @@ useEffect(() => {
 
   const placeOrder = async () => {
     setPlacing(true);
+    let orderId;
     try {
-      await orderService.createOrder({
+      const { data } = await orderService.createOrder({
         shipping: {
           fullName: ship.fullName,
           phone: ship.phone,
@@ -1415,15 +1443,38 @@ useEffect(() => {
         note: ship.note || null,
         requestInvoice,
       });
-      toast.success("Đặt hàng thành công!");
-      setOrderPlaced(true);
-      setStep(4);
-      scrollTop();
+      orderId = data.data.orderId;
+      setPlacedOrderId(orderId);
+
+      // COD (hoặc phương thức không cần cổng thanh toán online) → xong ngay, hiện trang cảm ơn.
+      if (!data.data.requiresOnlinePayment) {
+        toast.success("Đặt hàng thành công!");
+        setOrderPlaced(true);
+        setStep(4);
+        scrollTop();
+        return;
+      }
     } catch (err) {
       toast.error(
         err?.response?.data?.message || "Đặt hàng thất bại, thử lại!",
       );
-    } finally {
+      setPlacing(false);
+      return;
+    }
+
+    // VNPay / MoMo → đơn đã tạo (giữ trạng thái UNPAID), giờ lấy link cổng thanh toán rồi chuyển hướng.
+    // Tách try/catch riêng: nếu bước này lỗi, đơn hàng VẪN đã tồn tại — báo rõ để người dùng
+    // vào lịch sử đơn hàng bấm "Thanh toán lại" thay vì tưởng nhầm là chưa đặt được gì.
+    try {
+      const getUrl = method === "vnpay" ? paymentService.createVnpayUrl : paymentService.createMomoUrl;
+      const { data: payData } = await getUrl(orderId);
+      // Không setPlacing(false) ở đây — giữ nút "Đang xử lý…" cho tới khi trình duyệt rời trang.
+      window.location.href = payData.data.paymentUrl;
+    } catch (err) {
+      toast.error(
+        (err?.response?.data?.message || "Không tạo được liên kết thanh toán") +
+          " — đơn hàng đã được lưu, bạn có thể thanh toán lại trong Đơn hàng của tôi.",
+      );
       setPlacing(false);
     }
   };
@@ -2675,7 +2726,11 @@ useEffect(() => {
                   </button>
                 </Link>
 
-                <Link to="/account/orders" style={{ textDecoration: "none" }}>
+                <Link
+                  to="/profile"
+                  state={{ tab: "orders", orderId: placedOrderId }}
+                  style={{ textDecoration: "none" }}
+                >
                   <button
                     style={{
                       display: "flex",
@@ -2964,6 +3019,7 @@ useEffect(() => {
           couponInput={couponInput}
           setCouponInput={setCouponInput}
           onApply={applyCoupon}
+          couponLoading={couponLoading}
           onRemoveCoupon={() => {
             setCouponApplied(null);
             setCouponInput("");

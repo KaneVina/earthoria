@@ -64,6 +64,8 @@ v1.use('/addresses', require('./routes/addressRoutes'))
 v1.use('/children', require('./routes/childRoutes'))
 v1.use('/parent-pin', require('./routes/parentPinRoutes'))
 v1.use('/tickets', require('./routes/ticketRoutes'))
+v1.use('/payments', require('./routes/paymentRoutes'))
+v1.use('/coupons', require('./routes/couponRoutes'))
 
 // Public route
 v1.use('/ar', require('./routes/arRoutes'))

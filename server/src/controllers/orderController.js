@@ -1,9 +1,45 @@
+const crypto = require("crypto");
 const prisma = require("../config/db");
 const { formatResponse } = require("../utils/helpers");
 const { getShippingFee } = require("../utils/shipping");
+const { validateAndComputeDiscount } = require("../utils/couponUtil");
 
 const FREE_SHIP_THRESHOLD = 300_000;
 const { calcShippingFee: calcFee, WAREHOUSE } = require("../utils/shipping");
+
+// Sinh mã tham chiếu gửi cho cổng thanh toán (VNPay vnp_TxnRef / MoMo orderId).
+// Không dùng thẳng order.id vì mỗi lần "thanh toán lại" cần 1 mã MỚI (VNPay không cho trùng TxnRef).
+const genPaymentRef = () =>
+  `EARTH${Date.now()}${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
+
+const ONLINE_PAYMENT_METHODS = ["VNPAY", "MOMO"];
+
+// Đơn được đưa qua đây khi include items -> variant -> book (đúng schema hiện tại)
+const ORDER_ITEMS_INCLUDE = {
+  items: {
+    include: {
+      variant: {
+        include: { book: { select: { title: true, coverImage: true } } },
+      },
+    },
+  },
+  address: true,
+};
+
+// Trả về order theo format cũ mà FE đang đọc (item.book.title / item.book.coverImage)
+// để không phải sửa lại toàn bộ Profile.jsx / admin — chỉ "duỗi" variant.book ra ngoài item.
+const flattenOrderItems = (order) => {
+  if (!order) return order;
+  return {
+    ...order,
+    items: (order.items || []).map((item) => ({
+      ...item,
+      book: item.variant?.book
+        ? { title: item.variant.book.title, coverImage: item.variant.book.coverImage }
+        : null,
+    })),
+  };
+};
 
 const createOrder = async (req, res) => {
   try {
@@ -12,19 +48,15 @@ const createOrder = async (req, res) => {
     // shipping: { fullName, phone, email, province, district, ward, street }
     // district là tên (ví dụ "Ninh Kiều") từ form frontend
 
-    // 1. Lấy cart
+    // 1. Lấy cart (CartItem gắn với BookVariant, không phải Book trực tiếp)
     const cart = await prisma.cart.findUnique({
       where: { userId },
       include: {
         items: {
           include: {
-            book: {
-              select: {
-                id: true,
-                price: true,
-                salePrice: true,
-                stock: true,
-                title: true,
+            variant: {
+              include: {
+                book: { select: { id: true, title: true } },
               },
             },
           },
@@ -35,42 +67,40 @@ const createOrder = async (req, res) => {
       return formatResponse(res, 400, "Giỏ hàng trống");
     }
 
-    // 2. Kiểm tra stock
+    // 2. Kiểm tra stock (bỏ qua nếu variant là hàng không giới hạn - ví dụ sách điện tử)
     for (const item of cart.items) {
-      if (item.book.stock < item.quantity) {
+      const v = item.variant;
+      if (!v.isActive || !v.book) {
+        return formatResponse(res, 400, `Sản phẩm trong giỏ không còn khả dụng`);
+      }
+      if (!v.isUnlimitedStock && v.stock < item.quantity) {
         return formatResponse(
           res,
           400,
-          `Sách "${item.book.title}" không đủ hàng`,
+          `Sách "${v.book.title}" không đủ hàng`,
         );
       }
     }
 
     // 3. Tính subtotal
     const subtotal = cart.items.reduce((sum, item) => {
-      const price = item.book.salePrice || item.book.price;
+      const price = item.variant.salePrice ?? item.variant.price;
       return sum + price * item.quantity;
     }, 0);
 
-    // 4. Tính discount từ coupon (tra DB)
+    // 4. Tính discount từ coupon (tra DB, kiểm tra đầy đủ: active/hết hạn/hết lượt/minOrder)
     let discount = 0;
+    let appliedCoupon = null;
     if (couponCode) {
-      const coupon = await prisma.coupon.findFirst({
-        where: { code: couponCode, isActive: true },
+      const coupon = await prisma.coupon.findUnique({
+        where: { code: String(couponCode).trim().toUpperCase() },
       });
-      if (coupon && subtotal >= coupon.minOrder) {
-        discount =
-          coupon.type === "PERCENTAGE"
-            ? Math.round((subtotal * coupon.value) / 100)
-            : coupon.value;
-        if (coupon.maxDiscount)
-          discount = Math.min(discount, coupon.maxDiscount);
-        // Tăng usedCount
-        await prisma.coupon.update({
-          where: { id: coupon.id },
-          data: { usedCount: { increment: 1 } },
-        });
+      const result = validateAndComputeDiscount(coupon, subtotal);
+      if (!result.ok) {
+        return formatResponse(res, 400, result.reason || "Mã giảm giá không hợp lệ");
       }
+      discount = result.discount;
+      appliedCoupon = coupon;
     }
 
     const afterDiscount = subtotal - discount;
@@ -86,14 +116,15 @@ const createOrder = async (req, res) => {
 
     const total = afterDiscount + shippingFee;
 
-    // 6. Map paymentMethod
+    // 6. Map paymentMethod — MOMO giờ có enum riêng, không còn bị gộp vào VNPAY
     const methodMap = {
       cod: "COD",
       vnpay: "VNPAY",
-      momo: "VNPAY",
+      momo: "MOMO",
       card: "STRIPE",
     };
     const prismaMethod = methodMap[paymentMethod] || "COD";
+    const isOnlinePayment = ONLINE_PAYMENT_METHODS.includes(prismaMethod);
 
     // 7. Tạo Address snapshot (lưu vào bảng Address)
     const address = await prisma.address.create({
@@ -119,23 +150,34 @@ const createOrder = async (req, res) => {
           discount,
           shippingFee,
           total,
-          couponCode: couponCode || null,
+          couponCode: appliedCoupon ? appliedCoupon.code : null,
           note: note || null,
+          // Online payment (VNPay/MoMo) cần 1 mã tham chiếu để đối chiếu lúc gateway redirect về
+          paymentRef: isOnlinePayment ? genPaymentRef() : null,
           items: {
             create: cart.items.map((item) => ({
-              bookId: item.book.id,
+              variantId: item.variant.id,
               quantity: item.quantity,
-              price: item.book.salePrice || item.book.price,
+              price: item.variant.salePrice ?? item.variant.price,
             })),
           },
         },
         include: { items: true },
       });
 
-      // Giảm stock
+      // Tăng lượt dùng coupon (nếu có)
+      if (appliedCoupon) {
+        await tx.coupon.update({
+          where: { id: appliedCoupon.id },
+          data: { usedCount: { increment: 1 } },
+        });
+      }
+
+      // Giảm stock theo variant (bỏ qua hàng không giới hạn)
       for (const item of cart.items) {
-        await tx.book.update({
-          where: { id: item.book.id },
+        if (item.variant.isUnlimitedStock) continue;
+        await tx.bookVariant.update({
+          where: { id: item.variant.id },
           data: {
             stock: { decrement: item.quantity },
             sold: { increment: item.quantity },
@@ -152,6 +194,8 @@ const createOrder = async (req, res) => {
     return formatResponse(res, 201, "Đặt hàng thành công", {
       orderId: order.id,
       total,
+      paymentMethod: prismaMethod,
+      requiresOnlinePayment: isOnlinePayment,
     });
   } catch (error) {
     console.error(error);
@@ -163,16 +207,12 @@ const getMyOrders = async (req, res) => {
   try {
     const orders = await prisma.order.findMany({
       where: { userId: req.user.id },
-      include: {
-        items: {
-          include: { book: { select: { title: true, coverImage: true } } },
-        },
-        address: true,
-      },
+      include: ORDER_ITEMS_INCLUDE,
       orderBy: { createdAt: "desc" },
     });
-    return formatResponse(res, 200, "OK", orders);
+    return formatResponse(res, 200, "OK", orders.map(flattenOrderItems));
   } catch (error) {
+    console.error(error);
     return formatResponse(res, 500, "Lỗi server");
   }
 };
@@ -215,23 +255,19 @@ const calcShippingFee = async (req, res) => {
     return formatResponse(res, 500, "Lỗi server");
   }
 };
+
 const getOrderById = async (req, res) => {
   try {
     const order = await prisma.order.findUnique({
       where: { id: req.params.id },
-      include: {
-        items: {
-          include: { book: { select: { title: true, coverImage: true } } },
-        },
-        address: true,
-      },
+      include: ORDER_ITEMS_INCLUDE,
     });
 
     if (!order) return formatResponse(res, 404, "Không tìm thấy đơn hàng");
     if (order.userId !== req.user.id)
       return formatResponse(res, 403, "Không có quyền xem đơn hàng này");
 
-    return formatResponse(res, 200, "OK", order);
+    return formatResponse(res, 200, "OK", flattenOrderItems(order));
   } catch (error) {
     console.error(error);
     return formatResponse(res, 500, "Lỗi server");
@@ -244,7 +280,7 @@ const cancelOrder = async (req, res) => {
   try {
     const order = await prisma.order.findUnique({
       where: { id: req.params.id },
-      include: { items: true },
+      include: { items: { include: { variant: true } } },
     });
 
     if (!order) return formatResponse(res, 404, "Không tìm thấy đơn hàng");
@@ -259,14 +295,23 @@ const cancelOrder = async (req, res) => {
     }
 
     const updated = await prisma.$transaction(async (tx) => {
-      // Hoàn lại stock đã trừ lúc đặt hàng
+      // Hoàn lại stock đã trừ lúc đặt hàng (bỏ qua hàng không giới hạn)
       for (const item of order.items) {
-        await tx.book.update({
-          where: { id: item.bookId },
+        if (item.variant.isUnlimitedStock) continue;
+        await tx.bookVariant.update({
+          where: { id: item.variantId },
           data: {
             stock: { increment: item.quantity },
             sold: { decrement: item.quantity },
           },
+        });
+      }
+
+      // Hoàn lượt dùng coupon nếu đơn có áp mã và chưa thanh toán
+      if (order.couponCode) {
+        await tx.coupon.updateMany({
+          where: { code: order.couponCode, usedCount: { gt: 0 } },
+          data: { usedCount: { decrement: 1 } },
         });
       }
 
@@ -289,4 +334,8 @@ module.exports = {
   calcShippingFee,
   getOrderById,
   cancelOrder,
+  ORDER_ITEMS_INCLUDE,
+  flattenOrderItems,
+  genPaymentRef,
+  ONLINE_PAYMENT_METHODS,
 };
