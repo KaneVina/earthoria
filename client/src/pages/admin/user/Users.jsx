@@ -1,7 +1,11 @@
-import { useState, useCallback } from 'react'
+// Users.jsx — Admin user management
+import { useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Search, Lock, Unlock, X, ChevronDown, Copy, Check, ArrowUpCircle, ArrowDownCircle, UserPlus, Eye } from 'lucide-react'
+import {
+  Search, Lock, Unlock, X, ChevronDown, Copy, Check,
+  ArrowUpCircle, ArrowDownCircle, UserPlus, Eye, Download, Users as UsersIcon,
+} from 'lucide-react'
 import api from "../../../services/api";
 import { formatDate } from "../../../utils/helpers";
 import toast from 'react-hot-toast'
@@ -25,22 +29,46 @@ const ROLE_CONFIG = {
   CUSTOMER: { label: 'Customer', cls: 'neutral' },
 }
 
-/* ─ UserCodeBadge ─ */
-function UserCodeBadge({ code }) {
+/* ─ CopyButton dùng chung cho mã code & email ─ */
+function CopyButton({ value, label = 'Sao chép' }) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = useCallback(async (e) => {
     e.stopPropagation()
-    if (!code) return
+    if (!value) return
     try {
-      await navigator.clipboard.writeText(code)
+      await navigator.clipboard.writeText(value)
       setCopied(true)
       setTimeout(() => setCopied(false), 1500)
     } catch {
       // fallback
     }
-  }, [code])
+  }, [value])
 
+  return (
+    <button
+      onClick={handleCopy}
+      style={{
+        background: 'none',
+        border: 'none',
+        padding: '2px 3px',
+        cursor: 'pointer',
+        color: copied ? '#4a9e3f' : 'rgba(13,51,48,0.3)',
+        borderRadius: 3,
+        display: 'inline-flex',
+        alignItems: 'center',
+        transition: 'color 0.15s',
+      }}
+      aria-label={label}
+      title={copied ? 'Đã sao chép!' : label}
+    >
+      {copied ? <Check size={10.5} /> : <Copy size={10.5} />}
+    </button>
+  )
+}
+
+/* ─ UserCodeBadge ─ */
+function UserCodeBadge({ code }) {
   if (!code) {
     return <span className="a-td-muted" style={{ fontSize: 11 }}>—</span>
   }
@@ -59,24 +87,7 @@ function UserCodeBadge({ code }) {
       }}>
         {code}
       </code>
-      <button
-        onClick={handleCopy}
-        style={{
-          background: 'none',
-          border: 'none',
-          padding: '2px 3px',
-          cursor: 'pointer',
-          color: copied ? '#4a9e3f' : 'rgba(13,51,48,0.35)',
-          borderRadius: 3,
-          display: 'flex',
-          alignItems: 'center',
-          transition: 'color 0.15s',
-        }}
-        aria-label="Sao chép mã"
-        title={copied ? 'Đã sao chép!' : 'Sao chép mã'}
-      >
-        {copied ? <Check size={11} /> : <Copy size={11} />}
-      </button>
+      <CopyButton value={code} label="Sao chép mã" />
     </div>
   )
 }
@@ -121,6 +132,33 @@ function FilterSelect({ value, onChange, options, placeholder }) {
   )
 }
 
+/* ─ Skeleton row khi đang tải (bao gồm cả ô checkbox) ─ */
+function SkeletonRow() {
+  const bar = (w, h = 12) => (
+    <div className="a-skeleton" style={{ width: w, height: h }} />
+  )
+  return (
+    <tr>
+      <td>{bar(16, 16)}</td>
+      <td>{bar(110)}</td>
+      <td>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div className="a-skeleton" style={{ width: 32, height: 32, borderRadius: '50%' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {bar(90)}
+            {bar(130, 9)}
+          </div>
+        </div>
+      </td>
+      <td>{bar(60, 18)}</td>
+      <td>{bar(24)}</td>
+      <td>{bar(80)}</td>
+      <td>{bar(70, 18)}</td>
+      <td>{bar(50)}</td>
+    </tr>
+  )
+}
+
 /* ══════════════════════════════════════════════
    MAIN COMPONENT
 ══════════════════════════════════════════════ */
@@ -135,11 +173,14 @@ export default function Users() {
   const [page, setPage]                 = useState(1)
   const [roleFilter, setRoleFilter]     = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const [confirmUser, setConfirmUser]   = useState(null) // lock/unlock
+  const [confirmUser, setConfirmUser]   = useState(null) // lock/unlock (1 user)
   const [promoteUser, setPromoteUser]   = useState(null) // upgrade/downgrade
   const [viewUserId, setViewUserId]     = useState(null) // xem chi tiết
+  const [selectedIds, setSelectedIds]   = useState(new Set()) // bulk select
+  const [bulkAction, setBulkAction]     = useState(null) // { action: 'lock'|'unlock' }
+  const [exporting, setExporting]       = useState(false)
 
-  // State cho form xác nhận khóa (email + lý do)
+  // State cho form xác nhận khóa (email + lý do) — dùng chung cho cả modal 1 user & bulk
   const [lockEmailInput, setLockEmailInput] = useState('')
   const [lockReason, setLockReason]         = useState('')
 
@@ -187,8 +228,13 @@ export default function Users() {
     keepPreviousData: true,
   })
 
+  const users      = data?.users      ?? []
+  const totalPages = data?.totalPages ?? 1
+  const total      = data?.total      ?? 0
+
   const closeLockModal = useCallback(() => {
     setConfirmUser(null)
+    setBulkAction(null)
     setLockEmailInput('')
     setLockReason('')
   }, [])
@@ -208,6 +254,18 @@ export default function Users() {
     onError: (err) => toast.error(err?.response?.data?.message || 'Cập nhật thất bại!'),
   })
 
+  const bulkToggleMutation = useMutation({
+    mutationFn: ({ ids, action, reason }) =>
+      api.post('/admin/users/bulk-toggle', { ids, action, reason }),
+    onSuccess: (res) => {
+      toast.success(res.data.message || 'Đã cập nhật hàng loạt!')
+      qc.invalidateQueries(['admin-users'])
+      setSelectedIds(new Set())
+      closeLockModal()
+    },
+    onError: (err) => toast.error(err?.response?.data?.message || 'Thao tác thất bại!'),
+  })
+
   const promoteMutation = useMutation({
     mutationFn: ({ id, role }) => api.put(`/admin/users/${id}/role`, { role }),
     onSuccess: () => {
@@ -218,43 +276,89 @@ export default function Users() {
     onError: (err) => toast.error(err?.response?.data?.message || 'Cập nhật thất bại!'),
   })
 
-  const users      = data?.users      ?? []
-  const totalPages = data?.totalPages ?? 1
-  const total      = data?.total      ?? 0
-
   /*  Phân quyền theo role người đang xem  */
   // Staff: xem staff (read-only), xem+sửa customer/dealer
   // Admin: xem+sửa customer/dealer/staff
   const canPromote = (targetRole) => ['CUSTOMER', 'DEALER'].includes(targetRole)
 
-  const canToggle = (targetRole) => {
-    if (viewerRole === 'STAFF') return ['CUSTOMER', 'DEALER'].includes(targetRole)
-    if (viewerRole === 'ADMIN') return ['CUSTOMER', 'DEALER', 'STAFF'].includes(targetRole)
+  const canToggle = (targetUser) => {
+    if (targetUser.id === viewer?.id) return false // không tự khóa chính mình
+    if (viewerRole === 'STAFF') return ['CUSTOMER', 'DEALER'].includes(targetUser.role)
+    if (viewerRole === 'ADMIN') return ['CUSTOMER', 'DEALER', 'STAFF'].includes(targetUser.role)
     return false
   }
 
   const canCreateRoles = viewerRole === 'ADMIN' ? ['DEALER', 'STAFF'] : viewerRole === 'STAFF' ? ['DEALER'] : []
 
-  const roleFilterOptions = viewerRole === 'ADMIN'
-    ? [
-        { value: 'CUSTOMER', label: 'Customer' },
-        { value: 'DEALER',   label: 'Dealer'    },
-        { value: 'STAFF',    label: 'Staff'     },
-      ]
-    : [
-        { value: 'CUSTOMER', label: 'Customer' },
-        { value: 'DEALER',   label: 'Dealer'    },
-        { value: 'STAFF',    label: 'Staff'     },
-      ]
+  const roleFilterOptions = [
+    { value: 'CUSTOMER', label: 'Customer' },
+    { value: 'DEALER',   label: 'Dealer'    },
+    { value: 'STAFF',    label: 'Staff'     },
+  ]
 
-  // Điều kiện để xác nhận khóa: email nhập đúng + lý do đủ dài (đồng bộ với BE, tối thiểu 10 ký tự)
+  // Điều kiện để xác nhận khóa 1 user: email nhập đúng + lý do đủ dài
   const lockEmailMatches = confirmUser?.action === 'lock'
     ? lockEmailInput.trim().toLowerCase() === confirmUser.user.email.toLowerCase()
     : true
-  const lockReasonValid = confirmUser?.action === 'lock'
-    ? lockReason.trim().length >= 10
-    : true
+  const lockReasonValid = lockReason.trim().length >= 10
   const canSubmitLock = confirmUser?.action === 'unlock' || (lockEmailMatches && lockReasonValid)
+  const canSubmitBulk = bulkAction?.action === 'unlock' || lockReasonValid
+
+  /*  Bulk selection helpers  */
+  const selectableUsers = useMemo(
+    () => users.filter(u => canToggle(u)),
+    [users, viewer?.id, viewerRole]
+  )
+  const allSelectableChecked = selectableUsers.length > 0 &&
+    selectableUsers.every(u => selectedIds.has(u.id))
+
+  const toggleSelectAll = () => {
+    setSelectedIds(prev => {
+      if (allSelectableChecked) return new Set()
+      return new Set(selectableUsers.map(u => u.id))
+    })
+  }
+
+  const toggleSelectOne = (id) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  // Trong các user đã chọn, có bao nhiêu đang active (để quyết định bulk action là khóa hay mở)
+  const selectedUsers = users.filter(u => selectedIds.has(u.id))
+  const selectedActiveCount = selectedUsers.filter(u => u.isActive).length
+  const selectedLockedCount = selectedUsers.length - selectedActiveCount
+
+  const handleExportCsv = async () => {
+    setExporting(true)
+    try {
+      const res = await api.get('/admin/users/export', {
+        params: {
+          ...(search       && { search }),
+          ...(roleFilter   && { role: roleFilter }),
+          ...(statusFilter && { status: statusFilter }),
+        },
+        responseType: 'blob',
+      })
+      const url = window.URL.createObjectURL(new Blob([res.data]))
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `users-export-${new Date().toISOString().slice(0, 10)}.csv`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+      toast.success('Đã tải file CSV!')
+    } catch (err) {
+      toast.error('Xuất CSV thất bại!')
+    } finally {
+      setExporting(false)
+    }
+  }
 
   return (
     <AdminLayout>
@@ -269,6 +373,15 @@ export default function Users() {
           <div style={{ fontSize: 12, color: 'rgba(13,51,48,0.4)' }}>
             Tổng <strong style={{ color: 'var(--a-ink)' }}>{total}</strong> tài khoản
           </div>
+          <button
+            className="a-btn-ghost"
+            style={{ padding: '8px 14px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}
+            onClick={handleExportCsv}
+            disabled={exporting}
+          >
+            <Download size={13} />
+            {exporting ? 'Đang xuất...' : 'Xuất CSV'}
+          </button>
           {canCreateRoles.length > 0 && (
             <button
               className="a-btn-primary"
@@ -364,12 +477,64 @@ export default function Users() {
         )}
       </div>
 
+      {/*  Bulk action bar  */}
+      {selectedIds.size > 0 && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          background: 'rgba(74,158,63,0.06)', border: '1px solid rgba(74,158,63,0.2)',
+          borderRadius: 10, padding: '10px 16px', marginBottom: 14,
+        }}>
+          <div style={{ fontSize: 12.5, color: 'var(--a-ink)', fontWeight: 500 }}>
+            Đã chọn {selectedIds.size} tài khoản
+          </div>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {selectedActiveCount > 0 && (
+              <button
+                className="a-btn-icon lock"
+                style={{ width: 'auto', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5 }}
+                onClick={() => setBulkAction({ action: 'lock' })}
+              >
+                <Lock size={12} /> Khóa ({selectedActiveCount})
+              </button>
+            )}
+            {selectedLockedCount > 0 && (
+              <button
+                className="a-btn-icon unlock"
+                style={{ width: 'auto', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: 6, fontSize: 11.5 }}
+                onClick={() => setBulkAction({ action: 'unlock' })}
+              >
+                <Unlock size={12} /> Mở khóa ({selectedLockedCount})
+              </button>
+            )}
+            <button
+              onClick={() => setSelectedIds(new Set())}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: 'rgba(13,51,48,0.45)', fontSize: 11.5, padding: '6px 8px',
+              }}
+            >
+              Bỏ chọn
+            </button>
+          </div>
+        </div>
+      )}
+
       {/*  Table  */}
       <div className="a-table-card">
         <div className="a-table-wrap">
           <table className="a-table">
             <thead>
               <tr>
+                <th style={{ width: 34 }}>
+                  <input
+                    type="checkbox"
+                    checked={allSelectableChecked}
+                    onChange={toggleSelectAll}
+                    disabled={selectableUsers.length === 0}
+                    style={{ cursor: selectableUsers.length ? 'pointer' : 'default' }}
+                    aria-label="Chọn tất cả"
+                  />
+                </th>
                 {['Mã người dùng', 'Người dùng', 'Vai trò', 'Đơn hàng', 'Ngày đăng ký', 'Trạng thái', ''].map(h => (
                   <th key={h}>{h}</th>
                 ))}
@@ -377,29 +542,41 @@ export default function Users() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td colSpan={7} style={{ padding: 48, textAlign: 'center', color: 'rgba(13,51,48,0.3)' }}>
-                    Đang tải...
-                  </td>
-                </tr>
+                Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={`sk-${i}`} />)
               ) : !users.length ? (
                 <tr>
-                  <td colSpan={7} style={{ padding: 48, textAlign: 'center', color: 'rgba(13,51,48,0.3)' }}>
-                    {hasFilters
-                      ? 'Không tìm thấy kết quả phù hợp'
-                      : 'Không có người dùng nào'}
+                  <td colSpan={8} style={{ padding: 56, textAlign: 'center' }}>
+                    <UsersIcon size={30} style={{ color: 'rgba(13,51,48,0.15)', marginBottom: 10 }} />
+                    <div style={{ color: 'rgba(13,51,48,0.35)', fontSize: 13 }}>
+                      {hasFilters
+                        ? 'Không tìm thấy kết quả phù hợp'
+                        : 'Không có người dùng nào'}
+                    </div>
                   </td>
                 </tr>
               ) : users.map(user => {
                 const roleCfg = ROLE_CONFIG[user.role] ?? ROLE_CONFIG.CUSTOMER
                 const showPromote = canPromote(user.role)
-                const showToggle = canToggle(user.role)
+                const showToggle = canToggle(user)
+                const isSelf = user.id === viewer?.id
                 return (
                   <tr
                     key={user.id}
+                    className="a-row-clickable"
                     style={{ cursor: 'pointer' }}
                     onClick={() => setViewUserId(user.id)}
                   >
+                    <td onClick={e => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(user.id)}
+                        onChange={() => toggleSelectOne(user.id)}
+                        disabled={!showToggle}
+                        style={{ cursor: showToggle ? 'pointer' : 'default' }}
+                        aria-label={`Chọn ${user.name}`}
+                      />
+                    </td>
+
                     {/* User code */}
                     <td style={{ minWidth: 160 }} onClick={e => e.stopPropagation()}>
                       <UserCodeBadge code={user.userCode} />
@@ -415,8 +592,16 @@ export default function Users() {
                           {user.name?.[0]?.toUpperCase()}
                         </div>
                         <div>
-                          <div style={{ fontWeight: 500, fontSize: 12 }}>{user.name}</div>
-                          <div className="a-td-muted">{user.email}</div>
+                          <div style={{ fontWeight: 500, fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            {user.name}
+                            {isSelf && (
+                              <span className="a-badge neutral" style={{ fontSize: 8.5, padding: '1px 6px' }}>Bạn</span>
+                            )}
+                          </div>
+                          <div className="a-td-muted" style={{ display: 'flex', alignItems: 'center', gap: 3 }} onClick={e => e.stopPropagation()}>
+                            {user.email}
+                            <CopyButton value={user.email} label="Sao chép email" />
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -443,7 +628,7 @@ export default function Users() {
 
                     {/* Action */}
                     <td onClick={e => e.stopPropagation()}>
-                      <div style={{ display: 'flex', gap: 6 }}>
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
                         <button
                           className="a-btn-icon"
                           onClick={() => setViewUserId(user.id)}
@@ -471,6 +656,15 @@ export default function Users() {
                             {user.isActive ? <Lock size={12} /> : <Unlock size={12} />}
                           </button>
                         )}
+                        {isSelf && (
+                          <span
+                            className="a-td-muted"
+                            style={{ fontSize: 10.5 }}
+                            title="Không thể tự khóa tài khoản của chính mình"
+                          >
+                            —
+                          </span>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -495,7 +689,7 @@ export default function Users() {
         <UserDetailDrawer userId={viewUserId} onClose={() => setViewUserId(null)} />
       )}
 
-      {/*  Confirm lock/unlock modal  */}
+      {/*  Confirm lock/unlock modal (1 user)  */}
       {confirmUser && (
         <div
           className="a-modal-overlay"
@@ -538,7 +732,7 @@ export default function Users() {
                 <>
                   <p style={{ fontSize: 13, color: 'rgba(13,51,48,0.65)', lineHeight: 1.6, marginBottom: 16 }}>
                     Tài khoản này sẽ bị khóa. Để xác nhận, vui lòng nhập đúng email của tài khoản
-                    và lý do khóa.
+                    và lý do khóa — hệ thống sẽ tự động gửi email thông báo kèm lý do cho người dùng.
                   </p>
 
                   <label className="a-form-label" htmlFor="lock-email-confirm">
@@ -579,7 +773,7 @@ export default function Users() {
                     color: lockReason.length > 0 && !lockReasonValid ? '#c05050' : 'rgba(13,51,48,0.4)',
                     marginTop: 5,
                   }}>
-                    {lockReason.trim().length >= 10
+                    {lockReasonValid
                       ? 'Lý do hợp lệ'
                       : `Tối thiểu 10 ký tự (hiện ${lockReason.trim().length})`}
                   </div>
@@ -600,6 +794,93 @@ export default function Users() {
                 {toggleMutation.isPending
                   ? 'Đang xử lý...'
                   : (confirmUser.action === 'lock' ? 'Khóa tài khoản' : 'Mở khóa')
+                }
+              </button>
+              <button className="a-btn-ghost" onClick={closeLockModal}>Hủy</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/*  Bulk lock/unlock modal  */}
+      {bulkAction && (
+        <div
+          className="a-modal-overlay"
+          onClick={e => e.target === e.currentTarget && closeLockModal()}
+        >
+          <div className="a-modal" style={{ maxWidth: 440 }}>
+            <div className="a-modal-header">
+              <h3 className="a-modal-title">
+                {bulkAction.action === 'lock'
+                  ? `Khóa ${selectedActiveCount} tài khoản`
+                  : `Mở khóa ${selectedLockedCount} tài khoản`}
+              </h3>
+              <button className="a-modal-close" onClick={closeLockModal}>
+                <X size={16} />
+              </button>
+            </div>
+            <div className="a-modal-body">
+              <div style={{
+                display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16,
+                maxHeight: 140, overflowY: 'auto',
+              }}>
+                {selectedUsers
+                  .filter(u => bulkAction.action === 'lock' ? u.isActive : !u.isActive)
+                  .map(u => (
+                    <span key={u.id} className="a-badge neutral" style={{ fontSize: 10 }}>
+                      {u.name}
+                    </span>
+                  ))}
+              </div>
+
+              {bulkAction.action === 'unlock' ? (
+                <p style={{ fontSize: 13, color: 'rgba(13,51,48,0.65)', lineHeight: 1.6 }}>
+                  Các tài khoản trên sẽ được mở khóa. Email thông báo sẽ được gửi tự động cho từng người.
+                </p>
+              ) : (
+                <>
+                  <p style={{ fontSize: 13, color: 'rgba(13,51,48,0.65)', lineHeight: 1.6, marginBottom: 16 }}>
+                    Các tài khoản trên sẽ bị khóa cùng lúc. Nhập lý do chung — hệ thống sẽ gửi email
+                    thông báo kèm lý do cho từng người dùng.
+                  </p>
+                  <label className="a-form-label" htmlFor="bulk-lock-reason">
+                    Lý do khóa tài khoản
+                  </label>
+                  <textarea
+                    id="bulk-lock-reason"
+                    className="a-input a-textarea"
+                    placeholder="Vd: Dọn dẹp tài khoản spam/rác theo đợt kiểm tra định kỳ..."
+                    value={lockReason}
+                    onChange={e => setLockReason(e.target.value)}
+                  />
+                  <div style={{
+                    fontSize: 11,
+                    color: lockReason.length > 0 && !lockReasonValid ? '#c05050' : 'rgba(13,51,48,0.4)',
+                    marginTop: 5,
+                  }}>
+                    {lockReasonValid
+                      ? 'Lý do hợp lệ'
+                      : `Tối thiểu 10 ký tự (hiện ${lockReason.trim().length})`}
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="a-modal-footer">
+              <button
+                className="a-btn-primary"
+                style={{ background: bulkAction.action === 'lock' ? '#c05050' : '#4a9e3f' }}
+                onClick={() => bulkToggleMutation.mutate({
+                  ids: selectedUsers
+                    .filter(u => bulkAction.action === 'lock' ? u.isActive : !u.isActive)
+                    .map(u => u.id),
+                  action: bulkAction.action,
+                  reason: bulkAction.action === 'lock' ? lockReason.trim() : undefined,
+                })}
+                disabled={bulkToggleMutation.isPending || !canSubmitBulk}
+              >
+                {bulkToggleMutation.isPending
+                  ? 'Đang xử lý...'
+                  : (bulkAction.action === 'lock' ? 'Khóa tài khoản' : 'Mở khóa')
                 }
               </button>
               <button className="a-btn-ghost" onClick={closeLockModal}>Hủy</button>

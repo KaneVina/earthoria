@@ -1186,6 +1186,13 @@ exports.toggleUser = async (req, res) => {
     const viewerRole = req.user.role;
     const { email, reason } = req.body;
 
+    if (id === req.user.id) {
+      return res.status(400).json({
+        success: false,
+        message: "Không thể tự khóa/mở khóa tài khoản của chính mình",
+      });
+    }
+
     const user = await prisma.user.findUnique({ where: { id } });
     if (!user) {
       return res
@@ -1365,7 +1372,175 @@ exports.getUserDetail = async (req, res) => {
     return res.status(500).json({ success: false, message: "Lỗi server" });
   }
 };
+exports.bulkToggleUsers = async (req, res) => {
+  try {
+    const viewerRole = req.user.role;
+    const { ids, action, reason } = req.body;
 
+    if (!["STAFF", "ADMIN"].includes(viewerRole)) {
+      return res.status(403).json({ success: false, message: "Không có quyền" });
+    }
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ success: false, message: "Chưa chọn tài khoản nào" });
+    }
+    if (!["lock", "unlock"].includes(action)) {
+      return res.status(400).json({ success: false, message: "Hành động không hợp lệ" });
+    }
+
+    const cleanIds = [...new Set(ids)].filter((id) => id !== req.user.id);
+    if (cleanIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Không thể tự khóa/mở khóa tài khoản của chính mình",
+      });
+    }
+
+    const willLock = action === "lock";
+
+    if (willLock) {
+      const trimmedReason = (reason || "").trim();
+      if (!trimmedReason || trimmedReason.length < 10) {
+        return res.status(400).json({
+          success: false,
+          message: "Vui lòng nhập lý do khóa tài khoản (tối thiểu 10 ký tự)",
+        });
+      }
+    }
+
+    const allowedTargetRoles =
+      viewerRole === "STAFF" ? ["CUSTOMER", "DEALER"] : ["CUSTOMER", "DEALER", "STAFF"];
+
+    const targets = await prisma.user.findMany({
+      where: { id: { in: cleanIds }, role: { in: allowedTargetRoles } },
+      select: { id: true, email: true, name: true, isActive: true },
+    });
+
+    // Chỉ xử lý user đang ở đúng trạng thái ngược lại hành động (tránh khóa cái đã khóa)
+    const eligible = targets.filter((u) => (willLock ? u.isActive : !u.isActive));
+
+    if (eligible.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Không có tài khoản hợp lệ để thực hiện thao tác này",
+      });
+    }
+
+    const now = new Date();
+    await prisma.user.updateMany({
+      where: { id: { in: eligible.map((u) => u.id) } },
+      data: willLock
+        ? { isActive: false, lockReason: reason.trim(), lockedAt: now, lockedBy: req.user.id }
+        : { isActive: true, lockReason: null, lockedAt: null, lockedBy: null },
+    });
+
+    for (const u of eligible) {
+      if (willLock) {
+        sendAccountLockedEmail({
+          to: u.email,
+          name: u.name,
+          reason: reason.trim(),
+          dateLocked: now,
+        }).catch((err) => console.error("[bulkToggleUsers lock email]", err));
+      } else {
+        sendAccountUnlockedEmail({
+          to: u.email,
+          name: u.name,
+          dateUnlocked: now,
+        }).catch((err) => console.error("[bulkToggleUsers unlock email]", err));
+      }
+    }
+
+    return res.json({
+      success: true,
+      message: `Đã ${willLock ? "khóa" : "mở khóa"} ${eligible.length} tài khoản`,
+      data: { affected: eligible.length, skipped: cleanIds.length - eligible.length },
+    });
+  } catch (err) {
+    console.error("[bulkToggleUsers]", err);
+    return res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+function csvEscape(value) {
+  const str = value === null || value === undefined ? "" : String(value);
+  if (/[",\n]/.test(str)) return `"${str.replace(/"/g, '""')}"`;
+  return str;
+}
+
+exports.exportUsersCsv = async (req, res) => {
+  try {
+    const viewerRole = req.user.role;
+    let scopeRoles;
+    if (viewerRole === "STAFF") scopeRoles = ["STAFF", "CUSTOMER", "DEALER"];
+    else if (viewerRole === "ADMIN") scopeRoles = ["CUSTOMER", "DEALER", "STAFF"];
+    else return res.status(403).json({ success: false, message: "Không có quyền truy cập" });
+
+    const search = req.query.search?.trim() ?? "";
+    const role = req.query.role?.trim() ?? "";
+    const status = req.query.status?.trim() ?? "";
+
+    const conditions = [];
+    if (search) {
+      conditions.push({
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { email: { contains: search, mode: "insensitive" } },
+          { userCode: { contains: search, mode: "insensitive" } },
+        ],
+      });
+    }
+    if (role && scopeRoles.includes(role)) conditions.push({ role });
+    else conditions.push({ role: { in: scopeRoles } });
+    if (status === "active") conditions.push({ isActive: true });
+    else if (status === "locked") conditions.push({ isActive: false });
+
+    const where = conditions.length ? { AND: conditions } : {};
+
+    const users = await prisma.user.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      select: {
+        userCode: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        _count: { select: { orders: true, children: true } },
+      },
+    });
+
+    const header = [
+      "Mã người dùng", "Họ tên", "Email", "Số điện thoại",
+      "Vai trò", "Trạng thái", "Số đơn hàng", "Số tài khoản kid", "Ngày đăng ký",
+    ];
+    const rows = users.map((u) => [
+      u.userCode ?? "",
+      u.name ?? "",
+      u.email ?? "",
+      u.phone ?? "",
+      u.role,
+      u.isActive ? "Hoạt động" : "Đã khóa",
+      u._count.orders,
+      u._count.children,
+      u.createdAt.toISOString().slice(0, 10),
+    ]);
+
+    const csv = [header, ...rows]
+      .map((r) => r.map(csvEscape).join(","))
+      .join("\n");
+
+    const fileName = `users-export-${new Date().toISOString().slice(0, 10)}.csv`;
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+    // BOM để Excel đọc đúng UTF-8 tiếng Việt
+    return res.send("\uFEFF" + csv);
+  } catch (err) {
+    console.error("[exportUsersCsv]", err);
+    return res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
 exports.backfillUserCodes = async (req, res) => {
   try {
     const count = await backfillUserCodes();

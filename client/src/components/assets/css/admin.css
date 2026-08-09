@@ -767,6 +767,24 @@
   background: var(--a-surface);
 }
 
+.a-table tbody tr.a-row-clickable:hover td {
+  background: rgba(74, 158, 63, 0.05);
+}
+
+/*  Skeleton loading  */
+@keyframes a-skeleton-pulse {
+  0%   { opacity: 0.55; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.55; }
+}
+
+.a-skeleton {
+  display: inline-block;
+  background: var(--a-ink-08);
+  border-radius: 6px;
+  animation: a-skeleton-pulse 1.3s ease-in-out infinite;
+}
+
 /* Table — cell variants */
 .a-td-mono {
   font-family: monospace;

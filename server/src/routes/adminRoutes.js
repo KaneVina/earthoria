@@ -18,6 +18,8 @@ const {
   getUsers,
   getUserDetail,
   toggleUser,
+  bulkToggleUsers,
+  exportUsersCsv,
   backfillUserCodes,
   getCoupons,
   createCoupon,
@@ -85,9 +87,11 @@ router.use("/emails", adminOnly, require("./emailRoutes"));
 router.use("/tickets", staffOrAdmin, require("./adminTicketRoutes"));
 
 router.get("/users", staffOrAdmin, getUsers);
+router.get("/users/export", staffOrAdmin, exportUsersCsv);
 router.get("/users/:id/detail", staffOrAdmin, getUserDetail);
 router.post("/users", staffOrAdmin, createManagedUser);
 router.put("/users/:id/toggle", staffOrAdmin, toggleUser);
+router.post("/users/bulk-toggle", staffOrAdmin, bulkToggleUsers);
 router.post("/users/backfill-codes", adminOnly, backfillUserCodes);
 router.put("/users/:id/role", staffOrAdmin, updateUserRole);
 
