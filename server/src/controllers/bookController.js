@@ -11,6 +11,20 @@ const encodeBook = (book) => ({
 
 const FEATURE_FIELD = { ar: 'hasAR', ai: 'hasAI', '3d': 'has3DAudio' }
 
+// Chọn variant đại diện để lấy price/salePrice hiển thị ở list (ưu tiên PHYSICAL, fallback DIGITAL)
+const pickDisplayVariant = (variants = []) =>
+  variants.find((v) => v.format === 'PHYSICAL') || variants[0] || null
+
+const withDisplayPrice = (book) => {
+  const variant = pickDisplayVariant(book.variants)
+  return {
+    ...book,
+    price: variant?.price ?? null,
+    salePrice: variant?.salePrice ?? null,
+    variants: undefined
+  }
+}
+
 // Sách đạt ngưỡng đánh giá trung bình >= threshold
 const getBookIdsWithMinRating = async (threshold) => {
   const grouped = await prisma.review.groupBy({
@@ -64,9 +78,14 @@ const buildWhere = async (query, exclude = {}) => {
     ...(!exclude.category && category && { category: { slug: category } }),
     ...(featured === 'true' && { isFeatured: true }),
     ...((minPrice || maxPrice) && {
-      price: {
-        ...(minPrice && { gte: parseFloat(minPrice) }),
-        ...(maxPrice && { lte: parseFloat(maxPrice) })
+      variants: {
+        some: {
+          isActive: true,
+          price: {
+            ...(minPrice && { gte: parseFloat(minPrice) }),
+            ...(maxPrice && { lte: parseFloat(maxPrice) })
+          }
+        }
       }
     }),
     ...(ratingBookIds && { id: { in: ratingBookIds } }),
@@ -89,14 +108,15 @@ const getBooks = async (req, res) => {
         orderBy: { [sort]: order },
         include: {
           category: { select: { name: true, slug: true } },
-          reviews: { select: { rating: true } }
+          reviews: { select: { rating: true } },
+          variants: { where: { isActive: true } }
         }
       }),
       prisma.book.count({ where })
     ])
 
     const result = books.map(book => ({
-      ...encodeBook(book),
+      ...withDisplayPrice(encodeBook(book)),
       avgRating: book.reviews.length
         ? (book.reviews.reduce((a, b) => a + b.rating, 0) / book.reviews.length).toFixed(1)
         : 0,
@@ -191,7 +211,8 @@ const getBook = async (req, res) => {
           include: { user: { select: { name: true, avatar: true } } },
           orderBy: { createdAt: 'desc' },
           take: 20
-        }
+        },
+        variants: { where: { isActive: true } }
       }
     })
 
@@ -202,7 +223,7 @@ const getBook = async (req, res) => {
       : 0
 
     return formatResponse(res, 200, 'OK', {
-      ...encodeBook(book),
+      ...withDisplayPrice(encodeBook(book)),
       avgRating,
       reviewCount: book.reviews.length
     })
@@ -220,12 +241,13 @@ const getFeaturedBooks = async (req, res) => {
       take: 8,
       include: {
         category: { select: { name: true, slug: true } },
-        reviews: { select: { rating: true } }
+        reviews: { select: { rating: true } },
+        variants: { where: { isActive: true } }
       }
     })
 
     const result = books.map(book => ({
-      ...encodeBook(book),
+      ...withDisplayPrice(encodeBook(book)),
       avgRating: book.reviews.length
         ? (book.reviews.reduce((a, b) => a + b.rating, 0) / book.reviews.length).toFixed(1)
         : 0,
