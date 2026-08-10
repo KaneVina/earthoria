@@ -127,14 +127,19 @@ const createOrder = async (req, res) => {
 
     const total = afterDiscount + shippingFee;
 
-    // 6. Map paymentMethod — MOMO giờ có enum riêng, không còn bị gộp vào VNPAY
     const methodMap = {
       cod: "COD",
       vnpay: "VNPAY",
       momo: "MOMO",
-      card: "STRIPE",
     };
-    const prismaMethod = methodMap[paymentMethod] || "COD";
+    const prismaMethod = methodMap[paymentMethod];
+    if (!prismaMethod) {
+      return formatResponse(
+        res,
+        400,
+        "Phương thức thanh toán không hợp lệ hoặc chưa được hỗ trợ",
+      );
+    }
     const isOnlinePayment = ONLINE_PAYMENT_METHODS.includes(prismaMethod);
 
     // 7. Tạo Address snapshot (lưu vào bảng Address)
@@ -297,6 +302,15 @@ const cancelOrder = async (req, res) => {
     if (!order) return formatResponse(res, 404, "Không tìm thấy đơn hàng");
     if (order.userId !== req.user.id)
       return formatResponse(res, 403, "Không có quyền huỷ đơn hàng này");
+    // Đơn đã thanh toán online (VNPay/MoMo) rồi thì KHÔNG cho tự huỷ ở đây — huỷ ở bước này chỉ hoàn
+    // kho/coupon chứ không hề động đến tiền đã thu, nên phải qua quy trình yêu cầu hoàn tiền có kiểm soát.
+    if (order.paymentStatus === "PAID") {
+      return formatResponse(
+        res,
+        400,
+        "Đơn hàng đã được thanh toán — vui lòng liên hệ để được hỗ trợ hoàn tiền thay vì tự huỷ",
+      );
+    }
     if (!CANCELLABLE_STATUSES.includes(order.status)) {
       return formatResponse(
         res,
