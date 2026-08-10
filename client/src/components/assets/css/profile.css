@@ -1497,6 +1497,61 @@
 }
 
 /* ═══════════ FILTER PILLS ═══════════ */
+.pf-btn-cancel-order {
+  padding: 12px 20px;
+  border-radius: 10px;
+  border: 1px solid rgba(178, 58, 48, 0.35);
+  background: rgba(178, 58, 48, 0.06);
+  color: #b23a30;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+.pf-btn-cancel-order:hover {
+  background: #b23a30;
+  border-color: #b23a30;
+  color: #fff;
+}
+
+.pf-modal-btn-secondary {
+  padding: 11px 22px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.pf-modal-btn-secondary:hover:not(:disabled) {
+  border-color: var(--forest);
+  color: var(--forest);
+}
+.pf-modal-btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pf-modal-btn-danger {
+  padding: 11px 24px;
+  border-radius: 10px;
+  border: 1px solid #b23a30;
+  background: #b23a30;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.pf-modal-btn-danger:hover:not(:disabled) {
+  background: #9c2f26;
+  border-color: #9c2f26;
+}
+.pf-modal-btn-danger:disabled {
+  background: rgba(178, 58, 48, 0.35);
+  border-color: rgba(178, 58, 48, 0.35);
+  cursor: not-allowed;
+}
 .pf-order-lookup {
   display: flex;
   flex-direction: column;

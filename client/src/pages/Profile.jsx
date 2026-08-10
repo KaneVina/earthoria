@@ -1719,26 +1719,26 @@ function OrdersTab({ orders, loading, onSelect }) {
 
   const normalize = (s) => (s || "").toString().trim().toLowerCase();
 
-const handleLookup = (e) => {
-  e.preventDefault();
-  const code = normalize(lookupCode);
-  if (!code) {
-    setLookupError("Vui lòng nhập mã đơn hàng");
-    return;
-  }
-  const match = orders.find(
-    (o) =>
-      normalize(o.orderCode) === code ||
-      normalize(o.id) === code ||
-      normalize(o.id).startsWith(code)
-  );
-  if (match) {
-    setLookupError("");
-    onSelect(match.id);
-  } else {
-    setLookupError("Không tìm thấy đơn hàng với mã này");
-  }
-};
+  const handleLookup = (e) => {
+    e.preventDefault();
+    const code = normalize(lookupCode);
+    if (!code) {
+      setLookupError("Vui lòng nhập mã đơn hàng");
+      return;
+    }
+    const match = orders.find(
+      (o) =>
+        normalize(o.orderCode) === code ||
+        normalize(o.id) === code ||
+        normalize(o.id).startsWith(code),
+    );
+    if (match) {
+      setLookupError("");
+      onSelect(match.id);
+    } else {
+      setLookupError("Không tìm thấy đơn hàng với mã này");
+    }
+  };
 
   return (
     <div>
@@ -1771,7 +1771,9 @@ const handleLookup = (e) => {
             {Icon.search} <span>Tra cứu</span>
           </button>
         </div>
-        {lookupError && <div className="pf-order-lookup-error">{lookupError}</div>}
+        {lookupError && (
+          <div className="pf-order-lookup-error">{lookupError}</div>
+        )}
       </form>
 
       <div className="pf-filter-row">
@@ -2254,13 +2256,8 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
             {canCancel && (
               <button
                 onClick={() => setShowCancelModal(true)}
-                className="pf-btn-tactile"
-                style={{
-                  width: "100%",
-                  marginTop: 10,
-                  color: "#b23a30",
-                  borderColor: "rgba(178,58,48,0.3)",
-                }}
+                className="pf-btn-tactile pf-btn-cancel-order"
+                style={{ width: "100%", marginTop: 10 }}
               >
                 Huỷ đơn hàng
               </button>
@@ -2412,8 +2409,7 @@ function CancelOrderModal({ order, onClose, onConfirm, submitting }) {
             type="button"
             onClick={onClose}
             disabled={submitting}
-            className="pf-btn-tactile"
-            style={{ padding: "11px 20px" }}
+            className="pf-btn-tactile pf-modal-btn-secondary"
           >
             Đóng
           </button>
@@ -2426,13 +2422,7 @@ function CancelOrderModal({ order, onClose, onConfirm, submitting }) {
               })
             }
             disabled={!codeMatches || !reason.trim() || submitting}
-            className="pf-btn-tactile"
-            style={{
-              padding: "11px 22px",
-              background: "#b23a30",
-              color: "#fff",
-              opacity: !codeMatches || !reason.trim() || submitting ? 0.5 : 1,
-            }}
+            className="pf-btn-tactile pf-modal-btn-danger"
           >
             {submitting ? "Đang huỷ…" : "Xác nhận huỷ đơn"}
           </button>
