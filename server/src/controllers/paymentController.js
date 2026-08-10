@@ -93,8 +93,33 @@ async function waitForOrderPaid(orderId) {
   return prisma.order.findUnique({ where: { id: orderId } });
 }
 
-function isSessionExpired(order) {
-  return !!order.paymentSessionExpiresAt && order.paymentSessionExpiresAt < new Date();
+function isSessionExpired(expiresAt) {
+  return !!expiresAt && expiresAt < new Date();
+}
+
+// Order.paymentRef là 1 cột DUY NHẤT, bị GHI ĐÈ mỗi lần user bấm "thanh toán lại" (tạo phiên mới).
+// Nếu user hoàn tất thanh toán ở 1 tab/phiên CŨ sau khi đã tạo phiên mới hơn, callback (return hoặc
+// IPN) mang paymentRef CŨ sẽ không còn khớp Order.paymentRef hiện tại nữa → tra thẳng theo cột sẽ ra
+// null, đơn không bao giờ được xác nhận dù tiền đã bị trừ thật.
+// PaymentTransaction thì KHÔNG bị ghi đè (mỗi lần tạo phiên là 1 dòng CREATE riêng, lưu orderId) nên
+// fallback qua đây để tìm lại đúng đơn. Đồng thời trả về đúng hạn (TTL) của PHIÊN đó — không dùng
+// order.paymentSessionExpiresAt hiện tại vì cột đó lúc này đang phản ánh phiên MỚI hơn, không phải
+// phiên mà callback này thuộc về.
+async function findOrderByPaymentRef(paymentRef, gateway) {
+  if (!paymentRef) return { order: null, sessionExpiresAt: null };
+
+  const direct = await prisma.order.findFirst({ where: { paymentRef } });
+  if (direct) return { order: direct, sessionExpiresAt: direct.paymentSessionExpiresAt };
+
+  const txn = await prisma.paymentTransaction.findFirst({
+    where: { paymentRef, gateway, type: "CREATE" },
+    orderBy: { createdAt: "desc" },
+  });
+  if (!txn?.orderId) return { order: null, sessionExpiresAt: null };
+
+  const order = await prisma.order.findUnique({ where: { id: txn.orderId } });
+  const sessionExpiresAt = new Date(txn.createdAt.getTime() + PAYMENT_SESSION_TTL_MS);
+  return { order, sessionExpiresAt };
 }
 
 function vnpayAmountMatches(order, vnpAmount) {
@@ -170,9 +195,12 @@ const verifyVnpayReturn = async (req, res) => {
   try {
     const { isValid, isSuccess, signatureValid, tmnCodeValid, currency } = vnpay.verifyReturn(query);
 
-    const order = await prisma.order.findFirst({
-      where: { paymentRef: query.vnp_TxnRef, userId: req.user.id },
-    });
+    let { order, sessionExpiresAt } = await findOrderByPaymentRef(query.vnp_TxnRef, "VNPAY");
+    // Chặn user A xem/verify được đơn của user B qua paymentRef — coi như không tìm thấy.
+    if (order && order.userId !== req.user.id) {
+      order = null;
+      sessionExpiresAt = null;
+    }
 
     await logTransaction({
       orderId: order?.id || null,
@@ -212,7 +240,7 @@ const verifyVnpayReturn = async (req, res) => {
       });
     }
 
-    if (isSessionExpired(order)) {
+    if (isSessionExpired(sessionExpiresAt)) {
       return formatResponse(res, 200, "Phiên thanh toán đã hết hạn", {
         orderId: order.id,
         success: false,
@@ -258,7 +286,7 @@ const vnpayIpn = async (req, res) => {
   const ip = getIp(req);
   try {
     const { isValid, isSuccess, signatureValid, tmnCodeValid, currency } = vnpay.verifyReturn(query);
-    const order = await prisma.order.findFirst({ where: { paymentRef: query.vnp_TxnRef } });
+    const { order, sessionExpiresAt } = await findOrderByPaymentRef(query.vnp_TxnRef, "VNPAY");
 
     const baseLog = {
       orderId: order?.id || null,
@@ -287,7 +315,7 @@ const vnpayIpn = async (req, res) => {
       return res.json({ RspCode: "01", Message: "Order not found" });
     }
 
-    if (isSessionExpired(order)) {
+    if (isSessionExpired(sessionExpiresAt)) {
       await logTransaction({ ...baseLog, message: "Phiên thanh toán đã hết hạn, từ chối xác nhận" });
       return res.json({ RspCode: "01", Message: "Order not found or session expired" });
     }
@@ -406,9 +434,11 @@ const verifyMomoReturn = async (req, res) => {
   try {
     const { isValid, isSuccess, signatureValid, partnerCodeValid, currency } = momo.verifyReturn(query);
 
-    const order = await prisma.order.findFirst({
-      where: { paymentRef: query.orderId, userId: req.user.id },
-    });
+    let { order, sessionExpiresAt } = await findOrderByPaymentRef(query.orderId, "MOMO");
+    if (order && order.userId !== req.user.id) {
+      order = null;
+      sessionExpiresAt = null;
+    }
 
     await logTransaction({
       orderId: order?.id || null,
@@ -448,7 +478,7 @@ const verifyMomoReturn = async (req, res) => {
       });
     }
 
-    if (isSessionExpired(order)) {
+    if (isSessionExpired(sessionExpiresAt)) {
       return formatResponse(res, 200, "Phiên thanh toán đã hết hạn", {
         orderId: order.id,
         success: false,
@@ -492,7 +522,7 @@ const momoIpn = async (req, res) => {
   const ip = getIp(req);
   try {
     const { isValid, isSuccess, signatureValid, partnerCodeValid, currency } = momo.verifyReturn(query);
-    const order = await prisma.order.findFirst({ where: { paymentRef: query.orderId } });
+    const { order, sessionExpiresAt } = await findOrderByPaymentRef(query.orderId, "MOMO");
 
     const baseLog = {
       orderId: order?.id || null,
@@ -521,7 +551,7 @@ const momoIpn = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    if (isSessionExpired(order)) {
+    if (isSessionExpired(sessionExpiresAt)) {
       await logTransaction({ ...baseLog, message: "Phiên thanh toán đã hết hạn, từ chối xác nhận" });
       return res.status(200).json({ message: "Session expired, not confirmed" });
     }

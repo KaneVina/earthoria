@@ -13,6 +13,22 @@ const genPaymentRef = () =>
 
 const ONLINE_PAYMENT_METHODS = ["VNPAY", "MOMO"];
 
+// Ném ra TRONG transaction tạo đơn khi 1 request khác đã "thắng cuộc đua" giành mất stock/lượt
+// coupon ngay giữa lúc request này xử lý — bước kiểm tra sơ bộ ở trên (đọc stock/coupon TRƯỚC khi
+// vào transaction) chỉ là fast-fail, không đủ để chống race giữa 2 request đến gần như đồng thời.
+class StockRaceError extends Error {
+  constructor(bookTitle) {
+    super(`Sách "${bookTitle}" vừa hết hàng, vui lòng thử lại`);
+    this.bookTitle = bookTitle;
+  }
+}
+class CouponRaceError extends Error {
+  constructor(code) {
+    super(`Mã giảm giá "${code}" vừa hết lượt sử dụng, vui lòng thử lại`);
+    this.code = code;
+  }
+}
+
 // Đơn được đưa qua đây khi include items -> variant -> book (đúng schema hiện tại)
 const ORDER_ITEMS_INCLUDE = {
   items: {
@@ -181,24 +197,38 @@ const createOrder = async (req, res) => {
         include: { items: true },
       });
 
-      // Tăng lượt dùng coupon (nếu có)
+      // Tăng lượt dùng coupon (nếu có) — update CÓ ĐIỀU KIỆN (usedCount < usageLimit) để 2 request
+      // cùng dùng 1 coupon còn đúng 1 lượt, đến gần như đồng thời, chỉ đúng 1 request được tăng;
+      // request thua cuộc đua ném lỗi → cả transaction (kể cả order vừa tạo) tự rollback sạch.
       if (appliedCoupon) {
-        await tx.coupon.update({
-          where: { id: appliedCoupon.id },
+        const couponWhere = { id: appliedCoupon.id };
+        if (appliedCoupon.usageLimit != null) {
+          couponWhere.usedCount = { lt: appliedCoupon.usageLimit };
+        }
+        const couponResult = await tx.coupon.updateMany({
+          where: couponWhere,
           data: { usedCount: { increment: 1 } },
         });
+        if (couponResult.count === 0) {
+          throw new CouponRaceError(appliedCoupon.code);
+        }
       }
 
-      // Giảm stock theo variant (bỏ qua hàng không giới hạn)
+      // Giảm stock theo variant (bỏ qua hàng không giới hạn) — update CÓ ĐIỀU KIỆN (stock >= quantity)
+      // cùng lý do: check ở bước 2 phía trên đọc TRƯỚC transaction nên không chống được race, đây mới
+      // là chỗ đảm bảo thật — nếu không sẽ có thể trừ thành stock âm khi 2 đơn cùng giành 1 cuốn cuối.
       for (const item of cart.items) {
         if (item.variant.isUnlimitedStock) continue;
-        await tx.bookVariant.update({
-          where: { id: item.variant.id },
+        const stockResult = await tx.bookVariant.updateMany({
+          where: { id: item.variant.id, stock: { gte: item.quantity } },
           data: {
             stock: { decrement: item.quantity },
             sold: { increment: item.quantity },
           },
         });
+        if (stockResult.count === 0) {
+          throw new StockRaceError(item.variant.book.title);
+        }
       }
 
       // Xóa cart
@@ -214,6 +244,9 @@ const createOrder = async (req, res) => {
       requiresOnlinePayment: isOnlinePayment,
     });
   } catch (error) {
+    if (error instanceof StockRaceError || error instanceof CouponRaceError) {
+      return formatResponse(res, 409, error.message);
+    }
     console.error(error);
     return formatResponse(res, 500, "Lỗi server");
   }
