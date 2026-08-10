@@ -642,6 +642,9 @@ model SiteSetting {
   maintenanceEnd     DateTime? // Lịch tự động: kết thúc
   maintenanceMessage String?   @db.Text
 
+  // ─ Bảo vệ DevTools ─
+  devtoolsProtectionEnabled Boolean @default(true) // Công tắc chặn phím tắt devtools, có hiệu lực ngay không cần deploy lại
+
   // ─ Thông tin trang web ─
   siteName    String? @default("Earthoria")
   siteTagline String?
