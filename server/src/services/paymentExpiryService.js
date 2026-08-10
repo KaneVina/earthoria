@@ -5,23 +5,36 @@ const prisma = require("../config/db");
 // Coi như hết hạn sau ORPHAN_SESSION_TTL_MS kể từ lúc tạo đơn.
 const ORPHAN_SESSION_TTL_MS = 30 * 60 * 1000; // 30 phút
 
+// Đơn COD không có khái niệm "phiên thanh toán" (không trả tiền trước), nên không dùng
+// paymentSessionExpiresAt được. Rủi ro thật: đặt COD trừ kho NGAY lúc tạo đơn, đơn nằm PENDING
+// (chưa được admin bấm "Đã xác nhận") có thể bị dùng để giữ chết hàng vô thời hạn không tốn 1 đồng.
+// Coi như bỏ đơn nếu quá lâu mà vẫn chưa được xác nhận. Đây là quyết định nghiệp vụ — chỉnh theo
+// nhu cầu thực tế (thời gian nhân viên xử lý đơn) bằng biến môi trường COD_PENDING_TTL_HOURS.
+const COD_PENDING_TTL_MS = (Number(process.env.COD_PENDING_TTL_HOURS) || 24) * 60 * 60 * 1000;
+
 // Số đơn xử lý tối đa mỗi lượt quét, tránh 1 lượt ôm quá nhiều nếu job bị dừng lâu rồi chạy lại.
 const BATCH_SIZE = 200;
 
 /**
- * Hoàn kho + hoàn lượt dùng coupon + đánh dấu EXPIRED cho 1 đơn cụ thể — dùng chung logic với
- * cancelOrder (orderController.js) nhưng chạy nguyên tử theo kiểu "update có điều kiện" giống
- * markOrderPaidAtomic: chỉ đơn nào VẪN đang UNPAID mới bị chuyển, chống race với IPN đến gần như
- * cùng lúc (IPN thắng thì đơn đã PAID, updateMany dưới đây sẽ khớp 0 dòng và không hoàn kho nhầm).
+ * Hoàn kho + hoàn lượt dùng coupon + huỷ đơn — dùng chung logic với cancelOrder (orderController.js)
+ * nhưng chạy nguyên tử theo kiểu "update có điều kiện" giống markOrderPaidAtomic: chỉ đơn nào VẪN còn
+ * đúng điều kiện mới bị chuyển, chống race với IPN/admin xử lý gần như cùng lúc (thua race thì
+ * updateMany khớp 0 dòng, không hoàn kho nhầm).
  */
 async function expireOneOrder(order, reason) {
+  const isCod = order.paymentMethod === "COD";
+
   return prisma.$transaction(async (tx) => {
     const result = await tx.order.updateMany({
-      where: { id: order.id, paymentStatus: "UNPAID", status: "PENDING" },
-      data: { paymentStatus: "EXPIRED", status: "CANCELLED" },
+      where: isCod
+        ? { id: order.id, status: "PENDING" }
+        : { id: order.id, paymentStatus: "UNPAID", status: "PENDING" },
+      data: isCod
+        ? { status: "CANCELLED" }
+        : { paymentStatus: "EXPIRED", status: "CANCELLED" },
     });
 
-    // Thua race (IPN vừa set PAID, hoặc đơn đã bị xử lý bởi 1 lượt quét khác) — không hoàn gì cả.
+    // Thua race (IPN vừa set PAID, admin vừa xác nhận, hoặc đơn đã bị 1 lượt quét khác xử lý).
     if (result.count === 0) {
       return { expired: false };
     }
@@ -41,48 +54,63 @@ async function expireOneOrder(order, reason) {
       });
     }
 
-    await tx.paymentTransaction.create({
-      data: {
-        orderId: order.id,
-        gateway: order.paymentMethod, // 'VNPAY' | 'MOMO' — trùng giá trị PaymentGateway
-        type: "EXPIRE",
-        paymentRef: order.paymentRef || "",
-        amount: order.total,
-        currency: "VND",
-        isValidSignature: true,
-        rawPayload: { reason },
-        message:
-          reason === "orphan"
-            ? `Đơn chưa từng tạo phiên gateway (paymentSessionExpiresAt null), tự huỷ sau ${
-                ORPHAN_SESSION_TTL_MS / 60000
-              } phút kể từ khi tạo — hoàn kho/coupon`
-            : `Phiên thanh toán hết hạn lúc ${order.paymentSessionExpiresAt.toISOString()} — hoàn kho/coupon`,
-      },
-    });
+    // PaymentTransaction chỉ phục vụ audit cổng thanh toán online (gateway/paymentRef bắt buộc,
+    // COD không có cả 2) — COD auto-cancel nên chỉ log ra console, không ghi được vào bảng này.
+    if (!isCod) {
+      await tx.paymentTransaction.create({
+        data: {
+          orderId: order.id,
+          gateway: order.paymentMethod, // 'VNPAY' | 'MOMO' — trùng giá trị PaymentGateway
+          type: "EXPIRE",
+          paymentRef: order.paymentRef || "",
+          amount: order.total,
+          currency: "VND",
+          isValidSignature: true,
+          rawPayload: { reason },
+          message:
+            reason === "orphan"
+              ? `Đơn chưa từng tạo phiên gateway (paymentSessionExpiresAt null), tự huỷ sau ${
+                  ORPHAN_SESSION_TTL_MS / 60000
+                } phút kể từ khi tạo — hoàn kho/coupon`
+              : `Phiên thanh toán hết hạn lúc ${order.paymentSessionExpiresAt.toISOString()} — hoàn kho/coupon`,
+        },
+      });
+    }
 
     return { expired: true };
   });
 }
 
 /**
- * Quét & tự động hết hạn các đơn VNPay/MoMo còn UNPAID mà phiên thanh toán đã qua hạn, hoặc
- * chưa từng mở phiên (orphan) quá lâu. Hoàn kho + hoàn lượt coupon cho từng đơn. An toàn khi
- * gọi lặp lại/chồng lấn vì mỗi đơn chỉ bị hoàn đúng 1 lần (update có điều kiện paymentStatus=UNPAID).
+ * Quét & tự động huỷ:
+ * - Đơn VNPay/MoMo còn UNPAID mà phiên thanh toán đã qua hạn, hoặc chưa từng mở phiên (orphan) quá lâu.
+ * - Đơn COD còn PENDING (chưa được admin xác nhận) quá lâu.
+ * Hoàn kho + hoàn lượt coupon cho từng đơn. An toàn khi gọi lặp lại/chồng lấn vì mỗi đơn chỉ bị
+ * hoàn đúng 1 lần (update có điều kiện status=PENDING, riêng online payment còn thêm paymentStatus=UNPAID).
  *
  * @returns {{ scanned: number, expired: number, failed: number }}
  */
 async function expireStalePaymentSessions() {
   const now = new Date();
   const orphanCutoff = new Date(now.getTime() - ORPHAN_SESSION_TTL_MS);
+  const codCutoff = new Date(now.getTime() - COD_PENDING_TTL_MS);
 
   const candidates = await prisma.order.findMany({
     where: {
-      paymentMethod: { in: ["VNPAY", "MOMO"] },
-      paymentStatus: "UNPAID",
       status: "PENDING",
       OR: [
-        { paymentSessionExpiresAt: { lt: now } },
-        { paymentSessionExpiresAt: null, createdAt: { lt: orphanCutoff } },
+        {
+          paymentMethod: { in: ["VNPAY", "MOMO"] },
+          paymentStatus: "UNPAID",
+          OR: [
+            { paymentSessionExpiresAt: { lt: now } },
+            { paymentSessionExpiresAt: null, createdAt: { lt: orphanCutoff } },
+          ],
+        },
+        {
+          paymentMethod: "COD",
+          createdAt: { lt: codCutoff },
+        },
       ],
     },
     include: { items: { include: { variant: true } } },
@@ -94,7 +122,12 @@ async function expireStalePaymentSessions() {
 
   for (const order of candidates) {
     try {
-      const reason = order.paymentSessionExpiresAt ? "session_expired" : "orphan";
+      const reason =
+        order.paymentMethod === "COD"
+          ? "cod_stale"
+          : order.paymentSessionExpiresAt
+          ? "session_expired"
+          : "orphan";
       const { expired: didExpire } = await expireOneOrder(order, reason);
       if (didExpire) expired += 1;
     } catch (err) {

@@ -959,7 +959,7 @@ export default function Profile() {
     enabled: activeTab === "orders" || activeTab === "overview",
   });
 
-  const { data: orderDetail, isLoading: orderDetailLoading } = useQuery({
+  const { data: orderDetail, isLoading: orderDetailLoading, refetch: refetchOrderDetail } = useQuery({
     queryKey: ["order", selectedOrderId],
     queryFn: () =>
       orderService.getOrder(selectedOrderId).then((r) => r.data.data),
@@ -1131,6 +1131,7 @@ export default function Profile() {
                 order={orderDetail}
                 loading={orderDetailLoading}
                 onBack={() => setSelectedOrderId(null)}
+                onSessionExpire={refetchOrderDetail}
               />
             )}
             {activeTab === "security" && (
@@ -1880,7 +1881,52 @@ function OrderDetailSkeleton({ onBack }) {
   );
 }
 
-function OrderDetailTab({ order, loading, onBack }) {
+// Đếm ngược tới order.paymentSessionExpiresAt. Không tự đổi trạng thái đơn (đó là việc của
+// paymentExpiryService bên server, chạy mỗi 60s) — hết giờ ở đây chỉ để UI phản hồi ngay, rồi
+// gọi onSessionExpire để refetch, tránh trường hợp job server chưa kịp chạy mà FE đã báo sai.
+function PaymentSessionCountdown({ expiresAt, onExpire }) {
+  const target = new Date(expiresAt).getTime();
+  const [remainingMs, setRemainingMs] = useState(() => target - Date.now());
+  const firedRef = useRef(false);
+
+  useEffect(() => {
+    firedRef.current = false;
+    const tick = () => setRemainingMs(target - Date.now());
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [target]);
+
+  useEffect(() => {
+    if (remainingMs <= 0 && !firedRef.current) {
+      firedRef.current = true;
+      onExpire?.();
+    }
+  }, [remainingMs, onExpire]);
+
+  if (remainingMs <= 0) {
+    return (
+      <div className="pf-payment-badge" style={{ color: "#c0392b" }}>
+        {Icon.shield} <span>Phiên thanh toán đã hết hạn</span>
+      </div>
+    );
+  }
+
+  const mm = Math.floor(remainingMs / 60000);
+  const ss = Math.floor((remainingMs % 60000) / 1000);
+
+  return (
+    <div className="pf-payment-badge">
+      {Icon.shield}
+      <span>
+        Còn {mm}:{String(ss).padStart(2, "0")} để hoàn tất thanh toán, quá hạn đơn sẽ tự huỷ và
+        hoàn kho
+      </span>
+    </div>
+  );
+}
+
+function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
   const [retrying, setRetrying] = useState(false);
   if (loading || !order) return <OrderDetailSkeleton onBack={onBack} />;
 
@@ -2090,6 +2136,12 @@ function OrderDetailTab({ order, loading, onBack }) {
                   ` — ${order.paymentStatus === "PAID" ? "Đã thanh toán" : "Chưa thanh toán"}`}
               </span>
             </div>
+            {canRetryPayment && order.paymentSessionExpiresAt && (
+              <PaymentSessionCountdown
+                expiresAt={order.paymentSessionExpiresAt}
+                onExpire={onSessionExpire}
+              />
+            )}
             {canRetryPayment && (
               <button
                 onClick={retryPayment}
