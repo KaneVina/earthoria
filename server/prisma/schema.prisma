@@ -107,6 +107,7 @@ model Address {
   ward      String
   street    String
   isDefault Boolean @default(false)
+  isSaved   Boolean @default(true)
   lat       Float?
   lng       Float?
 

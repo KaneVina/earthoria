@@ -171,17 +171,40 @@ const createOrder = async (req, res) => {
     const isOnlinePayment = ONLINE_PAYMENT_METHODS.includes(prismaMethod);
 
     // 7. Tạo Address snapshot (lưu vào bảng Address)
-    const address = await prisma.address.create({
-      data: {
+    // Snapshot này KHÔNG dùng chung row với địa chỉ đã lưu trong profile
+    // (isSaved: true) — nên sau này người dùng sửa/xóa địa chỉ trong sổ địa
+    // chỉ không bao giờ làm đổi địa chỉ hiển thị trên các đơn đã đặt trước đó.
+    // Tuy nhiên nếu 2 đơn có CÙNG nội dung địa chỉ (trùng tên/sđt/tỉnh/phường/
+    // số nhà) thì dùng lại đúng 1 row snapshot đã có, tránh sinh vô số bản ghi
+    // trùng lặp trong bảng Address mỗi khi đặt hàng lặp lại cùng 1 địa chỉ.
+    let address = await prisma.address.findFirst({
+      where: {
         userId,
+        isSaved: false,
         fullName: shipping.fullName,
         phone: shipping.phone,
         province: shipping.province,
-        district: "",
         ward: shipping.ward,
         street: shipping.street,
       },
     });
+
+    if (!address) {
+      address = await prisma.address.create({
+        data: {
+          userId,
+          fullName: shipping.fullName,
+          phone: shipping.phone,
+          province: shipping.province,
+          district: "",
+          ward: shipping.ward,
+          street: shipping.street,
+          lat: shipping.lat ?? null,
+          lng: shipping.lng ?? null,
+          isSaved: false,
+        },
+      });
+    }
 
     // 8. Tạo Order + OrderItems trong transaction
     const order = await prisma.$transaction(async (tx) => {

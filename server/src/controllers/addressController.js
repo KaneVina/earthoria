@@ -5,7 +5,7 @@ const { formatResponse } = require('../utils/helpers')
 const getAddresses = async (req, res) => {
   try {
     const addresses = await prisma.address.findMany({
-      where: { userId: req.user.id },
+      where: { userId: req.user.id, isSaved: true },
       orderBy: [{ isDefault: 'desc' }, { id: 'asc' }],
     })
     return formatResponse(res, 200, 'OK', addresses)
@@ -44,6 +44,7 @@ const createAddress = async (req, res) => {
         ward,
         street,
         isDefault: isDefault || count === 0,
+        isSaved:  true,
         lat:      lat ? parseFloat(lat) : null,
         lng:      lng ? parseFloat(lng) : null,
       },
