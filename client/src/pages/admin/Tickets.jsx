@@ -88,8 +88,13 @@ function TicketDrawer({ ticket, onClose, currentUser }) {
 
   const replyMutation = useMutation({
     mutationFn: () => ticketService.reply(ticket.id, replyText.trim(), nextStatus || undefined),
-    onSuccess: () => {
-      toast.success('Đã gửi phản hồi — email thông báo đã được gửi tới khách hàng')
+    onSuccess: (res) => {
+      const emailSent = res.data?.data?.reply?.emailSent
+      if (emailSent) {
+        toast.success('Đã gửi phản hồi — email thông báo đã được gửi tới khách hàng')
+      } else {
+        toast.error('Đã lưu phản hồi nhưng gửi email thất bại — kiểm tra lại cấu hình gửi mail')
+      }
       setReplyText('')
       setNextStatus('')
       qc.invalidateQueries({ queryKey: ['admin-tickets'] })
@@ -268,9 +273,9 @@ function TicketDrawer({ ticket, onClose, currentUser }) {
                     <div style={{ fontSize: 12.5, lineHeight: 1.6, color: 'var(--a-ink)', whiteSpace: 'pre-wrap' }}>
                       {r.message}
                     </div>
-                    <div style={{ marginTop: 6, fontSize: 10.5, color: r.emailSent ? '#2e8b57' : 'rgba(13,51,48,0.35)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <div style={{ marginTop: 6, fontSize: 10.5, color: r.emailSent ? '#2e8b57' : '#b23a30', display: 'flex', alignItems: 'center', gap: 4 }}>
                       <CheckCheck size={11} />
-                      {r.emailSent ? 'Đã gửi email cho khách' : 'Đang gửi email...'}
+                      {r.emailSent ? 'Đã gửi email cho khách' : 'Gửi email thất bại'}
                     </div>
                   </div>
                 ))}

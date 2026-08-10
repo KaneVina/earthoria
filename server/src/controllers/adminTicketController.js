@@ -210,21 +210,34 @@ exports.replyToTicket = async (req, res) => {
       }),
     ])
 
-    // ─ Gửi email tự động cho khách hàng — không chặn phản hồi API nếu gửi mail lỗi ─
-    sendTicketReplyEmail({
-      to: ticket.email,
-      name: ticket.name,
-      code: ticket.code,
-      subject: ticket.subject,
-      message: reply.message,
-      staff: { name: req.user.name, email: req.user.email },
-    })
-      .then(() => prisma.ticketReply.update({ where: { id: reply.id }, data: { emailSent: true } }))
-      .catch((err) => console.error('[sendTicketReplyEmail]', err))
+    // ─ Gửi email tự động cho khách hàng — chờ gửi xong rồi mới trả response để
+    //   trạng thái emailSent phản ánh đúng thực tế (không còn kẹt mãi ở "đang gửi"),
+    //   nhưng nếu gửi mail lỗi thì vẫn không xoá/chặn phản hồi đã lưu.
+    let emailSent = false
+    try {
+      await sendTicketReplyEmail({
+        to: ticket.email,
+        name: ticket.name,
+        code: ticket.code,
+        subject: ticket.subject,
+        message: reply.message,
+        staff: { name: req.user.name, email: req.user.email },
+      })
+      emailSent = true
+    } catch (err) {
+      console.error('[sendTicketReplyEmail]', err)
+    }
+
+    if (emailSent) {
+      await prisma.ticketReply.update({ where: { id: reply.id }, data: { emailSent: true } })
+      reply.emailSent = true
+    }
 
     return res.status(201).json({
       success: true,
-      message: 'Đã gửi phản hồi và thông báo email cho khách hàng',
+      message: emailSent
+        ? 'Đã gửi phản hồi và thông báo email cho khách hàng'
+        : 'Đã lưu phản hồi nhưng gửi email thất bại — vui lòng kiểm tra lại cấu hình gửi mail',
       data: { reply, ticket: updatedTicket },
     })
   } catch (err) {

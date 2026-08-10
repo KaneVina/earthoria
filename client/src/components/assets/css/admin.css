@@ -1051,7 +1051,8 @@
 }
 
 /*  10. FORM ELEMENTS ────────────────────────────────── */
-.a-input {
+.a-input,
+.a-textarea {
   background: var(--a-bg);
   border: 1px solid var(--a-ink-20);
   border-radius: var(--a-radius);
@@ -1064,12 +1065,14 @@
   transition: border-color 0.15s;
 }
 
-.a-input:focus {
+.a-input:focus,
+.a-textarea:focus {
   border-color: var(--a-green);
   box-shadow: 0 0 0 3px rgba(74, 158, 63, 0.08);
 }
 
-.a-input:hover:not(:focus) {
+.a-input:hover:not(:focus),
+.a-textarea:hover:not(:focus) {
   border-color: var(--a-ink-40);
 }
 
@@ -1082,6 +1085,7 @@
 
 .a-textarea {
   min-height: 88px;
+  line-height: 1.6;
   resize: vertical;
 }
 
@@ -1654,18 +1658,21 @@
 
 /*  Form elements  */
 .admin-root.dark .a-input,
+.admin-root.dark .a-textarea,
 .admin-root.dark .a-inline-select {
   background: var(--a-surface);
   border: 1px solid var(--a-ink-20);
   color: var(--a-ink);
 }
 
-.admin-root.dark .a-input:focus {
+.admin-root.dark .a-input:focus,
+.admin-root.dark .a-textarea:focus {
   border-color: var(--a-green);
   box-shadow: 0 0 0 3px rgba(92, 184, 79, 0.12);
 }
 
-.admin-root.dark .a-input:hover:not(:focus) {
+.admin-root.dark .a-input:hover:not(:focus),
+.admin-root.dark .a-textarea:hover:not(:focus) {
   border-color: var(--a-ink-40);
 }
 

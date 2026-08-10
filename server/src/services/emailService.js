@@ -1,6 +1,17 @@
 const { Resend } = require('resend')
 const resend = new Resend(process.env.RESEND_API_KEY)
 
+async function sendMail(payload) {
+  const { data, error } = await resend.emails.send(payload)
+  if (error) {
+    const err = new Error(error.message || 'Gửi email thất bại')
+    err.name = 'ResendError'
+    err.cause = error
+    throw err
+  }
+  return data
+}
+
 async function verifyEmailTransport() {
   console.log('✓ Resend email service ready')
 }
@@ -143,7 +154,7 @@ async function sendOtpEmail({ to, name, otp }) {
     </div>
   `
 
-  return resend.emails.send({
+  return sendMail({
     from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
     to,
     subject: `${otp} — Mã xác thực Earthoria của bạn`,
@@ -190,7 +201,7 @@ async function sendPasswordChangedEmail({ to, name }) {
     </div>
   `
 
-  return resend.emails.send({
+  return sendMail({
     from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
     to,
     subject: 'Mật khẩu Earthoria của bạn đã được thay đổi',
@@ -359,7 +370,7 @@ async function sendCustomEmail({ to, cc, bcc, subject, heading, content, sender 
   if (cc)  payload.cc  = cc
   if (bcc) payload.bcc = bcc
 
-  return resend.emails.send(payload)
+  return sendMail(payload)
 }
 
 const ROLE_LABEL_VI = {
@@ -496,7 +507,7 @@ async function sendAccountProvisionedEmail({ to, role, name, userCode, password,
     ${buildSystemSignatureBlock()}
   `
 
-  return resend.emails.send({
+  return sendMail({
     from: `Earthoria System <noreply@earthoria.id.vn>`,
     to,
     subject: isUpgrade
@@ -565,7 +576,7 @@ async function sendAccountLockedEmail({ to, name, reason, dateLocked }) {
     ${buildSystemSignatureBlock()}
   `
 
-  return resend.emails.send({
+  return sendMail({
     from: `Earthoria System <noreply@earthoria.id.vn>`,
     to,
     subject: 'Tài khoản Earthoria của bạn đã bị khóa',
@@ -605,7 +616,7 @@ async function sendAccountUnlockedEmail({ to, name, dateUnlocked }) {
     ${buildSystemSignatureBlock()}
   `
 
-  return resend.emails.send({
+  return sendMail({
     from: `Earthoria System <noreply@earthoria.id.vn>`,
     to,
     subject: 'Tài khoản Earthoria của bạn đã được mở khóa',
@@ -666,7 +677,7 @@ async function sendTicketCreatedEmail({ to, name, code, subject }) {
     </div>
   `
 
-  return resend.emails.send({
+  return sendMail({
     from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
     to,
     subject: `[${code}] Đã tiếp nhận yêu cầu liên hệ của bạn`,
@@ -720,7 +731,7 @@ async function sendTicketReplyEmail({ to, name, code, subject, message, staff })
     ${staff && (staff.name || staff.email) ? buildSignatureBlock(staff) : ''}
   `
 
-  return resend.emails.send({
+  return sendMail({
     from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
     to,
     subject: `[${code}] Earthoria vừa phản hồi yêu cầu của bạn`,
