@@ -178,7 +178,7 @@ export default function Maintenance({ until, message }) {
             </div>
             <div className="em-logo-wrap" style={styles.logoWrapHeader}>
               <img
-                src="/logo-footer.png"
+                src="/logo-chinh.png"
                 alt="Earthoria"
                 style={styles.headerLogo}
               />
