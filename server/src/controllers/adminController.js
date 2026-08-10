@@ -429,6 +429,14 @@ function validateVariantsInput(variants) {
   return null;
 }
 
+// Sách điện tử là file, bán bao nhiêu cũng được -> LUÔN unlimited.
+// Sách giấy là hàng tồn kho thật -> KHÔNG BAO GIỜ được unlimited, dù client gửi gì lên.
+// Suy thẳng từ format, không tin giá trị isUnlimitedStock client gửi, để 2 field này
+// không bao giờ lệch nhau (tránh sách giấy bán vượt kho thật / sách điện tử báo hết hàng sai).
+function isUnlimitedByFormat(format) {
+  return format === "DIGITAL";
+}
+
 async function createVariantsForBook(tx, bookId, variants) {
   for (const v of variants) {
     const productCode = await generateProductCode(tx);
@@ -442,7 +450,7 @@ async function createVariantsForBook(tx, bookId, variants) {
         salePrice: v.salePrice != null ? Number(v.salePrice) : null,
         dealerPrice: v.dealerPrice != null ? Number(v.dealerPrice) : null,
         stock: Number(v.stock) || 0,
-        isUnlimitedStock: !!v.isUnlimitedStock,
+        isUnlimitedStock: isUnlimitedByFormat(v.format),
         isActive: v.isActive !== false,
       },
     });
@@ -465,7 +473,7 @@ async function upsertVariantsForBook(tx, bookId, variants) {
           dealerPrice: v.dealerPrice != null ? Number(v.dealerPrice) : null,
           stock: Number(v.stock) || 0,
           unit: v.unit || existing.unit,
-          isUnlimitedStock: !!v.isUnlimitedStock,
+          isUnlimitedStock: isUnlimitedByFormat(existing.format), // format không đổi được khi update
           isActive: v.isActive !== false,
         },
       });
@@ -481,7 +489,7 @@ async function upsertVariantsForBook(tx, bookId, variants) {
           salePrice: v.salePrice != null ? Number(v.salePrice) : null,
           dealerPrice: v.dealerPrice != null ? Number(v.dealerPrice) : null,
           stock: Number(v.stock) || 0,
-          isUnlimitedStock: !!v.isUnlimitedStock,
+          isUnlimitedStock: isUnlimitedByFormat(v.format),
           isActive: v.isActive !== false,
         },
       });

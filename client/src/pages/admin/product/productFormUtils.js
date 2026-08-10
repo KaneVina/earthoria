@@ -1,8 +1,3 @@
-// productFormUtils.js — dùng chung giữa ProductCreate.jsx và ProductDetail.jsx.
-// Sau khi tách price/stock/productCode ra BookVariant, 1 sách (Book) có thể
-// bán ở nhiều "định dạng" (PHYSICAL - sách giấy / DIGITAL - sách điện tử),
-// mỗi định dạng có giá/tồn kho/mã sách riêng -> nằm trong form.variants[].
-
 let keySeq = 0;
 const clientKey = () => `v_${Date.now()}_${keySeq++}`;
 
@@ -133,7 +128,7 @@ export const formToPayload = (form) => ({
       dealerPrice: computeModePrice(v.dealerMode, v.dealerPercent, v.dealerPrice, basePrice),
       stock: Number(v.stock) || 0,
       unit: v.unit || "Cuốn",
-      isUnlimitedStock: !!v.isUnlimitedStock,
+      isUnlimitedStock: v.format === "DIGITAL",
       isActive: v.isActive !== false,
     };
   }),

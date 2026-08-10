@@ -1,6 +1,3 @@
-// ProductVariantsEditor.jsx — Quản lý các định dạng bán (Sách giấy / Sách điện tử)
-// của 1 cuốn sách. Mỗi định dạng là 1 BookVariant riêng: giá, tồn kho, mã sách
-// độc lập với nhau.
 import { Plus, Trash2 } from "lucide-react";
 import { formatPrice } from "../../../utils/helpers";
 import { generateProductCode } from "../../../utils/generateProductCode";
@@ -58,8 +55,7 @@ export default function ProductVariantsEditor({ variants, setVariants, onDeleteV
         Định dạng bán *
       </label>
       <p style={{ fontSize: 11, color: "rgba(13,51,48,0.5)", marginTop: -4, marginBottom: 10 }}>
-        Mỗi sách bán được tối đa 2 định dạng — Sách giấy và/hoặc Sách điện tử,
-        mỗi định dạng có giá, tồn kho và mã sách riêng.
+        Mỗi sách bán được tối đa 2 định dạng: Sách giấy và/hoặc Sách điện tử.
       </p>
 
       {variants.length === 0 && (
@@ -140,19 +136,24 @@ function VariantCard({ variant, onChange, onRemove, canRemove }) {
 
         <div className="a-form-group">
           <label className="a-form-label">Tồn kho</label>
-          <input
-            className="a-input"
-            type="number"
-            min={0}
-            value={variant.stock}
-            onChange={(e) => onChange({ stock: e.target.value })}
-            placeholder="50"
-            disabled={variant.isUnlimitedStock}
-          />
-          <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, color: "rgba(13,51,48,0.5)", marginTop: 4 }}>
-            <input type="checkbox" checked={variant.isUnlimitedStock} onChange={(e) => onChange({ isUnlimitedStock: e.target.checked })} />
-            Không giới hạn tồn kho (phù hợp sách điện tử)
-          </label>
+          {variant.format === "DIGITAL" ? (
+            <div
+              className="a-input"
+              style={{ display: "flex", alignItems: "center", color: "rgba(13,51,48,0.5)" }}
+            >
+              Không giới hạn (sách điện tử)
+            </div>
+          ) : (
+            <input
+              className="a-input"
+              type="number"
+              min={0}
+              value={variant.stock}
+              onChange={(e) => onChange({ stock: e.target.value })}
+              placeholder="50"
+              required
+            />
+          )}
         </div>
 
         {!isNew && (
@@ -196,8 +197,6 @@ function VariantCard({ variant, onChange, onRemove, canRemove }) {
   );
 }
 
-/* Định dạng CHƯA lưu -> hiện mã minh họa (client-side, không phải mã thật).
-   Định dạng đã lưu -> hiện mã thật, không cho đổi. */
 function VariantCodePreview({ variant }) {
   if (variant.id) {
     return (
