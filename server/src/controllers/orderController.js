@@ -2,6 +2,18 @@ const crypto = require("crypto");
 const prisma = require("../config/db");
 const { formatResponse } = require("../utils/helpers");
 const { validateAndComputeDiscount } = require("../utils/couponUtil");
+const {
+  sendOrderConfirmedEmail,
+  sendOrderCancelledEmail,
+} = require("../services/emailService");
+
+// Gửi email không được phép làm hỏng/làm chậm luồng chính (tạo đơn, huỷ đơn...) — luôn tự bắt lỗi,
+// chỉ log lại để không ném unhandled rejection và không trì hoãn response trả về cho client.
+const sendOrderEmailSafe = (sendFn, payload) => {
+  sendFn(payload).catch((err) => {
+    console.error(`[orderController] Gửi email thất bại (${sendFn.name}):`, err);
+  });
+};
 
 const FREE_SHIP_THRESHOLD = 300_000;
 const { calcShippingFee: calcFee, WAREHOUSE } = require("../utils/shipping");
@@ -237,6 +249,34 @@ const createOrder = async (req, res) => {
       return newOrder;
     });
 
+    // Gửi email xác nhận đơn hàng (không chặn response) — dùng luôn dữ liệu cart/address đã có
+    // trong tay thay vì query lại DB, vì đúng những gì vừa được lưu vào Order/OrderItem.
+    sendOrderEmailSafe(sendOrderConfirmedEmail, {
+      to: req.user.email,
+      name: req.user.name,
+      order: {
+        id: order.id,
+        items: cart.items.map((item) => ({
+          title: item.variant.book?.title || "",
+          quantity: item.quantity,
+          price: item.variant.salePrice ?? item.variant.price,
+        })),
+        subtotal,
+        discount,
+        shippingFee,
+        total,
+        paymentMethod: prismaMethod,
+        address: {
+          fullName: shipping.fullName,
+          phone: shipping.phone,
+          street: shipping.street,
+          ward: shipping.ward,
+          district: "",
+          province: shipping.province,
+        },
+      },
+    });
+
     return formatResponse(res, 201, "Đặt hàng thành công", {
       orderId: order.id,
       total,
@@ -327,9 +367,15 @@ const CANCELLABLE_STATUSES = ["PENDING", "CONFIRMED"];
 
 const cancelOrder = async (req, res) => {
   try {
+    const { reason, confirmCode } = req.body;
+
     const order = await prisma.order.findUnique({
       where: { id: req.params.id },
-      include: { items: { include: { variant: true } } },
+      include: {
+        items: {
+          include: { variant: { include: { book: { select: { title: true } } } } },
+        },
+      },
     });
 
     if (!order) return formatResponse(res, 404, "Không tìm thấy đơn hàng");
@@ -351,6 +397,20 @@ const cancelOrder = async (req, res) => {
         "Đơn hàng đang ở trạng thái không thể huỷ",
       );
     }
+
+    // Bắt buộc gõ đúng mã đơn hàng (khớp mã hiển thị trên FE: order.id.slice(0,8)) trước khi cho huỷ —
+    // tránh thao tác nhầm, và bắt buộc phải có lý do để lưu vết + đưa vào email báo huỷ cho khách.
+    const expectedCode = order.id.slice(0, 8);
+    if (
+      !confirmCode ||
+      String(confirmCode).trim().toLowerCase() !== expectedCode.toLowerCase()
+    ) {
+      return formatResponse(res, 400, "Mã đơn hàng xác nhận không đúng");
+    }
+    if (!reason || !String(reason).trim()) {
+      return formatResponse(res, 400, "Vui lòng nhập lý do huỷ đơn");
+    }
+    const cancelReason = String(reason).trim();
 
     const updated = await prisma.$transaction(async (tx) => {
       // Hoàn lại stock đã trừ lúc đặt hàng (bỏ qua hàng không giới hạn)
@@ -377,6 +437,26 @@ const cancelOrder = async (req, res) => {
         where: { id: order.id },
         data: { status: "CANCELLED" },
       });
+    });
+
+    // Gửi email báo huỷ đơn kèm lý do khách vừa nhập (không chặn response).
+    sendOrderEmailSafe(sendOrderCancelledEmail, {
+      to: req.user.email,
+      name: req.user.name,
+      order: {
+        id: order.id,
+        items: order.items.map((item) => ({
+          title: item.variant.book?.title || "",
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        subtotal: order.subtotal,
+        discount: order.discount,
+        shippingFee: order.shippingFee,
+        total: order.total,
+        paymentStatus: updated.paymentStatus,
+      },
+      reason: cancelReason,
     });
 
     return formatResponse(res, 200, "Đã huỷ đơn hàng", updated);

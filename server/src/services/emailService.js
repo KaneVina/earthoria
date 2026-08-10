@@ -742,6 +742,287 @@ async function sendTicketReplyEmail({ to, name, code, subject, message, staff })
   })
 }
 
+// ═══════════════════════════ ORDER EMAILS ═══════════════════════════
+
+const PAYMENT_METHOD_LABEL_VI = {
+  COD: 'Thanh toán khi nhận hàng (COD)',
+  VNPAY: 'VNPay',
+  MOMO: 'MoMo',
+  STRIPE: 'Stripe',
+}
+
+function formatVnd(amount) {
+  return `${Math.round(Number(amount) || 0).toLocaleString('vi-VN')}₫`
+}
+
+// Mã đơn hàng ngắn gọn hiển thị cho khách (8 ký tự đầu của UUID, viết hoa) — khớp cách BE
+// đang dùng ở nơi khác (vd: orderInfo gửi cho VNPay/MoMo: `order.id.slice(0, 8)`).
+function shortOrderCode(orderId) {
+  return String(orderId || '').slice(0, 8).toUpperCase()
+}
+
+function buildOrderItemsTable(items) {
+  const rows = (items || [])
+    .map(
+      (item) => `
+    <tr>
+      <td style="padding:10px 0;border-bottom:1px solid rgba(11,46,43,0.06);font-size:13px;color:#0b2e2b;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+        ${item.title}
+        <span style="color:#8a9690;font-weight:300;"> × ${item.quantity}</span>
+      </td>
+      <td style="padding:10px 0;border-bottom:1px solid rgba(11,46,43,0.06);font-size:13px;color:#0b2e2b;text-align:right;white-space:nowrap;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+        ${formatVnd(item.price * item.quantity)}
+      </td>
+    </tr>`,
+    )
+    .join('')
+
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+      ${rows}
+    </table>
+  `
+}
+
+function buildOrderTotalsTable(order) {
+  const rows = [
+    ['Tạm tính', formatVnd(order.subtotal)],
+  ]
+  if (order.discount) rows.push(['Giảm giá', `-${formatVnd(order.discount)}`])
+  rows.push([
+    'Phí vận chuyển',
+    order.shippingFee ? formatVnd(order.shippingFee) : 'Miễn phí',
+  ])
+
+  const rowsHtml = rows
+    .map(
+      ([label, value]) => `
+    <tr>
+      <td style="padding:5px 0;font-size:12.5px;color:#5a6b60;font-weight:300;font-family:'Be Vietnam Pro',Arial,sans-serif;">${label}</td>
+      <td style="padding:5px 0;font-size:12.5px;color:#0b2e2b;text-align:right;font-family:'Be Vietnam Pro',Arial,sans-serif;">${value}</td>
+    </tr>`,
+    )
+    .join('')
+
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">
+      ${rowsHtml}
+      <tr>
+        <td colspan="2" style="padding-top:10px;">
+          <div style="height:1px;background:rgba(11,46,43,0.09);"></div>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding-top:12px;font-size:14px;font-weight:600;color:#0b2e2b;font-family:'Be Vietnam Pro',Arial,sans-serif;">Tổng cộng</td>
+        <td style="padding-top:12px;font-size:16px;font-weight:600;color:#0b2e2b;text-align:right;font-family:'Be Vietnam Pro',Arial,sans-serif;">${formatVnd(order.total)}</td>
+      </tr>
+    </table>
+  `
+}
+
+function buildOrderSummaryCard(order) {
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+      <tr>
+        <td style="background:#fff;border:1px solid rgba(11,46,43,0.09);border-radius:10px;overflow:hidden;">
+          <div style="background:#faf8f2;padding:16px 28px;border-bottom:1px solid rgba(11,46,43,0.06);">
+            <div style="font-size:9.5px;letter-spacing:2.5px;text-transform:uppercase;color:#a0b8a8;font-weight:500;margin-bottom:4px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+              Mã đơn hàng
+            </div>
+            <div style="font-size:18px;font-weight:600;color:#0b2e2b;letter-spacing:1px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+              #${shortOrderCode(order.id)}
+            </div>
+          </div>
+          <div style="padding:20px 28px;">
+            ${buildOrderItemsTable(order.items)}
+            ${buildOrderTotalsTable(order)}
+          </div>
+        </td>
+      </tr>
+    </table>
+  `
+}
+
+function buildOrderAddressBlock(order) {
+  if (!order.address) return ''
+  const a = order.address
+  const parts = [a.street, a.ward, a.district, a.province].filter(Boolean).join(', ')
+
+  return `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+      <tr>
+        <td style="background:#faf8f2;border-radius:8px;padding:16px 20px;">
+          <div style="font-size:9.5px;letter-spacing:2.5px;text-transform:uppercase;color:#a0b8a8;font-weight:500;margin-bottom:8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+            Giao đến
+          </div>
+          <div style="font-size:13px;color:#0b2e2b;font-weight:500;margin-bottom:3px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+            ${a.fullName || ''}${a.phone ? ` · ${a.phone}` : ''}
+          </div>
+          <div style="font-size:12.5px;color:#5a6b60;font-weight:300;line-height:1.7;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+            ${parts}
+          </div>
+        </td>
+      </tr>
+    </table>
+  `
+}
+
+// ─ Order: Xác nhận đặt hàng thành công (gửi ngay sau khi tạo đơn) ─
+async function sendOrderConfirmedEmail({ to, name, order }) {
+  const paymentLabel = PAYMENT_METHOD_LABEL_VI[order.paymentMethod] || order.paymentMethod
+
+  const bodyHtml = `
+    <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Thông báo đơn hàng
+    </div>
+    <h1 style="font-size:26px;font-weight:600;color:#0b2e2b;line-height:1.3;margin:0 0 28px;text-align:center;letter-spacing:1px;text-transform:uppercase;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Đặt Hàng Thành Công
+    </h1>
+
+    <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Xin chào, ${name || 'bạn'}.
+    </p>
+    <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 24px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Cảm ơn bạn đã đặt hàng tại Earthoria! Chúng tôi đã nhận được đơn hàng của bạn và sẽ xử lý trong thời gian sớm nhất.
+      Phương thức thanh toán: <strong style="color:#0b2e2b;font-weight:500;">${paymentLabel}</strong>.
+    </p>
+
+    ${buildOrderSummaryCard(order)}
+    ${buildOrderAddressBlock(order)}
+
+    <div style="background:rgba(74,158,63,0.04);border:1px solid rgba(74,158,63,0.14);border-radius:8px;padding:16px 20px;margin-bottom:8px;">
+      <p style="font-size:12px;color:#5a6b60;line-height:1.85;font-weight:300;margin:0;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+        <strong style="color:#0b2e2b;font-weight:500;">Lưu ý:</strong>
+        Bạn có thể theo dõi trạng thái đơn hàng trong mục "Đơn hàng của tôi" trên tài khoản Earthoria.
+      </p>
+    </div>
+  `
+
+  return sendMail({
+    from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
+    to,
+    subject: `[#${shortOrderCode(order.id)}] Đặt hàng thành công tại Earthoria`,
+    html: wrapEmailTemplate({
+      preheader: `Đơn hàng #${shortOrderCode(order.id)} của bạn đã được ghi nhận.`,
+      bodyHtml,
+    }),
+  })
+}
+
+// ─ Order: Đơn hàng đã được giao thành công ─
+async function sendOrderDeliveredEmail({ to, name, order }) {
+  const bodyHtml = `
+    <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Thông báo giao hàng thành công
+    </div>
+    <h1 style="font-size:26px;font-weight:600;color:#0b2e2b;line-height:1.3;margin:0 0 28px;text-align:center;letter-spacing:1px;text-transform:uppercase;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Giao Hàng Thành Công
+    </h1>
+
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(74,158,63,0.08);border:1px solid rgba(74,158,63,0.25);display:inline-block;line-height:52px;font-size:20px;color:#4a9e3f;text-align:center;">
+        ✓
+      </div>
+    </div>
+
+    <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Xin chào, ${name || 'bạn'}.
+    </p>
+    <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 24px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Đơn hàng <strong style="color:#0b2e2b;font-weight:500;">#${shortOrderCode(order.id)}</strong> đã được giao thành công đến bạn.
+      Cảm ơn bạn đã tin tưởng và mua sắm tại Earthoria!
+    </p>
+
+    ${buildOrderSummaryCard(order)}
+
+    <div style="background:rgba(74,158,63,0.04);border:1px solid rgba(74,158,63,0.14);border-radius:8px;padding:16px 20px;margin-bottom:8px;">
+      <p style="font-size:12px;color:#5a6b60;line-height:1.85;font-weight:300;margin:0;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+        <strong style="color:#0b2e2b;font-weight:500;">Có vấn đề với đơn hàng?</strong>
+        Liên hệ ngay
+        <a href="mailto:helpdesk.earthoria@gmail.com" style="color:#1a5a9e;text-decoration:none;font-weight:500;">helpdesk.earthoria@gmail.com</a>
+        để được hỗ trợ.
+      </p>
+    </div>
+  `
+
+  return sendMail({
+    from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
+    to,
+    subject: `[#${shortOrderCode(order.id)}] Giao hàng thành công`,
+    html: wrapEmailTemplate({
+      preheader: `Đơn hàng #${shortOrderCode(order.id)} đã được giao thành công.`,
+      bodyHtml,
+    }),
+  })
+}
+
+// ─ Order: Đơn hàng đã bị huỷ ─
+async function sendOrderCancelledEmail({ to, name, order, reason }) {
+  const bodyHtml = `
+    <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Thông báo đơn hàng
+    </div>
+    <h1 style="font-size:26px;font-weight:600;color:#0b2e2b;line-height:1.3;margin:0 0 28px;text-align:center;letter-spacing:1px;text-transform:uppercase;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Đơn Hàng Đã Bị Huỷ
+    </h1>
+
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(192,80,80,0.08);border:1px solid rgba(192,80,80,0.25);display:inline-block;line-height:52px;font-size:20px;color:#b23a30;text-align:center;">
+        ✕
+      </div>
+    </div>
+
+    <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Xin chào, ${name || 'bạn'}.
+    </p>
+    <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 24px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Đơn hàng <strong style="color:#0b2e2b;font-weight:500;">#${shortOrderCode(order.id)}</strong> của bạn đã bị huỷ.
+      ${order.paymentStatus === 'PAID' ? 'Số tiền đã thanh toán sẽ được hoàn lại theo chính sách hoàn tiền của Earthoria.' : ''}
+    </p>
+
+    ${
+      reason
+        ? `
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+      <tr>
+        <td style="background:#fff;border:1px solid rgba(11,46,43,0.09);border-radius:10px;overflow:hidden;">
+          <div style="background:#faf1ef;padding:14px 28px;border-bottom:1px solid rgba(11,46,43,0.06);">
+            <div style="font-size:9.5px;letter-spacing:2.5px;text-transform:uppercase;color:#b23a30;font-weight:600;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+              Lý do huỷ đơn
+            </div>
+          </div>
+          <div style="padding:16px 28px;font-size:13px;color:#0b2e2b;line-height:1.8;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+            ${reason}
+          </div>
+        </td>
+      </tr>
+    </table>`
+        : ''
+    }
+
+    ${buildOrderSummaryCard(order)}
+
+    <div style="background:rgba(192,80,80,0.05);border:1px solid rgba(192,80,80,0.18);border-radius:8px;padding:16px 20px;margin-bottom:8px;">
+      <p style="font-size:12px;color:#7a4440;line-height:1.85;font-weight:300;margin:0;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+        <strong style="color:#5a2820;font-weight:500;">Cần hỗ trợ thêm?</strong>
+        Liên hệ
+        <a href="mailto:helpdesk.earthoria@gmail.com" style="color:#b25450;text-decoration:none;font-weight:500;">helpdesk.earthoria@gmail.com</a>
+        và nhắc mã đơn hàng #${shortOrderCode(order.id)}.
+      </p>
+    </div>
+  `
+
+  return sendMail({
+    from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
+    to,
+    subject: `[#${shortOrderCode(order.id)}] Đơn hàng của bạn đã bị huỷ`,
+    html: wrapEmailTemplate({
+      preheader: `Đơn hàng #${shortOrderCode(order.id)} đã bị huỷ.`,
+      bodyHtml,
+    }),
+  })
+}
+
 module.exports = {
   verifyEmailTransport,
   sendOtpEmail,
@@ -754,4 +1035,7 @@ module.exports = {
   sendAccountUnlockedEmail,
   sendTicketCreatedEmail,
   sendTicketReplyEmail,
+  sendOrderConfirmedEmail,
+  sendOrderDeliveredEmail,
+  sendOrderCancelledEmail,
 }

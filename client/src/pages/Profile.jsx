@@ -1928,6 +1928,24 @@ function PaymentSessionCountdown({ expiresAt, onExpire }) {
 
 function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
   const [retrying, setRetrying] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const qc = useQueryClient();
+
+  const cancelMutation = useMutation({
+    mutationFn: (payload) => orderService.cancelOrder(order.id, payload),
+    onSuccess: () => {
+      toast.success(
+        "Đã huỷ đơn hàng thành công. Email xác nhận đã được gửi tới bạn.",
+      );
+      qc.invalidateQueries({ queryKey: ["order", order.id] });
+      qc.invalidateQueries({ queryKey: ["orders"] });
+      setShowCancelModal(false);
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || "Huỷ đơn hàng thất bại");
+    },
+  });
+
   if (loading || !order) return <OrderDetailSkeleton onBack={onBack} />;
 
   const status = ORDER_STATUS_MAP[order.status] || ORDER_STATUS_MAP.PENDING;
@@ -1938,6 +1956,9 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
     ["VNPAY", "MOMO"].includes(order.paymentMethod) &&
     order.paymentStatus !== "PAID" &&
     ["PENDING", "CONFIRMED"].includes(order.status);
+  const canCancel =
+    ["PENDING", "CONFIRMED"].includes(order.status) &&
+    order.paymentStatus !== "PAID";
 
   const retryPayment = async () => {
     setRetrying(true);
@@ -2158,7 +2179,142 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
                 )}
               </button>
             )}
+            {canCancel && (
+              <button
+                onClick={() => setShowCancelModal(true)}
+                className="pf-btn-tactile"
+                style={{
+                  width: "100%",
+                  marginTop: 10,
+                  color: "#b23a30",
+                  borderColor: "rgba(178,58,48,0.3)",
+                }}
+              >
+                Huỷ đơn hàng
+              </button>
+            )}
           </div>
+        </div>
+      </div>
+
+      {showCancelModal && (
+        <CancelOrderModal
+          order={order}
+          submitting={cancelMutation.isPending}
+          onClose={() => !cancelMutation.isPending && setShowCancelModal(false)}
+          onConfirm={(payload) => cancelMutation.mutate(payload)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ════════════════════════ HUỶ ĐƠN HÀNG — MODAL XÁC NHẬN ════════════════════════
+function CancelOrderModal({ order, onClose, onConfirm, submitting }) {
+  const expectedCode = (order.orderCode || order.id?.slice(0, 8) || "").toLowerCase();
+  const [codeInput, setCodeInput] = useState("");
+  const [reason, setReason] = useState("");
+  const codeMatches =
+    expectedCode.length > 0 && codeInput.trim().toLowerCase() === expectedCode;
+
+  return (
+    <div
+      onClick={(e) => e.target === e.currentTarget && !submitting && onClose()}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(11,46,43,0.55)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1000,
+        padding: 20,
+      }}
+    >
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: 14,
+          maxWidth: 440,
+          width: "100%",
+          padding: "32px 32px 28px",
+          boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+        }}
+      >
+        <h3 style={{ fontFamily: F.serif, fontSize: 22, color: "var(--forest)", margin: "0 0 8px" }}>
+          Huỷ đơn hàng #{order.orderCode || order.id?.slice(0, 8)}
+        </h3>
+        <p style={{ fontSize: 13.5, color: "var(--text-muted)", lineHeight: 1.7, margin: "0 0 20px" }}>
+          Để xác nhận, vui lòng nhập chính xác mã đơn hàng bên dưới. Hành động
+          này không thể hoàn tác.
+        </p>
+
+        <label style={{ fontSize: 11.5, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: "var(--text-muted)", display: "block", marginBottom: 6 }}>
+          Mã đơn hàng
+        </label>
+        <input
+          value={codeInput}
+          onChange={(e) => setCodeInput(e.target.value)}
+          placeholder={order.orderCode || order.id?.slice(0, 8)}
+          disabled={submitting}
+          style={{
+            width: "100%",
+            padding: "12px 14px",
+            borderRadius: 8,
+            border: `1.5px solid ${codeMatches ? "#4a9e3f" : "var(--border)"}`,
+            fontSize: 14,
+            marginBottom: 18,
+            fontFamily: F.sans,
+            boxSizing: "border-box",
+          }}
+        />
+
+        <label style={{ fontSize: 11.5, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: "var(--text-muted)", display: "block", marginBottom: 6 }}>
+          Lý do huỷ đơn
+        </label>
+        <textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          disabled={!codeMatches || submitting}
+          placeholder={
+            codeMatches
+              ? "Cho chúng tôi biết lý do bạn huỷ đơn..."
+              : "Nhập đúng mã đơn hàng ở trên để mở khoá ô này"
+          }
+          rows={4}
+          style={{
+            width: "100%",
+            padding: "12px 14px",
+            borderRadius: 8,
+            border: "1.5px solid var(--border)",
+            fontSize: 13.5,
+            fontFamily: F.sans,
+            resize: "vertical",
+            boxSizing: "border-box",
+            marginBottom: 24,
+            background: codeMatches ? "#fff" : "#f5f4f0",
+            color: codeMatches ? "inherit" : "#aaa",
+          }}
+        />
+
+        <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
+          <button type="button" onClick={onClose} disabled={submitting} className="pf-btn-tactile" style={{ padding: "11px 20px" }}>
+            Đóng
+          </button>
+          <button
+            type="button"
+            onClick={() => onConfirm({ confirmCode: codeInput.trim(), reason: reason.trim() })}
+            disabled={!codeMatches || !reason.trim() || submitting}
+            className="pf-btn-tactile"
+            style={{
+              padding: "11px 22px",
+              background: "#b23a30",
+              color: "#fff",
+              opacity: !codeMatches || !reason.trim() || submitting ? 0.5 : 1,
+            }}
+          >
+            {submitting ? "Đang huỷ…" : "Xác nhận huỷ đơn"}
+          </button>
         </div>
       </div>
     </div>
@@ -2190,8 +2346,6 @@ const PASSWORD_CHECKS = [
 ];
 
 function SecurityTab({ hasPassword, email }) {
-  // Tài khoản Google chưa từng tạo mật khẩu → hiển thị luồng "Tạo Mật Khẩu" (có OTP)
-  // thay vì form "Đổi Mật Khẩu" thông thường (vốn cần mật khẩu hiện tại — chưa từng có).
   if (hasPassword === false) {
     return <CreatePasswordFlow email={email} />;
   }

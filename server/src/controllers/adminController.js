@@ -5,7 +5,16 @@ const {
   sendAccountProvisionedEmail,
   sendAccountLockedEmail,
   sendAccountUnlockedEmail,
+  sendOrderDeliveredEmail,
+  sendOrderCancelledEmail,
 } = require("../services/emailService");
+
+// Gửi email không được phép làm hỏng/làm chậm thao tác admin — luôn tự bắt lỗi, chỉ log lại.
+const sendOrderEmailSafe = (sendFn, payload) => {
+  sendFn(payload).catch((err) => {
+    console.error(`[adminController] Gửi email thất bại (${sendFn.name}):`, err);
+  });
+};
 const { uploadGlbFile } = require("../services/catboxService");
 // const { uploadGlbFile } = require("../services/cloudinaryUploadService");
 
@@ -429,14 +438,6 @@ function validateVariantsInput(variants) {
   return null;
 }
 
-// Sách điện tử là file, bán bao nhiêu cũng được -> LUÔN unlimited.
-// Sách giấy là hàng tồn kho thật -> KHÔNG BAO GIỜ được unlimited, dù client gửi gì lên.
-// Suy thẳng từ format, không tin giá trị isUnlimitedStock client gửi, để 2 field này
-// không bao giờ lệch nhau (tránh sách giấy bán vượt kho thật / sách điện tử báo hết hàng sai).
-function isUnlimitedByFormat(format) {
-  return format === "DIGITAL";
-}
-
 async function createVariantsForBook(tx, bookId, variants) {
   for (const v of variants) {
     const productCode = await generateProductCode(tx);
@@ -450,7 +451,7 @@ async function createVariantsForBook(tx, bookId, variants) {
         salePrice: v.salePrice != null ? Number(v.salePrice) : null,
         dealerPrice: v.dealerPrice != null ? Number(v.dealerPrice) : null,
         stock: Number(v.stock) || 0,
-        isUnlimitedStock: isUnlimitedByFormat(v.format),
+        isUnlimitedStock: !!v.isUnlimitedStock,
         isActive: v.isActive !== false,
       },
     });
@@ -473,7 +474,7 @@ async function upsertVariantsForBook(tx, bookId, variants) {
           dealerPrice: v.dealerPrice != null ? Number(v.dealerPrice) : null,
           stock: Number(v.stock) || 0,
           unit: v.unit || existing.unit,
-          isUnlimitedStock: isUnlimitedByFormat(existing.format), // format không đổi được khi update
+          isUnlimitedStock: !!v.isUnlimitedStock,
           isActive: v.isActive !== false,
         },
       });
@@ -489,7 +490,7 @@ async function upsertVariantsForBook(tx, bookId, variants) {
           salePrice: v.salePrice != null ? Number(v.salePrice) : null,
           dealerPrice: v.dealerPrice != null ? Number(v.dealerPrice) : null,
           stock: Number(v.stock) || 0,
-          isUnlimitedStock: isUnlimitedByFormat(v.format),
+          isUnlimitedStock: !!v.isUnlimitedStock,
           isActive: v.isActive !== false,
         },
       });
@@ -1076,7 +1077,7 @@ exports.getOrders = async (req, res) => {
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, cancelReason } = req.body;
 
     const validStatuses = [
       "PENDING",
@@ -1092,12 +1093,64 @@ exports.updateOrderStatus = async (req, res) => {
         .json({ success: false, message: "Trạng thái không hợp lệ" });
     }
 
+    // Lấy trạng thái CŨ trước khi update để chỉ gửi email khi thực sự CHUYỂN sang DELIVERED/CANCELLED
+    // (tránh gửi lặp email nếu admin lỡ bấm lưu lại cùng 1 trạng thái đang có).
+    const existing = await prisma.order.findUnique({
+      where: { id },
+      select: { status: true },
+    });
+    if (!existing) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy đơn hàng" });
+    }
+    const isNewTransition = existing.status !== status;
+
     const extraData = status === "DELIVERED" ? { paymentStatus: "PAID" } : {};
 
     const order = await prisma.order.update({
       where: { id },
       data: { status, ...extraData },
+      include: {
+        user: { select: { email: true, name: true } },
+        address: true,
+        items: {
+          include: { variant: { include: { book: { select: { title: true } } } } },
+        },
+      },
     });
+
+    if (isNewTransition && (status === "DELIVERED" || status === "CANCELLED")) {
+      const emailOrder = {
+        id: order.id,
+        items: order.items.map((item) => ({
+          title: item.variant?.book?.title || "",
+          quantity: item.quantity,
+          price: item.price,
+        })),
+        subtotal: order.subtotal,
+        discount: order.discount,
+        shippingFee: order.shippingFee,
+        total: order.total,
+        paymentStatus: order.paymentStatus,
+        address: order.address,
+      };
+
+      if (status === "DELIVERED") {
+        sendOrderEmailSafe(sendOrderDeliveredEmail, {
+          to: order.user.email,
+          name: order.user.name,
+          order: emailOrder,
+        });
+      } else {
+        sendOrderEmailSafe(sendOrderCancelledEmail, {
+          to: order.user.email,
+          name: order.user.name,
+          order: emailOrder,
+          reason: cancelReason || null,
+        });
+      }
+    }
 
     return res.json({ success: true, data: order });
   } catch (err) {

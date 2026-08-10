@@ -5,5 +5,5 @@ export const orderService = {
   getMyOrders: (params) => api.get('/orders/me', { params }),
   getOrders:   (params) => api.get('/orders/me', { params }),
   getOrder:    (id)     => api.get(`/orders/${id}`),
-  cancelOrder: (id)     => api.put(`/orders/${id}/cancel`)
+  cancelOrder: (id, data) => api.put(`/orders/${id}/cancel`, data)
 }
