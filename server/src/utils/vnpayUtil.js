@@ -1,9 +1,3 @@
-// vnpayUtil.js — Ký & xác thực chữ ký cho cổng thanh toán VNPay (môi trường sandbox demo).
-//
-// Muốn test thật cần đăng ký tài khoản sandbox miễn phí tại:
-//   https://sandbox.vnpayment.vn/devreg/  → lấy vnp_TmnCode + vnp_HashSecret
-// rồi điền vào .env (VNPAY_TMN_CODE, VNPAY_HASH_SECRET). Thẻ test do VNPay cấp
-// sẵn trong tài khoản sandbox (ngân hàng NCB demo, OTP demo 123456...).
 const crypto = require("crypto");
 
 const VNP_URL =
@@ -11,8 +5,6 @@ const VNP_URL =
 const VNP_TMN_CODE = process.env.VNPAY_TMN_CODE || "";
 const VNP_HASH_SECRET = process.env.VNPAY_HASH_SECRET || "";
 
-// VNPay yêu cầu sort key alphabet rồi build query string TRƯỚC khi ký —
-// và encode y hệt lúc build URL thật (dùng encodeURIComponent, khoảng trắng thành '+').
 function sortObject(obj) {
   const sorted = {};
   Object.keys(obj)
@@ -45,10 +37,6 @@ function formatVnpDate(date) {
   );
 }
 
-/**
- * Tạo URL redirect người dùng sang cổng VNPay.
- * @param {{ txnRef: string, amount: number, orderInfo: string, ipAddr: string, returnUrl: string }} p
- */
 function createPaymentUrl({ txnRef, amount, orderInfo, ipAddr, returnUrl }) {
   const now = new Date();
   const params = {
@@ -71,21 +59,27 @@ function createPaymentUrl({ txnRef, amount, orderInfo, ipAddr, returnUrl }) {
   return `${VNP_URL}?${signData}&vnp_SecureHash=${secureHash}`;
 }
 
-/**
- * Xác thực chữ ký VNPay trả về (ở returnUrl hoặc IPN).
- * @param {Record<string,string>} query toàn bộ query params VNPay gửi về (đã bao gồm vnp_SecureHash)
- */
+const VNP_CURRENCY = "VND";
+
 function verifyReturn(query) {
   const { vnp_SecureHash, vnp_SecureHashType, ...rest } = query;
   const { secureHash } = buildSignedQuery(rest, VNP_HASH_SECRET);
-  const isValid =
+  const signatureValid =
     !!vnp_SecureHash &&
     secureHash.length === vnp_SecureHash.length &&
     crypto.timingSafeEqual(Buffer.from(secureHash), Buffer.from(vnp_SecureHash));
+
+  const tmnCodeValid = !!VNP_TMN_CODE && query.vnp_TmnCode === VNP_TMN_CODE;
+
+  const isValid = signatureValid && tmnCodeValid;
+
   return {
     isValid,
+    signatureValid,
+    tmnCodeValid,
     isSuccess: isValid && query.vnp_ResponseCode === "00" && query.vnp_TransactionStatus === "00",
+    currency: VNP_CURRENCY,
   };
 }
 
-module.exports = { createPaymentUrl, verifyReturn, VNP_TMN_CODE, VNP_HASH_SECRET };
+module.exports = { createPaymentUrl, verifyReturn, VNP_TMN_CODE, VNP_HASH_SECRET, VNP_CURRENCY };

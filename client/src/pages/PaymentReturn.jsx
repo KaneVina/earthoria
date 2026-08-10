@@ -1,17 +1,54 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
-import { Check, X, Loader2, ShieldCheck } from "lucide-react";
+import { Check, X, Loader2, ShieldCheck, RefreshCcw } from "lucide-react";
 import { paymentService } from "../services/paymentService";
 import { useAuthStore } from "../store/authStore";
 
+// Sau khi verify về, đơn có thể ở 3 trạng thái hiển thị:
+// - success: đã được IPN xác nhận PAID
+// - pending: gateway báo thành công nhưng IPN (nguồn xác nhận chính) chưa kịp xử lý xong — không phải lỗi
+// - failed: gateway báo thất bại/huỷ, hoặc phiên đã hết hạn, hoặc dữ liệu không khớp
 export default function PaymentReturn({ method }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
-  const [state, setState] = useState({ loading: true, success: false, orderId: null, message: "" });
+  const [state, setState] = useState({
+    loading: true,
+    success: false,
+    pending: false,
+    orderId: null,
+    message: "",
+  });
   const [retrying, setRetrying] = useState(false);
+  const [rechecking, setRechecking] = useState(false);
 
   const methodLabel = method === "vnpay" ? "VNPay" : "MoMo";
+
+  const runVerify = (showLoading) => {
+    const qs = location.search.replace(/^\?/, "");
+    if (!qs) {
+      setState({ loading: false, success: false, pending: false, orderId: null, message: "Thiếu thông tin giao dịch" });
+      return;
+    }
+
+    if (showLoading) setState((s) => ({ ...s, loading: true }));
+
+    const verify = method === "vnpay" ? paymentService.verifyVnpayReturn : paymentService.verifyMomoReturn;
+    return verify(qs)
+      .then(({ data }) => {
+        const { orderId, success, pending, message } = data.data;
+        setState({ loading: false, success: !!success, pending: !!pending, orderId, message: message || data.message });
+      })
+      .catch((err) => {
+        setState({
+          loading: false,
+          success: false,
+          pending: false,
+          orderId: null,
+          message: err?.response?.data?.message || "Không xác thực được giao dịch",
+        });
+      });
+  };
 
   useEffect(() => {
     // Chưa đăng nhập (vd token hết hạn trong lúc thanh toán) → cho đăng nhập lại rồi quay về đúng URL này
@@ -19,29 +56,18 @@ export default function PaymentReturn({ method }) {
       navigate(`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`);
       return;
     }
-
-    const qs = location.search.replace(/^\?/, "");
-    if (!qs) {
-      setState({ loading: false, success: false, orderId: null, message: "Thiếu thông tin giao dịch" });
-      return;
-    }
-
-    const verify = method === "vnpay" ? paymentService.verifyVnpayReturn : paymentService.verifyMomoReturn;
-    verify(qs)
-      .then(({ data }) => {
-        const { orderId, success, message } = data.data;
-        setState({ loading: false, success, orderId, message: message || data.message });
-      })
-      .catch((err) => {
-        setState({
-          loading: false,
-          success: false,
-          orderId: null,
-          message: err?.response?.data?.message || "Không xác thực được giao dịch",
-        });
-      });
+    runVerify(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.search, isAuthenticated]);
+
+  const recheck = async () => {
+    setRechecking(true);
+    try {
+      await runVerify(false);
+    } finally {
+      setRechecking(false);
+    }
+  };
 
   const retryPayment = async () => {
     if (!state.orderId) return;
@@ -54,6 +80,9 @@ export default function PaymentReturn({ method }) {
       setRetrying(false);
     }
   };
+
+  const showPending = !state.loading && !state.success && state.pending;
+  const showFailed = !state.loading && !state.success && !state.pending;
 
   return (
     <div
@@ -95,7 +124,7 @@ export default function PaymentReturn({ method }) {
                 width: 72,
                 height: 72,
                 borderRadius: "50%",
-                background: state.success ? "var(--forest)" : "#b25450",
+                background: state.success ? "var(--forest)" : showPending ? "var(--gold)" : "#b25450",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -104,6 +133,8 @@ export default function PaymentReturn({ method }) {
             >
               {state.success ? (
                 <Check size={30} color="var(--ivory)" strokeWidth={2} />
+              ) : showPending ? (
+                <Loader2 size={30} color="var(--ivory)" strokeWidth={2} />
               ) : (
                 <X size={30} color="var(--ivory)" strokeWidth={2} />
               )}
@@ -118,16 +149,51 @@ export default function PaymentReturn({ method }) {
                 marginBottom: 10,
               }}
             >
-              {state.success ? "Thanh toán thành công!" : "Thanh toán chưa hoàn tất"}
+              {state.success
+                ? "Thanh toán thành công!"
+                : showPending
+                ? "Đang chờ xác nhận…"
+                : "Thanh toán chưa hoàn tất"}
             </h2>
             <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 32, fontWeight: 300 }}>
               {state.success
                 ? `Đơn hàng của bạn đã được xác nhận qua ${methodLabel}.`
+                : showPending
+                ? "Giao dịch đã được gateway ghi nhận, hệ thống đang xác nhận lại — thường chỉ mất vài giây."
                 : state.message || `Giao dịch ${methodLabel} không thành công hoặc đã bị huỷ.`}
             </p>
 
             <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-              {!state.success && state.orderId && (
+              {showPending && (
+                <button
+                  onClick={recheck}
+                  disabled={rechecking}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    background: "var(--gold)",
+                    border: "none",
+                    padding: "15px 32px",
+                    cursor: rechecking ? "not-allowed" : "pointer",
+                    opacity: rechecking ? 0.7 : 1,
+                    fontFamily: "Be Vietnam Pro, sans-serif",
+                    fontSize: 11,
+                    letterSpacing: "0.18em",
+                    textTransform: "uppercase",
+                    color: "var(--ink)",
+                  }}
+                >
+                  {rechecking ? (
+                    <Loader2 size={14} style={{ animation: "spin 0.8s linear infinite" }} />
+                  ) : (
+                    <RefreshCcw size={14} />
+                  )}
+                  Kiểm tra lại
+                </button>
+              )}
+
+              {showFailed && state.orderId && (
                 <button
                   onClick={retryPayment}
                   disabled={retrying}

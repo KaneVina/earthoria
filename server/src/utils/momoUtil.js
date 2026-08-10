@@ -1,9 +1,3 @@
-// momoUtil.js — Tạo yêu cầu thanh toán & xác thực chữ ký MoMo (môi trường test/sandbox).
-//
-// Bộ accessKey/secretKey mặc định bên dưới là bộ khóa TEST công khai chính thức của MoMo,
-// dùng chung cho mọi developer thử nghiệm (công bố trong tài liệu tích hợp của MoMo) — không
-// phải bí mật riêng của dự án này. Muốn dùng khóa riêng thì đăng ký Business tại business.momo.vn
-// rồi điền vào .env (MOMO_PARTNER_CODE, MOMO_ACCESS_KEY, MOMO_SECRET_KEY).
 const crypto = require("crypto");
 
 const MOMO_ENDPOINT =
@@ -16,10 +10,6 @@ function sign(rawSignature) {
   return crypto.createHmac("sha256", SECRET_KEY).update(rawSignature).digest("hex");
 }
 
-/**
- * Gọi API MoMo để lấy payUrl (redirect người dùng sang đó thanh toán).
- * @param {{ orderId: string, amount: number, orderInfo: string, redirectUrl: string, ipnUrl: string }} p
- */
 async function createPaymentRequest({ orderId, amount, orderInfo, redirectUrl, ipnUrl }) {
   const requestId = `${orderId}-${Date.now()}`;
   const requestType = "captureWallet";
@@ -58,10 +48,7 @@ async function createPaymentRequest({ orderId, amount, orderInfo, redirectUrl, i
   return data; // { payUrl, resultCode, message, ... }
 }
 
-/**
- * Xác thực chữ ký MoMo gửi về ở redirectUrl / ipnUrl.
- * @param {Record<string,string>} query các field MoMo trả về (đã bao gồm signature)
- */
+const MOMO_CURRENCY = "VND";
 function verifyReturn(query) {
   const {
     signature,
@@ -87,12 +74,22 @@ function verifyReturn(query) {
     `&resultCode=${resultCode}&transId=${transId}`;
 
   const expected = sign(rawSignature);
-  const isValid =
+  const signatureValid =
     !!signature &&
     expected.length === signature.length &&
     crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
 
-  return { isValid, isSuccess: isValid && String(resultCode) === "0" };
+  const partnerCodeValid = !!PARTNER_CODE && partnerCode === PARTNER_CODE;
+
+  const isValid = signatureValid && partnerCodeValid;
+
+  return {
+    isValid,
+    signatureValid,
+    partnerCodeValid,
+    isSuccess: isValid && String(resultCode) === "0",
+    currency: MOMO_CURRENCY,
+  };
 }
 
-module.exports = { createPaymentRequest, verifyReturn, PARTNER_CODE };
+module.exports = { createPaymentRequest, verifyReturn, PARTNER_CODE, MOMO_CURRENCY };

@@ -332,12 +332,6 @@ const PAYMENT_OPTIONS = [
     label: "Ví MoMo",
     sub: "Ví điện tử MoMo",
   },
-  {
-    id: "card",
-    icon: CreditCard,
-    label: "Thẻ quốc tế",
-    sub: "Visa / Mastercard / JCB",
-  },
 ];
 
 /* ───────────────────────────────────────
