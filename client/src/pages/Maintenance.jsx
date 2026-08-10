@@ -35,9 +35,17 @@ const REASONS = [
     title: "Tích hợp sách điện tử lên hệ thống",
     body: "Bổ sung kho sách điện tử (ebook) để người dùng đọc trực tiếp trên nền tảng, không cần chờ giao sách giấy.",
   },
+   {
+    title: "Tích hợp thanh toán nâng cao",
+    body: "Bổ sung phương thức thanh toán bằng VNPay và Momo giúp trải nghiệm tốt hơn.",
+  },
   {
     title: "Thêm các trò chơi tương tác",
     body: "Tích hợp mini-game tương tác gắn liền với nội dung sách, giúp trải nghiệm đọc trở nên sinh động và hấp dẫn hơn.",
+  },
+   {
+    title: "Không gian quản lý trẻ dành cho phụ huynh",
+    body: "Quản lý thời gian tự động, can thiệp thông minh để bảo vệ quá trình trải nghiệm của trẻ nhỏ.",
   },
   {
     title: "Nâng cấp hệ thống AR và AI",
@@ -54,13 +62,9 @@ const REASONS = [
 ];
 
 export default function Maintenance({ until, message }) {
-  // Nếu admin đặt lịch bảo trì có giờ kết thúc cụ thể thì đếm ngược theo giờ đó,
-  // ngược lại (bật thủ công, không có lịch) thì dùng mốc mặc định cũ.
   const target = until ? new Date(until) : TARGET_DATE;
   const { d, h, m, s, done } = useCountdown(target);
 
-  // As soon as the countdown finishes, refresh automatically so the
-  // person sees the live site without needing to reload by hand.
   useEffect(() => {
     if (!done) return;
     const t = setTimeout(() => window.location.reload(), 1200);
@@ -145,9 +149,8 @@ export default function Maintenance({ until, message }) {
           </h2>
 
           <p className="em-rise-4" style={styles.vSub}>
-            Đằng sau quyển sách đang khép lại, đội ngũ của Earthoria sắp
-            xếp lại từng trang sách số để hành trình tiếp theo của bạn mượt mà
-            hơn.
+            Đằng sau quyển sách đang khép lại, đội ngũ của Earthoria sắp xếp lại
+            từng trang sách số để hành trình tiếp theo của bạn mượt mà hơn.
           </p>
         </div>
 
@@ -198,15 +201,17 @@ export default function Maintenance({ until, message }) {
               style={styles.eiraSorryImg}
             />
           </div>
-
           <p style={styles.desc}>
-            {message ||
-              "Đội ngũ vận hành và phát triển Earthoria xin phép được thông báo tạm ngưng phục vụ trong thời gian này để thực hiện các nâng cấp và bảo trì hệ thống nhằm mang đến trải nghiệm ổn định và tốt hơn cho người dùng."}
+            {message || "Xin chào quý khách hàng và độc giả của Earthoria,"}
           </p>
           <p style={styles.desc}>
-            Trong thời gian bảo trì, bạn có thể tạm thời không truy cập được
-            một số tính năng của hệ thống. Toàn bộ dữ liệu, đơn hàng và tủ
-            sách của bạn vẫn được lưu trữ an toàn và không bị ảnh hưởng.
+            {message ||
+              "Đội ngũ vận hành và phát triển Earthoria xin phép được thông báo tạm ngưng phục vụ trong khoản thời gian này để thực hiện các nâng cấp và bảo trì hệ thống nhằm mang đến trải nghiệm ổn định và tốt hơn cho người dùng."}
+          </p>
+          <p style={styles.desc}>
+            Trong thời gian bảo trì, bạn tạm thời không truy cập được các tính năng của hệ thống.
+            Toàn bộ dữ liệu, đơn hàng và tủ sách của
+            bạn vẫn được lưu trữ an toàn và không bị ảnh hưởng.
           </p>
           <p style={{ ...styles.desc, marginBottom: 0 }}>
             Chúng tôi chân thành xin lỗi vì sự gián đoạn này và cảm ơn bạn đã
@@ -346,8 +351,14 @@ export default function Maintenance({ until, message }) {
           </div>
           <div style={styles.reasonsList}>
             {REASONS.map((r, i) => (
-              <div key={r.title} style={styles.reasonRow} className="em-reason-row">
-                <span className="em-reason-index" style={styles.reasonIndex}>{pad(i + 1)}</span>
+              <div
+                key={r.title}
+                style={styles.reasonRow}
+                className="em-reason-row"
+              >
+                <span className="em-reason-index" style={styles.reasonIndex}>
+                  {pad(i + 1)}
+                </span>
                 <div style={{ minWidth: 0 }}>
                   <div style={styles.reasonTitle}>{r.title}</div>
                   <div style={styles.reasonBody}>{r.body}</div>
@@ -702,15 +713,15 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    width: 108,
-    height: 108,
+    width: 140,
+    height: 140,
     flexShrink: 0,
   },
   headerLogo: {
     position: "relative",
     zIndex: 2,
-    width: 80,
-    height: 80,
+    width: 110,
+    height: 110,
     objectFit: "contain",
   },
 
@@ -838,7 +849,8 @@ const styles = {
     transform: "translateX(-50%)",
     width: 320,
     height: 220,
-    background: "radial-gradient(ellipse, rgba(92,184,79,0.22) 0%, transparent 70%)",
+    background:
+      "radial-gradient(ellipse, rgba(92,184,79,0.22) 0%, transparent 70%)",
     pointerEvents: "none",
   },
   countdownCorner: {
