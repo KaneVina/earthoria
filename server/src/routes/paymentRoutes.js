@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const rateLimit = require('express-rate-limit')
+const { ipKeyGenerator } = require('express-rate-limit')
 const {
   createVnpayPaymentUrl,
   verifyVnpayReturn,
@@ -22,7 +23,7 @@ const createPaymentLimiter = rateLimit({
   max: 5, // tối đa 5 phiên thanh toán mới / user / 10 phút (đủ cho các lần "thanh toán lại" hợp lệ)
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req) => req.user?.id || req.ip,
+  keyGenerator: (req) => req.user?.id || ipKeyGenerator(req.ip),
   message: {
     success: false,
     message: 'Bạn thao tác quá nhanh, vui lòng thử lại sau ít phút',
