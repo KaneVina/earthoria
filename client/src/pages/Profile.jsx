@@ -333,6 +333,19 @@ const Icon = {
       <path d="M19 12H5M12 5l-7 7 7 7" />
     </svg>
   ),
+  search: (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <circle cx="11" cy="11" r="7" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  ),
   arrowRight: (
     <svg
       width="12"
@@ -925,7 +938,9 @@ export default function Profile() {
   // Cho phép điều hướng thẳng tới 1 tab (và 1 đơn hàng cụ thể) từ nơi khác,
   // vd: navigate('/profile', { state: { tab: 'orders', orderId } }) sau khi đặt/thanh toán xong.
   const [activeTab, setActiveTab] = useState(location.state?.tab || "overview");
-  const [selectedOrderId, setSelectedOrderId] = useState(location.state?.orderId || null);
+  const [selectedOrderId, setSelectedOrderId] = useState(
+    location.state?.orderId || null,
+  );
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const containerRef = useReveal([activeTab, selectedOrderId]);
   const contentTopRef = useRef(null);
@@ -959,7 +974,11 @@ export default function Profile() {
     enabled: activeTab === "orders" || activeTab === "overview",
   });
 
-  const { data: orderDetail, isLoading: orderDetailLoading, refetch: refetchOrderDetail } = useQuery({
+  const {
+    data: orderDetail,
+    isLoading: orderDetailLoading,
+    refetch: refetchOrderDetail,
+  } = useQuery({
     queryKey: ["order", selectedOrderId],
     queryFn: () =>
       orderService.getOrder(selectedOrderId).then((r) => r.data.data),
@@ -998,26 +1017,26 @@ export default function Profile() {
   const animatedSpent = useCountUp(totalSpent, 1100, !ordersLoading);
 
   const handleLogout = async () => {
-  const ok = await confirm({
-    title: "Đăng Xuất Tài Khoản?",
-    message:
-      "Bạn sẽ cần đăng nhập lại để xem đơn hàng và tiếp tục mua sắm tại Earthoria.",
-    confirmLabel: "Đăng Xuất",
-    cancelLabel: "Ở Lại",
-    danger: true,
-  });
-  if (!ok) return;
+    const ok = await confirm({
+      title: "Đăng Xuất Tài Khoản?",
+      message:
+        "Bạn sẽ cần đăng nhập lại để xem đơn hàng và tiếp tục mua sắm tại Earthoria.",
+      confirmLabel: "Đăng Xuất",
+      cancelLabel: "Ở Lại",
+      danger: true,
+    });
+    if (!ok) return;
 
-  try {
-    await authService.logout(); // gọi POST /auth/logout — clear cookie + revoke token ở DB
-  } catch (err) {
-    console.error("Logout API failed:", err);
-  }
+    try {
+      await authService.logout(); // gọi POST /auth/logout — clear cookie + revoke token ở DB
+    } catch (err) {
+      console.error("Logout API failed:", err);
+    }
 
-  logout(); // clear Zustand state
-  toast.success("Đã đăng xuất");
-  navigate("/");
-};
+    logout(); // clear Zustand state
+    toast.success("Đã đăng xuất");
+    navigate("/");
+  };
 
   if (!profile) return <GuestState />;
 
@@ -1689,12 +1708,37 @@ function MiniOrderCard({ order, delay, onClick }) {
 // ════════════════════════ ORDERS TAB ════════════════════════
 function OrdersTab({ orders, loading, onSelect }) {
   const [filter, setFilter] = useState("all");
+  const [lookupCode, setLookupCode] = useState("");
+  const [lookupError, setLookupError] = useState("");
   const filtered =
     filter === "all" ? orders : orders.filter((o) => o.status === filter);
   const countFor = (key) =>
     key === "all"
       ? orders.length
       : orders.filter((o) => o.status === key).length;
+
+  const normalize = (s) => (s || "").toString().trim().toLowerCase();
+
+const handleLookup = (e) => {
+  e.preventDefault();
+  const code = normalize(lookupCode);
+  if (!code) {
+    setLookupError("Vui lòng nhập mã đơn hàng");
+    return;
+  }
+  const match = orders.find(
+    (o) =>
+      normalize(o.orderCode) === code ||
+      normalize(o.id) === code ||
+      normalize(o.id).startsWith(code)
+  );
+  if (match) {
+    setLookupError("");
+    onSelect(match.id);
+  } else {
+    setLookupError("Không tìm thấy đơn hàng với mã này");
+  }
+};
 
   return (
     <div>
@@ -1705,6 +1749,30 @@ function OrdersTab({ orders, loading, onSelect }) {
         emphasis="Đơn Hàng"
         sub={`${orders.length} đơn hàng đã đặt từ khi tham gia Earthoria`}
       />
+
+      <form className="pf-order-lookup" onSubmit={handleLookup}>
+        <span className="pf-order-lookup-label">Tra cứu nhanh mã vận đơn</span>
+        <div className="pf-order-lookup-row">
+          <input
+            type="text"
+            className="pf-order-lookup-input"
+            placeholder="Nhập mã đơn hàng..."
+            value={lookupCode}
+            onChange={(e) => {
+              setLookupCode(e.target.value);
+              if (lookupError) setLookupError("");
+            }}
+          />
+          <button
+            type="submit"
+            className="pf-btn-tactile pf-order-lookup-btn"
+            aria-label="Tra cứu"
+          >
+            {Icon.search} <span>Tra cứu</span>
+          </button>
+        </div>
+        {lookupError && <div className="pf-order-lookup-error">{lookupError}</div>}
+      </form>
 
       <div className="pf-filter-row">
         {[
@@ -1919,8 +1987,8 @@ function PaymentSessionCountdown({ expiresAt, onExpire }) {
     <div className="pf-payment-badge">
       {Icon.shield}
       <span>
-        Còn {mm}:{String(ss).padStart(2, "0")} để hoàn tất thanh toán, quá hạn đơn sẽ tự huỷ và
-        hoàn kho
+        Còn {mm}:{String(ss).padStart(2, "0")} để hoàn tất thanh toán, quá hạn
+        đơn sẽ tự huỷ và hoàn kho
       </span>
     </div>
   );
@@ -1964,11 +2032,15 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
     setRetrying(true);
     try {
       const create =
-        order.paymentMethod === "VNPAY" ? paymentService.createVnpayUrl : paymentService.createMomoUrl;
+        order.paymentMethod === "VNPAY"
+          ? paymentService.createVnpayUrl
+          : paymentService.createMomoUrl;
       const { data } = await create(order.id);
       window.location.href = data.data.paymentUrl;
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Không tạo được liên kết thanh toán");
+      toast.error(
+        err?.response?.data?.message || "Không tạo được liên kết thanh toán",
+      );
       setRetrying(false);
     }
   };
@@ -2211,7 +2283,11 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
 
 // ════════════════════════ HUỶ ĐƠN HÀNG — MODAL XÁC NHẬN ════════════════════════
 function CancelOrderModal({ order, onClose, onConfirm, submitting }) {
-  const expectedCode = (order.orderCode || order.id?.slice(0, 8) || "").toLowerCase();
+  const expectedCode = (
+    order.orderCode ||
+    order.id?.slice(0, 8) ||
+    ""
+  ).toLowerCase();
   const [codeInput, setCodeInput] = useState("");
   const [reason, setReason] = useState("");
   const codeMatches =
@@ -2241,15 +2317,39 @@ function CancelOrderModal({ order, onClose, onConfirm, submitting }) {
           boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
         }}
       >
-        <h3 style={{ fontFamily: F.serif, fontSize: 22, color: "var(--forest)", margin: "0 0 8px" }}>
+        <h3
+          style={{
+            fontFamily: F.serif,
+            fontSize: 22,
+            color: "var(--forest)",
+            margin: "0 0 8px",
+          }}
+        >
           Huỷ đơn hàng #{order.orderCode || order.id?.slice(0, 8)}
         </h3>
-        <p style={{ fontSize: 13.5, color: "var(--text-muted)", lineHeight: 1.7, margin: "0 0 20px" }}>
+        <p
+          style={{
+            fontSize: 13.5,
+            color: "var(--text-muted)",
+            lineHeight: 1.7,
+            margin: "0 0 20px",
+          }}
+        >
           Để xác nhận, vui lòng nhập chính xác mã đơn hàng bên dưới. Hành động
           này không thể hoàn tác.
         </p>
 
-        <label style={{ fontSize: 11.5, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: "var(--text-muted)", display: "block", marginBottom: 6 }}>
+        <label
+          style={{
+            fontSize: 11.5,
+            fontWeight: 600,
+            letterSpacing: 1,
+            textTransform: "uppercase",
+            color: "var(--text-muted)",
+            display: "block",
+            marginBottom: 6,
+          }}
+        >
           Mã đơn hàng
         </label>
         <input
@@ -2269,7 +2369,17 @@ function CancelOrderModal({ order, onClose, onConfirm, submitting }) {
           }}
         />
 
-        <label style={{ fontSize: 11.5, fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", color: "var(--text-muted)", display: "block", marginBottom: 6 }}>
+        <label
+          style={{
+            fontSize: 11.5,
+            fontWeight: 600,
+            letterSpacing: 1,
+            textTransform: "uppercase",
+            color: "var(--text-muted)",
+            display: "block",
+            marginBottom: 6,
+          }}
+        >
           Lý do huỷ đơn
         </label>
         <textarea
@@ -2298,12 +2408,23 @@ function CancelOrderModal({ order, onClose, onConfirm, submitting }) {
         />
 
         <div style={{ display: "flex", gap: 12, justifyContent: "flex-end" }}>
-          <button type="button" onClick={onClose} disabled={submitting} className="pf-btn-tactile" style={{ padding: "11px 20px" }}>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={submitting}
+            className="pf-btn-tactile"
+            style={{ padding: "11px 20px" }}
+          >
             Đóng
           </button>
           <button
             type="button"
-            onClick={() => onConfirm({ confirmCode: codeInput.trim(), reason: reason.trim() })}
+            onClick={() =>
+              onConfirm({
+                confirmCode: codeInput.trim(),
+                reason: reason.trim(),
+              })
+            }
             disabled={!codeMatches || !reason.trim() || submitting}
             className="pf-btn-tactile"
             style={{
@@ -2406,9 +2527,7 @@ function CreatePasswordFlow({ email }) {
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
     },
     onError: (err) => {
-      toast.error(
-        err.response?.data?.message || "Không thể gửi mã xác thực.",
-      );
+      toast.error(err.response?.data?.message || "Không thể gửi mã xác thực.");
     },
   });
 
@@ -2505,7 +2624,10 @@ function CreatePasswordFlow({ email }) {
   ][strength];
 
   const canSubmit =
-    !createMutation.isPending && otpComplete && isStrongEnough && confirmMatches;
+    !createMutation.isPending &&
+    otpComplete &&
+    isStrongEnough &&
+    confirmMatches;
 
   return (
     <div>
@@ -2534,9 +2656,9 @@ function CreatePasswordFlow({ email }) {
           </div>
           <p className="pf-security-sub">
             Tài khoản {email ? <strong>{email}</strong> : "của bạn"} hiện đang
-            đăng nhập bằng Google và chưa có mật khẩu riêng. Tạo mật khẩu để
-            có thêm cách đăng nhập bằng email, phòng khi bạn không đăng nhập
-            được bằng Google.
+            đăng nhập bằng Google và chưa có mật khẩu riêng. Tạo mật khẩu để có
+            thêm cách đăng nhập bằng email, phòng khi bạn không đăng nhập được
+            bằng Google.
           </p>
 
           {stage === "intro" && (
@@ -2576,7 +2698,9 @@ function CreatePasswordFlow({ email }) {
                     />
                   ))}
                 </div>
-                {errors.otp && <div className="pf-field-error">{errors.otp}</div>}
+                {errors.otp && (
+                  <div className="pf-field-error">{errors.otp}</div>
+                )}
                 <div className="pf-otp-resend-row">
                   <span>Không nhận được mã?</span>
                   <button
@@ -2611,7 +2735,9 @@ function CreatePasswordFlow({ email }) {
                           className={`pf-strength-seg ${i < strength ? "is-filled" : ""}`}
                           style={{
                             background:
-                              i < strength ? strengthMeta.color : "var(--border)",
+                              i < strength
+                                ? strengthMeta.color
+                                : "var(--border)",
                             transitionDelay: `${i * 0.05}s`,
                           }}
                         />
@@ -2646,7 +2772,9 @@ function CreatePasswordFlow({ email }) {
                   value={form.confirmPassword}
                   onChange={(v) => handleChange("confirmPassword", v)}
                   show={showPw.confirm}
-                  toggle={() => setShowPw((s) => ({ ...s, confirm: !s.confirm }))}
+                  toggle={() =>
+                    setShowPw((s) => ({ ...s, confirm: !s.confirm }))
+                  }
                   error={errors.confirmPassword}
                   placeholder="Nhập lại mật khẩu mới"
                 />

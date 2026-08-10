@@ -303,7 +303,11 @@ export default function Navbar() {
                   <Link to="/profile" className="user-dropdown-item">
                     <User size={16} /> Hồ sơ của tôi
                   </Link>
-                  <Link to="/profile" className="user-dropdown-item">
+                  <Link
+                    to="/profile"
+                    state={{ tab: "orders" }}
+                    className="user-dropdown-item"
+                  >
                     <Package size={16} /> Đơn hàng
                   </Link>
                   <Link to="/parent-dashboard" className="user-dropdown-item">
@@ -373,7 +377,11 @@ export default function Navbar() {
               <Link to="/profile" className="nav-mobile-link">
                 <User size={15} /> Hồ sơ của tôi
               </Link>
-              <Link to="/profile" className="nav-mobile-link">
+              <Link
+                to="/profile"
+                state={{ tab: "orders" }}
+                className="nav-mobile-link"
+              >
                 <Package size={15} /> Đơn hàng
               </Link>
               <Link to="/parent-dashboard" className="nav-mobile-link">

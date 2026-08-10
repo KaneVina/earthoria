@@ -1497,6 +1497,66 @@
 }
 
 /* ═══════════ FILTER PILLS ═══════════ */
+.pf-order-lookup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  margin-bottom: 24px;
+  border: 0.5px solid var(--border);
+  border-radius: 12px;
+  background: var(--pale);
+}
+.pf-order-lookup-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-family: "Be Vietnam Pro", sans-serif;
+}
+.pf-order-lookup-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.pf-order-lookup-input {
+  flex: 1 1 220px;
+  min-width: 0;
+  padding: 11px 14px;
+  border: 0.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--ivory);
+  color: var(--text);
+  font-size: 13px;
+  font-family: "Be Vietnam Pro", sans-serif;
+  outline: none;
+}
+.pf-order-lookup-input:focus {
+  border-color: var(--border-gold);
+}
+.pf-order-lookup-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border: 0.5px solid var(--forest);
+  border-radius: 8px;
+  background: var(--forest);
+  color: var(--ivory);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.pf-order-lookup-btn:hover {
+  opacity: 0.9;
+}
+.pf-order-lookup-error {
+  font-size: 11.5px;
+  color: #c0392b;
+  font-family: "Be Vietnam Pro", sans-serif;
+}
 .pf-filter-row {
   display: flex;
   gap: 8px;
