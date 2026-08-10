@@ -145,14 +145,14 @@ export default function Maintenance({ until, message }) {
           </h2>
 
           <p className="em-rise-4" style={styles.vSub}>
-            Đằng sau quyển sách đang khép lại, đội ngũ của chúng tôi đang sắp
+            Đằng sau quyển sách đang khép lại, đội ngũ của Earthoria sắp
             xếp lại từng trang sách số để hành trình tiếp theo của bạn mượt mà
             hơn.
           </p>
         </div>
 
         <div className="em-rise-5" style={styles.vQuote}>
-          <span style={styles.vQuoteMark}>“</span>
+          <span style={styles.vQuoteMark}>"</span>
           <p style={styles.vQuoteText}>
             Một thư viện không bao giờ thực sự đóng cửa — nó chỉ đang lật sang
             trang mới.
@@ -185,11 +185,19 @@ export default function Maintenance({ until, message }) {
             </div>
           </div>
 
-          {/* Title */}
-          <h1 className="em-title" style={styles.title}>
-            Chúng tôi đang <em style={styles.titleEm}>nâng cấp</em>
-            <br className="em-title-br" /> trải nghiệm của bạn
-          </h1>
+          {/* Title — level with the Eira mascot image */}
+          <div className="em-title-row" style={styles.titleRow}>
+            <h1 className="em-title" style={styles.title}>
+              Chúng tôi đang <em style={styles.titleEm}>nâng cấp</em>
+              <br className="em-title-br" /> trải nghiệm của bạn
+            </h1>
+            <img
+              src="/eira/eira-sorry.png"
+              alt="Eira"
+              className="em-title-img"
+              style={styles.eiraSorryImg}
+            />
+          </div>
 
           <p style={styles.desc}>
             {message ||
@@ -208,7 +216,7 @@ export default function Maintenance({ until, message }) {
 
           <div style={styles.noteRow}>
             <span style={styles.plannedNote}>
-              “Đây là hành động đã được lên kế hoạch trước, không phải sự cố.”
+              "Đây là hành động đã được lên kế hoạch trước, không phải sự cố."
             </span>
             <span style={styles.signOff}>— Đội ngũ Quản lý Earthoria</span>
           </div>
@@ -465,6 +473,8 @@ html, body, #root { height: 100%; margin: 0; }
   }
   .em-panel-wrap { max-width: 480px !important; margin: auto !important; padding: 20px 0 !important; }
   .em-title-br { display: none; }
+  .em-title-row { gap: 12px !important; }
+  .em-title-img { width: 64px !important; height: 64px !important; }
   .em-units { gap: 2px !important; }
   .em-contact-grid { grid-template-columns: 1fr !important; gap: 4px !important; }
   .em-logo-wrap { width: 60px !important; height: 60px !important; }
@@ -692,28 +702,42 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    width: 88,
-    height: 88,
+    width: 108,
+    height: 108,
     flexShrink: 0,
   },
   headerLogo: {
     position: "relative",
     zIndex: 2,
-    width: 68,
-    height: 68,
+    width: 80,
+    height: 80,
     objectFit: "contain",
   },
 
+  titleRow: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 20,
+    marginBottom: 22,
+  },
   title: {
     fontFamily: "'Playfair Display', serif",
     fontWeight: 400,
     fontSize: "clamp(32px, 3vw, 44px)",
     lineHeight: 1.2,
     color: FOREST,
-    margin: "0 0 22px",
+    margin: 0,
     letterSpacing: "-0.008em",
   },
   titleEm: { fontStyle: "italic", color: GOLD },
+  eiraSorryImg: {
+    width: 96,
+    height: 96,
+    objectFit: "contain",
+    flexShrink: 0,
+    filter: "drop-shadow(0 10px 20px rgba(13,51,48,0.25))",
+  },
 
   desc: {
     fontSize: 14.5,
