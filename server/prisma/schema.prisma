@@ -411,6 +411,8 @@ enum PaymentTxnType {
   CREATE
   RETURN
   IPN
+  // Job tự động huỷ phiên thanh toán hết hạn (paymentSessionExpiresAt đã qua mà chưa PAID) ghi lại ở đây
+  EXPIRE
 }
 
 // Lịch sử toàn bộ giao dịch/callback thanh toán — phục vụ đối soát, audit, và điều tra khi có tranh chấp.
