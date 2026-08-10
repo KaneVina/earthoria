@@ -347,18 +347,18 @@ model Order {
   note            String?
   stripePaymentId String?
   couponCode      String?
-  // Mã tham chiếu giao dịch gửi cho cổng thanh toán (VNPay vnp_TxnRef / MoMo orderId).
-  // Sinh mới mỗi lần bấm "thanh toán lại" vì VNPay yêu cầu TxnRef không được trùng.
   paymentRef      String?
   // Mã giao dịch cổng thanh toán trả về sau khi thành công, dùng để đối soát.
   gatewayTxnId    String?
   paidAt          DateTime?
+  paymentSessionExpiresAt DateTime?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
-  user    User        @relation(fields: [userId], references: [id])
-  address Address     @relation(fields: [addressId], references: [id])
-  items   OrderItem[]
+  user                User                 @relation(fields: [userId], references: [id])
+  address             Address              @relation(fields: [addressId], references: [id])
+  items               OrderItem[]
+  paymentTransactions PaymentTransaction[]
 
   @@index([paymentRef])
 }
@@ -394,6 +394,65 @@ enum PaymentStatus {
   UNPAID
   PAID
   REFUNDED
+  // Gateway trả kết quả thất bại/huỷ rõ ràng (không phải "chưa thanh toán" thông thường)
+  FAILED
+  // Phiên thanh toán (paymentRef) hết hạn mà chưa nhận được callback thành công
+  EXPIRED
+}
+
+enum PaymentGateway {
+  VNPAY
+  MOMO
+}
+
+// CREATE = lúc tạo payment URL, RETURN = FE gọi verify khi user được redirect về,
+// IPN = gateway gọi server-to-server (nguồn xác nhận chính thức duy nhất để chuyển trạng thái đơn)
+enum PaymentTxnType {
+  CREATE
+  RETURN
+  IPN
+}
+
+// Lịch sử toàn bộ giao dịch/callback thanh toán — phục vụ đối soát, audit, và điều tra khi có tranh chấp.
+// Ghi cả những callback KHÔNG hợp lệ (sai chữ ký, sai TmnCode/partnerCode...) để phát hiện giả mạo.
+model PaymentTransaction {
+  id               String              @id @default(uuid())
+  orderId          String?
+  order            Order?              @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  gateway          PaymentGateway
+  type             PaymentTxnType
+  paymentRef       String
+  amount           Float?
+  currency         String?
+  gatewayTxnId     String?
+  resultCode       String?
+  message          String?
+  isValidSignature Boolean             @default(false)
+  rawPayload       Json
+  ip               String?
+  createdAt        DateTime            @default(now())
+
+  @@index([orderId])
+  @@index([paymentRef])
+  @@index([gateway, type])
+}
+
+// Dùng cho cơ chế idempotency của các endpoint tạo phiên thanh toán: 1 Idempotency-Key (do FE sinh,
+// 1 key/lần bấm) trong cùng cửa sổ thời gian chỉ được xử lý & tạo phiên gateway đúng 1 lần; các lần gọi
+// lại với cùng key (double click, FE tự retry do mất mạng...) sẽ nhận lại chính response cũ, không tạo trùng.
+model PaymentIdempotency {
+  id             String   @id @default(uuid())
+  userId         String
+  idempotencyKey String
+  endpoint       String
+  requestHash    String
+  statusCode     Int
+  responseBody   Json
+  createdAt      DateTime @default(now())
+  expiresAt      DateTime
+
+  @@unique([userId, idempotencyKey, endpoint])
+  @@index([expiresAt])
 }
 
 // ─ REVIEW ─
