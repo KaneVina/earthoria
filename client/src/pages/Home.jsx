@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import StickyScrollTransition from "./StickyScrollTransition";
 import HeroBanner from "../components/HeroBanner";
+import EcosystemStrip from "../components/EcosystemStrip";
 import { lazy, Suspense } from "react";
 import { SkeletonProductGrid } from "../components/skeletons/SkeletonShop";
 const SproutModel = lazy(() => import("../components/SproutModel"));
@@ -295,7 +296,14 @@ function WishlistBtn({ wishlisted, onToggle }) {
   );
 }
 
-function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding, delay }) {
+function BookCard({
+  book,
+  onAddCart,
+  badge,
+  badgeType = "forest",
+  isAdding,
+  delay,
+}) {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const { isInWishlist, toggleWishlist } = useWishlistStore();
@@ -365,7 +373,9 @@ function BookCard({ book, onAddCart, badge, badgeType = "forest", isAdding, dela
           </button>
         </div>
         {badge && (
-          <span className={`product-badge${badgeType === "gold" ? " gold" : ""}`}>
+          <span
+            className={`product-badge${badgeType === "gold" ? " gold" : ""}`}
+          >
             {badge}
           </span>
         )}
@@ -2195,14 +2205,15 @@ export default function Home() {
         .catch(() => featuredBooks) ?? Promise.resolve(featuredBooks),
   });
 
-  const { data: bestsellerBooks = [], isLoading: isBestsellerLoading } = useQuery({
-    queryKey: ["bestseller-books"],
-    queryFn: () =>
-      bookService
-        .getBestsellers?.()
-        .then((r) => r.data.data)
-        .catch(() => featuredBooks) ?? Promise.resolve(featuredBooks),
-  });
+  const { data: bestsellerBooks = [], isLoading: isBestsellerLoading } =
+    useQuery({
+      queryKey: ["bestseller-books"],
+      queryFn: () =>
+        bookService
+          .getBestsellers?.()
+          .then((r) => r.data.data)
+          .catch(() => featuredBooks) ?? Promise.resolve(featuredBooks),
+    });
 
   // Fireflies
   useEffect(() => {
@@ -2475,7 +2486,8 @@ export default function Home() {
           ))}
         </div>
       </div>
-
+      {/* ═══ ECOSYSTEM LOGO STRIP ═══ */}
+      <EcosystemStrip />
       {/* ═══ STATS ═══ */}
       <section className="stats-section reveal">
         <div className="stats-inner">
@@ -2610,16 +2622,18 @@ export default function Home() {
             {isFeaturedLoading ? (
               <SkeletonProductGrid count={3} />
             ) : (
-              displayFeatured.slice(0, 3).map((book) => (
-                <BookCard
-                  key={book.id}
-                  book={book}
-                  onAddCart={handleAddToCart}
-                  badge={book.isFeatured ? "Nổi Bật" : undefined}
-                  badgeType="gold"
-                  isAdding={addingIds.has(book.hashId)}
-                />
-              ))
+              displayFeatured
+                .slice(0, 3)
+                .map((book) => (
+                  <BookCard
+                    key={book.id}
+                    book={book}
+                    onAddCart={handleAddToCart}
+                    badge={book.isFeatured ? "Nổi Bật" : undefined}
+                    badgeType="gold"
+                    isAdding={addingIds.has(book.hashId)}
+                  />
+                ))
             )}
           </div>
         </div>
@@ -2978,149 +2992,157 @@ export default function Home() {
                 </div>
               ))}
             </div>
-          ) : displayBest.length > 0 && (
-            <div
-              className="reveal bestseller-podium"
-              style={{
-                gap: "16px",
-                marginBottom: "48px",
-                alignItems: "end",
-              }}
-            >
-              {[displayBest[1], displayBest[0], displayBest[2]]
-                .filter(Boolean)
-                .map((book, i) => {
-                  const ranks = [2, 1, 3];
-                  const rank = ranks[i];
-                  const isFirst = rank === 1;
-                  return (
-                    <div
-                      key={book.id}
-                      style={{
-                        background: isFirst
-                          ? "linear-gradient(135deg, #0d3330 0%, #1a5c52 50%, #4a9e3f 100%)"
-                          : "var(--white)",
-                        border: isFirst ? "none" : "0.5px solid var(--border)",
-                        padding: isFirst ? "36px 24px 28px" : "28px 24px 24px",
-                        textAlign: "center",
-                        position: "relative",
-                        overflow: "hidden",
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: "10px",
-                        minHeight: isFirst ? "340px" : "300px",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {/* rank badge */}
+          ) : (
+            displayBest.length > 0 && (
+              <div
+                className="reveal bestseller-podium"
+                style={{
+                  gap: "16px",
+                  marginBottom: "48px",
+                  alignItems: "end",
+                }}
+              >
+                {[displayBest[1], displayBest[0], displayBest[2]]
+                  .filter(Boolean)
+                  .map((book, i) => {
+                    const ranks = [2, 1, 3];
+                    const rank = ranks[i];
+                    const isFirst = rank === 1;
+                    return (
                       <div
+                        key={book.id}
                         style={{
-                          position: "absolute",
-                          top: "0",
-                          left: "50%",
-                          transform: "translateX(-50%)",
-                          background:
-                            rank === 1
-                              ? "var(--gold)"
-                              : rank === 2
-                                ? "#8a9490"
-                                : "#b07830",
-                          color: "var(--ivory)",
-                          fontFamily: "Playfair Display,serif",
-                          fontSize: "10px",
-                          fontWeight: 500,
-                          padding: "5px 20px",
-                          letterSpacing: "0.12em",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        #{rank}
-                      </div>
-                      {/* cover */}
-                      <div
-                        style={{
-                          marginTop: "16px",
-                          width: isFirst ? "90px" : "72px",
-                          height: isFirst ? "112px" : "90px",
+                          background: isFirst
+                            ? "linear-gradient(135deg, #0d3330 0%, #1a5c52 50%, #4a9e3f 100%)"
+                            : "var(--white)",
+                          border: isFirst
+                            ? "none"
+                            : "0.5px solid var(--border)",
+                          padding: isFirst
+                            ? "36px 24px 28px"
+                            : "28px 24px 24px",
+                          textAlign: "center",
+                          position: "relative",
                           overflow: "hidden",
-                          border: `1.5px solid ${isFirst ? "rgba(255,255,255,0.25)" : "var(--border)"}`,
-                          flexShrink: 0,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          gap: "10px",
+                          minHeight: isFirst ? "340px" : "300px",
+                          justifyContent: "center",
                         }}
                       >
-                        <img
-                          src={
-                            book.coverImage ||
-                            "https://placehold.co/90x112/0d3330/faf8f3?text=E"
-                          }
-                          alt={book.title}
+                        {/* rank badge */}
+                        <div
                           style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
+                            position: "absolute",
+                            top: "0",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            background:
+                              rank === 1
+                                ? "var(--gold)"
+                                : rank === 2
+                                  ? "#8a9490"
+                                  : "#b07830",
+                            color: "var(--ivory)",
+                            fontFamily: "Playfair Display,serif",
+                            fontSize: "10px",
+                            fontWeight: 500,
+                            padding: "5px 20px",
+                            letterSpacing: "0.12em",
+                            whiteSpace: "nowrap",
                           }}
-                        />
+                        >
+                          #{rank}
+                        </div>
+                        {/* cover */}
+                        <div
+                          style={{
+                            marginTop: "16px",
+                            width: isFirst ? "90px" : "72px",
+                            height: isFirst ? "112px" : "90px",
+                            overflow: "hidden",
+                            border: `1.5px solid ${isFirst ? "rgba(255,255,255,0.25)" : "var(--border)"}`,
+                            flexShrink: 0,
+                          }}
+                        >
+                          <img
+                            src={
+                              book.coverImage ||
+                              "https://placehold.co/90x112/0d3330/faf8f3?text=E"
+                            }
+                            alt={book.title}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
+                        </div>
+                        {/* title */}
+                        <div
+                          style={{
+                            fontFamily: "Playfair Display,serif",
+                            fontSize: isFirst ? "17px" : "14px",
+                            fontWeight: 400,
+                            color: isFirst ? "var(--ivory)" : "var(--forest)",
+                            lineHeight: 1.3,
+                            maxWidth: "180px",
+                          }}
+                        >
+                          {book.title}
+                        </div>
+                        {/* category */}
+                        <div
+                          style={{
+                            fontSize: "11px",
+                            color: isFirst
+                              ? "rgba(255,255,255,0.55)"
+                              : "var(--text-muted)",
+                          }}
+                        >
+                          {book.category?.name}
+                        </div>
+                        {/* price */}
+                        <div
+                          style={{
+                            fontFamily: "Montserrat,sans-serif",
+                            fontSize: isFirst ? "20px" : "16px",
+                            fontWeight: 600,
+                            color: isFirst ? "var(--gold)" : "var(--forest)",
+                            letterSpacing: "-0.01em",
+                          }}
+                        >
+                          {formatPrice(book.salePrice || book.price)}
+                        </div>
+                        {/* CTA */}
+                        <button
+                          onClick={() => handleAddToCart(book.hashId)}
+                          style={{
+                            background: isFirst
+                              ? "var(--gold)"
+                              : "var(--forest)",
+                            color: isFirst ? "var(--ink)" : "var(--ivory)",
+                            border: "none",
+                            padding: "10px 20px",
+                            cursor: "pointer",
+                            fontFamily: "Be Vietnam Pro,sans-serif",
+                            fontSize: "9px",
+                            letterSpacing: "0.14em",
+                            textTransform: "uppercase",
+                            transition: "all 0.3s",
+                            width: "100%",
+                            marginTop: "4px",
+                          }}
+                        >
+                          Thêm Vào Giỏ
+                        </button>
                       </div>
-                      {/* title */}
-                      <div
-                        style={{
-                          fontFamily: "Playfair Display,serif",
-                          fontSize: isFirst ? "17px" : "14px",
-                          fontWeight: 400,
-                          color: isFirst ? "var(--ivory)" : "var(--forest)",
-                          lineHeight: 1.3,
-                          maxWidth: "180px",
-                        }}
-                      >
-                        {book.title}
-                      </div>
-                      {/* category */}
-                      <div
-                        style={{
-                          fontSize: "11px",
-                          color: isFirst
-                            ? "rgba(255,255,255,0.55)"
-                            : "var(--text-muted)",
-                        }}
-                      >
-                        {book.category?.name}
-                      </div>
-                      {/* price */}
-                      <div
-                        style={{
-                          fontFamily: "Montserrat,sans-serif",
-                          fontSize: isFirst ? "20px" : "16px",
-                          fontWeight: 600,
-                          color: isFirst ? "var(--gold)" : "var(--forest)",
-                          letterSpacing: "-0.01em",
-                        }}
-                      >
-                        {formatPrice(book.salePrice || book.price)}
-                      </div>
-                      {/* CTA */}
-                      <button
-                        onClick={() => handleAddToCart(book.hashId)}
-                        style={{
-                          background: isFirst ? "var(--gold)" : "var(--forest)",
-                          color: isFirst ? "var(--ink)" : "var(--ivory)",
-                          border: "none",
-                          padding: "10px 20px",
-                          cursor: "pointer",
-                          fontFamily: "Be Vietnam Pro,sans-serif",
-                          fontSize: "9px",
-                          letterSpacing: "0.14em",
-                          textTransform: "uppercase",
-                          transition: "all 0.3s",
-                          width: "100%",
-                          marginTop: "4px",
-                        }}
-                      >
-                        Thêm Vào Giỏ
-                      </button>
-                    </div>
-                  );
-                })}
-            </div>
+                    );
+                  })}
+              </div>
+            )
           )}
 
           {!isBestsellerLoading && (
