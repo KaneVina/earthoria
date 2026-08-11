@@ -3614,6 +3614,7 @@ function ArTab({ arCodes, loading }) {
           title="Sách"
           emphasis="AR Của Tôi"
           sub="Toàn bộ mô hình 3D thuộc các cuốn sách bạn đã mua và nhận hàng"
+          logo="/logo/logo-mau/lg-m-family-studio.png"
         />
         <ParentDashboardBanner />
         <div
@@ -3638,6 +3639,7 @@ function ArTab({ arCodes, loading }) {
           title="Sách"
           emphasis="AR Của Tôi"
           sub="Toàn bộ mô hình 3D thuộc các cuốn sách bạn đã mua và nhận hàng"
+          logo="/logo/logo-mau/lg-m-family-studio.png"
         />
         <ParentDashboardBanner />
         <EmptyState
@@ -4005,9 +4007,17 @@ function FormInput({ label, value, onChange, required, style }) {
 }
 
 // ════════════════════════ SHARED COMPONENTS ════════════════════════
-function SectionHeader({ chapter, eyebrow, title, emphasis, sub }) {
+function SectionHeader({ chapter, eyebrow, title, emphasis, sub, logo }) {
   return (
     <div className="pf-section-header">
+      {logo && (
+        <img
+          src={logo}
+          alt=""
+          className="pf-section-logo"
+          style={{ height: 44, width: "auto", marginBottom: 12 }}
+        />
+      )}
       <div className="pf-section-chapter">Chương {chapter}</div>
       <div className="pf-section-eyebrow-row">
         <span className="pf-section-eyebrow-line" />
