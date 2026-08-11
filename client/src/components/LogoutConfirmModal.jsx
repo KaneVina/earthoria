@@ -87,8 +87,7 @@ export default function LogoutConfirmModal({
         </h3>
         <p className="lcm-msg">
           Bạn sẽ cần đăng nhập lại để tiếp tục sử dụng các tính năng của tài
-          khoản. Modal sẽ tự đóng và đăng xuất sau {seconds} giây nếu bạn
-          không phản hồi.
+          khoản.
         </p>
 
         <div className="lcm-actions">
