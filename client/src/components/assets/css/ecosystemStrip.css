@@ -1,7 +1,7 @@
 .eco-strip {
   position: relative;
   padding: 56px 0 60px;
-  background: linear-gradient(180deg, #0d2b1e 0%, #0f3226 100%);
+  background: var(--cream);
   overflow: hidden;
 }
 
@@ -10,8 +10,8 @@
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 15% 20%, rgba(184, 134, 46, 0.08) 0%, transparent 45%),
-    radial-gradient(circle at 85% 80%, rgba(74, 158, 63, 0.08) 0%, transparent 45%);
+    radial-gradient(circle at 15% 20%, rgba(74, 158, 63, 0.06) 0%, transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(184, 134, 46, 0.05) 0%, transparent 45%);
   pointer-events: none;
 }
 
@@ -34,7 +34,7 @@
 .eco-strip-eyebrow-line {
   width: 32px;
   height: 1px;
-  background: rgba(184, 134, 46, 0.5);
+  background: rgba(184, 134, 46, 0.55);
 }
 
 .eco-strip-eyebrow-text {
@@ -43,21 +43,21 @@
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: rgba(184, 134, 46, 0.85);
+  color: var(--gold);
 }
 
 .eco-strip-title {
   font-family: "Playfair Display", serif;
   font-size: clamp(22px, 3.4vw, 32px);
-  font-weight: 600;
-  color: #f4f1e8;
+  font-weight: 300;
+  color: var(--forest);
   margin: 0;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.01em;
 }
 
 .eco-strip-title em {
   font-style: italic;
-  color: #d4a843;
+  color: var(--gold);
 }
 
 .eco-strip-marquee {
@@ -78,11 +78,11 @@
 }
 .eco-strip-fade-left {
   left: 0;
-  background: linear-gradient(90deg, #0f3226 0%, transparent 100%);
+  background: linear-gradient(90deg, var(--cream) 0%, transparent 100%);
 }
 .eco-strip-fade-right {
   right: 0;
-  background: linear-gradient(270deg, #0f3226 0%, transparent 100%);
+  background: linear-gradient(270deg, var(--cream) 0%, transparent 100%);
 }
 
 .eco-strip-track {
@@ -107,23 +107,21 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 46px;
+  height: 44px;
   padding: 0 6px;
-  opacity: 0.72;
-  filter: grayscale(0.15) brightness(1.05);
-  transition: opacity 0.35s ease, filter 0.35s ease, transform 0.35s ease;
+  opacity: 0.85;
+  transition: opacity 0.35s ease, transform 0.35s ease;
 }
 
 .eco-strip-logo:hover {
   opacity: 1;
-  filter: grayscale(0) brightness(1);
   transform: translateY(-2px);
 }
 
 .eco-strip-logo img {
   height: 100%;
   width: auto;
-  max-width: 190px;
+  max-width: 180px;
   object-fit: contain;
   display: block;
 }
@@ -131,6 +129,6 @@
 @media (max-width: 640px) {
   .eco-strip { padding: 44px 0 48px; }
   .eco-strip-track { gap: 44px; animation-duration: 22s; }
-  .eco-strip-logo { height: 34px; }
-  .eco-strip-logo img { max-width: 130px; }
+  .eco-strip-logo { height: 32px; }
+  .eco-strip-logo img { max-width: 120px; }
 }

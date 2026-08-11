@@ -1,12 +1,12 @@
 import "./assets/css/ecosystemStrip.css";
 
 const ECOSYSTEM_LOGOS = [
-  { src: "/logo-chinh.png", alt: "Earthoria" },
-  { src: "/lg-m-family-studio.png", alt: "Earthoria Family Studio" },
-  { src: "/lg-m-game-studio.png", alt: "Earthoria Game Studio" },
-  { src: "/lg-m-kid-studio.png", alt: "Earthoria Kid Studio" },
-  { src: "/lg-m-qr-studio.png", alt: "Earthoria QR Studio" },
-  { src: "/lg-m-studio.png", alt: "Earthoria Studio" },
+  { src: "/logo/logo-mau/lg-m-chinh.png", alt: "Earthoria" },
+  { src: "/logo/logo-mau/lg-m-family-studio.png", alt: "Earthoria Family Studio" },
+  { src: "/logo/logo-mau/lg-m-game-studio.png", alt: "Earthoria Game Studio" },
+  { src: "/logo/logo-mau/lg-m-kid-studio.png", alt: "Earthoria Kid Studio" },
+  { src: "/logo/logo-mau/lg-m-qr-studio.png", alt: "Earthoria QR Studio" },
+  { src: "/logo/logo-mau/lg-m-studio.png", alt: "Earthoria Studio" },
 ];
 
 export default function EcosystemStrip() {
