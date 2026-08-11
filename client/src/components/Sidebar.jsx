@@ -20,6 +20,18 @@ function getInitials(user) {
   return "A";
 }
 
+// Chọn logo sidebar theo trang hiện tại
+function getSidebarLogo(currentPath) {
+  const path = currentPath || "";
+  if (path.startsWith("/dashboard/ar-codes")) {
+    return "/logo/logo-mau/lg-m-qr-studio.png"; // Trang QR
+  }
+  if (path.startsWith("/dashboard/games")) {
+    return "/logo/logo-mau/lg-m-game-studio.png"; // Trang Game
+  }
+  return "/logo/logo-mau/lg-m-studio.png"; // Mặc định
+}
+
 export default function Sidebar({
   collapsed,
   onToggleCollapsed,
@@ -40,6 +52,7 @@ export default function Sidebar({
   const displayName = user?.name || `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || "Chưa đăng nhập";
   const displayEmail = user?.email || "—";
   const initials = getInitials(user);
+  const sidebarLogo = getSidebarLogo(currentPath);
 
   return (
     <aside
@@ -56,7 +69,7 @@ export default function Sidebar({
           <>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <img
-                src="/logo-dai-trang.png"
+                src={sidebarLogo}
                 alt="Earthoria"
                 className="a-logo-img"
                 style={{ height: 32, width: "auto" }}
@@ -81,7 +94,7 @@ export default function Sidebar({
             }}
           >
             <img
-              src="/logo-ngan-trang.png"
+              src={sidebarLogo}
               alt="Earthoria"
               className="a-logo-img"
               style={{ height: 28, width: "auto" }}
