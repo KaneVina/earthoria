@@ -168,7 +168,7 @@ body.dark-mode .nav-links a.active {
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;
   color: transparent !important;
-  opacity: 0.52 !important;
+  opacity: 1 !important;
   text-decoration: none !important;
 }
 
@@ -178,7 +178,7 @@ body.dark-mode .nav-links a:hover:not(.active) {
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;
-  opacity: 0.58 !important;
+  opacity: 1 !important;
 }
 
 /* ────────────────────────────────────────────────────────────
