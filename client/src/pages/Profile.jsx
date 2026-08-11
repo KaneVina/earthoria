@@ -4011,12 +4011,32 @@ function SectionHeader({ chapter, eyebrow, title, emphasis, sub, logo }) {
   return (
     <div className="pf-section-header">
       {logo && (
-        <img
-          src={logo}
-          alt=""
-          className="pf-section-logo"
-          style={{ height: 44, width: "auto", marginBottom: 12 }}
-        />
+        <div
+          className="pf-section-logo-wrap"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: 16,
+          }}
+        >
+          <div
+            style={{
+              background: "#0f2318",
+              borderRadius: 14,
+              padding: "14px 28px",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <img
+              src={logo}
+              alt=""
+              className="pf-section-logo"
+              style={{ height: 32, width: "auto", display: "block" }}
+            />
+          </div>
+        </div>
       )}
       <div className="pf-section-chapter">Chương {chapter}</div>
       <div className="pf-section-eyebrow-row">
