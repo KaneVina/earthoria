@@ -1,6 +1,6 @@
 .eco-strip {
   position: relative;
-  padding: 56px 0 60px;
+  padding: 96px 0 104px;
   background: var(--cream);
   overflow: hidden;
 }
@@ -15,11 +15,25 @@
   pointer-events: none;
 }
 
+/* soft gold seam — a graceful stitch between the dark stats section above
+   and this lighter band, instead of a hard, jarring color cut */
+.eco-strip-top-accent {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  opacity: 0.55;
+}
+
 .eco-strip-inner {
   position: relative;
   z-index: 1;
   text-align: center;
-  margin-bottom: 38px;
+  max-width: 640px;
+  margin: 0 auto 56px;
   padding: 0 20px;
 }
 
@@ -89,8 +103,10 @@
   display: flex;
   align-items: center;
   width: max-content;
-  gap: 72px;
+  gap: 0;
   animation: eco-marquee 32s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .eco-strip-marquee:hover .eco-strip-track {
@@ -102,33 +118,65 @@
   to { transform: translateX(-50%); }
 }
 
+.eco-strip-logo-item {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+/* fixed-size stage for every logo so mismatched source-file paddings
+   (some marks sit tight in their canvas, others float with lots of
+   whitespace) no longer read as "some logos big, some tiny" */
 .eco-strip-logo {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 44px;
-  padding: 0 6px;
-  opacity: 0.85;
-  transition: opacity 0.35s ease, transform 0.35s ease;
+  width: 160px;
+  height: 56px;
+  margin: 0 20px;
+  transition: opacity 0.35s ease, transform 0.35s ease, filter 0.35s ease;
 }
 
 .eco-strip-logo:hover {
-  opacity: 1;
   transform: translateY(-2px);
 }
 
+/* brightness(0) flattens every logo — whatever its original hue — into
+   pure black, so the whole row reads as one single uniform color instead
+   of grayscale() which still keeps each logo's own light/dark contrast */
 .eco-strip-logo img {
-  height: 100%;
+  max-height: 100%;
+  max-width: 100%;
   width: auto;
-  max-width: 180px;
+  height: auto;
   object-fit: contain;
   display: block;
+  margin: 0 auto;
+  filter: brightness(0);
+  opacity: 0.42;
+  transition: opacity 0.35s ease, filter 0.35s ease;
+}
+
+.eco-strip-logo:hover img {
+  filter: none;
+  opacity: 1;
+}
+
+/* quiet dot rhythm between marks — echoes the same dot motif used in the
+   ticker strip above, so the two bands feel like one family */
+.eco-strip-sep {
+  flex: 0 0 auto;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--gold);
+  opacity: 0.35;
 }
 
 @media (max-width: 640px) {
-  .eco-strip { padding: 44px 0 48px; }
-  .eco-strip-track { gap: 44px; animation-duration: 22s; }
-  .eco-strip-logo { height: 32px; }
-  .eco-strip-logo img { max-width: 120px; }
+  .eco-strip { padding: 64px 0 68px; }
+  .eco-strip-track { animation-duration: 22s; }
+  .eco-strip-logo { width: 116px; height: 40px; margin: 0 14px; }
+  .eco-strip-sep { display: none; }
 }

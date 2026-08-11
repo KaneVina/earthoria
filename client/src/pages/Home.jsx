@@ -2486,8 +2486,6 @@ export default function Home() {
           ))}
         </div>
       </div>
-      {/* ═══ ECOSYSTEM LOGO STRIP ═══ */}
-      <EcosystemStrip />
       {/* ═══ STATS ═══ */}
       <section className="stats-section reveal">
         <div className="stats-inner">
@@ -2530,6 +2528,9 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      {/* ═══ ECOSYSTEM LOGO STRIP ═══ */}
+      <EcosystemStrip />
 
       {/* ═══ HOW IT WORKS ═══ */}
       <section className="how-section">
