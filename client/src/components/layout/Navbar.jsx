@@ -24,7 +24,7 @@ import SearchOverlay from "./SearchOverlay";
 import { useQueryClient } from "@tanstack/react-query";
 import "../assets/css/navbar.css";
 import { authService } from "../../services/authService";
-
+import LogoutConfirmModal from "../LogoutConfirmModal";
 const logoCompactImg = "/logo-nho.png";
 export default function Navbar() {
   const queryClient = useQueryClient();
@@ -43,6 +43,7 @@ export default function Navbar() {
   const [progress, setProgress] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   //  Effects ────────────────────────────────────────
   useEffect(() => {
@@ -73,6 +74,7 @@ export default function Navbar() {
 
   //  Helpers ─────────────────────────────────────────
   const handleLogout = async () => {
+    setShowLogoutModal(false);
     try {
       await authService.logout(); // gọi POST /auth/logout — clear cookie + revoke token ở DB
     } catch (err) {
@@ -321,7 +323,7 @@ export default function Navbar() {
                   <button
                     type="button"
                     className="user-dropdown-item logout"
-                    onClick={handleLogout}
+                    onClick={() => setShowLogoutModal(true)}
                   >
                     <LogOut size={16} /> Đăng xuất
                   </button>
@@ -390,7 +392,7 @@ export default function Navbar() {
               <button
                 type="button"
                 className="nav-mobile-link logout"
-                onClick={handleLogout}
+                onClick={() => setShowLogoutModal(true)}
               >
                 <LogOut size={15} /> Đăng xuất
               </button>
@@ -412,15 +414,22 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Search Overlay */}
+    {/* Search Overlay */}
       <SearchOverlay
         isOpen={searchOpen}
         onClose={() => setSearchOpen(false)}
         onOpen={() => setSearchOpen(true)}
         isAuthenticated={isAuthenticated}
         isAdmin={isAdmin}
-        onLogout={handleLogout}
+        onLogout={() => setShowLogoutModal(true)}
         getProductLink={(b) => `/books/${b.slug}/${b.hashId}`}
+      />
+
+      <LogoutConfirmModal
+        open={showLogoutModal}
+        onConfirm={handleLogout}
+        onCancel={() => setShowLogoutModal(false)}
+        seconds={10}
       />
     </>
   );

@@ -15,6 +15,7 @@ import { useAuthStore } from "../store/authStore";
 import { formatPrice, formatDate } from "../utils/helpers";
 import toast from "react-hot-toast";
 import "../components/assets/css/profile.css";
+import LogoutConfirmModal from "../components/LogoutConfirmModal";
 
 const F = {
   serif: "'Playfair Display', serif",
@@ -935,13 +936,12 @@ export default function Profile() {
   const location = useLocation();
   const queryClient = useQueryClient();
   const { user, logout, updateUser } = useAuthStore();
-  // Cho phép điều hướng thẳng tới 1 tab (và 1 đơn hàng cụ thể) từ nơi khác,
-  // vd: navigate('/profile', { state: { tab: 'orders', orderId } }) sau khi đặt/thanh toán xong.
   const [activeTab, setActiveTab] = useState(location.state?.tab || "overview");
   const [selectedOrderId, setSelectedOrderId] = useState(
     location.state?.orderId || null,
   );
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const containerRef = useReveal([activeTab, selectedOrderId]);
   const contentTopRef = useRef(null);
   const { confirm, dialog } = useConfirm();
@@ -1016,17 +1016,12 @@ export default function Profile() {
   const animatedOrderCount = useCountUp(orders.length, 900, !ordersLoading);
   const animatedSpent = useCountUp(totalSpent, 1100, !ordersLoading);
 
-  const handleLogout = async () => {
-    const ok = await confirm({
-      title: "Đăng Xuất Tài Khoản?",
-      message:
-        "Bạn sẽ cần đăng nhập lại để xem đơn hàng và tiếp tục mua sắm tại Earthoria.",
-      confirmLabel: "Đăng Xuất",
-      cancelLabel: "Ở Lại",
-      danger: true,
-    });
-    if (!ok) return;
+  const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
 
+  const doLogout = async () => {
+    setShowLogoutModal(false);
     try {
       await authService.logout(); // gọi POST /auth/logout — clear cookie + revoke token ở DB
     } catch (err) {
@@ -1173,6 +1168,12 @@ export default function Profile() {
       <FooterHelp />
 
       {dialog}
+      <LogoutConfirmModal
+        open={showLogoutModal}
+        onConfirm={doLogout}
+        onCancel={() => setShowLogoutModal(false)}
+        seconds={10}
+      />
     </div>
   );
 }
