@@ -38,6 +38,25 @@ function uploadImageBuffer(buffer, bookId) {
   })
 }
 
+// Ảnh dùng bên trong nội dung trò chơi (thẻ lật, ảnh minh hoạ ghép cặp,
+// thumbnail...) — tách thư mục riêng "games/" trong Cloudinary để không
+// lẫn với ảnh sản phẩm sách trong "books/".
+function uploadGameImageBuffer(buffer, gameId) {
+  return new Promise((resolve, reject) => {
+    const publicId = `games/${gameId || 'draft'}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: 'image',
+        public_id: publicId,
+        overwrite: false,
+        transformation: [{ width: 1000, crop: 'limit' }],
+      },
+      (err, result) => (err ? reject(err) : resolve(result))
+    )
+    stream.end(buffer)
+  })
+}
+
 function deleteImageByPublicId(publicId) {
   return cloudinary.uploader.destroy(publicId, { resource_type: 'image' })
 }
@@ -47,4 +66,10 @@ function extractPublicId(url) {
   return m ? m[1] : null
 }
 
-module.exports = { uploadGlbFile, uploadImageBuffer, deleteImageByPublicId, extractPublicId }
+module.exports = {
+  uploadGlbFile,
+  uploadImageBuffer,
+  uploadGameImageBuffer,
+  deleteImageByPublicId,
+  extractPublicId,
+}

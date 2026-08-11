@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Upload, Trash2, X, Copy, ImagePlus, Star, Loader2 } from "lucide-react";
 import api from "../../../services/api";
+import { getGameDefinition } from "../../../games/gameRegistry";
 import toast from "react-hot-toast";
 import AdminLayout from "../AdminLayout";
 import ProductFormFields from "./ProductFormFields";
@@ -243,6 +244,10 @@ export default function ProductDetail() {
               <div className="a-mini-stat-label">Mã AR</div>
               <div className="a-mini-stat-value">{book._count?.arCodes ?? 0}</div>
             </div>
+            <div className="a-mini-stat">
+              <div className="a-mini-stat-label">Trò chơi</div>
+              <div className="a-mini-stat-value">{book._count?.games ?? 0}</div>
+            </div>
           </div>
 
           {/* ẢNH SÁCH — mỗi thao tác gọi API ngay lập tức, tách khỏi nút "Lưu thay đổi" bên dưới */}
@@ -382,6 +387,50 @@ export default function ProductDetail() {
                           <td><span className={`a-badge ${access.cls}`}>{access.label}</span></td>
                           <td className="a-td-muted">{ac.scanCount}</td>
                           <td><span className={`a-badge ${ac.isActive ? "success" : "neutral"}`}>{ac.isActive ? "Hoạt động" : "Đã vô hiệu hoá"}</span></td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="a-table-card" style={{ marginTop: 20 }}>
+            <div className="a-table-head">
+              <h3 className="a-table-title">Trò <em>chơi</em> đã tạo</h3>
+              <a className="a-table-link" onClick={() => navigate(`/dashboard/games?bookId=${book.id}`)} style={{ cursor: "pointer" }}>
+                Quản lý trò chơi →
+              </a>
+            </div>
+            <div className="a-table-wrap">
+              <table className="a-table">
+                <thead>
+                  <tr>
+                    {["Tên trò chơi", "Loại", "Mã (code)", "Quyền xem", "Lượt chơi", "Trạng thái"].map((h) => (
+                      <th key={h}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {!book.games?.length ? (
+                    <tr>
+                      <td colSpan={6} style={{ padding: 32, textAlign: "center", color: "rgba(13,51,48,0.3)" }}>
+                        Sách này chưa có trò chơi nào
+                      </td>
+                    </tr>
+                  ) : (
+                    book.games.map((g) => {
+                      const access = ACCESS_LABEL[g.accessType] ?? ACCESS_LABEL.CUSTOMER_ONLY;
+                      const def = getGameDefinition(g.gameType);
+                      return (
+                        <tr key={g.id} onClick={() => navigate(`/dashboard/games/${g.id}`)} style={{ cursor: "pointer" }}>
+                          <td style={{ fontWeight: 500, fontSize: 12 }}>{g.title}</td>
+                          <td>{def?.shortLabel ?? g.gameType}</td>
+                          <td className="a-td-mono">{g.code}</td>
+                          <td><span className={`a-badge ${access.cls}`}>{access.label}</span></td>
+                          <td className="a-td-muted">{g.playCount}</td>
+                          <td><span className={`a-badge ${g.isActive ? "success" : "neutral"}`}>{g.isActive ? "Hoạt động" : "Đã vô hiệu hoá"}</span></td>
                         </tr>
                       );
                     })

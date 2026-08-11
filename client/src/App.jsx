@@ -55,6 +55,9 @@ import ParentDashboard from "./pages/ParentDashboard";
 import KidAccess from "./pages/kid/KidAccess";
 import Tickets from "./pages/admin/Tickets";
 import PaymentReturn from "./pages/PaymentReturn";
+import GameManager from "./pages/admin/GameManager";
+import GameDetail from "./pages/admin/GameDetail";
+import GamePlay from "./pages/GamePlay";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -342,6 +345,30 @@ export default function App() {
           }
         />
         <Route
+          path="/dashboard/games"
+          element={
+            <StaffOrAdminRoute>
+              <GameManager />
+            </StaffOrAdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/games/new"
+          element={
+            <StaffOrAdminRoute>
+              <GameDetail />
+            </StaffOrAdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/games/:id"
+          element={
+            <StaffOrAdminRoute>
+              <GameDetail />
+            </StaffOrAdminRoute>
+          }
+        />
+        <Route
           path="/dashboard/orders"
           element={
             <AdminRoute>
@@ -375,6 +402,7 @@ export default function App() {
         />
         <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
         <Route path="/ar/:slug/:code" element={<ArView />} />
+        <Route path="/game/:slug/:code" element={<GamePlay />} />
         <Route path="/e-kid/:slug/:token" element={<KidAccess />} />
       </Routes>
     </BrowserRouter>

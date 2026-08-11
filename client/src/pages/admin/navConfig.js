@@ -6,6 +6,7 @@ import {
   Tag,
   Users,
   QrCode,
+  Gamepad2,
   Mail,
   MessageSquareText,
   Settings as SettingsIcon,
@@ -38,6 +39,7 @@ export const NAV_GROUPS = [
     label: "Công cụ",
     items: [
       { label: "Tạo mã QR", href: "/dashboard/ar-codes", icon: QrCode },
+      { label: "Trò chơi", href: "/dashboard/games", icon: Gamepad2 },
       { label: "Email", href: "/dashboard/emails", icon: Mail },
       { label: "Cài đặt hệ thống", href: "/dashboard/settings", icon: SettingsIcon },
     ],

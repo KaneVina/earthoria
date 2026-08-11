@@ -57,6 +57,7 @@ model User {
 
   children      ChildProfile[]
   childAuditLogs ChildAuditLog[]
+  gameResults   GameResult[]
 
   // ─ Ticket liên hệ (Contact) ─
   tickets         Ticket[]      @relation("TicketRequester")
@@ -197,6 +198,7 @@ model Book {
   reviews  Review[]
   wishlist Wishlist[]
   arCodes  ArCode[]
+  games    Game[]
   authors  BookAuthor[]
   tags     BookTag[]
 
@@ -305,6 +307,56 @@ model ArCode {
   book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@index([bookId])
+}
+
+// ─ GAME ─
+enum GameType {
+  MEMORY_MATCH // Lật thẻ ghép đôi (ghép ô)
+  MATCH_PAIRS  // Nối các cặp tương ứng (nối bảng)
+  WORD_SEARCH  // Tìm từ ẩn trong bảng chữ cái
+  LETTER_HUNT  // Săn chữ cái trong bảng để ghép thành từ khoá, tính giờ
+}
+
+model Game {
+  id           String       @id @default(uuid())
+  code         String       @unique
+  title        String
+  instructions String?
+  gameType     GameType
+  config       Json
+  thumbnailUrl String?
+  bookId       String
+  isActive     Boolean      @default(true)
+  accessType   ArAccessType @default(CUSTOMER_ONLY)
+  playCount    Int          @default(0)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  book    Book         @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  results GameResult[]
+
+  @@index([bookId])
+}
+
+// Nhật ký mỗi lượt chơi hoàn thành — nguồn dữ liệu thật cho bảng xếp hạng
+// trong màn kết quả (public) và thống kê lượt chơi/điểm số bên admin.
+model GameResult {
+  id              String   @id @default(uuid())
+  gameId          String
+  userId          String?
+  childId         String?
+  playerName      String? // tên hiển thị khi chơi ẩn danh / không gắn tài khoản
+  score           Int      @default(0)
+  durationSeconds Int?
+  completedAt     DateTime @default(now())
+
+  game  Game          @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user  User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  child ChildProfile? @relation(fields: [childId], references: [id], onDelete: SetNull)
+
+  @@index([gameId, score])
+  @@index([userId])
+  @@index([childId])
 }
 
 // ─ CART ─
@@ -563,6 +615,7 @@ model ChildProfile {
   bookAccess  ChildBookAccess[]
   activities  ChildActivityLog[]
   auditLogs   ChildAuditLog[]
+  gameResults GameResult[]
 
   @@index([parentId])
 }

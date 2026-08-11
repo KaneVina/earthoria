@@ -49,11 +49,16 @@ api.interceptors.response.use(
     const status = error.response?.status
 
     const isArRequest = originalRequest?.url?.includes('/ar/')
+    // Chỉ bỏ qua auto-refresh cho endpoint CÔNG KHAI /games/:code (trang
+    // GamePlay tự xử lý 401 bằng cách điều hướng sang /login) — các gọi
+    // /admin/games/* vẫn cần auto-refresh-retry như mọi endpoint admin khác.
+    const isPublicGameRequest =
+      originalRequest?.url?.includes('/games/') && !originalRequest?.url?.includes('/admin/')
     const isAuthEndpoint =
       originalRequest?.url?.includes('/auth/login') ||
       originalRequest?.url?.includes('/auth/refresh')
 
-    if (status === 401 && !isArRequest && !isAuthEndpoint && !originalRequest._retry) {
+    if (status === 401 && !isArRequest && !isPublicGameRequest && !isAuthEndpoint && !originalRequest._retry) {
       originalRequest._retry = true
       try {
         const newToken = await refreshSession()

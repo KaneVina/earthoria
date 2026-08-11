@@ -186,8 +186,6 @@ function Stars({ rating = 5, max = 5 }) {
   );
 }
 
-//  Countdown price — đếm số chạy giảm dần từ giá gốc xuống giá sale,
-// chỉ chạy khi lướt tới viewport, chạy đúng 1 lần
 function CountdownPrice({ from, to, duration = 1200 }) {
   const [display, setDisplay] = useState(from);
   const rafRef = useRef(null);

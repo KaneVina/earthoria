@@ -512,7 +512,8 @@ exports.getProductById = async (req, res) => {
       include: {
         ...bookInclude,
         arCodes: { orderBy: { createdAt: "asc" } },
-        _count: { select: { reviews: true, arCodes: true } },
+        games: { orderBy: { createdAt: "asc" } },
+        _count: { select: { reviews: true, arCodes: true, games: true } },
       },
     });
 
@@ -592,7 +593,7 @@ exports.getProducts = async (req, res) => {
         orderBy: { createdAt: "desc" },
         include: {
           ...bookInclude,
-          _count: { select: { arCodes: true } },
+          _count: { select: { arCodes: true, games: true } },
         },
       }),
       prisma.book.count({ where }),

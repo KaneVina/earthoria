@@ -69,6 +69,7 @@ v1.use('/coupons', require('./routes/couponRoutes'))
 
 // Public route
 v1.use('/ar', require('./routes/arRoutes'))
+v1.use('/games', require('./routes/gameRoutes'))
 v1.use('/kid-access', require('./routes/kidAccessRoutes'))
 
 app.use('/api/v1', v1)
