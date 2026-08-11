@@ -1,22 +1,14 @@
-import logoChinh from "./assets/img/logo-chinh.png";
-import lgFamilyStudio from "./assets/img/lg-m-family-studio.png";
-import lgGameStudio from "./assets/img/lg-m-game-studio.png";
-import lgKidStudio from "./assets/img/lg-m-kid-studio.png";
-import lgQrStudio from "./assets/img/lg-m-qr-studio.png";
-import lgStudio from "./assets/img/lg-m-studio.png";
 import "./assets/css/ecosystemStrip.css";
 
 const ECOSYSTEM_LOGOS = [
-  { src: logoChinh, alt: "Earthoria" },
-  { src: lgFamilyStudio, alt: "Earthoria Family Studio" },
-  { src: lgGameStudio, alt: "Earthoria Game Studio" },
-  { src: lgKidStudio, alt: "Earthoria Kid Studio" },
-  { src: lgQrStudio, alt: "Earthoria QR Studio" },
-  { src: lgStudio, alt: "Earthoria Studio" },
+  { src: "/logo-chinh.png", alt: "Earthoria" },
+  { src: "/lg-m-family-studio.png", alt: "Earthoria Family Studio" },
+  { src: "/lg-m-game-studio.png", alt: "Earthoria Game Studio" },
+  { src: "/lg-m-kid-studio.png", alt: "Earthoria Kid Studio" },
+  { src: "/lg-m-qr-studio.png", alt: "Earthoria QR Studio" },
+  { src: "/lg-m-studio.png", alt: "Earthoria Studio" },
 ];
 
-// Dải logo hệ sinh thái Earthoria — 1 hàng chạy marquee mượt, vô hạn (nhân
-// đôi danh sách rồi dịch chuyển đúng 50% chiều rộng để tạo vòng lặp liền mạch).
 export default function EcosystemStrip() {
   const track = [...ECOSYSTEM_LOGOS, ...ECOSYSTEM_LOGOS];
 
