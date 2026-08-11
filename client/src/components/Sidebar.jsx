@@ -94,7 +94,7 @@ export default function Sidebar({
             }}
           >
             <img
-              src={sidebarLogo}
+              src="/logo-nho.png"
               alt="Earthoria"
               className="a-logo-img"
               style={{ height: 28, width: "auto" }}
