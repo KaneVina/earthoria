@@ -118,6 +118,7 @@ router.put(
 router.put("/ar-codes/:id/toggle", staffOrAdmin, toggleArCode);
 
 router.use("/games", staffOrAdmin, require("./adminGameRoutes"));
+router.use("/ebooks", staffOrAdmin, require("./adminEbookRoutes"));
 
 router.post("/inventory/imports", staffOrAdmin, createInventoryImport);
 

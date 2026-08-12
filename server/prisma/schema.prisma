@@ -199,6 +199,7 @@ model Book {
   wishlist Wishlist[]
   arCodes  ArCode[]
   games    Game[]
+  ebooks   Ebook[]
   authors  BookAuthor[]
   tags     BookTag[]
 
@@ -338,8 +339,7 @@ model Game {
   @@index([bookId])
 }
 
-// Nhật ký mỗi lượt chơi hoàn thành — nguồn dữ liệu thật cho bảng xếp hạng
-// trong màn kết quả (public) và thống kê lượt chơi/điểm số bên admin.
+// Nhật ký mỗi lượt chơi hoàn thành
 model GameResult {
   id              String   @id @default(uuid())
   gameId          String
@@ -357,6 +357,22 @@ model GameResult {
   @@index([gameId, score])
   @@index([userId])
   @@index([childId])
+}
+
+// Sách điện tử tương tác (đọc cùng)
+model Ebook {
+  id           String   @id @default(uuid())
+  title        String
+  bookId       String
+  pages        Json
+  thumbnailUrl String?
+  isActive     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([bookId])
 }
 
 // ─ CART ─
