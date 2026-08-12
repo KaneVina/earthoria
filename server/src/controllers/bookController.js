@@ -25,6 +25,24 @@ const withDisplayPrice = (book) => {
   }
 }
 
+// Đơn hàng được xem là "mua thành công": đã thanh toán và không còn ở trạng thái chờ xác nhận/đã huỷ (cùng chuẩn đang dùng ở childController/arController).
+const SUCCESSFUL_ORDER_STATUSES = ['CONFIRMED', 'SHIPPING', 'DELIVERED']
+
+const hasPurchasedBook = async (userId, bookId) => {
+  const item = await prisma.orderItem.findFirst({
+    where: {
+      variant: { bookId },
+      order: {
+        userId,
+        paymentStatus: 'PAID',
+        status: { in: SUCCESSFUL_ORDER_STATUSES }
+      }
+    },
+    select: { id: true }
+  })
+  return !!item
+}
+
 // Sách đạt ngưỡng đánh giá trung bình >= threshold
 const getBookIdsWithMinRating = async (threshold) => {
   const grouped = await prisma.review.groupBy({
@@ -208,7 +226,11 @@ const getBook = async (req, res) => {
         category: true,
         reviews: {
           where: { isVisible: true },
-          include: { user: { select: { name: true, avatar: true } } },
+          include: {
+            user: { select: { name: true, firstName: true, lastName: true, avatar: true } },
+            votes: req.user ? { where: { userId: req.user.id } } : false,
+            _count: { select: { votes: true } }
+          },
           orderBy: { createdAt: 'desc' },
           take: 20
         },
@@ -222,10 +244,42 @@ const getBook = async (req, res) => {
       ? (book.reviews.reduce((a, b) => a + b.rating, 0) / book.reviews.length).toFixed(1)
       : 0
 
+    const reviewIds = book.reviews.map((r) => r.id)
+    const voteGroups = reviewIds.length
+      ? await prisma.reviewVote.groupBy({ by: ['reviewId', 'isHelpful'], where: { reviewId: { in: reviewIds } }, _count: { _all: true } })
+      : []
+    const voteCountMap = {}
+    for (const g of voteGroups) {
+      voteCountMap[g.reviewId] = voteCountMap[g.reviewId] || { helpfulCount: 0, unhelpfulCount: 0 }
+      if (g.isHelpful) voteCountMap[g.reviewId].helpfulCount = g._count._all
+      else voteCountMap[g.reviewId].unhelpfulCount = g._count._all
+    }
+
+    const reviews = book.reviews.map((r) => ({
+      ...r,
+      helpfulCount: voteCountMap[r.id]?.helpfulCount || 0,
+      unhelpfulCount: voteCountMap[r.id]?.unhelpfulCount || 0,
+      myVote: req.user ? (r.votes?.[0]?.isHelpful ?? null) : null,
+      votes: undefined,
+      _count: undefined
+    }))
+
+    let canReview = false
+    let hasReviewed = false
+    if (req.user) {
+      [canReview, hasReviewed] = await Promise.all([
+        hasPurchasedBook(req.user.id, book.id),
+        prisma.review.findFirst({ where: { userId: req.user.id, bookId: book.id }, select: { id: true } }).then(Boolean)
+      ])
+    }
+
     return formatResponse(res, 200, 'OK', {
       ...withDisplayPrice(encodeBook(book)),
+      reviews,
       avgRating,
-      reviewCount: book.reviews.length
+      reviewCount: book.reviews.length,
+      canReview,
+      hasReviewed
     })
   } catch (error) {
     console.error(error)
@@ -273,6 +327,16 @@ const addReview = async (req, res) => {
     const book = await prisma.book.findFirst({ where: { slug, id: realId } })
     if (!book) return formatResponse(res, 404, 'Không tìm thấy sách')
 
+    const ratingNum = parseInt(rating)
+    if (!ratingNum || ratingNum < 1 || ratingNum > 5) {
+      return formatResponse(res, 400, 'Số sao đánh giá không hợp lệ')
+    }
+
+    const purchased = await hasPurchasedBook(req.user.id, book.id)
+    if (!purchased) {
+      return formatResponse(res, 403, 'Bạn cần mua sách này (đơn hàng ở trạng thái thành công) mới có thể đánh giá')
+    }
+
     const existing = await prisma.review.findFirst({
       where: { userId: req.user.id, bookId: book.id }
     })
@@ -282,15 +346,74 @@ const addReview = async (req, res) => {
       data: {
         userId: req.user.id,
         bookId: book.id,
-        rating: parseInt(rating),
+        rating: ratingNum,
         title,
         content
       },
-      include: { user: { select: { name: true, avatar: true } } }
+      include: { user: { select: { name: true, firstName: true, lastName: true, avatar: true } } }
     })
 
-    return formatResponse(res, 201, 'Đánh giá thành công', review)
+    return formatResponse(res, 201, 'Đánh giá thành công', {
+      ...review,
+      helpfulCount: 0,
+      unhelpfulCount: 0,
+      myVote: null
+    })
   } catch (error) {
+    console.error(error)
+    return formatResponse(res, 500, 'Lỗi server')
+  }
+}
+
+// Vote hữu ích / không hữu ích cho 1 review — bấm lại lựa chọn cũ = bỏ vote,
+// bấm lựa chọn khác = đổi vote. Không cho tự vote review của chính mình.
+const voteReview = async (req, res) => {
+  try {
+    const { slug, hashId, reviewId } = req.params
+    const { isHelpful } = req.body
+
+    if (typeof isHelpful !== 'boolean') {
+      return formatResponse(res, 400, 'Thiếu trạng thái vote')
+    }
+
+    const realId = decodeId(hashId)
+    if (!realId) return formatResponse(res, 404, 'Không tìm thấy sách')
+
+    const book = await prisma.book.findFirst({ where: { slug, id: realId } })
+    if (!book) return formatResponse(res, 404, 'Không tìm thấy sách')
+
+    const review = await prisma.review.findFirst({ where: { id: reviewId, bookId: book.id, isVisible: true } })
+    if (!review) return formatResponse(res, 404, 'Không tìm thấy đánh giá')
+
+    if (review.userId === req.user.id) {
+      return formatResponse(res, 400, 'Không thể tự vote đánh giá của chính mình')
+    }
+
+    const existing = await prisma.reviewVote.findUnique({
+      where: { reviewId_userId: { reviewId, userId: req.user.id } }
+    })
+
+    let myVote = isHelpful
+    if (!existing) {
+      await prisma.reviewVote.create({ data: { reviewId, userId: req.user.id, isHelpful } })
+    } else if (existing.isHelpful === isHelpful) {
+      await prisma.reviewVote.delete({ where: { id: existing.id } })
+      myVote = null
+    } else {
+      await prisma.reviewVote.update({ where: { id: existing.id }, data: { isHelpful } })
+    }
+
+    const counts = await prisma.reviewVote.groupBy({
+      by: ['isHelpful'],
+      where: { reviewId },
+      _count: { _all: true }
+    })
+    const helpfulCount = counts.find((c) => c.isHelpful)?._count._all || 0
+    const unhelpfulCount = counts.find((c) => !c.isHelpful)?._count._all || 0
+
+    return formatResponse(res, 200, 'OK', { helpfulCount, unhelpfulCount, myVote })
+  } catch (error) {
+    console.error(error)
     return formatResponse(res, 500, 'Lỗi server')
   }
 }
@@ -346,5 +469,5 @@ const getWishlist = async (req, res) => {
 
 module.exports = {
   getBooks, getBook, getFeaturedBooks, getFilterCounts,
-  addReview, toggleWishlist, getWishlist
+  addReview, voteReview, toggleWishlist, getWishlist
 }

@@ -6,6 +6,7 @@ export const bookService = {
   getBook: (slug, hashId) => api.get(`/books/${slug}/${hashId}`),
   getFeatured: () => api.get('/books/featured'),
   addReview: (slug, hashId, data) => api.post(`/books/${slug}/${hashId}/reviews`, data),
+  voteReview: (slug, hashId, reviewId, isHelpful) => api.post(`/books/${slug}/${hashId}/reviews/${reviewId}/vote`, { isHelpful }),
   toggleWishlist: (slug, hashId) => api.post(`/books/${slug}/${hashId}/wishlist`),
   getWishlist: () => api.get('/books/wishlist'),
   getCategories: () => api.get('/categories')

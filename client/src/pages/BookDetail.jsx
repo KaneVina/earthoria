@@ -5,6 +5,7 @@ import { bookService } from "../services/bookService";
 import { useCartStore } from "../store/cartStore";
 import { useAuthStore } from "../store/authStore";
 import { formatPrice, formatDate } from "../utils/helpers";
+import { flyToCart } from "../utils/flyToCart";
 import toast from "react-hot-toast";
 import CompareModal from "../components/CompareModal";
 
@@ -241,6 +242,7 @@ export default function BookDetail() {
   const { addToCart } = useCartStore();
   const { isAuthenticated } = useAuthStore();
   const heroRef = useRef(null);
+  const mainImgRef = useRef(null);
 
   //  State
   const [activeThumb, setActiveThumb] = useState(0);
@@ -280,6 +282,17 @@ export default function BookDetail() {
     },
     onError: (err) =>
       toast.error(err.response?.data?.message || "Đánh giá thất bại!"),
+  });
+
+  //  Vote review helpful/unhelpful mutation
+  const voteMutation = useMutation({
+    mutationFn: ({ reviewId, isHelpful }) =>
+      bookService.voteReview(slug, hashId, reviewId, isHelpful),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["book", slug, hashId]);
+    },
+    onError: (err) =>
+      toast.error(err.response?.data?.message || "Vote thất bại!"),
   });
 
   //  Scroll effects
@@ -324,7 +337,7 @@ export default function BookDetail() {
   const currentImg = images[activeThumb] || FALLBACK_IMGS[0];
   const thumbImages = images.length > 1 ? images : FALLBACK_IMGS;
   const avgRating = parseFloat(book?.avgRating) || 4.9;
-  const reviewCount = book?._count?.reviews || 0;
+  const reviewCount = book?.reviewCount || 0;
   const discountedPrice = book?.salePrice || book?.price;
   const originalPrice = book?.price;
   const hasDiscount = book?.salePrice && book.salePrice < book.price;
@@ -358,6 +371,7 @@ export default function BookDetail() {
     }
     if (addedToCart) return;
     try {
+      flyToCart(mainImgRef.current);
       await addToCart(hashId, qty);
       setAddedToCart(true);
       toast.success("Đã thêm vào giỏ hàng!");
@@ -394,6 +408,14 @@ export default function BookDetail() {
       return;
     }
     reviewMutation.mutate(reviewForm);
+  };
+
+  const handleVote = (reviewId, isHelpful) => {
+    if (!isAuthenticated) {
+      toast.error("Vui lòng đăng nhập để vote!");
+      return;
+    }
+    voteMutation.mutate({ reviewId, isHelpful });
   };
 
   const toggleFaq = (i) => setOpenFaq(openFaq === i ? null : i);
@@ -516,6 +538,7 @@ export default function BookDetail() {
         <div className="gallery-wrap reveal-left">
           <div className="gallery-main">
             <img
+              ref={mainImgRef}
               src={currentImg}
               alt={book.title}
               style={{
@@ -1029,7 +1052,36 @@ export default function BookDetail() {
                 </div>
 
                 {/* Write review form */}
-                {isAuthenticated && (
+                {isAuthenticated && book.hasReviewed && (
+                  <div
+                    style={{
+                      marginTop: "32px",
+                      paddingTop: "24px",
+                      borderTop: "0.5px solid var(--border)",
+                      fontSize: "13px",
+                      color: "var(--text-muted)",
+                    }}
+                  >
+                    Bạn đã đánh giá sách này. Cảm ơn bạn!
+                  </div>
+                )}
+
+                {isAuthenticated && !book.hasReviewed && !book.canReview && (
+                  <div
+                    style={{
+                      marginTop: "32px",
+                      paddingTop: "24px",
+                      borderTop: "0.5px solid var(--border)",
+                      fontSize: "13px",
+                      color: "var(--text-muted)",
+                    }}
+                  >
+                    Bạn cần mua sách này (đơn hàng ở trạng thái thành công) để
+                    có thể viết đánh giá.
+                  </div>
+                )}
+
+                {isAuthenticated && !book.hasReviewed && book.canReview && (
                   <form
                     onSubmit={handleReview}
                     style={{
@@ -1145,75 +1197,69 @@ export default function BookDetail() {
 
               {/* Review list */}
               <div className="review-list">
-                {(book.reviews?.length > 0
-                  ? book.reviews
-                  : [
-                      {
-                        user: { firstName: "Minh", lastName: "Anh" },
-                        rating: 5,
-                        title: "Con tôi không chịu rời cuốn sách này ra",
-                        content:
-                          "Mua cho bé 9 tuổi và thực sự không ngờ lại hay đến vậy. Mỗi tối đều ngồi ôm sách mở AR ra xem, hỏi đủ thứ câu hỏi. AI Tutor trả lời rất tự nhiên, không khô khan như sách giáo khoa.",
-                        createdAt: "2026-05-12",
-                        helpfulCount: 38,
-                      },
-                      {
-                        user: { firstName: "Thùy", lastName: "Linh" },
-                        rating: 5,
-                        title: "Quà sinh nhật hoàn hảo nhất từ trước đến nay",
-                        content:
-                          "Tặng cho cháu 7 tuổi, cháu thích đến mức nhờ tôi đọc cho nghe mỗi đêm rồi cùng quét AR. Sách đóng bìa cứng, giấy dày, in màu cực kỳ sắc nét.",
-                        createdAt: "2026-04-03",
-                        helpfulCount: 24,
-                      },
-                      {
-                        user: { firstName: "Hoàng", lastName: "Khải" },
-                        rating: 5,
-                        title:
-                          "Giáo viên giới thiệu và tôi không hối hận khi mua",
-                        content:
-                          "Con tôi 10 tuổi, giáo viên khoa học ở trường đề xuất dùng sách AR. AI Tutor biết điều chỉnh cách giải thích cho phù hợp — rất tiện luyện ngoại ngữ.",
-                        createdAt: "2026-03-19",
-                        helpfulCount: 19,
-                      },
-                    ]
-                ).map((r, i) => (
-                  <div key={i} className="review-item">
-                    <div className="review-header">
-                      <div className="reviewer-info">
-                        <div className="reviewer-avatar">
-                          {(r.user?.firstName || r.initial || "?")[0]}
-                        </div>
-                        <div>
-                          <div className="reviewer-name">
-                            {r.user
-                              ? `${r.user.firstName} ${r.user.lastName?.charAt(0)}.`
-                              : r.name}
+                {book.reviews?.length > 0 ? (
+                  book.reviews.map((r) => (
+                    <div key={r.id} className="review-item">
+                      <div className="review-header">
+                        <div className="reviewer-info">
+                          <div className="reviewer-avatar">
+                            {(r.user?.firstName || r.user?.name || "?")[0]}
                           </div>
-                          <div className="reviewer-date">
-                            {r.createdAt ? formatDate(r.createdAt) : r.date}
+                          <div>
+                            <div className="reviewer-name">
+                              {r.user?.firstName
+                                ? `${r.user.firstName} ${r.user.lastName?.charAt(0) || ""}.`
+                                : r.user?.name}
+                            </div>
+                            <div className="reviewer-date">
+                              {formatDate(r.createdAt)}
+                            </div>
                           </div>
                         </div>
+                        <div className="review-stars">
+                          {Array.from({ length: r.rating || 5 }).map(
+                            (_, j) => (
+                              <span key={j} className="star">
+                                ★
+                              </span>
+                            ),
+                          )}
+                        </div>
                       </div>
-                      <div className="review-stars">
-                        {Array.from({ length: r.rating || 5 }).map((_, j) => (
-                          <span key={j} className="star">
-                            ★
-                          </span>
-                        ))}
+                      <div className="review-title">{r.title}</div>
+                      <div className="review-body">{r.content}</div>
+                      <div className="review-helpful">
+                        <span>Đánh giá này có hữu ích không?</span>
+                        <button
+                          type="button"
+                          className={`helpful-btn${r.myVote === true ? " active" : ""}`}
+                          disabled={voteMutation.isPending}
+                          onClick={() => handleVote(r.id, true)}
+                        >
+                          👍 Có ({r.helpfulCount || 0})
+                        </button>
+                        <button
+                          type="button"
+                          className={`helpful-btn${r.myVote === false ? " active" : ""}`}
+                          disabled={voteMutation.isPending}
+                          onClick={() => handleVote(r.id, false)}
+                        >
+                          👎 Không ({r.unhelpfulCount || 0})
+                        </button>
                       </div>
                     </div>
-                    <div className="review-title">{r.title}</div>
-                    <div className="review-body">{r.content || r.body}</div>
-                    <div className="review-helpful">
-                      <span>Đánh giá này có hữu ích không?</span>
-                      <button className="helpful-btn">
-                        👍 Có ({r.helpfulCount || 0})
-                      </button>
-                      <button className="helpful-btn">Không</button>
-                    </div>
+                  ))
+                ) : (
+                  <div
+                    style={{
+                      padding: "24px 0",
+                      fontSize: "13px",
+                      color: "var(--text-muted)",
+                    }}
+                  >
+                    Chưa có đánh giá nào cho sách này. Hãy là người đầu tiên!
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>

@@ -51,6 +51,7 @@ model User {
   orders        Order[]
   cart          Cart?
   reviews       Review[]
+  reviewVotes   ReviewVote[]
   wishlist      Wishlist[]
   refreshTokens RefreshToken[]
   inventoryImports InventoryImport[]
@@ -537,8 +538,25 @@ model Review {
   isVisible Boolean  @default(true)
   createdAt DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  user  User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book  Book         @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  votes ReviewVote[]
+}
+
+// Vote "hữu ích / không hữu ích" cho 1 review — mỗi user chỉ vote 1 lần / review,
+// vote sau ghi đè vote trước (đổi ý), bấm lại lựa chọn cũ = bỏ vote.
+model ReviewVote {
+  id        String   @id @default(uuid())
+  reviewId  String
+  userId    String
+  isHelpful Boolean
+  createdAt DateTime @default(now())
+
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewId, userId])
+  @@index([reviewId])
 }
 
 // ─ WISHLIST ─
