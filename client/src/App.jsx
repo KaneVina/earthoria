@@ -19,6 +19,7 @@ import Orders from "./pages/admin/Orders";
 import Users from "./pages/admin/user/Users";
 import UserCreate from "./pages/admin/user/UserCreate";
 import Coupons from "./pages/admin/Coupons";
+import Reviews from "./pages/admin/Reviews";
 import GoogleAuthSuccess from "./pages/auth/GoogleAuthSuccess";
 import CustomCursor from "./components/CustomCursor";
 import ARGuide from "./pages/ARGuide";
@@ -82,8 +83,8 @@ const GuestRoute = ({ children }) => {
   return !isAuthenticated ? children : <Navigate to="/" replace />;
 };
 // Khởi động trang bảo trì (test tay — luôn ưu tiên cao nhất, ghi đè cả lịch/tự động của admin)
-// const MAINTENANCE_MODE = false;
-const MAINTENANCE_MODE = true;
+const MAINTENANCE_MODE = false;
+// const MAINTENANCE_MODE = true;
 
 export default function App() {
   const { setAuth, setAuthChecked, authChecked, user, isAuthenticated } = useAuthStore();
@@ -398,6 +399,14 @@ export default function App() {
             <AdminRoute>
               <Coupons />
             </AdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/reviews"
+          element={
+            <StaffOrAdminRoute>
+              <Reviews />
+            </StaffOrAdminRoute>
           }
         />
         <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />

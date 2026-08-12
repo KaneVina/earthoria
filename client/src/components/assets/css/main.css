@@ -5812,6 +5812,26 @@ body.dark-mode .promo-strip {
   color: var(--text-muted);
   font-weight: 300;
 }
+.review-reply {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: var(--ivory);
+  border-left: 2px solid var(--forest);
+}
+.review-reply-label {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--forest);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.review-reply-body {
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--text-muted);
+  font-weight: 300;
+}
 .review-helpful {
   display: flex;
   align-items: center;

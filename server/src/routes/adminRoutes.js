@@ -85,6 +85,7 @@ router.put("/orders/:id", adminOnly, updateOrderStatus);
 
 router.use("/emails", adminOnly, require("./emailRoutes"));
 router.use("/tickets", staffOrAdmin, require("./adminTicketRoutes"));
+router.use("/reviews", staffOrAdmin, require("./adminReviewRoutes"));
 
 router.get("/users", staffOrAdmin, getUsers);
 router.get("/users/export", staffOrAdmin, exportUsersCsv);

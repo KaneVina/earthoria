@@ -228,6 +228,7 @@ const getBook = async (req, res) => {
           where: { isVisible: true },
           include: {
             user: { select: { name: true, firstName: true, lastName: true, avatar: true } },
+            repliedBy: { select: { name: true } },
             votes: req.user ? { where: { userId: req.user.id } } : false,
             _count: { select: { votes: true } }
           },

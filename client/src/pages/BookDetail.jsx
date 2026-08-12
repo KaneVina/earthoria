@@ -308,12 +308,14 @@ export default function BookDetail() {
       .querySelectorAll(".reveal, .reveal-left, .reveal-right")
       .forEach((el) => revObserver.observe(el));
 
-   const handleScroll = () => {
-      const winScroll = document.documentElement.scrollTop
-      const height = document.documentElement.scrollHeight - document.documentElement.clientHeight
-      setProgress(height > 0 ? (winScroll / height) * 100 : 0)
+    const handleScroll = () => {
+      const winScroll = document.documentElement.scrollTop;
+      const height =
+        document.documentElement.scrollHeight -
+        document.documentElement.clientHeight;
+      setProgress(height > 0 ? (winScroll / height) * 100 : 0);
       if (heroRef.current) {
-        setStickyVisible(heroRef.current.getBoundingClientRect().bottom < 0)
+        setStickyVisible(heroRef.current.getBoundingClientRect().bottom < 0);
       }
     };
 
@@ -1217,17 +1219,23 @@ export default function BookDetail() {
                           </div>
                         </div>
                         <div className="review-stars">
-                          {Array.from({ length: r.rating || 5 }).map(
-                            (_, j) => (
-                              <span key={j} className="star">
-                                ★
-                              </span>
-                            ),
-                          )}
+                          {Array.from({ length: r.rating || 5 }).map((_, j) => (
+                            <span key={j} className="star">
+                              ★
+                            </span>
+                          ))}
                         </div>
                       </div>
                       <div className="review-title">{r.title}</div>
                       <div className="review-body">{r.content}</div>
+                      {r.reply && (
+                        <div className="review-reply">
+                          <div className="review-reply-label">
+                            Phản hồi từ {r.repliedBy?.name || "Earthoria"}
+                          </div>
+                          <div className="review-reply-body">{r.reply}</div>
+                        </div>
+                      )}
                       <div className="review-helpful">
                         <span>Đánh giá này có hữu ích không?</span>
                         <button

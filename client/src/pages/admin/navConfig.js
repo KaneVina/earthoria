@@ -9,6 +9,7 @@ import {
   Gamepad2,
   Mail,
   MessageSquareText,
+  Star,
   Settings as SettingsIcon,
 } from "lucide-react";
 
@@ -26,6 +27,7 @@ export const NAV_GROUPS = [
       { label: "Sản phẩm", href: "/dashboard/products", icon: Package },
       { label: "Đơn hàng", href: "/dashboard/orders", icon: ShoppingBag },
       { label: "Mã giảm giá", href: "/dashboard/coupons", icon: Tag },
+      { label: "Đánh giá", href: "/dashboard/reviews", icon: Star },
       { label: "Yêu cầu liên hệ", href: "/dashboard/tickets", icon: MessageSquareText },
     ],
   },
