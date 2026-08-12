@@ -1,6 +1,9 @@
 nav {
-  transition: background 0.45s ease, backdrop-filter 0.45s ease,
-              border-color 0.45s ease, box-shadow 0.4s ease !important;
+  transition:
+    background 0.45s ease,
+    backdrop-filter 0.45s ease,
+    border-color 0.45s ease,
+    box-shadow 0.4s ease !important;
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -67,9 +70,10 @@ nav.is-scrolled .nav-logo {
   opacity: 1;
   visibility: visible;
   transform: translateY(-50%) scale(1) rotate(0deg);
-  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-              visibility 0.45s;
+  transition:
+    opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.45s;
 }
 
 /* Logo ngang — ẨN ban đầu */
@@ -83,9 +87,10 @@ nav.is-scrolled .nav-logo {
   opacity: 0;
   visibility: hidden;
   transform: translateY(-50%) translateY(-8px) scale(0.92);
-  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-              visibility 0.5s;
+  transition:
+    opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.5s;
 }
 
 /* Khi cuộn: logo ngang hiện, logo nhỏ ẩn */
@@ -107,9 +112,17 @@ nav.is-scrolled .nav-logo-compact {
 }
 
 @media (max-width: 900px) {
-  .nav-logo-swap { width: 120px; height: 32px; }
-  .nav-logo-full { height: 24px; }
-  .nav-logo-compact { height: 32px; width: 32px; }
+  .nav-logo-swap {
+    width: 120px;
+    height: 32px;
+  }
+  .nav-logo-full {
+    height: 24px;
+  }
+  .nav-logo-compact {
+    height: 32px;
+    width: 32px;
+  }
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -132,7 +145,12 @@ nav.is-scrolled .nav-logo-compact {
 /* ACTIVE */
 .nav-links a.active {
   position: relative !important;
-  background: linear-gradient(135deg, #1a4a35 0%, #2d7a4f 52%, #6ab84a 100%) !important;
+  background: linear-gradient(
+    135deg,
+    #1a4a35 0%,
+    #2d7a4f 52%,
+    #6ab84a 100%
+  ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;
@@ -148,13 +166,23 @@ nav.is-scrolled .nav-logo-compact {
   right: 0 !important;
   bottom: -5px !important;
   height: 1.5px !important;
-  background: linear-gradient(to right, #1a4a35 0%, #2d7a4f 52%, #6ab84a 100%) !important;
+  background: linear-gradient(
+    to right,
+    #1a4a35 0%,
+    #2d7a4f 52%,
+    #6ab84a 100%
+  ) !important;
   pointer-events: none !important;
 }
 
 /* ACTIVE dark mode — đẩy sáng hơn để đọc được trên nền tối */
 body.dark-mode .nav-links a.active {
-  background: linear-gradient(135deg, #2d7a4f 0%, #4fa86e 48%, #6ab84a 100%) !important;
+  background: linear-gradient(
+    135deg,
+    #2d7a4f 0%,
+    #4fa86e 48%,
+    #6ab84a 100%
+  ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;
@@ -163,7 +191,12 @@ body.dark-mode .nav-links a.active {
 
 /* HOVER non-active */
 .nav-links a:hover:not(.active) {
-  background: linear-gradient(135deg, #1a4a35 0%, #2d7a4f 52%, #6ab84a 100%) !important;
+  background: linear-gradient(
+    135deg,
+    #1a4a35 0%,
+    #2d7a4f 52%,
+    #6ab84a 100%
+  ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;
@@ -174,7 +207,12 @@ body.dark-mode .nav-links a.active {
 
 /* HOVER dark mode */
 body.dark-mode .nav-links a:hover:not(.active) {
-  background: linear-gradient(135deg, #2d7a4f 0%, #4fa86e 48%, #6ab84a 100%) !important;
+  background: linear-gradient(
+    135deg,
+    #2d7a4f 0%,
+    #4fa86e 48%,
+    #6ab84a 100%
+  ) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;
@@ -221,9 +259,14 @@ nav.is-scrolled .nav-icon-group {
   border: 0.5px solid transparent;
   border-radius: 0;
   text-decoration: none;
-  transition: color 0.25s ease, background 0.25s ease,
-              border-color 0.25s ease, transform 0.2s ease,
-              opacity 0.35s ease, width 0.35s ease, padding 0.35s ease;
+  transition:
+    color 0.25s ease,
+    background 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.2s ease,
+    opacity 0.35s ease,
+    width 0.35s ease,
+    padding 0.35s ease;
 }
 
 .nav-icon:hover,
@@ -276,46 +319,80 @@ nav.is-scrolled .icon-theme {
    ──────────────────────────────────────────────────────────── */
 .nav-badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 17px;
-  height: 17px;
-  padding: 0 4px;
-  background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 55%, var(--forest-mid) 100%);
-  box-shadow: 0 2px 6px rgba(13, 43, 30, 0.35), 0 0 0 2px var(--ivory);
+  top: -3px;
+  right: -3px;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3.5px;
+  background: var(--forest-mid);
+  box-shadow:
+    0 1px 3px rgba(13, 43, 30, 0.3),
+    0 0 0 1.5px var(--ivory);
   border-radius: 999px;
-  font-size: 9.5px;
-  font-weight: 700;
+  font-size: 9px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--ivory);
   line-height: 1;
-  font-family: 'Be Vietnam Pro', sans-serif;
+  font-family: "Be Vietnam Pro", sans-serif;
   letter-spacing: 0;
   pointer-events: none;
 }
-
+body.dark-mode .nav-badge {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.4),
+    0 0 0 1.5px #121a16;
+}
 @keyframes badgePop {
-  0%   { transform: scale(0.35); opacity: 0; }
-  55%  { transform: scale(1.28); opacity: 1; }
-  75%  { transform: scale(0.9); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0.35);
+    opacity: 0;
+  }
+  55% {
+    transform: scale(1.28);
+    opacity: 1;
+  }
+  75% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 @keyframes badgeRing {
-  0%   { box-shadow: 0 2px 6px rgba(13,43,30,0.35), 0 0 0 2px var(--ivory), 0 0 0 0 rgba(106,184,74,0.55); }
-  70%  { box-shadow: 0 2px 6px rgba(13,43,30,0.35), 0 0 0 2px var(--ivory), 0 0 0 8px rgba(106,184,74,0); }
-  100% { box-shadow: 0 2px 6px rgba(13,43,30,0.35), 0 0 0 2px var(--ivory), 0 0 0 0 rgba(106,184,74,0); }
+  0% {
+    box-shadow:
+      0 2px 6px rgba(13, 43, 30, 0.35),
+      0 0 0 2px var(--ivory),
+      0 0 0 0 rgba(106, 184, 74, 0.55);
+  }
+  70% {
+    box-shadow:
+      0 2px 6px rgba(13, 43, 30, 0.35),
+      0 0 0 2px var(--ivory),
+      0 0 0 8px rgba(106, 184, 74, 0);
+  }
+  100% {
+    box-shadow:
+      0 2px 6px rgba(13, 43, 30, 0.35),
+      0 0 0 2px var(--ivory),
+      0 0 0 0 rgba(106, 184, 74, 0);
+  }
 }
 
 .nav-badge-pop {
-  animation: badgePop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
-             badgeRing 0.9s ease-out 0.08s;
+  animation:
+    badgePop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+    badgeRing 0.9s ease-out 0.08s;
 }
 
 body.dark-mode .nav-badge {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45), 0 0 0 2px #121a16;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.45),
+    0 0 0 2px #121a16;
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -328,7 +405,7 @@ body.dark-mode .nav-badge {
   left: 50%;
   transform: translateX(-50%) translateY(-4px);
   white-space: nowrap;
-  font-family: 'Be Vietnam Pro', sans-serif;
+  font-family: "Be Vietnam Pro", sans-serif;
   font-size: 10px;
   letter-spacing: 0.08em;
   font-weight: 400;
@@ -338,12 +415,15 @@ body.dark-mode .nav-badge {
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease,
+    visibility 0.25s;
   z-index: 960;
 }
 
 .nav-icon[data-tooltip]::after {
-  content: '';
+  content: "";
   position: absolute;
   top: calc(100% + 6px);
   left: 50%;
@@ -354,7 +434,9 @@ body.dark-mode .nav-badge {
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.25s ease, visibility 0.25s;
+  transition:
+    opacity 0.25s ease,
+    visibility 0.25s;
   z-index: 959;
 }
 
@@ -381,6 +463,309 @@ body.dark-mode .nav-icon[data-tooltip]::after {
 .nav-actions,
 .nav-icon-group {
   overflow: visible;
+}
+
+/* ────────────────────────────────────────────────────────────
+   CART DROPDOWN — xem nhanh giỏ hàng khi rê chuột vào icon giỏ
+   ──────────────────────────────────────────────────────────── */
+.nav-cart-wrapper {
+  position: relative;
+}
+
+.cart-dropdown {
+  position: absolute;
+  top: calc(100% + 16px);
+  right: -10px;
+  width: 320px;
+  background: var(--ivory);
+  border: 0.5px solid var(--border-gold);
+  box-shadow:
+    0 32px 64px rgba(13, 43, 30, 0.18),
+    0 6px 18px rgba(13, 43, 30, 0.08);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transform-origin: top right;
+  transition:
+    opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.28s;
+  z-index: 950;
+  padding: 16px;
+}
+
+.nav-cart-wrapper:hover .cart-dropdown,
+.nav-cart-wrapper:focus-within .cart-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Mũi tên nhỏ trỏ lên icon giỏ hàng, giúp gắn kết dropdown với icon */
+.cart-dropdown-arrow {
+  position: absolute;
+  top: -6px;
+  right: 22px;
+  width: 12px;
+  height: 12px;
+  background: var(--ivory);
+  border-left: 0.5px solid var(--border-gold);
+  border-top: 0.5px solid var(--border-gold);
+  transform: rotate(45deg);
+}
+
+.cart-dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 0.5px solid var(--border);
+}
+.cart-dropdown-header-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gold-pale);
+  border: 0.5px solid var(--border-gold);
+  color: var(--gold);
+}
+.cart-dropdown-header strong {
+  color: var(--forest);
+  font-weight: 600;
+}
+
+.cart-dropdown-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 272px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cart-dropdown-list::-webkit-scrollbar {
+  width: 4px;
+}
+.cart-dropdown-list::-webkit-scrollbar-thumb {
+  background: var(--border-gold);
+}
+
+.cart-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 6px;
+  border-left: 2px solid transparent;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+.cart-dropdown-item:hover {
+  background: rgba(74, 158, 63, 0.06);
+  border-left-color: var(--gold);
+}
+
+.cart-dropdown-thumb-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.cart-dropdown-thumb {
+  width: 42px;
+  height: 56px;
+  object-fit: cover;
+  background: var(--border);
+  border: 0.5px solid var(--border);
+}
+
+.cart-dropdown-qty {
+  position: absolute;
+  bottom: -5px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  background: var(--forest);
+  color: var(--ivory);
+  font-size: 9px;
+  font-weight: 600;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 2px var(--ivory);
+  line-height: 1;
+}
+
+.cart-dropdown-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 3px;
+}
+
+.cart-dropdown-title {
+  font-size: 12.5px;
+  color: var(--text-body);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 400;
+}
+
+.cart-dropdown-meta {
+  font-size: 11.5px;
+  color: var(--gold);
+  font-weight: 500;
+}
+
+.cart-dropdown-more {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 8px 0 2px;
+  font-style: italic;
+}
+
+.cart-dropdown-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: var(--text-body);
+  padding-top: 12px;
+  margin-top: 10px;
+  border-top: 0.5px dashed var(--border-gold);
+}
+.cart-dropdown-footer strong {
+  color: var(--gold);
+  font-size: 15px;
+  font-family: "Playfair Display", serif;
+}
+
+.cart-dropdown-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  margin-top: 12px;
+  padding: 11px;
+  background: var(--forest);
+  color: var(--ivory);
+  font-size: 11.5px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition:
+    background 0.25s ease,
+    transform 0.2s ease,
+    box-shadow 0.25s ease;
+}
+.cart-dropdown-btn:hover {
+  background: var(--forest-mid);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(13, 43, 30, 0.22);
+}
+.cart-dropdown-btn-arrow {
+  transform: rotate(-90deg);
+  transition: transform 0.25s ease;
+}
+.cart-dropdown-btn:hover .cart-dropdown-btn-arrow {
+  transform: rotate(-90deg) translateX(2px);
+}
+
+.cart-dropdown-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 6px 4px;
+  color: var(--text-muted);
+  font-size: 12.5px;
+  text-align: center;
+}
+.cart-dropdown-empty-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gold-pale);
+  border: 0.5px solid var(--border-gold);
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.cart-dropdown-empty-title {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--forest);
+  font-family: "Playfair Display", serif;
+}
+.cart-dropdown-empty-desc {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.cart-dropdown-empty .cart-dropdown-btn {
+  width: 100%;
+}
+
+body.dark-mode .cart-dropdown {
+  background: #121a16;
+  border-color: rgba(74, 158, 63, 0.25);
+  box-shadow:
+    0 32px 64px rgba(0, 0, 0, 0.45),
+    0 6px 18px rgba(0, 0, 0, 0.25);
+}
+body.dark-mode .cart-dropdown-arrow {
+  background: #121a16;
+  border-color: rgba(74, 158, 63, 0.25);
+}
+body.dark-mode .cart-dropdown-header,
+body.dark-mode .cart-dropdown-footer {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+body.dark-mode .cart-dropdown-title {
+  color: #c8d4cc;
+}
+body.dark-mode .cart-dropdown-item:hover {
+  background: rgba(74, 158, 63, 0.12);
+}
+body.dark-mode .cart-dropdown-header-icon,
+body.dark-mode .cart-dropdown-empty-icon {
+  background: rgba(74, 158, 63, 0.14);
+  border-color: rgba(74, 158, 63, 0.32);
+}
+
+@media (max-width: 900px) {
+  .cart-dropdown {
+    display: none;
+  }
+}
+
+/* Badge cho các mục Yêu thích / Giỏ hàng trong panel mobile */
+.nav-mobile-badge {
+  margin-left: auto;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: var(--forest-mid);
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--ivory);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 /* ────────────────────────────────────────────────────────────
@@ -473,9 +858,10 @@ body.dark-mode .nav-hamburger {
   -webkit-overflow-scrolling: touch;
   opacity: 0;
   visibility: hidden;
-  transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              opacity 0.3s ease,
-              visibility 0.4s;
+  transition:
+    max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.3s ease,
+    visibility 0.4s;
   padding: 0 24px;
 }
 
@@ -526,7 +912,12 @@ body.dark-mode .nav-hamburger {
   padding: 14px 6px 8px;
   font-weight: 400 !important;
   text-decoration: none !important;
-  background: linear-gradient(135deg, #1a4a35 0%, #2d7a4f 52%, #6ab84a 100%) !important;
+  background: linear-gradient(
+    135deg,
+    #1a4a35 0%,
+    #2d7a4f 52%,
+    #6ab84a 100%
+  ) !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
@@ -542,19 +933,34 @@ body.dark-mode .nav-hamburger {
   right: 6px !important;
   bottom: 0 !important;
   height: 1.5px !important;
-  background: linear-gradient(to right, #1a4a35 0%, #2d7a4f 52%, #6ab84a 100%) !important;
+  background: linear-gradient(
+    to right,
+    #1a4a35 0%,
+    #2d7a4f 52%,
+    #6ab84a 100%
+  ) !important;
   pointer-events: none !important;
 }
 
 body.dark-mode #navbar .nav-mobile-panel .nav-mobile-link.active {
-  background: linear-gradient(135deg, #2d7a4f 0%, #4fa86e 48%, #6ab84a 100%) !important;
+  background: linear-gradient(
+    135deg,
+    #2d7a4f 0%,
+    #4fa86e 48%,
+    #6ab84a 100%
+  ) !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
 }
 
 body.dark-mode #navbar .nav-mobile-panel .nav-mobile-link.active::after {
-  background: linear-gradient(to right, #2d7a4f 0%, #4fa86e 48%, #6ab84a 100%) !important;
+  background: linear-gradient(
+    to right,
+    #2d7a4f 0%,
+    #4fa86e 48%,
+    #6ab84a 100%
+  ) !important;
 }
 
 .nav-mobile-link.logout {
@@ -602,7 +1008,9 @@ body.dark-mode .nav-mobile-link {
   overflow: hidden;
   text-decoration: none !important;
   cursor: pointer;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  transition:
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
 }
 .pkd-cta-banner:hover {
   transform: translateY(-2px);
@@ -664,4 +1072,60 @@ body.dark-mode .nav-mobile-link {
     width: 100%;
     justify-content: center;
   }
+}
+
+/* ────────────────────────────────────────────────────────────
+   TOAST "ĐÃ XOÁ ... HOÀN TÁC" (Wishlist, v.v.)
+   Trước đây chưa có CSS nên nút Hoàn tác bị vỡ layout, dùng style
+   mặc định của trình duyệt. Style lại đồng bộ với theme (viền
+   vàng mảnh, góc vuông, giống các nút khác trong site).
+   ──────────────────────────────────────────────────────────── */
+.wl-undo-toast {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--ivory);
+  min-width: 0;
+}
+
+.wl-undo-toast > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wl-undo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  background: transparent;
+  color: var(--gold);
+  border: 0.5px solid var(--gold);
+  padding: 5px 10px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  font-family: "Be Vietnam Pro", sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.wl-undo-btn:hover {
+  background: var(--gold);
+  color: var(--ink, #0d3330);
+}
+
+.wl-undo-btn:active {
+  transform: scale(0.95);
+}
+
+.wl-undo-btn svg {
+  flex-shrink: 0;
 }

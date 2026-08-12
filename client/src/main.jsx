@@ -30,7 +30,8 @@ createRoot(document.getElementById('root')).render(
             fontSize: '13px',
             background: '#0d3330',
             color: '#faf8f3',
-            border: '0.5px solid rgba(74,158,63,0.3)'
+            border: '0.5px solid rgba(74,158,63,0.3)',
+            maxWidth: '460px'
           }
         }}
       />

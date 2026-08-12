@@ -25,6 +25,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import "../assets/css/navbar.css";
 import { authService } from "../../services/authService";
 import LogoutConfirmModal from "../LogoutConfirmModal";
+import { formatPrice } from "../../utils/helpers";
 const logoCompactImg = "/logo-nho.png";
 export default function Navbar() {
   const queryClient = useQueryClient();
@@ -34,6 +35,7 @@ export default function Navbar() {
   //  Stores ────────────────────────────────────────
   const { user, isAuthenticated, logout } = useAuthStore();
   const itemCount = useCartStore((s) => s.itemCount);
+  const cart = useCartStore((s) => s.cart);
   const fetchCart = useCartStore((s) => s.fetchCart);
   const { wishlistCount, fetchWishlist } = useWishlistStore();
   const { isDark, toggleTheme } = useTheme();
@@ -228,19 +230,91 @@ export default function Navbar() {
               </Link>
 
               {/* Cart */}
-              <Link
-                to="/cart"
-                className="nav-icon icon-cart"
-                aria-label="Giỏ hàng"
-                data-tooltip="Giỏ hàng"
-              >
-                <ShoppingCart size={16} strokeWidth={1.8} />
-                {itemCount > 0 && (
-                  <span key={itemCount} className="nav-badge nav-badge-pop">
-                    {itemCount > 99 ? "99+" : itemCount}
-                  </span>
-                )}
-              </Link>
+              <div className="nav-cart-wrapper">
+                <Link
+                  to="/cart"
+                  className="nav-icon icon-cart"
+                  aria-label="Giỏ hàng"
+                >
+                  <ShoppingCart size={16} strokeWidth={1.8} />
+                  {itemCount > 0 && (
+                    <span key={itemCount} className="nav-badge nav-badge-pop">
+                      {itemCount > 99 ? "99+" : itemCount}
+                    </span>
+                  )}
+                </Link>
+
+                {/* Dropdown xem nhanh giỏ hàng khi rê chuột vào */}
+                <div className="cart-dropdown">
+                  <span className="cart-dropdown-arrow" />
+                  {itemCount > 0 ? (
+                    <>
+                      <div className="cart-dropdown-header">
+                        <span className="cart-dropdown-header-icon">
+                          <ShoppingCart size={13} strokeWidth={2} />
+                        </span>
+                        <span>
+                          Giỏ hàng của bạn có{" "}
+                          <strong>{itemCount}</strong>{" "}
+                          {itemCount > 1 ? "sản phẩm" : "sản phẩm"}
+                        </span>
+                      </div>
+                      <ul className="cart-dropdown-list">
+                        {cart?.items?.slice(0, 4).map((item) => {
+                          const price =
+                            item.variant?.salePrice ?? item.variant?.price ?? 0;
+                          return (
+                            <li key={item.id} className="cart-dropdown-item">
+                              <span className="cart-dropdown-thumb-wrap">
+                                <img
+                                  src={item.variant?.book?.coverImage}
+                                  alt={item.variant?.book?.title}
+                                  className="cart-dropdown-thumb"
+                                />
+                                <span className="cart-dropdown-qty">
+                                  {item.quantity}
+                                </span>
+                              </span>
+                              <div className="cart-dropdown-info">
+                                <span className="cart-dropdown-title">
+                                  {item.variant?.book?.title}
+                                </span>
+                                <span className="cart-dropdown-meta">
+                                  {formatPrice(price)}
+                                </span>
+                              </div>
+                            </li>
+                          );
+                        })}
+                        {cart?.items?.length > 4 && (
+                          <li className="cart-dropdown-more">
+                            + {cart.items.length - 4} sản phẩm khác trong giỏ
+                          </li>
+                        )}
+                      </ul>
+                      <div className="cart-dropdown-footer">
+                        <span>Tổng cộng</span>
+                        <strong>{formatPrice(cart?.total ?? 0)}</strong>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="cart-dropdown-empty">
+                      <span className="cart-dropdown-empty-icon">
+                        <ShoppingCart size={22} strokeWidth={1.4} />
+                      </span>
+                      <span className="cart-dropdown-empty-title">
+                        Giỏ hàng đang trống
+                      </span>
+                      <span className="cart-dropdown-empty-desc">
+                        Khám phá thêm sách hay và thêm vào giỏ nhé
+                      </span>
+                      <Link to="/shop" className="cart-dropdown-btn">
+                        Khám phá cửa hàng
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Auth */}
@@ -371,6 +445,34 @@ export default function Navbar() {
               Quản trị
             </Link>
           )}
+
+          <div className="nav-mobile-divider" />
+
+          {/* Tìm kiếm / Yêu thích / Giỏ hàng — trước đây chỉ có trên desktop
+              (icon-group bị ẩn ở mobile) nên trên mobile không có cách nào
+              vào được các mục này. Thêm hẳn vào panel để luôn tìm thấy. */}
+          <button
+            type="button"
+            className="nav-mobile-link"
+            onClick={() => {
+              setMobileOpen(false);
+              setSearchOpen(true);
+            }}
+          >
+            <Search size={15} /> Tìm kiếm
+          </button>
+          <Link to="/wishlist" className="nav-mobile-link">
+            <Heart size={15} /> Yêu thích
+            {wishlistCount > 0 && (
+              <span className="nav-mobile-badge">{wishlistCount > 99 ? "99+" : wishlistCount}</span>
+            )}
+          </Link>
+          <Link to="/cart" className="nav-mobile-link">
+            <ShoppingCart size={15} /> Giỏ hàng
+            {itemCount > 0 && (
+              <span className="nav-mobile-badge">{itemCount > 99 ? "99+" : itemCount}</span>
+            )}
+          </Link>
 
           <div className="nav-mobile-divider" />
 
