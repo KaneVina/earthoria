@@ -59,6 +59,8 @@ import PaymentReturn from "./pages/PaymentReturn";
 import GameManager from "./pages/admin/GameManager";
 import GameDetail from "./pages/admin/GameDetail";
 import GamePlay from "./pages/GamePlay";
+import EbookManager from "./pages/admin/EbookManager";
+import EbookEditor from "./pages/admin/EbookEditor";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -136,7 +138,6 @@ export default function App() {
     return (
       <BrowserRouter>
         <Routes>
-          {/* Vẫn cho vào /login để admin đăng nhập được, từ đó vượt qua trang bảo trì */}
           <Route
             path="/login"
             element={
@@ -366,6 +367,30 @@ export default function App() {
           element={
             <StaffOrAdminRoute>
               <GameDetail />
+            </StaffOrAdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/ebooks"
+          element={
+            <StaffOrAdminRoute>
+              <EbookManager />
+            </StaffOrAdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/ebooks/new"
+          element={
+            <StaffOrAdminRoute>
+              <EbookEditor />
+            </StaffOrAdminRoute>
+          }
+        />
+        <Route
+          path="/dashboard/ebooks/:id"
+          element={
+            <StaffOrAdminRoute>
+              <EbookEditor />
             </StaffOrAdminRoute>
           }
         />

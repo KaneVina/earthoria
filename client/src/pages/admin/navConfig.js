@@ -8,6 +8,7 @@ import {
   QrCode,
   Gamepad2,
   Mail,
+  BookOpen,
   MessageSquareText,
   Star,
   Settings as SettingsIcon,
@@ -42,11 +43,11 @@ export const NAV_GROUPS = [
     items: [
       { label: "Tạo mã QR", href: "/dashboard/ar-codes", icon: QrCode },
       { label: "Trò chơi", href: "/dashboard/games", icon: Gamepad2 },
+      { label: "Ebook", href: "/dashboard/ebooks", icon: BookOpen },
       { label: "Email", href: "/dashboard/emails", icon: Mail },
       { label: "Cài đặt hệ thống", href: "/dashboard/settings", icon: SettingsIcon },
     ],
   },
 ];
 
-// Dùng để tra breadcrumb mặc định (label theo path hiện tại)
 export const ALL_NAV_ITEMS = NAV_GROUPS.flatMap((g) => g.items);

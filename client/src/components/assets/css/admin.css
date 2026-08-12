@@ -181,10 +181,28 @@
 /* Sidebar — Nav */
 .a-nav {
   flex: 1;
+  min-height: 0; /* cho phép flex item co lại thay vì đẩy tràn footer */
   padding: 0 10px 12px;
   display: flex;
   flex-direction: column;
   gap: 2px;
+  overflow-y: auto; /* menu dài sẽ tự cuộn riêng, không đẩy footer xuống */
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.a-nav::-webkit-scrollbar {
+  width: 5px;
+}
+
+.a-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.a-nav::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .a-sidebar.collapsed .a-nav {
