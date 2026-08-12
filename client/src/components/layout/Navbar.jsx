@@ -37,6 +37,8 @@ export default function Navbar() {
   const itemCount = useCartStore((s) => s.itemCount);
   const cart = useCartStore((s) => s.cart);
   const fetchCart = useCartStore((s) => s.fetchCart);
+  const removeCartItem = useCartStore((s) => s.removeItem);
+  const [removingItemId, setRemovingItemId] = useState(null);
   const { wishlistCount, fetchWishlist } = useWishlistStore();
   const { isDark, toggleTheme } = useTheme();
 
@@ -90,6 +92,19 @@ export default function Navbar() {
   };
 
   const isHome = location.pathname === "/" || location.pathname === "/home";
+
+  const handleQuickRemove = async (e, itemId) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setRemovingItemId(itemId);
+    try {
+      await removeCartItem(itemId);
+    } catch {
+      toast.error("Không thể xoá sản phẩm, vui lòng thử lại");
+    } finally {
+      setRemovingItemId(null);
+    }
+  };
 
   const isActive = (to) => {
     if (to === "/home") return isHome;
@@ -283,6 +298,15 @@ export default function Navbar() {
                                   {formatPrice(price)}
                                 </span>
                               </div>
+                              <button
+                                type="button"
+                                className="cart-dropdown-remove"
+                                aria-label="Xoá sản phẩm khỏi giỏ"
+                                disabled={removingItemId === item.id}
+                                onClick={(e) => handleQuickRemove(e, item.id)}
+                              >
+                                <X size={13} strokeWidth={2} />
+                              </button>
                             </li>
                           );
                         })}

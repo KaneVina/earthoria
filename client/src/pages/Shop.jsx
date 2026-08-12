@@ -5,6 +5,7 @@ import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { bookService } from "../services/bookService";
 import { useCartStore } from "../store/cartStore";
 import { formatPrice, getBookUrl } from "../utils/helpers";
+import { flyToCart } from "../utils/flyToCart";
 import { useAuthStore } from "../store/authStore";
 import { useWishlistStore } from "../store/wishlistStore";
 import toast from "react-hot-toast";
@@ -321,7 +322,7 @@ function AddToCartBtn({ onAdd, disabled }) {
     e.stopPropagation();
     if (disabled) return;
     setAdded(true);
-    onAdd && onAdd();
+    onAdd && onAdd(e);
     setTimeout(() => setAdded(false), 1400);
   };
 
@@ -817,7 +818,13 @@ function ProductCard({ book, onAddToCart, delay, isAdding }) {
             onClick={(e) => e.stopPropagation()}
           >
             <AddToCartBtn
-              onAdd={() => onAddToCart && onAddToCart(book.hashId)}
+              onAdd={(e) => {
+                const cardImg = e.currentTarget
+                  .closest(".product-card")
+                  ?.querySelector(".product-img-wrap img");
+                if (cardImg) flyToCart(cardImg);
+                onAddToCart && onAddToCart(book.hashId);
+              }}
               disabled={isAdding}
             />
           </div>
@@ -1478,7 +1485,13 @@ const [ageRange, setAgeRange] = useState([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
                   <div className="featured-cta">
                     <button
                       className="btn-add-cart"
-                      onClick={() => handleAddToCart(featuredBook.hashId)}
+                      onClick={(e) => {
+                        const featuredImg = e.currentTarget
+                          .closest(".featured-product-card")
+                          ?.querySelector(".product-img-wrap img");
+                        flyToCart(featuredImg);
+                        handleAddToCart(featuredBook.hashId);
+                      }}
                       disabled={addingIds.has(featuredBook.hashId)}
                     >
                       <CartIcon />

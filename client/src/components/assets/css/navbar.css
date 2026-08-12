@@ -626,6 +626,41 @@ body.dark-mode .nav-icon[data-tooltip]::after {
   font-weight: 500;
 }
 
+.cart-dropdown-remove {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0.5px solid transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.2s ease,
+    color 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+.cart-dropdown-item:hover .cart-dropdown-remove {
+  opacity: 1;
+}
+.cart-dropdown-remove:hover {
+  color: #c0392b;
+  background: rgba(192, 57, 43, 0.08);
+  border-color: rgba(192, 57, 43, 0.25);
+}
+.cart-dropdown-remove:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+body.dark-mode .cart-dropdown-remove {
+  color: #8fa398;
+}
+
 .cart-dropdown-more {
   font-size: 11.5px;
   color: var(--text-muted);
@@ -1128,4 +1163,35 @@ body.dark-mode .nav-mobile-link {
 
 .wl-undo-btn svg {
   flex-shrink: 0;
+}
+
+/* ────────────────────────────────────────────────────────────
+   FLY-TO-CART — ảnh sản phẩm bay vào icon giỏ hàng khi bấm
+   "Thêm vào giỏ" ở bất kỳ trang nào (xem src/utils/flyToCart.js)
+   ──────────────────────────────────────────────────────────── */
+.fly-to-cart-ghost {
+  position: fixed;
+  z-index: 9999;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 0.5px solid var(--border-gold);
+  box-shadow: 0 10px 26px rgba(13, 43, 30, 0.25);
+  pointer-events: none;
+  margin: 0;
+  max-width: none;
+  will-change: left, top, width, height, opacity, transform;
+}
+
+/* Icon giỏ hàng "nảy" nhẹ khi ảnh bay tới nơi */
+@keyframes cartIconBump {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.32); }
+  60% { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+.nav-icon.icon-cart.cart-icon-bump {
+  animation: cartIconBump 0.42s ease;
+}
+.nav-icon.icon-cart.cart-icon-bump svg {
+  color: var(--gold);
 }

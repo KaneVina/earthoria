@@ -5834,6 +5834,15 @@ body.dark-mode .promo-strip {
   border-color: var(--gold);
   color: var(--forest);
 }
+.helpful-btn.active {
+  border-color: var(--forest);
+  background: var(--forest);
+  color: var(--ivory);
+}
+.helpful-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
 
 /* ══════════════════════════════
    RELATED PRODUCTS

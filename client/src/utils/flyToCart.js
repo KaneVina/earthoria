@@ -9,13 +9,15 @@ export function flyToCart(sourceEl, imageSrc) {
   if (!src) return;
 
   const startRect = sourceEl.getBoundingClientRect();
-  const endRect = cartIcon.getBoundingClientRect();
+  // Phần tử chưa render / đang ẩn (width|height = 0) thì bỏ qua, tránh bay từ góc (0,0)
+  if (startRect.width === 0 || startRect.height === 0) return;
 
-  // Kích thước bay ban đầu: giới hạn lại cho gọn dù ảnh gốc to
-  const startW = Math.min(startRect.width, 90);
-  const startH = Math.min(startRect.height, 120);
+  const startW = Math.min(startRect.width, 80);
+  const startH = Math.min(startRect.height, 104);
   const startX = startRect.left + startRect.width / 2 - startW / 2;
   const startY = startRect.top + startRect.height / 2 - startH / 2;
+  const endW = 14;
+  const endH = 14;
 
   const ghost = document.createElement("img");
   ghost.src = src;
@@ -24,25 +26,45 @@ export function flyToCart(sourceEl, imageSrc) {
   ghost.style.height = `${startH}px`;
   ghost.style.left = `${startX}px`;
   ghost.style.top = `${startY}px`;
+  ghost.style.opacity = "1";
   document.body.appendChild(ghost);
 
-  const endX = endRect.left + endRect.width / 2 - 8;
-  const endY = endRect.top + endRect.height / 2 - 8;
+  const DURATION = 620; // ms
+  const ARC_HEIGHT = 70; // độ "vồng" lên của quỹ đạo bay, tạo cảm giác tự nhiên hơn đường thẳng
+  const startTime = performance.now();
 
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      ghost.style.transform = `translate(${endX - startX}px, ${endY - startY}px) scale(0.12) rotate(18deg)`;
-      ghost.style.opacity = "0.15";
-    });
-  });
+  const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
-  const cleanup = () => {
-    ghost.remove();
-    cartIcon.classList.add("cart-icon-bump");
-    setTimeout(() => cartIcon.classList.remove("cart-icon-bump"), 420);
+  const step = (now) => {
+    const t = Math.min((now - startTime) / DURATION, 1);
+    const eased = easeOutCubic(t);
+
+    // Tính lại vị trí đích MỖI FRAME — luôn đúng dù navbar/layout đổi giữa chừng
+    const endRect = cartIcon.getBoundingClientRect();
+    const endX = endRect.left + endRect.width / 2 - endW / 2;
+    const endY = endRect.top + endRect.height / 2 - endH / 2;
+
+    const curX = startX + (endX - startX) * eased;
+    const curY =
+      startY + (endY - startY) * eased - Math.sin(t * Math.PI) * ARC_HEIGHT;
+    const curW = startW + (endW - startW) * eased;
+    const curH = startH + (endH - startH) * eased;
+
+    ghost.style.left = `${curX}px`;
+    ghost.style.top = `${curY}px`;
+    ghost.style.width = `${curW}px`;
+    ghost.style.height = `${curH}px`;
+    ghost.style.opacity = String(1 - eased * 0.55);
+    ghost.style.transform = `rotate(${eased * 18}deg)`;
+
+    if (t < 1) {
+      requestAnimationFrame(step);
+    } else {
+      ghost.remove();
+      cartIcon.classList.add("cart-icon-bump");
+      setTimeout(() => cartIcon.classList.remove("cart-icon-bump"), 420);
+    }
   };
 
-  ghost.addEventListener("transitionend", cleanup, { once: true });
-  // Phòng trường hợp transitionend không bắn (ví dụ tab bị ẩn giữa chừng)
-  setTimeout(cleanup, 750);
+  requestAnimationFrame(step);
 }
