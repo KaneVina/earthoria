@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Timer } from "lucide-react";
+import { Timer, X as XIcon } from "lucide-react";
 
 const FILLER_LETTERS = "ABCDEFGHIKLMNOPQRSTUVXY".split("");
 
@@ -120,13 +120,21 @@ export default function LetterHuntPlayer({ config, onFinish }) {
     setRoundKey((k) => k + 1);
   };
 
+  const progressPct = targetLetters.length ? Math.round((progress / targetLetters.length) * 100) : 0;
+
   return (
-    <div className="g-play">
+    <div className="g-play g-play--letterhunt">
       <div className="g-play-stats">
         <span className={remaining <= 10 && status === "playing" ? "g-timer-urgent" : ""}>
-          <Timer size={13} style={{ verticalAlign: -2 }} /> {remaining}s
+          <Timer size={14} /> {remaining}s
         </span>
-        <span>❌ {mistakes} lần sai</span>
+        <span>
+          <XIcon size={14} /> {mistakes} lần sai
+        </span>
+      </div>
+
+      <div className="g-progress-bar">
+        <div className="g-progress-fill" style={{ width: `${progressPct}%` }} />
       </div>
 
       <div className="g-lh-progress">

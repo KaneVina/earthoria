@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import api from "../../services/api";
 import { gameService } from "../../services/gameService";
-import { GAME_TYPE_LIST, getGameDefinition } from "../../games/gameRegistry";
+import { GAME_TYPE_LIST, getGameDefinition, validateGameConfig } from "../../games/gameRegistry";
 import toast from "react-hot-toast";
 import AdminLayout from "./AdminLayout";
 import "../../components/assets/css/gamestudio.css";
@@ -199,6 +199,11 @@ export default function GameDetail() {
     }
     if (!gameType) {
       toast.error("Vui lòng chọn loại trò chơi");
+      return;
+    }
+    const configErrors = validateGameConfig(gameType, form.config);
+    if (configErrors.length > 0) {
+      toast.error(configErrors[0]);
       return;
     }
     if (isEditMode) updateMutation.mutate();

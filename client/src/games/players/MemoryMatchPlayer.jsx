@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Check } from "lucide-react";
+import { Check, Timer, RotateCw, Trophy } from "lucide-react";
 
 function shuffle(arr) {
   const a = [...arr];
@@ -80,14 +80,25 @@ export default function MemoryMatchPlayer({ config, onFinish }) {
     }
   }, [matched, pairs.length, moves, elapsed, onFinish]);
 
+  const progressPct = pairs.length ? Math.round((matched.size / pairs.length) * 100) : 0;
+  const allDone = pairs.length > 0 && matched.size === pairs.length;
+
   return (
-    <div className="g-play">
+    <div className="g-play g-play--memory">
       <div className="g-play-stats">
-        <span>⏱ {elapsed}s</span>
-        <span>🔁 {moves} lượt lật</span>
         <span>
-          ✅ {matched.size}/{pairs.length}
+          <Timer size={14} /> {elapsed}s
         </span>
+        <span>
+          <RotateCw size={14} /> {moves} lượt lật
+        </span>
+        <span className={allDone ? "g-stat-done" : ""}>
+          {allDone ? <Trophy size={14} /> : <Check size={14} />} {matched.size}/{pairs.length}
+        </span>
+      </div>
+
+      <div className="g-progress-bar">
+        <div className="g-progress-fill" style={{ width: `${progressPct}%` }} />
       </div>
 
       <div className="g-mm-grid" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
@@ -107,7 +118,7 @@ export default function MemoryMatchPlayer({ config, onFinish }) {
                   <Face face={card.face} />
                   {isMatched && (
                     <span className="g-mm-check">
-                      <Check size={12} />
+                      <Check size={14} />
                     </span>
                   )}
                 </div>

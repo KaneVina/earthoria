@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Timer, ListChecks, Trophy, Check } from "lucide-react";
 import { generateWordSearchGrid } from "../utils/wordSearchGenerator";
 
 function snapDirection(dr, dc) {
@@ -125,14 +126,22 @@ export default function WordSearchPlayer({ config, onFinish }) {
 
   const selectionKeys = new Set(selection.map((c) => `${c.r}-${c.c}`));
   const uniqueWords = [...new Set((config?.words || []).map((w) => w.toUpperCase().trim().replace(/\s+/g, "")))];
+  const progressPct = totalWords ? Math.round((foundWords.size / totalWords) * 100) : 0;
+  const allDone = totalWords > 0 && foundWords.size === totalWords;
 
   return (
-    <div className="g-play">
+    <div className="g-play g-play--wordsearch">
       <div className="g-play-stats">
-        <span>⏱ {elapsed}s</span>
         <span>
-          ✅ {foundWords.size}/{totalWords}
+          <Timer size={14} /> {elapsed}s
         </span>
+        <span className={allDone ? "g-stat-done" : ""}>
+          {allDone ? <Trophy size={14} /> : <ListChecks size={14} />} {foundWords.size}/{totalWords}
+        </span>
+      </div>
+
+      <div className="g-progress-bar">
+        <div className="g-progress-fill" style={{ width: `${progressPct}%` }} />
       </div>
 
       <div className="g-ws-play-layout">
@@ -164,12 +173,18 @@ export default function WordSearchPlayer({ config, onFinish }) {
           )}
         </div>
 
-        <div className="g-ws-word-list">
-          {uniqueWords.map((w) => (
-            <div key={w} className={`g-ws-word-chip${foundWords.has(w) ? " found" : ""}`}>
-              {w}
-            </div>
-          ))}
+        <div className="g-ws-word-panel">
+          <div className="g-ws-word-panel-title">
+            <ListChecks size={14} /> Từ cần tìm
+          </div>
+          <div className="g-ws-word-list">
+            {uniqueWords.map((w) => (
+              <div key={w} className={`g-ws-word-chip${foundWords.has(w) ? " found" : ""}`}>
+                {foundWords.has(w) && <Check size={11} />}
+                {w}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

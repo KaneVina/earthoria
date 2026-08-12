@@ -10,6 +10,13 @@ import MatchPairsPlayer from "./players/MatchPairsPlayer";
 import WordSearchPlayer from "./players/WordSearchPlayer";
 import LetterHuntPlayer from "./players/LetterHuntPlayer";
 
+import {
+  validateMemoryMatch,
+  validateMatchPairs,
+  validateWordSearchFull,
+  validateLetterHunt,
+} from "./validators";
+
 export const GAME_REGISTRY = {
   MEMORY_MATCH: {
     type: "MEMORY_MATCH",
@@ -20,6 +27,7 @@ export const GAME_REGISTRY = {
     defaultConfig: () => ({ pairs: [] }),
     Editor: MemoryMatchEditor,
     Player: MemoryMatchPlayer,
+    validate: validateMemoryMatch,
   },
   MATCH_PAIRS: {
     type: "MATCH_PAIRS",
@@ -30,6 +38,7 @@ export const GAME_REGISTRY = {
     defaultConfig: () => ({ pairs: [] }),
     Editor: MatchPairsEditor,
     Player: MatchPairsPlayer,
+    validate: validateMatchPairs,
   },
   WORD_SEARCH: {
     type: "WORD_SEARCH",
@@ -40,6 +49,7 @@ export const GAME_REGISTRY = {
     defaultConfig: () => ({ words: [], rows: null, cols: null }),
     Editor: WordSearchEditor,
     Player: WordSearchPlayer,
+    validate: validateWordSearchFull,
   },
   LETTER_HUNT: {
     type: "LETTER_HUNT",
@@ -50,6 +60,7 @@ export const GAME_REGISTRY = {
     defaultConfig: () => ({ secretWord: "", rows: 8, cols: 8, timeLimitSeconds: 60 }),
     Editor: LetterHuntEditor,
     Player: LetterHuntPlayer,
+    validate: validateLetterHunt,
   },
 };
 
@@ -57,4 +68,16 @@ export const GAME_TYPE_LIST = Object.values(GAME_REGISTRY);
 
 export function getGameDefinition(type) {
   return GAME_REGISTRY[type] || null;
+}
+
+// Chạy validate() của loại trò chơi tương ứng, trả về mảng lỗi (rỗng = hợp lệ).
+// Bọc try/catch để 1 lỗi bất ngờ trong logic kiểm tra không làm crash trang lưu.
+export function validateGameConfig(type, config) {
+  const def = getGameDefinition(type);
+  if (!def?.validate) return [];
+  try {
+    return def.validate(config) || [];
+  } catch {
+    return ["Không thể kiểm tra nội dung trò chơi — vui lòng kiểm tra lại dữ liệu đã nhập."];
+  }
 }

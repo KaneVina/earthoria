@@ -1,6 +1,12 @@
 import React, { useMemo, useState } from "react";
-import { X, RefreshCw } from "lucide-react";
+import { X, RefreshCw, AlertTriangle, CheckCircle2 } from "lucide-react";
+import toast from "react-hot-toast";
 import { generateWordSearchGrid } from "../utils/wordSearchGenerator";
+import { analyzeWordSearch } from "../validators";
+
+function cleanKey(w) {
+  return (w || "").toString().trim().toUpperCase().replace(/\s+/g, "");
+}
 
 export default function WordSearchEditor({ config, onChange }) {
   const words = config?.words || [];
@@ -12,7 +18,19 @@ export default function WordSearchEditor({ config, onChange }) {
   const commitDraft = () => {
     const val = draft.trim();
     if (!val) return;
-    if (val.replace(/\s/g, "").length > 14) return; // giữ đồng bộ với validation server
+    const key = cleanKey(val);
+    if (key.length === 0) {
+      setDraft("");
+      return;
+    }
+    if (key.length > 14) {
+      toast.error("Từ tối đa 14 chữ cái, thử từ ngắn hơn nhé");
+      return;
+    }
+    if (words.some((w) => cleanKey(w) === key)) {
+      toast.error(`"${val}" đã có trong danh sách rồi`);
+      return;
+    }
     setWords([...words, val]);
     setDraft("");
   };
@@ -25,25 +43,48 @@ export default function WordSearchEditor({ config, onChange }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [words.join("|"), config?.rows, config?.cols, previewSeed]);
 
+  const { errors, wordIssues } = useMemo(() => analyzeWordSearch(config), [config]);
+  const capacityOk = !preview || preview.placements.length >= words.length;
+  const isValid = words.length > 0 && errors.length === 0 && capacityOk;
+
   return (
     <div className="g-editor">
       <div className="g-editor-hint">
         Nhập từng từ khoá rồi bấm Enter để thêm. Bảng sẽ đặt các từ theo hàng
         ngang / dọc / chéo và tự lấp đầy chữ ngẫu nhiên xung quanh — mỗi lượt
         chơi thật sẽ sinh ra 1 bảng mới (khác với bảng xem trước bên dưới) để
-        đỡ nhàm khi chơi lại.
+        đỡ nhàm khi chơi lại. Mỗi từ tối đa 14 chữ cái và không được trùng nhau.
       </div>
+
+      {words.length > 0 && (
+        <div className="g-status-bar">
+          <span className="g-status-count">{words.length} từ khoá</span>
+          {isValid ? (
+            <span className="g-status-badge ok">
+              <CheckCircle2 size={12} /> Sẵn sàng lưu
+            </span>
+          ) : (
+            <span className="g-status-badge warn">
+              <AlertTriangle size={12} /> {errors.length > 0 ? `${errors.length} vấn đề cần sửa` : "Bảng chưa đủ chỗ"}
+            </span>
+          )}
+        </div>
+      )}
 
       <div className="g-tag-input">
         <div className="g-tag-list">
-          {words.map((w, i) => (
-            <span className="g-tag" key={`${w}-${i}`}>
-              {w}
-              <button type="button" onClick={() => removeWord(i)}>
-                <X size={10} />
-              </button>
-            </span>
-          ))}
+          {words.map((w, i) => {
+            const issue = wordIssues[i] || {};
+            const invalid = issue.tooLong || issue.duplicate;
+            return (
+              <span className={`g-tag${invalid ? " g-tag--invalid" : ""}`} key={`${w}-${i}`} title={invalid ? "Cần sửa từ này" : undefined}>
+                {w}
+                <button type="button" onClick={() => removeWord(i)}>
+                  <X size={10} />
+                </button>
+              </span>
+            );
+          })}
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -116,6 +157,15 @@ export default function WordSearchEditor({ config, onChange }) {
             </div>
           )}
         </div>
+      )}
+
+      {errors.length > 0 && (
+        <ul className="g-issue-list">
+          {errors.slice(0, 6).map((msg, i) => (
+            <li key={i}>{msg}</li>
+          ))}
+          {errors.length > 6 && <li>... và {errors.length - 6} vấn đề khác</li>}
+        </ul>
       )}
     </div>
   );

@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import { analyzeLetterHunt } from "../validators";
 
 export default function LetterHuntEditor({ config, onChange }) {
   const secretWord = config?.secretWord || "";
@@ -6,8 +8,9 @@ export default function LetterHuntEditor({ config, onChange }) {
   const cols = config?.cols || 8;
   const timeLimitSeconds = config?.timeLimitSeconds ?? 60;
 
-  const letterCount = secretWord.replace(/\s/g, "").length;
-  const capacity = rows * cols;
+  const { errors, letterCount, capacity, overCapacity } = useMemo(() => analyzeLetterHunt(config), [config]);
+  const isValid = errors.length === 0 && letterCount > 0;
+  const fillRatio = capacity > 0 ? Math.min(1, letterCount / capacity) : 0;
 
   return (
     <div className="g-editor">
@@ -17,16 +20,46 @@ export default function LetterHuntEditor({ config, onChange }) {
         đếm ngược. Ví dụ từ khoá: <em>"CON VOI"</em>.
       </div>
 
-      <div className="a-form-group" style={{ marginBottom: 12 }}>
+      {secretWord && (
+        <div className="g-status-bar">
+          <span className="g-status-count">
+            {letterCount} chữ cái / {capacity} ô ({rows}×{cols})
+          </span>
+          {isValid ? (
+            <span className="g-status-badge ok">
+              <CheckCircle2 size={12} /> Sẵn sàng lưu
+            </span>
+          ) : (
+            <span className="g-status-badge warn">
+              <AlertTriangle size={12} /> {errors.length} vấn đề cần sửa
+            </span>
+          )}
+        </div>
+      )}
+
+      <div className="a-form-group" style={{ marginBottom: 6 }}>
         <label className="a-form-label">Từ khoá bí mật</label>
         <input
-          className="a-input"
+          className={`a-input${overCapacity || !secretWord.trim() ? "" : ""}`}
           value={secretWord}
           onChange={(e) => onChange({ ...config, secretWord: e.target.value.toUpperCase() })}
           placeholder="vd: CON VOI"
           style={{ textTransform: "uppercase", letterSpacing: 1 }}
+          maxLength={40}
         />
       </div>
+
+      {secretWord && (
+        <div className="g-lh-preview-track">
+          {Array.from(secretWord).map((ch, i) =>
+            ch === " " ? <span key={i} className="g-lh-preview-space" /> : (
+              <span key={i} className="g-lh-preview-slot">
+                {ch}
+              </span>
+            ),
+          )}
+        </div>
+      )}
 
       <div className="g-inline-fields">
         <label>
@@ -65,11 +98,27 @@ export default function LetterHuntEditor({ config, onChange }) {
       </div>
 
       {letterCount > 0 && (
-        <div className={letterCount > capacity ? "g-editor-warn" : "g-editor-hint"} style={{ marginTop: 10 }}>
-          {letterCount > capacity
-            ? `Bảng ${rows}×${cols} (${capacity} ô) không đủ chỗ cho ${letterCount} chữ cái — hãy tăng số hàng/cột.`
-            : `Từ khoá có ${letterCount} chữ cái, bảng ${rows}×${cols} có ${capacity} ô — đủ chỗ.`}
+        <div className="g-lh-capacity">
+          <div className="g-lh-capacity-bar">
+            <div
+              className={`g-lh-capacity-fill${overCapacity ? " over" : ""}`}
+              style={{ width: `${fillRatio * 100}%` }}
+            />
+          </div>
+          <span className={overCapacity ? "g-editor-warn-text" : "g-editor-hint-text"}>
+            {overCapacity
+              ? `Bảng ${rows}×${cols} (${capacity} ô) không đủ chỗ cho ${letterCount} chữ cái — hãy tăng số hàng/cột.`
+              : `Từ khoá có ${letterCount} chữ cái, bảng ${rows}×${cols} có ${capacity} ô — đủ chỗ.`}
+          </span>
         </div>
+      )}
+
+      {errors.length > 0 && (
+        <ul className="g-issue-list">
+          {errors.map((msg, i) => (
+            <li key={i}>{msg}</li>
+          ))}
+        </ul>
       )}
     </div>
   );

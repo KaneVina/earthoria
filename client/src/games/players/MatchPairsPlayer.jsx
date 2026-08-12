@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Check, X as XIcon } from "lucide-react";
+import { Check, X as XIcon, Timer, Trophy } from "lucide-react";
 
 function shuffle(arr) {
   const a = [...arr];
@@ -79,14 +79,25 @@ export default function MatchPairsPlayer({ config, onFinish }) {
     return "idle";
   };
 
+  const progressPct = pairs.length ? Math.round((matchedIds.size / pairs.length) * 100) : 0;
+  const allDone = pairs.length > 0 && matchedIds.size === pairs.length;
+
   return (
-    <div className="g-play">
+    <div className="g-play g-play--matchpairs">
       <div className="g-play-stats">
-        <span>⏱ {elapsed}s</span>
-        <span>❌ {mistakes} lần sai</span>
         <span>
-          ✅ {matchedIds.size}/{pairs.length}
+          <Timer size={14} /> {elapsed}s
         </span>
+        <span>
+          <XIcon size={14} /> {mistakes} lần sai
+        </span>
+        <span className={allDone ? "g-stat-done" : ""}>
+          {allDone ? <Trophy size={14} /> : <Check size={14} />} {matchedIds.size}/{pairs.length}
+        </span>
+      </div>
+
+      <div className="g-progress-bar">
+        <div className="g-progress-fill" style={{ width: `${progressPct}%` }} />
       </div>
 
       <div className="g-mp-play-cols">
@@ -99,8 +110,8 @@ export default function MatchPairsPlayer({ config, onFinish }) {
               onClick={() => pickLeft(item.id)}
             >
               <span>{item.text}</span>
-              {stateOf("left", item.id) === "matched" && <Check size={13} />}
-              {stateOf("left", item.id) === "wrong" && <XIcon size={13} />}
+              {stateOf("left", item.id) === "matched" && <Check size={16} />}
+              {stateOf("left", item.id) === "wrong" && <XIcon size={16} />}
             </button>
           ))}
         </div>
@@ -113,8 +124,8 @@ export default function MatchPairsPlayer({ config, onFinish }) {
               onClick={() => pickRight(item.id)}
             >
               <span>{item.text}</span>
-              {stateOf("right", item.id) === "matched" && <Check size={13} />}
-              {stateOf("right", item.id) === "wrong" && <XIcon size={13} />}
+              {stateOf("right", item.id) === "matched" && <Check size={16} />}
+              {stateOf("right", item.id) === "wrong" && <XIcon size={16} />}
             </button>
           ))}
         </div>
