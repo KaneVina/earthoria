@@ -1,11 +1,79 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, Edit2, Plus, Upload, BookOpen, Trash2, Eye, EyeOff } from "lucide-react";
+import { Search, Edit2, Plus, Upload, BookOpen, Trash2, Eye, EyeOff, X } from "lucide-react";
 import { ebookService } from "../../services/ebookService";
+import api from "../../services/api";
 import toast from "react-hot-toast";
 import AdminLayout from "./AdminLayout";
 import "../../components/assets/css/gamestudio.css";
+
+/* Modal chọn sách để gắn nội dung sách điện tử */
+function PickBookModal({ onPick, onClose }) {
+  const [q, setQ] = useState("");
+  const { data: results = [], isFetching } = useQuery({
+    queryKey: ["admin-products-search-for-ebook", q],
+    queryFn: () => api.get("/admin/products/search", { params: { q } }).then((r) => r.data.data),
+    enabled: q.trim().length >= 1,
+  });
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed", inset: 0, background: "rgba(20,51,42,0.35)", zIndex: 100,
+        display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ background: "#fff", borderRadius: 14, width: 420, maxWidth: "100%", padding: 18, boxShadow: "0 20px 60px rgba(0,0,0,0.25)" }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <h3 style={{ margin: 0, fontSize: 15 }}>Chọn sách để tạo bản điện tử</h3>
+          <button onClick={onClose} className="a-btn-icon" style={{ border: "none", background: "transparent", cursor: "pointer" }}>
+            <X size={16} />
+          </button>
+        </div>
+        <div className="a-search-wrap" style={{ marginBottom: 10 }}>
+          <Search size={13} className="a-search-icon" />
+          <input
+            autoFocus
+            className="a-input"
+            placeholder="Gõ tên sách..."
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+        </div>
+        <div style={{ maxHeight: 320, overflowY: "auto" }}>
+          {q.trim().length < 1 ? (
+            <div style={{ padding: 16, fontSize: 12, color: "rgba(13,51,48,0.4)", textAlign: "center" }}>
+              Nhập tên sách để tìm
+            </div>
+          ) : isFetching ? (
+            <div style={{ padding: 16, fontSize: 12, textAlign: "center", color: "rgba(13,51,48,0.4)" }}>Đang tìm...</div>
+          ) : results.length === 0 ? (
+            <div style={{ padding: 16, fontSize: 12, textAlign: "center", color: "rgba(13,51,48,0.4)" }}>Không tìm thấy sách</div>
+          ) : (
+            results.map((b) => (
+              <div
+                key={b.id}
+                onClick={() => onPick(b)}
+                style={{ padding: "10px 8px", cursor: "pointer", fontSize: 13, borderBottom: "1px solid #f1efe9", display: "flex", justifyContent: "space-between" }}
+              >
+                <span>{b.title}</span>
+                {b.productCode && <span style={{ fontSize: 10, color: "rgba(13,51,48,0.4)", fontFamily: "monospace" }}>{b.productCode}</span>}
+              </div>
+            ))
+          )}
+        </div>
+        <p style={{ fontSize: 11, color: "rgba(13,51,48,0.45)", marginTop: 10, marginBottom: 0 }}>
+          Sau khi tạo nội dung, nhớ vào trang sửa sản phẩm của sách này để thêm biến thể <strong>Sách điện tử</strong> và đặt giá bán.
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export default function EbookManager() {
   const qc = useQueryClient();
@@ -14,6 +82,7 @@ export default function EbookManager() {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [page, setPage] = useState(1);
+  const [pickerOpen, setPickerOpen] = useState(false);
   const BOOKS_PER_PAGE = 8;
 
   const { data, isLoading } = useQuery({
@@ -73,7 +142,7 @@ export default function EbookManager() {
       </div>
 
       <div className="a-ar-filter-bar" style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
-        <button className="a-btn-primary" style={{ flexShrink: 0 }} onClick={() => navigate("/dashboard/ebooks/new")}>
+        <button className="a-btn-primary" style={{ flexShrink: 0 }} onClick={() => setPickerOpen(true)}>
           <Plus size={13} />
           Tạo sách điện tử mới
         </button>
@@ -239,6 +308,16 @@ export default function EbookManager() {
           </div>
         </div>
       </div>
+
+      {pickerOpen && (
+        <PickBookModal
+          onClose={() => setPickerOpen(false)}
+          onPick={(book) => {
+            setPickerOpen(false);
+            navigate(`/dashboard/ebooks/new?bookId=${book.id}`);
+          }}
+        />
+      )}
     </AdminLayout>
   );
 }

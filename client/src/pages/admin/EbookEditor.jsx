@@ -1,4 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import toast from "react-hot-toast";
+import { ebookService } from "../../services/ebookService";
 import {
   Undo2, Redo2, Plus, Image, Play, Square, Eye, Folder, Layers, Palette,
   X, ChevronUp, ChevronDown, Copy, Volume2, Trash2, ChevronLeft, ChevronRight,
@@ -17,7 +20,6 @@ const FONTS = [
 
 const PAGE_W = 680;
 const PAGE_H = 440;
-const STORAGE_KEY = "bookbuilder:project";
 
 const uid = () => `id_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 const clone = (v) => JSON.parse(JSON.stringify(v));
@@ -344,18 +346,22 @@ function PreviewOverlay({ pages, startIndex, onClose }) {
 }
 
 export default function BookBuilder() {
+  const navigate = useNavigate();
+  const { id: routeId } = useParams();
+  const [searchParams] = useSearchParams();
+  const bookIdFromQuery = searchParams.get("bookId");
+
+  const [ebookId, setEbookId] = useState(routeId || null);
+  const [bookId, setBookId] = useState(bookIdFromQuery || null);
+  const [bookTitle, setBookTitle] = useState("");
+  const [ebookTitle, setEbookTitle] = useState("");
+  const [loadError, setLoadError] = useState(null);
+
   const [pages, setPages] = useState([
     defaultPage({
       title: "Bìa sách",
       layers: [
-        defaultTextLayer({ text: "Chú Gấu Đi Rừng", x: 50, y: 40, width: 400, color: "#1a5c47", bold: true, fontSize: 40, fontFamily: FONTS[1].value }),
-        defaultTextLayer({ text: "một câu chuyện về lòng tốt", x: 54, y: 108, width: 360, color: "#4a9e3f", italic: true, fontSize: 18, fontFamily: FONTS[1].value }),
-      ],
-    }),
-    defaultPage({
-      title: "",
-      layers: [
-        defaultTextLayer({ text: "Một buổi sáng trong rừng, chú gấu nhỏ thức dậy và đi tìm mật ong.", x: 50, y: 150, width: 420, color: "#3a3327", fontSize: 20, fontFamily: FONTS[1].value }),
+        defaultTextLayer({ text: "Tên sách", x: 50, y: 40, width: 400, color: "#1a5c47", bold: true, fontSize: 40, fontFamily: FONTS[1].value }),
       ],
     }),
   ]);
@@ -386,6 +392,10 @@ export default function BookBuilder() {
   const clipboardRef = useRef(null);
   const pagesRef = useRef(pages);
   pagesRef.current = pages;
+  const ebookIdRef = useRef(ebookId);
+  ebookIdRef.current = ebookId;
+  const ebookTitleRef = useRef(ebookTitle);
+  ebookTitleRef.current = ebookTitle;
 
   const currentPage = pages[pageIndex] || pages[0];
 
@@ -398,38 +408,68 @@ export default function BookBuilder() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await window.storage.get(STORAGE_KEY, false);
-        if (!cancelled && res && res.value) {
-          const data = JSON.parse(res.value);
-          if (data && Array.isArray(data.pages) && data.pages.length) setPages(data.pages);
+        if (routeId) {
+          const res = await ebookService.getById(routeId);
+          const eb = res.data.data;
+          if (cancelled) return;
+          setEbookId(eb.id);
+          setBookId(eb.bookId);
+          setBookTitle(eb.book?.title || "");
+          setEbookTitle(eb.title || "");
+          if (Array.isArray(eb.pages) && eb.pages.length) setPages(eb.pages);
+        } else if (bookIdFromQuery) {
+          try {
+            const bookRes = await ebookService.getForBook(bookIdFromQuery);
+            if (!cancelled && Array.isArray(bookRes.data.data) && bookRes.data.data.length) {
+              navigate(`/dashboard/ebooks/${bookRes.data.data[0].id}`, { replace: true });
+              return;
+            }
+          } catch (e) {}
+          if (!cancelled) setEbookTitle("Sách điện tử mới");
+        } else {
+          if (!cancelled) setLoadError("Chưa chọn sách để gắn nội dung điện tử. Vui lòng quay lại và chọn một sách trước.");
         }
-      } catch (e) {}
-      finally { if (!cancelled) setLoaded(true); }
+      } catch (e) {
+        if (!cancelled) setLoadError(e?.response?.data?.message || "Không tải được sách điện tử.");
+      } finally {
+        if (!cancelled) setLoaded(true);
+      }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [routeId, bookIdFromQuery]);
 
-  const saveNow = async () => {
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+  const persist = async ({ silent } = {}) => {
+    if (loadError) return;
+    if (!ebookId && !bookId) return;
+    if (!silent) { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); }
     setSaveStatus("saving");
     try {
-      await window.storage.set(STORAGE_KEY, JSON.stringify({ pages: pagesRef.current }), false);
+      const payload = { title: (ebookTitleRef.current || "Sách điện tử mới").trim() || "Sách điện tử mới", pages: pagesRef.current };
+      if (ebookIdRef.current) {
+        await ebookService.update(ebookIdRef.current, payload);
+      } else {
+        const res = await ebookService.create(bookId, payload);
+        const created = res.data.data;
+        ebookIdRef.current = created.id;
+        setEbookId(created.id);
+        navigate(`/dashboard/ebooks/${created.id}`, { replace: true });
+      }
       setSaveStatus("saved");
-    } catch (e) { setSaveStatus("error"); }
+    } catch (e) {
+      setSaveStatus("error");
+      toast.error(e?.response?.data?.message || "Lưu thất bại, vui lòng thử lại.");
+    }
   };
 
+  const saveNow = () => persist();
+
   useEffect(() => {
-    if (!loaded) return;
+    if (!loaded || loadError) return;
     setSaveStatus("saving");
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(async () => {
-      try {
-        await window.storage.set(STORAGE_KEY, JSON.stringify({ pages }), false);
-        setSaveStatus("saved");
-      } catch (e) { setSaveStatus("error"); }
-    }, 800);
+    saveTimerRef.current = setTimeout(() => { persist({ silent: true }); }, 800);
     return () => clearTimeout(saveTimerRef.current);
-  }, [pages, loaded]);
+  }, [pages, ebookTitle, loaded, loadError]);
 
   useEffect(() => {
     if (!autoFit) return;
@@ -711,6 +751,27 @@ export default function BookBuilder() {
   const selected = currentPage.layers.find((l) => l.id === selectedId) || null;
   const layersFrontFirst = [...currentPage.layers].reverse();
 
+  if (loadError) {
+    return (
+      <div style={{
+        fontFamily: "'Be Vietnam Pro', system-ui, sans-serif", minHeight: "100vh", background: "#f7f4ee",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, padding: 24, textAlign: "center",
+      }}>
+        <BookOpen size={32} color="#4a9e3f" />
+        <p style={{ color: "#3a4a42", maxWidth: 420 }}>{loadError}</p>
+        <button
+          onClick={() => navigate("/dashboard/ebooks")}
+          style={{
+            background: "#1a5c47", color: "#fff", border: "none", borderRadius: 10,
+            padding: "10px 18px", fontSize: 13, fontWeight: 600, cursor: "pointer",
+          }}
+        >
+          Quay lại danh sách sách điện tử
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="bb-root">
       <style>{`
@@ -726,6 +787,9 @@ export default function BookBuilder() {
         .bb-save-dot { width: 6px; height: 6px; border-radius: 50%; background: #b7bfb9; }
         .bb-save-dot.ok { background: #4a9e3f; box-shadow: 0 0 0 3px rgba(74,158,63,0.18); }
         .bb-save-dot.busy { background: #e0a83f; animation: bb-pulse 1s ease-in-out infinite; }
+        .bb-save-dot.error, .bb-save-status.error { background: #d94f4f; }
+        .bb-ebook-title-input { font-family: 'Be Vietnam Pro', system-ui, sans-serif; font-size: 12px; border: 1px solid #dde4de; border-radius: 8px; padding: 5px 10px; margin-top: 4px; width: 280px; max-width: 60vw; color: #14332a; }
+        .bb-ebook-title-input:focus { outline: none; border-color: #4a9e3f; }
         @keyframes bb-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
         .bb-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; background: #fff; padding: 6px; border-radius: 14px; box-shadow: 0 2px 10px rgba(20,51,42,0.06); border: 1px solid rgba(20,51,42,0.06); }
         .bb-divider-v { width: 1px; align-self: stretch; background: rgba(20,51,42,0.10); margin: 2px 2px; }
@@ -832,11 +896,20 @@ export default function BookBuilder() {
           )}
           <h1 className="bb-title">
             <span>Trình <em>tạo sách</em></span>
+            {bookTitle && <span style={{ fontSize: 12, fontWeight: 400, color: "#6b7a72" }}>· {bookTitle}</span>}
             <span className="bb-save-status">
               <span className={`bb-save-dot ${saveStatus === "saving" ? "busy" : saveStatus === "saved" ? "ok" : ""}`} />
-              {saveStatus === "saving" ? "đang lưu…" : saveStatus === "saved" ? "đã lưu" : "chưa lưu"}
+              {saveStatus === "saving" ? "đang lưu…" : saveStatus === "saved" ? "đã lưu" : saveStatus === "error" ? "lỗi lưu" : "chưa lưu"}
             </span>
           </h1>
+          <input
+            className="bb-ebook-title-input"
+            value={ebookTitle}
+            placeholder="Tên sách điện tử (vd: Chú Gấu Đi Rừng - bản điện tử)"
+            onFocus={beginEdit}
+            onBlur={endEdit}
+            onChange={(e) => setEbookTitle(e.target.value)}
+          />
         </div>
         <div className="bb-actions">
           <button className="bb-btn bb-btn-icon" title="Hoàn tác (Ctrl+Z)" onClick={undo} disabled={pastRef.current.length === 0}>
