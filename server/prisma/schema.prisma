@@ -362,15 +362,21 @@ model GameResult {
 }
 
 // Sách điện tử tương tác (đọc cùng)
+enum EbookOrientation {
+  LANDSCAPE
+  PORTRAIT
+}
+
 model Ebook {
-  id           String   @id @default(uuid())
+  id           String           @id @default(uuid())
   title        String
   bookId       String
   pages        Json
+  orientation  EbookOrientation @default(LANDSCAPE)
   thumbnailUrl String?
-  isActive     Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  isActive     Boolean          @default(false)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 
   book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
 

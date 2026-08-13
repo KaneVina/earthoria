@@ -18,8 +18,8 @@ const FONTS = [
   { label: "Verdana", value: "Verdana, sans-serif" },
 ];
 
-const PAGE_W = 680;
-const PAGE_H = 440;
+const BASE_PAGE_W = 680;
+const BASE_PAGE_H = 440;
 
 const uid = () => `id_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 const clone = (v) => JSON.parse(JSON.stringify(v));
@@ -130,7 +130,7 @@ function speakText(text, { onWord, onEnd } = {}) {
 function defaultTextLayer(overrides = {}) {
   return {
     id: uid(), type: "text", text: "Nhập chữ...",
-    x: PAGE_W / 2 - 110, y: PAGE_H / 2 - 20, width: 220,
+    x: BASE_PAGE_W / 2 - 110, y: BASE_PAGE_H / 2 - 20, width: 220,
     align: "left", color: "#1f4d3f", bold: false, italic: false, underline: false,
     fontSize: 24, fontFamily: FONTS[0].value, strokeColor: "#000000", strokeWidth: 0, opacity: 100,
     ...overrides,
@@ -140,7 +140,7 @@ function defaultTextLayer(overrides = {}) {
 function defaultImageLayer(overrides = {}) {
   return {
     id: uid(), type: "image", src: "",
-    x: PAGE_W / 2 - 80, y: PAGE_H / 2 - 60, width: 160, height: 120, opacity: 100,
+    x: BASE_PAGE_W / 2 - 80, y: BASE_PAGE_H / 2 - 60, width: 160, height: 120, opacity: 100,
     ...overrides,
   };
 }
@@ -240,12 +240,14 @@ function LayerView({
   );
 }
 
-function PreviewOverlay({ pages, startIndex, onClose }) {
+function PreviewOverlay({ pages, startIndex, onClose, orientation }) {
   const [idx, setIdx] = useState(startIndex);
   const [reading, setReading] = useState(null);
   const wrapRef = useRef(null);
   const [scale, setScale] = useState(1);
   const lastHoverWord = useRef(null);
+  const PAGE_W = orientation === "PORTRAIT" ? BASE_PAGE_H : BASE_PAGE_W;
+  const PAGE_H = orientation === "PORTRAIT" ? BASE_PAGE_W : BASE_PAGE_H;
 
   useEffect(() => {
     const measure = () => {
@@ -257,7 +259,7 @@ function PreviewOverlay({ pages, startIndex, onClose }) {
     measure();
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
-  }, []);
+  }, [PAGE_W, PAGE_H]);
 
   useEffect(() => () => speechAvailable() && window.speechSynthesis.cancel(), []);
 
@@ -355,7 +357,11 @@ export default function BookBuilder() {
   const [bookId, setBookId] = useState(bookIdFromQuery || null);
   const [bookTitle, setBookTitle] = useState("");
   const [ebookTitle, setEbookTitle] = useState("");
+  const [orientation, setOrientation] = useState("LANDSCAPE");
   const [loadError, setLoadError] = useState(null);
+
+  const PAGE_W = orientation === "PORTRAIT" ? BASE_PAGE_H : BASE_PAGE_W;
+  const PAGE_H = orientation === "PORTRAIT" ? BASE_PAGE_W : BASE_PAGE_H;
 
   const [pages, setPages] = useState([
     defaultPage({
@@ -377,6 +383,7 @@ export default function BookBuilder() {
   const [autoFit, setAutoFit] = useState(true);
   const [ttsOk, setTtsOk] = useState(true);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [saveStatus, setSaveStatus] = useState("idle");
   const [logoError, setLogoError] = useState(false);
@@ -396,6 +403,8 @@ export default function BookBuilder() {
   ebookIdRef.current = ebookId;
   const ebookTitleRef = useRef(ebookTitle);
   ebookTitleRef.current = ebookTitle;
+  const orientationRef = useRef(orientation);
+  orientationRef.current = orientation;
 
   const currentPage = pages[pageIndex] || pages[0];
 
@@ -416,6 +425,7 @@ export default function BookBuilder() {
           setBookId(eb.bookId);
           setBookTitle(eb.book?.title || "");
           setEbookTitle(eb.title || "");
+          setOrientation(eb.orientation === "PORTRAIT" ? "PORTRAIT" : "LANDSCAPE");
           if (Array.isArray(eb.pages) && eb.pages.length) setPages(eb.pages);
         } else if (bookIdFromQuery) {
           try {
@@ -444,7 +454,7 @@ export default function BookBuilder() {
     if (!silent) { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); }
     setSaveStatus("saving");
     try {
-      const payload = { title: (ebookTitleRef.current || "Sách điện tử mới").trim() || "Sách điện tử mới", pages: pagesRef.current };
+      const payload = { title: (ebookTitleRef.current || "Sách điện tử mới").trim() || "Sách điện tử mới", pages: pagesRef.current, orientation: orientationRef.current };
       if (ebookIdRef.current) {
         await ebookService.update(ebookIdRef.current, payload);
       } else {
@@ -469,7 +479,7 @@ export default function BookBuilder() {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => { persist({ silent: true }); }, 800);
     return () => clearTimeout(saveTimerRef.current);
-  }, [pages, ebookTitle, loaded, loadError]);
+  }, [pages, ebookTitle, orientation, loaded, loadError]);
 
   useEffect(() => {
     if (!autoFit) return;
@@ -584,6 +594,57 @@ export default function BookBuilder() {
   };
   const setPageBackground = (color) => setPagesLive((prev) => prev.map((p, i) => i === pageIndex ? { ...p, background: color } : p));
   const setPageTitle = (title) => setPagesLive((prev) => prev.map((p, i) => i === pageIndex ? { ...p, title } : p));
+
+  const changeOrientation = (next) => {
+    if (next === orientation) return;
+    const oldW = PAGE_W, oldH = PAGE_H;
+    const newW = next === "PORTRAIT" ? BASE_PAGE_H : BASE_PAGE_W;
+    const newH = next === "PORTRAIT" ? BASE_PAGE_W : BASE_PAGE_H;
+    const rx = newW / oldW, ry = newH / oldH;
+    setPagesCommit((prev) => prev.map((p) => ({
+      ...p,
+      layers: p.layers.map((l) => ({
+        ...l,
+        x: l.x * rx,
+        y: l.y * ry,
+        width: l.width * (l.type === "image" ? rx : rx),
+        ...(l.type === "image" ? { height: l.height * ry } : {}),
+      })),
+    })));
+    setOrientation(next);
+  };
+
+  const exportPdf = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const html2canvas = (await import("html2canvas")).default;
+
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+      const pdf = new jsPDF({
+        orientation: PAGE_W >= PAGE_H ? "landscape" : "portrait",
+        unit: "px",
+        format: [PAGE_W, PAGE_H],
+      });
+
+      for (let i = 0; i < pages.length; i++) {
+        const node = document.getElementById(`bb-export-page-${i}`);
+        if (!node) continue;
+        const canvas = await html2canvas(node, { scale: 2, useCORS: true, backgroundColor: pages[i].background || "#ffffff" });
+        const imgData = canvas.toDataURL("image/jpeg", 0.92);
+        if (i > 0) pdf.addPage([PAGE_W, PAGE_H], PAGE_W >= PAGE_H ? "landscape" : "portrait");
+        pdf.addImage(imgData, "JPEG", 0, 0, PAGE_W, PAGE_H);
+      }
+
+      pdf.save(`${(ebookTitle || "sach-dien-tu").trim() || "sach-dien-tu"}.pdf`);
+    } catch (e) {
+      toast.error("Xuất PDF thất bại, vui lòng thử lại.");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const onLayerDragStart = (e, layer) => {
     e.stopPropagation();
@@ -910,6 +971,16 @@ export default function BookBuilder() {
             onBlur={endEdit}
             onChange={(e) => setEbookTitle(e.target.value)}
           />
+          {bookId && (
+            <button
+              className="bb-btn bb-btn-ghost"
+              style={{ marginTop: 4 }}
+              onClick={() => navigate(`/dashboard/products/${bookId}`)}
+              title="Mở trang sửa sản phẩm để thêm/điều chỉnh giá bán biến thể Sách điện tử"
+            >
+              Sửa giá bán sản phẩm
+            </button>
+          )}
         </div>
         <div className="bb-actions">
           <button className="bb-btn bb-btn-icon" title="Hoàn tác (Ctrl+Z)" onClick={undo} disabled={pastRef.current.length === 0}>
@@ -927,6 +998,9 @@ export default function BookBuilder() {
             <button className="bb-btn" onClick={readPage}><Play size={14} />Đọc trang</button>
           )}
           <button className="bb-btn bb-btn-primary" onClick={() => setPreviewOpen(true)}><Eye size={14} />Xem trước</button>
+          <button className="bb-btn" onClick={exportPdf} disabled={exporting}>
+            <Folder size={14} />{exporting ? "Đang xuất..." : "Xuất PDF"}
+          </button>
         </div>
       </div>
 
@@ -1013,6 +1087,19 @@ export default function BookBuilder() {
               <div className="bb-color-size">
                 <input type="color" value={currentPage.background} onFocus={beginEdit} onBlur={endEdit}
                   onChange={(e) => setPageBackground(e.target.value)} />
+              </div>
+            </div>
+            <div className="bb-field">
+              <label>Khổ sách (áp dụng cho toàn bộ sách)</label>
+              <div className="bb-row3">
+                <button
+                  className={`bb-btn${orientation === "LANDSCAPE" ? " active" : ""}`}
+                  onClick={() => changeOrientation("LANDSCAPE")}
+                >Ngang</button>
+                <button
+                  className={`bb-btn${orientation === "PORTRAIT" ? " active" : ""}`}
+                  onClick={() => changeOrientation("PORTRAIT")}
+                >Dọc</button>
               </div>
             </div>
             <div className="bb-hint">Số trang được đánh tự động theo thứ tự — không cần chỉnh tay.</div>
@@ -1177,7 +1264,21 @@ export default function BookBuilder() {
         </div>
       </div>
 
-      {previewOpen && <PreviewOverlay pages={pages} startIndex={pageIndex} onClose={() => setPreviewOpen(false)} />}
+      {previewOpen && <PreviewOverlay pages={pages} startIndex={pageIndex} orientation={orientation} onClose={() => setPreviewOpen(false)} />}
+
+      {exporting && (
+        <div style={{ position: "fixed", left: -99999, top: 0, pointerEvents: "none" }}>
+          {pages.map((p, i) => (
+            <div key={p.id} id={`bb-export-page-${i}`} style={{ width: PAGE_W, height: PAGE_H, position: "relative", background: p.background }}>
+              {p.layers.map((layer) => (
+                <LayerView key={layer.id} layer={layer} selected={false} readOnly
+                  onSelect={() => {}} onDragStart={() => {}} onResizeStart={() => {}}
+                  onWordHover={() => {}} onWordLeave={() => {}} />
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -138,7 +138,7 @@ exports.getEbookById = async (req, res) => {
 exports.createEbook = async (req, res) => {
   try {
     const { bookId } = req.params
-    const { title, pages, thumbnailUrl } = req.body
+    const { title, pages, thumbnailUrl, orientation } = req.body
 
     if (!title?.trim()) return res.status(400).json({ success: false, message: 'Thiếu tên sách điện tử' })
 
@@ -153,6 +153,7 @@ exports.createEbook = async (req, res) => {
       data: {
         title: title.trim(),
         pages: finalPages,
+        orientation: orientation === 'PORTRAIT' ? 'PORTRAIT' : 'LANDSCAPE',
         thumbnailUrl: thumbnailUrl || null,
         bookId,
       },
@@ -167,7 +168,7 @@ exports.createEbook = async (req, res) => {
 exports.updateEbook = async (req, res) => {
   try {
     const { id } = req.params
-    const { title, pages, thumbnailUrl, isActive } = req.body
+    const { title, pages, thumbnailUrl, isActive, orientation } = req.body
 
     const existing = await prisma.ebook.findUnique({ where: { id } })
     if (!existing) return res.status(404).json({ success: false, message: 'Không tìm thấy sách điện tử' })
@@ -179,6 +180,7 @@ exports.updateEbook = async (req, res) => {
     }
     if (thumbnailUrl !== undefined) data.thumbnailUrl = thumbnailUrl || null
     if (typeof isActive === 'boolean') data.isActive = isActive
+    if (orientation === 'PORTRAIT' || orientation === 'LANDSCAPE') data.orientation = orientation
 
     if (pages !== undefined) {
       const pagesError = validatePages(pages)
