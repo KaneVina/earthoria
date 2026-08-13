@@ -6,7 +6,7 @@ import {
   Undo2, Redo2, Plus, Image, Play, Square, Eye, Folder, Layers, Palette,
   X, ChevronUp, ChevronDown, Copy, Volume2, Trash2, ChevronLeft, ChevronRight,
   AlignLeft, AlignCenter, AlignRight, Bold, Italic, Underline, Minus, ZoomIn, ZoomOut, Maximize2,
-  BookOpen, Type, Sparkles, Save
+  BookOpen, Type, Sparkles, Save, Upload, Wand2, Tag, GripVertical
 } from "lucide-react";
 
 const FONTS = [
@@ -133,6 +133,7 @@ function defaultTextLayer(overrides = {}) {
     x: BASE_PAGE_W / 2 - 110, y: BASE_PAGE_H / 2 - 20, width: 220,
     align: "left", color: "#1f4d3f", bold: false, italic: false, underline: false,
     fontSize: 24, fontFamily: FONTS[0].value, strokeColor: "#000000", strokeWidth: 0, opacity: 100,
+    headingLevel: 0,
     ...overrides,
   };
 }
@@ -145,22 +146,93 @@ function defaultImageLayer(overrides = {}) {
   };
 }
 
+function defaultShapeLayer(overrides = {}) {
+  return {
+    id: uid(), type: "shape", shapeType: "rect",
+    x: BASE_PAGE_W / 2 - 80, y: BASE_PAGE_H / 2 - 60, width: 160, height: 100,
+    fill: "#4a9e3f", strokeColor: "#1a5c47", strokeWidth: 0, borderRadius: 12, opacity: 100,
+    ...overrides,
+  };
+}
+
 function defaultPage(overrides = {}) {
   return { id: uid(), title: "", background: "#fffdf8", layers: [], ...overrides };
 }
 
+function pageNumberBoxStyle(pos) {
+  const p = pos || { v: "bottom", h: "center" };
+  const style = {
+    position: "absolute", display: "flex", flexDirection: "column", gap: 2,
+    alignItems: p.h === "left" ? "flex-start" : p.h === "right" ? "flex-end" : "center",
+    fontFamily: "Georgia, serif", fontSize: 12, color: "rgba(31,42,36,0.45)",
+    pointerEvents: "none", userSelect: "none", zIndex: 2,
+  };
+  if (p.v === "top") style.top = 10; else style.bottom = 10;
+  if (p.h === "left") style.left = 14;
+  else if (p.h === "right") style.right = 14;
+  else { style.left = "50%"; style.transform = "translateX(-50%)"; }
+  return style;
+}
+
+function PageNumberBadge({ page, number, pos, showTitle }) {
+  return (
+    <div style={pageNumberBoxStyle(pos)}>
+      {showTitle && page?.title ? (
+        <span style={{ fontSize: 10, opacity: 0.85, whiteSpace: "nowrap" }}>{page.title}</span>
+      ) : null}
+      <span>{number}</span>
+    </div>
+  );
+}
+
 function LayerView({
   layer, selected, readOnly, isReadingThis, readingWordIndex,
-  onSelect, onDragStart, onResizeStart, onWordHover, onWordLeave,
+  onSelect, onDragStart, onResizeStart, onWordHover, onWordLeave, onLayerClick, onImageDrop,
 }) {
   const wrapStyle = { position: "absolute", left: layer.x, top: layer.y, opacity: (layer.opacity ?? 100) / 100 };
+  const isTocLink = readOnly && !!layer.tocTargetPageId;
+
+  const handleClick = (e) => {
+    e.stopPropagation();
+    if (readOnly) {
+      if (layer.tocTargetPageId) onLayerClick && onLayerClick(layer.tocTargetPageId);
+      return;
+    }
+    onSelect(layer.id);
+  };
+
+  if (layer.type === "shape") {
+    return (
+      <div
+        style={{ ...wrapStyle, width: layer.width, height: layer.height }}
+        onPointerDown={(e) => !readOnly && onDragStart(e, layer)}
+        onClick={handleClick}
+      >
+        <div style={{
+          width: "100%", height: "100%", boxSizing: "border-box",
+          background: layer.fill,
+          border: layer.strokeWidth > 0 ? `${layer.strokeWidth}px solid ${layer.strokeColor}` : "none",
+          borderRadius: layer.shapeType === "circle" ? "50%" : layer.borderRadius,
+          outline: !readOnly && selected ? "2px solid #4a9e3f" : "2px solid transparent",
+          outlineOffset: 4, cursor: readOnly ? "default" : "grab", touchAction: "none",
+          boxShadow: !readOnly && selected ? "0 0 0 4px rgba(74,158,63,0.14)" : "none",
+        }} />
+        {!readOnly && selected && (
+          <div onPointerDown={(e) => { e.stopPropagation(); onResizeStart(e, layer); }}
+            className="bb-resize-handle" style={{ cursor: "nwse-resize" }} />
+        )}
+      </div>
+    );
+  }
 
   if (layer.type === "image") {
     return (
       <div
         style={{ ...wrapStyle, width: layer.width, height: layer.height }}
         onPointerDown={(e) => !readOnly && onDragStart(e, layer)}
-        onClick={(e) => { e.stopPropagation(); !readOnly && onSelect(layer.id); }}
+        onClick={handleClick}
+        onDragOver={(e) => !readOnly && e.preventDefault()}
+        onDrop={(e) => !readOnly && onImageDrop && onImageDrop(e, layer.id)}
       >
         <div style={{
           position: "relative", width: "100%", height: "100%",
@@ -199,19 +271,19 @@ function LayerView({
     <div
       style={{ ...wrapStyle, width: layer.width }}
       onPointerDown={(e) => !readOnly && onDragStart(e, layer)}
-      onClick={(e) => { e.stopPropagation(); !readOnly && onSelect(layer.id); }}
+      onClick={handleClick}
     >
       <div style={{
         position: "relative", padding: "4px 6px", borderRadius: 8,
         outline: !readOnly && selected ? "2px solid #4a9e3f" : "2px solid transparent",
-        outlineOffset: 4, cursor: readOnly ? "default" : "grab", touchAction: "none",
+        outlineOffset: 4, cursor: readOnly ? (isTocLink ? "pointer" : "default") : "grab", touchAction: "none",
         boxShadow: !readOnly && selected ? "0 0 0 4px rgba(74,158,63,0.14)" : "none",
         transition: "outline-color 0.12s ease, box-shadow 0.12s ease",
       }}>
         <div style={{
           fontFamily: layer.fontFamily, fontSize: layer.fontSize,
           fontWeight: layer.bold ? 700 : 400, fontStyle: layer.italic ? "italic" : "normal",
-          textDecoration: layer.underline ? "underline" : "none", color: layer.color,
+          textDecoration: layer.underline ? "underline" : (isTocLink ? "underline dotted" : "none"), color: layer.color,
           textAlign: layer.align || "left",
           WebkitTextStroke: layer.strokeWidth > 0 ? `${layer.strokeWidth}px ${layer.strokeColor}` : undefined,
           lineHeight: 1.35, wordBreak: "break-word",
@@ -240,7 +312,7 @@ function LayerView({
   );
 }
 
-function PreviewOverlay({ pages, startIndex, onClose, orientation }) {
+function PreviewOverlay({ pages, startIndex, onClose, orientation, pageNumberPos, showTitleWithPageNumber, hidePageNumberOnCover }) {
   const [idx, setIdx] = useState(startIndex);
   const [reading, setReading] = useState(null);
   const wrapRef = useRef(null);
@@ -300,6 +372,10 @@ function PreviewOverlay({ pages, startIndex, onClose, orientation }) {
 
   const goPrev = () => { stop(); setIdx((i) => Math.max(0, i - 1)); };
   const goNext = () => { stop(); setIdx((i) => Math.min(pages.length - 1, i + 1)); };
+  const goToPageId = (pageId) => {
+    const target = pages.findIndex((p) => p.id === pageId);
+    if (target !== -1) { stop(); setIdx(target); }
+  };
 
   return (
     <div className="bb-preview">
@@ -321,8 +397,11 @@ function PreviewOverlay({ pages, startIndex, onClose, orientation }) {
               <LayerView key={layer.id} layer={layer} selected={false} readOnly
                 isReadingThis={reading?.layerId === layer.id} readingWordIndex={reading?.wordIndex}
                 onSelect={() => {}} onDragStart={() => {}} onResizeStart={() => {}}
-                onWordHover={onWordHover} onWordLeave={onWordLeave} />
+                onWordHover={onWordHover} onWordLeave={onWordLeave} onLayerClick={goToPageId} />
             ))}
+            {!(idx === 0 && hidePageNumberOnCover) && (
+              <PageNumberBadge page={page} number={idx + 1} pos={pageNumberPos} showTitle={showTitleWithPageNumber} />
+            )}
           </div>
         </div>
       </div>
@@ -359,6 +438,9 @@ export default function BookBuilder() {
   const [ebookTitle, setEbookTitle] = useState("");
   const [orientation, setOrientation] = useState("LANDSCAPE");
   const [loadError, setLoadError] = useState(null);
+  const [pageNumberPos, setPageNumberPos] = useState({ v: "bottom", h: "center" });
+  const [showTitleWithPageNumber, setShowTitleWithPageNumber] = useState(false);
+  const [hidePageNumberOnCover, setHidePageNumberOnCover] = useState(false);
 
   const PAGE_W = orientation === "PORTRAIT" ? BASE_PAGE_H : BASE_PAGE_W;
   const PAGE_H = orientation === "PORTRAIT" ? BASE_PAGE_W : BASE_PAGE_H;
@@ -389,8 +471,18 @@ export default function BookBuilder() {
   const [logoError, setLogoError] = useState(false);
   const [, bump] = useState(0);
 
+  const [bgRemoveColor, setBgRemoveColor] = useState("#ffffff");
+  const [bgRemoveTolerance, setBgRemoveTolerance] = useState(20);
+  const [bgRemoving, setBgRemoving] = useState(false);
+
+  const [dragLayerId, setDragLayerId] = useState(null);
+  const [dragOverLayerId, setDragOverLayerId] = useState(null);
+  const [dragPageId, setDragPageId] = useState(null);
+  const [dragOverPageId, setDragOverPageId] = useState(null);
+
   const wrapRef = useRef(null);
   const canvasRef = useRef(null);
+  const imageFileInputRef = useRef(null);
   const lastHoverWord = useRef(null);
   const pastRef = useRef([]);
   const futureRef = useRef([]);
@@ -405,6 +497,12 @@ export default function BookBuilder() {
   ebookTitleRef.current = ebookTitle;
   const orientationRef = useRef(orientation);
   orientationRef.current = orientation;
+  const pageNumberPosRef = useRef(pageNumberPos);
+  pageNumberPosRef.current = pageNumberPos;
+  const showTitleWithPageNumberRef = useRef(showTitleWithPageNumber);
+  showTitleWithPageNumberRef.current = showTitleWithPageNumber;
+  const hidePageNumberOnCoverRef = useRef(hidePageNumberOnCover);
+  hidePageNumberOnCoverRef.current = hidePageNumberOnCover;
 
   const currentPage = pages[pageIndex] || pages[0];
 
@@ -426,6 +524,9 @@ export default function BookBuilder() {
           setBookTitle(eb.book?.title || "");
           setEbookTitle(eb.title || "");
           setOrientation(eb.orientation === "PORTRAIT" ? "PORTRAIT" : "LANDSCAPE");
+          if (eb.pageNumberPos && eb.pageNumberPos.v && eb.pageNumberPos.h) setPageNumberPos(eb.pageNumberPos);
+          if (typeof eb.showTitleWithPageNumber === "boolean") setShowTitleWithPageNumber(eb.showTitleWithPageNumber);
+          if (typeof eb.hidePageNumberOnCover === "boolean") setHidePageNumberOnCover(eb.hidePageNumberOnCover);
           if (Array.isArray(eb.pages) && eb.pages.length) setPages(eb.pages);
         } else if (bookIdFromQuery) {
           try {
@@ -454,7 +555,14 @@ export default function BookBuilder() {
     if (!silent) { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); }
     setSaveStatus("saving");
     try {
-      const payload = { title: (ebookTitleRef.current || "Sách điện tử mới").trim() || "Sách điện tử mới", pages: pagesRef.current, orientation: orientationRef.current };
+      const payload = {
+        title: (ebookTitleRef.current || "Sách điện tử mới").trim() || "Sách điện tử mới",
+        pages: pagesRef.current,
+        orientation: orientationRef.current,
+        pageNumberPos: pageNumberPosRef.current,
+        showTitleWithPageNumber: showTitleWithPageNumberRef.current,
+        hidePageNumberOnCover: hidePageNumberOnCoverRef.current,
+      };
       if (ebookIdRef.current) {
         await ebookService.update(ebookIdRef.current, payload);
       } else {
@@ -479,7 +587,7 @@ export default function BookBuilder() {
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => { persist({ silent: true }); }, 800);
     return () => clearTimeout(saveTimerRef.current);
-  }, [pages, ebookTitle, orientation, loaded, loadError]);
+  }, [pages, ebookTitle, orientation, pageNumberPos, showTitleWithPageNumber, hidePageNumberOnCover, loaded, loadError]);
 
   useEffect(() => {
     if (!autoFit) return;
@@ -542,6 +650,11 @@ export default function BookBuilder() {
     setPagesCommit((prev) => prev.map((p, i) => i === pageIndex ? { ...p, layers: [...p.layers, layer] } : p));
     selectLayer(layer.id);
   };
+  const addShapeLayer = () => {
+    const layer = defaultShapeLayer();
+    setPagesCommit((prev) => prev.map((p, i) => i === pageIndex ? { ...p, layers: [...p.layers, layer] } : p));
+    selectLayer(layer.id);
+  };
   const removeLayer = (id) => {
     setPagesCommit((prev) => prev.map((p, i) => i === pageIndex ? { ...p, layers: p.layers.filter((l) => l.id !== id) } : p));
     if (selectedId === id) setSelectedId(null);
@@ -553,6 +666,50 @@ export default function BookBuilder() {
     setPagesCommit((prev) => prev.map((p, i) => i === pageIndex ? { ...p, layers: [...p.layers, copy] } : p));
     selectLayer(copy.id);
   };
+
+  const applyImageFile = async (file, layerId) => {
+    if (!file || !layerId || !file.type?.startsWith("image/")) return;
+    try {
+      const dataUrl = await fileToResizedDataUrl(file);
+      beginEdit();
+      updateLayer(layerId, { src: dataUrl });
+      endEdit();
+    } catch (err) {
+      toast.error(err?.message || "Không tải được ảnh lên, vui lòng thử lại.");
+    }
+  };
+  const handleImageFileChange = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    e.target.value = "";
+    if (!file || !selectedId) return;
+    applyImageFile(file, selectedId);
+  };
+  const handleImageDropOnLayer = (e, layerId) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (file) applyImageFile(file, layerId);
+  };
+
+  const handleRemoveBackground = async () => {
+    if (!selectedId || bgRemoving) return;
+    const layer = currentPage.layers.find((l) => l.id === selectedId);
+    if (!layer || !layer.src) return;
+    setBgRemoving(true);
+    try {
+      const result = await removeBackgroundByColor(layer.src, bgRemoveColor, bgRemoveTolerance);
+      beginEdit();
+      updateLayer(selectedId, { src: result });
+      endEdit();
+    } catch (err) {
+      if (err?.message === "CORS") {
+        toast.error("Ảnh từ link ngoài không cho phép xoá nền. Hãy tải ảnh lên từ máy rồi thử lại.");
+      } else {
+        toast.error("Không xoá được nền ảnh, vui lòng thử lại.");
+      }
+    } finally {
+      setBgRemoving(false);
+    }
+  };
   const moveLayer = (id, dir) => {
     setPagesCommit((prev) => prev.map((p, i) => {
       if (i !== pageIndex) return p;
@@ -563,6 +720,21 @@ export default function BookBuilder() {
       const [item] = copy.splice(idx, 1);
       copy.splice(target, 0, item);
       return { ...p, layers: copy };
+    }));
+  };
+
+  const reorderLayer = (draggedId, targetId) => {
+    if (!draggedId || draggedId === targetId) return;
+    setPagesCommit((prev) => prev.map((p, i) => {
+      if (i !== pageIndex) return p;
+      const layersArr = [...p.layers];
+      const fromIdx = layersArr.findIndex((l) => l.id === draggedId);
+      const toIdx = layersArr.findIndex((l) => l.id === targetId);
+      if (fromIdx === -1 || toIdx === -1) return p;
+      const [item] = layersArr.splice(fromIdx, 1);
+      const insertAt = fromIdx < toIdx ? toIdx : toIdx;
+      layersArr.splice(insertAt, 0, item);
+      return { ...p, layers: layersArr };
     }));
   };
 
@@ -592,6 +764,22 @@ export default function BookBuilder() {
     });
     setPageIndex(target);
   };
+  const reorderPages = (draggedId, targetId) => {
+    if (!draggedId || draggedId === targetId) return;
+    let newIndex = pageIndex;
+    setPagesCommit((prev) => {
+      const copy = [...prev];
+      const fromIdx = copy.findIndex((p) => p.id === draggedId);
+      const toIdx = copy.findIndex((p) => p.id === targetId);
+      if (fromIdx === -1 || toIdx === -1) return prev;
+      const currentId = copy[pageIndex]?.id;
+      const [item] = copy.splice(fromIdx, 1);
+      copy.splice(toIdx, 0, item);
+      newIndex = copy.findIndex((p) => p.id === currentId);
+      return copy;
+    });
+    setPageIndex((i) => (newIndex >= 0 ? newIndex : i));
+  };
   const setPageBackground = (color) => setPagesLive((prev) => prev.map((p, i) => i === pageIndex ? { ...p, background: color } : p));
   const setPageTitle = (title) => setPagesLive((prev) => prev.map((p, i) => i === pageIndex ? { ...p, title } : p));
 
@@ -612,6 +800,56 @@ export default function BookBuilder() {
       })),
     })));
     setOrientation(next);
+  };
+
+  const generateToc = () => {
+    const entries = [];
+    pages.forEach((p, i) => {
+      if (p.isToc) return;
+      p.layers.forEach((l) => {
+        if (l.type === "text" && l.headingLevel > 0 && l.text && l.text.trim()) {
+          entries.push({ text: l.text.trim(), level: l.headingLevel, pageId: p.id, pageNumber: i + 1 });
+        }
+      });
+    });
+
+    if (entries.length === 0) {
+      toast.error("Chưa có tiêu đề mục nào. Hãy vào bảng Định dạng, chọn một dòng chữ và đánh dấu là tiêu đề mục trước.");
+      return;
+    }
+
+    const layers = [
+      defaultTextLayer({
+        text: "Mục lục", x: 40, y: 26, width: PAGE_W - 80, fontSize: 32, bold: true,
+        color: "#1a5c47", fontFamily: FONTS[1].value, align: "center", headingLevel: 0,
+      }),
+    ];
+    let y = 84;
+    entries.forEach((entry) => {
+      const indent = (entry.level - 1) * 26;
+      const fontSize = entry.level === 1 ? 18 : entry.level === 2 ? 15 : 13;
+      layers.push(defaultTextLayer({
+        text: `${entry.text}  .....  ${entry.pageNumber}`,
+        x: 40 + indent, y, width: PAGE_W - 80 - indent, fontSize,
+        bold: entry.level === 1, color: "#2c3b34", align: "left",
+        headingLevel: 0, tocTargetPageId: entry.pageId,
+      }));
+      y += fontSize + 16;
+    });
+
+    setPagesCommit((prev) => {
+      const existingIdx = prev.findIndex((p) => p.isToc);
+      const tocPage = defaultPage({ title: "Mục lục", background: "#fffdf8", isToc: true, layers });
+      const copy = [...prev];
+      if (existingIdx !== -1) {
+        copy[existingIdx] = { ...tocPage, id: prev[existingIdx].id };
+      } else {
+        copy.splice(1, 0, tocPage);
+      }
+      return copy;
+    });
+    setActivePanel(null);
+    toast.success("Đã tạo / cập nhật mục lục.");
   };
 
   const exportPdf = async () => {
@@ -844,16 +1082,23 @@ export default function BookBuilder() {
         .bb-brand-mark-fallback { width: 38px; height: 38px; border-radius: 9px; background: linear-gradient(135deg, #1a5c47, #4a9e3f); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(26,92,71,0.28); }
         .bb-title { font-family: Georgia, serif; font-size: 19px; font-weight: 700; color: #14332a; margin: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px; line-height: 1.25; }
         .bb-title em { color: #4a9e3f; font-style: normal; }
-        .bb-save-status { font-family: 'Be Vietnam Pro', system-ui, sans-serif; font-size: 11px; font-weight: 500; color: #8a978f; display: inline-flex; align-items: center; gap: 5px; }
+        .bb-save-status { font-family: 'Be Vietnam Pro', system-ui, sans-serif; font-size: 11.5px; font-weight: 600; color: #6b7a72; display: inline-flex; align-items: center; gap: 5px; flex: 0 0 auto; white-space: nowrap; }
         .bb-save-dot { width: 6px; height: 6px; border-radius: 50%; background: #b7bfb9; }
         .bb-save-dot.ok { background: #4a9e3f; box-shadow: 0 0 0 3px rgba(74,158,63,0.18); }
         .bb-save-dot.busy { background: #e0a83f; animation: bb-pulse 1s ease-in-out infinite; }
         .bb-save-dot.error, .bb-save-status.error { background: #d94f4f; }
-        .bb-ebook-title-input { font-family: 'Be Vietnam Pro', system-ui, sans-serif; font-size: 12px; border: 1px solid #dde4de; border-radius: 8px; padding: 5px 10px; margin-top: 4px; width: 280px; max-width: 60vw; color: #14332a; }
-        .bb-ebook-title-input:focus { outline: none; border-color: #4a9e3f; }
         @keyframes bb-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
-        .bb-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; background: #fff; padding: 6px; border-radius: 14px; box-shadow: 0 2px 10px rgba(20,51,42,0.06); border: 1px solid rgba(20,51,42,0.06); }
+        .bb-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; background: #fff; padding: 6px; border-radius: 14px; box-shadow: 0 2px 10px rgba(20,51,42,0.06); border: 1px solid rgba(20,51,42,0.06); flex: 0 0 auto; }
         .bb-divider-v { width: 1px; align-self: stretch; background: rgba(20,51,42,0.10); margin: 2px 2px; }
+
+        .bb-meta-bar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; background: #fff; border-radius: 14px; padding: 10px 14px; margin: 12px 0; box-shadow: 0 2px 10px rgba(20,51,42,0.06); border: 1px solid rgba(20,51,42,0.06); }
+        .bb-meta-field { display: flex; flex-direction: column; gap: 4px; flex: 1 1 320px; max-width: 640px; }
+        .bb-meta-field label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #8a978f; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+        .bb-meta-book-tag { font-size: 10.5px; font-weight: 600; letter-spacing: 0; text-transform: none; color: #4a9e3f; }
+        .bb-meta-input-row { display: flex; align-items: center; gap: 10px; }
+        .bb-ebook-title-input { font-family: 'Be Vietnam Pro', system-ui, sans-serif; font-size: 13px; border: 1px solid #dde4de; border-radius: 9px; padding: 8px 10px; width: 100%; flex: 1 1 auto; min-width: 0; color: #14332a; background: #fbfaf7; transition: border-color 0.12s ease, box-shadow 0.12s ease; }
+        .bb-ebook-title-input:focus { outline: none; border-color: #4a9e3f; box-shadow: 0 0 0 3px rgba(74,158,63,0.14); background: #fff; }
+        .bb-meta-price-btn { flex: 0 0 auto; margin-left: auto; }
 
         .bb-btn { border: 1px solid rgba(20,51,42,0.14); background: #fff; color: #14332a; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 10px; cursor: pointer; transition: background 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease, border-color 0.15s ease; display: inline-flex; align-items: center; gap: 6px; }
         .bb-btn:hover { background: #eef6ec; border-color: rgba(74,158,63,0.35); }
@@ -871,16 +1116,18 @@ export default function BookBuilder() {
         .bb-current-page-label { font-size: 12px; color: #6b7a72; margin: 10px 2px 10px; display: flex; align-items: center; gap: 6px; }
         .bb-current-page-label strong { color: #14332a; }
 
-        .bb-pages-strip { display: flex; align-items: flex-start; gap: 12px; padding: 6px 4px 12px; margin-bottom: 6px; }
-        .bb-pages-strip-scroll { display: flex; align-items: flex-start; gap: 12px; overflow-x: auto; flex: 1 1 auto; min-width: 0; }
+        .bb-pages-strip { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-bottom: 14px; background: #fff; border-radius: 16px; box-shadow: 0 2px 10px rgba(20,51,42,0.06); border: 1px solid rgba(20,51,42,0.06); }
+        .bb-pages-strip-scroll { display: flex; align-items: flex-start; gap: 12px; overflow-x: auto; overflow-y: hidden; flex: 1 1 auto; min-width: 0; padding: 2px 2px 4px; }
         .bb-page-item { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 6px; }
         .bb-page-thumb { width: 60px; height: 42px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: Georgia, serif; font-size: 14px; font-weight: 700; color: #45524b; position: relative; box-shadow: 0 2px 6px rgba(20,51,42,0.10); transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease; }
         .bb-page-thumb:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(20,51,42,0.16); }
         .bb-page-thumb.active { border-color: #4a9e3f; box-shadow: 0 0 0 3px rgba(74,158,63,0.20), 0 4px 10px rgba(20,51,42,0.14); }
+        .bb-page-thumb.drag-over { border-color: #4a9e3f; transform: translateY(-3px); }
+        .bb-page-thumb.dragging-self { opacity: 0.4; }
         .bb-page-thumb::after { content: ""; position: absolute; top: 3px; right: 3px; width: 8px; height: 8px; border-radius: 2px 0 6px 0; background: rgba(20,51,42,0.08); }
         .bb-page-title-input { width: 68px; font-size: 10px; text-align: center; border: none; background: transparent; color: #6b7a72; padding: 1px 0; border-bottom: 1px dashed transparent; }
         .bb-page-title-input:focus { outline: none; border-bottom-color: #4a9e3f; }
-        .bb-page-strip-actions { display: inline-flex; align-items: center; justify-content: center; gap: 2px; background: #fff; border-radius: 14px; padding: 4px; box-shadow: 0 2px 8px rgba(20,51,42,0.06); border: 1px solid rgba(20,51,42,0.06); align-self: flex-start; flex: 0 0 auto; width: fit-content; }
+        .bb-page-strip-actions { display: inline-flex; align-items: center; justify-content: center; gap: 2px; flex: 0 0 auto; }
         .bb-pill-btn { width: 34px; min-width: 34px; height: 34px; padding: 0; border-radius: 9px; border: 1px solid transparent; background: transparent; color: #45524b; cursor: pointer; display: flex; align-items: center; justify-content: center; flex: 0 0 34px; transition: background 0.14s ease, color 0.14s ease, transform 0.08s ease; box-sizing: border-box; }
         .bb-pill-btn svg { display: block; }
         .bb-pill-btn:hover { background: #eef6ec; color: #1a5c47; }
@@ -888,6 +1135,7 @@ export default function BookBuilder() {
         .bb-pill-btn:disabled { opacity: 0.32; cursor: not-allowed; }
         .bb-pill-btn:disabled:hover { background: transparent; color: #45524b; }
         .bb-pill-sep { width: 1px; height: 18px; background: rgba(20,51,42,0.12); margin: 0 4px; flex-shrink: 0; }
+        .bb-strip-divider { width: 1px; align-self: stretch; background: rgba(20,51,42,0.08); flex: 0 0 auto; }
 
         .bb-workspace { position: relative; display: flex; border-radius: 18px; overflow: hidden; background: #eae7dd; border: 1px solid rgba(20,51,42,0.10); box-shadow: 0 16px 40px rgba(20,51,42,0.12); min-height: 560px; }
         .bb-rail { flex: 0 0 64px; background: #fff; border-right: 1px solid rgba(20,51,42,0.08); display: flex; flex-direction: column; align-items: center; padding: 14px 0; gap: 10px; z-index: 6; }
@@ -905,13 +1153,18 @@ export default function BookBuilder() {
         .bb-flyout-close:hover { background: #f4f1ea; color: #14332a; }
 
         .bb-canvas-area { flex: 1; display: flex; flex-direction: column; min-width: 0; padding: 16px; }
-        .bb-zoom-bar { display: flex; align-items: center; gap: 6px; background: #fff; padding: 5px; border-radius: 10px; width: fit-content; flex: 0 0 auto; box-shadow: 0 2px 8px rgba(20,51,42,0.06); border: 1px solid rgba(20,51,42,0.06); align-self: flex-start; }
+        .bb-zoom-bar { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
         .bb-zoom-bar span { font-size: 12px; color: #6b7a72; min-width: 42px; text-align: center; font-weight: 600; }
         .bb-canvas-frame { flex: 1; display: flex; align-items: center; justify-content: center; overflow: auto; background-image: radial-gradient(circle, rgba(20,51,42,0.06) 1px, transparent 1px); background-size: 18px 18px; border-radius: 14px; }
 
-        .bb-layer-row { display: flex; align-items: center; gap: 4px; padding: 7px 8px; border-radius: 9px; cursor: pointer; font-size: 13px; transition: background 0.12s ease; }
+        .bb-layer-row { display: flex; align-items: center; gap: 4px; padding: 7px 8px; border-radius: 9px; cursor: grab; font-size: 13px; transition: background 0.12s ease, box-shadow 0.12s ease; border: 1.5px solid transparent; }
+        .bb-layer-row:active { cursor: grabbing; }
         .bb-layer-row.selected { background: #eef6ec; box-shadow: inset 0 0 0 1px rgba(74,158,63,0.3); }
         .bb-layer-row:hover { background: #f4f1ea; }
+        .bb-layer-row.drag-over { border-color: #4a9e3f; background: #e2f2de; }
+        .bb-layer-row.dragging-self { opacity: 0.4; }
+        .bb-drag-handle { color: #b7bfb9; flex-shrink: 0; display: flex; align-items: center; }
+        .bb-heading-badge { font-size: 9px; font-weight: 800; color: #1a5c47; background: #e2f2de; border-radius: 4px; padding: 1px 5px; flex-shrink: 0; }
         .bb-layer-type { font-size: 11px; color: #8a978f; width: 18px; text-align: center; flex-shrink: 0; display: flex; align-items: center; }
         .bb-layer-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .bb-mini-btn { border: none; background: transparent; color: #6b7a72; cursor: pointer; font-size: 12px; width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: background 0.12s ease, color 0.12s ease; }
@@ -929,6 +1182,8 @@ export default function BookBuilder() {
         .bb-color-size input[type="color"] { width: 40px; height: 34px; border: 1px solid rgba(20,51,42,0.14); border-radius: 8px; padding: 2px; cursor: pointer; background: #fff; }
         .bb-color-size input[type="number"] { width: 72px; padding: 7px 9px; border-radius: 9px; border: 1px solid rgba(20,51,42,0.16); font-size: 13px; }
         .bb-color-size input[type="number"]:focus { outline: none; border-color: #4a9e3f; box-shadow: 0 0 0 3px rgba(74,158,63,0.14); }
+        .bb-checkbox-field { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12.5px; font-weight: 600; color: #45524b; }
+        .bb-checkbox-field input { width: 16px; height: 16px; accent-color: #4a9e3f; cursor: pointer; }
         .bb-hint { font-size: 12px; color: #6b7a72; background: #f4f1ea; border-radius: 10px; padding: 10px 12px; margin-top: 12px; line-height: 1.5; }
         .bb-empty { font-size: 13px; color: #8a978f; padding: 10px 4px; text-align: center; }
 
@@ -957,30 +1212,7 @@ export default function BookBuilder() {
           )}
           <h1 className="bb-title">
             <span>Trình <em>tạo sách</em></span>
-            {bookTitle && <span style={{ fontSize: 12, fontWeight: 400, color: "#6b7a72" }}>· {bookTitle}</span>}
-            <span className="bb-save-status">
-              <span className={`bb-save-dot ${saveStatus === "saving" ? "busy" : saveStatus === "saved" ? "ok" : ""}`} />
-              {saveStatus === "saving" ? "đang lưu…" : saveStatus === "saved" ? "đã lưu" : saveStatus === "error" ? "lỗi lưu" : "chưa lưu"}
-            </span>
           </h1>
-          <input
-            className="bb-ebook-title-input"
-            value={ebookTitle}
-            placeholder="Tên sách điện tử (vd: Chú Gấu Đi Rừng - bản điện tử)"
-            onFocus={beginEdit}
-            onBlur={endEdit}
-            onChange={(e) => setEbookTitle(e.target.value)}
-          />
-          {bookId && (
-            <button
-              className="bb-btn bb-btn-ghost"
-              style={{ marginTop: 4 }}
-              onClick={() => navigate(`/dashboard/products/${bookId}`)}
-              title="Mở trang sửa sản phẩm để thêm/điều chỉnh giá bán biến thể Sách điện tử"
-            >
-              Sửa giá bán sản phẩm
-            </button>
-          )}
         </div>
         <div className="bb-actions">
           <button className="bb-btn bb-btn-icon" title="Hoàn tác (Ctrl+Z)" onClick={undo} disabled={pastRef.current.length === 0}>
@@ -1004,6 +1236,38 @@ export default function BookBuilder() {
         </div>
       </div>
 
+      <div className="bb-meta-bar">
+        <div className="bb-meta-field">
+          <label>
+            Tên sách điện tử
+            {bookTitle && <span className="bb-meta-book-tag">· thuộc sách: {bookTitle}</span>}
+          </label>
+          <div className="bb-meta-input-row">
+            <input
+              className="bb-ebook-title-input"
+              value={ebookTitle}
+              placeholder="VD: Chú Gấu Đi Rừng - bản điện tử"
+              onFocus={beginEdit}
+              onBlur={endEdit}
+              onChange={(e) => setEbookTitle(e.target.value)}
+            />
+            <span className="bb-save-status">
+              <span className={`bb-save-dot ${saveStatus === "saving" ? "busy" : saveStatus === "saved" ? "ok" : ""}`} />
+              {saveStatus === "saving" ? "đang lưu…" : saveStatus === "saved" ? "đã lưu" : saveStatus === "error" ? "lỗi lưu" : "chưa lưu"}
+            </span>
+          </div>
+        </div>
+        {bookId && (
+          <button
+            className="bb-btn bb-meta-price-btn"
+            onClick={() => navigate(`/dashboard/products/${bookId}`)}
+            title="Mở trang sửa sản phẩm để thêm/điều chỉnh giá bán biến thể Sách điện tử"
+          >
+            <Tag size={14} />Sửa giá bán sản phẩm
+          </button>
+        )}
+      </div>
+
       <div className="bb-current-page-label">
         <Sparkles size={13} color="#4a9e3f" />
         Đang chỉnh: <strong>Trang {pageIndex + 1}</strong>
@@ -1019,10 +1283,19 @@ export default function BookBuilder() {
       <div className="bb-pages-strip">
         <div className="bb-pages-strip-scroll">
           {pages.map((p, i) => (
-            <div className="bb-page-item" key={p.id}>
+            <div
+              className="bb-page-item"
+              key={p.id}
+              draggable
+              onDragStart={(e) => { e.dataTransfer.effectAllowed = "move"; setDragPageId(p.id); }}
+              onDragOver={(e) => { e.preventDefault(); if (dragPageId && dragPageId !== p.id) setDragOverPageId(p.id); }}
+              onDragLeave={() => setDragOverPageId((id) => (id === p.id ? null : id))}
+              onDrop={(e) => { e.preventDefault(); reorderPages(dragPageId, p.id); setDragPageId(null); setDragOverPageId(null); }}
+              onDragEnd={() => { setDragPageId(null); setDragOverPageId(null); }}
+            >
               <div
-                className={`bb-page-thumb${i === pageIndex ? " active" : ""}`}
-                style={{ background: p.background }}
+                className={`bb-page-thumb${i === pageIndex ? " active" : ""}${dragOverPageId === p.id ? " drag-over" : ""}${dragPageId === p.id ? " dragging-self" : ""}`}
+                style={{ background: p.background, cursor: "grab" }}
                 onClick={() => { setPageIndex(i); setSelectedId(null); }}
               >{i + 1}</div>
               {i === pageIndex ? (
@@ -1034,6 +1307,8 @@ export default function BookBuilder() {
             </div>
           ))}
         </div>
+        <div className="bb-strip-divider" />
+
         <div className="bb-page-strip-actions">
           <button className="bb-pill-btn" title="Thêm trang mới" onClick={addPage}><Plus size={15} /></button>
           <button className="bb-pill-btn" title="Nhân đôi trang" onClick={duplicatePage}><Copy size={15} /></button>
@@ -1042,6 +1317,8 @@ export default function BookBuilder() {
           <button className="bb-pill-btn" title="Chuyển trang sang trái" onClick={() => movePage(-1)} disabled={pageIndex === 0}><ChevronLeft size={15} /></button>
           <button className="bb-pill-btn" title="Chuyển trang sang phải" onClick={() => movePage(1)} disabled={pageIndex === pages.length - 1}><ChevronRight size={15} /></button>
         </div>
+
+        <div className="bb-strip-divider" />
 
         <div className="bb-zoom-bar">
           <button className="bb-btn bb-btn-icon" onClick={zoomOut}><Minus size={14} /></button>
@@ -1058,6 +1335,9 @@ export default function BookBuilder() {
           </button>
           <button className="bb-rail-btn" onClick={addImageLayer} title="Thêm ảnh">
             <Image size={18} /><span>Ảnh</span>
+          </button>
+          <button className="bb-rail-btn" onClick={addShapeLayer} title="Thêm hình khối">
+            <Square size={18} /><span>Hình</span>
           </button>
           <div className="bb-rail-sep" />
           <button className={`bb-rail-btn${activePanel === "layers" ? " active" : ""}`} onClick={() => toggleRailPanel("layers")} title="Các lớp">
@@ -1102,6 +1382,50 @@ export default function BookBuilder() {
                 >Dọc</button>
               </div>
             </div>
+
+            <div className="bb-field">
+              <label>Vị trí số trang (áp dụng cho toàn bộ sách)</label>
+              <div className="bb-row3">
+                <button className={`bb-btn${pageNumberPos.v === "top" ? " active" : ""}`}
+                  onClick={() => setPageNumberPos((p) => ({ ...p, v: "top" }))}>Phía trên</button>
+                <button className={`bb-btn${pageNumberPos.v === "bottom" ? " active" : ""}`}
+                  onClick={() => setPageNumberPos((p) => ({ ...p, v: "bottom" }))}>Phía dưới</button>
+              </div>
+              <div className="bb-row3" style={{ marginTop: 6 }}>
+                <button className={`bb-btn${pageNumberPos.h === "left" ? " active" : ""}`}
+                  onClick={() => setPageNumberPos((p) => ({ ...p, h: "left" }))}>Trái</button>
+                <button className={`bb-btn${pageNumberPos.h === "center" ? " active" : ""}`}
+                  onClick={() => setPageNumberPos((p) => ({ ...p, h: "center" }))}>Giữa</button>
+                <button className={`bb-btn${pageNumberPos.h === "right" ? " active" : ""}`}
+                  onClick={() => setPageNumberPos((p) => ({ ...p, h: "right" }))}>Phải</button>
+              </div>
+            </div>
+            <div className="bb-field">
+              <label className="bb-checkbox-field" style={{ marginBottom: 0 }}>
+                <input type="checkbox" checked={showTitleWithPageNumber}
+                  onChange={(e) => setShowTitleWithPageNumber(e.target.checked)} />
+                Hiện tên trang cạnh số trang (nếu trang có đặt tên)
+              </label>
+            </div>
+            <div className="bb-field">
+              <label className="bb-checkbox-field" style={{ marginBottom: 0 }}>
+                <input type="checkbox" checked={hidePageNumberOnCover}
+                  onChange={(e) => setHidePageNumberOnCover(e.target.checked)} />
+                Không hiện số trang ở trang bìa (trang 1)
+              </label>
+            </div>
+
+            <div className="bb-field">
+              <label>Mục lục tự động</label>
+              <button type="button" className="bb-btn" style={{ width: "100%", justifyContent: "center" }} onClick={generateToc}>
+                <BookOpen size={14} />Tạo / cập nhật mục lục
+              </button>
+              <div className="bb-hint">
+                Vào bảng <strong>Chỉnh</strong>, chọn một dòng chữ và đặt "Vai trò trong mục lục" thành tiêu đề mục.
+                Sau đó bấm nút này để tự tạo trang mục lục, liệt kê các tiêu đề kèm số trang (bấm vào từng dòng khi Xem trước sẽ nhảy tới trang đó).
+              </div>
+            </div>
+
             <div className="bb-hint">Số trang được đánh tự động theo thứ tự — không cần chỉnh tay.</div>
           </div>
         )}
@@ -1113,9 +1437,26 @@ export default function BookBuilder() {
               <button className="bb-flyout-close" onClick={() => setActivePanel(null)}><X size={14} /></button>
             </div>
             {layersFrontFirst.length === 0 && <div className="bb-empty">Chưa có lớp nào trên trang này.</div>}
+            {layersFrontFirst.length > 0 && (
+              <div className="bb-hint" style={{ marginTop: 0, marginBottom: 10 }}>
+                Kéo <GripVertical size={11} style={{ verticalAlign: "-2px" }} /> để sắp xếp thứ tự lớp trước / sau.
+              </div>
+            )}
             {layersFrontFirst.map((layer) => (
-              <div key={layer.id} className={`bb-layer-row${(layer.id === selectedId || multiIds.includes(layer.id)) ? " selected" : ""}`} onClick={() => selectLayer(layer.id)}>
+              <div
+                key={layer.id}
+                className={`bb-layer-row${(layer.id === selectedId || multiIds.includes(layer.id)) ? " selected" : ""}${dragOverLayerId === layer.id ? " drag-over" : ""}${dragLayerId === layer.id ? " dragging-self" : ""}`}
+                draggable
+                onDragStart={(e) => { e.dataTransfer.effectAllowed = "move"; setDragLayerId(layer.id); }}
+                onDragOver={(e) => { e.preventDefault(); if (dragLayerId && dragLayerId !== layer.id) setDragOverLayerId(layer.id); }}
+                onDragLeave={() => setDragOverLayerId((id) => (id === layer.id ? null : id))}
+                onDrop={(e) => { e.preventDefault(); reorderLayer(dragLayerId, layer.id); setDragLayerId(null); setDragOverLayerId(null); }}
+                onDragEnd={() => { setDragLayerId(null); setDragOverLayerId(null); }}
+                onClick={() => selectLayer(layer.id)}
+              >
+                <span className="bb-drag-handle" title="Kéo để sắp xếp"><GripVertical size={13} /></span>
                 <span className="bb-layer-type">{layer.type === "image" ? <Image size={12} /> : <Type size={12} />}</span>
+                {layer.headingLevel > 0 && <span className="bb-heading-badge">Tiêu đề {layer.headingLevel}</span>}
                 <span className="bb-layer-label">{layer.type === "image" ? layer.src || "(chưa có ảnh)" : layer.text || "(trống)"}</span>
                 <button className="bb-mini-btn" title="Lên trước" onClick={(e) => { e.stopPropagation(); moveLayer(layer.id, 1); }}><ChevronUp size={12} /></button>
                 <button className="bb-mini-btn" title="Xuống sau" onClick={(e) => { e.stopPropagation(); moveLayer(layer.id, -1); }}><ChevronDown size={12} /></button>
@@ -1137,12 +1478,81 @@ export default function BookBuilder() {
             </div>
             {!selected ? (
               <div className="bb-empty">Chọn một lớp trên trang để chỉnh.</div>
+            ) : selected.type === "shape" ? (
+              <>
+                <div className="bb-field">
+                  <label>Kiểu hình</label>
+                  <div className="bb-row3">
+                    <button className={`bb-btn${selected.shapeType === "rect" ? " active" : ""}`}
+                      onClick={() => updateLayer(selected.id, { shapeType: "rect" }, { commit: true })}>Chữ nhật</button>
+                    <button className={`bb-btn${selected.shapeType === "circle" ? " active" : ""}`}
+                      onClick={() => updateLayer(selected.id, { shapeType: "circle" }, { commit: true })}>Tròn</button>
+                  </div>
+                </div>
+                <div className="bb-field">
+                  <label>Kích thước (rộng × cao)</label>
+                  <div className="bb-color-size">
+                    <input type="number" value={Math.round(selected.width)} onFocus={beginEdit} onBlur={endEdit}
+                      onChange={(e) => updateLayer(selected.id, { width: Number(e.target.value) || 20 })} />
+                    <input type="number" value={Math.round(selected.height)} onFocus={beginEdit} onBlur={endEdit}
+                      onChange={(e) => updateLayer(selected.id, { height: Number(e.target.value) || 20 })} />
+                  </div>
+                </div>
+                {selected.shapeType !== "circle" && (
+                  <div className="bb-field">
+                    <label>Bo góc ({selected.borderRadius}px)</label>
+                    <input type="range" min={0} max={120} value={selected.borderRadius} onFocus={beginEdit} onBlur={endEdit}
+                      onChange={(e) => updateLayer(selected.id, { borderRadius: Number(e.target.value) })} />
+                  </div>
+                )}
+                <div className="bb-field">
+                  <label>Màu nền &amp; viền</label>
+                  <div className="bb-color-size">
+                    <input type="color" value={selected.fill} onFocus={beginEdit} onBlur={endEdit}
+                      onChange={(e) => updateLayer(selected.id, { fill: e.target.value })} />
+                    <input type="color" value={selected.strokeColor} onFocus={beginEdit} onBlur={endEdit}
+                      onChange={(e) => updateLayer(selected.id, { strokeColor: e.target.value })} />
+                    <input type="number" min={0} max={12} value={selected.strokeWidth} onFocus={beginEdit} onBlur={endEdit}
+                      onChange={(e) => updateLayer(selected.id, { strokeWidth: Number(e.target.value) || 0 })} />
+                  </div>
+                </div>
+                <div className="bb-field">
+                  <label>Độ trong suốt ({selected.opacity}%)</label>
+                  <input type="range" min={10} max={100} value={selected.opacity} onFocus={beginEdit} onBlur={endEdit}
+                    onChange={(e) => updateLayer(selected.id, { opacity: Number(e.target.value) })} />
+                </div>
+              </>
             ) : selected.type === "image" ? (
               <>
                 <div className="bb-field">
-                  <label>Link ảnh (URL)</label>
-                  <input type="text" value={selected.src} onFocus={beginEdit} onBlur={endEdit}
-                    onChange={(e) => updateLayer(selected.id, { src: e.target.value })} placeholder="https://..." />
+                  <label>Ảnh</label>
+                  <div
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => handleImageDropOnLayer(e, selected.id)}
+                    onClick={() => imageFileInputRef.current && imageFileInputRef.current.click()}
+                    style={{
+                      border: "1.5px dashed #c7d0c9", borderRadius: 10, padding: "16px 10px",
+                      textAlign: "center", cursor: "pointer", background: "#fbfaf7", color: "#6b7a72", fontSize: 12.5,
+                    }}
+                  >
+                    <Upload size={16} style={{ marginBottom: 4 }} />
+                    <div>Kéo ảnh vào đây hoặc bấm để chọn ảnh từ máy</div>
+                  </div>
+                  <input ref={imageFileInputRef} type="file" accept="image/*" style={{ display: "none" }}
+                    onChange={handleImageFileChange} />
+                </div>
+                <div className="bb-field">
+                  <label>Xoá nền theo màu ({bgRemoveTolerance}%)</label>
+                  <div className="bb-color-size">
+                    <input type="color" value={bgRemoveColor}
+                      onChange={(e) => setBgRemoveColor(e.target.value)} title="Chọn màu nền cần xoá" />
+                    <input type="range" min={2} max={60} value={bgRemoveTolerance} style={{ flex: 1 }}
+                      onChange={(e) => setBgRemoveTolerance(Number(e.target.value))} />
+                  </div>
+                  <button type="button" className="bb-btn" style={{ width: "100%", justifyContent: "center", marginTop: 8 }}
+                    onClick={handleRemoveBackground} disabled={!selected.src || bgRemoving}>
+                    <Wand2 size={14} />{bgRemoving ? "Đang xoá nền..." : "Xoá nền"}
+                  </button>
                 </div>
                 <div className="bb-field">
                   <label>Kích thước (rộng × cao)</label>
@@ -1165,6 +1575,17 @@ export default function BookBuilder() {
                   <label>Nội dung</label>
                   <textarea value={selected.text} onFocus={beginEdit} onBlur={endEdit}
                     onChange={(e) => updateLayer(selected.id, { text: e.target.value })} />
+                </div>
+                <div className="bb-field">
+                  <label>Vai trò trong mục lục</label>
+                  <select value={selected.headingLevel || 0} onFocus={beginEdit} onBlur={endEdit}
+                    onChange={(e) => updateLayer(selected.id, { headingLevel: Number(e.target.value) })}>
+                    <option value={0}>Không phải tiêu đề mục</option>
+                    <option value={1}>Tiêu đề lớn (cấp 1)</option>
+                    <option value={2}>Tiêu đề vừa (cấp 2)</option>
+                    <option value={3}>Tiêu đề nhỏ (cấp 3)</option>
+                  </select>
+                  <div className="bb-hint">Đánh dấu tiêu đề để đưa vào mục lục tự động (bấm "Tạo / cập nhật mục lục" ở bảng Trang).</div>
                 </div>
                 <div className="bb-field">
                   <label>Kiểu chữ</label>
@@ -1232,7 +1653,8 @@ export default function BookBuilder() {
                   <LayerView key={layer.id} layer={layer} selected={layer.id === selectedId || multiIds.includes(layer.id)} readOnly={false}
                     isReadingThis={reading?.layerId === layer.id} readingWordIndex={reading?.wordIndex}
                     onSelect={selectLayer} onDragStart={onLayerDragStart} onResizeStart={onLayerResizeStart}
-                    onWordHover={onWordHover} onWordLeave={onWordLeave} />
+                    onWordHover={onWordHover} onWordLeave={onWordLeave}
+                    onImageDrop={handleImageDropOnLayer} />
                 ))}
 
                 {selected && !dragging && !resizing && (
@@ -1249,11 +1671,9 @@ export default function BookBuilder() {
                 {guides.x && <div className="bb-guide" style={{ left: PAGE_W / 2 - 0.5, top: 0, bottom: 0, width: 1 }} />}
                 {guides.y && <div className="bb-guide" style={{ top: PAGE_H / 2 - 0.5, left: 0, right: 0, height: 1 }} />}
 
-                <div style={{
-                  position: "absolute", bottom: 8, left: "50%", transform: "translateX(-50%)",
-                  fontFamily: "Georgia, serif", fontSize: 12, color: "rgba(31,42,36,0.32)",
-                  pointerEvents: "none", userSelect: "none",
-                }}>{pageIndex + 1}</div>
+                {!(pageIndex === 0 && hidePageNumberOnCover) && (
+                  <PageNumberBadge page={currentPage} number={pageIndex + 1} pos={pageNumberPos} showTitle={showTitleWithPageNumber} />
+                )}
               </div>
             </div>
           </div>
@@ -1264,7 +1684,12 @@ export default function BookBuilder() {
         </div>
       </div>
 
-      {previewOpen && <PreviewOverlay pages={pages} startIndex={pageIndex} orientation={orientation} onClose={() => setPreviewOpen(false)} />}
+      {previewOpen && (
+        <PreviewOverlay pages={pages} startIndex={pageIndex} orientation={orientation}
+          pageNumberPos={pageNumberPos} showTitleWithPageNumber={showTitleWithPageNumber}
+          hidePageNumberOnCover={hidePageNumberOnCover}
+          onClose={() => setPreviewOpen(false)} />
+      )}
 
       {exporting && (
         <div style={{ position: "fixed", left: -99999, top: 0, pointerEvents: "none" }}>
@@ -1275,6 +1700,9 @@ export default function BookBuilder() {
                   onSelect={() => {}} onDragStart={() => {}} onResizeStart={() => {}}
                   onWordHover={() => {}} onWordLeave={() => {}} />
               ))}
+              {!(i === 0 && hidePageNumberOnCover) && (
+                <PageNumberBadge page={p} number={i + 1} pos={pageNumberPos} showTitle={showTitleWithPageNumber} />
+              )}
             </div>
           ))}
         </div>
