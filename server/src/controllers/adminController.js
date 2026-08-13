@@ -1098,12 +1098,18 @@ exports.updateOrderStatus = async (req, res) => {
     // (tránh gửi lặp email nếu admin lỡ bấm lưu lại cùng 1 trạng thái đang có).
     const existing = await prisma.order.findUnique({
       where: { id },
-      select: { status: true },
+      select: { status: true, isDigital: true },
     });
     if (!existing) {
       return res
         .status(404)
         .json({ success: false, message: "Không tìm thấy đơn hàng" });
+    }
+    if (existing.isDigital && status === "SHIPPING") {
+      return res.status(400).json({
+        success: false,
+        message: "Đơn hàng sách điện tử không có bước vận chuyển",
+      });
     }
     const isNewTransition = existing.status !== status;
 

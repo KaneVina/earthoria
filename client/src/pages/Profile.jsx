@@ -2180,17 +2180,28 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
             ))}
           </div>
 
-          <div className="pf-shipping-card">
-            <div className="pf-shipping-head">
-              {Icon.truck} Thông Tin Giao Hàng
+          {order.isDigital ? (
+            <div className="pf-shipping-card">
+              <div className="pf-shipping-head">
+                {Icon.truck} Sách điện tử
+              </div>
+              <div className="pf-shipping-detail">
+                Đơn hàng chỉ gồm sách điện tử — không cần giao hàng. Sau khi thanh toán, bạn có thể đọc ngay trong mục Sách điện tử của tôi.
+              </div>
             </div>
-            <div className="pf-shipping-name">{shippingName}</div>
-            <div className="pf-shipping-detail">
-              {shippingPhone}
-              <br />
-              {shippingAddress}
+          ) : (
+            <div className="pf-shipping-card">
+              <div className="pf-shipping-head">
+                {Icon.truck} Thông Tin Giao Hàng
+              </div>
+              <div className="pf-shipping-name">{shippingName}</div>
+              <div className="pf-shipping-detail">
+                {shippingPhone}
+                <br />
+                {shippingAddress}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div>

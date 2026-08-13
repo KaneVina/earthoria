@@ -95,13 +95,16 @@ function OrderDrawer({ order, onClose }) {
           </div>
 
           {/* Status row */}
-          <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+          <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
             <span className={`a-badge ${ORDER_BADGE[order.status] ?? 'neutral'}`}>
               {ORDER_STATUS[order.status]}
             </span>
             <span className={`a-badge ${PAY_BADGE[order.paymentStatus] ?? 'neutral'}`}>
               {PAYMENT_STATUS[order.paymentStatus]}
             </span>
+            {order.isDigital && (
+              <span className="a-badge info">Sách điện tử — không giao hàng</span>
+            )}
           </div>
 
           {/* Shipping address */}
@@ -270,9 +273,11 @@ export default function Orders() {
                       value={order.status}
                       onChange={e => updateMutation.mutate({ id: order.id, status: e.target.value })}
                     >
-                      {Object.entries(ORDER_STATUS).map(([key, label]) => (
-                        <option key={key} value={key}>{label}</option>
-                      ))}
+                      {Object.entries(ORDER_STATUS)
+                        .filter(([key]) => !(order.isDigital && key === 'SHIPPING'))
+                        .map(([key, label]) => (
+                          <option key={key} value={key}>{label}</option>
+                        ))}
                     </select>
                   </td>
                 </tr>
