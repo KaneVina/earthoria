@@ -6,7 +6,8 @@ import {
   Undo2, Redo2, Plus, Image, Play, Square, Eye, Folder, Layers, Palette,
   X, ChevronUp, ChevronDown, Copy, Volume2, Trash2, ChevronLeft, ChevronRight,
   AlignLeft, AlignCenter, AlignRight, Bold, Italic, Underline, Minus, ZoomIn, ZoomOut, Maximize2,
-  BookOpen, Type, Sparkles, Save, Upload, Wand2, Tag, GripVertical
+  BookOpen, Type, Sparkles, Save, Upload, Wand2, Tag, GripVertical, Lock, Unlock,
+  Minus as LineIcon, ArrowRight, Star, Triangle, Group, Ungroup
 } from "lucide-react";
 
 const FONTS = [
@@ -133,7 +134,7 @@ function defaultTextLayer(overrides = {}) {
     x: BASE_PAGE_W / 2 - 110, y: BASE_PAGE_H / 2 - 20, width: 220,
     align: "left", color: "#1f4d3f", bold: false, italic: false, underline: false,
     fontSize: 24, fontFamily: FONTS[0].value, strokeColor: "#000000", strokeWidth: 0, opacity: 100,
-    headingLevel: 0,
+    headingLevel: 0, height: null, verticalAlign: "top", locked: false,
     ...overrides,
   };
 }
@@ -141,7 +142,7 @@ function defaultTextLayer(overrides = {}) {
 function defaultImageLayer(overrides = {}) {
   return {
     id: uid(), type: "image", src: "",
-    x: BASE_PAGE_W / 2 - 80, y: BASE_PAGE_H / 2 - 60, width: 160, height: 120, opacity: 100,
+    x: BASE_PAGE_W / 2 - 80, y: BASE_PAGE_H / 2 - 60, width: 160, height: 120, opacity: 100, locked: false,
     ...overrides,
   };
 }
@@ -150,9 +151,44 @@ function defaultShapeLayer(overrides = {}) {
   return {
     id: uid(), type: "shape", shapeType: "rect",
     x: BASE_PAGE_W / 2 - 80, y: BASE_PAGE_H / 2 - 60, width: 160, height: 100,
-    fill: "#4a9e3f", strokeColor: "#1a5c47", strokeWidth: 0, borderRadius: 12, opacity: 100,
+    fill: "#4a9e3f", strokeColor: "#1a5c47", strokeWidth: 0, borderRadius: 12, opacity: 100, locked: false,
     ...overrides,
   };
+}
+
+function ShapeSvg({ shapeType, fill, strokeColor, strokeWidth }) {
+  const sw = strokeWidth || 0;
+  if (shapeType === "line") {
+    return (
+      <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <line x1="2" y1="50" x2="98" y2="50" stroke={fill} strokeWidth={Math.max(sw, 3)} />
+      </svg>
+    );
+  }
+  if (shapeType === "arrow") {
+    return (
+      <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <line x1="2" y1="50" x2="82" y2="50" stroke={fill} strokeWidth={Math.max(sw, 3)} />
+        <polygon points="70,35 98,50 70,65" fill={fill} />
+      </svg>
+    );
+  }
+  if (shapeType === "star") {
+    return (
+      <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <polygon points="50,4 62,38 98,38 69,59 80,95 50,73 20,95 31,59 2,38 38,38"
+          fill={fill} stroke={sw > 0 ? strokeColor : "none"} strokeWidth={sw} strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  if (shapeType === "triangle") {
+    return (
+      <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <polygon points="50,4 96,96 4,96" fill={fill} stroke={sw > 0 ? strokeColor : "none"} strokeWidth={sw} strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  return null;
 }
 
 function defaultPage(overrides = {}) {
@@ -198,26 +234,36 @@ function LayerView({
       if (layer.tocTargetPageId) onLayerClick && onLayerClick(layer.tocTargetPageId);
       return;
     }
-    onSelect(layer.id);
+    if (!layer.locked) onSelect(layer.id, e.shiftKey);
   };
+  const handleDragStart = (e) => { if (!readOnly && !layer.locked) onDragStart(e, layer); };
 
   if (layer.type === "shape") {
+    const isVector = ["line", "arrow", "star", "triangle"].includes(layer.shapeType);
     return (
       <div
         style={{ ...wrapStyle, width: layer.width, height: layer.height }}
-        onPointerDown={(e) => !readOnly && onDragStart(e, layer)}
+        onPointerDown={handleDragStart}
         onClick={handleClick}
       >
         <div style={{
-          width: "100%", height: "100%", boxSizing: "border-box",
-          background: layer.fill,
-          border: layer.strokeWidth > 0 ? `${layer.strokeWidth}px solid ${layer.strokeColor}` : "none",
-          borderRadius: layer.shapeType === "circle" ? "50%" : layer.borderRadius,
+          position: "relative", width: "100%", height: "100%", boxSizing: "border-box",
           outline: !readOnly && selected ? "2px solid #4a9e3f" : "2px solid transparent",
-          outlineOffset: 4, cursor: readOnly ? "default" : "grab", touchAction: "none",
+          outlineOffset: 4, cursor: readOnly ? "default" : (layer.locked ? "not-allowed" : "grab"), touchAction: "none",
           boxShadow: !readOnly && selected ? "0 0 0 4px rgba(74,158,63,0.14)" : "none",
-        }} />
-        {!readOnly && selected && (
+        }}>
+          {isVector ? (
+            <ShapeSvg shapeType={layer.shapeType} fill={layer.fill} strokeColor={layer.strokeColor} strokeWidth={layer.strokeWidth} />
+          ) : (
+            <div style={{
+              width: "100%", height: "100%", boxSizing: "border-box",
+              background: layer.fill,
+              border: layer.strokeWidth > 0 ? `${layer.strokeWidth}px solid ${layer.strokeColor}` : "none",
+              borderRadius: layer.shapeType === "circle" ? "50%" : layer.borderRadius,
+            }} />
+          )}
+        </div>
+        {!readOnly && selected && !layer.locked && (
           <div onPointerDown={(e) => { e.stopPropagation(); onResizeStart(e, layer); }}
             className="bb-resize-handle" style={{ cursor: "nwse-resize" }} />
         )}
@@ -229,10 +275,10 @@ function LayerView({
     return (
       <div
         style={{ ...wrapStyle, width: layer.width, height: layer.height }}
-        onPointerDown={(e) => !readOnly && onDragStart(e, layer)}
+        onPointerDown={handleDragStart}
         onClick={handleClick}
         onDragOver={(e) => !readOnly && e.preventDefault()}
-        onDrop={(e) => !readOnly && onImageDrop && onImageDrop(e, layer.id)}
+        onDrop={(e) => !readOnly && !layer.locked && onImageDrop && onImageDrop(e, layer.id)}
       >
         <div style={{
           position: "relative", width: "100%", height: "100%",
@@ -267,14 +313,18 @@ function LayerView({
   }
 
   const words = (layer.text || "").split(" ");
+  const hasFixedHeight = layer.height != null && layer.height > 0;
   return (
     <div
-      style={{ ...wrapStyle, width: layer.width }}
+      style={{ ...wrapStyle, width: layer.width, height: hasFixedHeight ? layer.height : undefined }}
       onPointerDown={(e) => !readOnly && onDragStart(e, layer)}
       onClick={handleClick}
     >
       <div style={{
-        position: "relative", padding: "4px 6px", borderRadius: 8,
+        position: "relative", padding: "4px 6px", borderRadius: 8, height: hasFixedHeight ? "100%" : undefined,
+        display: hasFixedHeight ? "flex" : undefined, flexDirection: hasFixedHeight ? "column" : undefined,
+        justifyContent: hasFixedHeight ? (layer.verticalAlign === "middle" ? "center" : layer.verticalAlign === "bottom" ? "flex-end" : "flex-start") : undefined,
+        boxSizing: "border-box",
         outline: !readOnly && selected ? "2px solid #4a9e3f" : "2px solid transparent",
         outlineOffset: 4, cursor: readOnly ? (isTocLink ? "pointer" : "default") : "grab", touchAction: "none",
         boxShadow: !readOnly && selected ? "0 0 0 4px rgba(74,158,63,0.14)" : "none",
@@ -305,7 +355,7 @@ function LayerView({
         </div>
         {!readOnly && selected && (
           <div onPointerDown={(e) => { e.stopPropagation(); onResizeStart(e, layer); }}
-            className="bb-resize-handle" style={{ cursor: "ew-resize" }} />
+            className="bb-resize-handle" style={{ cursor: hasFixedHeight ? "nwse-resize" : "ew-resize" }} />
         )}
       </div>
     </div>
@@ -604,7 +654,18 @@ export default function BookBuilder() {
   const zoomOut = () => { setAutoFit(false); setScale((s) => Math.max(0.3, +(s - 0.1).toFixed(2))); };
   const zoomFit = () => setAutoFit(true);
 
-  const selectLayer = (id) => { setMultiIds([]); setSelectedId(id); if (id) setActivePanel("format"); };
+  const selectLayer = (id, additive) => {
+    if (additive) {
+      setSelectedId(null);
+      setMultiIds((prev) => {
+        const base = prev.length ? prev : (selectedId ? [selectedId] : []);
+        return base.includes(id) ? base.filter((x) => x !== id) : [...base, id];
+      });
+      setActivePanel("format");
+      return;
+    }
+    setMultiIds([]); setSelectedId(id); if (id) setActivePanel("format");
+  };
   const toggleRailPanel = (key) => setActivePanel((prev) => (prev === key ? null : key));
 
   const pushHistory = (snapshotPages) => {
@@ -886,21 +947,29 @@ export default function BookBuilder() {
 
   const onLayerDragStart = (e, layer) => {
     e.stopPropagation();
-    selectLayer(layer.id);
+    const isGroupDrag = multiIds.includes(layer.id) && multiIds.length > 1;
+    if (!isGroupDrag) selectLayer(layer.id);
     beginEdit();
     const rect = canvasRef.current.getBoundingClientRect();
-    setDragging({ id: layer.id, offsetX: (e.clientX - rect.left) / scale - layer.x, offsetY: (e.clientY - rect.top) / scale - layer.y });
+    const groupIds = isGroupDrag ? multiIds.filter((id) => !currentPage.layers.find((l) => l.id === id)?.locked) : [layer.id];
+    const startPositions = {};
+    currentPage.layers.forEach((l) => { if (groupIds.includes(l.id)) startPositions[l.id] = { x: l.x, y: l.y }; });
+    setDragging({
+      id: layer.id, groupIds, startPositions,
+      offsetX: (e.clientX - rect.left) / scale - layer.x, offsetY: (e.clientY - rect.top) / scale - layer.y,
+    });
   };
 
   useEffect(() => {
     if (!dragging) return;
     const layerMeta = currentPage.layers.find((l) => l.id === dragging.id);
+    const isGroup = dragging.groupIds && dragging.groupIds.length > 1;
     const onMove = (e) => {
       const rect = canvasRef.current.getBoundingClientRect();
       let x = (e.clientX - rect.left) / scale - dragging.offsetX;
       let y = (e.clientY - rect.top) / scale - dragging.offsetY;
       let gx = false, gy = false;
-      if (layerMeta) {
+      if (layerMeta && !isGroup) {
         const w = layerMeta.width || 0;
         const centerX = x + w / 2;
         if (Math.abs(centerX - PAGE_W / 2) < 6) { x = PAGE_W / 2 - w / 2; gx = true; }
@@ -913,7 +982,18 @@ export default function BookBuilder() {
       setGuides({ x: gx, y: gy });
       x = Math.max(-60, Math.min(x, PAGE_W - 20));
       y = Math.max(-20, Math.min(y, PAGE_H - 10));
-      updateLayer(dragging.id, { x, y });
+      if (isGroup) {
+        const baseStart = dragging.startPositions[dragging.id];
+        const dx = x - baseStart.x;
+        const dy = y - baseStart.y;
+        setPagesLive((prev) => prev.map((p, i) => i === pageIndex
+          ? { ...p, layers: p.layers.map((l) => dragging.groupIds.includes(l.id)
+              ? { ...l, x: dragging.startPositions[l.id].x + dx, y: dragging.startPositions[l.id].y + dy }
+              : l) }
+          : p));
+      } else {
+        updateLayer(dragging.id, { x, y });
+      }
     };
     const onUp = () => { setDragging(null); setGuides({ x: false, y: false }); endEdit(); };
     window.addEventListener("pointermove", onMove);
@@ -925,7 +1005,10 @@ export default function BookBuilder() {
   const onLayerResizeStart = (e, layer) => {
     e.stopPropagation();
     beginEdit();
-    setResizing({ id: layer.id, type: layer.type, startClientX: e.clientX, startClientY: e.clientY, startW: layer.width, startH: layer.height || 0 });
+    setResizing({
+      id: layer.id, type: layer.type, hasHeight: layer.height != null,
+      startClientX: e.clientX, startClientY: e.clientY, startW: layer.width, startH: layer.height || 0,
+    });
   };
 
   useEffect(() => {
@@ -933,8 +1016,10 @@ export default function BookBuilder() {
     const onMove = (e) => {
       const dx = (e.clientX - resizing.startClientX) / scale;
       const dy = (e.clientY - resizing.startClientY) / scale;
-      if (resizing.type === "image") {
+      if (resizing.type === "image" || resizing.type === "shape") {
         updateLayer(resizing.id, { width: Math.max(30, resizing.startW + dx), height: Math.max(30, resizing.startH + dy) });
+      } else if (resizing.type === "text" && resizing.hasHeight) {
+        updateLayer(resizing.id, { width: Math.max(60, resizing.startW + dx), height: Math.max(30, resizing.startH + dy) });
       } else {
         updateLayer(resizing.id, { width: Math.max(60, resizing.startW + dx) });
       }
@@ -992,16 +1077,17 @@ export default function BookBuilder() {
         else { setSelectedId(null); setMultiIds(pasted.map((p2) => p2.id)); setActivePanel("layers"); }
         return;
       }
-      if ((e.key === "Delete" || e.key === "Backspace") && activeIds.length) { e.preventDefault(); removeLayers(activeIds); return; }
+      const movableIds = activeIds.filter((id) => !currentPage.layers.find((l) => l.id === id)?.locked);
+      if ((e.key === "Delete" || e.key === "Backspace") && movableIds.length) { e.preventDefault(); removeLayers(movableIds); return; }
       if (meta && e.key.toLowerCase() === "d" && activeIds.length) { e.preventDefault(); duplicateLayers(activeIds); return; }
       if (e.key === "Escape" && (selectedId || multiIds.length)) { setSelectedId(null); setMultiIds([]); return; }
-      if (activeIds.length && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+      if (movableIds.length && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
         e.preventDefault();
         const step = e.shiftKey ? 8 : 1;
         const dx = e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0;
         const dy = e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
         setPagesCommit((prev) => prev.map((p, i) => i === pageIndex
-          ? { ...p, layers: p.layers.map((l) => activeIds.includes(l.id) ? { ...l, x: l.x + dx, y: l.y + dy } : l) }
+          ? { ...p, layers: p.layers.map((l) => movableIds.includes(l.id) ? { ...l, x: l.x + dx, y: l.y + dy } : l) }
           : p));
       }
     };
@@ -1460,6 +1546,10 @@ export default function BookBuilder() {
                 <span className="bb-layer-label">{layer.type === "image" ? layer.src || "(chưa có ảnh)" : layer.text || "(trống)"}</span>
                 <button className="bb-mini-btn" title="Lên trước" onClick={(e) => { e.stopPropagation(); moveLayer(layer.id, 1); }}><ChevronUp size={12} /></button>
                 <button className="bb-mini-btn" title="Xuống sau" onClick={(e) => { e.stopPropagation(); moveLayer(layer.id, -1); }}><ChevronDown size={12} /></button>
+                <button className="bb-mini-btn" title={layer.locked ? "Mở khoá" : "Khoá vị trí"}
+                  onClick={(e) => { e.stopPropagation(); updateLayer(layer.id, { locked: !layer.locked }, { commit: true }); }}>
+                  {layer.locked ? <Lock size={12} /> : <Unlock size={12} />}
+                </button>
                 <button className="bb-mini-btn" title="Nhân đôi" onClick={(e) => { e.stopPropagation(); duplicateLayer(layer.id); }}><Copy size={12} /></button>
                 {layer.type === "text" && (
                   <button className="bb-mini-btn" title="Đọc lớp này" onClick={(e) => { e.stopPropagation(); readLayer(layer); }}><Volume2 size={12} /></button>
@@ -1487,6 +1577,16 @@ export default function BookBuilder() {
                       onClick={() => updateLayer(selected.id, { shapeType: "rect" }, { commit: true })}>Chữ nhật</button>
                     <button className={`bb-btn${selected.shapeType === "circle" ? " active" : ""}`}
                       onClick={() => updateLayer(selected.id, { shapeType: "circle" }, { commit: true })}>Tròn</button>
+                    <button className={`bb-btn${selected.shapeType === "triangle" ? " active" : ""}`}
+                      onClick={() => updateLayer(selected.id, { shapeType: "triangle" }, { commit: true })}><Triangle size={14} /></button>
+                  </div>
+                  <div className="bb-row3" style={{ marginTop: 6 }}>
+                    <button className={`bb-btn${selected.shapeType === "line" ? " active" : ""}`}
+                      onClick={() => updateLayer(selected.id, { shapeType: "line" }, { commit: true })}><LineIcon size={14} />Đường</button>
+                    <button className={`bb-btn${selected.shapeType === "arrow" ? " active" : ""}`}
+                      onClick={() => updateLayer(selected.id, { shapeType: "arrow" }, { commit: true })}><ArrowRight size={14} />Mũi tên</button>
+                    <button className={`bb-btn${selected.shapeType === "star" ? " active" : ""}`}
+                      onClick={() => updateLayer(selected.id, { shapeType: "star" }, { commit: true })}><Star size={14} />Sao</button>
                   </div>
                 </div>
                 <div className="bb-field">
@@ -1576,6 +1676,33 @@ export default function BookBuilder() {
                   <textarea value={selected.text} onFocus={beginEdit} onBlur={endEdit}
                     onChange={(e) => updateLayer(selected.id, { text: e.target.value })} />
                 </div>
+                <div className="bb-field">
+                  <label className="bb-checkbox-field">
+                    <input type="checkbox" checked={selected.height != null}
+                      onChange={(e) => updateLayer(selected.id, { height: e.target.checked ? 120 : null }, { commit: true })} />
+                    Đặt chiều cao cố định (để căn giữa chữ theo chiều dọc)
+                  </label>
+                  {selected.height != null && (
+                    <div className="bb-color-size" style={{ marginTop: 8 }}>
+                      <input type="number" min={20} value={Math.round(selected.height)} onFocus={beginEdit} onBlur={endEdit}
+                        onChange={(e) => updateLayer(selected.id, { height: Number(e.target.value) || 20 })} />
+                      <span style={{ fontSize: 12, color: "#6b7a72" }}>px chiều cao</span>
+                    </div>
+                  )}
+                </div>
+                {selected.height != null && (
+                  <div className="bb-field">
+                    <label>Căn dọc trong khung</label>
+                    <div className="bb-row3">
+                      <button className={`bb-btn${selected.verticalAlign === "top" ? " active" : ""}`}
+                        onClick={() => updateLayer(selected.id, { verticalAlign: "top" }, { commit: true })}>Trên</button>
+                      <button className={`bb-btn${selected.verticalAlign === "middle" ? " active" : ""}`}
+                        onClick={() => updateLayer(selected.id, { verticalAlign: "middle" }, { commit: true })}>Giữa</button>
+                      <button className={`bb-btn${selected.verticalAlign === "bottom" ? " active" : ""}`}
+                        onClick={() => updateLayer(selected.id, { verticalAlign: "bottom" }, { commit: true })}>Dưới</button>
+                    </div>
+                  </div>
+                )}
                 <div className="bb-field">
                   <label>Vai trò trong mục lục</label>
                   <select value={selected.headingLevel || 0} onFocus={beginEdit} onBlur={endEdit}
