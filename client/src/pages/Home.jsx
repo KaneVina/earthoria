@@ -7,6 +7,7 @@ import { useCartStore } from "../store/cartStore";
 import { useAuthStore } from "../store/authStore";
 import { useWishlistStore } from "../store/wishlistStore";
 import { formatPrice, getBookUrl } from "../utils/helpers";
+import { flyToCart } from "../utils/flyToCart";
 import toast from "react-hot-toast";
 import {
   Truck,
@@ -155,7 +156,7 @@ function AddToCartBtn({ onAdd, disabled }) {
     e.stopPropagation();
     if (disabled) return;
     setAdded(true);
-    onAdd && onAdd();
+    onAdd && onAdd(e);
     setTimeout(() => setAdded(false), 1400);
   };
 
@@ -593,7 +594,13 @@ function BookCard({
             onClick={(e) => e.stopPropagation()}
           >
             <AddToCartBtn
-              onAdd={() => onAddCart && onAddCart(book.hashId)}
+              onAdd={(e) => {
+                const cardImg = e.currentTarget
+                  .closest(".product-card")
+                  ?.querySelector(".product-img-wrap img");
+                if (cardImg) flyToCart(cardImg);
+                onAddCart && onAddCart(book.hashId);
+              }}
               disabled={isAdding}
             />
           </div>
@@ -3119,7 +3126,13 @@ export default function Home() {
                         </div>
                         {/* CTA */}
                         <button
-                          onClick={() => handleAddToCart(book.hashId)}
+                          onClick={(e) => {
+                            const cardImg = e.currentTarget
+                              .closest("div")
+                              ?.querySelector("img");
+                            flyToCart(cardImg);
+                            handleAddToCart(book.hashId);
+                          }}
                           style={{
                             background: isFirst
                               ? "var(--gold)"

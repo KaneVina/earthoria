@@ -9,6 +9,7 @@ import { useWishlistStore } from '../store/wishlistStore'
 import { useCartStore } from '../store/cartStore'
 import { useAuthStore } from '../store/authStore'
 import { formatPrice } from '../utils/helpers'
+import { flyToCart } from '../utils/flyToCart'
 import toast from 'react-hot-toast'
 
 const PAGE_SIZE = 12
@@ -100,7 +101,13 @@ function WishlistCard({ book, onRemove, onMoveToCart, isRemoving, isMoving, sele
         <div className="wl-card-actions">
           <button
             className="wl-btn-cart"
-            onClick={() => onMoveToCart(book)}
+            onClick={(e) => {
+              const cardImg = e.currentTarget
+                .closest(".wl-card")
+                ?.querySelector(".wl-card-img");
+              if (cardImg) flyToCart(cardImg);
+              onMoveToCart(book);
+            }}
             disabled={book.stock === 0 || isMoving}
             title={book.stock === 0 ? 'Hết hàng' : 'Thêm vào giỏ hàng'}
           >

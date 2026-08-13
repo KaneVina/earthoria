@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useCompareStore } from "../store/compareStore";
 import { formatPrice, getBookUrl } from "../utils/helpers";
+import { flyToCart } from "../utils/flyToCart";
 import { useCartStore } from "../store/cartStore";
 import toast from "react-hot-toast";
 
@@ -419,7 +420,11 @@ export default function Compare() {
                       <button
                         className="btn-add-main compare-actions-noprint"
                         style={{ width: "100%", height: "40px", fontSize: "10px" }}
-                        onClick={() => handleAdd(item.hashId, item.title)}
+                        onClick={(e) => {
+                          const cardImg = e.currentTarget.parentElement?.querySelector("img");
+                          if (cardImg) flyToCart(cardImg);
+                          handleAdd(item.hashId, item.title);
+                        }}
                       >
                         Thêm vào giỏ
                       </button>

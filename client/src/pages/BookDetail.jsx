@@ -248,6 +248,7 @@ export default function BookDetail() {
   const [activeThumb, setActiveThumb] = useState(0);
   const [imgFading, setImgFading] = useState(false);
   const [qty, setQty] = useState(1);
+  const [selectedFormat, setSelectedFormat] = useState("PHYSICAL");
   const [wishlist, setWishlist] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
@@ -340,12 +341,38 @@ export default function BookDetail() {
   const thumbImages = images.length > 1 ? images : FALLBACK_IMGS;
   const avgRating = parseFloat(book?.avgRating) || 4.9;
   const reviewCount = book?.reviewCount || 0;
-  const discountedPrice = book?.salePrice || book?.price;
-  const originalPrice = book?.price;
-  const hasDiscount = book?.salePrice && book.salePrice < book.price;
+
+  const variants = book?.variants || [];
+  const activeVariant =
+    variants.find((v) => v.format === selectedFormat) ||
+    variants.find((v) => v.format === "PHYSICAL") ||
+    variants[0] ||
+    null;
+
+  const currentPrice = activeVariant ? activeVariant.price : book?.price;
+  const currentSalePrice = activeVariant
+    ? activeVariant.salePrice
+    : book?.salePrice;
+
+  const discountedPrice = currentSalePrice || currentPrice;
+  const originalPrice = currentPrice;
+  const hasDiscount = currentSalePrice && currentSalePrice < currentPrice;
   const discountPct = hasDiscount
-    ? Math.round((1 - book.salePrice / book.price) * 100)
+    ? Math.round((1 - currentSalePrice / currentPrice) * 100)
     : 0;
+
+  useEffect(() => {
+    if (variants.length) {
+      const hasSelected = variants.some((v) => v.format === selectedFormat);
+      if (!hasSelected) {
+        setSelectedFormat(
+          variants.find((v) => v.format === "PHYSICAL")?.format ||
+            variants[0].format
+        );
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [book?.id]);
 
   //  Tên tác giả (hỗ trợ 1 hoặc nhiều tác giả)
   const authorNames = book?.authors?.length
@@ -374,7 +401,7 @@ export default function BookDetail() {
     if (addedToCart) return;
     try {
       flyToCart(mainImgRef.current);
-      await addToCart(hashId, qty);
+      await addToCart(hashId, qty, selectedFormat);
       setAddedToCart(true);
       toast.success("Đã thêm vào giỏ hàng!");
       setTimeout(() => setAddedToCart(false), 1800);
@@ -695,6 +722,38 @@ export default function BookDetail() {
               </div>
             ))}
           </div>
+
+          {variants.length > 1 && (
+            <div className="variant-select-row" style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+              {variants.map((v) => {
+                const isActive = v.format === selectedFormat;
+                const label = v.format === "DIGITAL" ? "Ebook" : "Bản in";
+                return (
+                  <button
+                    key={v.id}
+                    type="button"
+                    onClick={() => setSelectedFormat(v.format)}
+                    className={`variant-option-btn${isActive ? " active" : ""}`}
+                    style={{
+                      padding: "8px 16px",
+                      borderRadius: 8,
+                      border: isActive
+                        ? "2px solid var(--gold, #c9a227)"
+                        : "1px solid #ddd",
+                      background: isActive ? "rgba(201,162,39,0.08)" : "#fff",
+                      fontWeight: isActive ? 600 : 500,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {label}
+                    <span style={{ display: "block", fontSize: 12, opacity: 0.7 }}>
+                      {formatPrice(v.salePrice || v.price)}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           {/* Price */}
           <div className="price-block">

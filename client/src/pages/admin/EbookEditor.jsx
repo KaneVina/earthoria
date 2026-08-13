@@ -1,6 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
-
-/* ───────────────────────── constants & helpers ───────────────────────── */
+import {
+  Undo2, Redo2, Plus, Image, Play, Square, Eye, Folder, Layers, Palette,
+  X, ChevronUp, ChevronDown, Copy, Volume2, Trash2, ChevronLeft, ChevronRight,
+  AlignLeft, AlignCenter, AlignRight, Bold, Italic, Underline, Minus, ZoomIn, ZoomOut, Maximize2,
+  BookOpen, Type, Sparkles, Save
+} from "lucide-react";
 
 const FONTS = [
   { label: "Be Vietnam Pro", value: "'Be Vietnam Pro', system-ui, sans-serif" },
@@ -19,8 +23,6 @@ const uid = () => `id_${Date.now().toString(36)}_${Math.random().toString(36).sl
 const clone = (v) => JSON.parse(JSON.stringify(v));
 const speechAvailable = () => typeof window !== "undefined" && "speechSynthesis" in window;
 
-// đọc file ảnh từ máy, thu nhỏ nếu quá lớn rồi nén lại — giữ dung lượng lưu
-// trữ hợp lý (bộ nhớ artifact giới hạn theo từng khoá lưu)
 function fileToResizedDataUrl(file, maxDim = 900, quality = 0.85) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -53,9 +55,6 @@ function hexToRgb(hex) {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-// xoá nền THEO MÀU (chroma-key đơn giản) — không phải AI tách vật thể như
-// Canva; chỉ làm trong suốt những pixel có màu gần với màu đã chọn, nên hợp
-// nhất với ảnh có nền một màu tương đối đồng đều
 function removeBackgroundByColor(srcUrl, hexColor, tolerancePercent) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -74,7 +73,7 @@ function removeBackgroundByColor(srcUrl, hexColor, tolerancePercent) {
         return;
       }
       const [tr, tg, tb] = hexToRgb(hexColor);
-      const tol = (tolerancePercent / 100) * 450; // ngưỡng khoảng cách màu r+g+b
+      const tol = (tolerancePercent / 100) * 450;
       const d = data.data;
       for (let i = 0; i < d.length; i += 4) {
         const dist = Math.abs(d[i] - tr) + Math.abs(d[i + 1] - tg) + Math.abs(d[i + 2] - tb);
@@ -128,36 +127,18 @@ function speakText(text, { onWord, onEnd } = {}) {
 
 function defaultTextLayer(overrides = {}) {
   return {
-    id: uid(),
-    type: "text",
-    text: "Nhập chữ...",
-    x: PAGE_W / 2 - 110,
-    y: PAGE_H / 2 - 20,
-    width: 220,
-    align: "left",
-    color: "#1f4d3f",
-    bold: false,
-    italic: false,
-    underline: false,
-    fontSize: 24,
-    fontFamily: FONTS[0].value,
-    strokeColor: "#000000",
-    strokeWidth: 0,
-    opacity: 100,
+    id: uid(), type: "text", text: "Nhập chữ...",
+    x: PAGE_W / 2 - 110, y: PAGE_H / 2 - 20, width: 220,
+    align: "left", color: "#1f4d3f", bold: false, italic: false, underline: false,
+    fontSize: 24, fontFamily: FONTS[0].value, strokeColor: "#000000", strokeWidth: 0, opacity: 100,
     ...overrides,
   };
 }
 
 function defaultImageLayer(overrides = {}) {
   return {
-    id: uid(),
-    type: "image",
-    src: "",
-    x: PAGE_W / 2 - 80,
-    y: PAGE_H / 2 - 60,
-    width: 160,
-    height: 120,
-    opacity: 100,
+    id: uid(), type: "image", src: "",
+    x: PAGE_W / 2 - 80, y: PAGE_H / 2 - 60, width: 160, height: 120, opacity: 100,
     ...overrides,
   };
 }
@@ -166,85 +147,46 @@ function defaultPage(overrides = {}) {
   return { id: uid(), title: "", background: "#fffdf8", layers: [], ...overrides };
 }
 
-/* ───────────────────────── layer view (shared editor + preview) ───────────────────────── */
-
 function LayerView({
-  layer,
-  selected,
-  readOnly,
-  isReadingThis,
-  readingWordIndex,
-  onSelect,
-  onDragStart,
-  onResizeStart,
-  onWordHover,
-  onWordLeave,
+  layer, selected, readOnly, isReadingThis, readingWordIndex,
+  onSelect, onDragStart, onResizeStart, onWordHover, onWordLeave,
 }) {
-  const wrapStyle = {
-    position: "absolute",
-    left: layer.x,
-    top: layer.y,
-    opacity: (layer.opacity ?? 100) / 100,
-  };
+  const wrapStyle = { position: "absolute", left: layer.x, top: layer.y, opacity: (layer.opacity ?? 100) / 100 };
 
   if (layer.type === "image") {
     return (
       <div
         style={{ ...wrapStyle, width: layer.width, height: layer.height }}
         onPointerDown={(e) => !readOnly && onDragStart(e, layer)}
-        onClick={(e) => {
-          e.stopPropagation();
-          !readOnly && onSelect(layer.id);
-        }}
+        onClick={(e) => { e.stopPropagation(); !readOnly && onSelect(layer.id); }}
       >
-        <div
-          style={{
-            position: "relative",
-            width: "100%",
-            height: "100%",
-            outline: !readOnly && selected ? "2px dashed #4a9e3f" : "2px dashed transparent",
-            outlineOffset: 4,
-            borderRadius: 6,
-            overflow: "hidden",
-            cursor: readOnly ? "default" : "grab",
-            touchAction: "none",
-          }}
-        >
+        <div style={{
+          position: "relative", width: "100%", height: "100%",
+          outline: !readOnly && selected ? "2px solid #4a9e3f" : "2px solid transparent",
+          outlineOffset: 4, borderRadius: 10, overflow: "hidden",
+          cursor: readOnly ? "default" : "grab", touchAction: "none",
+          boxShadow: !readOnly && selected ? "0 0 0 4px rgba(74,158,63,0.14)" : "none",
+          transition: "outline-color 0.12s ease, box-shadow 0.12s ease",
+        }}>
           {layer.src ? (
-            <img
-              src={layer.src}
-              alt=""
-              draggable={false}
-              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", pointerEvents: "none" }}
-            />
+            <img src={layer.src} alt="" draggable={false}
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", pointerEvents: "none" }} />
           ) : (
-            <div
-              style={{
-                width: "100%",
-                height: "100%",
-                background: "#eef1ee",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#8a978f",
-                fontSize: 12,
-                textAlign: "center",
-                padding: 8,
-              }}
-            >
+            <div style={{
+              width: "100%", height: "100%",
+              background: "repeating-linear-gradient(135deg, #eef1ee, #eef1ee 10px, #e5e9e4 10px, #e5e9e4 20px)",
+              border: "1.5px dashed #c7d0c9", borderRadius: 10, boxSizing: "border-box",
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
+              color: "#8a978f", fontSize: 12, textAlign: "center", padding: 8,
+            }}>
+              {!readOnly && <Image size={18} strokeWidth={1.6} />}
               {readOnly ? "" : "Dán link ảnh ở bảng Định dạng"}
             </div>
           )}
         </div>
         {!readOnly && selected && (
-          <div
-            onPointerDown={(e) => {
-              e.stopPropagation();
-              onResizeStart(e, layer);
-            }}
-            className="bb-resize-handle"
-            style={{ cursor: "nwse-resize" }}
-          />
+          <div onPointerDown={(e) => { e.stopPropagation(); onResizeStart(e, layer); }}
+            className="bb-resize-handle" style={{ cursor: "nwse-resize" }} />
         )}
       </div>
     );
@@ -255,74 +197,46 @@ function LayerView({
     <div
       style={{ ...wrapStyle, width: layer.width }}
       onPointerDown={(e) => !readOnly && onDragStart(e, layer)}
-      onClick={(e) => {
-        e.stopPropagation();
-        !readOnly && onSelect(layer.id);
-      }}
+      onClick={(e) => { e.stopPropagation(); !readOnly && onSelect(layer.id); }}
     >
-      <div
-        style={{
-          position: "relative",
-          padding: "4px 6px",
-          borderRadius: 8,
-          outline: !readOnly && selected ? "2px dashed #4a9e3f" : "2px dashed transparent",
-          outlineOffset: 4,
-          cursor: readOnly ? "default" : "grab",
-          touchAction: "none",
-        }}
-      >
-        <div
-          style={{
-            fontFamily: layer.fontFamily,
-            fontSize: layer.fontSize,
-            fontWeight: layer.bold ? 700 : 400,
-            fontStyle: layer.italic ? "italic" : "normal",
-            textDecoration: layer.underline ? "underline" : "none",
-            color: layer.color,
-            textAlign: layer.align || "left",
-            WebkitTextStroke: layer.strokeWidth > 0 ? `${layer.strokeWidth}px ${layer.strokeColor}` : undefined,
-            lineHeight: 1.35,
-            wordBreak: "break-word",
-          }}
-        >
+      <div style={{
+        position: "relative", padding: "4px 6px", borderRadius: 8,
+        outline: !readOnly && selected ? "2px solid #4a9e3f" : "2px solid transparent",
+        outlineOffset: 4, cursor: readOnly ? "default" : "grab", touchAction: "none",
+        boxShadow: !readOnly && selected ? "0 0 0 4px rgba(74,158,63,0.14)" : "none",
+        transition: "outline-color 0.12s ease, box-shadow 0.12s ease",
+      }}>
+        <div style={{
+          fontFamily: layer.fontFamily, fontSize: layer.fontSize,
+          fontWeight: layer.bold ? 700 : 400, fontStyle: layer.italic ? "italic" : "normal",
+          textDecoration: layer.underline ? "underline" : "none", color: layer.color,
+          textAlign: layer.align || "left",
+          WebkitTextStroke: layer.strokeWidth > 0 ? `${layer.strokeWidth}px ${layer.strokeColor}` : undefined,
+          lineHeight: 1.35, wordBreak: "break-word",
+        }}>
           {words.map((w, i) => (
             <React.Fragment key={i}>
               <span
-                onMouseEnter={(e) => {
-                  e.stopPropagation();
-                  onWordHover(w);
-                }}
+                onMouseEnter={(e) => { e.stopPropagation(); onWordHover({ word: w }); }}
                 onMouseLeave={onWordLeave}
                 style={{
-                  padding: "1px 2px",
-                  borderRadius: 4,
-                  cursor: "pointer",
+                  padding: "1px 2px", borderRadius: 4, cursor: "pointer",
                   background: isReadingThis && readingWordIndex === i ? "rgba(255,196,61,0.55)" : "transparent",
                   transition: "background 0.12s ease",
                 }}
-              >
-                {w}
-              </span>
+              >{w}</span>
               {i < words.length - 1 ? " " : ""}
             </React.Fragment>
           ))}
         </div>
         {!readOnly && selected && (
-          <div
-            onPointerDown={(e) => {
-              e.stopPropagation();
-              onResizeStart(e, layer);
-            }}
-            className="bb-resize-handle"
-            style={{ cursor: "ew-resize" }}
-          />
+          <div onPointerDown={(e) => { e.stopPropagation(); onResizeStart(e, layer); }}
+            className="bb-resize-handle" style={{ cursor: "ew-resize" }} />
         )}
       </div>
     </div>
   );
 }
-
-/* ───────────────────────── preview / read mode ───────────────────────── */
 
 function PreviewOverlay({ pages, startIndex, onClose }) {
   const [idx, setIdx] = useState(startIndex);
@@ -359,13 +273,10 @@ function PreviewOverlay({ pages, startIndex, onClose }) {
     window.speechSynthesis.cancel();
     setReading(null);
     const utter = new SpeechSynthesisUtterance(wordObj.word);
-    utter.lang = "vi-VN";
-    utter.rate = 0.9;
+    utter.lang = "vi-VN"; utter.rate = 0.9;
     window.speechSynthesis.speak(utter);
   };
-  const onWordLeave = () => {
-    lastHoverWord.current = null;
-  };
+  const onWordLeave = () => { lastHoverWord.current = null; };
 
   const readThisPage = () => {
     if (!speechAvailable()) return;
@@ -373,101 +284,64 @@ function PreviewOverlay({ pages, startIndex, onClose }) {
     const textLayers = page.layers.filter((l) => l.type === "text" && l.text.trim());
     let i = 0;
     const next = () => {
-      if (i >= textLayers.length) {
-        setReading(null);
-        return;
-      }
+      if (i >= textLayers.length) { setReading(null); return; }
       const layer = textLayers[i];
       speakText(layer.text, {
         onWord: (wi) => setReading({ layerId: layer.id, wordIndex: wi }),
-        onEnd: () => {
-          i += 1;
-          next();
-        },
+        onEnd: () => { i += 1; next(); },
       });
     };
     next();
   };
 
-  const goPrev = () => {
-    stop();
-    setIdx((i) => Math.max(0, i - 1));
-  };
-  const goNext = () => {
-    stop();
-    setIdx((i) => Math.min(pages.length - 1, i + 1));
-  };
+  const goPrev = () => { stop(); setIdx((i) => Math.max(0, i - 1)); };
+  const goNext = () => { stop(); setIdx((i) => Math.min(pages.length - 1, i + 1)); };
 
   return (
     <div className="bb-preview">
       <div className="bb-preview-top">
         <span className="bb-preview-page-label">
-          Trang {idx + 1} / {pages.length}
-          {page.title ? ` — ${page.title}` : ""}
+          Trang {idx + 1} / {pages.length}{page.title ? ` — ${page.title}` : ""}
         </span>
-        <button
-          className="bb-btn bb-btn-ghost"
-          onClick={() => {
-            stop();
-            onClose();
-          }}
-        >
-          ✕ Đóng
+        <button className="bb-btn bb-btn-ghost" onClick={() => { stop(); onClose(); }}>
+          <X size={14} style={{ marginRight: 4 }} />Đóng
         </button>
       </div>
-
       <div ref={wrapRef} className="bb-preview-stage">
         <div style={{ width: PAGE_W * scale, height: PAGE_H * scale }}>
-          <div
-            className="bb-preview-page"
-            style={{
-              width: PAGE_W,
-              height: PAGE_H,
-              transform: `scale(${scale})`,
-              background: page.background,
-            }}
-          >
+          <div className="bb-preview-page" style={{
+            width: PAGE_W, height: PAGE_H,
+            transform: `scale(${scale})`, background: page.background,
+          }}>
             {page.layers.map((layer) => (
-              <LayerView
-                key={layer.id}
-                layer={layer}
-                selected={false}
-                readOnly
-                isReadingThis={reading?.layerId === layer.id}
-                readingWordIndex={reading?.wordIndex}
-                onSelect={() => {}}
-                onDragStart={() => {}}
-                onResizeStart={() => {}}
-                onWordHover={onWordHover}
-                onWordLeave={onWordLeave}
-              />
+              <LayerView key={layer.id} layer={layer} selected={false} readOnly
+                isReadingThis={reading?.layerId === layer.id} readingWordIndex={reading?.wordIndex}
+                onSelect={() => {}} onDragStart={() => {}} onResizeStart={() => {}}
+                onWordHover={onWordHover} onWordLeave={onWordLeave} />
             ))}
           </div>
         </div>
       </div>
-
       <div className="bb-preview-bottom">
         <button className="bb-btn bb-btn-ghost" onClick={goPrev} disabled={idx === 0}>
-          ‹ Trước
+          <ChevronLeft size={16} />Trước
         </button>
         {reading ? (
           <button className="bb-btn bb-btn-danger" onClick={stop}>
-            ⏹ Dừng
+            <Square size={14} style={{ marginRight: 4 }} />Dừng
           </button>
         ) : (
           <button className="bb-btn bb-btn-primary" onClick={readThisPage}>
-            ▶ Đọc trang này
+            <Play size={14} style={{ marginRight: 4 }} />Đọc trang này
           </button>
         )}
         <button className="bb-btn bb-btn-ghost" onClick={goNext} disabled={idx === pages.length - 1}>
-          Sau ›
+          Sau<ChevronRight size={16} />
         </button>
       </div>
     </div>
   );
 }
-
-/* ───────────────────────── main component ───────────────────────── */
 
 export default function BookBuilder() {
   const [pages, setPages] = useState([
@@ -487,7 +361,8 @@ export default function BookBuilder() {
   ]);
   const [pageIndex, setPageIndex] = useState(0);
   const [selectedId, setSelectedId] = useState(null);
-  const [activePanel, setActivePanel] = useState(null); // null | 'page' | 'layers' | 'format'
+  const [multiIds, setMultiIds] = useState([]);
+  const [activePanel, setActivePanel] = useState(null);
   const [dragging, setDragging] = useState(null);
   const [resizing, setResizing] = useState(null);
   const [guides, setGuides] = useState({ x: false, y: false });
@@ -498,12 +373,8 @@ export default function BookBuilder() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [saveStatus, setSaveStatus] = useState("idle");
+  const [logoError, setLogoError] = useState(false);
   const [, bump] = useState(0);
-  const [dragOverCanvas, setDragOverCanvas] = useState(false);
-  const [bgRemoveColor, setBgRemoveColor] = useState("#ffffff");
-  const [bgRemoveTolerance, setBgRemoveTolerance] = useState(28);
-  const [bgRemoveBusy, setBgRemoveBusy] = useState(false);
-  const [bgRemoveError, setBgRemoveError] = useState("");
 
   const wrapRef = useRef(null);
   const canvasRef = useRef(null);
@@ -512,16 +383,17 @@ export default function BookBuilder() {
   const futureRef = useRef([]);
   const editSnapshotRef = useRef(null);
   const saveTimerRef = useRef(null);
+  const clipboardRef = useRef(null);
+  const pagesRef = useRef(pages);
+  pagesRef.current = pages;
 
   const currentPage = pages[pageIndex] || pages[0];
 
   useEffect(() => setTtsOk(speechAvailable()), []);
-
   useEffect(() => {
     if (pageIndex > pages.length - 1) setPageIndex(Math.max(0, pages.length - 1));
   }, [pages.length, pageIndex]);
 
-  /* ---- load / autosave via artifact storage ---- */
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -531,16 +403,20 @@ export default function BookBuilder() {
           const data = JSON.parse(res.value);
           if (data && Array.isArray(data.pages) && data.pages.length) setPages(data.pages);
         }
-      } catch (e) {
-        /* chưa có dữ liệu lưu trước đó */
-      } finally {
-        if (!cancelled) setLoaded(true);
-      }
+      } catch (e) {}
+      finally { if (!cancelled) setLoaded(true); }
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
+
+  const saveNow = async () => {
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    setSaveStatus("saving");
+    try {
+      await window.storage.set(STORAGE_KEY, JSON.stringify({ pages: pagesRef.current }), false);
+      setSaveStatus("saved");
+    } catch (e) { setSaveStatus("error"); }
+  };
 
   useEffect(() => {
     if (!loaded) return;
@@ -550,14 +426,11 @@ export default function BookBuilder() {
       try {
         await window.storage.set(STORAGE_KEY, JSON.stringify({ pages }), false);
         setSaveStatus("saved");
-      } catch (e) {
-        setSaveStatus("error");
-      }
+      } catch (e) { setSaveStatus("error"); }
     }, 800);
     return () => clearTimeout(saveTimerRef.current);
   }, [pages, loaded]);
 
-  /* ---- responsive scale-to-fit / zoom ---- */
   useEffect(() => {
     if (!autoFit) return;
     const measure = () => {
@@ -569,136 +442,94 @@ export default function BookBuilder() {
     return () => window.removeEventListener("resize", measure);
   }, [autoFit]);
 
-  const zoomIn = () => {
-    setAutoFit(false);
-    setScale((s) => Math.min(2, +(s + 0.1).toFixed(2)));
-  };
-  const zoomOut = () => {
-    setAutoFit(false);
-    setScale((s) => Math.max(0.3, +(s - 0.1).toFixed(2)));
-  };
+  const zoomIn = () => { setAutoFit(false); setScale((s) => Math.min(2, +(s + 0.1).toFixed(2))); };
+  const zoomOut = () => { setAutoFit(false); setScale((s) => Math.max(0.3, +(s - 0.1).toFixed(2))); };
   const zoomFit = () => setAutoFit(true);
 
-  /* ---- selection + rail/flyout panel ---- */
-  const selectLayer = (id) => {
-    setSelectedId(id);
-    if (id) setActivePanel("format");
-  };
-  const toggleRailPanel = (key) => {
-    setActivePanel((prev) => (prev === key ? null : key));
-  };
+  const selectLayer = (id) => { setMultiIds([]); setSelectedId(id); if (id) setActivePanel("format"); };
+  const toggleRailPanel = (key) => setActivePanel((prev) => (prev === key ? null : key));
 
-  /* ---- undo / redo ---- */
   const pushHistory = (snapshotPages) => {
     pastRef.current.push(snapshotPages);
     if (pastRef.current.length > 60) pastRef.current.shift();
     futureRef.current = [];
     bump((n) => n + 1);
   };
-  const setPagesCommit = (updater) =>
-    setPages((prev) => {
-      pushHistory(clone(prev));
-      return updater(prev);
-    });
+  const setPagesCommit = (updater) => setPages((prev) => { pushHistory(clone(prev)); return updater(prev); });
   const setPagesLive = (updater) => setPages((prev) => updater(prev));
 
-  const beginEdit = () => {
-    editSnapshotRef.current = clone(pages);
-  };
+  const beginEdit = () => { editSnapshotRef.current = clone(pages); };
   const endEdit = () => {
-    if (editSnapshotRef.current) {
-      pushHistory(editSnapshotRef.current);
-      editSnapshotRef.current = null;
-    }
+    if (editSnapshotRef.current) { pushHistory(editSnapshotRef.current); editSnapshotRef.current = null; }
   };
 
   const undo = () => {
     if (pastRef.current.length === 0) return;
     const prevSnap = pastRef.current.pop();
     futureRef.current.push(clone(pages));
-    setPages(prevSnap);
-    setSelectedId(null);
-    bump((n) => n + 1);
+    setPages(prevSnap); setSelectedId(null); bump((n) => n + 1);
   };
   const redo = () => {
     if (futureRef.current.length === 0) return;
     const nextSnap = futureRef.current.pop();
     pastRef.current.push(clone(pages));
-    setPages(nextSnap);
-    setSelectedId(null);
-    bump((n) => n + 1);
+    setPages(nextSnap); setSelectedId(null); bump((n) => n + 1);
   };
 
-  /* ---- layer helpers ---- */
   const updateLayer = (id, patch, opts = {}) => {
     const updater = (prev) =>
-      prev.map((p, i) => (i === pageIndex ? { ...p, layers: p.layers.map((l) => (l.id === id ? { ...l, ...patch } : l)) } : p));
+      prev.map((p, i) => i === pageIndex ? { ...p, layers: p.layers.map((l) => l.id === id ? { ...l, ...patch } : l) } : p);
     opts.commit ? setPagesCommit(updater) : setPagesLive(updater);
   };
 
   const addTextLayer = () => {
     const layer = defaultTextLayer();
-    setPagesCommit((prev) => prev.map((p, i) => (i === pageIndex ? { ...p, layers: [...p.layers, layer] } : p)));
+    setPagesCommit((prev) => prev.map((p, i) => i === pageIndex ? { ...p, layers: [...p.layers, layer] } : p));
     selectLayer(layer.id);
   };
   const addImageLayer = () => {
     const layer = defaultImageLayer();
-    setPagesCommit((prev) => prev.map((p, i) => (i === pageIndex ? { ...p, layers: [...p.layers, layer] } : p)));
+    setPagesCommit((prev) => prev.map((p, i) => i === pageIndex ? { ...p, layers: [...p.layers, layer] } : p));
     selectLayer(layer.id);
   };
   const removeLayer = (id) => {
-    setPagesCommit((prev) => prev.map((p, i) => (i === pageIndex ? { ...p, layers: p.layers.filter((l) => l.id !== id) } : p)));
+    setPagesCommit((prev) => prev.map((p, i) => i === pageIndex ? { ...p, layers: p.layers.filter((l) => l.id !== id) } : p));
     if (selectedId === id) setSelectedId(null);
   };
   const duplicateLayer = (id) => {
     const layer = currentPage.layers.find((l) => l.id === id);
     if (!layer) return;
     const copy = { ...clone(layer), id: uid(), x: layer.x + 16, y: layer.y + 16 };
-    setPagesCommit((prev) => prev.map((p, i) => (i === pageIndex ? { ...p, layers: [...p.layers, copy] } : p)));
+    setPagesCommit((prev) => prev.map((p, i) => i === pageIndex ? { ...p, layers: [...p.layers, copy] } : p));
     selectLayer(copy.id);
   };
   const moveLayer = (id, dir) => {
-    setPagesCommit((prev) =>
-      prev.map((p, i) => {
-        if (i !== pageIndex) return p;
-        const idx = p.layers.findIndex((l) => l.id === id);
-        const target = idx + dir;
-        if (idx === -1 || target < 0 || target >= p.layers.length) return p;
-        const copy = [...p.layers];
-        const [item] = copy.splice(idx, 1);
-        copy.splice(target, 0, item);
-        return { ...p, layers: copy };
-      })
-    );
+    setPagesCommit((prev) => prev.map((p, i) => {
+      if (i !== pageIndex) return p;
+      const idx = p.layers.findIndex((l) => l.id === id);
+      const target = idx + dir;
+      if (idx === -1 || target < 0 || target >= p.layers.length) return p;
+      const copy = [...p.layers];
+      const [item] = copy.splice(idx, 1);
+      copy.splice(target, 0, item);
+      return { ...p, layers: copy };
+    }));
   };
 
-  /* ---- page helpers ---- */
   const addPage = () => {
     const page = defaultPage();
-    setPagesCommit((prev) => {
-      const copy = [...prev];
-      copy.splice(pageIndex + 1, 0, page);
-      return copy;
-    });
-    setPageIndex(pageIndex + 1);
-    setSelectedId(null);
-    setActivePanel("page");
+    setPagesCommit((prev) => { const copy = [...prev]; copy.splice(pageIndex + 1, 0, page); return copy; });
+    setPageIndex(pageIndex + 1); setSelectedId(null); setActivePanel("page");
   };
   const duplicatePage = () => {
     const copy = { ...clone(currentPage), id: uid(), layers: currentPage.layers.map((l) => ({ ...l, id: uid() })) };
-    setPagesCommit((prev) => {
-      const arr = [...prev];
-      arr.splice(pageIndex + 1, 0, copy);
-      return arr;
-    });
-    setPageIndex(pageIndex + 1);
-    setSelectedId(null);
+    setPagesCommit((prev) => { const arr = [...prev]; arr.splice(pageIndex + 1, 0, copy); return arr; });
+    setPageIndex(pageIndex + 1); setSelectedId(null);
   };
   const deletePage = () => {
     if (pages.length <= 1) return;
     setPagesCommit((prev) => prev.filter((_, i) => i !== pageIndex));
-    setPageIndex(Math.max(0, pageIndex - 1));
-    setSelectedId(null);
+    setPageIndex(Math.max(0, pageIndex - 1)); setSelectedId(null);
   };
   const movePage = (dir) => {
     const target = pageIndex + dir;
@@ -711,24 +542,15 @@ export default function BookBuilder() {
     });
     setPageIndex(target);
   };
-  const setPageBackground = (color) => {
-    setPagesLive((prev) => prev.map((p, i) => (i === pageIndex ? { ...p, background: color } : p)));
-  };
-  const setPageTitle = (title) => {
-    setPagesLive((prev) => prev.map((p, i) => (i === pageIndex ? { ...p, title } : p)));
-  };
+  const setPageBackground = (color) => setPagesLive((prev) => prev.map((p, i) => i === pageIndex ? { ...p, background: color } : p));
+  const setPageTitle = (title) => setPagesLive((prev) => prev.map((p, i) => i === pageIndex ? { ...p, title } : p));
 
-  /* ---- dragging ---- */
   const onLayerDragStart = (e, layer) => {
     e.stopPropagation();
     selectLayer(layer.id);
     beginEdit();
     const rect = canvasRef.current.getBoundingClientRect();
-    setDragging({
-      id: layer.id,
-      offsetX: (e.clientX - rect.left) / scale - layer.x,
-      offsetY: (e.clientY - rect.top) / scale - layer.y,
-    });
+    setDragging({ id: layer.id, offsetX: (e.clientX - rect.left) / scale - layer.x, offsetY: (e.clientY - rect.top) / scale - layer.y });
   };
 
   useEffect(() => {
@@ -738,22 +560,15 @@ export default function BookBuilder() {
       const rect = canvasRef.current.getBoundingClientRect();
       let x = (e.clientX - rect.left) / scale - dragging.offsetX;
       let y = (e.clientY - rect.top) / scale - dragging.offsetY;
-      let gx = false;
-      let gy = false;
+      let gx = false, gy = false;
       if (layerMeta) {
         const w = layerMeta.width || 0;
         const centerX = x + w / 2;
-        if (Math.abs(centerX - PAGE_W / 2) < 6) {
-          x = PAGE_W / 2 - w / 2;
-          gx = true;
-        }
+        if (Math.abs(centerX - PAGE_W / 2) < 6) { x = PAGE_W / 2 - w / 2; gx = true; }
         if (layerMeta.type === "image") {
           const h = layerMeta.height || 0;
           const centerY = y + h / 2;
-          if (Math.abs(centerY - PAGE_H / 2) < 6) {
-            y = PAGE_H / 2 - h / 2;
-            gy = true;
-          }
+          if (Math.abs(centerY - PAGE_H / 2) < 6) { y = PAGE_H / 2 - h / 2; gy = true; }
         }
       }
       setGuides({ x: gx, y: gy });
@@ -761,21 +576,13 @@ export default function BookBuilder() {
       y = Math.max(-20, Math.min(y, PAGE_H - 10));
       updateLayer(dragging.id, { x, y });
     };
-    const onUp = () => {
-      setDragging(null);
-      setGuides({ x: false, y: false });
-      endEdit();
-    };
+    const onUp = () => { setDragging(null); setGuides({ x: false, y: false }); endEdit(); };
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
-    return () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-    };
+    return () => { window.removeEventListener("pointermove", onMove); window.removeEventListener("pointerup", onUp); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dragging, scale]);
 
-  /* ---- resizing ---- */
   const onLayerResizeStart = (e, layer) => {
     e.stopPropagation();
     beginEdit();
@@ -793,61 +600,77 @@ export default function BookBuilder() {
         updateLayer(resizing.id, { width: Math.max(60, resizing.startW + dx) });
       }
     };
-    const onUp = () => {
-      setResizing(null);
-      endEdit();
-    };
+    const onUp = () => { setResizing(null); endEdit(); };
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
-    return () => {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-    };
+    return () => { window.removeEventListener("pointermove", onMove); window.removeEventListener("pointerup", onUp); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resizing, scale]);
 
-  /* ---- keyboard shortcuts ---- */
+  const removeLayers = (ids) => {
+    setPagesCommit((prev) => prev.map((p, i) => i === pageIndex ? { ...p, layers: p.layers.filter((l) => !ids.includes(l.id)) } : p));
+    setSelectedId(null); setMultiIds([]);
+  };
+  const duplicateLayers = (ids) => {
+    const copies = currentPage.layers
+      .filter((l) => ids.includes(l.id))
+      .map((l) => ({ ...clone(l), id: uid(), x: l.x + 16, y: l.y + 16 }));
+    if (!copies.length) return;
+    setPagesCommit((prev) => prev.map((p, i) => i === pageIndex ? { ...p, layers: [...p.layers, ...copies] } : p));
+    if (copies.length === 1) { setMultiIds([]); selectLayer(copies[0].id); }
+    else { setSelectedId(null); setMultiIds(copies.map((c) => c.id)); setActivePanel("layers"); }
+  };
+
   useEffect(() => {
     const onKey = (e) => {
       const tag = document.activeElement && document.activeElement.tagName;
       const typing = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
       const meta = e.ctrlKey || e.metaKey;
-      if (meta && e.key.toLowerCase() === "z") {
-        e.preventDefault();
-        e.shiftKey ? redo() : undo();
-        return;
-      }
-      if (meta && e.key.toLowerCase() === "y") {
-        e.preventDefault();
-        redo();
-        return;
-      }
+      const activeIds = multiIds.length ? multiIds : (selectedId ? [selectedId] : []);
+
+      if (meta && e.key.toLowerCase() === "z") { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+      if (meta && e.key.toLowerCase() === "y") { e.preventDefault(); redo(); return; }
+      if (meta && e.key.toLowerCase() === "s") { e.preventDefault(); saveNow(); return; }
+
       if (typing) return;
-      if ((e.key === "Delete" || e.key === "Backspace") && selectedId) {
+
+      if (meta && e.key.toLowerCase() === "a") {
         e.preventDefault();
-        removeLayer(selectedId);
+        const ids = currentPage.layers.map((l) => l.id);
+        setSelectedId(null); setMultiIds(ids); if (ids.length) setActivePanel("layers");
         return;
       }
-      if (meta && e.key.toLowerCase() === "d" && selectedId) {
+      if (meta && e.key.toLowerCase() === "c" && activeIds.length) {
         e.preventDefault();
-        duplicateLayer(selectedId);
+        clipboardRef.current = currentPage.layers.filter((l) => activeIds.includes(l.id)).map((l) => clone(l));
         return;
       }
-      if (selectedId && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+      if (meta && e.key.toLowerCase() === "v" && clipboardRef.current && clipboardRef.current.length) {
+        e.preventDefault();
+        const pasted = clipboardRef.current.map((l) => ({ ...clone(l), id: uid(), x: l.x + 20, y: l.y + 20 }));
+        setPagesCommit((prev) => prev.map((p, i) => i === pageIndex ? { ...p, layers: [...p.layers, ...pasted] } : p));
+        if (pasted.length === 1) { setMultiIds([]); selectLayer(pasted[0].id); }
+        else { setSelectedId(null); setMultiIds(pasted.map((p2) => p2.id)); setActivePanel("layers"); }
+        return;
+      }
+      if ((e.key === "Delete" || e.key === "Backspace") && activeIds.length) { e.preventDefault(); removeLayers(activeIds); return; }
+      if (meta && e.key.toLowerCase() === "d" && activeIds.length) { e.preventDefault(); duplicateLayers(activeIds); return; }
+      if (e.key === "Escape" && (selectedId || multiIds.length)) { setSelectedId(null); setMultiIds([]); return; }
+      if (activeIds.length && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
         e.preventDefault();
         const step = e.shiftKey ? 8 : 1;
         const dx = e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0;
         const dy = e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
-        const layer = currentPage.layers.find((l) => l.id === selectedId);
-        if (layer) updateLayer(selectedId, { x: layer.x + dx, y: layer.y + dy }, { commit: true });
+        setPagesCommit((prev) => prev.map((p, i) => i === pageIndex
+          ? { ...p, layers: p.layers.map((l) => activeIds.includes(l.id) ? { ...l, x: l.x + dx, y: l.y + dy } : l) }
+          : p));
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedId, pages, pageIndex]);
+  }, [selectedId, multiIds, pages, pageIndex]);
 
-  /* ---- read aloud (editor) ---- */
   const onWordHover = (wordObj) => {
     if (!speechAvailable() || !wordObj.word.trim()) return;
     if (lastHoverWord.current === wordObj.word) return;
@@ -855,13 +678,10 @@ export default function BookBuilder() {
     window.speechSynthesis.cancel();
     setReading(null);
     const utter = new SpeechSynthesisUtterance(wordObj.word);
-    utter.lang = "vi-VN";
-    utter.rate = 0.9;
+    utter.lang = "vi-VN"; utter.rate = 0.9;
     window.speechSynthesis.speak(utter);
   };
-  const onWordLeave = () => {
-    lastHoverWord.current = null;
-  };
+  const onWordLeave = () => { lastHoverWord.current = null; };
 
   const readLayer = (layer) => {
     speakText(layer.text, {
@@ -876,26 +696,17 @@ export default function BookBuilder() {
     const textLayers = currentPage.layers.filter((l) => l.type === "text" && l.text.trim());
     let i = 0;
     const next = () => {
-      if (i >= textLayers.length) {
-        setReading(null);
-        return;
-      }
+      if (i >= textLayers.length) { setReading(null); return; }
       const layer = textLayers[i];
       speakText(layer.text, {
         onWord: (idx) => setReading({ layerId: layer.id, wordIndex: idx }),
-        onEnd: () => {
-          i += 1;
-          next();
-        },
+        onEnd: () => { i += 1; next(); },
       });
     };
     next();
   };
 
-  const stopReading = () => {
-    if (speechAvailable()) window.speechSynthesis.cancel();
-    setReading(null);
-  };
+  const stopReading = () => { if (speechAvailable()) window.speechSynthesis.cancel(); setReading(null); };
 
   const selected = currentPage.layers.find((l) => l.id === selectedId) || null;
   const layersFrontFirst = [...currentPage.layers].reverse();
@@ -903,113 +714,151 @@ export default function BookBuilder() {
   return (
     <div className="bb-root">
       <style>{`
-        .bb-root { font-family: 'Be Vietnam Pro', system-ui, sans-serif; background: #f7f4ee; color: #1f2a24; min-height: 100vh; padding: 16px; box-sizing: border-box; }
-        .bb-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 4px; }
-        .bb-title { font-family: Georgia, serif; font-size: 20px; font-weight: 700; color: #14332a; margin: 0; }
-        .bb-title em { color: #4a9e3f; font-style: italic; }
-        .bb-save-status { font-size: 11px; color: #8a978f; margin-left: 8px; font-weight: 400; }
-        .bb-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-        .bb-btn { border: 1px solid rgba(20,51,42,0.18); background: #fff; color: #14332a; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 8px; cursor: pointer; transition: background 0.15s ease, transform 0.1s ease; }
-        .bb-btn:hover { background: #eef6ec; }
-        .bb-btn:active { transform: scale(0.97); }
-        .bb-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        .bb-btn-primary { background: #1a5c47; color: #fff; border-color: #1a5c47; }
-        .bb-btn-primary:hover { background: #14483a; }
-        .bb-btn-danger { background: #fff; color: #b3432f; border-color: rgba(179,67,47,0.35); }
-        .bb-btn-ghost { background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.3); }
-        .bb-btn-ghost:hover { background: rgba(255,255,255,0.22); }
-        .bb-btn-icon { padding: 8px 10px; }
-        .bb-btn.active { background: #4a9e3f; color: #fff; border-color: #4a9e3f; }
-        .bb-current-page-label { font-size: 12px; color: #6b7a72; margin: 2px 0 10px; }
+        * { box-sizing: border-box; }
+        .bb-root { font-family: 'Be Vietnam Pro', system-ui, sans-serif; background: #f7f4ee; color: #1f2a24; min-height: 100vh; padding: 18px; }
+        .bb-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 4px; }
+        .bb-brand { display: flex; align-items: center; gap: 10px; }
+        .bb-brand-mark { height: 40px; width: auto; max-width: 220px; object-fit: contain; flex-shrink: 0; }
+        .bb-brand-mark-fallback { width: 38px; height: 38px; border-radius: 9px; background: linear-gradient(135deg, #1a5c47, #4a9e3f); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(26,92,71,0.28); }
+        .bb-title { font-family: Georgia, serif; font-size: 19px; font-weight: 700; color: #14332a; margin: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px; line-height: 1.25; }
+        .bb-title em { color: #4a9e3f; font-style: normal; }
+        .bb-save-status { font-family: 'Be Vietnam Pro', system-ui, sans-serif; font-size: 11px; font-weight: 500; color: #8a978f; display: inline-flex; align-items: center; gap: 5px; }
+        .bb-save-dot { width: 6px; height: 6px; border-radius: 50%; background: #b7bfb9; }
+        .bb-save-dot.ok { background: #4a9e3f; box-shadow: 0 0 0 3px rgba(74,158,63,0.18); }
+        .bb-save-dot.busy { background: #e0a83f; animation: bb-pulse 1s ease-in-out infinite; }
+        @keyframes bb-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+        .bb-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; background: #fff; padding: 6px; border-radius: 14px; box-shadow: 0 2px 10px rgba(20,51,42,0.06); border: 1px solid rgba(20,51,42,0.06); }
+        .bb-divider-v { width: 1px; align-self: stretch; background: rgba(20,51,42,0.10); margin: 2px 2px; }
 
-        .bb-pages-strip { display: flex; align-items: flex-start; gap: 10px; overflow-x: auto; padding: 4px 2px 10px; margin-bottom: 4px; }
-        .bb-page-item { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .bb-page-thumb { width: 56px; height: 38px; border-radius: 7px; border: 2px solid transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: Georgia, serif; font-size: 14px; font-weight: 700; color: #45524b; position: relative; }
-        .bb-page-thumb.active { border-color: #4a9e3f; box-shadow: 0 0 0 2px rgba(74,158,63,0.22); }
+        .bb-btn { border: 1px solid rgba(20,51,42,0.14); background: #fff; color: #14332a; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 10px; cursor: pointer; transition: background 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease, border-color 0.15s ease; display: inline-flex; align-items: center; gap: 6px; }
+        .bb-btn:hover { background: #eef6ec; border-color: rgba(74,158,63,0.35); }
+        .bb-btn:active { transform: scale(0.96); }
+        .bb-btn:disabled { opacity: 0.38; cursor: not-allowed; transform: none; }
+        .bb-btn:disabled:hover { background: #fff; border-color: rgba(20,51,42,0.14); }
+        .bb-btn-primary { background: linear-gradient(135deg, #1f6c53, #1a5c47); color: #fff; border-color: #1a5c47; box-shadow: 0 3px 10px rgba(26,92,71,0.28); }
+        .bb-btn-primary:hover { background: linear-gradient(135deg, #226f56, #14483a); box-shadow: 0 4px 14px rgba(26,92,71,0.36); }
+        .bb-btn-danger { background: #fff; color: #b3432f; border-color: rgba(179,67,47,0.3); }
+        .bb-btn-danger:hover { background: #fdf1ee; border-color: rgba(179,67,47,0.5); }
+        .bb-btn-ghost { background: rgba(255,255,255,0.10); color: #fff; border-color: rgba(255,255,255,0.28); backdrop-filter: blur(6px); }
+        .bb-btn-ghost:hover { background: rgba(255,255,255,0.20); }
+        .bb-btn-icon { padding: 8px 10px; }
+        .bb-btn.active { background: linear-gradient(135deg, #55ac48, #4a9e3f); color: #fff; border-color: #4a9e3f; box-shadow: 0 2px 8px rgba(74,158,63,0.32); }
+        .bb-current-page-label { font-size: 12px; color: #6b7a72; margin: 10px 2px 10px; display: flex; align-items: center; gap: 6px; }
+        .bb-current-page-label strong { color: #14332a; }
+
+        .bb-pages-strip { display: flex; align-items: flex-start; gap: 12px; padding: 6px 4px 12px; margin-bottom: 6px; }
+        .bb-pages-strip-scroll { display: flex; align-items: flex-start; gap: 12px; overflow-x: auto; flex: 1 1 auto; min-width: 0; }
+        .bb-page-item { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .bb-page-thumb { width: 60px; height: 42px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: Georgia, serif; font-size: 14px; font-weight: 700; color: #45524b; position: relative; box-shadow: 0 2px 6px rgba(20,51,42,0.10); transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease; }
+        .bb-page-thumb:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(20,51,42,0.16); }
+        .bb-page-thumb.active { border-color: #4a9e3f; box-shadow: 0 0 0 3px rgba(74,158,63,0.20), 0 4px 10px rgba(20,51,42,0.14); }
+        .bb-page-thumb::after { content: ""; position: absolute; top: 3px; right: 3px; width: 8px; height: 8px; border-radius: 2px 0 6px 0; background: rgba(20,51,42,0.08); }
         .bb-page-title-input { width: 68px; font-size: 10px; text-align: center; border: none; background: transparent; color: #6b7a72; padding: 1px 0; border-bottom: 1px dashed transparent; }
         .bb-page-title-input:focus { outline: none; border-bottom-color: #4a9e3f; }
-        .bb-page-strip-actions { display: flex; align-items: center; gap: 6px; padding-top: 2px; }
+        .bb-page-strip-actions { display: inline-flex; align-items: center; justify-content: center; gap: 2px; background: #fff; border-radius: 14px; padding: 4px; box-shadow: 0 2px 8px rgba(20,51,42,0.06); border: 1px solid rgba(20,51,42,0.06); align-self: flex-start; flex: 0 0 auto; width: fit-content; }
+        .bb-pill-btn { width: 34px; min-width: 34px; height: 34px; padding: 0; border-radius: 9px; border: 1px solid transparent; background: transparent; color: #45524b; cursor: pointer; display: flex; align-items: center; justify-content: center; flex: 0 0 34px; transition: background 0.14s ease, color 0.14s ease, transform 0.08s ease; box-sizing: border-box; }
+        .bb-pill-btn svg { display: block; }
+        .bb-pill-btn:hover { background: #eef6ec; color: #1a5c47; }
+        .bb-pill-btn:active { transform: scale(0.92); }
+        .bb-pill-btn:disabled { opacity: 0.32; cursor: not-allowed; }
+        .bb-pill-btn:disabled:hover { background: transparent; color: #45524b; }
+        .bb-pill-sep { width: 1px; height: 18px; background: rgba(20,51,42,0.12); margin: 0 4px; flex-shrink: 0; }
 
-        .bb-workspace { position: relative; display: flex; border-radius: 14px; overflow: hidden; background: #e9e6dd; border: 1px solid rgba(20,51,42,0.14); box-shadow: 0 12px 30px rgba(20,51,42,0.10); min-height: 540px; }
-        .bb-rail { flex: 0 0 56px; background: #fff; border-right: 1px solid rgba(20,51,42,0.1); display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 8px; z-index: 6; }
-        .bb-rail-btn { width: 40px; height: 40px; border-radius: 10px; border: none; background: transparent; cursor: pointer; font-size: 17px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #6b7a72; gap: 1px; }
+        .bb-workspace { position: relative; display: flex; border-radius: 18px; overflow: hidden; background: #eae7dd; border: 1px solid rgba(20,51,42,0.10); box-shadow: 0 16px 40px rgba(20,51,42,0.12); min-height: 560px; }
+        .bb-rail { flex: 0 0 64px; background: #fff; border-right: 1px solid rgba(20,51,42,0.08); display: flex; flex-direction: column; align-items: center; padding: 14px 0; gap: 10px; z-index: 6; }
+        .bb-rail-btn { width: 46px; height: 46px; border-radius: 12px; border: none; background: transparent; cursor: pointer; font-size: 17px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #6b7a72; gap: 3px; transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease; }
         .bb-rail-btn span { font-size: 8px; font-weight: 700; letter-spacing: 0.02em; }
-        .bb-rail-btn:hover { background: #f4f1ea; }
-        .bb-rail-btn.active { background: #eef6ec; color: #1a5c47; }
+        .bb-rail-btn:hover { background: #f4f1ea; transform: translateY(-1px); }
+        .bb-rail-btn.active { background: linear-gradient(160deg, #eef6ec, #e2f2de); color: #1a5c47; box-shadow: inset 0 0 0 1px rgba(74,158,63,0.25); }
+        .bb-rail-sep { width: 30px; height: 1px; background: rgba(20,51,42,0.10); margin: 2px 0; }
 
-        .bb-flyout { position: absolute; left: 56px; top: 0; bottom: 0; width: 280px; background: #fff; border-right: 1px solid rgba(20,51,42,0.1); box-shadow: 6px 0 24px rgba(0,0,0,0.10); z-index: 5; padding: 16px; overflow-y: auto; animation: bb-slide-in 0.16s ease; }
+        .bb-flyout { position: absolute; left: 64px; top: 0; bottom: 0; width: 290px; background: #fff; border-right: 1px solid rgba(20,51,42,0.08); box-shadow: 10px 0 30px rgba(0,0,0,0.10); z-index: 5; padding: 18px; overflow-y: auto; animation: bb-slide-in 0.16s ease; }
         @keyframes bb-slide-in { from { transform: translateX(-10px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .bb-flyout-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .bb-flyout-head h3 { margin: 0; font-size: 13px; letter-spacing: 0.04em; text-transform: uppercase; color: #14332a; font-weight: 700; }
-        .bb-flyout-close { border: none; background: transparent; cursor: pointer; color: #8a978f; font-size: 15px; width: 24px; height: 24px; border-radius: 6px; }
-        .bb-flyout-close:hover { background: #f4f1ea; }
+        .bb-flyout-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid rgba(20,51,42,0.08); }
+        .bb-flyout-head h3 { margin: 0; font-size: 12.5px; letter-spacing: 0.05em; text-transform: uppercase; color: #14332a; font-weight: 800; }
+        .bb-flyout-close { border: none; background: transparent; cursor: pointer; color: #8a978f; font-size: 15px; width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: background 0.12s ease; }
+        .bb-flyout-close:hover { background: #f4f1ea; color: #14332a; }
 
-        .bb-canvas-area { flex: 1; display: flex; flex-direction: column; min-width: 0; padding: 14px; }
-        .bb-zoom-bar { display: flex; align-items: center; gap: 4px; margin-bottom: 10px; }
-        .bb-zoom-bar span { font-size: 12px; color: #6b7a72; min-width: 40px; text-align: center; }
-        .bb-canvas-frame { flex: 1; display: flex; align-items: center; justify-content: center; overflow: auto; }
+        .bb-canvas-area { flex: 1; display: flex; flex-direction: column; min-width: 0; padding: 16px; }
+        .bb-zoom-bar { display: flex; align-items: center; gap: 6px; background: #fff; padding: 5px; border-radius: 10px; width: fit-content; flex: 0 0 auto; box-shadow: 0 2px 8px rgba(20,51,42,0.06); border: 1px solid rgba(20,51,42,0.06); align-self: flex-start; }
+        .bb-zoom-bar span { font-size: 12px; color: #6b7a72; min-width: 42px; text-align: center; font-weight: 600; }
+        .bb-canvas-frame { flex: 1; display: flex; align-items: center; justify-content: center; overflow: auto; background-image: radial-gradient(circle, rgba(20,51,42,0.06) 1px, transparent 1px); background-size: 18px 18px; border-radius: 14px; }
 
-        .bb-layer-row { display: flex; align-items: center; gap: 4px; padding: 6px 8px; border-radius: 8px; cursor: pointer; font-size: 13px; }
-        .bb-layer-row.selected { background: #eef6ec; }
+        .bb-layer-row { display: flex; align-items: center; gap: 4px; padding: 7px 8px; border-radius: 9px; cursor: pointer; font-size: 13px; transition: background 0.12s ease; }
+        .bb-layer-row.selected { background: #eef6ec; box-shadow: inset 0 0 0 1px rgba(74,158,63,0.3); }
         .bb-layer-row:hover { background: #f4f1ea; }
-        .bb-layer-type { font-size: 11px; color: #8a978f; width: 16px; text-align: center; flex-shrink: 0; }
+        .bb-layer-type { font-size: 11px; color: #8a978f; width: 18px; text-align: center; flex-shrink: 0; display: flex; align-items: center; }
         .bb-layer-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .bb-mini-btn { border: none; background: transparent; color: #6b7a72; cursor: pointer; font-size: 12px; width: 22px; height: 22px; border-radius: 5px; flex-shrink: 0; }
+        .bb-mini-btn { border: none; background: transparent; color: #6b7a72; cursor: pointer; font-size: 12px; width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: background 0.12s ease, color 0.12s ease; }
         .bb-mini-btn:hover { background: rgba(20,51,42,0.08); color: #14332a; }
 
-        .bb-field { margin-bottom: 12px; }
-        .bb-field label { display: block; font-size: 12px; font-weight: 600; color: #45524b; margin-bottom: 5px; }
-        .bb-field input[type="text"], .bb-field textarea, .bb-field select { width: 100%; box-sizing: border-box; padding: 7px 9px; border-radius: 7px; border: 1px solid rgba(20,51,42,0.2); font-size: 13px; font-family: inherit; background: #fff; }
-        .bb-field textarea { resize: vertical; min-height: 54px; }
-        .bb-field input[type="range"] { width: 100%; }
+        .bb-field { margin-bottom: 14px; }
+        .bb-field label { display: block; font-size: 12px; font-weight: 700; color: #45524b; margin-bottom: 6px; }
+        .bb-field input[type="text"], .bb-field textarea, .bb-field select { width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 9px; border: 1px solid rgba(20,51,42,0.16); font-size: 13px; font-family: inherit; background: #fbfaf7; transition: border-color 0.12s ease, box-shadow 0.12s ease; }
+        .bb-field input[type="text"]:focus, .bb-field textarea:focus, .bb-field select:focus { outline: none; border-color: #4a9e3f; box-shadow: 0 0 0 3px rgba(74,158,63,0.14); background: #fff; }
+        .bb-field textarea { resize: vertical; min-height: 58px; }
+        .bb-field input[type="range"] { width: 100%; accent-color: #4a9e3f; }
         .bb-row3 { display: flex; gap: 6px; }
-        .bb-row3 .bb-btn { flex: 1; padding: 7px 0; }
+        .bb-row3 .bb-btn { flex: 1; padding: 8px 0; justify-content: center; }
         .bb-color-size { display: flex; gap: 10px; align-items: center; }
-        .bb-color-size input[type="color"] { width: 38px; height: 32px; border: none; border-radius: 6px; padding: 0; cursor: pointer; }
-        .bb-color-size input[type="number"] { width: 70px; padding: 6px 8px; border-radius: 7px; border: 1px solid rgba(20,51,42,0.2); font-size: 13px; }
-        .bb-hint { font-size: 12px; color: #6b7a72; background: #f4f1ea; border-radius: 8px; padding: 8px 10px; margin-top: 10px; }
-        .bb-empty { font-size: 13px; color: #8a978f; padding: 8px 4px; }
+        .bb-color-size input[type="color"] { width: 40px; height: 34px; border: 1px solid rgba(20,51,42,0.14); border-radius: 8px; padding: 2px; cursor: pointer; background: #fff; }
+        .bb-color-size input[type="number"] { width: 72px; padding: 7px 9px; border-radius: 9px; border: 1px solid rgba(20,51,42,0.16); font-size: 13px; }
+        .bb-color-size input[type="number"]:focus { outline: none; border-color: #4a9e3f; box-shadow: 0 0 0 3px rgba(74,158,63,0.14); }
+        .bb-hint { font-size: 12px; color: #6b7a72; background: #f4f1ea; border-radius: 10px; padding: 10px 12px; margin-top: 12px; line-height: 1.5; }
+        .bb-empty { font-size: 13px; color: #8a978f; padding: 10px 4px; text-align: center; }
 
-        .bb-resize-handle { position: absolute; right: -7px; bottom: -7px; width: 14px; height: 14px; border-radius: 50%; background: #4a9e3f; border: 2px solid #fff; touch-action: none; }
-        .bb-guide { position: absolute; background: #4a9e3f; opacity: 0.85; pointer-events: none; }
-        .bb-float-toolbar { position: absolute; display: flex; gap: 3px; background: #14332a; border-radius: 8px; padding: 4px; box-shadow: 0 8px 20px rgba(0,0,0,0.28); z-index: 30; }
-        .bb-float-toolbar button { border: none; background: transparent; color: #fff; cursor: pointer; font-size: 13px; width: 26px; height: 26px; border-radius: 5px; }
-        .bb-float-toolbar button:hover { background: rgba(255,255,255,0.15); }
+        .bb-resize-handle { position: absolute; right: -8px; bottom: -8px; width: 15px; height: 15px; border-radius: 50%; background: #4a9e3f; border: 2.5px solid #fff; touch-action: none; box-shadow: 0 2px 5px rgba(20,51,42,0.3); }
+        .bb-guide { position: absolute; background: #4a9e3f; opacity: 0.85; pointer-events: none; box-shadow: 0 0 6px rgba(74,158,63,0.6); }
+        .bb-float-toolbar { position: absolute; display: flex; gap: 3px; background: #14332a; border-radius: 10px; padding: 5px; box-shadow: 0 10px 24px rgba(0,0,0,0.30); z-index: 30; }
+        .bb-float-toolbar button { border: none; background: transparent; color: #fff; cursor: pointer; font-size: 13px; width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; transition: background 0.12s ease; }
+        .bb-float-toolbar button:hover { background: rgba(255,255,255,0.16); }
 
-        .bb-preview { position: fixed; inset: 0; background: rgba(12,26,21,0.94); z-index: 9999; display: flex; flex-direction: column; }
-        .bb-preview-top { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; }
-        .bb-preview-page-label { color: #fff; font-size: 13px; opacity: 0.85; }
+        .bb-preview { position: fixed; inset: 0; background: rgba(10,22,18,0.95); z-index: 9999; display: flex; flex-direction: column; backdrop-filter: blur(3px); }
+        .bb-preview-top { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; }
+        .bb-preview-page-label { color: #fff; font-size: 13px; opacity: 0.85; font-weight: 500; }
         .bb-preview-stage { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .bb-preview-page { position: relative; border-radius: 12px; overflow: hidden; box-shadow: 0 24px 70px rgba(0,0,0,0.45); transform-origin: top left; }
-        .bb-preview-bottom { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 16px 18px 22px; }
+        .bb-preview-page { position: relative; border-radius: 14px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.5); transform-origin: top left; }
+        .bb-preview-bottom { display: flex; justify-content: center; align-items: center; gap: 14px; padding: 18px 20px 26px; }
 
-        @media (max-width: 720px) {
-          .bb-flyout { width: calc(100% - 56px); }
-        }
+        @media (max-width: 720px) { .bb-flyout { width: calc(100% - 64px); } }
       `}</style>
 
-      {/* header */}
       <div className="bb-header">
-        <h1 className="bb-title">
-          Trình Tạo Sách <em>Đọc Cùng</em>
-          <span className="bb-save-status">
-            {saveStatus === "saving" ? "· đang lưu…" : saveStatus === "saved" ? "· đã lưu" : ""}
-          </span>
-        </h1>
-        <div className="bb-actions">
-          <button className="bb-btn bb-btn-icon" title="Hoàn tác (Ctrl+Z)" onClick={undo} disabled={pastRef.current.length === 0}>↩</button>
-          <button className="bb-btn bb-btn-icon" title="Làm lại (Ctrl+Shift+Z)" onClick={redo} disabled={futureRef.current.length === 0}>↪</button>
-          <button className="bb-btn" onClick={addTextLayer}>+ Chữ</button>
-          <button className="bb-btn" onClick={addImageLayer}>+ Ảnh</button>
-          {reading ? (
-            <button className="bb-btn bb-btn-danger" onClick={stopReading}>⏹ Dừng đọc</button>
+        <div className="bb-brand">
+          {logoError ? (
+            <div className="bb-brand-mark bb-brand-mark-fallback"><BookOpen size={19} color="#fff" strokeWidth={2.2} /></div>
           ) : (
-            <button className="bb-btn" onClick={readPage}>▶ Đọc trang</button>
+            <img src="/logo/logo-mau/lg-m-studio.png" alt="" className="bb-brand-mark" onError={() => setLogoError(true)} />
           )}
-          <button className="bb-btn bb-btn-primary" onClick={() => setPreviewOpen(true)}>👁 Xem trước</button>
+          <h1 className="bb-title">
+            <span>Trình <em>tạo sách</em></span>
+            <span className="bb-save-status">
+              <span className={`bb-save-dot ${saveStatus === "saving" ? "busy" : saveStatus === "saved" ? "ok" : ""}`} />
+              {saveStatus === "saving" ? "đang lưu…" : saveStatus === "saved" ? "đã lưu" : "chưa lưu"}
+            </span>
+          </h1>
+        </div>
+        <div className="bb-actions">
+          <button className="bb-btn bb-btn-icon" title="Hoàn tác (Ctrl+Z)" onClick={undo} disabled={pastRef.current.length === 0}>
+            <Undo2 size={15} />
+          </button>
+          <button className="bb-btn bb-btn-icon" title="Làm lại (Ctrl+Shift+Z)" onClick={redo} disabled={futureRef.current.length === 0}>
+            <Redo2 size={15} />
+          </button>
+          <div className="bb-divider-v" />
+          <button className="bb-btn" title="Lưu ngay (Ctrl+S)" onClick={saveNow}><Save size={14} />Lưu</button>
+          <div className="bb-divider-v" />
+          {reading ? (
+            <button className="bb-btn bb-btn-danger" onClick={stopReading}><Square size={14} />Dừng đọc</button>
+          ) : (
+            <button className="bb-btn" onClick={readPage}><Play size={14} />Đọc trang</button>
+          )}
+          <button className="bb-btn bb-btn-primary" onClick={() => setPreviewOpen(true)}><Eye size={14} />Xem trước</button>
         </div>
       </div>
+
       <div className="bb-current-page-label">
+        <Sparkles size={13} color="#4a9e3f" />
         Đang chỉnh: <strong>Trang {pageIndex + 1}</strong>
         {currentPage.title ? ` — ${currentPage.title}` : ""} · {pages.length} trang
       </div>
@@ -1020,56 +869,58 @@ export default function BookBuilder() {
         </div>
       )}
 
-      {/* pages strip — auto page number + optional title */}
       <div className="bb-pages-strip">
-        {pages.map((p, i) => (
-          <div className="bb-page-item" key={p.id}>
-            <div
-              className={`bb-page-thumb${i === pageIndex ? " active" : ""}`}
-              style={{ background: p.background }}
-              onClick={() => {
-                setPageIndex(i);
-                setSelectedId(null);
-              }}
-            >
-              {i + 1}
+        <div className="bb-pages-strip-scroll">
+          {pages.map((p, i) => (
+            <div className="bb-page-item" key={p.id}>
+              <div
+                className={`bb-page-thumb${i === pageIndex ? " active" : ""}`}
+                style={{ background: p.background }}
+                onClick={() => { setPageIndex(i); setSelectedId(null); }}
+              >{i + 1}</div>
+              {i === pageIndex ? (
+                <input className="bb-page-title-input" value={p.title} placeholder="Tên trang"
+                  onFocus={beginEdit} onBlur={endEdit} onChange={(e) => setPageTitle(e.target.value)} />
+              ) : (
+                <span className="bb-page-title-input" style={{ color: "#b7bfb9" }}>{p.title || "\u00A0"}</span>
+              )}
             </div>
-            {i === pageIndex ? (
-              <input
-                className="bb-page-title-input"
-                value={p.title}
-                placeholder="Tên trang"
-                onFocus={beginEdit}
-                onBlur={endEdit}
-                onChange={(e) => setPageTitle(e.target.value)}
-              />
-            ) : (
-              <span className="bb-page-title-input" style={{ color: "#b7bfb9" }}>
-                {p.title || "\u00A0"}
-              </span>
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
         <div className="bb-page-strip-actions">
-          <button className="bb-btn bb-btn-icon" title="Thêm trang mới" onClick={addPage}>+ Trang</button>
-          <button className="bb-btn bb-btn-icon" title="Nhân đôi trang" onClick={duplicatePage}>⧉</button>
-          <button className="bb-btn bb-btn-icon" title="Xoá trang" onClick={deletePage} disabled={pages.length <= 1}>🗑</button>
-          <button className="bb-btn bb-btn-icon" title="Chuyển trang sang trái" onClick={() => movePage(-1)} disabled={pageIndex === 0}>◀</button>
-          <button className="bb-btn bb-btn-icon" title="Chuyển trang sang phải" onClick={() => movePage(1)} disabled={pageIndex === pages.length - 1}>▶</button>
+          <button className="bb-pill-btn" title="Thêm trang mới" onClick={addPage}><Plus size={15} /></button>
+          <button className="bb-pill-btn" title="Nhân đôi trang" onClick={duplicatePage}><Copy size={15} /></button>
+          <button className="bb-pill-btn" title="Xoá trang" onClick={deletePage} disabled={pages.length <= 1}><Trash2 size={15} /></button>
+          <div className="bb-pill-sep" />
+          <button className="bb-pill-btn" title="Chuyển trang sang trái" onClick={() => movePage(-1)} disabled={pageIndex === 0}><ChevronLeft size={15} /></button>
+          <button className="bb-pill-btn" title="Chuyển trang sang phải" onClick={() => movePage(1)} disabled={pageIndex === pages.length - 1}><ChevronRight size={15} /></button>
+        </div>
+
+        <div className="bb-zoom-bar">
+          <button className="bb-btn bb-btn-icon" onClick={zoomOut}><Minus size={14} /></button>
+          <span>{Math.round(scale * 100)}%</span>
+          <button className="bb-btn bb-btn-icon" onClick={zoomIn}><ZoomIn size={14} /></button>
+          <button className="bb-btn" onClick={zoomFit}><Maximize2 size={14} />Vừa khung</button>
         </div>
       </div>
 
-      {/* workspace: rail + flyout (click to open) + canvas */}
       <div className="bb-workspace">
         <div className="bb-rail">
-          <button className={`bb-rail-btn${activePanel === "page" ? " active" : ""}`} onClick={() => toggleRailPanel("page")} title="Trang">
-            🗂<span>Trang</span>
+          <button className="bb-rail-btn" onClick={addTextLayer} title="Thêm chữ">
+            <Type size={18} /><span>Chữ</span>
           </button>
+          <button className="bb-rail-btn" onClick={addImageLayer} title="Thêm ảnh">
+            <Image size={18} /><span>Ảnh</span>
+          </button>
+          <div className="bb-rail-sep" />
           <button className={`bb-rail-btn${activePanel === "layers" ? " active" : ""}`} onClick={() => toggleRailPanel("layers")} title="Các lớp">
-            📑<span>Lớp</span>
+            <Layers size={18} /><span>Lớp</span>
           </button>
           <button className={`bb-rail-btn${activePanel === "format" ? " active" : ""}`} onClick={() => toggleRailPanel("format")} title="Định dạng">
-            🎨<span>Chỉnh</span>
+            <Palette size={18} /><span>Chỉnh</span>
+          </button>
+          <button className={`bb-rail-btn${activePanel === "page" ? " active" : ""}`} onClick={() => toggleRailPanel("page")} title="Trang">
+            <Folder size={18} /><span>Trang</span>
           </button>
         </div>
 
@@ -1077,16 +928,18 @@ export default function BookBuilder() {
           <div className="bb-flyout">
             <div className="bb-flyout-head">
               <h3>Trang {pageIndex + 1}</h3>
-              <button className="bb-flyout-close" onClick={() => setActivePanel(null)}>✕</button>
+              <button className="bb-flyout-close" onClick={() => setActivePanel(null)}><X size={14} /></button>
             </div>
             <div className="bb-field">
               <label>Tên trang (không bắt buộc)</label>
-              <input type="text" value={currentPage.title} onFocus={beginEdit} onBlur={endEdit} onChange={(e) => setPageTitle(e.target.value)} placeholder="VD: Bìa sách" />
+              <input type="text" value={currentPage.title} onFocus={beginEdit} onBlur={endEdit}
+                onChange={(e) => setPageTitle(e.target.value)} placeholder="VD: Bìa sách" />
             </div>
             <div className="bb-field">
               <label>Màu nền trang</label>
               <div className="bb-color-size">
-                <input type="color" value={currentPage.background} onFocus={beginEdit} onBlur={endEdit} onChange={(e) => setPageBackground(e.target.value)} />
+                <input type="color" value={currentPage.background} onFocus={beginEdit} onBlur={endEdit}
+                  onChange={(e) => setPageBackground(e.target.value)} />
               </div>
             </div>
             <div className="bb-hint">Số trang được đánh tự động theo thứ tự — không cần chỉnh tay.</div>
@@ -1097,20 +950,20 @@ export default function BookBuilder() {
           <div className="bb-flyout">
             <div className="bb-flyout-head">
               <h3>Các lớp ({currentPage.layers.length})</h3>
-              <button className="bb-flyout-close" onClick={() => setActivePanel(null)}>✕</button>
+              <button className="bb-flyout-close" onClick={() => setActivePanel(null)}><X size={14} /></button>
             </div>
             {layersFrontFirst.length === 0 && <div className="bb-empty">Chưa có lớp nào trên trang này.</div>}
             {layersFrontFirst.map((layer) => (
-              <div key={layer.id} className={`bb-layer-row${layer.id === selectedId ? " selected" : ""}`} onClick={() => selectLayer(layer.id)}>
-                <span className="bb-layer-type">{layer.type === "image" ? "🖼" : "T"}</span>
+              <div key={layer.id} className={`bb-layer-row${(layer.id === selectedId || multiIds.includes(layer.id)) ? " selected" : ""}`} onClick={() => selectLayer(layer.id)}>
+                <span className="bb-layer-type">{layer.type === "image" ? <Image size={12} /> : <Type size={12} />}</span>
                 <span className="bb-layer-label">{layer.type === "image" ? layer.src || "(chưa có ảnh)" : layer.text || "(trống)"}</span>
-                <button className="bb-mini-btn" title="Lên trước" onClick={(e) => { e.stopPropagation(); moveLayer(layer.id, 1); }}>↑</button>
-                <button className="bb-mini-btn" title="Xuống sau" onClick={(e) => { e.stopPropagation(); moveLayer(layer.id, -1); }}>↓</button>
-                <button className="bb-mini-btn" title="Nhân đôi" onClick={(e) => { e.stopPropagation(); duplicateLayer(layer.id); }}>⧉</button>
+                <button className="bb-mini-btn" title="Lên trước" onClick={(e) => { e.stopPropagation(); moveLayer(layer.id, 1); }}><ChevronUp size={12} /></button>
+                <button className="bb-mini-btn" title="Xuống sau" onClick={(e) => { e.stopPropagation(); moveLayer(layer.id, -1); }}><ChevronDown size={12} /></button>
+                <button className="bb-mini-btn" title="Nhân đôi" onClick={(e) => { e.stopPropagation(); duplicateLayer(layer.id); }}><Copy size={12} /></button>
                 {layer.type === "text" && (
-                  <button className="bb-mini-btn" title="Đọc lớp này" onClick={(e) => { e.stopPropagation(); readLayer(layer); }}>🔊</button>
+                  <button className="bb-mini-btn" title="Đọc lớp này" onClick={(e) => { e.stopPropagation(); readLayer(layer); }}><Volume2 size={12} /></button>
                 )}
-                <button className="bb-mini-btn" title="Xoá" onClick={(e) => { e.stopPropagation(); removeLayer(layer.id); }}>✕</button>
+                <button className="bb-mini-btn" title="Xoá" onClick={(e) => { e.stopPropagation(); removeLayer(layer.id); }}><X size={12} /></button>
               </div>
             ))}
           </div>
@@ -1120,7 +973,7 @@ export default function BookBuilder() {
           <div className="bb-flyout">
             <div className="bb-flyout-head">
               <h3>Định dạng</h3>
-              <button className="bb-flyout-close" onClick={() => setActivePanel(null)}>✕</button>
+              <button className="bb-flyout-close" onClick={() => setActivePanel(null)}><X size={14} /></button>
             </div>
             {!selected ? (
               <div className="bb-empty">Chọn một lớp trên trang để chỉnh.</div>
@@ -1128,69 +981,78 @@ export default function BookBuilder() {
               <>
                 <div className="bb-field">
                   <label>Link ảnh (URL)</label>
-                  <input type="text" value={selected.src} onFocus={beginEdit} onBlur={endEdit} onChange={(e) => updateLayer(selected.id, { src: e.target.value })} placeholder="https://..." />
+                  <input type="text" value={selected.src} onFocus={beginEdit} onBlur={endEdit}
+                    onChange={(e) => updateLayer(selected.id, { src: e.target.value })} placeholder="https://..." />
                 </div>
                 <div className="bb-field">
                   <label>Kích thước (rộng × cao)</label>
                   <div className="bb-color-size">
-                    <input type="number" value={Math.round(selected.width)} onFocus={beginEdit} onBlur={endEdit} onChange={(e) => updateLayer(selected.id, { width: Number(e.target.value) || 30 })} />
-                    <input type="number" value={Math.round(selected.height)} onFocus={beginEdit} onBlur={endEdit} onChange={(e) => updateLayer(selected.id, { height: Number(e.target.value) || 30 })} />
+                    <input type="number" value={Math.round(selected.width)} onFocus={beginEdit} onBlur={endEdit}
+                      onChange={(e) => updateLayer(selected.id, { width: Number(e.target.value) || 30 })} />
+                    <input type="number" value={Math.round(selected.height)} onFocus={beginEdit} onBlur={endEdit}
+                      onChange={(e) => updateLayer(selected.id, { height: Number(e.target.value) || 30 })} />
                   </div>
                 </div>
                 <div className="bb-field">
                   <label>Độ trong suốt ({selected.opacity}%)</label>
-                  <input type="range" min={10} max={100} value={selected.opacity} onFocus={beginEdit} onBlur={endEdit} onChange={(e) => updateLayer(selected.id, { opacity: Number(e.target.value) })} />
+                  <input type="range" min={10} max={100} value={selected.opacity} onFocus={beginEdit} onBlur={endEdit}
+                    onChange={(e) => updateLayer(selected.id, { opacity: Number(e.target.value) })} />
                 </div>
               </>
             ) : (
               <>
                 <div className="bb-field">
                   <label>Nội dung</label>
-                  <textarea value={selected.text} onFocus={beginEdit} onBlur={endEdit} onChange={(e) => updateLayer(selected.id, { text: e.target.value })} />
+                  <textarea value={selected.text} onFocus={beginEdit} onBlur={endEdit}
+                    onChange={(e) => updateLayer(selected.id, { text: e.target.value })} />
                 </div>
                 <div className="bb-field">
                   <label>Kiểu chữ</label>
                   <div className="bb-row3">
-                    <button className={`bb-btn${selected.bold ? " active" : ""}`} onClick={() => updateLayer(selected.id, { bold: !selected.bold }, { commit: true })}>B</button>
-                    <button className={`bb-btn${selected.italic ? " active" : ""}`} style={{ fontStyle: "italic" }} onClick={() => updateLayer(selected.id, { italic: !selected.italic }, { commit: true })}>I</button>
-                    <button className={`bb-btn${selected.underline ? " active" : ""}`} style={{ textDecoration: "underline" }} onClick={() => updateLayer(selected.id, { underline: !selected.underline }, { commit: true })}>U</button>
+                    <button className={`bb-btn${selected.bold ? " active" : ""}`} onClick={() => updateLayer(selected.id, { bold: !selected.bold }, { commit: true })}><Bold size={14} /></button>
+                    <button className={`bb-btn${selected.italic ? " active" : ""}`} onClick={() => updateLayer(selected.id, { italic: !selected.italic }, { commit: true })}><Italic size={14} /></button>
+                    <button className={`bb-btn${selected.underline ? " active" : ""}`} onClick={() => updateLayer(selected.id, { underline: !selected.underline }, { commit: true })}><Underline size={14} /></button>
                   </div>
                 </div>
                 <div className="bb-field">
                   <label>Căn chữ</label>
                   <div className="bb-row3">
-                    <button className={`bb-btn${selected.align === "left" ? " active" : ""}`} onClick={() => updateLayer(selected.id, { align: "left" }, { commit: true })}>Trái</button>
-                    <button className={`bb-btn${selected.align === "center" ? " active" : ""}`} onClick={() => updateLayer(selected.id, { align: "center" }, { commit: true })}>Giữa</button>
-                    <button className={`bb-btn${selected.align === "right" ? " active" : ""}`} onClick={() => updateLayer(selected.id, { align: "right" }, { commit: true })}>Phải</button>
+                    <button className={`bb-btn${selected.align === "left" ? " active" : ""}`} onClick={() => updateLayer(selected.id, { align: "left" }, { commit: true })}><AlignLeft size={14} /></button>
+                    <button className={`bb-btn${selected.align === "center" ? " active" : ""}`} onClick={() => updateLayer(selected.id, { align: "center" }, { commit: true })}><AlignCenter size={14} /></button>
+                    <button className={`bb-btn${selected.align === "right" ? " active" : ""}`} onClick={() => updateLayer(selected.id, { align: "right" }, { commit: true })}><AlignRight size={14} /></button>
                   </div>
                 </div>
                 <div className="bb-field">
                   <label>Font chữ</label>
-                  <select value={selected.fontFamily} onFocus={beginEdit} onBlur={endEdit} onChange={(e) => updateLayer(selected.id, { fontFamily: e.target.value })}>
-                    {FONTS.map((f) => (
-                      <option key={f.value} value={f.value}>{f.label}</option>
-                    ))}
+                  <select value={selected.fontFamily} onFocus={beginEdit} onBlur={endEdit}
+                    onChange={(e) => updateLayer(selected.id, { fontFamily: e.target.value })}>
+                    {FONTS.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
                   </select>
                 </div>
                 <div className="bb-field">
                   <label>Màu chữ &amp; cỡ chữ</label>
                   <div className="bb-color-size">
-                    <input type="color" value={selected.color} onFocus={beginEdit} onBlur={endEdit} onChange={(e) => updateLayer(selected.id, { color: e.target.value })} />
-                    <input type="number" min={10} max={96} value={selected.fontSize} onFocus={beginEdit} onBlur={endEdit} onChange={(e) => updateLayer(selected.id, { fontSize: Number(e.target.value) || 10 })} />
+                    <input type="color" value={selected.color} onFocus={beginEdit} onBlur={endEdit}
+                      onChange={(e) => updateLayer(selected.id, { color: e.target.value })} />
+                    <input type="number" min={10} max={96} value={selected.fontSize} onFocus={beginEdit} onBlur={endEdit}
+                      onChange={(e) => updateLayer(selected.id, { fontSize: Number(e.target.value) || 10 })} />
                     <span style={{ fontSize: 12, color: "#6b7a72" }}>px</span>
                   </div>
                 </div>
                 <div className="bb-field">
                   <label>Viền chữ (màu &amp; độ dày)</label>
                   <div className="bb-color-size">
-                    <input type="color" value={selected.strokeColor} onFocus={beginEdit} onBlur={endEdit} onChange={(e) => updateLayer(selected.id, { strokeColor: e.target.value })} />
-                    <input type="number" min={0} max={6} step={0.5} value={selected.strokeWidth} onFocus={beginEdit} onBlur={endEdit} onChange={(e) => updateLayer(selected.id, { strokeWidth: Number(e.target.value) || 0 })} />
+                    <input type="color" value={selected.strokeColor} onFocus={beginEdit} onBlur={endEdit}
+                      onChange={(e) => updateLayer(selected.id, { strokeColor: e.target.value })} />
+                    <input type="number" min={0} max={6} step={0.5} value={selected.strokeWidth} onFocus={beginEdit} onBlur={endEdit}
+                      onChange={(e) => updateLayer(selected.id, { strokeWidth: Number(e.target.value) || 0 })} />
                     <span style={{ fontSize: 12, color: "#6b7a72" }}>px</span>
                   </div>
                 </div>
                 <div className="bb-field">
                   <label>Độ trong suốt ({selected.opacity}%)</label>
-                  <input type="range" min={10} max={100} value={selected.opacity} onFocus={beginEdit} onBlur={endEdit} onChange={(e) => updateLayer(selected.id, { opacity: Number(e.target.value) })} />
+                  <input type="range" min={10} max={100} value={selected.opacity} onFocus={beginEdit} onBlur={endEdit}
+                    onChange={(e) => updateLayer(selected.id, { opacity: Number(e.target.value) })} />
                 </div>
               </>
             )}
@@ -1198,66 +1060,46 @@ export default function BookBuilder() {
         )}
 
         <div className="bb-canvas-area">
-          <div className="bb-zoom-bar">
-            <button className="bb-btn bb-btn-icon" onClick={zoomOut}>−</button>
-            <span>{Math.round(scale * 100)}%</span>
-            <button className="bb-btn bb-btn-icon" onClick={zoomIn}>+</button>
-            <button className="bb-btn" onClick={zoomFit}>Vừa khung</button>
-          </div>
-
           <div className="bb-canvas-frame" ref={wrapRef}>
-            <div ref={canvasRef} onPointerDown={() => setSelectedId(null)} style={{ width: PAGE_W * scale, height: PAGE_H * scale, flexShrink: 0 }}>
-              <div
-                style={{
-                  width: PAGE_W,
-                  height: PAGE_H,
-                  transform: `scale(${scale})`,
-                  transformOrigin: "top left",
-                  position: "relative",
-                  background: currentPage.background,
-                  borderRadius: 8,
-                  boxShadow: "0 2px 10px rgba(0,0,0,0.06)",
-                }}
-              >
+            <div ref={canvasRef} onPointerDown={() => { setSelectedId(null); setMultiIds([]); }}
+              style={{ width: PAGE_W * scale, height: PAGE_H * scale, flexShrink: 0 }}>
+              <div style={{
+                width: PAGE_W, height: PAGE_H, transform: `scale(${scale})`, transformOrigin: "top left",
+                position: "relative", background: currentPage.background, borderRadius: 10,
+                boxShadow: "0 8px 26px rgba(20,51,42,0.16), 0 2px 6px rgba(20,51,42,0.08)",
+              }}>
                 {currentPage.layers.map((layer) => (
-                  <LayerView
-                    key={layer.id}
-                    layer={layer}
-                    selected={layer.id === selectedId}
-                    readOnly={false}
-                    isReadingThis={reading?.layerId === layer.id}
-                    readingWordIndex={reading?.wordIndex}
-                    onSelect={selectLayer}
-                    onDragStart={onLayerDragStart}
-                    onResizeStart={onLayerResizeStart}
-                    onWordHover={onWordHover}
-                    onWordLeave={onWordLeave}
-                  />
+                  <LayerView key={layer.id} layer={layer} selected={layer.id === selectedId || multiIds.includes(layer.id)} readOnly={false}
+                    isReadingThis={reading?.layerId === layer.id} readingWordIndex={reading?.wordIndex}
+                    onSelect={selectLayer} onDragStart={onLayerDragStart} onResizeStart={onLayerResizeStart}
+                    onWordHover={onWordHover} onWordLeave={onWordLeave} />
                 ))}
 
                 {selected && !dragging && !resizing && (
-                  <div className="bb-float-toolbar" style={{ left: selected.x, top: Math.max(0, selected.y - 34) }}>
+                  <div className="bb-float-toolbar" style={{ left: selected.x, top: Math.max(0, selected.y - 36) }}
+                    onPointerDown={(e) => e.stopPropagation()}>
                     {selected.type === "text" && (
-                      <button title="Đọc lớp này" onClick={() => readLayer(selected)}>🔊</button>
+                      <button title="Đọc lớp này" onClick={() => readLayer(selected)}><Volume2 size={13} /></button>
                     )}
-                    <button title="Nhân đôi (Ctrl+D)" onClick={() => duplicateLayer(selected.id)}>⧉</button>
-                    <button title="Xoá (Delete)" onClick={() => removeLayer(selected.id)}>✕</button>
+                    <button title="Nhân đôi (Ctrl+D)" onClick={() => duplicateLayer(selected.id)}><Copy size={13} /></button>
+                    <button title="Xoá (Delete)" onClick={() => removeLayer(selected.id)}><X size={13} /></button>
                   </div>
                 )}
 
                 {guides.x && <div className="bb-guide" style={{ left: PAGE_W / 2 - 0.5, top: 0, bottom: 0, width: 1 }} />}
                 {guides.y && <div className="bb-guide" style={{ top: PAGE_H / 2 - 0.5, left: 0, right: 0, height: 1 }} />}
 
-                <div style={{ position: "absolute", bottom: 8, left: "50%", transform: "translateX(-50%)", fontFamily: "Georgia, serif", fontSize: 12, color: "rgba(31,42,36,0.32)", pointerEvents: "none", userSelect: "none" }}>
-                  {pageIndex + 1}
-                </div>
+                <div style={{
+                  position: "absolute", bottom: 8, left: "50%", transform: "translateX(-50%)",
+                  fontFamily: "Georgia, serif", fontSize: 12, color: "rgba(31,42,36,0.32)",
+                  pointerEvents: "none", userSelect: "none",
+                }}>{pageIndex + 1}</div>
               </div>
             </div>
           </div>
 
-          <div className="bb-hint">
-            Kéo để di chuyển · kéo chấm xanh ở góc để đổi cỡ · rê chuột vào từng chữ để nghe đọc từ đó · Ctrl+Z hoàn tác, Delete
-            xoá lớp, mũi tên di chuyển, Ctrl+D nhân đôi.
+          <div className="bb-hint" style={{ textAlign: "center", color: "#a9b3ac" }}>
+            Power by earthoria, Ver2.1.2
           </div>
         </div>
       </div>

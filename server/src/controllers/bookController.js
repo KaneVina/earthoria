@@ -20,8 +20,7 @@ const withDisplayPrice = (book) => {
   return {
     ...book,
     price: variant?.price ?? null,
-    salePrice: variant?.salePrice ?? null,
-    variants: undefined
+    salePrice: variant?.salePrice ?? null
   }
 }
 
