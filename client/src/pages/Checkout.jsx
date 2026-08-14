@@ -1358,6 +1358,11 @@ export default function Checkout() {
     if (isDigitalOrder && method === "cod") setMethod("");
   }, [isDigitalOrder, method]);
 
+  // Đơn TOÀN sách điện tử: ẩn hẳn bước "Thiết lập đơn hàng" — bỏ qua thẳng sang bước Thanh toán.
+  useEffect(() => {
+    if (isDigitalOrder && step === 1) setStep(2);
+  }, [isDigitalOrder, step]);
+
   const subtotal = items.reduce(
     (s, i) => s + (i.variant?.salePrice ?? i.variant?.price ?? 0) * i.quantity,
     0,
@@ -1696,7 +1701,10 @@ export default function Checkout() {
           <em style={{ fontStyle: "italic", color: "var(--gold)" }}>Hàng</em>
         </h1>
 
-        <StepBar current={step + 1} />
+        <StepBar
+          current={isDigitalOrder ? step : step + 1}
+          digital={isDigitalOrder}
+        />
       </div>
 
       {/* main 2-col layout */}
@@ -1718,202 +1726,580 @@ export default function Checkout() {
           {/* ┌──────────────────────────────────┐
               │  STEP 1 — Thông tin giao hàng    │
               └──────────────────────────────────┘ */}
-          {step === 1 && (
+          {step === 1 && !isDigitalOrder && (
             <div className="co-step">
-              <SectionHead
-                icon={MapPin}
-                title={
-                  isDigitalOrder ? "Xác nhận đơn hàng" : "Thiết lập đơn hàng"
-                }
-              />
+              <SectionHead icon={MapPin} title="Thiết lập đơn hàng" />
 
-              {isDigitalOrder ? (
+              <>
+                {/*  Tile chọn hình thức  */}
                 <div
                   style={{
-                    padding: "28px 24px",
-                    border: "1px solid var(--border)",
-                    borderRadius: 10,
-                    background: "var(--ivory)",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 10,
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 12,
+                    marginBottom: 28,
                   }}
                 >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 10,
-                      color: "var(--forest)",
-                    }}
-                  >
-                    <FileText size={20} />
-                    <strong
-                      style={{
-                        fontFamily: "Playfair Display, serif",
-                        fontSize: 18,
-                      }}
-                    >
-                      Đơn hàng chỉ gồm sách điện tử
-                    </strong>
-                  </div>
-                  <p
-                    style={{
-                      color: "var(--text-muted, #7a7a72)",
-                      fontSize: 14,
-                      lineHeight: 1.6,
-                      margin: 0,
-                    }}
-                  >
-                    Sách điện tử không cần giao hàng nên không yêu cầu địa chỉ.
-                    Bạn chỉ cần chọn phương thức thanh toán online (VNPay hoặc
-                    MoMo) ở bước tiếp theo — thanh toán xong đơn hàng sẽ tự động
-                    hoàn thành và sách xuất hiện ngay trong mục Sách điện tử của
-                    bạn.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {/*  Tile chọn hình thức  */}
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: 12,
-                      marginBottom: 28,
-                    }}
-                  >
-                    {[
-                      {
-                        id: "pickup",
-                        icon: Package,
-                        label: "Lấy tại shop",
-                        sub: "600 Nguyễn Văn Cừ, An Bình, Cần Thơ",
-                        fee: "Miễn phí",
-                      },
-                      {
-                        id: "shipping",
-                        icon: Truck,
-                        label: "Giao hàng tận nơi",
-                        sub: "Toàn quốc · GHTK / GHN",
-                        fee: "Tính theo khoảng cách",
-                      },
-                    ].map((opt) => {
-                      const Icon = opt.icon;
-                      const active = deliveryMode === opt.id;
-                      return (
-                        <button
-                          key={opt.id}
-                          onClick={() => {
-                            setDeliveryMode(opt.id);
-                            if (opt.id === "pickup")
-                              setShipCalc({
-                                km: 0,
-                                fee: 0,
-                                free: true,
-                                isNoiO: true,
-                                loading: false,
-                              });
-                          }}
+                  {[
+                    {
+                      id: "pickup",
+                      icon: Package,
+                      label: "Lấy tại shop",
+                      sub: "600 Nguyễn Văn Cừ, An Bình, Cần Thơ",
+                      fee: "Miễn phí",
+                    },
+                    {
+                      id: "shipping",
+                      icon: Truck,
+                      label: "Giao hàng tận nơi",
+                      sub: "Toàn quốc · GHTK / GHN",
+                      fee: "Tính theo khoảng cách",
+                    },
+                  ].map((opt) => {
+                    const Icon = opt.icon;
+                    const active = deliveryMode === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        onClick={() => {
+                          setDeliveryMode(opt.id);
+                          if (opt.id === "pickup")
+                            setShipCalc({
+                              km: 0,
+                              fee: 0,
+                              free: true,
+                              isNoiO: true,
+                              loading: false,
+                            });
+                        }}
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: 14,
+                          padding: "18px 20px",
+                          textAlign: "left",
+                          cursor: "pointer",
+                          background: active
+                            ? "var(--gold-pale)"
+                            : "var(--white)",
+                          border: `${active ? "1.5px" : "0.5px"} solid ${active ? "var(--gold)" : "var(--border)"}`,
+                          fontFamily: "Be Vietnam Pro, sans-serif",
+                          transition: "all 0.25s",
+                        }}
+                      >
+                        <div
                           style={{
+                            width: 40,
+                            height: 40,
+                            flexShrink: 0,
+                            border: "0.5px solid var(--border-gold)",
                             display: "flex",
-                            alignItems: "flex-start",
-                            gap: 14,
-                            padding: "18px 20px",
-                            textAlign: "left",
-                            cursor: "pointer",
-                            background: active
-                              ? "var(--gold-pale)"
-                              : "var(--white)",
-                            border: `${active ? "1.5px" : "0.5px"} solid ${active ? "var(--gold)" : "var(--border)"}`,
-                            fontFamily: "Be Vietnam Pro, sans-serif",
-                            transition: "all 0.25s",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: active ? "var(--gold)" : "var(--text-muted)",
+                            transition: "color 0.25s",
                           }}
                         >
+                          <Icon size={18} strokeWidth={1.5} />
+                        </div>
+                        <div style={{ flex: 1 }}>
                           <div
                             style={{
-                              width: 40,
-                              height: 40,
-                              flexShrink: 0,
-                              border: "0.5px solid var(--border-gold)",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
+                              fontSize: 13,
+                              color: "var(--forest)",
+                              fontWeight: active ? 500 : 300,
+                              marginBottom: 3,
+                            }}
+                          >
+                            {opt.label}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 11,
+                              color: "var(--text-muted)",
+                              marginBottom: 6,
+                            }}
+                          >
+                            {opt.sub}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: 10,
+                              letterSpacing: "0.12em",
                               color: active
                                 ? "var(--gold)"
                                 : "var(--text-muted)",
-                              transition: "color 0.25s",
+                              textTransform: "uppercase",
                             }}
                           >
-                            <Icon size={18} strokeWidth={1.5} />
+                            {opt.fee}
                           </div>
-                          <div style={{ flex: 1 }}>
-                            <div
-                              style={{
-                                fontSize: 13,
-                                color: "var(--forest)",
-                                fontWeight: active ? 500 : 300,
-                                marginBottom: 3,
-                              }}
-                            >
-                              {opt.label}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: 11,
-                                color: "var(--text-muted)",
-                                marginBottom: 6,
-                              }}
-                            >
-                              {opt.sub}
-                            </div>
-                            <div
-                              style={{
-                                fontSize: 10,
-                                letterSpacing: "0.12em",
-                                color: active
-                                  ? "var(--gold)"
-                                  : "var(--text-muted)",
-                                textTransform: "uppercase",
-                              }}
-                            >
-                              {opt.fee}
-                            </div>
-                          </div>
-                          {active && (
-                            <Check
-                              size={15}
-                              style={{ color: "var(--gold)", flexShrink: 0 }}
-                            />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
+                        </div>
+                        {active && (
+                          <Check
+                            size={15}
+                            style={{ color: "var(--gold)", flexShrink: 0 }}
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
 
-                  {/*  PICKUP  */}
-                  {deliveryMode === "pickup" && (
+                {/*  PICKUP  */}
+                {deliveryMode === "pickup" && (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 18,
+                    }}
+                  >
                     <div
                       style={{
+                        padding: "14px 18px",
+                        background: "rgba(74,158,63,0.06)",
+                        border: "0.5px solid rgba(74,158,63,0.25)",
                         display: "flex",
-                        flexDirection: "column",
-                        gap: 18,
+                        alignItems: "center",
+                        gap: 12,
                       }}
                     >
+                      <MapPin
+                        size={14}
+                        style={{ color: "var(--gold)", flexShrink: 0 }}
+                      />
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 13,
+                            color: "var(--forest)",
+                            fontWeight: 400,
+                          }}
+                        >
+                          Earthoria Store — FPT University Cần Thơ
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 11,
+                            color: "var(--text-muted)",
+                            marginTop: 2,
+                          }}
+                        >
+                          600 Nguyễn Văn Cừ (nối dài), Phường An Bình · Giờ mở
+                          cửa: 8:00 – 21:00
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: 16,
+                      }}
+                    >
+                      <Field
+                        label="Họ và tên"
+                        required
+                        error={shipErr.fullName}
+                      >
+                        <input
+                          className={`co-input${shipErr.fullName ? " error" : ""}`}
+                          value={ship.fullName}
+                          onChange={(e) =>
+                            setShip((f) => ({
+                              ...f,
+                              fullName: e.target.value,
+                            }))
+                          }
+                          placeholder="Nguyễn Văn An"
+                          style={{
+                            border: `0.5px solid ${shipErr.fullName ? "#c0392b" : "var(--border)"}`,
+                          }}
+                        />
+                      </Field>
+                      <Field
+                        label="Số điện thoại"
+                        required
+                        error={shipErr.phone}
+                      >
+                        <input
+                          className={`co-input${shipErr.phone ? " error" : ""}`}
+                          value={ship.phone}
+                          type="tel"
+                          onChange={(e) =>
+                            setShip((f) => ({ ...f, phone: e.target.value }))
+                          }
+                          placeholder="0912 345 678"
+                          style={{
+                            border: `0.5px solid ${shipErr.phone ? "#c0392b" : "var(--border)"}`,
+                          }}
+                        />
+                      </Field>
+                    </div>
+                    <Field
+                      label="Email nhận xác nhận đơn hàng"
+                      required
+                      error={shipErr.email}
+                    >
+                      <input
+                        className={`co-input${shipErr.email ? " error" : ""}`}
+                        value={ship.email}
+                        type="email"
+                        onChange={(e) =>
+                          setShip((f) => ({ ...f, email: e.target.value }))
+                        }
+                        placeholder="ten@email.com"
+                        style={{
+                          border: `0.5px solid ${shipErr.email ? "#c0392b" : "var(--border)"}`,
+                        }}
+                      />
+                    </Field>
+                    <Field label="Ghi chú (không bắt buộc)">
+                      <textarea
+                        value={ship.note}
+                        onChange={(e) =>
+                          setShip((f) => ({ ...f, note: e.target.value }))
+                        }
+                        placeholder="Thời gian đến lấy dự kiến…"
+                        style={{
+                          background: "var(--white)",
+                          border: "0.5px solid var(--border)",
+                          padding: "13px 16px",
+                          fontFamily: "Be Vietnam Pro, sans-serif",
+                          fontSize: 13,
+                          color: "var(--forest)",
+                          fontWeight: 300,
+                          outline: "none",
+                          resize: "vertical",
+                          minHeight: 72,
+                          width: "100%",
+                          boxSizing: "border-box",
+                          borderRadius: 0,
+                        }}
+                      />
+                    </Field>
+
+                    <label
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={requestInvoice}
+                        onChange={(e) => setRequestInvoice(e.target.checked)}
+                        style={{ display: "none" }}
+                      />
+                      <div
+                        style={{
+                          width: 18,
+                          height: 18,
+                          border: `0.5px solid ${requestInvoice ? "var(--forest)" : "var(--border)"}`,
+                          background: requestInvoice
+                            ? "var(--forest)"
+                            : "var(--white)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          transition: "all 0.2s",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {requestInvoice && (
+                          <Check size={11} style={{ color: "var(--ivory)" }} />
+                        )}
+                      </div>
+                      <span
+                        style={{
+                          fontSize: 12,
+                          color: "var(--text-muted)",
+                          fontWeight: 300,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                        }}
+                      >
+                        <FileText size={13} style={{ color: "var(--gold)" }} />{" "}
+                        Yêu cầu xuất hoá đơn (VAT)
+                      </span>
+                    </label>
+                  </div>
+                )}
+
+                {/*  SHIPPING  */}
+                {deliveryMode === "shipping" && (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 18,
+                    }}
+                  >
+                    {/* Email — chung cả 2 mode */}
+                    <Field
+                      label="Email nhận xác nhận đơn hàng"
+                      required
+                      error={shipErr.email}
+                    >
+                      <input
+                        className={`co-input${shipErr.email ? " error" : ""}`}
+                        value={ship.email}
+                        type="email"
+                        onChange={(e) =>
+                          setShip((f) => ({ ...f, email: e.target.value }))
+                        }
+                        placeholder="ten@email.com"
+                        style={{
+                          border: `0.5px solid ${shipErr.email ? "#c0392b" : "var(--border)"}`,
+                        }}
+                      />
+                    </Field>
+
+                    {/* Danh sách địa chỉ đã lưu */}
+                    <div>
+                      <div
+                        style={{
+                          fontSize: 10,
+                          letterSpacing: "0.18em",
+                          textTransform: "uppercase",
+                          color: "var(--text-muted)",
+                          marginBottom: 8,
+                        }}
+                      >
+                        Địa chỉ giao hàng{" "}
+                        <span style={{ color: "var(--gold)" }}>*</span>
+                      </div>
+
+                      {savedAddresses.length > 0 && (
+                        <div
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 8,
+                            marginBottom: 12,
+                          }}
+                        >
+                          {savedAddresses.map((addr) => (
+                            <div
+                              key={addr.id}
+                              onClick={() => applyAddress(addr)}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 14,
+                                padding: "14px 16px",
+                                cursor: "pointer",
+                                border: `${selectedAddressId === addr.id ? "1.5px" : "0.5px"} solid ${selectedAddressId === addr.id ? "var(--gold)" : "var(--border)"}`,
+                                background:
+                                  selectedAddressId === addr.id
+                                    ? "var(--gold-pale)"
+                                    : "var(--white)",
+                                transition: "all 0.2s",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: 18,
+                                  height: 18,
+                                  borderRadius: "50%",
+                                  flexShrink: 0,
+                                  border: `2px solid ${selectedAddressId === addr.id ? "var(--gold)" : "var(--border)"}`,
+                                  display: "flex",
+                                  alignItems: "center",
+                                  justifyContent: "center",
+                                }}
+                              >
+                                {selectedAddressId === addr.id && (
+                                  <div
+                                    style={{
+                                      width: 8,
+                                      height: 8,
+                                      borderRadius: "50%",
+                                      background: "var(--gold)",
+                                    }}
+                                  />
+                                )}
+                              </div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 8,
+                                    marginBottom: 3,
+                                  }}
+                                >
+                                  <span
+                                    style={{
+                                      fontSize: 13,
+                                      color: "var(--forest)",
+                                      fontWeight: 400,
+                                    }}
+                                  >
+                                    {addr.fullName}
+                                  </span>
+                                  <span
+                                    style={{
+                                      fontSize: 11,
+                                      color: "var(--text-muted)",
+                                    }}
+                                  >
+                                    ·
+                                  </span>
+                                  <span
+                                    style={{
+                                      fontSize: 12,
+                                      color: "var(--text-muted)",
+                                    }}
+                                  >
+                                    {addr.phone}
+                                  </span>
+                                  {addr.isDefault && (
+                                    <span
+                                      style={{
+                                        fontSize: 9,
+                                        letterSpacing: "0.12em",
+                                        textTransform: "uppercase",
+                                        color: "#fff",
+                                        background: "var(--forest)",
+                                        padding: "2px 7px",
+                                      }}
+                                    >
+                                      Mặc định
+                                    </span>
+                                  )}
+                                </div>
+                                <div
+                                  style={{
+                                    fontSize: 12,
+                                    color: "var(--text-muted)",
+                                    fontWeight: 300,
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                  }}
+                                >
+                                  {[addr.street, addr.ward, addr.province]
+                                    .filter(Boolean)
+                                    .join(", ")}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {savedAddresses.length === 0 && (
+                        <div
+                          style={{
+                            padding: "16px",
+                            textAlign: "center",
+                            border: "0.5px dashed var(--border)",
+                            marginBottom: 12,
+                            fontSize: 13,
+                            color: "var(--text-muted)",
+                            fontWeight: 300,
+                          }}
+                        >
+                          Chưa có địa chỉ nào được lưu
+                        </div>
+                      )}
+
+                      {/* Nút thêm địa chỉ */}
+                      <button
+                        onClick={() => {
+                          setShowMapModal(true);
+                          setMapStep("map");
+                        }}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          background: "transparent",
+                          border: "0.5px dashed var(--border-gold)",
+                          padding: "12px 20px",
+                          cursor: "pointer",
+                          width: "100%",
+                          justifyContent: "center",
+                          fontFamily: "Be Vietnam Pro, sans-serif",
+                          fontSize: 12,
+                          letterSpacing: "0.12em",
+                          textTransform: "uppercase",
+                          color: "var(--gold)",
+                          transition: "all 0.25s",
+                        }}
+                      >
+                        <span style={{ fontSize: 18, lineHeight: 1 }}>+</span>{" "}
+                        Thêm địa chỉ mới
+                      </button>
+                    </div>
+
+                    {/* Địa chỉ đã chọn summary */}
+                    {selectedAddressId && (
                       <div
                         style={{
                           padding: "14px 18px",
-                          background: "rgba(74,158,63,0.06)",
-                          border: "0.5px solid rgba(74,158,63,0.25)",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 12,
+                          background: "var(--cream)",
+                          border: "0.5px solid var(--border)",
                         }}
                       >
-                        <MapPin
-                          size={14}
-                          style={{ color: "var(--gold)", flexShrink: 0 }}
-                        />
+                        <div
+                          style={{
+                            fontSize: 11,
+                            color: "var(--text-muted)",
+                            marginBottom: 6,
+                          }}
+                        >
+                          Giao đến —{" "}
+                          <button
+                            onClick={() => setSelectedAddressId(null)}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              cursor: "pointer",
+                              color: "var(--gold)",
+                              fontSize: 11,
+                              padding: 0,
+                            }}
+                          >
+                            Thay đổi
+                          </button>
+                        </div>
+                        <div style={{ fontSize: 13, color: "var(--forest)" }}>
+                          {ship.fullName} · {ship.phone}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 12,
+                            color: "var(--text-muted)",
+                            marginTop: 3,
+                          }}
+                        >
+                          {[ship.street, ship.wardName, ship.provinceName]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Phí ship box */}
+                    {ship.wardName && (
+                      <div
+                        style={{
+                          padding: "14px 18px",
+                          background: shipCalc.free
+                            ? "rgba(74,158,63,0.06)"
+                            : "var(--cream)",
+                          border: `0.5px solid ${shipCalc.free ? "rgba(74,158,63,0.3)" : "var(--border)"}`,
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
                         <div>
                           <div
                             style={{
@@ -1922,918 +2308,28 @@ export default function Checkout() {
                               fontWeight: 400,
                             }}
                           >
-                            Earthoria Store — FPT University Cần Thơ
+                            Phí giao hàng
                           </div>
                           <div
                             style={{
                               fontSize: 11,
-                              color: "var(--text-muted)",
-                              marginTop: 2,
-                            }}
-                          >
-                            600 Nguyễn Văn Cừ (nối dài), Phường An Bình · Giờ mở
-                            cửa: 8:00 – 21:00
-                          </div>
-                        </div>
-                      </div>
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "1fr 1fr",
-                          gap: 16,
-                        }}
-                      >
-                        <Field
-                          label="Họ và tên"
-                          required
-                          error={shipErr.fullName}
-                        >
-                          <input
-                            className={`co-input${shipErr.fullName ? " error" : ""}`}
-                            value={ship.fullName}
-                            onChange={(e) =>
-                              setShip((f) => ({
-                                ...f,
-                                fullName: e.target.value,
-                              }))
-                            }
-                            placeholder="Nguyễn Văn An"
-                            style={{
-                              border: `0.5px solid ${shipErr.fullName ? "#c0392b" : "var(--border)"}`,
-                            }}
-                          />
-                        </Field>
-                        <Field
-                          label="Số điện thoại"
-                          required
-                          error={shipErr.phone}
-                        >
-                          <input
-                            className={`co-input${shipErr.phone ? " error" : ""}`}
-                            value={ship.phone}
-                            type="tel"
-                            onChange={(e) =>
-                              setShip((f) => ({ ...f, phone: e.target.value }))
-                            }
-                            placeholder="0912 345 678"
-                            style={{
-                              border: `0.5px solid ${shipErr.phone ? "#c0392b" : "var(--border)"}`,
-                            }}
-                          />
-                        </Field>
-                      </div>
-                      <Field
-                        label="Email nhận xác nhận đơn hàng"
-                        required
-                        error={shipErr.email}
-                      >
-                        <input
-                          className={`co-input${shipErr.email ? " error" : ""}`}
-                          value={ship.email}
-                          type="email"
-                          onChange={(e) =>
-                            setShip((f) => ({ ...f, email: e.target.value }))
-                          }
-                          placeholder="ten@email.com"
-                          style={{
-                            border: `0.5px solid ${shipErr.email ? "#c0392b" : "var(--border)"}`,
-                          }}
-                        />
-                      </Field>
-                      <Field label="Ghi chú (không bắt buộc)">
-                        <textarea
-                          value={ship.note}
-                          onChange={(e) =>
-                            setShip((f) => ({ ...f, note: e.target.value }))
-                          }
-                          placeholder="Thời gian đến lấy dự kiến…"
-                          style={{
-                            background: "var(--white)",
-                            border: "0.5px solid var(--border)",
-                            padding: "13px 16px",
-                            fontFamily: "Be Vietnam Pro, sans-serif",
-                            fontSize: 13,
-                            color: "var(--forest)",
-                            fontWeight: 300,
-                            outline: "none",
-                            resize: "vertical",
-                            minHeight: 72,
-                            width: "100%",
-                            boxSizing: "border-box",
-                            borderRadius: 0,
-                          }}
-                        />
-                      </Field>
-
-                      <label
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 10,
-                          cursor: "pointer",
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={requestInvoice}
-                          onChange={(e) => setRequestInvoice(e.target.checked)}
-                          style={{ display: "none" }}
-                        />
-                        <div
-                          style={{
-                            width: 18,
-                            height: 18,
-                            border: `0.5px solid ${requestInvoice ? "var(--forest)" : "var(--border)"}`,
-                            background: requestInvoice
-                              ? "var(--forest)"
-                              : "var(--white)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            transition: "all 0.2s",
-                            flexShrink: 0,
-                          }}
-                        >
-                          {requestInvoice && (
-                            <Check
-                              size={11}
-                              style={{ color: "var(--ivory)" }}
-                            />
-                          )}
-                        </div>
-                        <span
-                          style={{
-                            fontSize: 12,
-                            color: "var(--text-muted)",
-                            fontWeight: 300,
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 6,
-                          }}
-                        >
-                          <FileText
-                            size={13}
-                            style={{ color: "var(--gold)" }}
-                          />{" "}
-                          Yêu cầu xuất hoá đơn (VAT)
-                        </span>
-                      </label>
-                    </div>
-                  )}
-
-                  {/*  SHIPPING  */}
-                  {deliveryMode === "shipping" && (
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 18,
-                      }}
-                    >
-                      {/* Email — chung cả 2 mode */}
-                      <Field
-                        label="Email nhận xác nhận đơn hàng"
-                        required
-                        error={shipErr.email}
-                      >
-                        <input
-                          className={`co-input${shipErr.email ? " error" : ""}`}
-                          value={ship.email}
-                          type="email"
-                          onChange={(e) =>
-                            setShip((f) => ({ ...f, email: e.target.value }))
-                          }
-                          placeholder="ten@email.com"
-                          style={{
-                            border: `0.5px solid ${shipErr.email ? "#c0392b" : "var(--border)"}`,
-                          }}
-                        />
-                      </Field>
-
-                      {/* Danh sách địa chỉ đã lưu */}
-                      <div>
-                        <div
-                          style={{
-                            fontSize: 10,
-                            letterSpacing: "0.18em",
-                            textTransform: "uppercase",
-                            color: "var(--text-muted)",
-                            marginBottom: 8,
-                          }}
-                        >
-                          Địa chỉ giao hàng{" "}
-                          <span style={{ color: "var(--gold)" }}>*</span>
-                        </div>
-
-                        {savedAddresses.length > 0 && (
-                          <div
-                            style={{
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: 8,
-                              marginBottom: 12,
-                            }}
-                          >
-                            {savedAddresses.map((addr) => (
-                              <div
-                                key={addr.id}
-                                onClick={() => applyAddress(addr)}
-                                style={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 14,
-                                  padding: "14px 16px",
-                                  cursor: "pointer",
-                                  border: `${selectedAddressId === addr.id ? "1.5px" : "0.5px"} solid ${selectedAddressId === addr.id ? "var(--gold)" : "var(--border)"}`,
-                                  background:
-                                    selectedAddressId === addr.id
-                                      ? "var(--gold-pale)"
-                                      : "var(--white)",
-                                  transition: "all 0.2s",
-                                }}
-                              >
-                                <div
-                                  style={{
-                                    width: 18,
-                                    height: 18,
-                                    borderRadius: "50%",
-                                    flexShrink: 0,
-                                    border: `2px solid ${selectedAddressId === addr.id ? "var(--gold)" : "var(--border)"}`,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                  }}
-                                >
-                                  {selectedAddressId === addr.id && (
-                                    <div
-                                      style={{
-                                        width: 8,
-                                        height: 8,
-                                        borderRadius: "50%",
-                                        background: "var(--gold)",
-                                      }}
-                                    />
-                                  )}
-                                </div>
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                  <div
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: 8,
-                                      marginBottom: 3,
-                                    }}
-                                  >
-                                    <span
-                                      style={{
-                                        fontSize: 13,
-                                        color: "var(--forest)",
-                                        fontWeight: 400,
-                                      }}
-                                    >
-                                      {addr.fullName}
-                                    </span>
-                                    <span
-                                      style={{
-                                        fontSize: 11,
-                                        color: "var(--text-muted)",
-                                      }}
-                                    >
-                                      ·
-                                    </span>
-                                    <span
-                                      style={{
-                                        fontSize: 12,
-                                        color: "var(--text-muted)",
-                                      }}
-                                    >
-                                      {addr.phone}
-                                    </span>
-                                    {addr.isDefault && (
-                                      <span
-                                        style={{
-                                          fontSize: 9,
-                                          letterSpacing: "0.12em",
-                                          textTransform: "uppercase",
-                                          color: "#fff",
-                                          background: "var(--forest)",
-                                          padding: "2px 7px",
-                                        }}
-                                      >
-                                        Mặc định
-                                      </span>
-                                    )}
-                                  </div>
-                                  <div
-                                    style={{
-                                      fontSize: 12,
-                                      color: "var(--text-muted)",
-                                      fontWeight: 300,
-                                      overflow: "hidden",
-                                      textOverflow: "ellipsis",
-                                      whiteSpace: "nowrap",
-                                    }}
-                                  >
-                                    {[addr.street, addr.ward, addr.province]
-                                      .filter(Boolean)
-                                      .join(", ")}
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {savedAddresses.length === 0 && (
-                          <div
-                            style={{
-                              padding: "16px",
-                              textAlign: "center",
-                              border: "0.5px dashed var(--border)",
-                              marginBottom: 12,
-                              fontSize: 13,
-                              color: "var(--text-muted)",
-                              fontWeight: 300,
-                            }}
-                          >
-                            Chưa có địa chỉ nào được lưu
-                          </div>
-                        )}
-
-                        {/* Nút thêm địa chỉ */}
-                        <button
-                          onClick={() => {
-                            setShowMapModal(true);
-                            setMapStep("map");
-                          }}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 8,
-                            background: "transparent",
-                            border: "0.5px dashed var(--border-gold)",
-                            padding: "12px 20px",
-                            cursor: "pointer",
-                            width: "100%",
-                            justifyContent: "center",
-                            fontFamily: "Be Vietnam Pro, sans-serif",
-                            fontSize: 12,
-                            letterSpacing: "0.12em",
-                            textTransform: "uppercase",
-                            color: "var(--gold)",
-                            transition: "all 0.25s",
-                          }}
-                        >
-                          <span style={{ fontSize: 18, lineHeight: 1 }}>+</span>{" "}
-                          Thêm địa chỉ mới
-                        </button>
-                      </div>
-
-                      {/* Địa chỉ đã chọn summary */}
-                      {selectedAddressId && (
-                        <div
-                          style={{
-                            padding: "14px 18px",
-                            background: "var(--cream)",
-                            border: "0.5px solid var(--border)",
-                          }}
-                        >
-                          <div
-                            style={{
-                              fontSize: 11,
-                              color: "var(--text-muted)",
-                              marginBottom: 6,
-                            }}
-                          >
-                            Giao đến —{" "}
-                            <button
-                              onClick={() => setSelectedAddressId(null)}
-                              style={{
-                                background: "none",
-                                border: "none",
-                                cursor: "pointer",
-                                color: "var(--gold)",
-                                fontSize: 11,
-                                padding: 0,
-                              }}
-                            >
-                              Thay đổi
-                            </button>
-                          </div>
-                          <div style={{ fontSize: 13, color: "var(--forest)" }}>
-                            {ship.fullName} · {ship.phone}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: 12,
                               color: "var(--text-muted)",
                               marginTop: 3,
                             }}
                           >
-                            {[ship.street, ship.wardName, ship.provinceName]
-                              .filter(Boolean)
-                              .join(", ")}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Phí ship box */}
-                      {ship.wardName && (
-                        <div
-                          style={{
-                            padding: "14px 18px",
-                            background: shipCalc.free
-                              ? "rgba(74,158,63,0.06)"
-                              : "var(--cream)",
-                            border: `0.5px solid ${shipCalc.free ? "rgba(74,158,63,0.3)" : "var(--border)"}`,
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                          }}
-                        >
-                          <div>
-                            <div
-                              style={{
-                                fontSize: 13,
-                                color: "var(--forest)",
-                                fontWeight: 400,
-                              }}
-                            >
-                              Phí giao hàng
-                            </div>
-                            <div
-                              style={{
-                                fontSize: 11,
-                                color: "var(--text-muted)",
-                                marginTop: 3,
-                              }}
-                            >
-                              {shipCalc.loading
-                                ? "Đang tính..."
-                                : shipCalc.free
-                                  ? "Miễn phí"
-                                  : shipCalc.isNoiO
-                                    ? `Nội ô · ${shipCalc.km} km · `
-                                    : shipCalc.km
-                                      ? `${shipCalc.km} km · `
-                                      : "Không xác định · "}
-                              {!shipCalc.loading && !shipCalc.free && (
-                                <button
-                                  onClick={() => setShowPriceModal(true)}
-                                  style={{
-                                    background: "none",
-                                    border: "none",
-                                    cursor: "pointer",
-                                    color: "var(--gold)",
-                                    fontSize: 11,
-                                    padding: 0,
-                                    textDecoration: "underline",
-                                    fontFamily: "Be Vietnam Pro, sans-serif",
-                                  }}
-                                >
-                                  Xem bảng giá
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                          <div
-                            style={{
-                              fontFamily: "Playfair Display, serif",
-                              fontSize: 18,
-                              color: shipCalc.free
-                                ? "#4a9e3f"
-                                : "var(--forest)",
-                              minWidth: 80,
-                              textAlign: "right",
-                            }}
-                          >
                             {shipCalc.loading
-                              ? "..."
+                              ? "Đang tính..."
                               : shipCalc.free
                                 ? "Miễn phí"
-                                : `${(shipCalc.fee || 30000).toLocaleString("vi-VN")}đ`}
-                          </div>
-                        </div>
-                      )}
-
-                      <Field label="Ghi chú đơn hàng (không bắt buộc)">
-                        <textarea
-                          value={ship.note}
-                          onChange={(e) =>
-                            setShip((f) => ({ ...f, note: e.target.value }))
-                          }
-                          placeholder="Giao giờ hành chính, gọi trước khi giao…"
-                          style={{
-                            background: "var(--white)",
-                            border: "0.5px solid var(--border)",
-                            padding: "13px 16px",
-                            fontFamily: "Be Vietnam Pro, sans-serif",
-                            fontSize: 13,
-                            color: "var(--forest)",
-                            fontWeight: 300,
-                            outline: "none",
-                            resize: "vertical",
-                            minHeight: 72,
-                            width: "100%",
-                            boxSizing: "border-box",
-                            borderRadius: 0,
-                          }}
-                        />
-                      </Field>
-
-                      <label
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 10,
-                          cursor: "pointer",
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={requestInvoice}
-                          onChange={(e) => setRequestInvoice(e.target.checked)}
-                          style={{ display: "none" }}
-                        />
-                        <div
-                          style={{
-                            width: 18,
-                            height: 18,
-                            border: `0.5px solid ${requestInvoice ? "var(--forest)" : "var(--border)"}`,
-                            background: requestInvoice
-                              ? "var(--forest)"
-                              : "var(--white)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            transition: "all 0.2s",
-                            flexShrink: 0,
-                          }}
-                        >
-                          {requestInvoice && (
-                            <Check
-                              size={11}
-                              style={{ color: "var(--ivory)" }}
-                            />
-                          )}
-                        </div>
-                        <span
-                          style={{
-                            fontSize: 12,
-                            color: "var(--text-muted)",
-                            fontWeight: 300,
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 6,
-                          }}
-                        >
-                          <FileText
-                            size={13}
-                            style={{ color: "var(--gold)" }}
-                          />{" "}
-                          Yêu cầu xuất hoá đơn (VAT)
-                        </span>
-                      </label>
-                    </div>
-                  )}
-
-                  <NavRow
-                    onBack={() => navigate("/cart")}
-                    backLabel="Giỏ hàng"
-                    onNext={goToStep2}
-                    nextLabel="Tiếp: Thanh toán"
-                  />
-
-                  {/* ══ MAP MODAL ══ */}
-                  {showMapModal && (
-                    <div
-                      onClick={() => setShowMapModal(false)}
-                      style={{
-                        position: "fixed",
-                        inset: 0,
-                        zIndex: 2000,
-                        background: "rgba(10,14,12,0.6)",
-                        backdropFilter: "blur(4px)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        padding: 24,
-                      }}
-                    >
-                      <div
-                        onClick={(e) => e.stopPropagation()}
-                        style={{
-                          background: "var(--ivory)",
-                          border: "0.5px solid var(--border-gold)",
-                          width: "100%",
-                          maxWidth: 680,
-                          maxHeight: "90vh",
-                          overflow: "hidden",
-                          display: "flex",
-                          flexDirection: "column",
-                          boxShadow: "0 40px 80px rgba(13,43,30,0.35)",
-                        }}
-                      >
-                        {/* Modal header */}
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            padding: "20px 24px",
-                            borderBottom: "0.5px solid var(--border)",
-                            flexShrink: 0,
-                          }}
-                        >
-                          <div>
-                            <h3
-                              style={{
-                                fontFamily: "Playfair Display, serif",
-                                fontSize: 20,
-                                fontWeight: 400,
-                                color: "var(--forest)",
-                                margin: 0,
-                              }}
-                            >
-                              Chọn{" "}
-                              <em
-                                style={{
-                                  color: "var(--gold)",
-                                  fontStyle: "italic",
-                                }}
-                              >
-                                địa chỉ
-                              </em>{" "}
-                              trên bản đồ
-                            </h3>
-                            <p
-                              style={{
-                                fontSize: 11,
-                                color: "var(--text-muted)",
-                                margin: "4px 0 0",
-                              }}
-                            >
-                              Click vào bản đồ để ghim vị trí, hoặc tìm kiếm địa
-                              chỉ
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => setShowMapModal(false)}
-                            style={{
-                              background: "none",
-                              border: "none",
-                              cursor: "pointer",
-                              color: "var(--text-muted)",
-                              fontSize: 22,
-                            }}
-                          >
-                            ✕
-                          </button>
-                        </div>
-
-                        {mapStep === "map" ? (
-                          <>
-                            {/* Search */}
-                            <div
-                              style={{
-                                padding: "14px 24px",
-                                borderBottom: "0.5px solid var(--border)",
-                                display: "flex",
-                                gap: 8,
-                                flexShrink: 0,
-                              }}
-                            >
-                              <input
-                                value={mapSearch}
-                                onChange={(e) => setMapSearch(e.target.value)}
-                                onKeyDown={async (e) => {
-                                  if (e.key !== "Enter" || !mapSearch.trim())
-                                    return;
-                                  setMapSearching(true);
-                                  try {
-                                    const r = await fetch(
-                                      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(mapSearch + ", Vietnam")}&format=json&limit=1`,
-                                      { headers: { "Accept-Language": "vi" } },
-                                    );
-                                    const d = await r.json();
-                                    if (d[0])
-                                      setMapPin({
-                                        lat: parseFloat(d[0].lat),
-                                        lng: parseFloat(d[0].lon),
-                                      });
-                                  } catch {}
-                                  setMapSearching(false);
-                                }}
-                                placeholder="Tìm địa chỉ, nhấn Enter để tìm…"
-                                style={{
-                                  flex: 1,
-                                  background: "var(--white)",
-                                  border: "0.5px solid var(--border)",
-                                  padding: "10px 14px",
-                                  fontFamily: "Be Vietnam Pro, sans-serif",
-                                  fontSize: 13,
-                                  color: "var(--forest)",
-                                  outline: "none",
-                                  borderRadius: 0,
-                                }}
-                              />
+                                : shipCalc.isNoiO
+                                  ? `Nội ô · ${shipCalc.km} km · `
+                                  : shipCalc.km
+                                    ? `${shipCalc.km} km · `
+                                    : "Không xác định · "}
+                            {!shipCalc.loading && !shipCalc.free && (
                               <button
-                                onClick={async () => {
-                                  if (!mapSearch.trim()) return;
-                                  setMapSearching(true);
-                                  try {
-                                    const r = await fetch(
-                                      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(mapSearch + ", Vietnam")}&format=json&limit=1`,
-                                      { headers: { "Accept-Language": "vi" } },
-                                    );
-                                    const d = await r.json();
-                                    if (d[0])
-                                      setMapPin({
-                                        lat: parseFloat(d[0].lat),
-                                        lng: parseFloat(d[0].lon),
-                                      });
-                                  } catch {}
-                                  setMapSearching(false);
-                                }}
+                                onClick={() => setShowPriceModal(true)}
                                 style={{
-                                  background: "var(--forest)",
-                                  border: "none",
-                                  padding: "10px 20px",
-                                  cursor: "pointer",
-                                  fontFamily: "Be Vietnam Pro, sans-serif",
-                                  fontSize: 11,
-                                  letterSpacing: "0.14em",
-                                  textTransform: "uppercase",
-                                  color: "var(--ivory)",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 6,
-                                }}
-                              >
-                                {mapSearching && (
-                                  <Loader2
-                                    size={13}
-                                    style={{
-                                      animation: "spin 0.8s linear infinite",
-                                    }}
-                                  />
-                                )}{" "}
-                                Tìm
-                              </button>
-                            </div>
-
-                            {/* Map */}
-                            <div
-                              style={{
-                                flex: 1,
-                                minHeight: 340,
-                                position: "relative",
-                              }}
-                            >
-                              <MapContainer
-                                center={
-                                  mapPin
-                                    ? [mapPin.lat, mapPin.lng]
-                                    : [10.0124518, 105.7324316]
-                                }
-                                zoom={mapPin ? 16 : 13}
-                                style={{
-                                  width: "100%",
-                                  height: "100%",
-                                  minHeight: 340,
-                                }}
-                                key={
-                                  mapPin
-                                    ? `${mapPin.lat},${mapPin.lng}`
-                                    : "default"
-                                }
-                              >
-                                <TileLayer
-                                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                  attribution="© OpenStreetMap"
-                                />
-                                <MapClickHandler
-                                  onPick={(pin) => setMapPin(pin)}
-                                />
-                                {mapPin && (
-                                  <Marker position={[mapPin.lat, mapPin.lng]} />
-                                )}
-                              </MapContainer>
-                              {!mapPin && (
-                                <div
-                                  style={{
-                                    position: "absolute",
-                                    bottom: 16,
-                                    left: "50%",
-                                    transform: "translateX(-50%)",
-                                    zIndex: 1000,
-                                    background: "rgba(13,51,48,0.85)",
-                                    backdropFilter: "blur(8px)",
-                                    color: "var(--ivory)",
-                                    padding: "10px 20px",
-                                    fontSize: 12,
-                                    letterSpacing: "0.06em",
-                                    whiteSpace: "nowrap",
-                                  }}
-                                >
-                                  👆 Click vào bản đồ để chọn vị trí
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Actions */}
-                            <div
-                              style={{
-                                padding: "16px 24px",
-                                borderTop: "0.5px solid var(--border)",
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                flexShrink: 0,
-                              }}
-                            >
-                              <div
-                                style={{
-                                  fontSize: 12,
-                                  color: "var(--text-muted)",
-                                }}
-                              >
-                                {mapPin
-                                  ? `📍 ${mapPin.lat.toFixed(5)}, ${mapPin.lng.toFixed(5)}`
-                                  : "Chưa chọn vị trí"}
-                              </div>
-                              <div style={{ display: "flex", gap: 10 }}>
-                                <button
-                                  onClick={() => setShowMapModal(false)}
-                                  style={{
-                                    background: "none",
-                                    border: "0.5px solid var(--border)",
-                                    padding: "10px 20px",
-                                    cursor: "pointer",
-                                    fontFamily: "Be Vietnam Pro, sans-serif",
-                                    fontSize: 11,
-                                    letterSpacing: "0.12em",
-                                    textTransform: "uppercase",
-                                    color: "var(--text-muted)",
-                                  }}
-                                >
-                                  Huỷ
-                                </button>
-                                <button
-                                  disabled={!mapPin}
-                                  onClick={() => setMapStep("confirm")}
-                                  style={{
-                                    background: mapPin
-                                      ? "var(--forest)"
-                                      : "var(--border)",
-                                    border: "none",
-                                    padding: "10px 28px",
-                                    cursor: mapPin ? "pointer" : "not-allowed",
-                                    fontFamily: "Be Vietnam Pro, sans-serif",
-                                    fontSize: 11,
-                                    letterSpacing: "0.14em",
-                                    textTransform: "uppercase",
-                                    color: "var(--ivory)",
-                                  }}
-                                >
-                                  Tiếp theo →
-                                </button>
-                              </div>
-                            </div>
-                          </>
-                        ) : (
-                          /*  Bước confirm: điền thông tin  */
-                          <div
-                            style={{
-                              padding: 24,
-                              overflowY: "auto",
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: 16,
-                            }}
-                          >
-                            <div
-                              style={{
-                                padding: "12px 16px",
-                                background: "rgba(74,158,63,0.06)",
-                                border: "0.5px solid rgba(74,158,63,0.25)",
-                                fontSize: 12,
-                                color: "var(--text-muted)",
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 8,
-                              }}
-                            >
-                              <MapPin
-                                size={13}
-                                style={{ color: "var(--gold)", flexShrink: 0 }}
-                              />
-                              Vị trí: {mapPin?.lat.toFixed(5)},{" "}
-                              {mapPin?.lng.toFixed(5)}
-                              <button
-                                onClick={() => setMapStep("map")}
-                                style={{
-                                  marginLeft: "auto",
                                   background: "none",
                                   border: "none",
                                   cursor: "pointer",
@@ -2841,239 +2337,379 @@ export default function Checkout() {
                                   fontSize: 11,
                                   padding: 0,
                                   textDecoration: "underline",
-                                }}
-                              >
-                                Chọn lại
-                              </button>
-                            </div>
-
-                            <div
-                              style={{
-                                display: "grid",
-                                gridTemplateColumns: "1fr 1fr",
-                                gap: 14,
-                              }}
-                            >
-                              {[
-                                {
-                                  key: "fullName",
-                                  label: "Họ tên",
-                                  placeholder: "Nguyễn Văn An",
-                                },
-                                {
-                                  key: "phone",
-                                  label: "Điện thoại",
-                                  placeholder: "0912 345 678",
-                                },
-                              ].map((f) => (
-                                <div key={f.key} className="form-group">
-                                  <label
-                                    style={{
-                                      fontSize: 10,
-                                      letterSpacing: "0.16em",
-                                      textTransform: "uppercase",
-                                      color: "var(--text-muted)",
-                                      marginBottom: 6,
-                                      display: "block",
-                                    }}
-                                  >
-                                    {f.label}{" "}
-                                    <span style={{ color: "var(--gold)" }}>
-                                      *
-                                    </span>
-                                  </label>
-                                  <input
-                                    value={newAddrForm[f.key]}
-                                    onChange={(e) =>
-                                      setNewAddrForm((p) => ({
-                                        ...p,
-                                        [f.key]: e.target.value,
-                                      }))
-                                    }
-                                    placeholder={f.placeholder}
-                                    style={{
-                                      width: "100%",
-                                      boxSizing: "border-box",
-                                      border: "0.5px solid var(--border)",
-                                      padding: "12px 14px",
-                                      fontFamily: "Be Vietnam Pro, sans-serif",
-                                      fontSize: 13,
-                                      color: "var(--forest)",
-                                      outline: "none",
-                                      background: "var(--white)",
-                                      borderRadius: 0,
-                                    }}
-                                  />
-                                </div>
-                              ))}
-                            </div>
-
-                            <div className="form-group">
-                              <label
-                                style={{
-                                  fontSize: 10,
-                                  letterSpacing: "0.16em",
-                                  textTransform: "uppercase",
-                                  color: "var(--text-muted)",
-                                  marginBottom: 6,
-                                  display: "block",
-                                }}
-                              >
-                                Số nhà, tên đường{" "}
-                                <span style={{ color: "var(--gold)" }}>*</span>
-                              </label>
-                              <input
-                                value={newAddrForm.street}
-                                onChange={(e) =>
-                                  setNewAddrForm((p) => ({
-                                    ...p,
-                                    street: e.target.value,
-                                  }))
-                                }
-                                placeholder="123 Đường Lê Lợi"
-                                style={{
-                                  width: "100%",
-                                  boxSizing: "border-box",
-                                  border: "0.5px solid var(--border)",
-                                  padding: "12px 14px",
                                   fontFamily: "Be Vietnam Pro, sans-serif",
-                                  fontSize: 13,
-                                  color: "var(--forest)",
-                                  outline: "none",
-                                  background: "var(--white)",
-                                  borderRadius: 0,
                                 }}
-                              />
-                            </div>
+                              >
+                                Xem bảng giá
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            fontFamily: "Playfair Display, serif",
+                            fontSize: 18,
+                            color: shipCalc.free ? "#4a9e3f" : "var(--forest)",
+                            minWidth: 80,
+                            textAlign: "right",
+                          }}
+                        >
+                          {shipCalc.loading
+                            ? "..."
+                            : shipCalc.free
+                              ? "Miễn phí"
+                              : `${(shipCalc.fee || 30000).toLocaleString("vi-VN")}đ`}
+                        </div>
+                      </div>
+                    )}
 
-                            <div
+                    <Field label="Ghi chú đơn hàng (không bắt buộc)">
+                      <textarea
+                        value={ship.note}
+                        onChange={(e) =>
+                          setShip((f) => ({ ...f, note: e.target.value }))
+                        }
+                        placeholder="Giao giờ hành chính, gọi trước khi giao…"
+                        style={{
+                          background: "var(--white)",
+                          border: "0.5px solid var(--border)",
+                          padding: "13px 16px",
+                          fontFamily: "Be Vietnam Pro, sans-serif",
+                          fontSize: 13,
+                          color: "var(--forest)",
+                          fontWeight: 300,
+                          outline: "none",
+                          resize: "vertical",
+                          minHeight: 72,
+                          width: "100%",
+                          boxSizing: "border-box",
+                          borderRadius: 0,
+                        }}
+                      />
+                    </Field>
+
+                    <label
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        cursor: "pointer",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={requestInvoice}
+                        onChange={(e) => setRequestInvoice(e.target.checked)}
+                        style={{ display: "none" }}
+                      />
+                      <div
+                        style={{
+                          width: 18,
+                          height: 18,
+                          border: `0.5px solid ${requestInvoice ? "var(--forest)" : "var(--border)"}`,
+                          background: requestInvoice
+                            ? "var(--forest)"
+                            : "var(--white)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          transition: "all 0.2s",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {requestInvoice && (
+                          <Check size={11} style={{ color: "var(--ivory)" }} />
+                        )}
+                      </div>
+                      <span
+                        style={{
+                          fontSize: 12,
+                          color: "var(--text-muted)",
+                          fontWeight: 300,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                        }}
+                      >
+                        <FileText size={13} style={{ color: "var(--gold)" }} />{" "}
+                        Yêu cầu xuất hoá đơn (VAT)
+                      </span>
+                    </label>
+                  </div>
+                )}
+
+                <NavRow
+                  onBack={() => navigate("/cart")}
+                  backLabel="Giỏ hàng"
+                  onNext={goToStep2}
+                  nextLabel="Tiếp: Thanh toán"
+                />
+
+                {/* ══ MAP MODAL ══ */}
+                {showMapModal && (
+                  <div
+                    onClick={() => setShowMapModal(false)}
+                    style={{
+                      position: "fixed",
+                      inset: 0,
+                      zIndex: 2000,
+                      background: "rgba(10,14,12,0.6)",
+                      backdropFilter: "blur(4px)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: 24,
+                    }}
+                  >
+                    <div
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        background: "var(--ivory)",
+                        border: "0.5px solid var(--border-gold)",
+                        width: "100%",
+                        maxWidth: 680,
+                        maxHeight: "90vh",
+                        overflow: "hidden",
+                        display: "flex",
+                        flexDirection: "column",
+                        boxShadow: "0 40px 80px rgba(13,43,30,0.35)",
+                      }}
+                    >
+                      {/* Modal header */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          padding: "20px 24px",
+                          borderBottom: "0.5px solid var(--border)",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <div>
+                          <h3
+                            style={{
+                              fontFamily: "Playfair Display, serif",
+                              fontSize: 20,
+                              fontWeight: 400,
+                              color: "var(--forest)",
+                              margin: 0,
+                            }}
+                          >
+                            Chọn{" "}
+                            <em
                               style={{
-                                display: "grid",
-                                gridTemplateColumns: "1fr 1fr",
-                                gap: 14,
+                                color: "var(--gold)",
+                                fontStyle: "italic",
                               }}
                             >
-                              {[
-                                {
-                                  key: "province",
-                                  label: "Tỉnh / Thành phố",
-                                  placeholder: "Cần Thơ",
-                                },
-                                {
-                                  key: "ward",
-                                  label: "Phường / Xã",
-                                  placeholder: "An Bình",
-                                },
-                              ].map((f) => (
-                                <div key={f.key} className="form-group">
-                                  <label
-                                    style={{
-                                      fontSize: 10,
-                                      letterSpacing: "0.16em",
-                                      textTransform: "uppercase",
-                                      color: "var(--text-muted)",
-                                      marginBottom: 6,
-                                      display: "block",
-                                    }}
-                                  >
-                                    {f.label}{" "}
-                                    <span style={{ color: "var(--gold)" }}>
-                                      *
-                                    </span>
-                                  </label>
-                                  <input
-                                    value={newAddrForm[f.key]}
-                                    onChange={(e) =>
-                                      setNewAddrForm((p) => ({
-                                        ...p,
-                                        [f.key]: e.target.value,
-                                      }))
-                                    }
-                                    placeholder={f.placeholder}
-                                    style={{
-                                      width: "100%",
-                                      boxSizing: "border-box",
-                                      border: "0.5px solid var(--border)",
-                                      padding: "12px 14px",
-                                      fontFamily: "Be Vietnam Pro, sans-serif",
-                                      fontSize: 13,
-                                      color: "var(--forest)",
-                                      outline: "none",
-                                      background: "var(--white)",
-                                      borderRadius: 0,
-                                    }}
-                                  />
-                                </div>
-                              ))}
-                            </div>
+                              địa chỉ
+                            </em>{" "}
+                            trên bản đồ
+                          </h3>
+                          <p
+                            style={{
+                              fontSize: 11,
+                              color: "var(--text-muted)",
+                              margin: "4px 0 0",
+                            }}
+                          >
+                            Click vào bản đồ để ghim vị trí, hoặc tìm kiếm địa
+                            chỉ
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => setShowMapModal(false)}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            color: "var(--text-muted)",
+                            fontSize: 22,
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </div>
 
-                            <label
+                      {mapStep === "map" ? (
+                        <>
+                          {/* Search */}
+                          <div
+                            style={{
+                              padding: "14px 24px",
+                              borderBottom: "0.5px solid var(--border)",
+                              display: "flex",
+                              gap: 8,
+                              flexShrink: 0,
+                            }}
+                          >
+                            <input
+                              value={mapSearch}
+                              onChange={(e) => setMapSearch(e.target.value)}
+                              onKeyDown={async (e) => {
+                                if (e.key !== "Enter" || !mapSearch.trim())
+                                  return;
+                                setMapSearching(true);
+                                try {
+                                  const r = await fetch(
+                                    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(mapSearch + ", Vietnam")}&format=json&limit=1`,
+                                    { headers: { "Accept-Language": "vi" } },
+                                  );
+                                  const d = await r.json();
+                                  if (d[0])
+                                    setMapPin({
+                                      lat: parseFloat(d[0].lat),
+                                      lng: parseFloat(d[0].lon),
+                                    });
+                                } catch {}
+                                setMapSearching(false);
+                              }}
+                              placeholder="Tìm địa chỉ, nhấn Enter để tìm…"
                               style={{
+                                flex: 1,
+                                background: "var(--white)",
+                                border: "0.5px solid var(--border)",
+                                padding: "10px 14px",
+                                fontFamily: "Be Vietnam Pro, sans-serif",
+                                fontSize: 13,
+                                color: "var(--forest)",
+                                outline: "none",
+                                borderRadius: 0,
+                              }}
+                            />
+                            <button
+                              onClick={async () => {
+                                if (!mapSearch.trim()) return;
+                                setMapSearching(true);
+                                try {
+                                  const r = await fetch(
+                                    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(mapSearch + ", Vietnam")}&format=json&limit=1`,
+                                    { headers: { "Accept-Language": "vi" } },
+                                  );
+                                  const d = await r.json();
+                                  if (d[0])
+                                    setMapPin({
+                                      lat: parseFloat(d[0].lat),
+                                      lng: parseFloat(d[0].lon),
+                                    });
+                                } catch {}
+                                setMapSearching(false);
+                              }}
+                              style={{
+                                background: "var(--forest)",
+                                border: "none",
+                                padding: "10px 20px",
+                                cursor: "pointer",
+                                fontFamily: "Be Vietnam Pro, sans-serif",
+                                fontSize: 11,
+                                letterSpacing: "0.14em",
+                                textTransform: "uppercase",
+                                color: "var(--ivory)",
                                 display: "flex",
                                 alignItems: "center",
-                                gap: 10,
-                                cursor: "pointer",
+                                gap: 6,
                               }}
                             >
-                              <input
-                                type="checkbox"
-                                checked={newAddrForm.isDefault}
-                                onChange={(e) =>
-                                  setNewAddrForm((p) => ({
-                                    ...p,
-                                    isDefault: e.target.checked,
-                                  }))
-                                }
-                                style={{ display: "none" }}
+                              {mapSearching && (
+                                <Loader2
+                                  size={13}
+                                  style={{
+                                    animation: "spin 0.8s linear infinite",
+                                  }}
+                                />
+                              )}{" "}
+                              Tìm
+                            </button>
+                          </div>
+
+                          {/* Map */}
+                          <div
+                            style={{
+                              flex: 1,
+                              minHeight: 340,
+                              position: "relative",
+                            }}
+                          >
+                            <MapContainer
+                              center={
+                                mapPin
+                                  ? [mapPin.lat, mapPin.lng]
+                                  : [10.0124518, 105.7324316]
+                              }
+                              zoom={mapPin ? 16 : 13}
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                minHeight: 340,
+                              }}
+                              key={
+                                mapPin
+                                  ? `${mapPin.lat},${mapPin.lng}`
+                                  : "default"
+                              }
+                            >
+                              <TileLayer
+                                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                attribution="© OpenStreetMap"
                               />
+                              <MapClickHandler
+                                onPick={(pin) => setMapPin(pin)}
+                              />
+                              {mapPin && (
+                                <Marker position={[mapPin.lat, mapPin.lng]} />
+                              )}
+                            </MapContainer>
+                            {!mapPin && (
                               <div
                                 style={{
-                                  width: 18,
-                                  height: 18,
-                                  border: `0.5px solid ${newAddrForm.isDefault ? "var(--forest)" : "var(--border)"}`,
-                                  background: newAddrForm.isDefault
-                                    ? "var(--forest)"
-                                    : "var(--white)",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  transition: "all 0.2s",
-                                  flexShrink: 0,
-                                }}
-                              >
-                                {newAddrForm.isDefault && (
-                                  <Check
-                                    size={11}
-                                    style={{ color: "var(--ivory)" }}
-                                  />
-                                )}
-                              </div>
-                              <span
-                                style={{
+                                  position: "absolute",
+                                  bottom: 16,
+                                  left: "50%",
+                                  transform: "translateX(-50%)",
+                                  zIndex: 1000,
+                                  background: "rgba(13,51,48,0.85)",
+                                  backdropFilter: "blur(8px)",
+                                  color: "var(--ivory)",
+                                  padding: "10px 20px",
                                   fontSize: 12,
-                                  color: "var(--text-muted)",
-                                  fontWeight: 300,
+                                  letterSpacing: "0.06em",
+                                  whiteSpace: "nowrap",
                                 }}
                               >
-                                Đặt làm địa chỉ mặc định
-                              </span>
-                            </label>
+                                👆 Click vào bản đồ để chọn vị trí
+                              </div>
+                            )}
+                          </div>
 
+                          {/* Actions */}
+                          <div
+                            style={{
+                              padding: "16px 24px",
+                              borderTop: "0.5px solid var(--border)",
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              flexShrink: 0,
+                            }}
+                          >
                             <div
                               style={{
-                                display: "flex",
-                                gap: 10,
-                                paddingTop: 8,
-                                borderTop: "0.5px solid var(--border)",
+                                fontSize: 12,
+                                color: "var(--text-muted)",
                               }}
                             >
+                              {mapPin
+                                ? `📍 ${mapPin.lat.toFixed(5)}, ${mapPin.lng.toFixed(5)}`
+                                : "Chưa chọn vị trí"}
+                            </div>
+                            <div style={{ display: "flex", gap: 10 }}>
                               <button
-                                onClick={() => setMapStep("map")}
+                                onClick={() => setShowMapModal(false)}
                                 style={{
-                                  flex: 1,
                                   background: "none",
                                   border: "0.5px solid var(--border)",
-                                  padding: 13,
+                                  padding: "10px 20px",
                                   cursor: "pointer",
                                   fontFamily: "Be Vietnam Pro, sans-serif",
                                   fontSize: 11,
@@ -3082,95 +2718,394 @@ export default function Checkout() {
                                   color: "var(--text-muted)",
                                 }}
                               >
-                                ← Chọn lại vị trí
+                                Huỷ
                               </button>
                               <button
-                                disabled={savingAddr}
-                                onClick={async () => {
-                                  if (
-                                    !newAddrForm.fullName ||
-                                    !newAddrForm.phone ||
-                                    !newAddrForm.street ||
-                                    !newAddrForm.province ||
-                                    !newAddrForm.ward
-                                  ) {
-                                    toast.error(
-                                      "Vui lòng điền đầy đủ thông tin",
-                                    );
-                                    return;
-                                  }
-                                  setSavingAddr(true);
-                                  try {
-                                    const { data } =
-                                      await addressService.create({
-                                        ...newAddrForm,
-                                        lat: mapPin?.lat,
-                                        lng: mapPin?.lng,
-                                      });
-                                    const newAddr = data.data;
-                                    setSavedAddresses((prev) => [
-                                      ...prev,
-                                      newAddr,
-                                    ]);
-                                    applyAddress(newAddr);
-                                    setShowMapModal(false);
-                                    setMapStep("map");
-                                    setMapPin(null);
-                                    setMapSearch("");
-                                    setNewAddrForm({
-                                      fullName: "",
-                                      phone: "",
-                                      street: "",
-                                      province: "",
-                                      ward: "",
-                                      isDefault: false,
-                                    });
-                                    toast.success("Đã lưu địa chỉ!");
-                                  } catch {
-                                    toast.error("Lưu địa chỉ thất bại");
-                                  } finally {
-                                    setSavingAddr(false);
-                                  }
-                                }}
+                                disabled={!mapPin}
+                                onClick={() => setMapStep("confirm")}
                                 style={{
-                                  flex: 2,
-                                  background: savingAddr
-                                    ? "var(--sage)"
-                                    : "var(--forest)",
+                                  background: mapPin
+                                    ? "var(--forest)"
+                                    : "var(--border)",
                                   border: "none",
-                                  padding: 13,
-                                  cursor: savingAddr
-                                    ? "not-allowed"
-                                    : "pointer",
+                                  padding: "10px 28px",
+                                  cursor: mapPin ? "pointer" : "not-allowed",
                                   fontFamily: "Be Vietnam Pro, sans-serif",
                                   fontSize: 11,
-                                  letterSpacing: "0.16em",
+                                  letterSpacing: "0.14em",
                                   textTransform: "uppercase",
                                   color: "var(--ivory)",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  justifyContent: "center",
-                                  gap: 8,
                                 }}
                               >
-                                {savingAddr && (
-                                  <Loader2
-                                    size={13}
-                                    style={{
-                                      animation: "spin 0.8s linear infinite",
-                                    }}
-                                  />
-                                )}
-                                Lưu địa chỉ & sử dụng
+                                Tiếp theo →
                               </button>
                             </div>
                           </div>
-                        )}
-                      </div>
+                        </>
+                      ) : (
+                        /*  Bước confirm: điền thông tin  */
+                        <div
+                          style={{
+                            padding: 24,
+                            overflowY: "auto",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 16,
+                          }}
+                        >
+                          <div
+                            style={{
+                              padding: "12px 16px",
+                              background: "rgba(74,158,63,0.06)",
+                              border: "0.5px solid rgba(74,158,63,0.25)",
+                              fontSize: 12,
+                              color: "var(--text-muted)",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 8,
+                            }}
+                          >
+                            <MapPin
+                              size={13}
+                              style={{ color: "var(--gold)", flexShrink: 0 }}
+                            />
+                            Vị trí: {mapPin?.lat.toFixed(5)},{" "}
+                            {mapPin?.lng.toFixed(5)}
+                            <button
+                              onClick={() => setMapStep("map")}
+                              style={{
+                                marginLeft: "auto",
+                                background: "none",
+                                border: "none",
+                                cursor: "pointer",
+                                color: "var(--gold)",
+                                fontSize: 11,
+                                padding: 0,
+                                textDecoration: "underline",
+                              }}
+                            >
+                              Chọn lại
+                            </button>
+                          </div>
+
+                          <div
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns: "1fr 1fr",
+                              gap: 14,
+                            }}
+                          >
+                            {[
+                              {
+                                key: "fullName",
+                                label: "Họ tên",
+                                placeholder: "Nguyễn Văn An",
+                              },
+                              {
+                                key: "phone",
+                                label: "Điện thoại",
+                                placeholder: "0912 345 678",
+                              },
+                            ].map((f) => (
+                              <div key={f.key} className="form-group">
+                                <label
+                                  style={{
+                                    fontSize: 10,
+                                    letterSpacing: "0.16em",
+                                    textTransform: "uppercase",
+                                    color: "var(--text-muted)",
+                                    marginBottom: 6,
+                                    display: "block",
+                                  }}
+                                >
+                                  {f.label}{" "}
+                                  <span style={{ color: "var(--gold)" }}>
+                                    *
+                                  </span>
+                                </label>
+                                <input
+                                  value={newAddrForm[f.key]}
+                                  onChange={(e) =>
+                                    setNewAddrForm((p) => ({
+                                      ...p,
+                                      [f.key]: e.target.value,
+                                    }))
+                                  }
+                                  placeholder={f.placeholder}
+                                  style={{
+                                    width: "100%",
+                                    boxSizing: "border-box",
+                                    border: "0.5px solid var(--border)",
+                                    padding: "12px 14px",
+                                    fontFamily: "Be Vietnam Pro, sans-serif",
+                                    fontSize: 13,
+                                    color: "var(--forest)",
+                                    outline: "none",
+                                    background: "var(--white)",
+                                    borderRadius: 0,
+                                  }}
+                                />
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="form-group">
+                            <label
+                              style={{
+                                fontSize: 10,
+                                letterSpacing: "0.16em",
+                                textTransform: "uppercase",
+                                color: "var(--text-muted)",
+                                marginBottom: 6,
+                                display: "block",
+                              }}
+                            >
+                              Số nhà, tên đường{" "}
+                              <span style={{ color: "var(--gold)" }}>*</span>
+                            </label>
+                            <input
+                              value={newAddrForm.street}
+                              onChange={(e) =>
+                                setNewAddrForm((p) => ({
+                                  ...p,
+                                  street: e.target.value,
+                                }))
+                              }
+                              placeholder="123 Đường Lê Lợi"
+                              style={{
+                                width: "100%",
+                                boxSizing: "border-box",
+                                border: "0.5px solid var(--border)",
+                                padding: "12px 14px",
+                                fontFamily: "Be Vietnam Pro, sans-serif",
+                                fontSize: 13,
+                                color: "var(--forest)",
+                                outline: "none",
+                                background: "var(--white)",
+                                borderRadius: 0,
+                              }}
+                            />
+                          </div>
+
+                          <div
+                            style={{
+                              display: "grid",
+                              gridTemplateColumns: "1fr 1fr",
+                              gap: 14,
+                            }}
+                          >
+                            {[
+                              {
+                                key: "province",
+                                label: "Tỉnh / Thành phố",
+                                placeholder: "Cần Thơ",
+                              },
+                              {
+                                key: "ward",
+                                label: "Phường / Xã",
+                                placeholder: "An Bình",
+                              },
+                            ].map((f) => (
+                              <div key={f.key} className="form-group">
+                                <label
+                                  style={{
+                                    fontSize: 10,
+                                    letterSpacing: "0.16em",
+                                    textTransform: "uppercase",
+                                    color: "var(--text-muted)",
+                                    marginBottom: 6,
+                                    display: "block",
+                                  }}
+                                >
+                                  {f.label}{" "}
+                                  <span style={{ color: "var(--gold)" }}>
+                                    *
+                                  </span>
+                                </label>
+                                <input
+                                  value={newAddrForm[f.key]}
+                                  onChange={(e) =>
+                                    setNewAddrForm((p) => ({
+                                      ...p,
+                                      [f.key]: e.target.value,
+                                    }))
+                                  }
+                                  placeholder={f.placeholder}
+                                  style={{
+                                    width: "100%",
+                                    boxSizing: "border-box",
+                                    border: "0.5px solid var(--border)",
+                                    padding: "12px 14px",
+                                    fontFamily: "Be Vietnam Pro, sans-serif",
+                                    fontSize: 13,
+                                    color: "var(--forest)",
+                                    outline: "none",
+                                    background: "var(--white)",
+                                    borderRadius: 0,
+                                  }}
+                                />
+                              </div>
+                            ))}
+                          </div>
+
+                          <label
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 10,
+                              cursor: "pointer",
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={newAddrForm.isDefault}
+                              onChange={(e) =>
+                                setNewAddrForm((p) => ({
+                                  ...p,
+                                  isDefault: e.target.checked,
+                                }))
+                              }
+                              style={{ display: "none" }}
+                            />
+                            <div
+                              style={{
+                                width: 18,
+                                height: 18,
+                                border: `0.5px solid ${newAddrForm.isDefault ? "var(--forest)" : "var(--border)"}`,
+                                background: newAddrForm.isDefault
+                                  ? "var(--forest)"
+                                  : "var(--white)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                transition: "all 0.2s",
+                                flexShrink: 0,
+                              }}
+                            >
+                              {newAddrForm.isDefault && (
+                                <Check
+                                  size={11}
+                                  style={{ color: "var(--ivory)" }}
+                                />
+                              )}
+                            </div>
+                            <span
+                              style={{
+                                fontSize: 12,
+                                color: "var(--text-muted)",
+                                fontWeight: 300,
+                              }}
+                            >
+                              Đặt làm địa chỉ mặc định
+                            </span>
+                          </label>
+
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 10,
+                              paddingTop: 8,
+                              borderTop: "0.5px solid var(--border)",
+                            }}
+                          >
+                            <button
+                              onClick={() => setMapStep("map")}
+                              style={{
+                                flex: 1,
+                                background: "none",
+                                border: "0.5px solid var(--border)",
+                                padding: 13,
+                                cursor: "pointer",
+                                fontFamily: "Be Vietnam Pro, sans-serif",
+                                fontSize: 11,
+                                letterSpacing: "0.12em",
+                                textTransform: "uppercase",
+                                color: "var(--text-muted)",
+                              }}
+                            >
+                              ← Chọn lại vị trí
+                            </button>
+                            <button
+                              disabled={savingAddr}
+                              onClick={async () => {
+                                if (
+                                  !newAddrForm.fullName ||
+                                  !newAddrForm.phone ||
+                                  !newAddrForm.street ||
+                                  !newAddrForm.province ||
+                                  !newAddrForm.ward
+                                ) {
+                                  toast.error("Vui lòng điền đầy đủ thông tin");
+                                  return;
+                                }
+                                setSavingAddr(true);
+                                try {
+                                  const { data } = await addressService.create({
+                                    ...newAddrForm,
+                                    lat: mapPin?.lat,
+                                    lng: mapPin?.lng,
+                                  });
+                                  const newAddr = data.data;
+                                  setSavedAddresses((prev) => [
+                                    ...prev,
+                                    newAddr,
+                                  ]);
+                                  applyAddress(newAddr);
+                                  setShowMapModal(false);
+                                  setMapStep("map");
+                                  setMapPin(null);
+                                  setMapSearch("");
+                                  setNewAddrForm({
+                                    fullName: "",
+                                    phone: "",
+                                    street: "",
+                                    province: "",
+                                    ward: "",
+                                    isDefault: false,
+                                  });
+                                  toast.success("Đã lưu địa chỉ!");
+                                } catch {
+                                  toast.error("Lưu địa chỉ thất bại");
+                                } finally {
+                                  setSavingAddr(false);
+                                }
+                              }}
+                              style={{
+                                flex: 2,
+                                background: savingAddr
+                                  ? "var(--sage)"
+                                  : "var(--forest)",
+                                border: "none",
+                                padding: 13,
+                                cursor: savingAddr ? "not-allowed" : "pointer",
+                                fontFamily: "Be Vietnam Pro, sans-serif",
+                                fontSize: 11,
+                                letterSpacing: "0.16em",
+                                textTransform: "uppercase",
+                                color: "var(--ivory)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: 8,
+                              }}
+                            >
+                              {savingAddr && (
+                                <Loader2
+                                  size={13}
+                                  style={{
+                                    animation: "spin 0.8s linear infinite",
+                                  }}
+                                />
+                              )}
+                              Lưu địa chỉ & sử dụng
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </>
-              )}
+                  </div>
+                )}
+              </>
             </div>
           )}
 
@@ -3539,10 +3474,14 @@ export default function Checkout() {
 
               <NavRow
                 onBack={() => {
-                  setStep(1);
-                  scrollTop();
+                  if (isDigitalOrder) {
+                    navigate("/cart");
+                  } else {
+                    setStep(1);
+                    scrollTop();
+                  }
                 }}
-                backLabel="Địa chỉ"
+                backLabel={isDigitalOrder ? "Giỏ hàng" : "Địa chỉ"}
                 onNext={goToStep3}
                 nextLabel="Xem xác nhận"
               />

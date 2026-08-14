@@ -8,10 +8,18 @@ const STEPS = [
   { n: 5, label: "Hoàn tất" },
 ];
 
-export default function StepBar({ current }) {
+const STEPS_DIGITAL = [
+  { n: 1, label: "Giỏ hàng" },
+  { n: 2, label: "Thanh toán" },
+  { n: 3, label: "Xác nhận" },
+  { n: 4, label: "Hoàn tất" },
+];
+
+export default function StepBar({ current, digital }) {
+  const steps = digital ? STEPS_DIGITAL : STEPS;
   return (
     <div style={{ display: "flex", alignItems: "center", marginBottom: 48 }}>
-      {STEPS.map((s, i) => {
+      {steps.map((s, i) => {
         const done = current > s.n;
         const active = current === s.n;
         return (
@@ -20,7 +28,7 @@ export default function StepBar({ current }) {
             style={{
               display: "flex",
               alignItems: "center",
-              flex: i < STEPS.length - 1 ? 1 : "none",
+              flex: i < steps.length - 1 ? 1 : "none",
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
@@ -55,7 +63,7 @@ export default function StepBar({ current }) {
                 {s.label}
               </span>
             </div>
-            {i < STEPS.length - 1 && (
+            {i < steps.length - 1 && (
               <div
                 style={{
                   flex: 1,
