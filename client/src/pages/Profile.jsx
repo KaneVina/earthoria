@@ -2017,11 +2017,28 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
     },
   });
 
+  const confirmReceivedMutation = useMutation({
+    mutationFn: () => orderService.confirmReceived(order.id),
+    onSuccess: () => {
+      toast.success("Đã xác nhận nhận hàng, cảm ơn bạn!");
+      qc.invalidateQueries({ queryKey: ["order", order.id] });
+      qc.invalidateQueries({ queryKey: ["orders"] });
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || "Xác nhận thất bại");
+    },
+  });
+
   if (loading || !order) return <OrderDetailSkeleton onBack={onBack} />;
 
   const status = ORDER_STATUS_MAP[order.status] || ORDER_STATUS_MAP.PENDING;
   const isCancelled = order.status === "CANCELLED";
-  const stepIdx = ORDER_STEPS.indexOf(order.status);
+  // COMPLETED không có mặt trong ORDER_STEPS (thanh tiến trình chỉ mô tả các bước trước khi hoàn tất) —
+  // coi như đã đi hết thanh, cho cả đơn sách giấy (đã bấm "đã nhận đơn") lẫn đơn ebook (thanh toán xong).
+  const stepIdx =
+    order.status === "COMPLETED"
+      ? ORDER_STEPS.length - 1
+      : ORDER_STEPS.indexOf(order.status);
   const fillPct = (Math.max(0, stepIdx) / (ORDER_STEPS.length - 1)) * 100;
   const canRetryPayment =
     ["VNPAY", "MOMO"].includes(order.paymentMethod) &&
@@ -2030,6 +2047,8 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
   const canCancel =
     ["PENDING", "CONFIRMED"].includes(order.status) &&
     order.paymentStatus !== "PAID";
+  // Chỉ sách giấy mới có bước DELIVERED chờ người nhận bấm xác nhận; ebook đã tự COMPLETED khi thanh toán.
+  const canConfirmReceived = !order.isDigital && order.status === "DELIVERED";
 
   const retryPayment = async () => {
     setRetrying(true);
@@ -2262,6 +2281,22 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
                   </>
                 ) : (
                   `Thanh toán lại qua ${order.paymentMethod === "VNPAY" ? "VNPay" : "MoMo"}`
+                )}
+              </button>
+            )}
+            {canConfirmReceived && (
+              <button
+                onClick={() => confirmReceivedMutation.mutate()}
+                disabled={confirmReceivedMutation.isPending}
+                className="pf-btn-tactile pf-btn-shine pf-pw-submit"
+                style={{ width: "100%", marginTop: 14 }}
+              >
+                {confirmReceivedMutation.isPending ? (
+                  <>
+                    <span className="pf-spinner-sm" /> Đang xác nhận…
+                  </>
+                ) : (
+                  "Đã nhận được hàng"
                 )}
               </button>
             )}

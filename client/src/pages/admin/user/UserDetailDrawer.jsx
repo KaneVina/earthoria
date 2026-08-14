@@ -22,6 +22,7 @@ const ORDER_STATUS_LABEL = {
   CONFIRMED: 'Đã xác nhận',
   SHIPPING:  'Vận chuyển',
   DELIVERED: 'Đã giao',
+  COMPLETED: 'Hoàn thành',
   CANCELLED: 'Hủy đơn',
   REFUNDED:  'Hoàn tiền',
 }
@@ -31,6 +32,7 @@ const ORDER_BADGE = {
   CONFIRMED: 'info',
   SHIPPING:  'info',
   DELIVERED: 'success',
+  COMPLETED: 'success',
   CANCELLED: 'danger',
   REFUNDED:  'danger',
 }

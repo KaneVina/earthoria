@@ -4,10 +4,6 @@ import { Check, X, Loader2, ShieldCheck, RefreshCcw } from "lucide-react";
 import { paymentService } from "../services/paymentService";
 import { useAuthStore } from "../store/authStore";
 
-// Sau khi verify về, đơn có thể ở 3 trạng thái hiển thị:
-// - success: đã được IPN xác nhận PAID
-// - pending: gateway báo thành công nhưng IPN (nguồn xác nhận chính) chưa kịp xử lý xong — không phải lỗi
-// - failed: gateway báo thất bại/huỷ, hoặc phiên đã hết hạn, hoặc dữ liệu không khớp
 export default function PaymentReturn({ method }) {
   const location = useLocation();
   const navigate = useNavigate();

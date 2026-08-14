@@ -13,6 +13,7 @@ export const ORDER_STATUS = {
   CONFIRMED: 'Đã xác nhận',
   SHIPPING:  'Vận chuyển',
   DELIVERED: 'Đã giao',
+  COMPLETED: 'Hoàn thành',
   CANCELLED: 'Hủy đơn',
   REFUNDED:  'Hoàn tiền',
 }
@@ -29,6 +30,7 @@ const ORDER_BADGE = {
   CONFIRMED: 'info',
   SHIPPING:  'info',
   DELIVERED: 'success',
+  COMPLETED: 'success',
   CANCELLED: 'danger',
   REFUNDED:  'danger',
 }
@@ -274,7 +276,8 @@ export default function Orders() {
                       onChange={e => updateMutation.mutate({ id: order.id, status: e.target.value })}
                     >
                       {Object.entries(ORDER_STATUS)
-                        .filter(([key]) => !(order.isDigital && key === 'SHIPPING'))
+                        // Đơn sách điện tử không có bước vận chuyển — thanh toán xong tự chuyển COMPLETED.
+                        .filter(([key]) => !(order.isDigital && ['SHIPPING', 'DELIVERED'].includes(key)))
                         .map(([key, label]) => (
                           <option key={key} value={key}>{label}</option>
                         ))}

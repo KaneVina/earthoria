@@ -12,7 +12,10 @@ const {
 // Gửi email không được phép làm hỏng/làm chậm thao tác admin — luôn tự bắt lỗi, chỉ log lại.
 const sendOrderEmailSafe = (sendFn, payload) => {
   sendFn(payload).catch((err) => {
-    console.error(`[adminController] Gửi email thất bại (${sendFn.name}):`, err);
+    console.error(
+      `[adminController] Gửi email thất bại (${sendFn.name}):`,
+      err,
+    );
   });
 };
 const { uploadGlbFile } = require("../services/catboxService");
@@ -24,9 +27,11 @@ const CHART_COLORS = {
   CONFIRMED: "#2a78d6",
   SHIPPING: "#4a3aa7",
   DELIVERED: "#4a9e3f",
+  COMPLETED: "#0d3330",
   CANCELLED: "#e34948",
   REFUNDED: "#e34948",
 };
+
 const CATEGORY_COLORS = [
   "#0D3330",
   "#2a78d6",
@@ -43,6 +48,7 @@ const STATUS_LABEL = {
   CONFIRMED: "Đã xác nhận",
   SHIPPING: "Vận chuyển",
   DELIVERED: "Đã giao",
+  COMPLETED: "Hoàn thành",
   CANCELLED: "Hủy đơn",
   REFUNDED: "Hoàn tiền",
 };
@@ -338,7 +344,7 @@ exports.getDashboard = async (req, res) => {
       ...latestOrders.map((o) => ({
         time: o.createdAt,
         type:
-          o.status === "DELIVERED"
+          o.status === "DELIVERED" || o.status === "COMPLETED"
             ? "green"
             : o.status === "CANCELLED"
               ? "red"
@@ -691,9 +697,10 @@ exports.createProduct = async (req, res) => {
       include: bookInclude,
     });
 
-    return res
-      .status(201)
-      .json({ success: true, data: { ...withAuthorNames(full), isVisible: full.isActive } });
+    return res.status(201).json({
+      success: true,
+      data: { ...withAuthorNames(full), isVisible: full.isActive },
+    });
   } catch (err) {
     if (err.code === "P2002") {
       return res
@@ -778,9 +785,15 @@ exports.updateProduct = async (req, res) => {
       }
     });
 
-    const book = await prisma.book.findUnique({ where: { id }, include: bookInclude });
+    const book = await prisma.book.findUnique({
+      where: { id },
+      include: bookInclude,
+    });
 
-    return res.json({ success: true, data: { ...withAuthorNames(book), isVisible: book.isActive } });
+    return res.json({
+      success: true,
+      data: { ...withAuthorNames(book), isVisible: book.isActive },
+    });
   } catch (err) {
     if (err.code === "P2025") {
       return res
@@ -812,11 +825,14 @@ exports.deleteProductVariant = async (req, res) => {
         .json({ success: false, message: "Không tìm thấy định dạng bán này" });
     }
 
-    const totalVariants = await prisma.bookVariant.count({ where: { bookId: id } });
+    const totalVariants = await prisma.bookVariant.count({
+      where: { bookId: id },
+    });
     if (totalVariants <= 1) {
       return res.status(400).json({
         success: false,
-        message: "Sách phải có ít nhất 1 định dạng bán, không thể xóa định dạng cuối cùng",
+        message:
+          "Sách phải có ít nhất 1 định dạng bán, không thể xóa định dạng cuối cùng",
       });
     }
 
@@ -836,7 +852,9 @@ exports.deleteProductVariant = async (req, res) => {
         success: false,
         softDeleted: true,
         message: `Không thể xóa vì định dạng này còn ${orderCount} đơn hàng đã mua${
-          inventoryImportCount ? `, ${inventoryImportCount} phiếu nhập kho liên quan` : ""
+          inventoryImportCount
+            ? `, ${inventoryImportCount} phiếu nhập kho liên quan`
+            : ""
         }. Đã chuyển sang trạng thái ngừng bán.`,
       });
     }
@@ -1080,11 +1098,12 @@ exports.updateOrderStatus = async (req, res) => {
     const { id } = req.params;
     const { status, cancelReason } = req.body;
 
-    const validStatuses = [
+   const validStatuses = [
       "PENDING",
       "CONFIRMED",
       "SHIPPING",
       "DELIVERED",
+      "COMPLETED",
       "CANCELLED",
       "REFUNDED",
     ];
@@ -1105,7 +1124,9 @@ exports.updateOrderStatus = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Không tìm thấy đơn hàng" });
     }
-    if (existing.isDigital && status === "SHIPPING") {
+    // Đơn sách điện tử không có bước giao hàng — thanh toán xong tự chuyển COMPLETED,
+    // nên admin không can thiệp vào SHIPPING/DELIVERED của đơn này.
+    if (existing.isDigital && ["SHIPPING", "DELIVERED"].includes(status)) {
       return res.status(400).json({
         success: false,
         message: "Đơn hàng sách điện tử không có bước vận chuyển",
@@ -1113,7 +1134,12 @@ exports.updateOrderStatus = async (req, res) => {
     }
     const isNewTransition = existing.status !== status;
 
-    const extraData = status === "DELIVERED" ? { paymentStatus: "PAID" } : {};
+    // DELIVERED (sách giấy): đánh dấu đã thu tiền (COD thu khi giao / online đã PAID từ trước).
+    // COMPLETED do admin tự set (hỗ trợ/override) cũng coi như đã thanh toán xong.
+    const extraData =
+      status === "DELIVERED" || status === "COMPLETED"
+        ? { paymentStatus: "PAID" }
+        : {};
 
     const order = await prisma.order.update({
       where: { id },
@@ -1122,7 +1148,9 @@ exports.updateOrderStatus = async (req, res) => {
         user: { select: { email: true, name: true } },
         address: true,
         items: {
-          include: { variant: { include: { book: { select: { title: true } } } } },
+          include: {
+            variant: { include: { book: { select: { title: true } } } },
+          },
         },
       },
     });
@@ -1446,13 +1474,19 @@ exports.bulkToggleUsers = async (req, res) => {
     const { ids, action, reason } = req.body;
 
     if (!["STAFF", "ADMIN"].includes(viewerRole)) {
-      return res.status(403).json({ success: false, message: "Không có quyền" });
+      return res
+        .status(403)
+        .json({ success: false, message: "Không có quyền" });
     }
     if (!Array.isArray(ids) || ids.length === 0) {
-      return res.status(400).json({ success: false, message: "Chưa chọn tài khoản nào" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Chưa chọn tài khoản nào" });
     }
     if (!["lock", "unlock"].includes(action)) {
-      return res.status(400).json({ success: false, message: "Hành động không hợp lệ" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Hành động không hợp lệ" });
     }
 
     const cleanIds = [...new Set(ids)].filter((id) => id !== req.user.id);
@@ -1476,7 +1510,9 @@ exports.bulkToggleUsers = async (req, res) => {
     }
 
     const allowedTargetRoles =
-      viewerRole === "STAFF" ? ["CUSTOMER", "DEALER"] : ["CUSTOMER", "DEALER", "STAFF"];
+      viewerRole === "STAFF"
+        ? ["CUSTOMER", "DEALER"]
+        : ["CUSTOMER", "DEALER", "STAFF"];
 
     const targets = await prisma.user.findMany({
       where: { id: { in: cleanIds }, role: { in: allowedTargetRoles } },
@@ -1484,7 +1520,9 @@ exports.bulkToggleUsers = async (req, res) => {
     });
 
     // Chỉ xử lý user đang ở đúng trạng thái ngược lại hành động (tránh khóa cái đã khóa)
-    const eligible = targets.filter((u) => (willLock ? u.isActive : !u.isActive));
+    const eligible = targets.filter((u) =>
+      willLock ? u.isActive : !u.isActive,
+    );
 
     if (eligible.length === 0) {
       return res.status(400).json({
@@ -1497,7 +1535,12 @@ exports.bulkToggleUsers = async (req, res) => {
     await prisma.user.updateMany({
       where: { id: { in: eligible.map((u) => u.id) } },
       data: willLock
-        ? { isActive: false, lockReason: reason.trim(), lockedAt: now, lockedBy: req.user.id }
+        ? {
+            isActive: false,
+            lockReason: reason.trim(),
+            lockedAt: now,
+            lockedBy: req.user.id,
+          }
         : { isActive: true, lockReason: null, lockedAt: null, lockedBy: null },
     });
 
@@ -1521,7 +1564,10 @@ exports.bulkToggleUsers = async (req, res) => {
     return res.json({
       success: true,
       message: `Đã ${willLock ? "khóa" : "mở khóa"} ${eligible.length} tài khoản`,
-      data: { affected: eligible.length, skipped: cleanIds.length - eligible.length },
+      data: {
+        affected: eligible.length,
+        skipped: cleanIds.length - eligible.length,
+      },
     });
   } catch (err) {
     console.error("[bulkToggleUsers]", err);
@@ -1540,8 +1586,12 @@ exports.exportUsersCsv = async (req, res) => {
     const viewerRole = req.user.role;
     let scopeRoles;
     if (viewerRole === "STAFF") scopeRoles = ["STAFF", "CUSTOMER", "DEALER"];
-    else if (viewerRole === "ADMIN") scopeRoles = ["CUSTOMER", "DEALER", "STAFF"];
-    else return res.status(403).json({ success: false, message: "Không có quyền truy cập" });
+    else if (viewerRole === "ADMIN")
+      scopeRoles = ["CUSTOMER", "DEALER", "STAFF"];
+    else
+      return res
+        .status(403)
+        .json({ success: false, message: "Không có quyền truy cập" });
 
     const search = req.query.search?.trim() ?? "";
     const role = req.query.role?.trim() ?? "";
@@ -1580,8 +1630,15 @@ exports.exportUsersCsv = async (req, res) => {
     });
 
     const header = [
-      "Mã người dùng", "Họ tên", "Email", "Số điện thoại",
-      "Vai trò", "Trạng thái", "Số đơn hàng", "Số tài khoản kid", "Ngày đăng ký",
+      "Mã người dùng",
+      "Họ tên",
+      "Email",
+      "Số điện thoại",
+      "Vai trò",
+      "Trạng thái",
+      "Số đơn hàng",
+      "Số tài khoản kid",
+      "Ngày đăng ký",
     ];
     const rows = users.map((u) => [
       u.userCode ?? "",
@@ -1790,7 +1847,13 @@ exports.searchProductsQuick = async (req, res) => {
         slug: true,
         coverImage: true,
         variants: {
-          select: { id: true, format: true, productCode: true, unit: true, stock: true },
+          select: {
+            id: true,
+            format: true,
+            productCode: true,
+            unit: true,
+            stock: true,
+          },
         },
         _count: { select: { arCodes: true } },
       },
@@ -2103,7 +2166,12 @@ exports.createInventoryImport = async (req, res) => {
               { status: 404 },
             );
           }
-          variant = await getOrCreatePhysicalVariant(tx, book, unitPrice, raw.unit);
+          variant = await getOrCreatePhysicalVariant(
+            tx,
+            book,
+            unitPrice,
+            raw.unit,
+          );
         } else {
           const trimmedCode = raw.productCode?.trim();
           if (trimmedCode) {
@@ -2156,7 +2224,12 @@ exports.createInventoryImport = async (req, res) => {
           }
 
           if (!variant) {
-            variant = await getOrCreatePhysicalVariant(tx, book, unitPrice, raw.unit);
+            variant = await getOrCreatePhysicalVariant(
+              tx,
+              book,
+              unitPrice,
+              raw.unit,
+            );
           }
         }
 

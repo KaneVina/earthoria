@@ -415,6 +415,7 @@ model Order {
   userId          String
   addressId       String
   status          OrderStatus   @default(PENDING)
+  isDigital       Boolean       @default(false)
   paymentMethod   PaymentMethod
   paymentStatus   PaymentStatus @default(UNPAID)
   subtotal        Float
@@ -456,6 +457,7 @@ enum OrderStatus {
   CONFIRMED
   SHIPPING
   DELIVERED
+  COMPLETED
   CANCELLED
   REFUNDED
 }

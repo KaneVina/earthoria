@@ -387,7 +387,7 @@ const getChildBooks = async (req, res) => {
         order: {
           userId: req.user.id,
           paymentStatus: "PAID",
-          status: { in: ["CONFIRMED", "SHIPPING", "DELIVERED"] },
+          status: { in: ["CONFIRMED", "SHIPPING", "DELIVERED", "COMPLETED"] },
         },
       },
       select: {
@@ -444,7 +444,7 @@ const toggleChildBookVisibility = async (req, res) => {
         order: {
           userId: req.user.id,
           paymentStatus: "PAID",
-          status: { in: ["CONFIRMED", "SHIPPING", "DELIVERED"] },
+          status: { in: ["CONFIRMED", "SHIPPING", "DELIVERED", "COMPLETED"] },
         },
       },
     });
@@ -623,7 +623,7 @@ const getKidPublicBooks = async (req, res) => {
         order: {
           userId: child.parentId,
           paymentStatus: "PAID",
-          status: { in: ["CONFIRMED", "SHIPPING", "DELIVERED"] },
+          status: { in: ["CONFIRMED", "SHIPPING", "DELIVERED", "COMPLETED"] },
         },
       },
       select: {

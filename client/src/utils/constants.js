@@ -3,6 +3,7 @@ export const ORDER_STATUS = {
   CONFIRMED: 'Đã xác nhận',
   SHIPPING: 'Đang giao hàng',
   DELIVERED: 'Đã giao hàng',
+  COMPLETED: 'Hoàn thành',
   CANCELLED: 'Đã hủy',
   REFUNDED: 'Đã hoàn tiền'
 }

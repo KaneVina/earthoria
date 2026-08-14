@@ -11,7 +11,10 @@ const {
 // chỉ log lại để không ném unhandled rejection và không trì hoãn response trả về cho client.
 const sendOrderEmailSafe = (sendFn, payload) => {
   sendFn(payload).catch((err) => {
-    console.error(`[orderController] Gửi email thất bại (${sendFn.name}):`, err);
+    console.error(
+      `[orderController] Gửi email thất bại (${sendFn.name}):`,
+      err,
+    );
   });
 };
 
@@ -112,6 +115,10 @@ const createOrder = async (req, res) => {
       }
     }
 
+    const isDigitalOrder = cart.items.every(
+      (item) => item.variant.format === "DIGITAL",
+    );
+
     // 3. Tính subtotal
     const subtotal = cart.items.reduce((sum, item) => {
       const price = item.variant.salePrice ?? item.variant.price;
@@ -140,8 +147,11 @@ const createOrder = async (req, res) => {
     const afterDiscount = subtotal - discount;
 
     // 5. Tính phí ship theo km (dùng cùng hàm calcFee với endpoint xem trước /orders/shipping-fee)
+    // Sách điện tử không giao hàng nên luôn miễn phí ship.
     let shippingFee;
-    if (shipping.deliveryMode === "pickup") {
+    if (isDigitalOrder) {
+      shippingFee = 0;
+    } else if (shipping.deliveryMode === "pickup") {
       shippingFee = 0;
     } else if (afterDiscount >= FREE_SHIP_THRESHOLD) {
       shippingFee = 0;
@@ -168,42 +178,74 @@ const createOrder = async (req, res) => {
         "Phương thức thanh toán không hợp lệ hoặc chưa được hỗ trợ",
       );
     }
+    if (isDigitalOrder && prismaMethod === "COD") {
+      return formatResponse(
+        res,
+        400,
+        "Sách điện tử chỉ hỗ trợ thanh toán online qua VNPay hoặc MoMo",
+      );
+    }
     const isOnlinePayment = ONLINE_PAYMENT_METHODS.includes(prismaMethod);
 
     // 7. Tạo Address snapshot (lưu vào bảng Address)
-    // Snapshot này KHÔNG dùng chung row với địa chỉ đã lưu trong profile
-    // (isSaved: true) — nên sau này người dùng sửa/xóa địa chỉ trong sổ địa
-    // chỉ không bao giờ làm đổi địa chỉ hiển thị trên các đơn đã đặt trước đó.
-    // Tuy nhiên nếu 2 đơn có CÙNG nội dung địa chỉ (trùng tên/sđt/tỉnh/phường/
-    // số nhà) thì dùng lại đúng 1 row snapshot đã có, tránh sinh vô số bản ghi
-    // trùng lặp trong bảng Address mỗi khi đặt hàng lặp lại cùng 1 địa chỉ.
-    let address = await prisma.address.findFirst({
-      where: {
-        userId,
-        isSaved: false,
-        fullName: shipping.fullName,
-        phone: shipping.phone,
-        province: shipping.province,
-        ward: shipping.ward,
-        street: shipping.street,
-      },
-    });
-
-    if (!address) {
-      address = await prisma.address.create({
-        data: {
+    let address;
+    if (isDigitalOrder) {
+      const fullName = shipping?.fullName || req.user.name;
+      const phone = shipping?.phone || req.user.phone || "";
+      address = await prisma.address.findFirst({
+        where: {
           userId,
+          isSaved: false,
+          fullName,
+          phone,
+          province: "",
+          ward: "",
+          street: "",
+        },
+      });
+      if (!address) {
+        address = await prisma.address.create({
+          data: {
+            userId,
+            fullName,
+            phone,
+            province: "",
+            district: "",
+            ward: "",
+            street: "",
+            isSaved: false,
+          },
+        });
+      }
+    } else {
+      address = await prisma.address.findFirst({
+        where: {
+          userId,
+          isSaved: false,
           fullName: shipping.fullName,
           phone: shipping.phone,
           province: shipping.province,
-          district: "",
           ward: shipping.ward,
           street: shipping.street,
-          lat: shipping.lat ?? null,
-          lng: shipping.lng ?? null,
-          isSaved: false,
         },
       });
+
+      if (!address) {
+        address = await prisma.address.create({
+          data: {
+            userId,
+            fullName: shipping.fullName,
+            phone: shipping.phone,
+            province: shipping.province,
+            district: "",
+            ward: shipping.ward,
+            street: shipping.street,
+            lat: shipping.lat ?? null,
+            lng: shipping.lng ?? null,
+            isSaved: false,
+          },
+        });
+      }
     }
 
     // 8. Tạo Order + OrderItems trong transaction
@@ -213,6 +255,7 @@ const createOrder = async (req, res) => {
           userId,
           addressId: address.id,
           paymentMethod: prismaMethod,
+          isDigital: isDigitalOrder,
           subtotal,
           discount,
           shippingFee,
@@ -289,14 +332,17 @@ const createOrder = async (req, res) => {
         shippingFee,
         total,
         paymentMethod: prismaMethod,
-        address: {
-          fullName: shipping.fullName,
-          phone: shipping.phone,
-          street: shipping.street,
-          ward: shipping.ward,
-          district: "",
-          province: shipping.province,
-        },
+        isDigital: isDigitalOrder,
+        address: isDigitalOrder
+          ? null
+          : {
+              fullName: shipping.fullName,
+              phone: shipping.phone,
+              street: shipping.street,
+              ward: shipping.ward,
+              district: "",
+              province: shipping.province,
+            },
       },
     });
 
@@ -396,7 +442,9 @@ const cancelOrder = async (req, res) => {
       where: { id: req.params.id },
       include: {
         items: {
-          include: { variant: { include: { book: { select: { title: true } } } } },
+          include: {
+            variant: { include: { book: { select: { title: true } } } },
+          },
         },
       },
     });
@@ -489,12 +537,45 @@ const cancelOrder = async (req, res) => {
   }
 };
 
+const confirmOrderReceived = async (req, res) => {
+  try {
+    const order = await prisma.order.findUnique({ where: { id: req.params.id } });
+
+    if (!order) return formatResponse(res, 404, "Không tìm thấy đơn hàng");
+    if (order.userId !== req.user.id)
+      return formatResponse(res, 403, "Không có quyền với đơn hàng này");
+    if (order.isDigital)
+      return formatResponse(
+        res,
+        400,
+        "Đơn hàng sách điện tử tự động hoàn thành ngay sau khi thanh toán",
+      );
+    if (order.status !== "DELIVERED")
+      return formatResponse(
+        res,
+        400,
+        "Đơn hàng chưa ở trạng thái đã giao, chưa thể xác nhận đã nhận",
+      );
+
+    const updated = await prisma.order.update({
+      where: { id: order.id },
+      data: { status: "COMPLETED", paymentStatus: "PAID" },
+    });
+
+    return formatResponse(res, 200, "Đã xác nhận nhận hàng, cảm ơn bạn!", updated);
+  } catch (error) {
+    console.error(error);
+    return formatResponse(res, 500, "Lỗi server");
+  }
+};
+
 module.exports = {
   createOrder,
   getMyOrders,
   calcShippingFee,
   getOrderById,
   cancelOrder,
+  confirmOrderReceived,
   ORDER_ITEMS_INCLUDE,
   flattenOrderItems,
   genPaymentRef,

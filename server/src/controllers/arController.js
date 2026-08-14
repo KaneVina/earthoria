@@ -1,49 +1,51 @@
-const prisma = require('../config/db')
+const prisma = require("../config/db");
 
-/**
- * GET /api/v1/ar/:code — BẮT BUỘC đăng nhập (middleware `protect` áp ở
- * route). Chưa login → 401 do chính `protect` trả về, không cần xử lý
- * thêm ở đây.
- *
- * Sau khi xác thực token, còn phải kiểm tra thêm: user này CÓ sở hữu
- * cuốn sách chứa mã AR này không (đơn hàng DELIVERED). Đây là lớp
- * kiểm soát chính chống chia sẻ link — không dựa vào việc "biết code"
- * nữa mà dựa vào "có mua sách + đăng nhập đúng tài khoản đó".
- */
 exports.getArCode = async (req, res) => {
   try {
-    const { code } = req.params
+    const { code } = req.params;
 
     const arCode = await prisma.arCode.findUnique({
       where: { code },
       include: {
         book: { select: { id: true, title: true, slug: true } },
       },
-    })
+    });
 
     if (!arCode || !arCode.isActive) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy mã này' })
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy mã này" });
     }
 
-    if (arCode.accessType !== 'PUBLIC') {
+    if (arCode.accessType !== "PUBLIC") {
       if (!req.user) {
-        return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập để xem mô hình AR' })
+        return res
+          .status(401)
+          .json({
+            success: false,
+            message: "Vui lòng đăng nhập để xem mô hình AR",
+          });
       }
 
-      if (req.user.role !== 'ADMIN' && req.user.role !== 'STAFF') {
+      if (req.user.role !== "ADMIN" && req.user.role !== "STAFF") {
         const owns = await prisma.orderItem.findFirst({
           where: {
-            bookId: arCode.bookId,
-            order: { userId: req.user.id, status: 'DELIVERED' },
+            variant: { bookId: arCode.bookId },
+            // DELIVERED = đang chờ khách xác nhận, COMPLETED = đã xác nhận nhận hàng — cả 2 đều coi là đã sở hữu.
+            order: {
+              userId: req.user.id,
+              status: { in: ["DELIVERED", "COMPLETED"] },
+            },
           },
           select: { id: true },
-        })
+        });
 
         if (!owns) {
           return res.status(403).json({
             success: false,
-            message: 'Bạn cần sở hữu cuốn sách này (đơn hàng đã giao) để xem mô hình AR',
-          })
+            message:
+              "Bạn cần sở hữu cuốn sách này (đơn hàng đã giao) để xem mô hình AR",
+          });
         }
       }
     }
@@ -51,7 +53,7 @@ exports.getArCode = async (req, res) => {
     await prisma.arCode.update({
       where: { id: arCode.id },
       data: { scanCount: { increment: 1 } },
-    })
+    });
 
     return res.json({
       success: true,
@@ -62,12 +64,12 @@ exports.getArCode = async (req, res) => {
         accessType: arCode.accessType,
         book: arCode.book,
       },
-    })
+    });
   } catch (err) {
-    console.error('[getArCode]', err)
-    return res.status(500).json({ success: false, message: 'Lỗi server' })
+    console.error("[getArCode]", err);
+    return res.status(500).json({ success: false, message: "Lỗi server" });
   }
-}
+};
 
 /**
  * GET /api/v1/ar/my-books — danh sách toàn bộ ArCode thuộc các sách mà
@@ -79,20 +81,31 @@ exports.getMyArCodes = async (req, res) => {
       where: {
         isActive: true,
         book: {
-          orderItems: {
-            some: { order: { userId: req.user.id, status: 'DELIVERED' } },
+          variants: {
+            some: {
+              orderItems: {
+                some: {
+                  order: {
+                    userId: req.user.id,
+                    status: { in: ["DELIVERED", "COMPLETED"] },
+                  },
+                },
+              },
+            },
           },
         },
       },
       include: {
-        book: { select: { id: true, title: true, slug: true, coverImage: true } },
+        book: {
+          select: { id: true, title: true, slug: true, coverImage: true },
+        },
       },
-      orderBy: [{ bookId: 'asc' }, { createdAt: 'asc' }],
-    })
+      orderBy: [{ bookId: "asc" }, { createdAt: "asc" }],
+    });
 
-    return res.json({ success: true, data: arCodes })
+    return res.json({ success: true, data: arCodes });
   } catch (err) {
-    console.error('[getMyArCodes]', err)
-    return res.status(500).json({ success: false, message: 'Lỗi server' })
+    console.error("[getMyArCodes]", err);
+    return res.status(500).json({ success: false, message: "Lỗi server" });
   }
-}
+};

@@ -50,6 +50,7 @@ const ORDER_META = {
   CONFIRMED: { label: "Đã xác nhận", cls: "info" },
   SHIPPING: { label: "Vận chuyển", cls: "info" },
   DELIVERED: { label: "Đã giao", cls: "success" },
+  COMPLETED: { label: "Hoàn thành", cls: "success" },
   CANCELLED: { label: "Hủy đơn", cls: "danger" },
   REFUNDED: { label: "Hoàn tiền", cls: "danger" },
 };

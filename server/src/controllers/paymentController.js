@@ -72,11 +72,19 @@ async function markOrderPaidAtomic(orderId, gatewayTxnId) {
       return { alreadyPaid: true };
     }
 
-    // Bước riêng vì updateMany ở trên không lọc theo status cũ (PENDING) để không bỏ sót đơn CONFIRMED
-    await tx.order.updateMany({
-      where: { id: orderId, status: "PENDING" },
-      data: { status: "CONFIRMED" },
+    // Bước riêng vì updateMany ở trên không lọc theo status cũ (PENDING) để không bỏ sót đơn CONFIRMED.
+    // Đơn toàn sách điện tử (isDigital) không có bước giao hàng — thanh toán xong là chuyển thẳng
+    // COMPLETED; đơn sách giấy vẫn đi CONFIRMED -> ... -> DELIVERED như cũ.
+    const current = await tx.order.findUnique({
+      where: { id: orderId },
+      select: { status: true, isDigital: true },
     });
+    if (current?.status === "PENDING") {
+      await tx.order.update({
+        where: { id: orderId },
+        data: { status: current.isDigital ? "COMPLETED" : "CONFIRMED" },
+      });
+    }
 
     return { alreadyPaid: false };
   });

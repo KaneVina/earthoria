@@ -25,7 +25,7 @@ const withDisplayPrice = (book) => {
 }
 
 // Đơn hàng được xem là "mua thành công": đã thanh toán và không còn ở trạng thái chờ xác nhận/đã huỷ (cùng chuẩn đang dùng ở childController/arController).
-const SUCCESSFUL_ORDER_STATUSES = ['CONFIRMED', 'SHIPPING', 'DELIVERED']
+const SUCCESSFUL_ORDER_STATUSES = ['CONFIRMED', 'SHIPPING', 'DELIVERED', 'COMPLETED']
 
 const hasPurchasedBook = async (userId, bookId) => {
   const item = await prisma.orderItem.findFirst({
