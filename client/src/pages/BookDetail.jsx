@@ -292,7 +292,7 @@ export default function BookDetail() {
       if (!hasSelected) {
         setSelectedFormat(
           variants.find((v) => v.format === "PHYSICAL")?.format ||
-            variants[0].format
+            variants[0].format,
         );
       }
     }
@@ -749,7 +749,11 @@ export default function BookDetail() {
               onClick={handleWishlist}
               title={wishlist ? "Xóa khỏi yêu thích" : "Thêm vào yêu thích"}
             >
-              <Heart size={16} strokeWidth={1.5} fill={wishlist ? "currentColor" : "none"} />
+              <Heart
+                size={16}
+                strokeWidth={1.5}
+                fill={wishlist ? "currentColor" : "none"}
+              />
             </button>
           </div>
 
@@ -1021,6 +1025,17 @@ export default function BookDetail() {
             <div className="reviews-layout">
               {/* Summary */}
               <div className="reviews-summary">
+                <div
+                  style={{
+                    fontSize: "10px",
+                    letterSpacing: "0.16em",
+                    textTransform: "uppercase",
+                    color: "var(--text-muted)",
+                    marginBottom: "8px",
+                  }}
+                >
+                  Điểm trung bình
+                </div>
                 <div className="reviews-big-num">{avgRating.toFixed(1)}</div>
                 <div className="reviews-stars-big">
                   <Stars rating={avgRating} />
@@ -1028,18 +1043,30 @@ export default function BookDetail() {
                 <div className="reviews-total">
                   Dựa trên {reviewCount} đánh giá
                 </div>
-                <div className="rating-bars">
+                <div
+                  className="rating-bars"
+                  style={{
+                    opacity: reviewCount > 0 ? 1 : 0.35,
+                    transition: "opacity 0.3s ease",
+                  }}
+                >
                   {/* ratingBreakdown giờ lấy từ server (tính trên toàn bộ đánh giá
                       còn hiển thị của sách), không còn số % giả khi chưa có dữ liệu */}
                   {[5, 4, 3, 2, 1].map((star) => {
                     const count = book.ratingBreakdown?.[star] || 0;
                     const pct =
-                      reviewCount > 0 ? Math.round((count / reviewCount) * 100) : 0;
+                      reviewCount > 0
+                        ? Math.round((count / reviewCount) * 100)
+                        : 0;
                     return (
                       <div key={star} className="rating-bar-row">
                         <span className="rating-bar-label">
                           {star}
-                          <Star size={11} strokeWidth={1.5} fill="currentColor" />
+                          <Star
+                            size={11}
+                            strokeWidth={1.5}
+                            fill="currentColor"
+                          />
                         </span>
                         <div className="rating-bar-track">
                           <div
@@ -1074,12 +1101,27 @@ export default function BookDetail() {
                       marginTop: "32px",
                       paddingTop: "24px",
                       borderTop: "0.5px solid var(--border)",
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: "10px",
                       fontSize: "13px",
                       color: "var(--text-muted)",
+                      lineHeight: 1.6,
                     }}
                   >
-                    Bạn cần mua sách này (đơn hàng ở trạng thái thành công) để
-                    có thể viết đánh giá.
+                    <svg
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      style={{ flexShrink: 0, marginTop: "1px", color: "var(--gold)" }}
+                    >
+                      <rect x="3" y="11" width="18" height="11" rx="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                    <span>Bạn cần mua sách này để có thể viết đánh giá.</span>
                   </div>
                 )}
 
@@ -1126,13 +1168,21 @@ export default function BookDetail() {
                               s <= reviewForm.rating
                                 ? "var(--gold)"
                                 : "var(--pale)",
-                            transition: "color 0.2s",
+                            transition: "color 0.15s ease, transform 0.15s ease",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = "scale(1.15)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = "scale(1)";
                           }}
                         >
                           <Star
                             size={20}
                             strokeWidth={1.5}
-                            fill={s <= reviewForm.rating ? "currentColor" : "none"}
+                            fill={
+                              s <= reviewForm.rating ? "currentColor" : "none"
+                            }
                           />
                         </button>
                       ))}
@@ -1153,7 +1203,11 @@ export default function BookDetail() {
                         fontSize: "13px",
                         outline: "none",
                         marginBottom: "10px",
+                        borderRadius: "2px",
+                        transition: "border-color 0.2s",
                       }}
+                      onFocus={(e) => (e.target.style.borderColor = "var(--gold)")}
+                      onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
                     />
                     <textarea
                       placeholder="Chia sẻ trải nghiệm của bạn..."
@@ -1175,7 +1229,11 @@ export default function BookDetail() {
                         outline: "none",
                         resize: "vertical",
                         marginBottom: "12px",
+                        borderRadius: "2px",
+                        transition: "border-color 0.2s",
                       }}
+                      onFocus={(e) => (e.target.style.borderColor = "var(--gold)")}
+                      onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
                     />
                     <button
                       type="submit"
@@ -1225,7 +1283,9 @@ export default function BookDetail() {
                                 <BadgeCheck size={12} strokeWidth={1.5} />
                                 Đã mua:{" "}
                                 {r.purchasedFormats
-                                  .map((f) => (f === "DIGITAL" ? "Ebook" : "Bản in"))
+                                  .map((f) =>
+                                    f === "DIGITAL" ? "Ebook" : "Bản in",
+                                  )
                                   .join(", ")}
                               </div>
                             )}
@@ -1272,12 +1332,54 @@ export default function BookDetail() {
                 ) : (
                   <div
                     style={{
-                      padding: "24px 0",
-                      fontSize: "13px",
-                      color: "var(--text-muted)",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      textAlign: "center",
+                      padding: "72px 24px",
+                      border: "0.5px dashed var(--border)",
+                      background: "var(--ivory)",
                     }}
                   >
-                    Chưa có đánh giá nào cho sách này. Hãy là người đầu tiên!
+                    <div
+                      style={{
+                        width: "56px",
+                        height: "56px",
+                        borderRadius: "50%",
+                        background: "rgba(201, 162, 39, 0.08)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginBottom: "20px",
+                        color: "var(--gold)",
+                      }}
+                    >
+                      <Star size={24} strokeWidth={1.2} />
+                    </div>
+                    <h3
+                      style={{
+                        fontFamily: "'Playfair Display', serif",
+                        fontSize: "20px",
+                        fontWeight: 400,
+                        color: "var(--forest)",
+                        marginBottom: "8px",
+                      }}
+                    >
+                      Chưa có đánh giá nào
+                    </h3>
+                    <p
+                      style={{
+                        fontSize: "13px",
+                        lineHeight: 1.7,
+                        color: "var(--text-muted)",
+                        fontWeight: 300,
+                        maxWidth: "320px",
+                      }}
+                    >
+                      Hãy là người đầu tiên chia sẻ trải nghiệm của bạn về cuốn
+                      sách này để giúp những độc giả khác.
+                    </p>
                   </div>
                 )}
               </div>
