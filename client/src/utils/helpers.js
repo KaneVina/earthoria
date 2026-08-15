@@ -23,13 +23,22 @@ export const truncate = (str, n) => {
 
 export const getBookUrl = (slug, hashId) => `/books/${slug}/${hashId}`
 
+// weightGrams (Int, gram) -> chuỗi hiển thị, vd 680 -> "680g"
+export const formatWeight = (weightGrams) => {
+  if (weightGrams == null) return null
+  return `${weightGrams}g`
+}
+
+export const formatAgeRange = (ageMin, ageMax) => {
+  if (ageMin != null && ageMax != null) return `${ageMin}–${ageMax} tuổi`
+  if (ageMin != null) return `Từ ${ageMin} tuổi`
+  if (ageMax != null) return `Đến ${ageMax} tuổi`
+  return null
+}
+
 const ORDER_CODE_CHARS =
   'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 
-// Mã đơn hiển thị dạng ODE-aabbccdef: aa = tháng, bb = ngày, cc = 2 số cuối năm đặt đơn,
-// def = 3 ký tự chữ/số sinh ổn định từ id đơn (cùng 1 đơn luôn ra cùng 1 mã, không đổi theo lần render).
-// PHẢI khớp 100% với hàm getOrderCode() bên BE (server/src/controllers/orderController.js) vì
-// dùng để xác nhận huỷ đơn.
 export const getOrderCode = (order) => {
   if (!order) return ''
   if (order.orderCode) return order.orderCode

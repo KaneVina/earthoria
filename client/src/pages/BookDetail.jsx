@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { bookService } from "../services/bookService";
 import { useCartStore } from "../store/cartStore";
 import { useAuthStore } from "../store/authStore";
-import { formatPrice, formatDate } from "../utils/helpers";
+import { formatPrice, formatDate, formatWeight, formatAgeRange } from "../utils/helpers";
 import { flyToCart } from "../utils/flyToCart";
 import toast from "react-hot-toast";
 import CompareModal from "../components/CompareModal";
@@ -311,6 +311,9 @@ export default function BookDetail() {
         .join(", ")
     : book?.author?.name || book?.author || book?.authorName || "Đang cập nhật";
 
+  const ageRangeDisplay =
+    book?.ageRangeLabel || formatAgeRange(book?.ageMin, book?.ageMax);
+
   //  Handlers
   const changeImg = (idx) => {
     if (idx === activeThumb) return;
@@ -575,8 +578,8 @@ export default function BookDetail() {
           <div className="info-eyebrow">
             <div className="info-eyebrow-line"></div>
             <span className="info-eyebrow-text">
-              {book.category?.name || "Sách AR"} ·{" "}
-              {book.ageRange || "Mọi lứa tuổi"}
+           {book.category?.name || "Sách AR"} ·{" "}
+              {ageRangeDisplay || "Mọi lứa tuổi"}
             </span>
           </div>
 
@@ -630,8 +633,8 @@ export default function BookDetail() {
                 {lang}
               </span>
             ))}
-            {book.ageRange && (
-              <span className="product-tag">{book.ageRange}</span>
+            {ageRangeDisplay && (
+              <span className="product-tag">{ageRangeDisplay}</span>
             )}
             {/* Fallback tags nếu không có data */}
             {!book.hasAR && !book.hasAI && (
@@ -652,7 +655,7 @@ export default function BookDetail() {
           {/* Quick specs */}
           <div className="quick-specs">
             {[
-              ["Độ tuổi", book.ageRange || "6–12 tuổi"],
+                 ["Độ tuổi", ageRangeDisplay || "6–12 tuổi"],
               [
                 "Mô hình AR",
                 book.arModelCount
@@ -892,11 +895,11 @@ export default function BookDetail() {
                       book.pages ? `${book.pages} trang` : "128 trang",
                     ],
                     ["Kích thước", book.dimensions || "21 × 28 × 1.2 cm"],
-                    ["Trọng lượng", book.weight || "680g"],
-                    ["Bìa sách", book.cover || "Cứng, chống nước"],
-                    ["Giấy in", book.paper || "FSC Certified 150gsm"],
+                      ["Trọng lượng", formatWeight(book.weightGrams) || "680g"],
+                    ["Bìa sách", book.coverType || "Cứng, chống nước"],
+                    ["Giấy in", book.paperType || "FSC Certified 150gsm"],
                     ["Ngôn ngữ", book.language || "Tiếng Việt / Tiếng Anh"],
-                    ["Độ tuổi", book.ageRange || "6–12 tuổi"],
+                    ["Độ tuổi", ageRangeDisplay || "6–12 tuổi"],
                   ].map(([k, v]) => (
                     <div key={k} className="details-row">
                       <span className="details-key">{k}</span>
@@ -938,7 +941,8 @@ export default function BookDetail() {
           </div>
         )}
 
-        {/* Tab: Nội dung sách */}
+         {/* Tab: Nội dung sách */}
+        {/* book.chapters/chapterIntro/arModelCount/languages/updatePeriod: chưa có field trong schema, đây là nội dung mặc định cố ý, không phải bug */}
         {activeTab === "chapters" && (
           <div className="tab-panel active">
             <div

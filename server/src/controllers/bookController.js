@@ -3,12 +3,33 @@ const { formatResponse } = require('../utils/helpers')
 const { encodeId, decodeId } = require('../utils/hashids')
 const { userOwnsDigitalBook } = require('../utils/bookOwnership')
 
+// Chuẩn hoá quan hệ authors (BookAuthor[] -> Author[] phẳng) để khớp cách
+// frontend đang đọc book.authors (mảng { id, name }). Chỉ map nếu field authors
+// thực sự có trong query (tránh set undefined -> [] sai lệch ở nơi chưa include).
+const mapAuthors = (book) =>
+  book?.authors
+    ? { ...book, authors: book.authors.map((ba) => ba.author).filter(Boolean) }
+    : book
+
+// Chuỗi hiển thị độ tuổi dựng sẵn ở backend để tránh logic format rải rác
+// nhiều nơi trong frontend.
+const getAgeRangeLabel = (book) => {
+  if (book.ageMin != null && book.ageMax != null) return `${book.ageMin}–${book.ageMax} tuổi`
+  if (book.ageMin != null) return `Từ ${book.ageMin} tuổi`
+  if (book.ageMax != null) return `Đến ${book.ageMax} tuổi`
+  return null
+}
+
 // Helper encode book
-const encodeBook = (book) => ({
-  ...book,
-  hashId: encodeId(book.id),
-  url: `/${book.slug}/${encodeId(book.id)}`
-})
+const encodeBook = (book) => {
+  const withAuthors = mapAuthors(book)
+  return {
+    ...withAuthors,
+    hashId: encodeId(book.id),
+    url: `/${book.slug}/${encodeId(book.id)}`,
+    ageRangeLabel: getAgeRangeLabel(book)
+  }
+}
 
 const FEATURE_FIELD = { ar: 'hasAR', ai: 'hasAI', '3d': 'has3DAudio' }
 
@@ -142,7 +163,8 @@ const getBooks = async (req, res) => {
         include: {
           category: { select: { name: true, slug: true } },
           reviews: { select: { rating: true } },
-          variants: { where: { isActive: true } }
+          variants: { where: { isActive: true } },
+          authors: { include: { author: true }, orderBy: { order: 'asc' } }
         }
       }),
       prisma.book.count({ where })
@@ -250,7 +272,8 @@ const getBook = async (req, res) => {
           orderBy: { createdAt: 'desc' },
           take: 20
         },
-        variants: { where: { isActive: true } }
+        variants: { where: { isActive: true } },
+        authors: { include: { author: true }, orderBy: { order: 'asc' } }
       }
     })
 
@@ -339,7 +362,8 @@ const getFeaturedBooks = async (req, res) => {
       include: {
         category: { select: { name: true, slug: true } },
         reviews: { select: { rating: true } },
-        variants: { where: { isActive: true } }
+        variants: { where: { isActive: true } },
+        authors: { include: { author: true }, orderBy: { order: 'asc' } }
       }
     })
 
@@ -499,7 +523,10 @@ const getWishlist = async (req, res) => {
       where: { userId: req.user.id },
       include: {
         book: {
-          include: { category: { select: { name: true, slug: true } } }
+          include: {
+            category: { select: { name: true, slug: true } },
+            authors: { include: { author: true }, orderBy: { order: 'asc' } }
+          }
         }
       }
     })
