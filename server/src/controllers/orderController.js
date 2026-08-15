@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const prisma = require("../config/db");
 const { formatResponse } = require("../utils/helpers");
+const { encodeId } = require("../utils/hashids");
 const { validateAndComputeDiscount } = require("../utils/couponUtil");
 const {
   sendOrderConfirmedEmail,
@@ -28,6 +29,32 @@ const genPaymentRef = () =>
 
 const ONLINE_PAYMENT_METHODS = ["VNPAY", "MOMO"];
 
+const ORDER_CODE_CHARS =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+// Mã đơn hiển thị dạng ODE-aabbccdef: aa = tháng, bb = ngày, cc = 2 số cuối năm đặt đơn,
+// def = 3 ký tự chữ/số sinh ổn định từ id đơn — PHẢI khớp 100% với hàm getOrderCode() bên FE
+// (client/src/pages/Profile.jsx) vì dùng để xác nhận huỷ đơn.
+const getOrderCode = (order) => {
+  if (!order) return "";
+  if (order.orderCode) return order.orderCode;
+  const d = new Date(order.createdAt || Date.now());
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const yy = String(d.getFullYear()).slice(-2);
+  const seed = String(order.id || "");
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  }
+  let suffix = "";
+  for (let i = 0; i < 3; i++) {
+    suffix += ORDER_CODE_CHARS[hash % ORDER_CODE_CHARS.length];
+    hash = Math.floor(hash / ORDER_CODE_CHARS.length) + i + 1;
+  }
+  return `ODE-${mm}${dd}${yy}${suffix}`;
+};
+
 // Ném ra TRONG transaction tạo đơn khi 1 request khác đã "thắng cuộc đua" giành mất stock/lượt
 // coupon ngay giữa lúc request này xử lý — bước kiểm tra sơ bộ ở trên (đọc stock/coupon TRƯỚC khi
 // vào transaction) chỉ là fast-fail, không đủ để chống race giữa 2 request đến gần như đồng thời.
@@ -49,7 +76,9 @@ const ORDER_ITEMS_INCLUDE = {
   items: {
     include: {
       variant: {
-        include: { book: { select: { title: true, coverImage: true } } },
+        include: {
+          book: { select: { id: true, slug: true, title: true, coverImage: true } },
+        },
       },
     },
   },
@@ -58,6 +87,7 @@ const ORDER_ITEMS_INCLUDE = {
 
 // Trả về order theo format cũ mà FE đang đọc (item.book.title / item.book.coverImage)
 // để không phải sửa lại toàn bộ Profile.jsx / admin — chỉ "duỗi" variant.book ra ngoài item.
+// hashId được sinh thêm để FE dựng link `/books/:slug/:hashId` khi bấm vào sản phẩm.
 const flattenOrderItems = (order) => {
   if (!order) return order;
   return {
@@ -66,6 +96,9 @@ const flattenOrderItems = (order) => {
       ...item,
       book: item.variant?.book
         ? {
+            id: item.variant.book.id,
+            slug: item.variant.book.slug,
+            hashId: encodeId(item.variant.book.id),
             title: item.variant.book.title,
             coverImage: item.variant.book.coverImage,
           }
@@ -322,6 +355,7 @@ const createOrder = async (req, res) => {
       name: req.user.name,
       order: {
         id: order.id,
+        createdAt: order.createdAt,
         items: cart.items.map((item) => ({
           title: item.variant.book?.title || "",
           quantity: item.quantity,
@@ -469,12 +503,12 @@ const cancelOrder = async (req, res) => {
       );
     }
 
-    // Bắt buộc gõ đúng mã đơn hàng (khớp mã hiển thị trên FE: order.id.slice(0,8)) trước khi cho huỷ —
-    // tránh thao tác nhầm, và bắt buộc phải có lý do để lưu vết + đưa vào email báo huỷ cho khách.
-    const expectedCode = order.id.slice(0, 8);
+    // Bắt buộc gõ đúng mã đơn hàng hiển thị trên FE (dạng ODE-aabbccdef, xem getOrderCode()) trước khi
+    // cho huỷ — tránh thao tác nhầm, và bắt buộc phải có lý do để lưu vết + đưa vào email báo huỷ cho khách.
+    const expectedCode = getOrderCode(order).toLowerCase();
     if (
       !confirmCode ||
-      String(confirmCode).trim().toLowerCase() !== expectedCode.toLowerCase()
+      String(confirmCode).trim().toLowerCase() !== expectedCode
     ) {
       return formatResponse(res, 400, "Mã đơn hàng xác nhận không đúng");
     }
@@ -516,6 +550,7 @@ const cancelOrder = async (req, res) => {
       name: req.user.name,
       order: {
         id: order.id,
+        createdAt: order.createdAt,
         items: order.items.map((item) => ({
           title: item.variant.book?.title || "",
           quantity: item.quantity,
@@ -579,5 +614,6 @@ module.exports = {
   ORDER_ITEMS_INCLUDE,
   flattenOrderItems,
   genPaymentRef,
+  getOrderCode,
   ONLINE_PAYMENT_METHODS,
 };

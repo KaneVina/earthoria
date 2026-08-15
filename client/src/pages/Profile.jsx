@@ -12,7 +12,13 @@ import { orderService } from "../services/orderService";
 import { paymentService } from "../services/paymentService";
 import { arService } from "../services/arService";
 import { useAuthStore } from "../store/authStore";
-import { formatPrice, formatDate } from "../utils/helpers";
+import {
+  formatPrice,
+  formatDate,
+  formatDateTime,
+  getBookUrl,
+  getOrderCode,
+} from "../utils/helpers";
 import toast from "react-hot-toast";
 import "../components/assets/css/profile.css";
 import LogoutConfirmModal from "../components/LogoutConfirmModal";
@@ -109,6 +115,15 @@ const ORDER_STEPS = [
   "SHIPPING",
   "DELIVERED",
 ];
+
+// Đơn toàn sách điện tử không có bước giao hàng — chỉ đi thẳng Chờ thanh toán -> Hoàn tất
+// (khớp với luồng BE: PENDING -> COMPLETED khi thanh toán xong, bỏ qua CONFIRMED/PROCESSING/SHIPPING/DELIVERED).
+const DIGITAL_ORDER_STEPS = ["PENDING", "COMPLETED"];
+const DIGITAL_STEP_LABELS = {
+  PENDING: "Chờ thanh toán",
+  COMPLETED: "Hoàn tất",
+};
+
 
 // ════════════════════ ICONS ════════════════════
 const Icon = {
@@ -1687,7 +1702,7 @@ function MiniOrderCard({ order, delay, onClick }) {
       <div className="pf-mini-order-accent" />
       <div style={{ paddingLeft: "4px" }}>
         <div className="pf-mini-order-code">
-          Đơn #{order.orderCode || order.id?.slice(0, 8)}
+          Đơn #{getOrderCode(order)}
         </div>
         <div className="pf-mini-order-meta">
           {order.items?.length || 0} sản phẩm · {formatDate(order.createdAt)}
@@ -1729,7 +1744,7 @@ function OrdersTab({ orders, loading, onSelect }) {
     }
     const match = orders.find(
       (o) =>
-        normalize(o.orderCode) === code ||
+        normalize(getOrderCode(o)) === code ||
         normalize(o.id) === code ||
         normalize(o.id).startsWith(code),
     );
@@ -1883,9 +1898,9 @@ function OrderCard({ order, delay, onClick }) {
           }}
         >
           <span className="pf-order-code">
-            Đơn #{order.orderCode || order.id?.slice(0, 8)}
+            Đơn #{getOrderCode(order)}
           </span>
-          <CopyButton text={order.orderCode || order.id} />
+          <CopyButton text={getOrderCode(order)} />
           <div className="pf-vdivider" />
           <span className="pf-order-date">{formatDate(order.createdAt)}</span>
         </div>
@@ -2033,13 +2048,16 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
 
   const status = ORDER_STATUS_MAP[order.status] || ORDER_STATUS_MAP.PENDING;
   const isCancelled = order.status === "CANCELLED";
-  // COMPLETED không có mặt trong ORDER_STEPS (thanh tiến trình chỉ mô tả các bước trước khi hoàn tất) —
-  // coi như đã đi hết thanh, cho cả đơn sách giấy (đã bấm "đã nhận đơn") lẫn đơn ebook (thanh toán xong).
-  const stepIdx =
-    order.status === "COMPLETED"
+  // Đơn ebook không đi qua CONFIRMED/PROCESSING/SHIPPING/DELIVERED (BE chuyển thẳng
+  // PENDING -> COMPLETED khi thanh toán xong) nên dùng riêng 1 thanh tiến trình 2 bước,
+  // không hiển thị các bước giao hàng vốn không áp dụng cho sách điện tử.
+  const steps = order.isDigital ? DIGITAL_ORDER_STEPS : ORDER_STEPS;
+  const stepIdx = order.isDigital
+    ? steps.indexOf(order.status === "COMPLETED" ? "COMPLETED" : "PENDING")
+    : order.status === "COMPLETED"
       ? ORDER_STEPS.length - 1
       : ORDER_STEPS.indexOf(order.status);
-  const fillPct = (Math.max(0, stepIdx) / (ORDER_STEPS.length - 1)) * 100;
+  const fillPct = (Math.max(0, stepIdx) / (steps.length - 1)) * 100;
   const canRetryPayment =
     ["VNPAY", "MOMO"].includes(order.paymentMethod) &&
     order.paymentStatus !== "PAID" &&
@@ -2103,12 +2121,12 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
             }}
           >
             <h2 className="pf-detail-title">
-              #{order.orderCode || order.id?.slice(0, 8)}
+              #{getOrderCode(order)}
             </h2>
-            <CopyButton text={order.orderCode || order.id} />
+            <CopyButton text={getOrderCode(order)} />
           </div>
           <div className="pf-detail-date">
-            Đặt ngày {formatDate(order.createdAt)}
+            Đặt lúc {formatDateTime(order.createdAt)}
           </div>
         </div>
         <span
@@ -2127,11 +2145,13 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
                 className="pf-tracker-line-fill"
                 style={{ width: `${fillPct}%` }}
               >
-                <span className="pf-tracker-line-dot" />
+                {fillPct < 100 && <span className="pf-tracker-line-dot" />}
               </div>
             </div>
-            {ORDER_STEPS.map((s, i) => {
-              const st = ORDER_STATUS_MAP[s];
+            {steps.map((s, i) => {
+              const label = order.isDigital
+                ? DIGITAL_STEP_LABELS[s]
+                : ORDER_STATUS_MAP[s].label;
               const done = i <= stepIdx;
               const current = i === stepIdx;
               return (
@@ -2146,7 +2166,7 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
                     )}
                   </div>
                   <span className={`pf-tracker-label ${done ? "done" : ""}`}>
-                    {st.label}
+                    {label}
                   </span>
                 </div>
               );
@@ -2168,35 +2188,44 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
             <div className="pf-items-header">
               Sản Phẩm ({order.items?.length || 0})
             </div>
-            {(order.items || []).map((item, i) => (
-              <div
-                key={i}
-                className="pf-item-row"
-                style={{
-                  borderBottom:
-                    i < order.items.length - 1
-                      ? "0.5px solid var(--border)"
-                      : "none",
-                }}
-              >
-                <div className="pf-item-thumb">
-                  {item.book?.coverImage && (
-                    <img src={item.book.coverImage} alt="" />
-                  )}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div className="pf-item-title">
-                    {item.book?.title || item.title}
+            {(order.items || []).map((item, i) => {
+              const hasBookLink = item.book?.slug && item.book?.hashId;
+              const ItemWrap = hasBookLink ? Link : "div";
+              const wrapProps = hasBookLink
+                ? { to: getBookUrl(item.book.slug, item.book.hashId) }
+                : {};
+              return (
+                <ItemWrap
+                  key={i}
+                  {...wrapProps}
+                  className={`pf-item-row${hasBookLink ? " pf-item-row-link" : ""}`}
+                  style={{
+                    borderBottom:
+                      i < order.items.length - 1
+                        ? "0.5px solid var(--border)"
+                        : "none",
+                    cursor: hasBookLink ? "pointer" : "default",
+                  }}
+                >
+                  <div className="pf-item-thumb">
+                    {item.book?.coverImage && (
+                      <img src={item.book.coverImage} alt="" />
+                    )}
                   </div>
-                  <div className="pf-item-meta">
-                    SL: {item.quantity} × {formatPrice(item.price)}
+                  <div style={{ flex: 1 }}>
+                    <div className="pf-item-title">
+                      {item.book?.title || item.title}
+                    </div>
+                    <div className="pf-item-meta">
+                      SL: {item.quantity} × {formatPrice(item.price)}
+                    </div>
                   </div>
-                </div>
-                <div className="pf-item-total">
-                  {formatPrice(item.price * item.quantity)}
-                </div>
-              </div>
-            ))}
+                  <div className="pf-item-total">
+                    {formatPrice(item.price * item.quantity)}
+                  </div>
+                </ItemWrap>
+              );
+            })}
           </div>
 
           {order.isDigital ? (
@@ -2327,11 +2356,7 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
 
 // ════════════════════════ HUỶ ĐƠN HÀNG — MODAL XÁC NHẬN ════════════════════════
 function CancelOrderModal({ order, onClose, onConfirm, submitting }) {
-  const expectedCode = (
-    order.orderCode ||
-    order.id?.slice(0, 8) ||
-    ""
-  ).toLowerCase();
+  const expectedCode = (getOrderCode(order) || "").toLowerCase();
   const [codeInput, setCodeInput] = useState("");
   const [reason, setReason] = useState("");
   const codeMatches =
@@ -2369,7 +2394,7 @@ function CancelOrderModal({ order, onClose, onConfirm, submitting }) {
             margin: "0 0 8px",
           }}
         >
-          Huỷ đơn hàng #{order.orderCode || order.id?.slice(0, 8)}
+          Huỷ đơn hàng #{getOrderCode(order)}
         </h3>
         <p
           style={{
@@ -2399,7 +2424,7 @@ function CancelOrderModal({ order, onClose, onConfirm, submitting }) {
         <input
           value={codeInput}
           onChange={(e) => setCodeInput(e.target.value)}
-          placeholder={order.orderCode || order.id?.slice(0, 8)}
+          placeholder={getOrderCode(order)}
           disabled={submitting}
           style={{
             width: "100%",

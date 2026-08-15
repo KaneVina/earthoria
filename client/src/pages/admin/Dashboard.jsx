@@ -24,7 +24,7 @@ import {
   Area,
 } from "recharts";
 import api from "../../services/api";
-import { formatPrice, formatDate } from "../../utils/helpers";
+import { formatPrice, formatDate, getOrderCode } from "../../utils/helpers";
 import AdminLayout from "./AdminLayout";
 import ServerStatus from "./ServerStatus";
 
@@ -807,7 +807,7 @@ export default function Dashboard() {
                   const meta = ORDER_META[order.status] ?? ORDER_META.PENDING;
                   return (
                     <tr key={order.id}>
-                      <td className="a-td-mono">{order.id.slice(0, 8)}...</td>
+                      <td className="a-td-mono">{getOrderCode(order)}</td>
                       <td>
                         <div style={{ fontWeight: 500, fontSize: 12 }}>
                           {order.user?.name}

@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ChevronDown, X } from 'lucide-react'
 import api from '../../services/api'
-import { formatPrice, formatDate } from '../../utils/helpers'
+import { formatPrice, formatDate, getOrderCode } from '../../utils/helpers'
 import toast from 'react-hot-toast'
 import AdminLayout from './AdminLayout'
 
@@ -252,7 +252,7 @@ export default function Orders() {
                   style={{ cursor: 'pointer' }}
                   onClick={() => setSelected(order)}
                 >
-                  <td className="a-td-mono">{order.id?.slice(0, 8)}...</td>
+                  <td className="a-td-mono">{getOrderCode(order)}</td>
                   <td>
                     <div style={{ fontWeight: 500, fontSize: 12 }}>{order.user?.name}</div>
                     <div className="a-td-muted">{order.user?.email}</div>

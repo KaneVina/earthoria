@@ -1,5 +1,6 @@
 const prisma = require("../config/db");
 const { generateProductCode } = require("../utils/generateProductCode");
+const { getOrderCode } = require("./orderController");
 const bcrypt = require("bcryptjs");
 const {
   sendAccountProvisionedEmail,
@@ -349,7 +350,7 @@ exports.getDashboard = async (req, res) => {
             : o.status === "CANCELLED"
               ? "red"
               : "blue",
-        text: `Đơn hàng #${o.id.slice(0, 8)} — ${STATUS_LABEL[o.status] ?? o.status}`,
+        text: `Đơn hàng #${getOrderCode(o)} — ${STATUS_LABEL[o.status] ?? o.status}`,
       })),
       ...latestUsers.map((u) => ({
         time: u.createdAt,
@@ -1158,6 +1159,7 @@ exports.updateOrderStatus = async (req, res) => {
     if (isNewTransition && (status === "DELIVERED" || status === "CANCELLED")) {
       const emailOrder = {
         id: order.id,
+        createdAt: order.createdAt,
         items: order.items.map((item) => ({
           title: item.variant?.book?.title || "",
           quantity: item.quantity,

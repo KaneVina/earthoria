@@ -1836,7 +1836,7 @@
 }
 .pf-tracker-line-dot {
   position: absolute;
-  right: -4px;
+  right: -4.5px;
   top: 50%;
   transform: translateY(-50%);
   width: 9px;
@@ -1932,6 +1932,14 @@
   gap: 18px;
   align-items: center;
   flex-wrap: wrap;
+  color: inherit;
+  text-decoration: none;
+}
+.pf-item-row-link {
+  transition: background 0.2s ease;
+}
+.pf-item-row-link:hover {
+  background: var(--cream);
 }
 .pf-item-thumb {
   width: 64px;

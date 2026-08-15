@@ -2,18 +2,15 @@ const prisma = require("../config/db");
 const { formatResponse } = require("../utils/helpers");
 const vnpay = require("../utils/vnpayUtil");
 const momo = require("../utils/momoUtil");
-const { genPaymentRef } = require("./orderController");
+const { genPaymentRef, getOrderCode } = require("./orderController");
 
-// Đơn vị tiền tệ duy nhất của hệ thống hiện tại — dùng để đối chiếu với field currency
-// mà vnpayUtil/momoUtil trả về (2 cổng đều chỉ hỗ trợ VND, không có field currency thật trong callback).
+// Đơn vị tiền tệ duy nhất của hệ thống hiện tại — dùng để đối chiếu với field currency mà vnpayUtil/momoUtil trả về (2 cổng đều chỉ hỗ trợ VND, không có field currency thật trong callback).
 const ORDER_CURRENCY = "VND";
 
-// Thời hạn hiệu lực của 1 phiên thanh toán (paymentRef) kể từ lúc tạo payment URL.
-// Sau mốc này, kể cả callback có chữ ký hợp lệ cũng KHÔNG được dùng để đánh dấu đơn đã thanh toán.
+// Thời hạn hiệu lực của 1 phiên thanh toán (paymentRef) kể từ lúc tạo payment URL. Sau mốc này, kể cả callback có chữ ký hợp lệ cũng KHÔNG được dùng để đánh dấu đơn đã thanh toán.
 const PAYMENT_SESSION_TTL_MS = 15 * 60 * 1000; // 15 phút
 
-// Khi FE gọi verify ngay sau khi được gateway redirect về mà gateway báo "thành công", IPN (nguồn xác
-// nhận chính thức) có thể chưa kịp tới do độ trễ mạng — đợi ngắn, đọc lại DB vài lần trước khi trả "pending".
+// Khi FE gọi verify ngay sau khi được gateway redirect về mà gateway báo "thành công", IPN (nguồn xác nhận chính thức) có thể chưa kịp tới do độ trễ mạng — đợi ngắn, đọc lại DB vài lần trước khi trả "pending".
 const WAIT_FOR_IPN_TRIES = 6;
 const WAIT_FOR_IPN_INTERVAL_MS = 500;
 
@@ -167,7 +164,7 @@ const createVnpayPaymentUrl = async (req, res) => {
     const paymentUrl = vnpay.createPaymentUrl({
       txnRef: paymentRef,
       amount: order.total,
-      orderInfo: `Thanh toan don hang Earthoria ${order.id.slice(0, 8)}`,
+      orderInfo: `Thanh toan don hang Earthoria ${getOrderCode(order)}`,
       ipAddr: ip,
       returnUrl,
     });
@@ -393,7 +390,7 @@ const createMomoPaymentUrl = async (req, res) => {
     const momoRes = await momo.createPaymentRequest({
       orderId: paymentRef,
       amount: order.total,
-      orderInfo: `Thanh toan don hang Earthoria ${order.id.slice(0, 8)}`,
+      orderInfo: `Thanh toan don hang Earthoria ${getOrderCode(order)}`,
       redirectUrl: `${clientOrigin(req)}/payment/momo/return`,
       ipnUrl: `${serverBaseUrl}/api/v1/payments/momo/ipn`,
     });

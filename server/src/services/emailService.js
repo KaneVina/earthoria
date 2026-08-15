@@ -755,10 +755,31 @@ function formatVnd(amount) {
   return `${Math.round(Number(amount) || 0).toLocaleString('vi-VN')}₫`
 }
 
-// Mã đơn hàng ngắn gọn hiển thị cho khách (8 ký tự đầu của UUID, viết hoa) — khớp cách BE
-// đang dùng ở nơi khác (vd: orderInfo gửi cho VNPay/MoMo: `order.id.slice(0, 8)`).
-function shortOrderCode(orderId) {
-  return String(orderId || '').slice(0, 8).toUpperCase()
+// Mã đơn hàng hiển thị cho khách trong email — dạng ODE-aabbccdef, PHẢI khớp 100% với
+// getOrderCode() ở orderController.js/helpers.js (FE) để khách đối chiếu đúng 1 mã duy nhất
+// xuyên suốt web + email.
+const ORDER_CODE_CHARS =
+  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+
+function shortOrderCode(order) {
+  const orderId = typeof order === 'string' ? order : order?.id
+  const createdAt = typeof order === 'string' ? null : order?.createdAt
+  if (!orderId) return ''
+  const d = new Date(createdAt || Date.now())
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  const yy = String(d.getFullYear()).slice(-2)
+  const seed = String(orderId)
+  let hash = 0
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0
+  }
+  let suffix = ''
+  for (let i = 0; i < 3; i++) {
+    suffix += ORDER_CODE_CHARS[hash % ORDER_CODE_CHARS.length]
+    hash = Math.floor(hash / ORDER_CODE_CHARS.length) + i + 1
+  }
+  return `ODE-${mm}${dd}${yy}${suffix}`
 }
 
 function buildOrderItemsTable(items) {
@@ -830,7 +851,7 @@ function buildOrderSummaryCard(order) {
               Mã đơn hàng
             </div>
             <div style="font-size:18px;font-weight:600;color:#0b2e2b;letter-spacing:1px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
-              #${shortOrderCode(order.id)}
+              #${shortOrderCode(order)}
             </div>
           </div>
           <div style="padding:20px 28px;">
@@ -901,9 +922,9 @@ async function sendOrderConfirmedEmail({ to, name, order }) {
   return sendMail({
     from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
     to,
-    subject: `[#${shortOrderCode(order.id)}] Đặt hàng thành công tại Earthoria`,
+    subject: `[#${shortOrderCode(order)}] Đặt hàng thành công tại Earthoria`,
     html: wrapEmailTemplate({
-      preheader: `Đơn hàng #${shortOrderCode(order.id)} của bạn đã được ghi nhận.`,
+      preheader: `Đơn hàng #${shortOrderCode(order)} của bạn đã được ghi nhận.`,
       bodyHtml,
     }),
   })
@@ -929,7 +950,7 @@ async function sendOrderDeliveredEmail({ to, name, order }) {
       Xin chào, ${name || 'bạn'}.
     </p>
     <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 24px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
-      Đơn hàng <strong style="color:#0b2e2b;font-weight:500;">#${shortOrderCode(order.id)}</strong> đã được giao thành công đến bạn.
+      Đơn hàng <strong style="color:#0b2e2b;font-weight:500;">#${shortOrderCode(order)}</strong> đã được giao thành công đến bạn.
       Cảm ơn bạn đã tin tưởng và mua sắm tại Earthoria!
     </p>
 
@@ -948,9 +969,9 @@ async function sendOrderDeliveredEmail({ to, name, order }) {
   return sendMail({
     from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
     to,
-    subject: `[#${shortOrderCode(order.id)}] Giao hàng thành công`,
+    subject: `[#${shortOrderCode(order)}] Giao hàng thành công`,
     html: wrapEmailTemplate({
-      preheader: `Đơn hàng #${shortOrderCode(order.id)} đã được giao thành công.`,
+      preheader: `Đơn hàng #${shortOrderCode(order)} đã được giao thành công.`,
       bodyHtml,
     }),
   })
@@ -976,7 +997,7 @@ async function sendOrderCancelledEmail({ to, name, order, reason }) {
       Xin chào, ${name || 'bạn'}.
     </p>
     <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 24px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
-      Đơn hàng <strong style="color:#0b2e2b;font-weight:500;">#${shortOrderCode(order.id)}</strong> của bạn đã bị huỷ.
+      Đơn hàng <strong style="color:#0b2e2b;font-weight:500;">#${shortOrderCode(order)}</strong> của bạn đã bị huỷ.
       ${order.paymentStatus === 'PAID' ? 'Số tiền đã thanh toán sẽ được hoàn lại theo chính sách hoàn tiền của Earthoria.' : ''}
     </p>
 
@@ -1007,7 +1028,7 @@ async function sendOrderCancelledEmail({ to, name, order, reason }) {
         <strong style="color:#5a2820;font-weight:500;">Cần hỗ trợ thêm?</strong>
         Liên hệ
         <a href="mailto:helpdesk.earthoria@gmail.com" style="color:#b25450;text-decoration:none;font-weight:500;">helpdesk.earthoria@gmail.com</a>
-        và nhắc mã đơn hàng #${shortOrderCode(order.id)}.
+        và nhắc mã đơn hàng #${shortOrderCode(order)}.
       </p>
     </div>
   `
@@ -1015,9 +1036,9 @@ async function sendOrderCancelledEmail({ to, name, order, reason }) {
   return sendMail({
     from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
     to,
-    subject: `[#${shortOrderCode(order.id)}] Đơn hàng của bạn đã bị huỷ`,
+    subject: `[#${shortOrderCode(order)}] Đơn hàng của bạn đã bị huỷ`,
     html: wrapEmailTemplate({
-      preheader: `Đơn hàng #${shortOrderCode(order.id)} đã bị huỷ.`,
+      preheader: `Đơn hàng #${shortOrderCode(order)} đã bị huỷ.`,
       bodyHtml,
     }),
   })
