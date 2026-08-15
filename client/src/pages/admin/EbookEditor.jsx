@@ -2140,6 +2140,9 @@ export default function BookBuilder() {
         .bb-pill-btn:disabled:hover { background: transparent; color: #45524b; }
         .bb-pill-sep { width: 1px; height: 18px; background: rgba(20,51,42,0.12); margin: 0 4px; flex-shrink: 0; }
         .bb-strip-divider { width: 1px; align-self: stretch; background: rgba(20,51,42,0.08); flex: 0 0 auto; }
+        .bb-qr-pick-btn { width: 100%; flex-direction: column; align-items: flex-start; gap: 3px; padding: 10px 12px; margin-bottom: 6px; text-align: left; }
+        .bb-qr-pick-label { display: flex; align-items: center; gap: 6px; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .bb-qr-pick-code { width: 100%; font-family: 'SFMono-Regular', Consolas, monospace; font-size: 11px; font-weight: 400; color: #6b7a72; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
         .bb-workspace { position: relative; display: flex; border-radius: 18px; overflow: hidden; background: #eae7dd; border: 1px solid rgba(20,51,42,0.10); box-shadow: 0 16px 40px rgba(20,51,42,0.12); min-height: 560px; }
         .bb-rail { flex: 0 0 64px; background: #fff; border-right: 1px solid rgba(20,51,42,0.08); display: flex; flex-direction: column; align-items: center; padding: 14px 0; gap: 10px; z-index: 6; }
@@ -2684,29 +2687,11 @@ export default function BookBuilder() {
                       Sách chưa có mã AR nào. Tạo ở mục "Quản lý mã QR" trước.
                     </div>
                   ) : (
-                    bookLinkables.arCodes.map((ac) => (
-                      <button
-                        key={ac.id}
-                        type="button"
-                        className="bb-btn"
-                        style={{
-                          width: "100%",
-                          justifyContent: "flex-start",
-                          marginBottom: 6,
-                        }}
-                        onClick={() => addQrLayer("AR", ac)}
-                      >
-                        <Sparkles size={13} style={{ marginRight: 6 }} />
-                        {ac.label}
-                        <span
-                          style={{
-                            marginLeft: "auto",
-                            opacity: 0.6,
-                            fontSize: 11,
-                          }}
-                        >
-                          {ac.code}
-                        </span>
+                   bookLinkables.arCodes.map((ac) => (
+                      <button key={ac.id} type="button" className="bb-btn bb-qr-pick-btn"
+                        onClick={() => addQrLayer("AR", ac)}>
+                        <span className="bb-qr-pick-label"><Sparkles size={13} />{ac.label}</span>
+                        <span className="bb-qr-pick-code">{ac.code}</span>
                       </button>
                     ))
                   )}
@@ -2719,29 +2704,11 @@ export default function BookBuilder() {
                       trước.
                     </div>
                   ) : (
-                    bookLinkables.games.map((g) => (
-                      <button
-                        key={g.id}
-                        type="button"
-                        className="bb-btn"
-                        style={{
-                          width: "100%",
-                          justifyContent: "flex-start",
-                          marginBottom: 6,
-                        }}
-                        onClick={() => addQrLayer("GAME", g)}
-                      >
-                        <Play size={13} style={{ marginRight: 6 }} />
-                        {g.title}
-                        <span
-                          style={{
-                            marginLeft: "auto",
-                            opacity: 0.6,
-                            fontSize: 11,
-                          }}
-                        >
-                          {g.code}
-                        </span>
+                   bookLinkables.games.map((g) => (
+                      <button key={g.id} type="button" className="bb-btn bb-qr-pick-btn"
+                        onClick={() => addQrLayer("GAME", g)}>
+                        <span className="bb-qr-pick-label"><Play size={13} />{g.title}</span>
+                        <span className="bb-qr-pick-code">{g.code}</span>
                       </button>
                     ))
                   )}
