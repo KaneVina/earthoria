@@ -763,10 +763,8 @@ export default function BookDetail() {
               <Link
                 to={`/ebook/${book.slug}`}
                 className="btn-secondary btn-secondary--owned"
+                style={{ textDecoration: "none" }}
               >
-                <span className="btn-secondary-owned-badge">
-                  <Check size={9} />
-                </span>
                 <Play size={13} /> Đọc sách điện tử
               </Link>
             ) : (
@@ -1116,7 +1114,11 @@ export default function BookDetail() {
                       fill="none"
                       stroke="currentColor"
                       strokeWidth="1.5"
-                      style={{ flexShrink: 0, marginTop: "1px", color: "var(--gold)" }}
+                      style={{
+                        flexShrink: 0,
+                        marginTop: "1px",
+                        color: "var(--gold)",
+                      }}
                     >
                       <rect x="3" y="11" width="18" height="11" rx="2" />
                       <path d="M7 11V7a5 5 0 0 1 10 0v4" />
@@ -1168,7 +1170,8 @@ export default function BookDetail() {
                               s <= reviewForm.rating
                                 ? "var(--gold)"
                                 : "var(--pale)",
-                            transition: "color 0.15s ease, transform 0.15s ease",
+                            transition:
+                              "color 0.15s ease, transform 0.15s ease",
                           }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.transform = "scale(1.15)";
@@ -1206,8 +1209,12 @@ export default function BookDetail() {
                         borderRadius: "2px",
                         transition: "border-color 0.2s",
                       }}
-                      onFocus={(e) => (e.target.style.borderColor = "var(--gold)")}
-                      onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                      onFocus={(e) =>
+                        (e.target.style.borderColor = "var(--gold)")
+                      }
+                      onBlur={(e) =>
+                        (e.target.style.borderColor = "var(--border)")
+                      }
                     />
                     <textarea
                       placeholder="Chia sẻ trải nghiệm của bạn..."
@@ -1232,8 +1239,12 @@ export default function BookDetail() {
                         borderRadius: "2px",
                         transition: "border-color 0.2s",
                       }}
-                      onFocus={(e) => (e.target.style.borderColor = "var(--gold)")}
-                      onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
+                      onFocus={(e) =>
+                        (e.target.style.borderColor = "var(--gold)")
+                      }
+                      onBlur={(e) =>
+                        (e.target.style.borderColor = "var(--border)")
+                      }
                     />
                     <button
                       type="submit"
