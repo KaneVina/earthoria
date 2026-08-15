@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { Loader2, Lock, SearchX, BookOpen } from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Loader2, Lock, SearchX } from "lucide-react";
 import { ebookService } from "../services/ebookService";
 import { PreviewOverlay } from "./admin/EbookEditor";
 import "../components/assets/css/gameplay.css";
@@ -71,9 +71,9 @@ export default function EbookReader() {
             Sách điện tử chỉ dành cho khách hàng đã mua bản điện tử (ebook) của cuốn sách này. Nếu bạn đã mua,
             vui lòng kiểm tra lại tài khoản đang đăng nhập hoặc liên hệ với chúng tôi để được hỗ trợ.
           </p>
-          <Link to="/" className="bb-btn bb-btn-primary" style={{ marginTop: 12 }}>
+          <button className="gp-cta" style={{ marginTop: 12 }} onClick={() => navigate("/")}>
             Về trang chủ
-          </Link>
+          </button>
         </div>
       </main>
     );
@@ -98,23 +98,14 @@ export default function EbookReader() {
   const bookUrl = data.book?.slug && data.book?.hashId ? `/books/${data.book.slug}/${data.book.hashId}` : "/";
 
   return (
-    <main className="gp-view" style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-      <div className="gp-topbar">
-        <Link to={bookUrl} className="gp-back">
-          <BookOpen size={14} /> {data.book?.title || "Về trang sách"}
-        </Link>
-      </div>
-      <div style={{ flex: 1, minHeight: 0 }}>
-        <PreviewOverlay
-          pages={Array.isArray(data.pages) ? data.pages : []}
-          startIndex={0}
-          orientation={data.orientation === "PORTRAIT" ? "PORTRAIT" : "LANDSCAPE"}
-          pageNumberPos={{ v: "bottom", h: "center" }}
-          showTitleWithPageNumber={false}
-          hidePageNumberOnCover={false}
-          onClose={() => navigate(bookUrl)}
-        />
-      </div>
-    </main>
+    <PreviewOverlay
+      pages={Array.isArray(data.pages) ? data.pages : []}
+      startIndex={0}
+      orientation={data.orientation === "PORTRAIT" ? "PORTRAIT" : "LANDSCAPE"}
+      pageNumberPos={{ v: "bottom", h: "center" }}
+      showTitleWithPageNumber={false}
+      hidePageNumberOnCover={false}
+      onClose={() => navigate(bookUrl)}
+    />
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
@@ -18,6 +18,10 @@ import {
   Star,
   Leaf,
   Wind,
+  Settings,
+  Type,
+  ShieldCheck,
+  Search,
 } from "lucide-react";
 import { kidAccessService } from "../../services/kidAccessService";
 import FullScreenLoader from "../../components/FullScreenLoader";
@@ -44,6 +48,28 @@ const BREATH_PHASES = ["Hít vào thật sâu…", "Thở ra thật chậm…"];
 // Bảng màu xoay vòng cho "tủ sách" — mỗi cuốn có một tông riêng để kệ sách
 // trông sống động, giống sách thật xếp cạnh nhau chứ không đơn sắc.
 const SHELF_ACCENTS = ["leaf", "sky", "berry", "sun", "grape", "coral"];
+
+// Các mức cỡ chữ bé có thể tự chọn trong bảng cài đặt (giữ nút bánh răng để mở).
+// Lưu theo từng token trên máy của bé để lần sau ghé lại vẫn giữ đúng cỡ chữ.
+const FONT_SCALES = [
+  { key: "sm", label: "Nhỏ", value: 0.88 },
+  { key: "md", label: "Vừa", value: 1 },
+  { key: "lg", label: "Lớn", value: 1.15 },
+  { key: "xl", label: "Rất lớn", value: 1.3 },
+];
+const HOLD_DURATION_MS = 900;
+
+const WEEKDAYS_VI = ["Chủ nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+
+function fmtTimeParts(date) {
+  const h = pad2(date.getHours());
+  const m = pad2(date.getMinutes());
+  return { h, m };
+}
+
+function fmtDateVi(date) {
+  return `${WEEKDAYS_VI[date.getDay()]}, ${date.getDate()} tháng ${date.getMonth() + 1}`;
+}
 
 function timeGreeting() {
   const h = new Date().getHours();
@@ -72,6 +98,17 @@ function withinWindow(start, end) {
   const s = sh * 60 + sm;
   const e = eh * 60 + em;
   return s <= e ? cur >= s && cur <= e : cur >= s || cur <= e;
+}
+
+// Bỏ dấu tiếng Việt để tìm kiếm "dễ dãi" hơn — bé gõ không dấu vẫn ra
+// đúng sách (vd. "co tich" vẫn khớp "Cổ tích").
+function normalizeSearch(str) {
+  return String(str ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .trim();
 }
 
 // Chọn màu "gáy sách" ổn định theo id, dùng cho modal (để trùng khớp cảm
@@ -110,8 +147,24 @@ export default function KidAccess() {
   // ── phiên đọc (chỉ hiển thị, không ghi vào server) ──
   const [sessionSeconds, setSessionSeconds] = useState(0);
 
+  // ── đồng hồ giờ thực, hiển thị cho bé biết bây giờ là mấy giờ ──
+  const [now, setNow] = useState(() => new Date());
+
+  // ── cỡ chữ do bé/phụ huynh chọn trong bảng cài đặt, nhớ theo từng link ──
+  const [fontKey, setFontKey] = useState("md");
+
+  // ── bảng cài đặt dành cho phụ huynh + cơ chế "giữ để mở" trên nút bánh răng ──
+  const [showSettings, setShowSettings] = useState(false);
+  const [isHolding, setIsHolding] = useState(false);
+  const [holdPct, setHoldPct] = useState(0);
+  const holdRafRef = useRef(null);
+
   // ── thanh điều hướng đổi diện mạo khi cuộn ──
   const [isScrolled, setIsScrolled] = useState(false);
+
+  // ── tìm sách theo tên trong tủ sách của bé ──
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef(null);
 
   // ── nhắc nghỉ mắt ──
   const [showRest, setShowRest] = useState(false);
@@ -155,6 +208,36 @@ export default function KidAccess() {
   );
 
   const isOk = status === "ok" && child && !child.isLocked;
+
+  // ── đồng hồ giờ thực: cập nhật mỗi giây để hiển thị HH:MM cho bé ──
+  useEffect(() => {
+    if (!isOk) return;
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, [isOk]);
+
+  // ── nạp cỡ chữ đã lưu cho đúng link của bé (mỗi bé một token riêng) ──
+  useEffect(() => {
+    if (!token) return;
+    try {
+      const saved = localStorage.getItem(`kid-font-scale:${token}`);
+      if (saved && FONT_SCALES.some((s) => s.key === saved)) setFontKey(saved);
+    } catch {
+      /* localStorage có thể bị chặn (chế độ riêng tư) — bỏ qua, dùng mặc định */
+    }
+  }, [token]);
+
+  // ── lưu lại mỗi khi bé/phụ huynh đổi cỡ chữ ──
+  useEffect(() => {
+    if (!token) return;
+    try {
+      localStorage.setItem(`kid-font-scale:${token}`, fontKey);
+    } catch {
+      /* bỏ qua nếu không lưu được */
+    }
+  }, [fontKey, token]);
+
+  const fontScale = FONT_SCALES.find((s) => s.key === fontKey)?.value ?? 1;
 
   // ── đếm giờ phiên đọc hiện tại (chỉ hiển thị cho vui, không phải nguồn sự thật) ──
   useEffect(() => {
@@ -242,6 +325,47 @@ export default function KidAccess() {
 
   const handleOpenBook = useCallback((book) => setActiveBook(book), []);
   const closeModal = useCallback(() => setActiveBook(null), []);
+  const closeSettings = useCallback(() => setShowSettings(false), []);
+
+  const clearSearch = useCallback(() => {
+    setSearchQuery("");
+    searchInputRef.current?.focus();
+  }, []);
+
+  // ── giữ nút bánh răng ~0.9s để mở bảng cài đặt — chủ đích không phải chạm
+  // một cái là vào ngay, để bé không lỡ tay đổi cài đặt của ba mẹ ──
+  const cancelGearHold = useCallback(() => {
+    if (holdRafRef.current) cancelAnimationFrame(holdRafRef.current);
+    holdRafRef.current = null;
+    setIsHolding(false);
+    setHoldPct(0);
+  }, []);
+
+  const startGearHold = useCallback(
+    (e) => {
+      e.preventDefault();
+      setIsHolding(true);
+      const startedAt = performance.now();
+      const tick = (t) => {
+        const pct = Math.min(100, ((t - startedAt) / HOLD_DURATION_MS) * 100);
+        setHoldPct(pct);
+        if (pct >= 100) {
+          holdRafRef.current = null;
+          setIsHolding(false);
+          setHoldPct(0);
+          setShowSettings(true);
+          return;
+        }
+        holdRafRef.current = requestAnimationFrame(tick);
+      };
+      holdRafRef.current = requestAnimationFrame(tick);
+    },
+    [],
+  );
+
+  useEffect(() => () => {
+    if (holdRafRef.current) cancelAnimationFrame(holdRafRef.current);
+  }, []);
 
   const handleReadNow = useCallback((book) => {
     // TODO(backend): kid-access hiện chỉ trả về id/slug/coverImage cho
@@ -275,6 +399,14 @@ export default function KidAccess() {
     el.style.setProperty("--rx", 0);
     el.style.setProperty("--ry", 0);
   }, []);
+
+  // ── lọc tủ sách theo từ khoá tìm kiếm (bỏ dấu, không phân biệt hoa/thường) ──
+  const filteredBooks = useMemo(() => {
+    const q = normalizeSearch(searchQuery);
+    if (!q) return books;
+    return books.filter((b) => normalizeSearch(b.title).includes(q));
+  }, [books, searchQuery]);
+  const isSearching = normalizeSearch(searchQuery).length > 0;
 
   if (status === "loading") {
     return (
@@ -343,8 +475,20 @@ export default function KidAccess() {
     child.tipsEnabled && (child.tipsFrequency === "rest" || child.tipsFrequency === "interval");
   const modalAccent = activeBook ? accentForId(activeBook.id) : "leaf";
 
+  // ── viền đếm ngược quanh logo trên header — chỉ hiện khi phụ huynh có
+  // đặt giới hạn thời gian đọc/ngày. Nội suy thêm giây của phiên hiện tại
+  // (chỉ để hiển thị, không phải nguồn sự thật) để viền vơi dần mượt theo
+  // thời gian thực thay vì nhảy cách phút như số liệu từ server. ──
+  const liveTodayMinutes = dailyLimit > 0 ? Math.min(dailyLimit, todayMinutes + sessionSeconds / 60) : 0;
+  const crestRemainPercent = dailyLimit > 0 ? Math.max(0, 100 - (liveTodayMinutes / dailyLimit) * 100) : 100;
+  const crestRingRadius = 46;
+  const crestRingCirc = 2 * Math.PI * crestRingRadius;
+  const crestRingOffset = crestRingCirc * (1 - crestRemainPercent / 100);
+  const crestRemainMinutes = dailyLimit > 0 ? Math.max(0, Math.ceil(dailyLimit - liveTodayMinutes)) : null;
+  const crestRingState = limitReached ? "is-empty" : crestRemainPercent <= 20 ? "is-warning" : "";
+
   return (
-    <div className="kid-page" style={{ "--kid-accent": child.avatarColor || "var(--gold)" }}>
+    <div className="kid-page" style={{ "--kid-accent": child.avatarColor || "var(--gold)", "--kid-font-scale": fontScale }}>
       <div className="kid-bg" aria-hidden="true">
         <div className="kid-bg-wash" />
         <div className="kid-bg-hills" />
@@ -352,7 +496,6 @@ export default function KidAccess() {
         <span className="kid-bg-sun" />
         <span className="kid-bg-cloud kid-bg-cloud-1" />
         <span className="kid-bg-cloud kid-bg-cloud-2" />
-        <span className="kid-bg-cloud kid-bg-cloud-3" />
         <div className="kid-bg-art" />
         <div className="kid-bg-grain" />
         <span className="kid-bg-orb kid-bg-orb-1" />
@@ -363,11 +506,6 @@ export default function KidAccess() {
         <span className="kid-bg-icon kid-bg-icon-2">
           <Leaf size={18} />
         </span>
-        <span className="kid-bg-icon kid-bg-icon-3">
-          <Star size={11} fill="currentColor" />
-        </span>
-        <span className="kid-firefly" />
-        <span className="kid-firefly" />
         <span className="kid-firefly" />
         <span className="kid-firefly" />
         <span className="kid-firefly" />
@@ -378,11 +516,26 @@ export default function KidAccess() {
         <header className={`kid-topbar${isScrolled ? " is-scrolled" : ""}`}>
           <div className="kid-brand">
             <div className="kid-crest-wrap">
-              <span className="kid-crest-ring" aria-hidden="true" />
+              {dailyLimit > 0 ? (
+                <svg className="kid-crest-countdown" viewBox="0 0 100 100" aria-hidden="true">
+                  <title>{`Còn ${crestRemainMinutes} phút đọc hôm nay`}</title>
+                  <circle className="kid-crest-countdown-track" cx="50" cy="50" r={crestRingRadius} />
+                  <circle
+                    className={`kid-crest-countdown-fill${crestRingState ? ` ${crestRingState}` : ""}`}
+                    cx="50"
+                    cy="50"
+                    r={crestRingRadius}
+                    strokeDasharray={crestRingCirc}
+                    strokeDashoffset={crestRingOffset}
+                  />
+                </svg>
+              ) : (
+                <span className="kid-crest-ring" aria-hidden="true" />
+              )}
               <span className="kid-crest-badge-ring" aria-hidden="true" />
               <span className="kid-crest-sparkle" aria-hidden="true">✦</span>
               <span className="kid-crest">
-                <img src="/kid/e-kid-logo2.png" alt="Earthoria" className="kid-crest-img" />
+                <img src="/logo/logo-mau/lg-m-kid-studio.png" alt="Earthoria" className="kid-crest-img" />
               </span>
             </div>
             <div className="kid-brandtext">
@@ -390,11 +543,28 @@ export default function KidAccess() {
               <span className="kid-brand-tagline">kids · thư viện diệu kỳ</span>
             </div>
           </div>
-          <span className="kid-live-chip">
-            <Clock size={12} />
-            <span className="kid-live-dot" />
-            Đang đọc · {fmtClock(sessionSeconds)}
-          </span>
+          <div className="kid-topbar-actions">
+            <span className="kid-live-chip">
+              <Clock size={12} />
+              <span className="kid-live-dot" />
+              <span className="kid-live-label">Đang đọc · {fmtClock(sessionSeconds)}</span>
+            </span>
+            <button
+              type="button"
+              className={`kid-gear-btn${isHolding ? " is-holding" : ""}`}
+              style={{ "--hold-pct": holdPct }}
+              aria-label="Giữ để mở cài đặt dành cho phụ huynh"
+              onPointerDown={startGearHold}
+              onPointerUp={cancelGearHold}
+              onPointerLeave={cancelGearHold}
+              onPointerCancel={cancelGearHold}
+              onContextMenu={(e) => e.preventDefault()}
+            >
+              <span className="kid-gear-ring" aria-hidden="true" />
+              <Settings size={17} />
+              <span className="kid-gear-hint">Giữ để mở · dành cho ba mẹ</span>
+            </button>
+          </div>
         </header>
 
         <section className="kid-hero">
@@ -409,6 +579,7 @@ export default function KidAccess() {
               <i>✦</i>
             </span>
           </div>
+          <p className="kid-hero-eyebrow">Thư viện của {child.name}</p>
           <h1 className="kid-hero-title">
             {timeGreeting()}, {child.name}!
           </h1>
@@ -424,7 +595,49 @@ export default function KidAccess() {
           )}
         </section>
 
+        <section className="kid-search-section">
+          <label className="kid-search-bar" htmlFor="kid-book-search">
+            <Search size={19} className="kid-search-icon" aria-hidden="true" />
+            <input
+              id="kid-book-search"
+              ref={searchInputRef}
+              type="text"
+              inputMode="search"
+              autoComplete="off"
+              className="kid-search-input"
+              placeholder="Bé muốn tìm sách gì nào?"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {isSearching && (
+              <button
+                type="button"
+                className="kid-search-clear"
+                onClick={clearSearch}
+                aria-label="Xoá tìm kiếm"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </label>
+        </section>
+
         <section className="kid-stats-row">
+          <div className="kid-stat-card kid-stat-card--time">
+            <div className="kid-clock-icon">
+              <Clock size={18} />
+            </div>
+            <div>
+              <div className="kid-stat-label">Bây giờ là</div>
+              <div className="kid-clock-value">
+                {fmtTimeParts(now).h}
+                <span className="kid-clock-colon">:</span>
+                {fmtTimeParts(now).m}
+              </div>
+              <div className="kid-clock-date">{fmtDateVi(now)}</div>
+            </div>
+          </div>
+
           <div className="kid-stat-card kid-ring-card">
             {dailyLimit > 0 ? (
               <div className="kid-ring">
@@ -512,11 +725,13 @@ export default function KidAccess() {
               <Leaf size={17} className="kid-shelf-leaf" aria-hidden="true" />
               <h2 className="kid-shelf-title">Tủ sách của bé</h2>
             </div>
-            <span className="kid-shelf-count">{books.length} cuốn</span>
+            <span className="kid-shelf-count">
+              {isSearching ? `${filteredBooks.length}/${books.length} cuốn` : `${books.length} cuốn`}
+            </span>
           </div>
 
           <div className="kid-book-grid">
-            {books.map((b, i) => {
+            {filteredBooks.map((b, i) => {
               const accent = SHELF_ACCENTS[i % SHELF_ACCENTS.length];
               return (
                 <button
@@ -551,6 +766,7 @@ export default function KidAccess() {
                       </div>
                     )}
                     <span className="kid-book-shine" aria-hidden="true" />
+                    <span className="kid-book-cover-inset" aria-hidden="true" />
                     {(b.ageMin || b.ageMax) && (
                       <span className="kid-book-age">
                         {b.ageMin ?? "0"}–{b.ageMax ?? "17"} tuổi
@@ -575,7 +791,23 @@ export default function KidAccess() {
               );
             })}
 
-            {books.length === 0 && (
+            {filteredBooks.length === 0 && isSearching && (
+              <div className="kid-empty">
+                <div className="kid-empty-icon">
+                  <Search size={24} />
+                </div>
+                <div className="kid-empty-title">Không tìm thấy sách nào</div>
+                <p className="kid-empty-sub">
+                  Bé thử gõ tên khác xem sao, hoặc nhờ ba mẹ mua thêm sách mới
+                  nhé!
+                </p>
+                <button type="button" className="kid-empty-clear" onClick={clearSearch}>
+                  Xoá tìm kiếm
+                </button>
+              </div>
+            )}
+
+            {books.length === 0 && !isSearching && (
               <div className="kid-empty">
                 <div className="kid-empty-icon">
                   <BookMarked size={26} />
@@ -658,6 +890,62 @@ export default function KidAccess() {
                   </>
                 )}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSettings && (
+        <div className="kid-modal-overlay" onClick={closeSettings}>
+          <div className="kid-settings-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="kid-settings-header">
+              <div className="kid-settings-icon">
+                <Settings size={20} />
+              </div>
+              <div>
+                <div className="kid-settings-title">Cài đặt cho ba mẹ</div>
+                <div className="kid-settings-sub">Tuỳ chỉnh nhanh cho {child.name}</div>
+              </div>
+              <button type="button" className="kid-settings-close" onClick={closeSettings} aria-label="Đóng">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="kid-settings-section">
+              <div className="kid-settings-label">
+                <Type size={14} /> Cỡ chữ trên trang đọc
+              </div>
+              <div className="kid-font-options">
+                {FONT_SCALES.map((opt) => (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    className={`kid-font-option${fontKey === opt.key ? " is-active" : ""}`}
+                    onClick={() => setFontKey(opt.key)}
+                  >
+                    <span className="kid-font-glyph">Aa</span>
+                    <span className="kid-font-option-label">{opt.label}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="kid-font-preview" style={{ "--kid-font-scale": fontScale }}>
+                Bé thích đọc sách cùng Earthoria Kid Studio!
+              </div>
+            </div>
+
+            <div className="kid-settings-divider" />
+
+            <div className="kid-settings-section" style={{ marginBottom: 0 }}>
+              <div className="kid-settings-label">
+                <ShieldCheck size={14} /> Quản lý nâng cao
+              </div>
+              <Link to="/parent-dashboard" className="kid-settings-cta">
+                Mở trang quản lý cho phụ huynh <ChevronRight size={16} />
+              </Link>
+            </div>
+
+            <div className="kid-settings-footnote">
+              <Leaf size={13} /> Giờ đọc, giới hạn thời gian và nhắc nghỉ mắt được quản lý ở đó.
             </div>
           </div>
         </div>

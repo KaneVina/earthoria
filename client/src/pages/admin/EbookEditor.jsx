@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { ebookService } from "../../services/ebookService";
 import api from "../../services/api";
 import { QRCodeCanvas } from "qrcode.react";
+import "../../components/assets/css/ebookPreview.css";
 import {
   Undo2,
   Redo2,
@@ -393,12 +394,13 @@ function PageNumberBadge({ page, number, pos, showTitle }) {
   );
 }
 
-function LayerView({
+ function LayerView({
   layer,
   selected,
   readOnly,
   isReadingThis,
   readingWordIndex,
+  fontScale,
   onSelect,
   onDragStart,
   onResizeStart,
@@ -406,6 +408,9 @@ function LayerView({
   onWordLeave,
   onLayerClick,
   onImageDrop,
+  onLineHover,
+  onLineLeave,
+  onAskAI,
 }) {
   const wrapStyle = {
     position: "absolute",
@@ -423,8 +428,13 @@ function LayerView({
         if (url) window.open(url, "_blank", "noopener,noreferrer");
         return;
       }
-      if (layer.tocTargetPageId)
+      if (layer.tocTargetPageId) {
         onLayerClick && onLayerClick(layer.tocTargetPageId);
+        return;
+      }
+      if (layer.type === "text" && layer.text?.trim() && onAskAI) {
+        onAskAI(layer.text.trim());
+      }
       return;
     }
     if (!layer.locked) onSelect(layer.id, e.shiftKey);
@@ -696,6 +706,8 @@ function LayerView({
 
   const words = (layer.text || "").split(" ");
   const hasFixedHeight = layer.height != null && layer.height > 0;
+  const scaledFontSize = (layer.fontSize || 16) * (fontScale || 1);
+  const askable = readOnly && !!layer.text?.trim() && !layer.tocTargetPageId;
   return (
     <div
       style={{
@@ -707,6 +719,11 @@ function LayerView({
       onClick={handleClick}
     >
       <div
+        className={askable ? "er-line" : undefined}
+        onMouseEnter={
+          readOnly ? () => onLineHover && onLineHover(layer) : undefined
+        }
+        onMouseLeave={readOnly ? () => onLineLeave && onLineLeave() : undefined}
         style={{
           position: "relative",
           padding: "4px 6px",
@@ -727,17 +744,26 @@ function LayerView({
               ? "2px solid #4a9e3f"
               : "2px solid transparent",
           outlineOffset: 4,
-          cursor: readOnly ? (isTocLink ? "pointer" : "default") : "grab",
+          cursor: readOnly
+            ? isTocLink || askable
+              ? "pointer"
+              : "default"
+            : "grab",
           touchAction: "none",
           boxShadow:
             !readOnly && selected ? "0 0 0 4px rgba(74,158,63,0.14)" : "none",
           transition: "outline-color 0.12s ease, box-shadow 0.12s ease",
         }}
       >
+        {askable && (
+          <span className="er-line-badge">
+            <Volume2 size={10} /> Nghe · Hỏi AI
+          </span>
+        )}
         <div
           style={{
             fontFamily: layer.fontFamily,
-            fontSize: layer.fontSize,
+            fontSize: scaledFontSize,
             fontWeight: layer.bold ? 700 : 400,
             fontStyle: layer.italic ? "italic" : "normal",
             textDecoration: layer.underline
@@ -758,15 +784,19 @@ function LayerView({
           {words.map((w, i) => (
             <React.Fragment key={i}>
               <span
-                onMouseEnter={(e) => {
-                  e.stopPropagation();
-                  onWordHover({ word: w });
-                }}
-                onMouseLeave={onWordLeave}
+                onMouseEnter={
+                  !readOnly
+                    ? (e) => {
+                        e.stopPropagation();
+                        onWordHover({ word: w });
+                      }
+                    : undefined
+                }
+                onMouseLeave={!readOnly ? onWordLeave : undefined}
                 style={{
                   padding: "1px 2px",
                   borderRadius: 4,
-                  cursor: "pointer",
+                  cursor: readOnly ? "inherit" : "pointer",
                   background:
                     isReadingThis && readingWordIndex === i
                       ? "rgba(255,196,61,0.55)"
@@ -804,95 +834,228 @@ export function PreviewOverlay({
   showTitleWithPageNumber,
   hidePageNumberOnCover,
 }) {
-  const [idx, setIdx] = useState(startIndex);
-  const [reading, setReading] = useState(null);
-  const wrapRef = useRef(null);
-  const [scale, setScale] = useState(1);
-  const lastHoverWord = useRef(null);
+  const THEMES = {
+    forest: { label: "Rừng đêm" },
+    dark: { label: "Tối" },
+    light: { label: "Sáng" },
+    sepia: { label: "Ấm áp" },
+  };
+  const SPREAD_GAP = 26;
+
   const PAGE_W = orientation === "PORTRAIT" ? BASE_PAGE_H : BASE_PAGE_W;
   const PAGE_H = orientation === "PORTRAIT" ? BASE_PAGE_W : BASE_PAGE_H;
+
+  const [idx, setIdx] = useState(Math.max(0, Math.min(pages.length - 1, startIndex)));
+  const [reading, setReading] = useState(null);
+  const [scale, setScale] = useState(1);
+  const [theme, setTheme] = useState("forest");
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const [fontScale, setFontScale] = useState(1);
+  const [pageView, setPageView] = useState("single");
+  const [autoPlay, setAutoPlay] = useState(false);
+
+  const wrapRef = useRef(null);
+  const themeBoxRef = useRef(null);
+  const lineHoverTimer = useRef(null);
+
+  const groupStartFor = (i, mode = pageView) => {
+    const clamped = Math.max(0, Math.min(pages.length - 1, i));
+    if (mode !== "double") return clamped;
+    if (clamped === 0) return 0;
+    return clamped % 2 === 1 ? clamped : clamped - 1;
+  };
+
+  const visiblePages =
+    pageView === "double"
+      ? idx === 0
+        ? [pages[0]].filter(Boolean)
+        : [pages[idx], pages[idx + 1]].filter(Boolean)
+      : [pages[idx]].filter(Boolean);
+
+  const page = pages[idx];
+
+  const nextGroupStart = (current) => {
+    if (pageView !== "double") return Math.min(pages.length - 1, current + 1);
+    if (current === 0) return pages.length > 1 ? 1 : 0;
+    const n = current + 2;
+    return n <= pages.length - 1 ? n : current;
+  };
+  const prevGroupStart = (current) => {
+    if (pageView !== "double") return Math.max(0, current - 1);
+    if (current <= 1) return 0;
+    return current - 2;
+  };
 
   useEffect(() => {
     const measure = () => {
       if (!wrapRef.current) return;
-      const w = wrapRef.current.clientWidth - 40;
-      const h = wrapRef.current.clientHeight - 40;
-      setScale(Math.max(0.3, Math.min(1.3, w / PAGE_W, h / PAGE_H)));
+      const spreadCount = visiblePages.length === 2 ? 2 : 1;
+      const stageW = spreadCount === 2 ? PAGE_W * 2 + SPREAD_GAP : PAGE_W;
+      const w = wrapRef.current.clientWidth - 48;
+      const h = wrapRef.current.clientHeight - 48;
+      setScale(Math.max(0.28, Math.min(1.3, w / stageW, h / PAGE_H)));
     };
     measure();
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
-  }, [PAGE_W, PAGE_H]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [PAGE_W, PAGE_H, pageView, idx, pages.length]);
 
-  useEffect(
-    () => () => speechAvailable() && window.speechSynthesis.cancel(),
-    [],
-  );
+  useEffect(() => {
+    return () => {
+      if (speechAvailable()) window.speechSynthesis.cancel();
+      if (lineHoverTimer.current) clearTimeout(lineHoverTimer.current);
+    };
+  }, []);
 
-  const page = pages[idx];
+  useEffect(() => {
+    if (!themeMenuOpen) return;
+    const onDocClick = (e) => {
+      if (themeBoxRef.current && !themeBoxRef.current.contains(e.target))
+        setThemeMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [themeMenuOpen]);
 
   const stop = () => {
     if (speechAvailable()) window.speechSynthesis.cancel();
     setReading(null);
   };
 
-  const onWordHover = (wordObj) => {
-    if (!speechAvailable() || !wordObj.word.trim()) return;
-    if (lastHoverWord.current === wordObj.word) return;
-    lastHoverWord.current = wordObj.word;
-    window.speechSynthesis.cancel();
-    setReading(null);
-    const utter = new SpeechSynthesisUtterance(wordObj.word);
-    utter.lang = "vi-VN";
-    utter.rate = 0.9;
-    window.speechSynthesis.speak(utter);
-  };
-  const onWordLeave = () => {
-    lastHoverWord.current = null;
-  };
-
-  const readThisPage = () => {
+  const readSpread = (auto = false) => {
     if (!speechAvailable()) return;
     window.speechSynthesis.cancel();
-    const textLayers = page.layers.filter(
-      (l) => l.type === "text" && l.text.trim(),
+    const targets = visiblePages.flatMap((p) =>
+      (p?.layers || []).filter((l) => l.type === "text" && l.text?.trim()),
     );
+    if (!targets.length) {
+      setReading(null);
+      if (auto) autoAdvance();
+      return;
+    }
     let i = 0;
-    const next = () => {
-      if (i >= textLayers.length) {
+    const step = () => {
+      if (i >= targets.length) {
         setReading(null);
+        if (auto) autoAdvance();
         return;
       }
-      const layer = textLayers[i];
+      const layer = targets[i];
       speakText(layer.text, {
         onWord: (wi) => setReading({ layerId: layer.id, wordIndex: wi }),
         onEnd: () => {
           i += 1;
-          next();
+          step();
         },
       });
     };
-    next();
+    step();
   };
 
-  const goPrev = () => {
-    stop();
-    setIdx((i) => Math.max(0, i - 1));
+  const autoAdvance = () => {
+    setIdx((current) => {
+      const next = nextGroupStart(current);
+      if (next === current) {
+        setAutoPlay(false);
+        return current;
+      }
+      return next;
+    });
   };
-  const goNext = () => {
-    stop();
-    setIdx((i) => Math.min(pages.length - 1, i + 1));
+
+  useEffect(() => {
+    if (!autoPlay) return;
+    readSpread(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPlay, idx, pageView]);
+
+  useEffect(() => {
+    if (!autoPlay) stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPlay]);
+
+  const onLineHover = (layer) => {
+    if (reading || !speechAvailable() || !layer.text?.trim()) return;
+    if (lineHoverTimer.current) clearTimeout(lineHoverTimer.current);
+    lineHoverTimer.current = setTimeout(() => {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(layer.text);
+      utter.lang = "vi-VN";
+      utter.rate = 0.95;
+      window.speechSynthesis.speak(utter);
+    }, 260);
   };
-  const goToPageId = (pageId) => {
-    const target = pages.findIndex((p) => p.id === pageId);
-    if (target !== -1) {
-      stop();
-      setIdx(target);
+  const onLineLeave = () => {
+    if (lineHoverTimer.current) {
+      clearTimeout(lineHoverTimer.current);
+      lineHoverTimer.current = null;
     }
   };
 
+  const askAboutText = (text) => {
+    const clean = text.replace(/\s+/g, " ").trim();
+    if (!clean) return;
+    window.dispatchEvent(
+      new CustomEvent("eira:ask", {
+        detail: {
+          text: `Trong sách mình đang đọc có đoạn: "${clean}". Bạn giải thích/kể thêm giúp mình với nhé.`,
+        },
+      }),
+    );
+  };
+
+  const goPrev = () => {
+    const target = prevGroupStart(idx);
+    if (target === idx) return;
+    if (!autoPlay) stop();
+    setIdx(target);
+  };
+  const goNext = () => {
+    const target = nextGroupStart(idx);
+    if (target === idx) return;
+    if (!autoPlay) stop();
+    setIdx(target);
+  };
+  const goToPageId = (pageId) => {
+    const target = pages.findIndex((p) => p.id === pageId);
+    if (target === -1) return;
+    setAutoPlay(false);
+    stop();
+    setIdx(groupStartFor(target));
+  };
+  const togglePageView = () => {
+    setPageView((v) => {
+      const next = v === "double" ? "single" : "double";
+      setIdx((i) => groupStartFor(i, next));
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "ArrowRight") goNext();
+      else if (e.key === "ArrowLeft") goPrev();
+      else if (e.key === "Escape") {
+        stop();
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idx, pageView, autoPlay]);
+
+  const stageW = visiblePages.length === 2 ? PAGE_W * 2 + SPREAD_GAP : PAGE_W;
+  const pageLabel =
+    visiblePages.length === 2
+      ? `Trang ${idx + 1}–${idx + 2} / ${pages.length}`
+      : `Trang ${idx + 1} / ${pages.length}`;
+  const canGoNext = nextGroupStart(idx) !== idx;
+  const canGoPrev = idx !== 0;
+
   return (
-    <div className="bb-preview">
+    <div className={`er-shell er-theme-${theme}`}>
       <style>{`
         .bb-qr-tap { transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s ease; will-change: transform; }
         .bb-qr-tap:hover { transform: scale(1.06); box-shadow: 0 10px 24px rgba(26,92,71,0.28); }
@@ -904,86 +1067,172 @@ export function PreviewOverlay({
           50% { box-shadow: 0 0 0 9px rgba(26,92,71,0); }
         }
       `}</style>
-      <div className="bb-preview-top">
-        <span className="bb-preview-page-label">
-          Trang {idx + 1} / {pages.length}{page.title ? ` — ${page.title}` : ""}
-        </span>
+
+      <div className="er-topbar">
         <button
-          className="bb-btn bb-btn-ghost"
+          className="er-icon-btn"
+          title="Đóng"
           onClick={() => {
             stop();
             onClose();
           }}
         >
-          <X size={14} style={{ marginRight: 4 }} />
-          Đóng
+          <X size={18} />
         </button>
+
+        <div className="er-title">
+          <span className="er-title-page">{pageLabel}</span>
+          {page?.title && <span className="er-title-name">{page.title}</span>}
+        </div>
+
+        <div className="er-tools">
+          <div className="er-tool-group" ref={themeBoxRef}>
+            <button
+              className={`er-tool-btn ${themeMenuOpen ? "active" : ""}`}
+              title="Đổi màu nền"
+              onClick={() => setThemeMenuOpen((v) => !v)}
+            >
+              <Palette size={15} />
+              <span className="er-tool-label">Màu nền</span>
+            </button>
+            {themeMenuOpen && (
+              <div className="er-popover">
+                {Object.entries(THEMES).map(([key, t]) => (
+                  <button
+                    key={key}
+                    className={`er-swatch ${theme === key ? "active" : ""}`}
+                    onClick={() => {
+                      setTheme(key);
+                      setThemeMenuOpen(false);
+                    }}
+                  >
+                    <span className={`er-swatch-dot er-swatch-dot--${key}`} />
+                    <span className="er-swatch-label">{t.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="er-font-group">
+            <button
+              className="er-tool-btn"
+              title="Chữ nhỏ hơn"
+              onClick={() =>
+                setFontScale((s) => Math.max(0.85, +(s - 0.05).toFixed(2)))
+              }
+            >
+              <Minus size={14} />
+            </button>
+            <span className="er-font-value">{Math.round(fontScale * 100)}%</span>
+            <button
+              className="er-tool-btn"
+              title="Chữ lớn hơn"
+              onClick={() =>
+                setFontScale((s) => Math.min(1.35, +(s + 0.05).toFixed(2)))
+              }
+            >
+              <Plus size={14} />
+            </button>
+          </div>
+
+          <button
+            className="er-tool-btn"
+            title={pageView === "double" ? "Xem 1 trang" : "Xem 2 trang"}
+            onClick={togglePageView}
+          >
+            <BookOpen size={15} />
+            <span className="er-tool-label">
+              {pageView === "double" ? "2 trang" : "1 trang"}
+            </span>
+          </button>
+
+          <button
+            className={`er-tool-btn ${autoPlay ? "active" : ""}`}
+            title="Tự động đọc cả sách"
+            onClick={() => setAutoPlay((v) => !v)}
+          >
+            {autoPlay ? <Square size={14} /> : <Volume2 size={15} />}
+            <span className="er-tool-label">Tự đọc</span>
+          </button>
+        </div>
       </div>
-      <div ref={wrapRef} className="bb-preview-stage">
-        <div style={{ width: PAGE_W * scale, height: PAGE_H * scale }}>
+
+      <div ref={wrapRef} className="er-stage">
+        <div style={{ width: stageW * scale, height: PAGE_H * scale }}>
           <div
-            className="bb-preview-page"
+            className="er-spread"
             style={{
-              width: PAGE_W,
+              width: stageW,
               height: PAGE_H,
               transform: `scale(${scale})`,
-              background: page.background,
+              gap: SPREAD_GAP,
             }}
           >
-            {page.layers.map((layer) => (
-              <LayerView
-                key={layer.id}
-                layer={layer}
-                selected={false}
-                readOnly
-                isReadingThis={reading?.layerId === layer.id}
-                readingWordIndex={reading?.wordIndex}
-                onSelect={() => {}}
-                onDragStart={() => {}}
-                onResizeStart={() => {}}
-                onWordHover={onWordHover}
-                onWordLeave={onWordLeave}
-                onLayerClick={goToPageId}
-              />
-            ))}
-            {!(idx === 0 && hidePageNumberOnCover) && (
-              <PageNumberBadge
-                page={page}
-                number={idx + 1}
-                pos={pageNumberPos}
-                showTitle={showTitleWithPageNumber}
-              />
-            )}
+            {visiblePages.map((p, i) => {
+              const globalIndex = idx + i;
+              return (
+                <div
+                  key={p.id}
+                  className="er-page"
+                  style={{ width: PAGE_W, height: PAGE_H, background: p.background }}
+                >
+                  {p.layers.map((layer) => (
+                    <LayerView
+                      key={layer.id}
+                      layer={layer}
+                      selected={false}
+                      readOnly
+                      fontScale={fontScale}
+                      isReadingThis={reading?.layerId === layer.id}
+                      readingWordIndex={reading?.wordIndex}
+                      onSelect={() => {}}
+                      onDragStart={() => {}}
+                      onResizeStart={() => {}}
+                      onLineHover={onLineHover}
+                      onLineLeave={onLineLeave}
+                      onAskAI={askAboutText}
+                      onLayerClick={goToPageId}
+                    />
+                  ))}
+                  {!(globalIndex === 0 && hidePageNumberOnCover) && (
+                    <PageNumberBadge
+                      page={p}
+                      number={globalIndex + 1}
+                      pos={pageNumberPos}
+                      showTitle={showTitleWithPageNumber}
+                    />
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
-      <div className="bb-preview-bottom">
-        <button
-          className="bb-btn bb-btn-ghost"
-          onClick={goPrev}
-          disabled={idx === 0}
-        >
-          <ChevronLeft size={16} />
-          Trước
+
+      <div className="er-bottombar">
+        <button className="er-nav-btn" onClick={goPrev} disabled={!canGoPrev}>
+          <ChevronLeft size={18} />
         </button>
         {reading ? (
-          <button className="bb-btn bb-btn-danger" onClick={stop}>
-            <Square size={14} style={{ marginRight: 4 }} />
+          <button
+            className="er-read-btn danger"
+            onClick={() => {
+              setAutoPlay(false);
+              stop();
+            }}
+          >
+            <Square size={14} />
             Dừng
           </button>
         ) : (
-          <button className="bb-btn bb-btn-primary" onClick={readThisPage}>
-            <Play size={14} style={{ marginRight: 4 }} />
+          <button className="er-read-btn" onClick={() => readSpread(false)}>
+            <Play size={14} />
             Đọc trang này
           </button>
         )}
-        <button
-          className="bb-btn bb-btn-ghost"
-          onClick={goNext}
-          disabled={idx === pages.length - 1}
-        >
-          Sau
-          <ChevronRight size={16} />
+        <button className="er-nav-btn" onClick={goNext} disabled={!canGoNext}>
+          <ChevronRight size={18} />
         </button>
       </div>
     </div>
@@ -2223,14 +2472,6 @@ export default function BookBuilder() {
         .bb-float-toolbar { position: absolute; display: flex; gap: 3px; background: #14332a; border-radius: 10px; padding: 5px; box-shadow: 0 10px 24px rgba(0,0,0,0.30); z-index: 30; }
         .bb-float-toolbar button { border: none; background: transparent; color: #fff; cursor: pointer; font-size: 13px; width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; transition: background 0.12s ease; }
         .bb-float-toolbar button:hover { background: rgba(255,255,255,0.16); }
-
-        .bb-preview { position: fixed; inset: 0; background: rgba(10,22,18,0.95); z-index: 9999; display: flex; flex-direction: column; backdrop-filter: blur(3px); }
-        .bb-preview-top { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; }
-        .bb-preview-page-label { color: #fff; font-size: 13px; opacity: 0.85; font-weight: 500; }
-        .bb-preview-stage { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .bb-preview-page { position: relative; border-radius: 14px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.5); transform-origin: top left; }
-        .bb-preview-bottom { display: flex; justify-content: center; align-items: center; gap: 14px; padding: 18px 20px 26px; }
-
         @media (max-width: 720px) { .bb-flyout { width: calc(100% - 64px); } }
       `}</style>
 

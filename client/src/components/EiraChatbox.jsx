@@ -764,6 +764,20 @@ function EiraUI() {
     sendMessage(lastUserMsgRef.current);
   }, [isBusy, sendMessage]);
 
+  /* Nhận câu hỏi gửi từ nơi khác trong app (vd: bấm vào 1 dòng chữ trong
+     sách điện tử) qua sự kiện window "eira:ask", tự mở khung chat và hỏi luôn */
+  useEffect(() => {
+    const handleAskEvent = (e) => {
+      const text = e?.detail?.text;
+      if (!text || typeof text !== "string") return;
+      setIsOpen(true);
+      setSuggHidden(true);
+      setTimeout(() => sendMessage(text), 380);
+    };
+    window.addEventListener("eira:ask", handleAskEvent);
+    return () => window.removeEventListener("eira:ask", handleAskEvent);
+  }, [sendMessage]);
+
   /* Xóa toàn bộ hội thoại hiện tại, bắt đầu lại từ đầu */
   const handleClearChat = useCallback(() => {
     if (isBusy) return;
