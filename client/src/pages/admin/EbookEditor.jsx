@@ -53,6 +53,8 @@ import {
   QrCode,
   Info,
   User,
+  VolumeX,
+  MousePointer,
 } from "lucide-react";
 
 const FONTS = [
@@ -850,14 +852,16 @@ export function PreviewOverlay({
   const [idx, setIdx] = useState(Math.max(0, Math.min(pages.length - 1, startIndex)));
   const [reading, setReading] = useState(null);
   const [scale, setScale] = useState(1);
+  const [zoom, setZoom] = useState(1);
   const [theme, setTheme] = useState("forest");
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
-  const [fontScale, setFontScale] = useState(1);
   const [pageView, setPageView] = useState("single");
-  const [autoPlay, setAutoPlay] = useState(false);
+  const [readMode, setReadMode] = useState("off"); // "off" | "auto" | "hover"
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   const [direction, setDirection] = useState("next");
+
+  const autoPlay = readMode === "auto";
 
   const wrapRef = useRef(null);
   const themeBoxRef = useRef(null);
@@ -988,7 +992,7 @@ export function PreviewOverlay({
     setIdx((current) => {
       const next = nextGroupStart(current);
       if (next === current) {
-        setAutoPlay(false);
+        setReadMode("off");
         return current;
       }
       return next;
@@ -1007,7 +1011,8 @@ export function PreviewOverlay({
   }, [autoPlay]);
 
   const onLineHover = (layer) => {
-    if (reading || !speechAvailable() || !layer.text?.trim()) return;
+    if (readMode !== "hover" || reading || !speechAvailable() || !layer.text?.trim())
+      return;
     if (lineHoverTimer.current) clearTimeout(lineHoverTimer.current);
     lineHoverTimer.current = setTimeout(() => {
       window.speechSynthesis.cancel();
@@ -1053,7 +1058,7 @@ export function PreviewOverlay({
   const goToPageId = (pageId) => {
     const target = pages.findIndex((p) => p.id === pageId);
     if (target === -1) return;
-    setAutoPlay(false);
+    if (readMode === "auto") setReadMode("off");
     stop();
     setDirection(target >= idx ? "next" : "prev");
     setIdx(groupStartFor(target));
@@ -1081,6 +1086,7 @@ export function PreviewOverlay({
   }, [idx, pageView, autoPlay]);
 
   const stageW = visiblePages.length === 2 ? PAGE_W * 2 + SPREAD_GAP : PAGE_W;
+  const effectiveScale = scale * zoom;
   const pageLabel =
     visiblePages.length === 2
       ? `Trang ${idx + 1}–${idx + 2} / ${pages.length}`
@@ -1126,7 +1132,6 @@ export function PreviewOverlay({
             onClick={() => setInfoOpen((v) => !v)}
           >
             <Info size={15} />
-            <span className="er-tool-label">Thông tin</span>
           </button>
 
           <div className="er-tool-group" ref={themeBoxRef}>
@@ -1136,7 +1141,6 @@ export function PreviewOverlay({
               onClick={() => setThemeMenuOpen((v) => !v)}
             >
               <Palette size={15} />
-              <span className="er-tool-label">Màu nền</span>
             </button>
             {themeMenuOpen && (
               <div className="er-popover">
@@ -1157,22 +1161,22 @@ export function PreviewOverlay({
             )}
           </div>
 
-          <div className="er-font-group">
+          <div className="er-zoom-group">
             <button
               className="er-tool-btn"
-              title="Chữ nhỏ hơn"
+              title="Thu nhỏ trang"
               onClick={() =>
-                setFontScale((s) => Math.max(0.85, +(s - 0.05).toFixed(2)))
+                setZoom((s) => Math.max(0.6, +(s - 0.15).toFixed(2)))
               }
             >
               <Minus size={14} />
             </button>
-            <span className="er-font-value">{Math.round(fontScale * 100)}%</span>
+            <span className="er-font-value">{Math.round(zoom * 100)}%</span>
             <button
               className="er-tool-btn"
-              title="Chữ lớn hơn"
+              title="Phóng to trang"
               onClick={() =>
-                setFontScale((s) => Math.min(1.35, +(s + 0.05).toFixed(2)))
+                setZoom((s) => Math.min(2.2, +(s + 0.15).toFixed(2)))
               }
             >
               <Plus size={14} />
@@ -1191,12 +1195,32 @@ export function PreviewOverlay({
           </button>
 
           <button
-            className={`er-tool-btn ${autoPlay ? "active" : ""}`}
-            title="Tự động đọc cả sách"
-            onClick={() => setAutoPlay((v) => !v)}
+            className={`er-tool-btn ${readMode === "auto" ? "active" : ""} ${
+              readMode === "hover" ? "listening" : ""
+            }`}
+            title={
+              readMode === "off"
+                ? "Bấm để bật Tự động đọc"
+                : readMode === "auto"
+                  ? "Đang tự động đọc — bấm để chuyển sang đọc khi rê chuột"
+                  : "Đang đọc khi rê chuột — bấm để tắt"
+            }
+            onClick={() =>
+              setReadMode((m) =>
+                m === "off" ? "auto" : m === "auto" ? "hover" : "off",
+              )
+            }
           >
-            {autoPlay ? <Square size={14} /> : <Volume2 size={15} />}
-            <span className="er-tool-label">Tự đọc</span>
+            {readMode === "off" && <VolumeX size={15} />}
+            {readMode === "auto" && <Volume2 size={15} />}
+            {readMode === "hover" && <MousePointer size={15} />}
+            <span className="er-tool-label">
+              {readMode === "off"
+                ? "Tắt đọc"
+                : readMode === "auto"
+                  ? "Tự động đọc"
+                  : "Đọc khi rê"}
+            </span>
           </button>
 
           <button
@@ -1212,7 +1236,11 @@ export function PreviewOverlay({
 
       <div ref={wrapRef} className="er-stage">
         <div
-          style={{ width: stageW * scale, height: PAGE_H * scale, perspective: 1600 }}
+          style={{
+            width: stageW * effectiveScale,
+            height: PAGE_H * effectiveScale,
+            perspective: 1600,
+          }}
         >
           <div key={idx} className={`er-flip er-flip--${direction}`}>
             <div
@@ -1220,7 +1248,7 @@ export function PreviewOverlay({
               style={{
                 width: stageW,
                 height: PAGE_H,
-                transform: `scale(${scale})`,
+                transform: `scale(${effectiveScale})`,
                 gap: SPREAD_GAP,
               }}
             >
@@ -1238,7 +1266,6 @@ export function PreviewOverlay({
                       layer={layer}
                       selected={false}
                       readOnly
-                      fontScale={fontScale}
                       isReadingThis={reading?.layerId === layer.id}
                       readingWordIndex={reading?.wordIndex}
                       onSelect={() => {}}
