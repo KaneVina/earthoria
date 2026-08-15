@@ -59,6 +59,7 @@ import PaymentReturn from "./pages/PaymentReturn";
 import GameManager from "./pages/admin/GameManager";
 import GameDetail from "./pages/admin/GameDetail";
 import GamePlay from "./pages/GamePlay";
+import EbookReader from "./pages/EbookReader";
 import EbookManager from "./pages/admin/EbookManager";
 import EbookEditor from "./pages/admin/EbookEditor";
 
@@ -437,6 +438,7 @@ export default function App() {
         <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
         <Route path="/ar/:slug/:code" element={<ArView />} />
         <Route path="/game/:slug/:code" element={<GamePlay />} />
+        <Route path="/ebook/:slug" element={<EbookReader />} />
         <Route path="/e-kid/:slug/:token" element={<KidAccess />} />
       </Routes>
     </BrowserRouter>

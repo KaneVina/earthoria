@@ -1,6 +1,7 @@
 const prisma = require('../config/db')
 const { formatResponse } = require('../utils/helpers')
 const { encodeId, decodeId } = require('../utils/hashids')
+const { userOwnsDigitalBook } = require('../utils/bookOwnership')
 
 // Helper encode book
 const encodeBook = (book) => ({
@@ -266,12 +267,19 @@ const getBook = async (req, res) => {
 
     let canReview = false
     let hasReviewed = false
+    let ownsEbook = false
     if (req.user) {
       [canReview, hasReviewed] = await Promise.all([
         hasPurchasedBook(req.user.id, book.id),
         prisma.review.findFirst({ where: { userId: req.user.id, bookId: book.id }, select: { id: true } }).then(Boolean)
       ])
+      if (req.user.role === 'ADMIN' || req.user.role === 'STAFF') {
+        ownsEbook = true
+      } else {
+        ownsEbook = await userOwnsDigitalBook(prisma, req.user.id, book.id)
+      }
     }
+    const ebook = await prisma.ebook.findFirst({ where: { bookId: book.id, isActive: true }, select: { id: true } })
 
     return formatResponse(res, 200, 'OK', {
       ...withDisplayPrice(encodeBook(book)),
@@ -279,7 +287,9 @@ const getBook = async (req, res) => {
       avgRating,
       reviewCount: book.reviews.length,
       canReview,
-      hasReviewed
+      hasReviewed,
+      hasEbook: !!ebook,
+      ownsEbook
     })
   } catch (error) {
     console.error(error)

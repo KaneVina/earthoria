@@ -2,12 +2,14 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { ebookService } from "../../services/ebookService";
+import api from "../../services/api";
+import { QRCodeCanvas } from "qrcode.react";
 import {
   Undo2, Redo2, Plus, Image, Play, Square, Eye, Folder, Layers, Palette,
   X, ChevronUp, ChevronDown, Copy, Volume2, Trash2, ChevronLeft, ChevronRight,
   AlignLeft, AlignCenter, AlignRight, Bold, Italic, Underline, Minus, ZoomIn, ZoomOut, Maximize2,
   BookOpen, Type, Sparkles, Save, Upload, Wand2, Tag, GripVertical, Lock, Unlock,
-  Minus as LineIcon, ArrowRight, Star, Triangle, Group, Ungroup
+  Minus as LineIcon, ArrowRight, Star, Triangle, Group, Ungroup, QrCode
 } from "lucide-react";
 
 const FONTS = [
@@ -156,6 +158,20 @@ function defaultShapeLayer(overrides = {}) {
   };
 }
 
+function defaultQrLayer(overrides = {}) {
+  return {
+    id: uid(), type: "qr", linkType: "AR", refId: "", code: "", bookSlug: "", label: "",
+    x: BASE_PAGE_W / 2 - 60, y: BASE_PAGE_H / 2 - 60, width: 120, height: 120, opacity: 100, locked: false,
+    ...overrides,
+  };
+}
+
+function qrLayerUrl(layer) {
+  if (!layer || !layer.code || !layer.bookSlug) return "";
+  const kind = layer.linkType === "GAME" ? "game" : "ar";
+  return `${window.location.origin}/${kind}/${layer.bookSlug}/${layer.code}`;
+}
+
 function ShapeSvg({ shapeType, fill, strokeColor, strokeWidth }) {
   const sw = strokeWidth || 0;
   if (shapeType === "line") {
@@ -231,6 +247,11 @@ function LayerView({
   const handleClick = (e) => {
     e.stopPropagation();
     if (readOnly) {
+      if (layer.type === "qr") {
+        const url = qrLayerUrl(layer);
+        if (url) window.open(url, "_blank", "noopener,noreferrer");
+        return;
+      }
       if (layer.tocTargetPageId) onLayerClick && onLayerClick(layer.tocTargetPageId);
       return;
     }
@@ -261,6 +282,55 @@ function LayerView({
               border: layer.strokeWidth > 0 ? `${layer.strokeWidth}px solid ${layer.strokeColor}` : "none",
               borderRadius: layer.shapeType === "circle" ? "50%" : layer.borderRadius,
             }} />
+          )}
+        </div>
+        {!readOnly && selected && !layer.locked && (
+          <div onPointerDown={(e) => { e.stopPropagation(); onResizeStart(e, layer); }}
+            className="bb-resize-handle" style={{ cursor: "nwse-resize" }} />
+        )}
+      </div>
+    );
+  }
+
+  if (layer.type === "qr") {
+    const qrUrl = qrLayerUrl(layer);
+    return (
+      <div
+        style={{ ...wrapStyle, width: layer.width, height: layer.height }}
+        onPointerDown={handleDragStart}
+        onClick={handleClick}
+      >
+        <div style={{
+          position: "relative", width: "100%", height: "100%", boxSizing: "border-box",
+          outline: !readOnly && selected ? "2px solid #4a9e3f" : "2px solid transparent",
+          outlineOffset: 4, borderRadius: 10, overflow: "hidden", background: "#fff",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          cursor: readOnly ? (qrUrl ? "pointer" : "default") : (layer.locked ? "not-allowed" : "grab"),
+          touchAction: "none",
+          boxShadow: !readOnly && selected ? "0 0 0 4px rgba(74,158,63,0.14)" : "none",
+          transition: "outline-color 0.12s ease, box-shadow 0.12s ease",
+        }}>
+          {qrUrl ? (
+            <QRCodeCanvas value={qrUrl} size={Math.max(24, Math.min(layer.width, layer.height) - 14)} level="M"
+              includeMargin bgColor="#ffffff" fgColor={layer.linkType === "GAME" ? "#7a3ea1" : "#0D3330"} />
+          ) : (
+            <div style={{
+              width: "100%", height: "100%",
+              background: "repeating-linear-gradient(135deg, #eef1ee, #eef1ee 10px, #e5e9e4 10px, #e5e9e4 20px)",
+              border: "1.5px dashed #c7d0c9", borderRadius: 10, boxSizing: "border-box",
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6,
+              color: "#8a978f", fontSize: 11, textAlign: "center", padding: 8,
+            }}>
+              {!readOnly && <QrCode size={18} strokeWidth={1.6} />}
+              {readOnly ? "" : "Chưa gắn liên kết AR/Game"}
+            </div>
+          )}
+          {qrUrl && (
+            <span style={{
+              position: "absolute", bottom: 3, left: "50%", transform: "translateX(-50%)",
+              fontSize: 9, fontWeight: 700, letterSpacing: 0.3, padding: "1px 6px", borderRadius: 6,
+              background: layer.linkType === "GAME" ? "#7a3ea1" : "#0D3330", color: "#fff", pointerEvents: "none",
+            }}>{layer.linkType === "GAME" ? "GAME" : "AR"}</span>
           )}
         </div>
         {!readOnly && selected && !layer.locked && (
@@ -362,7 +432,7 @@ function LayerView({
   );
 }
 
-function PreviewOverlay({ pages, startIndex, onClose, orientation, pageNumberPos, showTitleWithPageNumber, hidePageNumberOnCover }) {
+export function PreviewOverlay({ pages, startIndex, onClose, orientation, pageNumberPos, showTitleWithPageNumber, hidePageNumberOnCover }) {
   const [idx, setIdx] = useState(startIndex);
   const [reading, setReading] = useState(null);
   const wrapRef = useRef(null);
@@ -488,6 +558,7 @@ export default function BookBuilder() {
   const [ebookTitle, setEbookTitle] = useState("");
   const [orientation, setOrientation] = useState("LANDSCAPE");
   const [loadError, setLoadError] = useState(null);
+  const [bookLinkables, setBookLinkables] = useState({ slug: "", arCodes: [], games: [] });
   const [pageNumberPos, setPageNumberPos] = useState({ v: "bottom", h: "center" });
   const [showTitleWithPageNumber, setShowTitleWithPageNumber] = useState(false);
   const [hidePageNumberOnCover, setHidePageNumberOnCover] = useState(false);
@@ -598,6 +669,17 @@ export default function BookBuilder() {
     })();
     return () => { cancelled = true; };
   }, [routeId, bookIdFromQuery]);
+
+  useEffect(() => {
+    if (!bookId) { setBookLinkables({ slug: "", arCodes: [], games: [] }); return; }
+    let cancelled = false;
+    api.get(`/admin/products/${bookId}`).then((res) => {
+      if (cancelled) return;
+      const b = res.data.data || {};
+      setBookLinkables({ slug: b.slug || "", arCodes: b.arCodes || [], games: b.games || [] });
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [bookId]);
 
   const persist = async ({ silent } = {}) => {
     if (loadError) return;
@@ -715,6 +797,18 @@ export default function BookBuilder() {
     const layer = defaultShapeLayer();
     setPagesCommit((prev) => prev.map((p, i) => i === pageIndex ? { ...p, layers: [...p.layers, layer] } : p));
     selectLayer(layer.id);
+  };
+  const addQrLayer = (linkType, item) => {
+    const layer = defaultQrLayer({
+      linkType,
+      refId: item.id,
+      code: item.code,
+      bookSlug: bookLinkables.slug,
+      label: linkType === "GAME" ? item.title : item.label,
+    });
+    setPagesCommit((prev) => prev.map((p, i) => i === pageIndex ? { ...p, layers: [...p.layers, layer] } : p));
+    selectLayer(layer.id);
+    setActivePanel("format");
   };
   const removeLayer = (id) => {
     setPagesCommit((prev) => prev.map((p, i) => i === pageIndex ? { ...p, layers: p.layers.filter((l) => l.id !== id) } : p));
@@ -856,8 +950,8 @@ export default function BookBuilder() {
         ...l,
         x: l.x * rx,
         y: l.y * ry,
-        width: l.width * (l.type === "image" ? rx : rx),
-        ...(l.type === "image" ? { height: l.height * ry } : {}),
+        width: l.width * rx,
+        ...(l.type === "image" || l.type === "qr" ? { height: l.height * ry } : {}),
       })),
     })));
     setOrientation(next);
@@ -1425,6 +1519,9 @@ export default function BookBuilder() {
           <button className="bb-rail-btn" onClick={addShapeLayer} title="Thêm hình khối">
             <Square size={18} /><span>Hình</span>
           </button>
+          <button className={`bb-rail-btn${activePanel === "qr" ? " active" : ""}`} onClick={() => toggleRailPanel("qr")} title="Thêm mã QR AR/Game">
+            <QrCode size={18} /><span>QR</span>
+          </button>
           <div className="bb-rail-sep" />
           <button className={`bb-rail-btn${activePanel === "layers" ? " active" : ""}`} onClick={() => toggleRailPanel("layers")} title="Các lớp">
             <Layers size={18} /><span>Lớp</span>
@@ -1516,6 +1613,51 @@ export default function BookBuilder() {
           </div>
         )}
 
+        {activePanel === "qr" && (
+          <div className="bb-flyout">
+            <div className="bb-flyout-head">
+              <h3>Thêm mã QR</h3>
+              <button className="bb-flyout-close" onClick={() => setActivePanel(null)}><X size={14} /></button>
+            </div>
+            {!bookId ? (
+              <div className="bb-empty">Sách điện tử chưa gắn với sách nào.</div>
+            ) : (
+              <>
+                <div className="bb-field">
+                  <label>Mã AR của sách này</label>
+                  {bookLinkables.arCodes.length === 0 ? (
+                    <div className="bb-hint">Sách chưa có mã AR nào. Tạo ở mục "Quản lý mã QR" trước.</div>
+                  ) : (
+                    bookLinkables.arCodes.map((ac) => (
+                      <button key={ac.id} type="button" className="bb-btn"
+                        style={{ width: "100%", justifyContent: "flex-start", marginBottom: 6 }}
+                        onClick={() => addQrLayer("AR", ac)}>
+                        <Sparkles size={13} style={{ marginRight: 6 }} />{ac.label}
+                        <span style={{ marginLeft: "auto", opacity: 0.6, fontSize: 11 }}>{ac.code}</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+                <div className="bb-field">
+                  <label>Trò chơi của sách này</label>
+                  {bookLinkables.games.length === 0 ? (
+                    <div className="bb-hint">Sách chưa có trò chơi nào. Tạo ở mục "Studio trò chơi" trước.</div>
+                  ) : (
+                    bookLinkables.games.map((g) => (
+                      <button key={g.id} type="button" className="bb-btn"
+                        style={{ width: "100%", justifyContent: "flex-start", marginBottom: 6 }}
+                        onClick={() => addQrLayer("GAME", g)}>
+                        <Play size={13} style={{ marginRight: 6 }} />{g.title}
+                        <span style={{ marginLeft: "auto", opacity: 0.6, fontSize: 11 }}>{g.code}</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
         {activePanel === "layers" && (
           <div className="bb-flyout">
             <div className="bb-flyout-head">
@@ -1541,9 +1683,9 @@ export default function BookBuilder() {
                 onClick={() => selectLayer(layer.id)}
               >
                 <span className="bb-drag-handle" title="Kéo để sắp xếp"><GripVertical size={13} /></span>
-                <span className="bb-layer-type">{layer.type === "image" ? <Image size={12} /> : <Type size={12} />}</span>
+                <span className="bb-layer-type">{layer.type === "image" ? <Image size={12} /> : layer.type === "qr" ? <QrCode size={12} /> : <Type size={12} />}</span>
                 {layer.headingLevel > 0 && <span className="bb-heading-badge">Tiêu đề {layer.headingLevel}</span>}
-                <span className="bb-layer-label">{layer.type === "image" ? layer.src || "(chưa có ảnh)" : layer.text || "(trống)"}</span>
+                <span className="bb-layer-label">{layer.type === "image" ? layer.src || "(chưa có ảnh)" : layer.type === "qr" ? (layer.label || "(chưa gắn liên kết)") : layer.text || "(trống)"}</span>
                 <button className="bb-mini-btn" title="Lên trước" onClick={(e) => { e.stopPropagation(); moveLayer(layer.id, 1); }}><ChevronUp size={12} /></button>
                 <button className="bb-mini-btn" title="Xuống sau" onClick={(e) => { e.stopPropagation(); moveLayer(layer.id, -1); }}><ChevronDown size={12} /></button>
                 <button className="bb-mini-btn" title={layer.locked ? "Mở khoá" : "Khoá vị trí"}
@@ -1615,6 +1757,45 @@ export default function BookBuilder() {
                     <input type="number" min={0} max={12} value={selected.strokeWidth} onFocus={beginEdit} onBlur={endEdit}
                       onChange={(e) => updateLayer(selected.id, { strokeWidth: Number(e.target.value) || 0 })} />
                   </div>
+                </div>
+                <div className="bb-field">
+                  <label>Độ trong suốt ({selected.opacity}%)</label>
+                  <input type="range" min={10} max={100} value={selected.opacity} onFocus={beginEdit} onBlur={endEdit}
+                    onChange={(e) => updateLayer(selected.id, { opacity: Number(e.target.value) })} />
+                </div>
+              </>
+            ) : selected.type === "qr" ? (
+              <>
+                <div className="bb-field">
+                  <label>Liên kết đang gắn</label>
+                  {selected.code ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: 10, border: "1px solid #e1e7e0", borderRadius: 10 }}>
+                      <QRCodeCanvas value={qrLayerUrl(selected)} size={56} level="M" includeMargin
+                        bgColor="#ffffff" fgColor={selected.linkType === "GAME" ? "#7a3ea1" : "#0D3330"} />
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: "#14332a" }}>
+                          {selected.linkType === "GAME" ? "Trò chơi" : "AR"}: {selected.label}
+                        </div>
+                        <div style={{ fontSize: 11, color: "#6b7a72", wordBreak: "break-all" }}>{qrLayerUrl(selected)}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bb-hint">Chưa gắn liên kết nào cho mã QR này.</div>
+                  )}
+                  <button type="button" className="bb-btn" style={{ width: "100%", justifyContent: "center", marginTop: 8 }}
+                    onClick={() => setActivePanel("qr")}>
+                    <QrCode size={14} />Đổi liên kết
+                  </button>
+                </div>
+                <div className="bb-field">
+                  <label>Kích thước (rộng × cao)</label>
+                  <div className="bb-color-size">
+                    <input type="number" value={Math.round(selected.width)} onFocus={beginEdit} onBlur={endEdit}
+                      onChange={(e) => updateLayer(selected.id, { width: Number(e.target.value) || 40, height: Number(e.target.value) || 40 })} />
+                    <input type="number" value={Math.round(selected.height)} onFocus={beginEdit} onBlur={endEdit}
+                      onChange={(e) => updateLayer(selected.id, { height: Number(e.target.value) || 40 })} />
+                  </div>
+                  <div className="bb-hint">Nên để rộng = cao để mã QR không bị méo.</div>
                 </div>
                 <div className="bb-field">
                   <label>Độ trong suốt ({selected.opacity}%)</label>

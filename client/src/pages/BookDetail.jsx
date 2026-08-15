@@ -821,6 +821,14 @@ export default function BookDetail() {
 
           {/* Secondary CTAs */}
           <div className="secondary-cta">
+            {book.ownsEbook && (
+              <Link
+                to={`/ebook/${book.slug}`}
+                className="btn-secondary"
+              >
+                <IconPlay size={13} /> Đọc sách điện tử
+              </Link>
+            )}
             <button
               className="btn-secondary"
               onClick={() => toast.success("Tính năng đang phát triển!")}

@@ -10,4 +10,17 @@ async function userOwnsBook(prisma, userId, bookId) {
   return !!owns
 }
 
-module.exports = { userOwnsBook }
+// Sách điện tử (ebook) là 1 variant riêng (format DIGITAL) — chỉ ai đã mua đúng
+// bản điện tử (không phải chỉ mua bản in) mới được đọc.
+async function userOwnsDigitalBook(prisma, userId, bookId) {
+  const owns = await prisma.orderItem.findFirst({
+    where: {
+      variant: { bookId, format: 'DIGITAL' },
+      order: { userId, status: { in: ['DELIVERED', 'COMPLETED'] } },
+    },
+    select: { id: true },
+  })
+  return !!owns
+}
+
+module.exports = { userOwnsBook, userOwnsDigitalBook }
