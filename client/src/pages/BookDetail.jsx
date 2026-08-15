@@ -9,6 +9,17 @@ import { flyToCart } from "../utils/flyToCart";
 import toast from "react-hot-toast";
 import CompareModal from "../components/CompareModal";
 import RebuyConfirmModal from "../components/RebuyConfirmModal";
+import {
+  ShoppingCart,
+  Check,
+  Heart,
+  Play,
+  Share2,
+  Search,
+  Star,
+  ThumbsUp,
+  ThumbsDown,
+} from "lucide-react";
 
 //  Fallback images khi chưa có ảnh từ API
 const FALLBACK_IMGS = [
@@ -80,109 +91,18 @@ const FAQS = [
   },
 ];
 
-//  SVG Icons
-const IconCart = ({ size = 15 }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-  >
-    <circle cx="9" cy="21" r="1" />
-    <circle cx="20" cy="21" r="1" />
-    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-  </svg>
-);
-const IconCheck = ({ size = 15 }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-  >
-    <polyline points="20 6 9 17 4 12" />
-  </svg>
-);
-const IconHeart = ({ filled }) => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill={filled ? "currentColor" : "none"}
-    stroke="currentColor"
-    strokeWidth="1.5"
-  >
-    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-  </svg>
-);
-const IconPlay = ({ size = 14 }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-  >
-    <polygon points="5 3 19 12 5 21 5 3" />
-  </svg>
-);
-const IconShare = () => (
-  <svg
-    width="13"
-    height="13"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-  >
-    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
-    <polyline points="16 6 12 2 8 6" />
-    <line x1="12" y1="2" x2="12" y2="15" />
-  </svg>
-);
-const IconSearch = () => (
-  <svg
-    width="13"
-    height="13"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-  >
-    <circle cx="11" cy="11" r="8" />
-    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-  </svg>
-);
-const IconChevronUp = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-  >
-    <path d="M18 15l-6-6-6 6" />
-  </svg>
-);
-const IconStar = () => <span className="star">★</span>;
-
-//  Stars component
-function Stars({ rating = 5, max = 5 }) {
+//  Stars component — dùng lucide Star, tô đầy theo rating thực tế
+function Stars({ rating = 0, max = 5, size = 13 }) {
   return (
     <div className="stars">
       {Array.from({ length: max }).map((_, i) => (
-        <span
+        <Star
           key={i}
+          size={size}
+          strokeWidth={1.5}
           className={i < Math.round(rating) ? "star" : "star empty"}
-        >
-          ★
-        </span>
+          fill={i < Math.round(rating) ? "currentColor" : "none"}
+        />
       ))}
     </div>
   );
@@ -341,7 +261,9 @@ export default function BookDetail() {
 
   const currentImg = images[activeThumb] || FALLBACK_IMGS[0];
   const thumbImages = images.length > 1 ? images : FALLBACK_IMGS;
-  const avgRating = parseFloat(book?.avgRating) || 4.9;
+  //  Không dùng `|| fallback` ở đây vì sách chưa có đánh giá nào thì avgRating
+  //  trả về từ server là số 0 (falsy) — dùng `|| 4.9` sẽ vô tình hiện điểm giả.
+  const avgRating = book?.avgRating != null ? parseFloat(book.avgRating) : 0;
   const reviewCount = book?.reviewCount || 0;
 
   const variants = book?.variants || [];
@@ -618,7 +540,7 @@ export default function BookDetail() {
               }
             >
               <div className="gallery-ar-pulse"></div>
-              <IconPlay />
+              <Play size={14} />
               Xem Demo AR
             </button>
           </div>
@@ -813,11 +735,11 @@ export default function BookDetail() {
             >
               {addedToCart ? (
                 <>
-                  <IconCheck /> Đã thêm vào giỏ!
+                  <Check size={15} /> Đã thêm vào giỏ!
                 </>
               ) : (
                 <>
-                  <IconCart /> Thêm vào giỏ hàng
+                  <ShoppingCart size={15} /> Thêm vào giỏ hàng
                 </>
               )}
             </button>
@@ -826,7 +748,7 @@ export default function BookDetail() {
               onClick={handleWishlist}
               title={wishlist ? "Xóa khỏi yêu thích" : "Thêm vào yêu thích"}
             >
-              <IconHeart filled={wishlist} />
+              <Heart size={16} strokeWidth={1.5} fill={wishlist ? "currentColor" : "none"} />
             </button>
           </div>
 
@@ -838,16 +760,16 @@ export default function BookDetail() {
                 className="btn-secondary btn-secondary--owned"
               >
                 <span className="btn-secondary-owned-badge">
-                  <IconCheck size={9} />
+                  <Check size={9} />
                 </span>
-                <IconPlay size={13} /> Đọc sách điện tử
+                <Play size={13} /> Đọc sách điện tử
               </Link>
             ) : (
               <button
                 className="btn-secondary"
                 onClick={() => toast.success("Tính năng đang phát triển!")}
               >
-                <IconPlay size={13} /> Xem demo AR
+                <Play size={13} /> Xem demo AR
               </button>
             )}
             <button
@@ -857,13 +779,13 @@ export default function BookDetail() {
                 toast.success("Đã sao chép link!");
               }}
             >
-              <IconShare /> Chia sẻ
+              <Share2 size={13} /> Chia sẻ
             </button>
             <button
               className="btn-secondary"
               onClick={() => setCompareOpen(true)}
             >
-              <IconSearch /> So sánh
+              <Search size={13} /> So sánh
             </button>
           </div>
 
@@ -1106,23 +1028,18 @@ export default function BookDetail() {
                   Dựa trên {reviewCount} đánh giá
                 </div>
                 <div className="rating-bars">
+                  {/* ratingBreakdown giờ lấy từ server (tính trên toàn bộ đánh giá
+                      còn hiển thị của sách), không còn số % giả khi chưa có dữ liệu */}
                   {[5, 4, 3, 2, 1].map((star) => {
                     const count = book.ratingBreakdown?.[star] || 0;
                     const pct =
-                      reviewCount > 0
-                        ? Math.round((count / reviewCount) * 100)
-                        : star === 5
-                          ? 88
-                          : star === 4
-                            ? 9
-                            : star === 3
-                              ? 2
-                              : star === 2
-                                ? 1
-                                : 0;
+                      reviewCount > 0 ? Math.round((count / reviewCount) * 100) : 0;
                     return (
                       <div key={star} className="rating-bar-row">
-                        <span>{star}★</span>
+                        <span className="rating-bar-label">
+                          {star}
+                          <Star size={11} strokeWidth={1.5} fill="currentColor" />
+                        </span>
                         <div className="rating-bar-track">
                           <div
                             className="rating-bar-fill"
@@ -1203,7 +1120,7 @@ export default function BookDetail() {
                             background: "none",
                             border: "none",
                             cursor: "pointer",
-                            fontSize: "20px",
+                            display: "flex",
                             color:
                               s <= reviewForm.rating
                                 ? "var(--gold)"
@@ -1211,7 +1128,11 @@ export default function BookDetail() {
                             transition: "color 0.2s",
                           }}
                         >
-                          ★
+                          <Star
+                            size={20}
+                            strokeWidth={1.5}
+                            fill={s <= reviewForm.rating ? "currentColor" : "none"}
+                          />
                         </button>
                       ))}
                     </div>
@@ -1300,12 +1221,9 @@ export default function BookDetail() {
                             </div>
                           </div>
                         </div>
+                        {/* Số sao thật của review, không còn mặc định "5" khi thiếu dữ liệu */}
                         <div className="review-stars">
-                          {Array.from({ length: r.rating || 5 }).map((_, j) => (
-                            <span key={j} className="star">
-                              ★
-                            </span>
-                          ))}
+                          <Stars rating={r.rating || 0} size={12} />
                         </div>
                       </div>
                       <div className="review-title">{r.title}</div>
@@ -1326,7 +1244,8 @@ export default function BookDetail() {
                           disabled={voteMutation.isPending}
                           onClick={() => handleVote(r.id, true)}
                         >
-                          👍 Có ({r.helpfulCount || 0})
+                          <ThumbsUp size={12} strokeWidth={1.5} /> Có (
+                          {r.helpfulCount || 0})
                         </button>
                         <button
                           type="button"
@@ -1334,7 +1253,8 @@ export default function BookDetail() {
                           disabled={voteMutation.isPending}
                           onClick={() => handleVote(r.id, false)}
                         >
-                          👎 Không ({r.unhelpfulCount || 0})
+                          <ThumbsDown size={12} strokeWidth={1.5} /> Không (
+                          {r.unhelpfulCount || 0})
                         </button>
                       </div>
                     </div>
@@ -1460,11 +1380,7 @@ export default function BookDetail() {
           <div>
             <div className="sticky-product-name">{book.title}</div>
             <div className="sticky-stars">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <span key={i} className="star">
-                  ★
-                </span>
-              ))}
+              <Stars rating={avgRating} size={12} />
               <span>
                 {avgRating.toFixed(1)} · {reviewCount} đánh giá
               </span>
@@ -1476,7 +1392,7 @@ export default function BookDetail() {
             onClick={handleAddToCart}
             disabled={addedToCart}
           >
-            <IconCart size={14} />
+            <ShoppingCart size={14} />
             {addedToCart ? "Đã thêm!" : "Thêm vào giỏ hàng"}
           </button>
         </div>
@@ -1532,11 +1448,7 @@ function RelatedCard({
       </div>
       <div className="product-body">
         <div className="product-rating-mini">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <span key={i} className="star" style={{ fontSize: "10px" }}>
-              ★
-            </span>
-          ))}
+          <Stars rating={5} size={10} />
           <span>({rating})</span>
         </div>
         <div className="product-name">{name}</div>
@@ -1544,31 +1456,7 @@ function RelatedCard({
         <div className="product-card-footer">
           <span className="product-price">{formatPrice(price)}</span>
           <button className="add-cart-mini" onClick={handleAdd}>
-            {added ? (
-              <svg
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-            ) : (
-              <svg
-                width="13"
-                height="13"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              >
-                <circle cx="9" cy="21" r="1" />
-                <circle cx="20" cy="21" r="1" />
-                <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-              </svg>
-            )}
+            {added ? <Check size={12} /> : <ShoppingCart size={13} />}
           </button>
         </div>
       </div>

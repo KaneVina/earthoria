@@ -5820,6 +5820,13 @@ body.dark-mode .promo-strip {
   font-size: 12px;
   color: var(--text-muted);
 }
+.rating-bar-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--gold);
+  flex-shrink: 0;
+}
 .rating-bar-track {
   flex: 1;
   height: 3px;
@@ -5881,7 +5888,6 @@ body.dark-mode .promo-strip {
   gap: 2px;
 }
 .review-stars .star {
-  font-size: 12px;
   color: var(--gold);
 }
 .review-title {

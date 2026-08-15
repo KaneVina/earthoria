@@ -241,9 +241,26 @@ const getBook = async (req, res) => {
 
     if (!book) return formatResponse(res, 404, 'Không tìm thấy sách')
 
-    const avgRating = book.reviews.length
-      ? (book.reviews.reduce((a, b) => a + b.rating, 0) / book.reviews.length).toFixed(1)
-      : 0
+    // avgRating/reviewCount/ratingBreakdown phải tính trên TOÀN BỘ review còn hiển thị
+    // của sách, không chỉ 20 review mới nhất đang load ở trên (nếu không sẽ sai khi
+    // sách có nhiều hơn 20 đánh giá).
+    const [reviewStats, ratingGroups] = await Promise.all([
+      prisma.review.aggregate({
+        where: { bookId: book.id, isVisible: true },
+        _avg: { rating: true },
+        _count: { _all: true }
+      }),
+      prisma.review.groupBy({
+        by: ['rating'],
+        where: { bookId: book.id, isVisible: true },
+        _count: { _all: true }
+      })
+    ])
+
+    const reviewCount = reviewStats._count._all
+    const avgRating = reviewCount ? reviewStats._avg.rating.toFixed(1) : 0
+    const ratingBreakdown = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+    ratingGroups.forEach((g) => { ratingBreakdown[g.rating] = g._count._all })
 
     const reviewIds = book.reviews.map((r) => r.id)
     const voteGroups = reviewIds.length
@@ -285,7 +302,8 @@ const getBook = async (req, res) => {
       ...withDisplayPrice(encodeBook(book)),
       reviews,
       avgRating,
-      reviewCount: book.reviews.length,
+      reviewCount,
+      ratingBreakdown,
       canReview,
       hasReviewed,
       hasEbook: !!ebook,
