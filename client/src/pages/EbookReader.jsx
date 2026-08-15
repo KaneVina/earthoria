@@ -105,6 +105,7 @@ export default function EbookReader() {
       pageNumberPos={{ v: "bottom", h: "center" }}
       showTitleWithPageNumber={false}
       hidePageNumberOnCover={false}
+      bookInfo={data.book}
       onClose={() => navigate(bookUrl)}
     />
   );

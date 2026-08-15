@@ -8,7 +8,21 @@ exports.getEbookForReading = async (req, res) => {
 
     const book = await prisma.book.findUnique({
       where: { slug },
-      select: { id: true, title: true, slug: true, coverImage: true },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        coverImage: true,
+        description: true,
+        ageMin: true,
+        ageMax: true,
+        language: true,
+        pages: true,
+        publisher: true,
+        publishYear: true,
+        category: { select: { name: true } },
+        authors: { include: { author: true }, orderBy: { order: 'asc' } },
+      },
     })
     if (!book) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy sách này' })
@@ -43,7 +57,22 @@ exports.getEbookForReading = async (req, res) => {
         pages: ebook.pages,
         orientation: ebook.orientation,
         thumbnailUrl: ebook.thumbnailUrl,
-        book: { ...book, hashId: encodeId(book.id) },
+        book: {
+          id: book.id,
+          title: book.title,
+          slug: book.slug,
+          coverImage: book.coverImage,
+          description: book.description,
+          ageMin: book.ageMin,
+          ageMax: book.ageMax,
+          language: book.language,
+          pages: book.pages,
+          publisher: book.publisher,
+          publishYear: book.publishYear,
+          categoryName: book.category?.name || null,
+          authors: (book.authors ?? []).map((ba) => ba.author.name),
+          hashId: encodeId(book.id),
+        },
       },
     })
   } catch (err) {

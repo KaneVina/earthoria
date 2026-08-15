@@ -51,6 +51,8 @@ import {
   Group,
   Ungroup,
   QrCode,
+  Info,
+  User,
 } from "lucide-react";
 
 const FONTS = [
@@ -832,6 +834,7 @@ export function PreviewOverlay({
   pageNumberPos,
   showTitleWithPageNumber,
   hidePageNumberOnCover,
+  bookInfo,
 }) {
   const THEMES = {
     forest: { label: "Rừng đêm" },
@@ -853,6 +856,8 @@ export function PreviewOverlay({
   const [pageView, setPageView] = useState("single");
   const [autoPlay, setAutoPlay] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
+  const [direction, setDirection] = useState("next");
 
   const wrapRef = useRef(null);
   const themeBoxRef = useRef(null);
@@ -979,6 +984,7 @@ export function PreviewOverlay({
   };
 
   const autoAdvance = () => {
+    setDirection("next");
     setIdx((current) => {
       const next = nextGroupStart(current);
       if (next === current) {
@@ -1034,12 +1040,14 @@ export function PreviewOverlay({
     const target = prevGroupStart(idx);
     if (target === idx) return;
     if (!autoPlay) stop();
+    setDirection("prev");
     setIdx(target);
   };
   const goNext = () => {
     const target = nextGroupStart(idx);
     if (target === idx) return;
     if (!autoPlay) stop();
+    setDirection("next");
     setIdx(target);
   };
   const goToPageId = (pageId) => {
@@ -1047,6 +1055,7 @@ export function PreviewOverlay({
     if (target === -1) return;
     setAutoPlay(false);
     stop();
+    setDirection(target >= idx ? "next" : "prev");
     setIdx(groupStartFor(target));
   };
   const togglePageView = () => {
@@ -1111,6 +1120,15 @@ export function PreviewOverlay({
         </div>
 
         <div className="er-tools">
+          <button
+            className={`er-tool-btn ${infoOpen ? "active" : ""}`}
+            title="Thông tin sách"
+            onClick={() => setInfoOpen((v) => !v)}
+          >
+            <Info size={15} />
+            <span className="er-tool-label">Thông tin</span>
+          </button>
+
           <div className="er-tool-group" ref={themeBoxRef}>
             <button
               className={`er-tool-btn ${themeMenuOpen ? "active" : ""}`}
@@ -1193,16 +1211,19 @@ export function PreviewOverlay({
       </div>
 
       <div ref={wrapRef} className="er-stage">
-        <div style={{ width: stageW * scale, height: PAGE_H * scale }}>
-          <div
-            className="er-spread"
-            style={{
-              width: stageW,
-              height: PAGE_H,
-              transform: `scale(${scale})`,
-              gap: SPREAD_GAP,
-            }}
-          >
+        <div
+          style={{ width: stageW * scale, height: PAGE_H * scale, perspective: 1600 }}
+        >
+          <div key={idx} className={`er-flip er-flip--${direction}`}>
+            <div
+              className="er-spread"
+              style={{
+                width: stageW,
+                height: PAGE_H,
+                transform: `scale(${scale})`,
+                gap: SPREAD_GAP,
+              }}
+            >
             {visiblePages.map((p, i) => {
               const globalIndex = idx + i;
               return (
@@ -1240,6 +1261,7 @@ export function PreviewOverlay({
                 </div>
               );
             })}
+            </div>
           </div>
         </div>
       </div>
@@ -1269,6 +1291,74 @@ export function PreviewOverlay({
           <ChevronRight size={18} />
         </button>
       </div>
+
+      {infoOpen && (
+        <div className="er-info-backdrop" onClick={() => setInfoOpen(false)}>
+          <div className="er-info-card" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="er-icon-btn er-info-close"
+              onClick={() => setInfoOpen(false)}
+            >
+              <X size={16} />
+            </button>
+            {bookInfo ? (
+              <>
+                {bookInfo.coverImage && (
+                  <img
+                    className="er-info-cover"
+                    src={bookInfo.coverImage}
+                    alt={bookInfo.title || ""}
+                  />
+                )}
+                <div className="er-info-body">
+                  <h2 className="er-info-title">{bookInfo.title}</h2>
+                  {bookInfo.authors?.length > 0 && (
+                    <div className="er-info-authors">
+                      <User size={13} /> {bookInfo.authors.join(", ")}
+                    </div>
+                  )}
+                  {bookInfo.description && (
+                    <p className="er-info-desc">{bookInfo.description}</p>
+                  )}
+                  <div className="er-info-meta">
+                    {bookInfo.categoryName && (
+                      <span className="er-info-tag">{bookInfo.categoryName}</span>
+                    )}
+                    {(bookInfo.ageMin || bookInfo.ageMax) && (
+                      <span className="er-info-tag">
+                        {bookInfo.ageMin && bookInfo.ageMax
+                          ? `${bookInfo.ageMin}-${bookInfo.ageMax} tuổi`
+                          : bookInfo.ageMin
+                            ? `Từ ${bookInfo.ageMin} tuổi`
+                            : `Đến ${bookInfo.ageMax} tuổi`}
+                      </span>
+                    )}
+                    {bookInfo.publisher && (
+                      <span className="er-info-tag">NXB {bookInfo.publisher}</span>
+                    )}
+                    {bookInfo.publishYear && (
+                      <span className="er-info-tag">{bookInfo.publishYear}</span>
+                    )}
+                    {bookInfo.pages ? (
+                      <span className="er-info-tag">{bookInfo.pages} trang</span>
+                    ) : null}
+                    {bookInfo.language && (
+                      <span className="er-info-tag">
+                        {bookInfo.language === "VI" ? "Tiếng Việt" : bookInfo.language}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="er-info-body">
+                <h2 className="er-info-title">{page?.title || "Sách điện tử"}</h2>
+                <p className="er-info-desc">Chưa có thông tin chi tiết cho sách này.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -3985,6 +4075,7 @@ export default function BookBuilder() {
           pageNumberPos={pageNumberPos}
           showTitleWithPageNumber={showTitleWithPageNumber}
           hidePageNumberOnCover={hidePageNumberOnCover}
+          bookInfo={{ title: bookTitle }}
           onClose={() => setPreviewOpen(false)}
         />
       )}
