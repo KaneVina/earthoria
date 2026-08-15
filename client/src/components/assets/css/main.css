@@ -5201,6 +5201,8 @@ body.dark-mode .promo-strip {
 .product-price-old {
   font-family: "Montserrat", sans-serif;
   font-weight: 400;
+  color: #c05050;
+  text-decoration: line-through;
 }
 .price-save {
   font-size: 10px;

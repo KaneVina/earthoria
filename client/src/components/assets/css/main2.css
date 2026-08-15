@@ -1555,7 +1555,7 @@ body.dark-mode .product-rating-mini {
   color: rgba(180, 200, 188, 0.4);
 }
 body.dark-mode .price-old {
-  color: rgba(180, 200, 188, 0.3);
+  color: #e08787;
 }
 body.dark-mode .price-save {
   background: rgba(74, 158, 63, 0.12);
