@@ -72,23 +72,27 @@ const RELATED_FALLBACK = [
 const FAQS = [
   {
     q: "Ứng dụng AR có miễn phí không?",
-    a: "Có, ứng dụng Earthoria AR hoàn toàn miễn phí trên App Store và Google Play. Bạn chỉ cần mua sách và tải app về là có thể sử dụng ngay.",
+    a: "Hoàn toàn miễn phí. Ứng dụng Earthoria AR có sẵn trên App Store và Google Play — bạn chỉ cần sở hữu sách và tải app về là bắt đầu trải nghiệm ngay, không phát sinh chi phí ẩn nào.",
   },
   {
     q: "Cần kết nối internet để dùng AR không?",
-    a: "Sau khi tải nội dung lần đầu (khoảng 2.4GB), toàn bộ trải nghiệm AR hoạt động 100% offline. Chỉ tính năng AI Tutor cần kết nối internet.",
+    a: "Không. Sau lần tải nội dung đầu tiên (khoảng 2.4GB), toàn bộ trải nghiệm AR hoạt động 100% offline — lý tưởng cho các chuyến đi hoặc khu vực không có Wi-Fi. Riêng tính năng AI Tutor cần kết nối internet để phản hồi theo thời gian thực.",
   },
   {
-    q: "Thiết bị nào tương thích?",
-    a: "iPhone/iPad chạy iOS 14.0 trở lên và Android 10.0 trở lên với tối thiểu 3GB RAM. Thiết bị hỗ trợ ARKit hoặc ARCore sẽ cho trải nghiệm tốt nhất.",
+    q: "Thiết bị nào tương thích với sách?",
+    a: "iPhone/iPad chạy iOS 14.0 trở lên, hoặc thiết bị Android 10.0 trở lên với tối thiểu 3GB RAM. Để có trải nghiệm mượt mà và chính xác nhất, chúng tôi khuyến nghị thiết bị hỗ trợ ARKit (Apple) hoặc ARCore (Google).",
   },
   {
-    q: '"Cập nhật nội dung miễn phí 24 tháng" có nghĩa là gì?',
-    a: "Trong 24 tháng từ ngày mua, bạn sẽ nhận được tất cả các bản cập nhật nội dung mới — loài mới, câu chuyện mới và thử thách khám phá mới — hoàn toàn miễn phí.",
+    q: 'Chính sách "Cập nhật nội dung miễn phí 24 tháng" hoạt động ra sao?',
+    a: "Trong vòng 24 tháng kể từ ngày mua, mọi bản cập nhật nội dung mới — loài mới, câu chuyện mới, thử thách khám phá mới — sẽ tự động có sẵn trong ứng dụng của bạn mà không tốn thêm chi phí.",
   },
   {
-    q: "Chính sách đổi trả như thế nào?",
-    a: "Sản phẩm còn nguyên vẹn có thể đổi trả trong 30 ngày kể từ ngày nhận hàng. Với sản phẩm lỗi kỹ thuật, chúng tôi hỗ trợ đổi mới trong toàn bộ thời gian bảo hành 12 tháng.",
+    q: "Tôi có thể đổi trả sách nếu không hài lòng không?",
+    a: "Có. Với sản phẩm còn nguyên vẹn, bạn có thể đổi trả trong vòng 30 ngày kể từ ngày nhận hàng. Nếu gặp lỗi kỹ thuật, chúng tôi hỗ trợ đổi mới miễn phí trong suốt 12 tháng bảo hành.",
+  },
+  {
+    q: "Sách có phù hợp cho trẻ dùng một mình không?",
+    a: "Có, giao diện AR được thiết kế trực quan cho trẻ từ 6 tuổi trở lên tự thao tác. Tuy nhiên với các bé dưới 8 tuổi, chúng tôi khuyến khích phụ huynh đồng hành trong 1-2 lần đầu để làm quen thao tác.",
   },
 ];
 
@@ -937,15 +941,22 @@ export default function BookDetail() {
         {/* Tab: Nội dung sách */}
         {activeTab === "chapters" && (
           <div className="tab-panel active">
-            <div style={{ maxWidth: "760px" }}>
-              <div style={{ marginBottom: "40px" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "320px 1fr",
+                gap: "60px",
+                alignItems: "start",
+              }}
+            >
+              <div style={{ position: "sticky", top: "100px" }}>
                 <h3
                   style={{
                     fontFamily: "'Playfair Display', serif",
                     fontSize: "28px",
                     fontWeight: 300,
                     color: "var(--forest)",
-                    marginBottom: "12px",
+                    marginBottom: "16px",
                   }}
                 >
                   Hành Trình{" "}
@@ -958,11 +969,27 @@ export default function BookDetail() {
                     fontSize: "13px",
                     lineHeight: 1.8,
                     color: "var(--text-muted)",
+                    fontWeight: 300,
+                    marginBottom: "24px",
                   }}
                 >
                   {book.chapterIntro ||
                     "Mỗi chương là một thế giới riêng biệt với hệ thống mô hình AR và câu chuyện độc lập."}
                 </p>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "10px",
+                    fontSize: "11px",
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    color: "var(--gold)",
+                    borderTop: "0.5px solid var(--border)",
+                    paddingTop: "16px",
+                  }}
+                >
+                  ✦ {book.arModelCount ? `${book.arModelCount}+` : "120+"} mô hình AR
+                </div>
               </div>
               <div className="chapter-list">
                 {(book.chapters?.length > 0
@@ -1401,8 +1428,51 @@ export default function BookDetail() {
         {/* Tab: FAQ */}
         {activeTab === "faq" && (
           <div className="tab-panel active">
-            <div style={{ maxWidth: "720px" }}>
-              {FAQS.map((faq, i) => (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "320px 1fr",
+                gap: "60px",
+                alignItems: "start",
+              }}
+            >
+              <div style={{ position: "sticky", top: "100px" }}>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    letterSpacing: "0.16em",
+                    textTransform: "uppercase",
+                    color: "var(--gold)",
+                    marginBottom: "14px",
+                  }}
+                >
+                  Hỗ trợ khách hàng
+                </div>
+                <h3
+                  style={{
+                    fontFamily: "'Playfair Display', serif",
+                    fontSize: "28px",
+                    fontWeight: 300,
+                    color: "var(--forest)",
+                    marginBottom: "16px",
+                    lineHeight: 1.3,
+                  }}
+                >
+                  Giải Đáp <em style={{ fontStyle: "italic", color: "var(--gold)" }}>Thắc Mắc</em>
+                </h3>
+                <p
+                  style={{
+                    fontSize: "13px",
+                    lineHeight: 1.8,
+                    color: "var(--text-muted)",
+                    fontWeight: 300,
+                  }}
+                >
+                  Không tìm thấy câu trả lời bạn cần? Đội ngũ Earthoria luôn sẵn sàng hỗ trợ 7 ngày/tuần.
+                </p>
+              </div>
+              <div>
+                {FAQS.map((faq, i) => (
                 <div
                   key={i}
                   style={{ borderBottom: "0.5px solid var(--border)" }}
@@ -1465,6 +1535,7 @@ export default function BookDetail() {
                   </div>
                 </div>
               ))}
+              </div>
             </div>
           </div>
         )}
