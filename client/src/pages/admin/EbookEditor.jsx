@@ -1270,11 +1270,28 @@ export function PreviewOverlay({
         <button className="er-nav-btn" onClick={goPrev} disabled={!canGoPrev}>
           <ChevronLeft size={18} />
         </button>
-        <div className={`er-page-pill ${reading ? "is-reading" : ""}`}>
-          {reading && <span className="er-page-pill-dot" />}
-          <span>
-            {visiblePages.length === 2 ? `${idx + 1}\u2013${idx + 2}` : idx + 1} / {pages.length}
-          </span>
+        <div className="er-page-dots">
+          {pages.map((p, i) => {
+            const isActive =
+              pageView === "double" ? i === idx || i === idx + 1 : i === idx;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                className={`er-page-dot ${isActive ? "active" : ""} ${
+                  isActive && reading ? "is-reading" : ""
+                }`}
+                onClick={() => {
+                  if (i === idx) return;
+                  if (!autoPlay) stop();
+                  setDirection(i >= idx ? "next" : "prev");
+                  setIdx(groupStartFor(i));
+                }}
+              >
+                {i + 1}
+              </button>
+            );
+          })}
         </div>
         <button className="er-nav-btn" onClick={goNext} disabled={!canGoNext}>
           <ChevronRight size={18} />
