@@ -498,3 +498,106 @@
 @media (max-width: 480px) {
   .er-info-drawer { width: 100vw; }
 }
+
+/* ─ Mục lục (dùng chung khung drawer với Thông tin sách) ─ */
+.er-toc-list {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 10px 24px;
+}
+.er-toc-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: none;
+  background: transparent;
+  border-radius: 12px;
+  padding: 12px 12px;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+.er-toc-item:hover { background: rgba(20, 51, 42, 0.06); }
+.er-toc-item.active {
+  background: var(--er-green-pale);
+}
+.er-toc-num {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  background: rgba(20, 51, 42, 0.08);
+  color: var(--er-forest);
+}
+.er-toc-item.active .er-toc-num {
+  background: var(--er-forest);
+  color: #fff;
+}
+.er-toc-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #2c3a33;
+}
+.er-toc-item.active .er-toc-title { color: var(--er-forest); font-weight: 800; }
+.er-toc-star {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: #9aa8a0;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.er-toc-star:hover { background: rgba(20, 51, 42, 0.08); color: var(--er-forest); }
+
+/* ─ Dấu chấm đánh dấu (bookmark) trên số trang ở thanh dưới ─ */
+.er-page-dot { position: relative; }
+.er-page-dot-mark {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--er-gold);
+  border: 2px solid rgba(5, 12, 10, 0.9);
+}
+.er-theme-light .er-page-dot-mark,
+.er-theme-sepia .er-page-dot-mark {
+  border-color: #f6f4ee;
+}
+
+/* ─ Hiệu ứng nảy nhẹ khi bookmark trang ─ */
+@keyframes er-bookmark-pop {
+  0% { transform: scale(0.6); }
+  60% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+.er-bookmark-pop { animation: er-bookmark-pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* ─ Responsive mobile: an toàn vùng tai thỏ, nút to hơn để dễ chạm ─ */
+.er-topbar { padding-top: max(14px, env(safe-area-inset-top)); }
+.er-bottombar { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+@media (max-width: 760px) {
+  .er-title-name { max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .er-toc-item { padding: 13px 10px; }
+  .er-toc-num, .er-toc-star { width: 32px; height: 32px; }
+  .er-info-drawer-head h3 { font-size: 14px; }
+}
+@media (max-width: 420px) {
+  .er-tools { gap: 6px; }
+  .er-zoom-group .er-font-value { min-width: 30px; font-size: 11px; }
+}

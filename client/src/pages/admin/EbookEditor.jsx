@@ -55,6 +55,9 @@ import {
   User,
   VolumeX,
   MousePointer,
+  List,
+  Bookmark,
+  BookmarkCheck,
 } from "lucide-react";
 
 const FONTS = [
@@ -837,6 +840,8 @@ export function PreviewOverlay({
   showTitleWithPageNumber,
   hidePageNumberOnCover,
   bookInfo,
+  storageKey,
+  resumeFromStorage,
 }) {
   const THEMES = {
     forest: { label: "Rừng đêm" },
@@ -849,7 +854,29 @@ export function PreviewOverlay({
   const PAGE_W = orientation === "PORTRAIT" ? BASE_PAGE_H : BASE_PAGE_W;
   const PAGE_H = orientation === "PORTRAIT" ? BASE_PAGE_W : BASE_PAGE_H;
 
-  const [idx, setIdx] = useState(Math.max(0, Math.min(pages.length - 1, startIndex)));
+  const STORAGE_PREFIX = `earthoria:reader:${storageKey || "preview"}`;
+
+  const [idx, setIdx] = useState(() => {
+    if (resumeFromStorage) {
+      try {
+        const saved = localStorage.getItem(`${STORAGE_PREFIX}:lastPage`);
+        const n = saved != null ? parseInt(saved, 10) : NaN;
+        if (!Number.isNaN(n)) return Math.max(0, Math.min(pages.length - 1, n));
+      } catch {
+        // localStorage không khả dụng — bỏ qua, dùng startIndex mặc định
+      }
+    }
+    return Math.max(0, Math.min(pages.length - 1, startIndex));
+  });
+  const [bookmarks, setBookmarks] = useState(() => {
+    try {
+      const raw = localStorage.getItem(`${STORAGE_PREFIX}:bookmarks`);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+  const [tocOpen, setTocOpen] = useState(false);
   const [reading, setReading] = useState(null);
   const [scale, setScale] = useState(1);
   const [zoom, setZoom] = useState(1);
@@ -951,6 +978,31 @@ export function PreviewOverlay({
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [themeMenuOpen]);
+
+  // Tự lưu vị trí đang đọc (chỉ khi resumeFromStorage được bật, tức trang đọc công khai)
+  useEffect(() => {
+    if (!resumeFromStorage) return;
+    try {
+      localStorage.setItem(`${STORAGE_PREFIX}:lastPage`, String(idx));
+    } catch {
+      // localStorage không khả dụng — bỏ qua
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idx, resumeFromStorage]);
+
+  const toggleBookmark = (pageId) => {
+    setBookmarks((prev) => {
+      const next = prev.includes(pageId)
+        ? prev.filter((id) => id !== pageId)
+        : [...prev, pageId];
+      try {
+        localStorage.setItem(`${STORAGE_PREFIX}:bookmarks`, JSON.stringify(next));
+      } catch {
+        // localStorage không khả dụng — bỏ qua
+      }
+      return next;
+    });
+  };
 
   const stop = () => {
     if (speechAvailable()) window.speechSynthesis.cancel();
@@ -1073,6 +1125,11 @@ export function PreviewOverlay({
 
   useEffect(() => {
     const onKey = (e) => {
+      if (e.key === "Escape" && (infoOpen || tocOpen)) {
+        setInfoOpen(false);
+        setTocOpen(false);
+        return;
+      }
       if (e.key === "ArrowRight") goNext();
       else if (e.key === "ArrowLeft") goPrev();
       else if (e.key === "Escape") {
@@ -1083,7 +1140,7 @@ export function PreviewOverlay({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idx, pageView, autoPlay]);
+  }, [idx, pageView, autoPlay, infoOpen, tocOpen]);
 
   const stageW = visiblePages.length === 2 ? PAGE_W * 2 + SPREAD_GAP : PAGE_W;
   const effectiveScale = scale * zoom;
@@ -1127,9 +1184,41 @@ export function PreviewOverlay({
 
         <div className="er-tools">
           <button
+            className={`er-tool-btn ${tocOpen ? "active" : ""}`}
+            title="Mục lục"
+            onClick={() => {
+              setTocOpen((v) => !v);
+              setInfoOpen(false);
+            }}
+          >
+            <List size={15} />
+          </button>
+
+          <button
+            className={`er-tool-btn ${
+              page && bookmarks.includes(page.id) ? "active" : ""
+            }`}
+            title={
+              page && bookmarks.includes(page.id)
+                ? "Bỏ đánh dấu trang này"
+                : "Đánh dấu trang này"
+            }
+            onClick={() => page && toggleBookmark(page.id)}
+          >
+            {page && bookmarks.includes(page.id) ? (
+              <BookmarkCheck size={15} className="er-bookmark-pop" />
+            ) : (
+              <Bookmark size={15} />
+            )}
+          </button>
+
+          <button
             className={`er-tool-btn ${infoOpen ? "active" : ""}`}
             title="Thông tin sách"
-            onClick={() => setInfoOpen((v) => !v)}
+            onClick={() => {
+              setInfoOpen((v) => !v);
+              setTocOpen(false);
+            }}
           >
             <Info size={15} />
           </button>
@@ -1316,6 +1405,7 @@ export function PreviewOverlay({
                 }}
               >
                 {i + 1}
+                {bookmarks.includes(p.id) && <span className="er-page-dot-mark" />}
               </button>
             );
           })}
@@ -1393,6 +1483,57 @@ export function PreviewOverlay({
                   <p className="er-info-desc">Chưa có thông tin chi tiết cho sách này.</p>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {tocOpen && (
+        <div className="er-info-backdrop" onClick={() => setTocOpen(false)}>
+          <div className="er-info-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="er-info-drawer-head">
+              <h3>Mục lục</h3>
+              <button className="er-icon-btn" onClick={() => setTocOpen(false)}>
+                <X size={16} />
+              </button>
+            </div>
+            <div className="er-info-scroll">
+              <div className="er-toc-list">
+                {pages.map((p, i) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    className={`er-toc-item ${i === idx ? "active" : ""}`}
+                    onClick={() => {
+                      if (readMode === "auto") setReadMode("off");
+                      stop();
+                      setDirection(i >= idx ? "next" : "prev");
+                      setIdx(groupStartFor(i));
+                      setTocOpen(false);
+                    }}
+                  >
+                    <span className="er-toc-num">{i + 1}</span>
+                    <span className="er-toc-title">
+                      {p.title || `Trang ${i + 1}`}
+                    </span>
+                    <span
+                      role="button"
+                      tabIndex={-1}
+                      className="er-toc-star"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleBookmark(p.id);
+                      }}
+                    >
+                      {bookmarks.includes(p.id) ? (
+                        <BookmarkCheck size={15} />
+                      ) : (
+                        <Bookmark size={15} />
+                      )}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -4114,6 +4255,7 @@ export default function BookBuilder() {
           showTitleWithPageNumber={showTitleWithPageNumber}
           hidePageNumberOnCover={hidePageNumberOnCover}
           bookInfo={{ title: bookTitle }}
+          storageKey={ebookId || bookId || "draft"}
           onClose={() => setPreviewOpen(false)}
         />
       )}

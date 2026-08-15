@@ -106,6 +106,8 @@ export default function EbookReader() {
       showTitleWithPageNumber={false}
       hidePageNumberOnCover={false}
       bookInfo={data.book}
+      storageKey={data.id}
+      resumeFromStorage
       onClose={() => navigate(bookUrl)}
     />
   );
