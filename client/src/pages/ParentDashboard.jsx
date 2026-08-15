@@ -36,7 +36,7 @@ import {
   Trash2,
   BookMarked,
   Smile,
-  QrCode,
+  MoreVertical,
 } from "lucide-react";
 
 import "../components/assets/css/profile.css";
@@ -48,6 +48,7 @@ import CreateChildWizard from "../components/parent/CreateChildWizard";
 import FullScreenLoader from "../components/FullScreenLoader";
 import KidLinkCard from "../components/parent/KidLinkCard";
 import DeleteChildModal from "../components/parent/DeleteChildModal";
+import ChildActionsModal from "../components/parent/ChildActionsModal";
 
 const WEEK_LABELS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 // Chủ nhật (0) xuống cuối mảng (index 6).
@@ -399,6 +400,12 @@ export default function ParentDashboard() {
   /*  Lock / unlock  */
   const [lockConfirmOpen, setLockConfirmOpen] = useState(false);
   const [unlockPinOpen, setUnlockPinOpen] = useState(false);
+  /*  Bé đang là mục tiêu của khoá/mở khoá — có thể khác activeChild khi
+      thao tác trực tiếp từ menu "..." trên thẻ chọn bé */
+  const [lockTarget, setLockTarget] = useState(null); // { id, name }
+
+  /*  Bé đang mở modal thao tác nhanh (menu "...") trên thẻ chọn bé */
+  const [actionsChild, setActionsChild] = useState(null);
 
   /*  Xoá vĩnh viễn hồ sơ con — lưu riêng { id, name } của bé cần xoá,
       để có thể xoá nhanh ngay từ thẻ chọn bé mà không cần đợi
@@ -410,13 +417,18 @@ export default function ParentDashboard() {
     loadChildren(); // tải lại danh sách — activeChildId sẽ tự chuyển sang bé còn lại (xem loadChildren)
   };
 
-  const requestLock = () => setLockConfirmOpen(true);
+  const requestLock = (child) => {
+    setLockTarget(child ? { id: child.id, name: child.name } : (activeChild ? { id: activeChildId, name: activeChild.name } : null));
+    setLockConfirmOpen(true);
+  };
   const confirmLock = async () => {
-    if (!activeChildId || !activeChild) return;
+    if (!lockTarget) return;
     try {
-      const res = await childService.lock(activeChildId);
-      setDashboard((prev) => ({ ...prev, child: res.data.data.child }));
-      setChildren((prev) => prev.map((c) => (c.id === activeChildId ? { ...c, isLocked: true } : c)));
+      const res = await childService.lock(lockTarget.id);
+      if (lockTarget.id === activeChildId) {
+        setDashboard((prev) => (prev ? { ...prev, child: res.data.data.child } : prev));
+      }
+      setChildren((prev) => prev.map((c) => (c.id === lockTarget.id ? { ...c, isLocked: true } : c)));
       toast.success(res.data.message);
     } catch (err) {
       toast.error(err.response?.data?.message || "Không thể khóa AR");
@@ -425,13 +437,19 @@ export default function ParentDashboard() {
     }
   };
 
-  const requestUnlock = () => setUnlockPinOpen(true);
+  const requestUnlock = (child) => {
+    setLockTarget(child ? { id: child.id, name: child.name } : (activeChild ? { id: activeChildId, name: activeChild.name } : null));
+    setUnlockPinOpen(true);
+  };
   // Gọi API thật, xác thực PIN ở server (bcrypt + chống brute-force) —
   // trả về lỗi cụ thể (sai PIN/còn mấy lần thử/đã bị khóa tạm) để hiển thị.
   const confirmUnlock = async (pin) => {
-    const res = await childService.unlock(activeChildId, pin);
-    setDashboard((prev) => ({ ...prev, child: res.data.data.child }));
-    setChildren((prev) => prev.map((c) => (c.id === activeChildId ? { ...c, isLocked: false } : c)));
+    if (!lockTarget) return;
+    const res = await childService.unlock(lockTarget.id, pin);
+    if (lockTarget.id === activeChildId) {
+      setDashboard((prev) => (prev ? { ...prev, child: res.data.data.child } : prev));
+    }
+    setChildren((prev) => prev.map((c) => (c.id === lockTarget.id ? { ...c, isLocked: false } : c)));
     setUnlockPinOpen(false);
     toast.success(res.data.message);
   };
@@ -644,31 +662,6 @@ export default function ParentDashboard() {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  /*  Khi bấm nút "lấy link/QR" trên thẻ của MỘT bé khác bé đang chọn,
-      trang sẽ render lại màn hình loading trong lúc chuyển bé (xem
-      `if (!activeChild || dashboardLoading)` bên dưới) — nên phải đợi
-      dashboard của bé mới tải xong rồi mới cuộn tới, chứ gọi ngay sẽ
-      hụt vì section chưa kịp có trong DOM.  */
-  const [pendingScrollTo, setPendingScrollTo] = useState(null);
-  useEffect(() => {
-    if (pendingScrollTo && !dashboardLoading && activeChild) {
-      const id = pendingScrollTo;
-      setPendingScrollTo(null);
-      // đợi 1 khung hình để DOM của section kịp mount xong
-      requestAnimationFrame(() => scrollToSection(id));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingScrollTo, dashboardLoading, activeChild]);
-
-  const jumpToKidLink = (childId) => {
-    if (childId !== activeChildId) {
-      setActiveChildId(childId);
-      setPendingScrollTo("kid-link");
-    } else {
-      scrollToSection("kid-link");
-    }
-  };
-
   // Vị trí % của khung giờ được phép trên dải 24h, để vẽ timeline
   const startPct = (timeToMinutes(settings.allowStart) / (24 * 60)) * 100;
   const endPct = (timeToMinutes(settings.allowEnd) / (24 * 60)) * 100;
@@ -848,39 +841,20 @@ export default function ParentDashboard() {
                       className="pkd-child-quick-btn"
                       role="button"
                       tabIndex={0}
-                      title={`Lấy link & QR cho ${child.name}`}
+                      title={`Thao tác cho ${child.name}`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        jumpToKidLink(child.id);
+                        setActionsChild(child);
                       }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
                           e.stopPropagation();
-                          jumpToKidLink(child.id);
+                          setActionsChild(child);
                         }
                       }}
                     >
-                      <QrCode size={14} />
-                    </span>
-                    <span
-                      className="pkd-child-quick-btn is-danger"
-                      role="button"
-                      tabIndex={0}
-                      title={`Xoá vĩnh viễn hồ sơ của ${child.name}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDeleteTarget({ id: child.id, name: child.name });
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setDeleteTarget({ id: child.id, name: child.name });
-                        }
-                      }}
-                    >
-                      <Trash2 size={14} />
+                      <MoreVertical size={14} />
                     </span>
                   </span>
                 </button>
@@ -985,7 +959,7 @@ export default function ParentDashboard() {
                 <strong>AR đang bị tạm khóa cho {activeChild.name}.</strong>
                 <div>Chỉ phụ huynh mới có thể mở khóa bằng mã PIN.</div>
               </div>
-              <button className="pkd-mini-btn pf-btn-tactile" onClick={requestUnlock} type="button">
+              <button className="pkd-mini-btn pf-btn-tactile" onClick={() => requestUnlock()} type="button">
                 <Unlock size={13} /> Mở khóa
               </button>
             </RevealCard>
@@ -1423,11 +1397,11 @@ export default function ParentDashboard() {
               thiết bị kết nối trở lại.
             </p>
             {lockState.isLocked ? (
-              <button className="pkd-lock-btn is-unlock pf-btn-tactile" onClick={requestUnlock}>
+              <button className="pkd-lock-btn is-unlock pf-btn-tactile" onClick={() => requestUnlock()}>
                 <Unlock size={16} /> Mở khóa cho {activeChild.name}
               </button>
             ) : (
-              <button className="pkd-lock-btn is-lock pf-btn-tactile" onClick={requestLock}>
+              <button className="pkd-lock-btn is-lock pf-btn-tactile" onClick={() => requestLock()}>
                 <Lock size={16} /> Khóa ngay cho {activeChild.name}
               </button>
             )}
@@ -1496,7 +1470,7 @@ export default function ParentDashboard() {
           </div>
           <h3 className="pf-confirm-title">Khóa AR ngay bây giờ?</h3>
           <p className="pf-confirm-msg">
-            {activeChild.name} sẽ không thể mở sách AR nào cho đến khi bạn mở khóa lại bằng mã PIN.
+            {lockTarget?.name} sẽ không thể mở sách AR nào cho đến khi bạn mở khóa lại bằng mã PIN.
           </p>
           <div className="pf-confirm-actions">
             <button className="pf-confirm-cancel pf-btn-tactile" onClick={() => setLockConfirmOpen(false)}>
@@ -1522,7 +1496,7 @@ export default function ParentDashboard() {
             <Unlock size={18} />
           </div>
           <h3 className="pf-confirm-title">Nhập mã PIN để mở khóa</h3>
-          <p className="pf-confirm-msg">Chỉ phụ huynh mới mở khóa được. Trẻ không thể tự bấm mở.</p>
+          <p className="pf-confirm-msg">Mở khóa AR cho {lockTarget?.name}. Chỉ phụ huynh mới mở khóa được.</p>
 
           {isLockedOut ? (
             <div className="pkd-lockout-msg">
@@ -1717,6 +1691,25 @@ export default function ParentDashboard() {
           childName={deleteTarget.name}
           onClose={() => setDeleteTarget(null)}
           onDeleted={handleChildDeleted}
+        />
+      )}
+
+      {actionsChild && (
+        <ChildActionsModal
+          child={actionsChild}
+          onClose={() => setActionsChild(null)}
+          onLock={() => {
+            requestLock(actionsChild);
+            setActionsChild(null);
+          }}
+          onUnlock={() => {
+            requestUnlock(actionsChild);
+            setActionsChild(null);
+          }}
+          onDelete={() => {
+            setDeleteTarget({ id: actionsChild.id, name: actionsChild.name });
+            setActionsChild(null);
+          }}
         />
       )}
 

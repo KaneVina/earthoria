@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
 import { arService } from "../services/arService";
 import Model3D from "../components/3d/Model3D";
@@ -359,11 +359,13 @@ const CODE_OVERRIDES = {
 const SCAN_DURATION_MS = 2400;
 
 export default function ArView() {
-  const { slug, code } = useParams();
+  // :token chỉ có khi vào từ link riêng của bé (route /e-kid/:slug/:token/ar/:code)
+  const { slug, code, token } = useParams();
   const navigate = useNavigate();
+  const isKidMode = !!token;
 
   const [state, setState] = useState({
-    status: "loading", // loading | ready | not-found | forbidden
+    status: "loading", // loading | ready | not-found | forbidden | locked
     data: null,
   });
 
@@ -390,7 +392,7 @@ export default function ArView() {
 
     async function fetchArCode() {
       try {
-        const res = await arService.getArCode(code);
+        const res = await arService.getArCode(code, token);
         if (cancelled) return;
 
         const data = res.data?.data;
@@ -400,7 +402,10 @@ export default function ArView() {
         }
 
         if (data.book?.slug && data.book.slug !== slug) {
-          navigate(`/ar/${data.book.slug}/${code}`, { replace: true });
+          const correctPath = isKidMode
+            ? `/e-kid/${data.book.slug}/${token}/ar/${code}`
+            : `/ar/${data.book.slug}/${code}`;
+          navigate(correctPath, { replace: true });
         }
 
         const baseData = CODE_OVERRIDES[code] || FALLBACK_DATA;
@@ -424,6 +429,12 @@ export default function ArView() {
         const httpStatus = err.response?.status;
 
         if (httpStatus === 401) {
+          // Phiên của bé không có tài khoản để đăng nhập lại — hiện màn hình
+          // "không tìm thấy" thân thiện thay vì đá về /login.
+          if (isKidMode) {
+            setState({ status: "not-found", data: null });
+            return;
+          }
           const currentUrl = `${window.location.pathname}${window.location.search}`;
           navigate(`/login?redirect=${encodeURIComponent(currentUrl)}`, {
             replace: true,
@@ -432,6 +443,10 @@ export default function ArView() {
         }
 
         if (httpStatus === 403) {
+          if (err.response?.data?.code === "CHILD_LOCKED") {
+            setState({ status: "locked", data: null });
+            return;
+          }
           setState({ status: "forbidden", data: null });
           return;
         }
@@ -444,7 +459,7 @@ export default function ArView() {
     return () => {
       cancelled = true;
     };
-  }, [code, slug, navigate]);
+  }, [code, slug, token, isKidMode, navigate]);
 
   // Sau khi data sẵn sàng, chạy hiệu ứng quét rồi mới chuyển sang preview
   useEffect(() => {
@@ -464,6 +479,47 @@ export default function ArView() {
           <span className="ar-view__loading-text">
             Đang chuẩn bị mô hình AR…
           </span>
+        </div>
+      </main>
+    );
+  }
+
+  if (state.status === "locked") {
+    return (
+      <main className="ar-view ar-view--center">
+        <div className="ar-view__empty">
+          <div className="ar-view__badge" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect
+                x="5"
+                y="11"
+                width="14"
+                height="9"
+                rx="2"
+                stroke="currentColor"
+                strokeWidth="1.4"
+              />
+              <path
+                d="M8 11V7.5a4 4 0 0 1 8 0V11"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+              />
+              <circle cx="12" cy="15.3" r="1.3" fill="currentColor" />
+            </svg>
+          </div>
+          <span className="ar-view__eyebrow">Earthoria AR</span>
+          <h1>AR đang bị khoá</h1>
+          <p>Ba mẹ đã tạm khoá AR rồi. Nhờ ba mẹ mở khoá lại nhé!</p>
+          {isKidMode && (
+            <Link to={`/e-kid/${slug}/${token}`} className="ar-view__back-link">
+              Quay lại tủ sách
+            </Link>
+          )}
         </div>
       </main>
     );
@@ -504,6 +560,11 @@ export default function ArView() {
             sách tương ứng. Nếu bạn đã mua sách này, vui lòng kiểm tra lại tài
             khoản đang đăng nhập hoặc liên hệ với chúng tôi để được hỗ trợ.
           </p>
+          {isKidMode && (
+            <Link to={`/e-kid/${slug}/${token}`} className="ar-view__back-link">
+              Quay lại tủ sách
+            </Link>
+          )}
         </div>
       </main>
     );
@@ -541,6 +602,11 @@ export default function ArView() {
             Mã AR không tồn tại hoặc đã bị vô hiệu hoá. Vui lòng kiểm tra lại
             trang sách hoặc liên hệ với chúng tôi nếu bạn nghĩ đây là nhầm lẫn.
           </p>
+          {isKidMode && (
+            <Link to={`/e-kid/${slug}/${token}`} className="ar-view__back-link">
+              Quay lại tủ sách
+            </Link>
+          )}
         </div>
       </main>
     );

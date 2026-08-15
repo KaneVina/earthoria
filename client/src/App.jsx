@@ -440,6 +440,7 @@ export default function App() {
         <Route path="/game/:slug/:code" element={<GamePlay />} />
         <Route path="/ebook/:slug" element={<EbookReader />} />
         <Route path="/e-kid/:slug/:token" element={<KidAccess />} />
+        <Route path="/e-kid/:slug/:token/ar/:code" element={<ArView />} />
       </Routes>
     </BrowserRouter>
   );

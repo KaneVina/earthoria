@@ -2663,6 +2663,23 @@
   opacity: 1;
   transform: translateX(0);
 }
+.pf-ar-status {
+  flex-shrink: 0;
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2.5px 8px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+.pf-ar-status.is-activated {
+  color: var(--forest);
+  background: rgba(74, 158, 63, 0.12);
+}
+.pf-ar-status.is-pending {
+  color: var(--gold);
+  background: rgba(212, 168, 67, 0.12);
+}
 
 /* ═══════════ EMPTY STATE ═══════════ */
 .pf-empty-state {

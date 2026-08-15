@@ -3,6 +3,7 @@ const prisma = require("../config/db");
 exports.getArCode = async (req, res) => {
   try {
     const { code } = req.params;
+    const { kidToken } = req.query;
 
     const arCode = await prisma.arCode.findUnique({
       where: { code },
@@ -18,16 +19,60 @@ exports.getArCode = async (req, res) => {
     }
 
     if (arCode.accessType !== "PUBLIC") {
-      if (!req.user) {
-        return res
-          .status(401)
-          .json({
-            success: false,
-            message: "Vui lòng đăng nhập để xem mô hình AR",
-          });
+      // Phiên của bé (link/QR riêng, không đăng nhập tài khoản chính) — xác
+      // thực bằng kidToken thay vì req.user, vẫn tôn trọng khoá AR + ẩn sách
+      // mà phụ huynh đã đặt cho bé.
+      let child = null;
+      if (!req.user && kidToken) {
+        child = await prisma.childProfile.findFirst({
+          where: { kidLinkToken: kidToken, isActive: true },
+        });
       }
 
-      if (req.user.role !== "ADMIN" && req.user.role !== "STAFF") {
+      if (child) {
+        if (child.isLocked) {
+          return res.status(403).json({
+            success: false,
+            code: "CHILD_LOCKED",
+            message: "AR đã bị phụ huynh khoá. Nhờ ba mẹ mở khoá nhé!",
+          });
+        }
+
+        const access = await prisma.childBookAccess.findFirst({
+          where: { childId: child.id, bookId: arCode.bookId },
+          select: { visible: true },
+        });
+        if (access && access.visible === false) {
+          return res.status(403).json({
+            success: false,
+            message: "Sách này đã bị ẩn khỏi tủ sách của bé",
+          });
+        }
+
+        const owns = await prisma.orderItem.findFirst({
+          where: {
+            variant: { bookId: arCode.bookId },
+            order: {
+              userId: child.parentId,
+              status: { in: ["DELIVERED", "COMPLETED"] },
+            },
+          },
+          select: { id: true },
+        });
+
+        if (!owns) {
+          return res.status(403).json({
+            success: false,
+            message:
+              "Gia đình bạn cần sở hữu cuốn sách này (đơn hàng đã giao) để xem mô hình AR",
+          });
+        }
+      } else if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          message: "Vui lòng đăng nhập để xem mô hình AR",
+        });
+      } else if (req.user.role !== "ADMIN" && req.user.role !== "STAFF") {
         const owns = await prisma.orderItem.findFirst({
           where: {
             variant: { bookId: arCode.bookId },

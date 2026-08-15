@@ -634,13 +634,21 @@ const getKidPublicBooks = async (req, res) => {
             },
           },
         },
+        // Cần biết trạng thái đơn thật để tách "đã mua" khỏi "đã có thể xem AR"
+        // — chỉ đơn DELIVERED/COMPLETED mới coi là đã giao sách tận tay.
+        order: { select: { status: true } },
       },
     });
 
     const bookMap = new Map();
+    const deliveredBookIds = new Set();
     for (const item of purchasedItems) {
       const book = item.variant?.book;
-      if (book) bookMap.set(book.id, book);
+      if (!book) continue;
+      bookMap.set(book.id, book);
+      if (["DELIVERED", "COMPLETED"].includes(item.order?.status)) {
+        deliveredBookIds.add(book.id);
+      }
     }
 
     const access = await prisma.childBookAccess.findMany({
@@ -648,8 +656,25 @@ const getKidPublicBooks = async (req, res) => {
     });
     const visibilityMap = Object.fromEntries(access.map((a) => [a.bookId, a.visible]));
 
+    // Mã AR — chỉ lấy cho các sách đã thật sự được giao, để tủ sách của bé
+    // phản ánh đúng trạng thái có thể xem AR hay chưa (không hardcode).
+    const arCodes = await prisma.arCode.findMany({
+      where: { isActive: true, bookId: { in: [...deliveredBookIds] } },
+      select: { code: true, label: true, bookId: true },
+      orderBy: { createdAt: "asc" },
+    });
+    const arCodeMap = {};
+    for (const ar of arCodes) {
+      (arCodeMap[ar.bookId] ??= []).push({ code: ar.code, label: ar.label });
+    }
+
     const books = [...bookMap.values()]
-      .map((book) => ({ ...book, visible: visibilityMap[book.id] ?? true }))
+      .map((book) => ({
+        ...book,
+        visible: visibilityMap[book.id] ?? true,
+        isDelivered: deliveredBookIds.has(book.id),
+        arCodes: arCodeMap[book.id] || [],
+      }))
       .filter((b) => b.visible);
 
     return formatResponse(res, 200, "OK", { books });

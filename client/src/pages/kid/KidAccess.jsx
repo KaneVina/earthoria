@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   BookOpen,
@@ -138,43 +138,44 @@ function spawnRipple(e) {
 }
 
 export default function KidAccess() {
-  const { token } = useParams(); // :slug không dùng để tra cứu, chỉ để đẹp URL
+  const { slug, token } = useParams(); // :slug không dùng để tra cứu, chỉ để đẹp URL
+  const navigate = useNavigate();
   const [status, setStatus] = useState("loading"); // loading | ok | invalid
   const [child, setChild] = useState(null);
   const [books, setBooks] = useState([]);
   const [activeBook, setActiveBook] = useState(null);
 
-  // ── phiên đọc (chỉ hiển thị, không ghi vào server) ──
+  //   phiên đọc (chỉ hiển thị, không ghi vào server)
   const [sessionSeconds, setSessionSeconds] = useState(0);
 
-  // ── đồng hồ giờ thực, hiển thị cho bé biết bây giờ là mấy giờ ──
+  //   đồng hồ giờ thực, hiển thị cho bé biết bây giờ là mấy giờ
   const [now, setNow] = useState(() => new Date());
 
-  // ── cỡ chữ do bé/phụ huynh chọn trong bảng cài đặt, nhớ theo từng link ──
+  //   cỡ chữ do bé/phụ huynh chọn trong bảng cài đặt, nhớ theo từng link
   const [fontKey, setFontKey] = useState("md");
 
-  // ── bảng cài đặt dành cho phụ huynh + cơ chế "giữ để mở" trên nút bánh răng ──
+  //   bảng cài đặt dành cho phụ huynh + cơ chế "giữ để mở" trên nút bánh răng
   const [showSettings, setShowSettings] = useState(false);
   const [isHolding, setIsHolding] = useState(false);
   const [holdPct, setHoldPct] = useState(0);
   const holdRafRef = useRef(null);
 
-  // ── thanh điều hướng đổi diện mạo khi cuộn ──
+  //   thanh điều hướng đổi diện mạo khi cuộn
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // ── tìm sách theo tên trong tủ sách của bé ──
+  //   tìm sách theo tên trong tủ sách của bé
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef(null);
 
-  // ── nhắc nghỉ mắt ──
+  //   nhắc nghỉ mắt
   const [showRest, setShowRest] = useState(false);
   const [restLeft, setRestLeft] = useState(0);
 
-  // ── giải lao bắt buộc ──
+  //   giải lao bắt buộc
   const [showBreak, setShowBreak] = useState(false);
   const [breakLeft, setBreakLeft] = useState(0);
 
-  // ── nhịp thở hiển thị trong overlay ──
+  //   nhịp thở hiển thị trong overlay
   const [breathPhase, setBreathPhase] = useState(0);
 
   useEffect(() => {
@@ -209,14 +210,14 @@ export default function KidAccess() {
 
   const isOk = status === "ok" && child && !child.isLocked;
 
-  // ── đồng hồ giờ thực: cập nhật mỗi giây để hiển thị HH:MM cho bé ──
+  //   đồng hồ giờ thực: cập nhật mỗi giây để hiển thị HH:MM cho bé
   useEffect(() => {
     if (!isOk) return;
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, [isOk]);
 
-  // ── nạp cỡ chữ đã lưu cho đúng link của bé (mỗi bé một token riêng) ──
+  //   nạp cỡ chữ đã lưu cho đúng link của bé (mỗi bé một token riêng)
   useEffect(() => {
     if (!token) return;
     try {
@@ -227,7 +228,7 @@ export default function KidAccess() {
     }
   }, [token]);
 
-  // ── lưu lại mỗi khi bé/phụ huynh đổi cỡ chữ ──
+  //   lưu lại mỗi khi bé/phụ huynh đổi cỡ chữ
   useEffect(() => {
     if (!token) return;
     try {
@@ -239,14 +240,14 @@ export default function KidAccess() {
 
   const fontScale = FONT_SCALES.find((s) => s.key === fontKey)?.value ?? 1;
 
-  // ── đếm giờ phiên đọc hiện tại (chỉ hiển thị cho vui, không phải nguồn sự thật) ──
+  //   đếm giờ phiên đọc hiện tại (chỉ hiển thị cho vui, không phải nguồn sự thật)
   useEffect(() => {
     if (!isOk || showBreak) return;
     const id = setInterval(() => setSessionSeconds((s) => s + 1), 1000);
     return () => clearInterval(id);
   }, [isOk, showBreak]);
 
-  // ── đổi diện mạo thanh điều hướng khi cuộn trang ──
+  //   đổi diện mạo thanh điều hướng khi cuộn trang
   useEffect(() => {
     if (!isOk) return;
     const onScroll = () => setIsScrolled(window.scrollY > 8);
@@ -255,7 +256,7 @@ export default function KidAccess() {
     return () => window.removeEventListener("scroll", onScroll);
   }, [isOk]);
 
-  // ── lịch nhắc nghỉ mắt định kỳ ──
+  //   lịch nhắc nghỉ mắt định kỳ
   useEffect(() => {
     if (!isOk || !child?.ruleEnabled) return;
     const periodMs = Math.max(1, child.ruleIntervalMinutes || 20) * 60000;
@@ -283,7 +284,7 @@ export default function KidAccess() {
     return () => clearTimeout(id);
   }, [showRest, restLeft]);
 
-  // ── lịch giải lao bắt buộc ──
+  //   lịch giải lao bắt buộc
   useEffect(() => {
     if (!isOk || !child?.mandatoryBreakEnabled) return;
     const periodMs = Math.max(1, child.breakAfterMinutes || 45) * 60000;
@@ -307,7 +308,7 @@ export default function KidAccess() {
     return () => clearTimeout(id);
   }, [showBreak, breakLeft]);
 
-  // ── luân phiên "hít vào / thở ra" theo đúng nhịp vòng tròn thở (4.5s) ──
+  //   luân phiên "hít vào / thở ra" theo đúng nhịp vòng tròn thở (4.5s)
   useEffect(() => {
     if (!showRest && !showBreak) return;
     setBreathPhase(0);
@@ -315,7 +316,7 @@ export default function KidAccess() {
     return () => clearInterval(id);
   }, [showRest, showBreak]);
 
-  // ── mẹo hiển thị lúc mở app (tipsFrequency === 'open') ──
+  //   mẹo hiển thị lúc mở app (tipsFrequency === 'open')
   useEffect(() => {
     if (isOk && child?.tipsEnabled && child?.tipsFrequency === "open") {
       toast(eyeTip, { icon: "💡", duration: 5000 });
@@ -332,8 +333,6 @@ export default function KidAccess() {
     searchInputRef.current?.focus();
   }, []);
 
-  // ── giữ nút bánh răng ~0.9s để mở bảng cài đặt — chủ đích không phải chạm
-  // một cái là vào ngay, để bé không lỡ tay đổi cài đặt của ba mẹ ──
   const cancelGearHold = useCallback(() => {
     if (holdRafRef.current) cancelAnimationFrame(holdRafRef.current);
     holdRafRef.current = null;
@@ -367,17 +366,30 @@ export default function KidAccess() {
     if (holdRafRef.current) cancelAnimationFrame(holdRafRef.current);
   }, []);
 
-  const handleReadNow = useCallback((book) => {
-    // TODO(backend): kid-access hiện chỉ trả về id/slug/coverImage cho
-    // sách — chưa có hashId / mã AR để mở thẳng /books/:slug/:hashId
-    // hoặc /ar/:slug/:code từ phiên của bé. Khi API bổ sung, thay đoạn
-    // toast bên dưới bằng navigate() tới đúng route đọc sách.
-    toast.success(`Nhờ ba mẹ mở AR để cùng đọc "${book.title}" nhé!`, {
-      icon: "📖",
-    });
-  }, []);
+  const handleReadNow = useCallback(
+    (book) => {
+      if (child?.isLocked) {
+        toast("AR đang bị khoá, nhờ ba mẹ mở khoá nhé!", { icon: "🔒" });
+        return;
+      }
+      if (!book.isDelivered) {
+        toast("Sách đang trên đường giao, chưa xem AR được nhé!", {
+          icon: "📦",
+        });
+        return;
+      }
+      if (!book.arCodes?.length) {
+        toast.success(`Nhờ ba mẹ mở AR để cùng đọc "${book.title}" nhé!`, {
+          icon: "📖",
+        });
+        return;
+      }
+      navigate(`/e-kid/${slug}/${token}/ar/${book.arCodes[0].code}`);
+    },
+    [child?.isLocked, navigate, slug, token],
+  );
 
-  // ── tilt + shine mượt cho thẻ sách, cập nhật trực tiếp qua DOM để không re-render ──
+  //   tilt + shine mượt cho thẻ sách, cập nhật trực tiếp qua DOM để không re-render
   const handleCardMove = useCallback((e) => {
     const el = e.currentTarget;
     const rect = el.getBoundingClientRect();
@@ -400,7 +412,7 @@ export default function KidAccess() {
     el.style.setProperty("--ry", 0);
   }, []);
 
-  // ── lọc tủ sách theo từ khoá tìm kiếm (bỏ dấu, không phân biệt hoa/thường) ──
+  //   lọc tủ sách theo từ khoá tìm kiếm (bỏ dấu, không phân biệt hoa/thường)
   const filteredBooks = useMemo(() => {
     const q = normalizeSearch(searchQuery);
     if (!q) return books;
@@ -475,10 +487,10 @@ export default function KidAccess() {
     child.tipsEnabled && (child.tipsFrequency === "rest" || child.tipsFrequency === "interval");
   const modalAccent = activeBook ? accentForId(activeBook.id) : "leaf";
 
-  // ── viền đếm ngược quanh logo trên header — chỉ hiện khi phụ huynh có
+  //   viền đếm ngược quanh logo trên header — chỉ hiện khi phụ huynh có
   // đặt giới hạn thời gian đọc/ngày. Nội suy thêm giây của phiên hiện tại
   // (chỉ để hiển thị, không phải nguồn sự thật) để viền vơi dần mượt theo
-  // thời gian thực thay vì nhảy cách phút như số liệu từ server. ──
+  // thời gian thực thay vì nhảy cách phút như số liệu từ server.
   const liveTodayMinutes = dailyLimit > 0 ? Math.min(dailyLimit, todayMinutes + sessionSeconds / 60) : 0;
   const crestRemainPercent = dailyLimit > 0 ? Math.max(0, 100 - (liveTodayMinutes / dailyLimit) * 100) : 100;
   const crestRingRadius = 46;
@@ -772,10 +784,14 @@ export default function KidAccess() {
                         {b.ageMin ?? "0"}–{b.ageMax ?? "17"} tuổi
                       </span>
                     )}
-                    <span className={`kid-book-cta${limitReached ? " is-locked" : ""}`}>
+                    <span className={`kid-book-cta${limitReached || !b.isDelivered ? " is-locked" : ""}`}>
                       {limitReached ? (
                         <>
                           <Lock size={13} /> Hết giờ hôm nay
+                        </>
+                      ) : !b.isDelivered ? (
+                        <>
+                          <Clock size={13} /> Đang giao hàng
                         </>
                       ) : (
                         <>
@@ -866,16 +882,16 @@ export default function KidAccess() {
               )}
               <h3 className="kid-modal-title">{activeBook.title}</h3>
               <p className="kid-modal-desc">
-                Sẵn sàng cùng {child.name} bước vào câu chuyện này chưa nào?
-                Nhờ ba mẹ bật AR để trang sách bừng sáng thành thế giới thật
-                nhé!
+                {activeBook.isDelivered
+                  ? `Sẵn sàng cùng ${child.name} bước vào câu chuyện này chưa nào? Chạm nút bên dưới để mô hình AR bừng sáng thành thế giới thật nhé!`
+                  : "Sách đang trên đường giao tới nhà. Khi nhận được sách, bé có thể mở AR ở đây nhé!"}
               </p>
               <button
                 type="button"
-                className={`kid-modal-cta${limitReached ? " is-disabled" : ""}`}
-                disabled={limitReached}
+                className={`kid-modal-cta${limitReached || !activeBook.isDelivered ? " is-disabled" : ""}`}
+                disabled={limitReached || !activeBook.isDelivered}
                 onClick={(e) => {
-                  if (limitReached) return;
+                  if (limitReached || !activeBook.isDelivered) return;
                   spawnRipple(e);
                   handleReadNow(activeBook);
                 }}
@@ -883,6 +899,10 @@ export default function KidAccess() {
                 {limitReached ? (
                   <>
                     <Lock size={15} /> Hôm nay đã đọc đủ giờ
+                  </>
+                ) : !activeBook.isDelivered ? (
+                  <>
+                    <Clock size={15} /> Đang giao hàng
                   </>
                 ) : (
                   <>

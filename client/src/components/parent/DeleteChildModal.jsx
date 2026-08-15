@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Trash2 } from "lucide-react";
 import { childService } from "../../services/childService";
 
 export default function DeleteChildModal({ childId, childName, onClose, onDeleted }) {
@@ -24,32 +25,42 @@ export default function DeleteChildModal({ childId, childName, onClose, onDelete
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-box danger" onClick={(e) => e.stopPropagation()}>
-        <h3>Xoá vĩnh viễn hồ sơ của {childName}?</h3>
-        <p>
-          Hành động này <b>không thể hoàn tác</b>. Toàn bộ hồ sơ, cài đặt,
-          nhật ký hoạt động và link/QR riêng của bé sẽ bị xoá hoàn toàn khỏi
-          hệ thống.
+    <div
+      className="pf-overlay"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose?.();
+      }}
+    >
+      <div className="pf-confirm pkd-modal" role="dialog" aria-modal="true">
+        <div className="pf-confirm-icon danger">
+          <Trash2 size={18} />
+        </div>
+        <h3 className="pf-confirm-title">Xoá vĩnh viễn hồ sơ của {childName}?</h3>
+        <p className="pf-confirm-msg">
+          Hành động này <b>không thể hoàn tác</b>. Toàn bộ hồ sơ, cài đặt, nhật ký hoạt động và
+          link/QR riêng của bé sẽ bị xoá hoàn toàn khỏi hệ thống.
         </p>
-        <p>
+        <p className="pf-confirm-msg" style={{ marginBottom: 12 }}>
           Để xác nhận, hãy gõ chính xác tên bé: <b>{childName}</b>
         </p>
         <input
           autoFocus
+          className="pkd-wizard-input pf-pw-input"
+          style={{ marginBottom: 12 }}
           value={confirmName}
           onChange={(e) => setConfirmName(e.target.value)}
           placeholder="Nhập tên bé để xác nhận"
         />
-        {error && <p className="error-text">{error}</p>}
-        <div className="modal-actions">
-          <button onClick={onClose} disabled={loading}>
+        {error && <p className="pf-field-error">{error}</p>}
+        <div className="pf-confirm-actions">
+          <button className="pf-confirm-cancel pf-btn-tactile" onClick={onClose} disabled={loading} type="button">
             Huỷ
           </button>
           <button
-            className="danger"
+            className="pf-confirm-ok danger pf-btn-tactile"
             disabled={!matches || loading}
             onClick={handleDelete}
+            type="button"
           >
             {loading ? "Đang xoá..." : "Xoá vĩnh viễn"}
           </button>

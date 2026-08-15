@@ -3751,28 +3751,48 @@ function ArTab({ arCodes, loading }) {
             {group.book?.title}
           </div>
           <div className="pf-addr-grid">
-            {group.items.map((item) => (
-              <Link
-                key={item.id}
-                to={`/ar/${group.book?.slug}/${item.code}`}
-                className="pf-addr-card pf-ar-card"
-                style={{
-                  textDecoration: "none",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 14,
-                }}
-              >
-                <div className="pf-ar-badge">{Icon.compass}</div>
-                <div>
-                  <div className="pf-addr-name" style={{ marginBottom: 3 }}>
-                    {item.label}
+            {group.items.map((item) => {
+              const isActivated = (item.scanCount || 0) > 0;
+              return (
+                <Link
+                  key={item.id}
+                  to={`/ar/${group.book?.slug}/${item.code}`}
+                  className="pf-addr-card pf-ar-card"
+                  style={{
+                    textDecoration: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 14,
+                  }}
+                >
+                  <div className="pf-ar-badge">{Icon.compass}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div
+                      className="pf-addr-name"
+                      style={{
+                        marginBottom: 3,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      {item.label}
+                      <span
+                        className={`pf-ar-status ${isActivated ? "is-activated" : "is-pending"}`}
+                      >
+                        {isActivated ? "Đã kích hoạt" : "Chưa kích hoạt"}
+                      </span>
+                    </div>
+                    <div className="pf-addr-phone">
+                      {isActivated
+                        ? `Đã xem ${item.scanCount} lần · Bấm để xem lại`
+                        : "Bấm để kích hoạt & xem mô hình 3D"}
+                    </div>
                   </div>
-                  <div className="pf-addr-phone">Bấm để xem mô hình 3D</div>
-                </div>
-                <span className="pf-ar-card-arrow">{Icon.arrowRight}</span>
-              </Link>
-            ))}
+                  <span className="pf-ar-card-arrow">{Icon.arrowRight}</span>
+                </Link>
+              );
+            })}
           </div>
         </div>
       ))}

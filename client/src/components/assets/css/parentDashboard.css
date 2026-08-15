@@ -1,10 +1,3 @@
-/* ═══════════════════════════════════════════════════════════════
-   PARENT DASHBOARD — "pkd-" prefix
-   Tái dùng biến từ main.css (--forest, --gold, --ivory, --cream...)
-   và các component đã có ở profile.css (.pf-switch, .pf-overlay,
-   .pf-confirm, .pf-btn-tactile) + main.css (.pill, .otp-input...).
-   ═══════════════════════════════════════════════════════════════ */
-
 .pkd-page { background: var(--cream); min-height: 100vh; }
 
 .pkd-header {
@@ -917,6 +910,65 @@
   }
 }
 
+/* Modal thao tác nhanh cho 1 bé (mở từ nút "..." trên thẻ chọn bé) */
+.pkd-actions-modal { text-align: left; }
+.pkd-actions-modal-head { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; padding-right: 30px; }
+.pkd-actions-modal-status {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase;
+  padding: 3px 9px; border-radius: 20px;
+}
+.pkd-actions-modal-status.is-locked { color: #b25450; background: rgba(178,84,80,0.1); }
+.pkd-actions-modal-status.is-active { color: var(--forest); background: rgba(74,158,63,0.12); }
+.pkd-actions-modal-section {
+  border-top: 0.5px solid var(--border); border-bottom: 0.5px solid var(--border);
+  padding: 22px 0; margin-bottom: 20px;
+}
+.pkd-actions-modal-footer { display: flex; flex-direction: column; gap: 10px; }
+.pkd-actions-modal-delete {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  background: none; border: none; color: #b25450; font-size: 12px; cursor: pointer;
+  padding: 6px; text-decoration: underline;
+}
+.pkd-actions-modal-delete:hover { color: #8a4440; }
+
+/* Link & QR riêng cho bé (KidLinkCard) — dùng cả trong modal trên và
+   trong section "Link cho bé" ở cuối trang */
+.kid-link-card { display: flex; flex-direction: column; gap: 14px; }
+.kid-link-card h4 {
+  font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 400;
+  color: var(--forest); margin: 0;
+}
+.kid-link-hint { font-size: 12px; line-height: 1.7; color: var(--text-muted); font-weight: 300; margin: 0; }
+.kid-link-card > p:not(.kid-link-hint) { color: var(--text-muted); font-size: 12.5px; text-align: center; padding: 24px 0; margin: 0; }
+.kid-link-url-row { display: flex; gap: 8px; }
+.kid-link-url-row input {
+  flex: 1; min-width: 0; background: var(--cream); border: 0.5px solid var(--border);
+  border-radius: 6px; padding: 10px 14px; font-size: 12px; color: var(--forest);
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+.kid-link-url-row button {
+  flex-shrink: 0; background: var(--gold-pale); border: 0.5px solid var(--border-gold);
+  color: var(--forest); border-radius: 6px; padding: 0 16px; font-size: 11.5px;
+  cursor: pointer; transition: all 0.2s ease;
+}
+.kid-link-url-row button:hover { background: var(--gold); color: var(--ivory); }
+.kid-link-qr {
+  display: flex; justify-content: center; padding: 20px;
+  background: var(--white); border: 0.5px solid var(--border); border-radius: 10px;
+}
+.kid-link-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.kid-link-actions button {
+  flex: 1; min-width: 140px; display: inline-flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 10px 14px; border-radius: 6px; font-size: 11.5px; cursor: pointer;
+  transition: all 0.2s ease; border: 0.5px solid var(--border-gold);
+  background: var(--gold-pale); color: var(--forest);
+}
+.kid-link-actions button:hover:not(:disabled) { background: var(--gold); color: var(--ivory); }
+.kid-link-actions button:disabled { opacity: 0.5; cursor: not-allowed; }
+.kid-link-actions button.danger { border-color: rgba(178,84,80,0.3); background: rgba(178,84,80,0.08); color: #b25450; }
+.kid-link-actions button.danger:hover:not(:disabled) { background: #b25450; color: #fff; }
+
 /* Dark mode */
 body.dark-mode .pkd-page { background: #0e1612; }
 body.dark-mode .pkd-stat-card,
@@ -942,4 +994,7 @@ body.dark-mode .pkd-wizard-avatar-btn { background: #0f1510; border-color: rgba(
 body.dark-mode .pkd-wizard-input.pf-pw-input { background: #0f1510; color: #c8d4cc; border-color: rgba(255,255,255,0.08); }
 body.dark-mode .pkd-wizard-terms-row { background: #1c2822; border-color: rgba(255,255,255,0.07); color: #b4c8bc; }
 body.dark-mode .pkd-add-child-card { background: rgba(255,255,255,0.02); }
+body.dark-mode .kid-link-url-row input { background: #0f1510; color: #c8d4cc; border-color: rgba(255,255,255,0.08); }
+body.dark-mode .kid-link-qr { background: #16201a; border-color: rgba(255,255,255,0.08); }
+body.dark-mode .kid-link-card h4 { color: #e8ecdf; }
 body.dark-mode .pkd-book-visible-title { color: #c8d4cc; }
