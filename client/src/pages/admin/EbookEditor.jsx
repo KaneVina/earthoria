@@ -1049,6 +1049,8 @@ export default function BookBuilder() {
   const [exporting, setExporting] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [saveStatus, setSaveStatus] = useState("idle");
+  const [isActive, setIsActive] = useState(false);
+  const [toggling, setToggling] = useState(false);
   const [logoError, setLogoError] = useState(false);
   const [, bump] = useState(0);
 
@@ -1114,6 +1116,7 @@ export default function BookBuilder() {
             setShowTitleWithPageNumber(eb.showTitleWithPageNumber);
           if (typeof eb.hidePageNumberOnCover === "boolean")
             setHidePageNumberOnCover(eb.hidePageNumberOnCover);
+          if (typeof eb.isActive === "boolean") setIsActive(eb.isActive);
           if (Array.isArray(eb.pages) && eb.pages.length) setPages(eb.pages);
         } else if (bookIdFromQuery) {
           try {
@@ -1649,6 +1652,21 @@ export default function BookBuilder() {
     toast.success("Đã tạo / cập nhật mục lục.");
   };
 
+  const handleToggleActive = async () => {
+    if (!ebookId || toggling) return;
+    setToggling(true);
+    try {
+      const res = await ebookService.toggle(ebookId);
+      const next = !!res.data?.data?.isActive;
+      setIsActive(next);
+      toast.success(next ? "Đã bật — sách điện tử hiện đã hiển thị cho khách." : "Đã chuyển về Đang soạn — khách sẽ không đọc được sách này.");
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Không thể đổi trạng thái sách điện tử.");
+    } finally {
+      setToggling(false);
+    }
+  };
+
   const exportPdf = async () => {
     if (exporting) return;
     setExporting(true);
@@ -2091,6 +2109,12 @@ export default function BookBuilder() {
         .bb-save-dot.ok { background: #4a9e3f; box-shadow: 0 0 0 3px rgba(74,158,63,0.18); }
         .bb-save-dot.busy { background: #e0a83f; animation: bb-pulse 1s ease-in-out infinite; }
         .bb-save-dot.error, .bb-save-status.error { background: #d94f4f; }
+        .bb-status-toggle-btn { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; }
+        .bb-status-toggle-btn.is-draft { background: #fff4e0; border-color: #f2c98a; color: #9a6a1c; }
+        .bb-status-toggle-btn.is-active { background: #e6f7ee; border-color: #8fd6ac; color: #1c7a45; }
+        .bb-status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .bb-status-dot.off { background: #d99a2b; }
+        .bb-status-dot.on { background: #21a35a; }
         @keyframes bb-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
         .bb-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; background: #fff; padding: 6px; border-radius: 14px; box-shadow: 0 2px 10px rgba(20,51,42,0.06); border: 1px solid rgba(20,51,42,0.06); flex: 0 0 auto; }
         .bb-divider-v { width: 1px; align-self: stretch; background: rgba(20,51,42,0.10); margin: 2px 2px; }
@@ -2315,6 +2339,22 @@ export default function BookBuilder() {
             </span>
           </div>
         </div>
+        {ebookId && (
+          <button
+            type="button"
+            className={`bb-btn bb-status-toggle-btn ${isActive ? "is-active" : "is-draft"}`}
+            onClick={handleToggleActive}
+            disabled={toggling}
+            title={
+              isActive
+                ? "Sách điện tử đang hiển thị cho khách hàng. Bấm để chuyển về Đang soạn."
+                : "Sách điện tử đang ở chế độ soạn, khách hàng chưa đọc được. Bấm để Bật."
+            }
+          >
+            <span className={`bb-status-dot ${isActive ? "on" : "off"}`} />
+            {toggling ? "Đang cập nhật…" : isActive ? "Đã bật" : "Đang soạn"}
+          </button>
+        )}
         {bookId && (
           <button
             className="bb-btn bb-meta-price-btn"
