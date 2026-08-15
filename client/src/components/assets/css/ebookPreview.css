@@ -1,3 +1,9 @@
+/* ============================================================
+   EBOOK READER — giao diện đọc sách chuyên nghiệp, dùng chung
+   cho khung xem trước trong trình biên tập (admin) và trang
+   đọc sách điện tử công khai (/ebook/:slug)
+   ============================================================ */
+
 .er-shell {
   --er-forest: #0d3330;
   --er-forest-mid: #1a5c52;
@@ -266,7 +272,6 @@
 /* ─ Khả năng tương tác với từng dòng chữ khi đọc ─ */
 .er-line {
   position: relative;
-  cursor: pointer;
   border-radius: 8px;
   transition: background 0.15s ease, box-shadow 0.15s ease;
 }
@@ -281,23 +286,37 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  border: none;
+  font-family: inherit;
   background: var(--er-forest);
   color: #fff;
   font-size: 10px;
   font-weight: 700;
-  padding: 3px 8px;
+  padding: 4px 9px;
   border-radius: 999px;
   white-space: nowrap;
   opacity: 0;
   transform: translateY(2px);
-  pointer-events: none;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s ease;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.28);
   z-index: 5;
 }
 .er-line:hover .er-line-badge {
   opacity: 1;
   transform: translateY(0);
+}
+.er-line-badge:hover { background: var(--er-forest-mid); }
+.er-line-badge:active { transform: translateY(0) scale(0.94); }
+
+/* ─ Responsive: không có hover trên cảm ứng nên luôn hiện sẵn nhãn ─ */
+@media (hover: none) {
+  .er-line-badge {
+    position: static;
+    opacity: 1;
+    transform: none;
+    margin: 4px 0 0;
+  }
 }
 
 /* ─ Responsive ─ */
@@ -308,7 +327,6 @@
   .er-tool-btn, .er-icon-btn { padding: 8px; }
   .er-bottombar { padding: 12px 14px 18px; gap: 10px; }
   .er-read-btn { padding: 11px 16px; }
-  .er-line-badge { display: none; }
 }
 
 /* ─ Màu chấm minh hoạ cho từng theme trong popover ─ */

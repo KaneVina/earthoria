@@ -394,7 +394,7 @@ function PageNumberBadge({ page, number, pos, showTitle }) {
   );
 }
 
- function LayerView({
+function LayerView({
   layer,
   selected,
   readOnly,
@@ -430,10 +430,6 @@ function PageNumberBadge({ page, number, pos, showTitle }) {
       }
       if (layer.tocTargetPageId) {
         onLayerClick && onLayerClick(layer.tocTargetPageId);
-        return;
-      }
-      if (layer.type === "text" && layer.text?.trim() && onAskAI) {
-        onAskAI(layer.text.trim());
       }
       return;
     }
@@ -744,11 +740,7 @@ function PageNumberBadge({ page, number, pos, showTitle }) {
               ? "2px solid #4a9e3f"
               : "2px solid transparent",
           outlineOffset: 4,
-          cursor: readOnly
-            ? isTocLink || askable
-              ? "pointer"
-              : "default"
-            : "grab",
+          cursor: readOnly ? (isTocLink ? "pointer" : "default") : "grab",
           touchAction: "none",
           boxShadow:
             !readOnly && selected ? "0 0 0 4px rgba(74,158,63,0.14)" : "none",
@@ -756,9 +748,16 @@ function PageNumberBadge({ page, number, pos, showTitle }) {
         }}
       >
         {askable && (
-          <span className="er-line-badge">
-            <Volume2 size={10} /> Nghe · Hỏi AI
-          </span>
+          <button
+            type="button"
+            className="er-line-badge"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAskAI && onAskAI(layer.text.trim());
+            }}
+          >
+            <Sparkles size={10} /> Hỏi AI
+          </button>
         )}
         <div
           style={{
@@ -853,37 +852,63 @@ export function PreviewOverlay({
   const [fontScale, setFontScale] = useState(1);
   const [pageView, setPageView] = useState("single");
   const [autoPlay, setAutoPlay] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const wrapRef = useRef(null);
   const themeBoxRef = useRef(null);
   const lineHoverTimer = useRef(null);
 
+  const toggleFullscreen = () => {
+    const el = document.documentElement;
+    const request =
+      el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+    const exit =
+      document.exitFullscreen ||
+      document.webkitExitFullscreen ||
+      document.msExitFullscreen;
+    if (!document.fullscreenElement) {
+      request && request.call(el).catch(() => {});
+    } else {
+      exit && exit.call(document).catch(() => {});
+    }
+  };
+
+  useEffect(() => {
+    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onFsChange);
+    document.addEventListener("webkitfullscreenchange", onFsChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onFsChange);
+      document.removeEventListener("webkitfullscreenchange", onFsChange);
+      if (document.fullscreenElement) {
+        (document.exitFullscreen || document.webkitExitFullscreen)?.call(
+          document,
+        );
+      }
+    };
+  }, []);
+
   const groupStartFor = (i, mode = pageView) => {
     const clamped = Math.max(0, Math.min(pages.length - 1, i));
     if (mode !== "double") return clamped;
-    if (clamped === 0) return 0;
-    return clamped % 2 === 1 ? clamped : clamped - 1;
+    return clamped - (clamped % 2);
   };
 
   const visiblePages =
     pageView === "double"
-      ? idx === 0
-        ? [pages[0]].filter(Boolean)
-        : [pages[idx], pages[idx + 1]].filter(Boolean)
+      ? [pages[idx], pages[idx + 1]].filter(Boolean)
       : [pages[idx]].filter(Boolean);
 
   const page = pages[idx];
 
   const nextGroupStart = (current) => {
     if (pageView !== "double") return Math.min(pages.length - 1, current + 1);
-    if (current === 0) return pages.length > 1 ? 1 : 0;
     const n = current + 2;
     return n <= pages.length - 1 ? n : current;
   };
   const prevGroupStart = (current) => {
     if (pageView !== "double") return Math.max(0, current - 1);
-    if (current <= 1) return 0;
-    return current - 2;
+    return current >= 2 ? current - 2 : 0;
   };
 
   useEffect(() => {
@@ -1155,6 +1180,15 @@ export function PreviewOverlay({
             {autoPlay ? <Square size={14} /> : <Volume2 size={15} />}
             <span className="er-tool-label">Tự đọc</span>
           </button>
+
+          <button
+            className={`er-tool-btn ${isFullscreen ? "active" : ""}`}
+            title={isFullscreen ? "Thoát toàn màn hình" : "Toàn màn hình"}
+            onClick={toggleFullscreen}
+          >
+            <Maximize2 size={15} />
+            <span className="er-tool-label">Toàn màn hình</span>
+          </button>
         </div>
       </div>
 
@@ -1298,8 +1332,6 @@ export default function BookBuilder() {
   const [exporting, setExporting] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [saveStatus, setSaveStatus] = useState("idle");
-  const [isActive, setIsActive] = useState(false);
-  const [toggling, setToggling] = useState(false);
   const [logoError, setLogoError] = useState(false);
   const [, bump] = useState(0);
 
@@ -1365,7 +1397,6 @@ export default function BookBuilder() {
             setShowTitleWithPageNumber(eb.showTitleWithPageNumber);
           if (typeof eb.hidePageNumberOnCover === "boolean")
             setHidePageNumberOnCover(eb.hidePageNumberOnCover);
-          if (typeof eb.isActive === "boolean") setIsActive(eb.isActive);
           if (Array.isArray(eb.pages) && eb.pages.length) setPages(eb.pages);
         } else if (bookIdFromQuery) {
           try {
@@ -1901,21 +1932,6 @@ export default function BookBuilder() {
     toast.success("Đã tạo / cập nhật mục lục.");
   };
 
-  const handleToggleActive = async () => {
-    if (!ebookId || toggling) return;
-    setToggling(true);
-    try {
-      const res = await ebookService.toggle(ebookId);
-      const next = !!res.data?.data?.isActive;
-      setIsActive(next);
-      toast.success(next ? "Đã bật — sách điện tử hiện đã hiển thị cho khách." : "Đã chuyển về Đang soạn — khách sẽ không đọc được sách này.");
-    } catch (e) {
-      toast.error(e?.response?.data?.message || "Không thể đổi trạng thái sách điện tử.");
-    } finally {
-      setToggling(false);
-    }
-  };
-
   const exportPdf = async () => {
     if (exporting) return;
     setExporting(true);
@@ -2358,12 +2374,6 @@ export default function BookBuilder() {
         .bb-save-dot.ok { background: #4a9e3f; box-shadow: 0 0 0 3px rgba(74,158,63,0.18); }
         .bb-save-dot.busy { background: #e0a83f; animation: bb-pulse 1s ease-in-out infinite; }
         .bb-save-dot.error, .bb-save-status.error { background: #d94f4f; }
-        .bb-status-toggle-btn { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; }
-        .bb-status-toggle-btn.is-draft { background: #fff4e0; border-color: #f2c98a; color: #9a6a1c; }
-        .bb-status-toggle-btn.is-active { background: #e6f7ee; border-color: #8fd6ac; color: #1c7a45; }
-        .bb-status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-        .bb-status-dot.off { background: #d99a2b; }
-        .bb-status-dot.on { background: #21a35a; }
         @keyframes bb-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
         .bb-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; background: #fff; padding: 6px; border-radius: 14px; box-shadow: 0 2px 10px rgba(20,51,42,0.06); border: 1px solid rgba(20,51,42,0.06); flex: 0 0 auto; }
         .bb-divider-v { width: 1px; align-self: stretch; background: rgba(20,51,42,0.10); margin: 2px 2px; }
@@ -2472,6 +2482,8 @@ export default function BookBuilder() {
         .bb-float-toolbar { position: absolute; display: flex; gap: 3px; background: #14332a; border-radius: 10px; padding: 5px; box-shadow: 0 10px 24px rgba(0,0,0,0.30); z-index: 30; }
         .bb-float-toolbar button { border: none; background: transparent; color: #fff; cursor: pointer; font-size: 13px; width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; transition: background 0.12s ease; }
         .bb-float-toolbar button:hover { background: rgba(255,255,255,0.16); }
+
+
         @media (max-width: 720px) { .bb-flyout { width: calc(100% - 64px); } }
       `}</style>
 
@@ -2580,22 +2592,6 @@ export default function BookBuilder() {
             </span>
           </div>
         </div>
-        {ebookId && (
-          <button
-            type="button"
-            className={`bb-btn bb-status-toggle-btn ${isActive ? "is-active" : "is-draft"}`}
-            onClick={handleToggleActive}
-            disabled={toggling}
-            title={
-              isActive
-                ? "Sách điện tử đang hiển thị cho khách hàng. Bấm để chuyển về Đang soạn."
-                : "Sách điện tử đang ở chế độ soạn, khách hàng chưa đọc được. Bấm để Bật."
-            }
-          >
-            <span className={`bb-status-dot ${isActive ? "on" : "off"}`} />
-            {toggling ? "Đang cập nhật…" : isActive ? "Đã bật" : "Đang soạn"}
-          </button>
-        )}
         {bookId && (
           <button
             className="bb-btn bb-meta-price-btn"
