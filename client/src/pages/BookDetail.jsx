@@ -19,6 +19,7 @@ import {
   Star,
   ThumbsUp,
   ThumbsDown,
+  BadgeCheck,
 } from "lucide-react";
 
 //  Fallback images khi chưa có ảnh từ API
@@ -1219,6 +1220,15 @@ export default function BookDetail() {
                             <div className="reviewer-date">
                               {formatDate(r.createdAt)}
                             </div>
+                            {r.purchasedFormats?.length > 0 && (
+                              <div className="reviewer-verified">
+                                <BadgeCheck size={12} strokeWidth={1.5} />
+                                Đã mua:{" "}
+                                {r.purchasedFormats
+                                  .map((f) => (f === "DIGITAL" ? "Ebook" : "Bản in"))
+                                  .join(", ")}
+                              </div>
+                            )}
                           </div>
                         </div>
                         {/* Số sao thật của review, không còn mặc định "5" khi thiếu dữ liệu */}

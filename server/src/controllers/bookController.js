@@ -43,6 +43,21 @@ const hasPurchasedBook = async (userId, bookId) => {
   return !!item
 }
 
+const getPurchasedFormats = async (userId, bookId) => {
+  const items = await prisma.orderItem.findMany({
+    where: {
+      variant: { bookId },
+      order: {
+        userId,
+        paymentStatus: 'PAID',
+        status: { in: SUCCESSFUL_ORDER_STATUSES }
+      }
+    },
+    select: { variant: { select: { format: true } } }
+  })
+  return [...new Set(items.map((i) => i.variant.format))]
+}
+
 // Sách đạt ngưỡng đánh giá trung bình >= threshold
 const getBookIdsWithMinRating = async (threshold) => {
   const grouped = await prisma.review.groupBy({
@@ -360,8 +375,8 @@ const addReview = async (req, res) => {
       return formatResponse(res, 400, 'Số sao đánh giá không hợp lệ')
     }
 
-    const purchased = await hasPurchasedBook(req.user.id, book.id)
-    if (!purchased) {
+    const purchasedFormats = await getPurchasedFormats(req.user.id, book.id)
+    if (!purchasedFormats.length) {
       return formatResponse(res, 403, 'Bạn cần mua sách này (đơn hàng ở trạng thái thành công) mới có thể đánh giá')
     }
 
@@ -375,6 +390,7 @@ const addReview = async (req, res) => {
         userId: req.user.id,
         bookId: book.id,
         rating: ratingNum,
+        purchasedFormats,
         title,
         content
       },

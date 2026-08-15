@@ -5883,6 +5883,19 @@ body.dark-mode .promo-strip {
   color: var(--text-muted);
   margin-top: 2px;
 }
+.reviewer-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  color: var(--forest);
+}
+.reviewer-verified svg {
+  color: var(--gold);
+  flex-shrink: 0;
+}
 .review-stars {
   display: flex;
   gap: 2px;
