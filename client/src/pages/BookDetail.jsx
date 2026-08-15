@@ -8,6 +8,7 @@ import { formatPrice, formatDate } from "../utils/helpers";
 import { flyToCart } from "../utils/flyToCart";
 import toast from "react-hot-toast";
 import CompareModal from "../components/CompareModal";
+import RebuyConfirmModal from "../components/RebuyConfirmModal";
 
 //  Fallback images khi chưa có ảnh từ API
 const FALLBACK_IMGS = [
@@ -94,10 +95,10 @@ const IconCart = ({ size = 15 }) => (
     <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
   </svg>
 );
-const IconCheck = () => (
+const IconCheck = ({ size = 15 }) => (
   <svg
-    width="15"
-    height="15"
+    width={size}
+    height={size}
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
@@ -261,6 +262,7 @@ export default function BookDetail() {
     content: "",
   });
   const [compareOpen, setCompareOpen] = useState(false);
+  const [rebuyModalOpen, setRebuyModalOpen] = useState(false);
 
   //  Fetch book
   const {
@@ -392,13 +394,7 @@ export default function BookDetail() {
     }, 200);
   };
 
-  const handleAddToCart = async () => {
-    if (!isAuthenticated) {
-      toast.error("Vui lòng đăng nhập để mua hàng!");
-      navigate("/login");
-      return;
-    }
-    if (addedToCart) return;
+  const performAddToCart = async () => {
     try {
       flyToCart(mainImgRef.current);
       await addToCart(hashId, qty, selectedFormat);
@@ -408,6 +404,31 @@ export default function BookDetail() {
     } catch (err) {
       toast.error(err.response?.data?.message || "Thêm vào giỏ thất bại!");
     }
+  };
+
+  const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      toast.error("Vui lòng đăng nhập để mua hàng!");
+      navigate("/login");
+      return;
+    }
+    if (addedToCart) return;
+    // Khách đã sở hữu bản điện tử của sách này rồi — hỏi lại trước khi cho
+    // mua thêm 1 lần nữa, tránh mua nhầm/mua trùng.
+    if (selectedFormat === "DIGITAL" && book?.ownsEbook) {
+      setRebuyModalOpen(true);
+      return;
+    }
+    await performAddToCart();
+  };
+
+  const handleRebuyConfirm = () => {
+    setRebuyModalOpen(false);
+    performAddToCart();
+  };
+
+  const handleRebuyCancel = () => {
+    setRebuyModalOpen(false);
   };
 
   const handleWishlist = async () => {
@@ -724,7 +745,7 @@ export default function BookDetail() {
           </div>
 
           {variants.length > 1 && (
-            <div className="variant-select-row" style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+            <div className="format-select-row">
               {variants.map((v) => {
                 const isActive = v.format === selectedFormat;
                 const label = v.format === "DIGITAL" ? "Ebook" : "Bản in";
@@ -733,20 +754,10 @@ export default function BookDetail() {
                     key={v.id}
                     type="button"
                     onClick={() => setSelectedFormat(v.format)}
-                    className={`variant-option-btn${isActive ? " active" : ""}`}
-                    style={{
-                      padding: "8px 16px",
-                      borderRadius: 8,
-                      border: isActive
-                        ? "2px solid var(--gold, #c9a227)"
-                        : "1px solid #ddd",
-                      background: isActive ? "rgba(201,162,39,0.08)" : "#fff",
-                      fontWeight: isActive ? 600 : 500,
-                      cursor: "pointer",
-                    }}
+                    className={`format-option${isActive ? " active" : ""}`}
                   >
-                    {label}
-                    <span style={{ display: "block", fontSize: 12, opacity: 0.7 }}>
+                    <span className="format-option-label">{label}</span>
+                    <span className="format-option-price">
                       {formatPrice(v.salePrice || v.price)}
                     </span>
                   </button>
@@ -821,20 +832,24 @@ export default function BookDetail() {
 
           {/* Secondary CTAs */}
           <div className="secondary-cta">
-            {book.ownsEbook && (
+            {book.ownsEbook ? (
               <Link
                 to={`/ebook/${book.slug}`}
-                className="btn-secondary"
+                className="btn-secondary btn-secondary--owned"
               >
+                <span className="btn-secondary-owned-badge">
+                  <IconCheck size={9} />
+                </span>
                 <IconPlay size={13} /> Đọc sách điện tử
               </Link>
+            ) : (
+              <button
+                className="btn-secondary"
+                onClick={() => toast.success("Tính năng đang phát triển!")}
+              >
+                <IconPlay size={13} /> Xem demo AR
+              </button>
             )}
-            <button
-              className="btn-secondary"
-              onClick={() => toast.success("Tính năng đang phát triển!")}
-            >
-              <IconPlay size={13} /> Xem demo AR
-            </button>
             <button
               className="btn-secondary"
               onClick={() => {
@@ -1471,6 +1486,13 @@ export default function BookDetail() {
         open={compareOpen}
         onClose={() => setCompareOpen(false)}
         currentBook={book}
+      />
+      {/* ══ REBUY EBOOK CONFIRM MODAL ══ */}
+      <RebuyConfirmModal
+        open={rebuyModalOpen}
+        onConfirm={handleRebuyConfirm}
+        onCancel={handleRebuyCancel}
+        bookTitle={book?.title}
       />
     </>
   );
