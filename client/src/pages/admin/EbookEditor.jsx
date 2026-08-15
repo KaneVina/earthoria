@@ -1270,23 +1270,12 @@ export function PreviewOverlay({
         <button className="er-nav-btn" onClick={goPrev} disabled={!canGoPrev}>
           <ChevronLeft size={18} />
         </button>
-        {reading ? (
-          <button
-            className="er-read-btn danger"
-            onClick={() => {
-              setAutoPlay(false);
-              stop();
-            }}
-          >
-            <Square size={14} />
-            Dừng
-          </button>
-        ) : (
-          <button className="er-read-btn" onClick={() => readSpread(false)}>
-            <Play size={14} />
-            Đọc trang này
-          </button>
-        )}
+        <div className={`er-page-pill ${reading ? "is-reading" : ""}`}>
+          {reading && <span className="er-page-pill-dot" />}
+          <span>
+            {visiblePages.length === 2 ? `${idx + 1}\u2013${idx + 2}` : idx + 1} / {pages.length}
+          </span>
+        </div>
         <button className="er-nav-btn" onClick={goNext} disabled={!canGoNext}>
           <ChevronRight size={18} />
         </button>
@@ -1294,68 +1283,73 @@ export function PreviewOverlay({
 
       {infoOpen && (
         <div className="er-info-backdrop" onClick={() => setInfoOpen(false)}>
-          <div className="er-info-card" onClick={(e) => e.stopPropagation()}>
-            <button
-              className="er-icon-btn er-info-close"
-              onClick={() => setInfoOpen(false)}
-            >
-              <X size={16} />
-            </button>
-            {bookInfo ? (
-              <>
-                {bookInfo.coverImage && (
-                  <img
-                    className="er-info-cover"
-                    src={bookInfo.coverImage}
-                    alt={bookInfo.title || ""}
-                  />
-                )}
-                <div className="er-info-body">
-                  <h2 className="er-info-title">{bookInfo.title}</h2>
-                  {bookInfo.authors?.length > 0 && (
-                    <div className="er-info-authors">
-                      <User size={13} /> {bookInfo.authors.join(", ")}
+          <div className="er-info-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="er-info-drawer-head">
+              <h3>Thông tin sách</h3>
+              <button className="er-icon-btn" onClick={() => setInfoOpen(false)}>
+                <X size={16} />
+              </button>
+            </div>
+            <div className="er-info-scroll">
+              {bookInfo ? (
+                <>
+                  {bookInfo.coverImage && (
+                    <img
+                      className="er-info-cover"
+                      src={bookInfo.coverImage}
+                      alt={bookInfo.title || ""}
+                    />
+                  )}
+                  <div className="er-info-body">
+                    <h2 className="er-info-title">{bookInfo.title}</h2>
+                    {bookInfo.authors?.length > 0 && (
+                      <div className="er-info-authors">
+                        <User size={13} /> {bookInfo.authors.join(", ")}
+                      </div>
+                    )}
+                    <div className="er-info-meta">
+                      {bookInfo.categoryName && (
+                        <span className="er-info-tag">{bookInfo.categoryName}</span>
+                      )}
+                      {(bookInfo.ageMin || bookInfo.ageMax) && (
+                        <span className="er-info-tag">
+                          {bookInfo.ageMin && bookInfo.ageMax
+                            ? `${bookInfo.ageMin}-${bookInfo.ageMax} tuổi`
+                            : bookInfo.ageMin
+                              ? `Từ ${bookInfo.ageMin} tuổi`
+                              : `Đến ${bookInfo.ageMax} tuổi`}
+                        </span>
+                      )}
+                      {bookInfo.publisher && (
+                        <span className="er-info-tag">NXB {bookInfo.publisher}</span>
+                      )}
+                      {bookInfo.publishYear && (
+                        <span className="er-info-tag">{bookInfo.publishYear}</span>
+                      )}
+                      {bookInfo.pages ? (
+                        <span className="er-info-tag">{bookInfo.pages} trang</span>
+                      ) : null}
+                      {bookInfo.language && (
+                        <span className="er-info-tag">
+                          {bookInfo.language === "VI" ? "Tiếng Việt" : bookInfo.language}
+                        </span>
+                      )}
                     </div>
-                  )}
-                  {bookInfo.description && (
-                    <p className="er-info-desc">{bookInfo.description}</p>
-                  )}
-                  <div className="er-info-meta">
-                    {bookInfo.categoryName && (
-                      <span className="er-info-tag">{bookInfo.categoryName}</span>
-                    )}
-                    {(bookInfo.ageMin || bookInfo.ageMax) && (
-                      <span className="er-info-tag">
-                        {bookInfo.ageMin && bookInfo.ageMax
-                          ? `${bookInfo.ageMin}-${bookInfo.ageMax} tuổi`
-                          : bookInfo.ageMin
-                            ? `Từ ${bookInfo.ageMin} tuổi`
-                            : `Đến ${bookInfo.ageMax} tuổi`}
-                      </span>
-                    )}
-                    {bookInfo.publisher && (
-                      <span className="er-info-tag">NXB {bookInfo.publisher}</span>
-                    )}
-                    {bookInfo.publishYear && (
-                      <span className="er-info-tag">{bookInfo.publishYear}</span>
-                    )}
-                    {bookInfo.pages ? (
-                      <span className="er-info-tag">{bookInfo.pages} trang</span>
-                    ) : null}
-                    {bookInfo.language && (
-                      <span className="er-info-tag">
-                        {bookInfo.language === "VI" ? "Tiếng Việt" : bookInfo.language}
-                      </span>
+                    {bookInfo.description && (
+                      <>
+                        <div className="er-info-divider" />
+                        <p className="er-info-desc">{bookInfo.description}</p>
+                      </>
                     )}
                   </div>
+                </>
+              ) : (
+                <div className="er-info-body">
+                  <h2 className="er-info-title">{page?.title || "Sách điện tử"}</h2>
+                  <p className="er-info-desc">Chưa có thông tin chi tiết cho sách này.</p>
                 </div>
-              </>
-            ) : (
-              <div className="er-info-body">
-                <h2 className="er-info-title">{page?.title || "Sách điện tử"}</h2>
-                <p className="er-info-desc">Chưa có thông tin chi tiết cho sách này.</p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       )}
