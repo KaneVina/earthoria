@@ -1,9 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Loader2, PlayCircle, Trophy, RotateCcw, ArrowLeft, Lock, SearchX, Info } from "lucide-react";
+import { Loader2, PlayCircle, Trophy, RotateCcw, ArrowLeft, Lock, SearchX, Info, Leaf, Sparkles } from "lucide-react";
 import { gameService } from "../services/gameService";
 import { getGameDefinition } from "../games/gameRegistry";
 import "../components/assets/css/gameplay.css";
+
+function GpAmbient() {
+  return (
+    <div aria-hidden="true">
+      <Leaf className="gp-ambient gp-ambient-1" />
+      <Sparkles className="gp-ambient gp-ambient-2" />
+      <Sparkles className="gp-ambient gp-ambient-3" />
+      <Leaf className="gp-ambient gp-ambient-4" />
+    </div>
+  );
+}
 
 export default function GamePlay() {
   const { slug, code } = useParams();
@@ -74,6 +85,7 @@ export default function GamePlay() {
   if (state.status === "loading") {
     return (
       <main className="gp-view gp-view--center">
+      <GpAmbient />
         <div className="gp-loading">
           <Loader2 size={26} className="gp-spin" />
           <span>Đang tải trò chơi…</span>
@@ -85,6 +97,7 @@ export default function GamePlay() {
   if (state.status === "forbidden") {
     return (
       <main className="gp-view gp-view--center">
+      <GpAmbient />
         <div className="gp-empty">
           <div className="gp-empty-badge">
             <Lock size={22} />
@@ -103,6 +116,7 @@ export default function GamePlay() {
   if (state.status === "not-found") {
     return (
       <main className="gp-view gp-view--center">
+      <GpAmbient />
         <div className="gp-empty">
           <div className="gp-empty-badge">
             <SearchX size={22} />
@@ -122,6 +136,7 @@ export default function GamePlay() {
 
   return (
     <main className="gp-view">
+      <GpAmbient />
       <div className="gp-topbar">
         <Link to={data.book?.slug && data.book?.hashId ? `/books/${data.book.slug}/${data.book.hashId}` : "/"} className="gp-back">
           <ArrowLeft size={14} /> {data.book?.title || "Về trang sách"}
