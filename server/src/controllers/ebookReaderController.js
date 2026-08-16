@@ -1,6 +1,7 @@
 const prisma = require('../config/db')
 const { userOwnsDigitalBook } = require('../utils/bookOwnership')
 const { encodeId } = require('../utils/hashids')
+const { isWithinAllowedWindow, isDailyLimitReached } = require('../utils/childPolicy')
 
 exports.getEbookForReading = async (req, res) => {
   try {
@@ -47,6 +48,33 @@ exports.getEbookForReading = async (req, res) => {
     }
 
     if (child) {
+      // Trước đây chỉ AR kiểm tra isLocked/khung giờ/giới hạn phút — Ebook hoàn
+      // toàn bỏ qua các rule này, nên khoá "AR" của phụ huynh thực chất không
+      // khoá được việc đọc ebook. Áp cùng bộ rule như AR để nhất quán.
+      if (child.isLocked) {
+        return res.status(403).json({
+          success: false,
+          code: 'CHILD_LOCKED',
+          message: 'Thiết bị của bé đang bị phụ huynh khoá.',
+        })
+      }
+
+      if (!isWithinAllowedWindow(child)) {
+        return res.status(403).json({
+          success: false,
+          code: 'OUTSIDE_ALLOWED_WINDOW',
+          message: 'Ngoài khung giờ ba mẹ cho phép sử dụng.',
+        })
+      }
+
+      if (await isDailyLimitReached(prisma, child)) {
+        return res.status(403).json({
+          success: false,
+          code: 'DAILY_LIMIT_REACHED',
+          message: 'Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!',
+        })
+      }
+
       const access = await prisma.childBookAccess.findFirst({
         where: { childId: child.id, bookId: book.id },
         select: { visible: true },

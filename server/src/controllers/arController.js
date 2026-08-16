@@ -1,4 +1,5 @@
 const prisma = require("../config/db");
+const { isWithinAllowedWindow, isDailyLimitReached } = require("../utils/childPolicy");
 
 exports.getArCode = async (req, res) => {
   try {
@@ -19,6 +20,9 @@ exports.getArCode = async (req, res) => {
     }
 
     if (arCode.accessType !== "PUBLIC") {
+      // Phiên của bé (link/QR riêng, không đăng nhập tài khoản chính) — xác
+      // thực bằng kidToken thay vì req.user, vẫn tôn trọng khoá AR + ẩn sách
+      // mà phụ huynh đã đặt cho bé.
       let child = null;
       if (!req.user && kidToken) {
         child = await prisma.childProfile.findFirst({
@@ -32,6 +36,25 @@ exports.getArCode = async (req, res) => {
             success: false,
             code: "CHILD_LOCKED",
             message: "AR đã bị phụ huynh khoá. Nhờ ba mẹ mở khoá nhé!",
+          });
+        }
+
+        // Khung giờ và giới hạn số phút/ngày — trước đây chỉ được hiển thị/tính
+        // toán ở client (UI guidance), không hề được chặn ở server, nên bé vẫn
+        // gọi thẳng API để xem AR ngoài giờ cho phép hoặc sau khi đã hết giờ.
+        if (!isWithinAllowedWindow(child)) {
+          return res.status(403).json({
+            success: false,
+            code: "OUTSIDE_ALLOWED_WINDOW",
+            message: "Ngoài khung giờ ba mẹ cho phép sử dụng.",
+          });
+        }
+
+        if (await isDailyLimitReached(prisma, child)) {
+          return res.status(403).json({
+            success: false,
+            code: "DAILY_LIMIT_REACHED",
+            message: "Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!",
           });
         }
 

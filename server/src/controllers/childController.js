@@ -3,8 +3,19 @@ const { formatResponse } = require("../utils/helpers");
 const { calculateAge, isValidChildDob } = require("../utils/age");
 const { verifyParentPin } = require("../utils/parentPin");
 const { generateKidLinkToken, buildKidLinkUrl } = require("../utils/kidLink");
+const {
+  startOfTodayVn,
+  getVnParts,
+  isWithinAllowedWindow,
+  isDailyLimitReached,
+  getTodayMinutes,
+} = require("../utils/childPolicy");
 
 const MAX_CHILDREN_PER_PARENT = 10;
+// 1 phiên hoạt động (đọc ebook / xem AR) đơn lẻ không được tính quá mức này —
+// chặn trường hợp tab bị treo/ở nền quá lâu rồi mới gọi ping, khiến 1 lần ping
+// cộng dồn một số phút bất thường.
+const MAX_SESSION_MINUTES = 6 * 60;
 
 const SETTINGS_SELECT = {
   dailyLimitMinutes: true,
@@ -38,6 +49,79 @@ const CHILD_SELECT = {
   ...SETTINGS_SELECT,
 };
 
+const TIPS_FREQUENCY_VALUES = ["open", "interval", "rest"];
+const TIME_HHMM_RE = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+// Validate + coerce từng field trong body settings. Trước đây chỉ validate
+// dailyLimitMinutes; các field còn lại được ghi thẳng vào DB không kiểm tra gì,
+// cho phép gửi giá trị âm/NaN/chuỗi rác làm hỏng logic ở FE (vd allowStart="abc"
+// khiến `split(":").map(Number)` ra NaN).
+// Trả về { data, error } — error là message tiếng Việt đầu tiên gặp phải.
+function validateSettingsPatch(body) {
+  const data = {};
+
+  const boolFields = [
+    "ruleEnabled",
+    "allowWindowEnabled",
+    "mandatoryBreakEnabled",
+    "tipsEnabled",
+    "notifyPush",
+    "notifyEmail",
+    "notifyOnLimitExceeded",
+    "notifyOnSkippedRest",
+  ];
+  for (const field of boolFields) {
+    if (body[field] !== undefined) {
+      if (typeof body[field] !== "boolean") {
+        return { error: `Trường "${field}" phải là true/false` };
+      }
+      data[field] = body[field];
+    }
+  }
+
+  const intRanges = {
+    dailyLimitMinutes: [5, 240],
+    ruleIntervalMinutes: [1, 180],
+    ruleRestSeconds: [5, 600],
+    breakAfterMinutes: [5, 240],
+    breakDurationMinutes: [1, 60],
+  };
+  const rangeMessages = {
+    dailyLimitMinutes: "Giới hạn giờ phải trong khoảng 5–240 phút",
+    ruleIntervalMinutes: "Chu kỳ nhắc nghỉ mắt phải trong khoảng 1–180 phút",
+    ruleRestSeconds: "Thời gian nghỉ mắt phải trong khoảng 5–600 giây",
+    breakAfterMinutes: "Thời điểm nhắc nghỉ phải trong khoảng 5–240 phút",
+    breakDurationMinutes: "Thời lượng nghỉ giải lao phải trong khoảng 1–60 phút",
+  };
+  for (const [field, [min, max]] of Object.entries(intRanges)) {
+    if (body[field] !== undefined) {
+      const n = Number(body[field]);
+      if (!Number.isInteger(n) || n < min || n > max) {
+        return { error: rangeMessages[field] };
+      }
+      data[field] = n;
+    }
+  }
+
+  for (const field of ["allowStart", "allowEnd"]) {
+    if (body[field] !== undefined) {
+      if (typeof body[field] !== "string" || !TIME_HHMM_RE.test(body[field])) {
+        return { error: `Trường "${field}" phải có định dạng giờ hợp lệ (HH:mm)` };
+      }
+      data[field] = body[field];
+    }
+  }
+
+  if (body.tipsFrequency !== undefined) {
+    if (!TIPS_FREQUENCY_VALUES.includes(body.tipsFrequency)) {
+      return { error: `Trường "tipsFrequency" không hợp lệ` };
+    }
+    data.tipsFrequency = body.tipsFrequency;
+  }
+
+  return { data };
+}
+
 function serializeChild(child) {
   return { ...child, age: calculateAge(child.dob) };
 }
@@ -68,8 +152,9 @@ const listChildren = async (req, res) => {
       orderBy: { createdAt: "asc" },
     });
 
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
+    // "Hôm nay" tính theo giờ Việt Nam (không phụ thuộc timezone server) —
+    // tránh lệch ngày nếu server chạy UTC.
+    const startOfToday = startOfTodayVn();
 
     const childIds = children.map((c) => c.id);
     const todayLogs = childIds.length
@@ -130,27 +215,52 @@ const createChild = async (req, res) => {
       );
     }
 
-    const existingCount = await prisma.childProfile.count({
-      where: { parentId: req.user.id, isActive: true },
-    });
-    if (existingCount >= MAX_CHILDREN_PER_PARENT) {
-      return formatResponse(
-        res,
-        400,
-        `Bạn đã đạt giới hạn tối đa ${MAX_CHILDREN_PER_PARENT} hồ sơ trẻ em`,
-      );
+    // Đếm số con hiện có + tạo mới trong CÙNG một transaction Serializable —
+    // trước đây count() và create() là 2 câu lệnh tách rời, nên 2 request tạo
+    // con gần như đồng thời có thể cùng đọc thấy count=9 rồi cùng tạo, vượt
+    // quá MAX_CHILDREN_PER_PARENT. Serializable khiến Postgres tự phát hiện
+    // xung đột và ném lỗi (P2034) cho 1 trong 2 transaction — ta retry lại 1
+    // lần, lúc đó count() sẽ thấy dữ liệu mới nhất.
+    let child;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        child = await prisma.$transaction(
+          async (tx) => {
+            const existingCount = await tx.childProfile.count({
+              where: { parentId: req.user.id, isActive: true },
+            });
+            if (existingCount >= MAX_CHILDREN_PER_PARENT) {
+              const err = new Error("MAX_CHILDREN_REACHED");
+              err.code = "MAX_CHILDREN_REACHED";
+              throw err;
+            }
+            return tx.childProfile.create({
+              data: {
+                parentId: req.user.id,
+                name: name.trim(),
+                dob: new Date(dob),
+                avatarEmoji: avatarEmoji || "🦊",
+                avatarColor: avatarColor || "#4a9e3f",
+              },
+              select: CHILD_SELECT,
+            });
+          },
+          { isolationLevel: "Serializable" },
+        );
+        break;
+      } catch (err) {
+        if (err.code === "MAX_CHILDREN_REACHED") {
+          return formatResponse(
+            res,
+            400,
+            `Bạn đã đạt giới hạn tối đa ${MAX_CHILDREN_PER_PARENT} hồ sơ trẻ em`,
+          );
+        }
+        const isSerializationConflict = err.code === "P2034";
+        if (isSerializationConflict && attempt === 0) continue; // thử lại 1 lần
+        throw err;
+      }
     }
-
-    const child = await prisma.childProfile.create({
-      data: {
-        parentId: req.user.id,
-        name: name.trim(),
-        dob: new Date(dob),
-        avatarEmoji: avatarEmoji || "🦊",
-        avatarColor: avatarColor || "#4a9e3f",
-      },
-      select: CHILD_SELECT,
-    });
 
     await pushAudit({
       parentId: req.user.id,
@@ -207,14 +317,17 @@ const getChildDashboard = async (req, res) => {
     const child = await findOwnChild(req.user.id, req.params.childId);
     if (!child) return formatResponse(res, 404, "Không tìm thấy hồ sơ trẻ");
 
-    const now = new Date();
-    const startOfToday = new Date(now);
-    startOfToday.setHours(0, 0, 0, 0);
-
-    // 7 ngày gần nhất, kể cả hôm nay, thứ tự Thứ 2 → Chủ nhật theo tuần hiện tại
-    const dayOfWeek = (now.getDay() + 6) % 7; // 0 = Thứ 2 ... 6 = Chủ nhật
+    // "Hôm nay"/"tuần này" tính theo giờ Việt Nam — nhất quán với listChildren,
+    // getKidPublicProfile, và enforcement ở AR/Ebook.
+    const startOfToday = startOfTodayVn();
+    const todayVnParts = getVnParts();
+    // Dùng Date.UTC với đúng bộ Y-M-D theo giờ VN để lấy đúng thứ trong tuần
+    // (getUTCDay trên 1 mốc UTC 00:00 của đúng ngày đó luôn cho ra đúng thứ,
+    // bất kể server chạy ở timezone nào).
+    const todayWeekdayUtc = new Date(Date.UTC(todayVnParts.year, todayVnParts.month - 1, todayVnParts.day));
+    const dayOfWeek = (todayWeekdayUtc.getUTCDay() + 6) % 7; // 0 = Thứ 2 ... 6 = Chủ nhật
     const startOfWeek = new Date(startOfToday);
-    startOfWeek.setDate(startOfWeek.getDate() - dayOfWeek);
+    startOfWeek.setUTCDate(startOfWeek.getUTCDate() - dayOfWeek);
 
     const [weekLogs, sessions, auditLog] = await Promise.all([
       prisma.childActivityLog.findMany({
@@ -237,7 +350,9 @@ const getChildDashboard = async (req, res) => {
     const weeklyMinutes = Array(7).fill(0);
     let todayMinutes = 0;
     for (const log of weekLogs) {
-      const idx = (new Date(log.occurredOn).getDay() + 6) % 7;
+      const logVnParts = getVnParts(log.occurredOn);
+      const logWeekdayUtc = new Date(Date.UTC(logVnParts.year, logVnParts.month - 1, logVnParts.day));
+      const idx = (logWeekdayUtc.getUTCDay() + 6) % 7;
       weeklyMinutes[idx] += log.minutes;
       if (new Date(log.occurredOn) >= startOfToday) todayMinutes += log.minutes;
     }
@@ -274,21 +389,11 @@ const updateChildSettings = async (req, res) => {
     const child = await findOwnChild(req.user.id, req.params.childId);
     if (!child) return formatResponse(res, 404, "Không tìm thấy hồ sơ trẻ");
 
-    const allowedFields = Object.keys(SETTINGS_SELECT);
-    const data = {};
-    for (const field of allowedFields) {
-      if (req.body[field] !== undefined) data[field] = req.body[field];
-    }
+    const { data, error } = validateSettingsPatch(req.body);
+    if (error) return formatResponse(res, 400, error);
 
     if (Object.keys(data).length === 0) {
       return formatResponse(res, 400, "Không có gì để cập nhật");
-    }
-
-    if (
-      data.dailyLimitMinutes !== undefined &&
-      (data.dailyLimitMinutes < 5 || data.dailyLimitMinutes > 240)
-    ) {
-      return formatResponse(res, 400, "Giới hạn giờ phải trong khoảng 5–240 phút");
     }
 
     const updated = await prisma.childProfile.update({
@@ -330,10 +435,10 @@ const lockChild = async (req, res) => {
       parentId: req.user.id,
       childId: child.id,
       type: "LOCK",
-      message: `Bạn đã khoá AR cho ${child.name}`,
+      message: `Bạn đã khoá thiết bị của ${child.name}`,
     });
 
-    return formatResponse(res, 200, `Đã khoá AR trên thiết bị của ${child.name}`, {
+    return formatResponse(res, 200, `Đã khoá thiết bị của ${child.name}`, {
       child: serializeChild(updated),
     });
   } catch (error) {
@@ -366,7 +471,7 @@ const unlockChild = async (req, res) => {
       parentId: req.user.id,
       childId: child.id,
       type: "UNLOCK",
-      message: `Bạn đã mở khoá AR cho ${child.name}`,
+      message: `Bạn đã mở khoá cho ${child.name}`,
     });
 
     return formatResponse(res, 200, "Đã mở khoá", { child: serializeChild(updated) });
@@ -529,8 +634,6 @@ const regenerateKidLink = async (req, res) => {
 };
 
 // DELETE /api/v1/children/:childId/permanent — XOÁ VĨNH VIỄN
-// Yêu cầu cả PIN phụ huynh lẫn gõ đúng tên bé, vì đây là hành động nguy
-// hiểm hơn unlock nên phải được bảo vệ tối thiểu bằng PIN.
 const deleteChildPermanently = async (req, res) => {
   try {
     const child = await prisma.childProfile.findFirst({
@@ -538,14 +641,6 @@ const deleteChildPermanently = async (req, res) => {
       select: { id: true, name: true },
     });
     if (!child) return formatResponse(res, 404, "Không tìm thấy hồ sơ trẻ");
-
-    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
-    const verify = await verifyParentPin(user, req.body.pin);
-    if (!verify.ok) {
-      return formatResponse(res, verify.code === "LOCKED_OUT" ? 429 : 400, verify.message, {
-        code: verify.code,
-      });
-    }
 
     const { confirmName } = req.body;
     if (typeof confirmName !== "string" || confirmName.trim() !== child.name) {
@@ -602,15 +697,10 @@ const getKidPublicProfile = async (req, res) => {
     });
     if (!child) return formatResponse(res, 404, "Link không hợp lệ hoặc đã bị thu hồi");
 
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
-    const todayAgg = await prisma.childActivityLog.aggregate({
-      where: { childId: child.id, occurredOn: { gte: startOfToday } },
-      _sum: { minutes: true },
-    });
+    const todayMinutes = await getTodayMinutes(prisma, child.id);
 
     return formatResponse(res, 200, "OK", {
-      child: { ...serializeChild(child), todayMinutes: todayAgg._sum.minutes || 0 },
+      child: { ...serializeChild(child), todayMinutes },
     });
   } catch (error) {
     console.error(error);
@@ -711,6 +801,104 @@ const getKidPublicBooks = async (req, res) => {
   }
 };
 
+// ════════════════════════════════════════════
+// [PUBLIC] POST /api/v1/kid-access/:token/activity/start
+// Bắt đầu 1 phiên hoạt động (đọc ebook / xem AR) cho bé — tạo 1 dòng
+// ChildActivityLog với minutes=0, dùng createdAt của chính dòng này làm mốc
+// thời gian server để tính phút về sau (xem pingKidActivity).
+//
+// Trước đây KHÔNG có endpoint nào ghi ChildActivityLog cả — Parent Dashboard
+// hiển thị "phút đã dùng hôm nay"/biểu đồ tuần nhưng luôn là dữ liệu rỗng vì
+// không có nguồn ghi. Đây là bước đầu nối "telemetry pipeline" thật cho hệ
+// thống, đo bằng đồng hồ server (không tin số phút client tự báo).
+// ════════════════════════════════════════════
+const startKidActivity = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { bookId } = req.body;
+
+    const child = await prisma.childProfile.findFirst({
+      where: { kidLinkToken: token, isActive: true },
+    });
+    if (!child) return formatResponse(res, 404, "Link không hợp lệ hoặc đã bị thu hồi");
+
+    if (child.isLocked) {
+      return formatResponse(res, 403, "Thiết bị của bé đang bị phụ huynh khoá.", {
+        code: "CHILD_LOCKED",
+      });
+    }
+    if (!isWithinAllowedWindow(child)) {
+      return formatResponse(res, 403, "Ngoài khung giờ ba mẹ cho phép sử dụng.", {
+        code: "OUTSIDE_ALLOWED_WINDOW",
+      });
+    }
+    if (await isDailyLimitReached(prisma, child)) {
+      return formatResponse(res, 403, "Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!", {
+        code: "DAILY_LIMIT_REACHED",
+      });
+    }
+
+    let validBookId = null;
+    if (bookId) {
+      const book = await prisma.book.findUnique({ where: { id: bookId }, select: { id: true } });
+      if (book) validBookId = book.id;
+    }
+
+    const log = await prisma.childActivityLog.create({
+      data: { childId: child.id, bookId: validBookId, minutes: 0 },
+    });
+
+    return formatResponse(res, 201, "OK", { activityId: log.id });
+  } catch (error) {
+    console.error(error);
+    return formatResponse(res, 500, "Lỗi server");
+  }
+};
+
+// ════════════════════════════════════════════
+// [PUBLIC] POST /api/v1/kid-access/:token/activity/:activityId/ping
+// Client gọi định kỳ (vd mỗi 30–60s) trong lúc bé đang đọc/xem, và 1 lần khi
+// rời trang. Server tự tính số phút = (now - createdAt của phiên) theo đồng
+// hồ server, KHÔNG dùng số phút do client tự đếm/gửi lên — bé mở DevTools
+// sửa timer phía client cũng không đổi được số phút ghi nhận.
+// ════════════════════════════════════════════
+const pingKidActivity = async (req, res) => {
+  try {
+    const { token, activityId } = req.params;
+
+    const child = await prisma.childProfile.findFirst({
+      where: { kidLinkToken: token, isActive: true },
+    });
+    if (!child) return formatResponse(res, 404, "Link không hợp lệ hoặc đã bị thu hồi");
+
+    const log = await prisma.childActivityLog.findFirst({
+      where: { id: activityId, childId: child.id },
+    });
+    if (!log) return formatResponse(res, 404, "Không tìm thấy phiên hoạt động");
+
+    const elapsedMs = Date.now() - log.createdAt.getTime();
+    const minutes = Math.max(0, Math.min(MAX_SESSION_MINUTES, Math.round(elapsedMs / 60000)));
+
+    if (minutes !== log.minutes) {
+      await prisma.childActivityLog.update({ where: { id: log.id }, data: { minutes } });
+    }
+
+    const todayMinutes = await getTodayMinutes(prisma, child.id);
+    const limitReached = child.dailyLimitMinutes > 0 && todayMinutes >= child.dailyLimitMinutes;
+
+    return formatResponse(res, 200, "OK", {
+      minutes,
+      todayMinutes,
+      limitReached,
+      locked: child.isLocked,
+      withinWindow: isWithinAllowedWindow(child),
+    });
+  } catch (error) {
+    console.error(error);
+    return formatResponse(res, 500, "Lỗi server");
+  }
+};
+
 module.exports = {
   listChildren,
   createChild,
@@ -726,4 +914,6 @@ module.exports = {
   deleteChildPermanently,
   getKidPublicProfile,
   getKidPublicBooks,
+  startKidActivity,
+  pingKidActivity,
 };

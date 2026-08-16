@@ -66,11 +66,21 @@ exports.completeGame = async (req, res) => {
 
     let validChildId = null
     if (childId) {
-      const child = await prisma.childProfile.findUnique({
-        where: { id: childId },
+      // Trước đây chỉ kiểm tra child có tồn tại hay không, KHÔNG kiểm tra child đó
+      // có thuộc về user đang đăng nhập không — bất kỳ ai biết UUID của 1 child
+      // (của gia đình khác) đều có thể ghi GameResult vào hồ sơ đó (IDOR). Giờ bắt
+      // buộc childId phải thuộc về chính req.user (nếu có đăng nhập) mới được nhận.
+      if (!req.user) {
+        return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập để lưu kết quả cho hồ sơ trẻ em' })
+      }
+      const child = await prisma.childProfile.findFirst({
+        where: { id: childId, parentId: req.user.id, isActive: true },
         select: { id: true },
       })
-      if (child) validChildId = child.id
+      if (!child) {
+        return res.status(403).json({ success: false, message: 'Hồ sơ trẻ em không hợp lệ hoặc không thuộc về bạn' })
+      }
+      validChildId = child.id
     }
 
     const safeScore = Number.isFinite(Number(score)) ? Math.max(0, Math.round(Number(score))) : 0
