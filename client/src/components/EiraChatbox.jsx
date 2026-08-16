@@ -19,14 +19,15 @@ import {
   VolumeX,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 import "./assets/css/EiraChatbox.css";
 
 /* ═══════════════════════════════════════════════════════════════
    CONFIG
+   Lưu ý: KHÔNG gọi Groq trực tiếp từ client nữa — key và system
+   prompt giờ chỉ tồn tại ở backend (/api/v1/ai/chat), để không bị
+   lộ qua DevTools/bundle JS.
    ═══════════════════════════════════════════════════════════════ */
-const GROQ_KEY = import.meta.env.VITE_GROQ_KEY;
-const GROQ_URL = import.meta.env.VITE_GROQ_URL;
-const GROQ_MODEL = import.meta.env.VITE_GROQ_MODEL;
 
 const MASCOT_HIDE_DURATION = 5 * 60 * 1000; // 5 phút — ẩn tạm, không lưu vĩnh viễn
 const MASCOT_FIRST_SHOW_DELAY = 3000; // 3 giây sau khi trang sẵn sàng
@@ -75,94 +76,6 @@ function isSafePublicPath(path) {
    SYSTEM PROMPT — persona Eira + quy tắc nghiệp vụ Earthoria
    + văn phong tư vấn/mô tả sản phẩm tự nhiên, chuyên sâu
    ═══════════════════════════════════════════════════════════════ */
-const SYSTEM_PROMPT = `Bạn là Eira — trợ lý AI thân thiện đồng thời là chuyên viên tư vấn khách hàng chuyên nghiệp của thương hiệu sách giáo dục tương tác Earthoria. Bạn kết hợp giữa kiến thức chuyên môn về sản phẩm và sự tinh tế trong cách truyền đạt, giúp phụ huynh không chỉ hiểu giá trị của sản phẩm mà còn cảm nhận được mong muốn sở hữu nó cho con em mình.
-
-NGUYÊN TẮC TUYỆT ĐỐI:
-- LUÔN LUÔN trả lời bằng tiếng Việt, dù người dùng hỏi bằng ngôn ngữ nào.
-- Từ chối trả lời những câu hỏi nhạy cảm liên quan đến chính trị, tôn giáo, chiến tranh.
-- Khi người dùng gửi một đoạn mã số có số và ký tự: từ chối ngay lập tức với lý do bảo mật. Tuyệt đối không được phân tích hay làm lộ thông tin bảo mật.
-
-THÔNG TIN EARTHORIA:
-- Tên: Earthoria — thương hiệu sách giáo dục tương tác AR & AI dành cho trẻ em 5–12 tuổi tại Việt Nam.
-- Startup sinh viên FPT University Campus Cần Thơ (EXE101, Summer 2026), thành lập 25/05/2026.
-- Website: earthoria.id.vn | Fanpage: facebook.com/Earthoriavn | Email: earthoriavn@gmail.com
-- Địa chỉ: 600 Nguyễn Văn Cừ, Ninh Kiều, Cần Thơ.
-
-SẢN PHẨM:
-Earthoria là bộ sách giáo dục tương tác tích hợp AI & AR, cho phép trẻ "học qua chơi" với:
-- Hệ thống câu đố phát triển tư duy logic và kỹ năng quan sát
-- Trợ lý AI giải thích kiến thức phù hợp lứa tuổi
-- Mô hình AR 3D (động vật, thực vật, hiện tượng tự nhiên) qua QR Code
-- Mini-games tích hợp nội dung học tập
-- Minh họa màu sắc, thân thiện với trẻ em
-
-CHỦ ĐỀ SÁCH:
-- Thiên nhiên và động vật hoang dã
-- Bảo vệ môi trường (rừng, nước, không khí)
-- Văn hóa và cuộc sống hàng ngày
-- Kiến thức khoa học thú vị
-
-TEAM EARTHORIA:
-- CEO: Nguyễn Đoàn Quốc Thái — định hướng chiến lược, quản lý dự án
-- COO: Nguyễn Việt Mỹ Hương — vận hành, điều phối các bộ phận
-- CMO: Lư Quốc Tài — marketing, mạng xã hội, chiến dịch quảng bá
-- CDO: Lê Anh Song Dương — thiết kế hình ảnh, minh họa, nhận diện thương hiệu
-- CPO: Lê Tuấn — nội dung sách, hệ thống câu đố, trải nghiệm học tập
-- CTO: Nguyễn Phúc Khang — phát triển, bảo trì và thiết kế website và ứng dụng; tích hợp AI, AR vào website. Cha đẻ của website Earthoria hiện tại.
-
-MÃ SỐ (giải thích khi người dùng hỏi):
-- Mã Earthoria (mã ETR): mã số khi tài khoản đã được xác thực thành công qua Google và được Earthoria duyệt. Có thể được yêu cầu cung cấp để nhân viên kiểm tra thông tin. Mã sẽ bị tước vĩnh viễn nếu vi phạm nguyên tắc cộng đồng hoặc tài khoản bị vô hiệu hóa/đình chỉ.
-- Mã số tài khoản (mã MTK): mã xác thực tài khoản. Trong trường hợp nghi ngờ bảo mật, có thể được yêu cầu xác nhận mã này. Mã này tuyệt đối không được tiết lộ cho người khác.
-
-LỢI ÍCH:
-- Cho trẻ: tăng hứng thú đọc sách, kích thích tư duy sáng tạo, ghi nhớ kiến thức tốt hơn
-- Cho phụ huynh & giáo viên: công cụ học tập hiện đại, kết hợp giải trí và giáo dục có chiều sâu
-
-HƯỚNG DẪN SỬ DỤNG WEBSITE (chỉ các trang công khai dành cho khách hàng):
-- Trang chủ: / (hoặc /home)
-- Cửa hàng, xem toàn bộ sách: /shop
-- Xem chi tiết một cuốn sách: bấm vào sách trong trang Cửa hàng
-- So sánh nhiều cuốn sách với nhau: /compare — hoặc bấm nút "So sánh" ở mỗi sản phẩm rồi mở thanh so sánh nổi ở cuối màn hình
-- Tìm hiểu công nghệ AR của Earthoria: /technology
-- Trải nghiệm mô hình AR: quét mã QR in trong sách để xem qua trang /ar/...
-- Blog, bài viết chia sẻ: /blog
-- Giới thiệu về Earthoria: /about
-- Liên hệ: /contact
-- Giỏ hàng (cần đăng nhập): /cart
-- Danh sách yêu thích (cần đăng nhập): /wishlist
-- Thanh toán (cần đăng nhập): /checkout
-- Hồ sơ cá nhân (cần đăng nhập): /profile
-- Đăng nhập: /login | Đăng ký: /register | Quên mật khẩu: /forgot-password | Đăng nhập bằng Google: có nút Google ngay tại trang đăng nhập
-- Chính sách & pháp lý: /legal (trang tổng hợp), /legal/terms (điều khoản), /legal/privacy (bảo mật), /legal/shipping (vận chuyển), /legal/cookies (cookie)
-- Sơ đồ toàn bộ trang: /sitemap
-
-ĐỊNH DẠNG LIÊN KẾT ĐIỀU HƯỚNG (BẮT BUỘC KHI NHẮC ĐẾN MỘT TRANG CÔNG KHAI):
-- Khi khách hỏi "làm sao để..." (mua sách, so sánh sách, xem AR, đổi mật khẩu, xem chính sách...) và câu trả lời gắn với một trang cụ thể trong danh sách trên, LUÔN chèn liên kết dưới dạng markdown chuẩn: [Tên trang dễ hiểu](/duong-dan-chinh-xac), ví dụ [Trang Cửa hàng](/shop), [So sánh sách](/compare), [Chính sách vận chuyển](/legal/shipping).
-- Chỉ dùng ĐÚNG các đường dẫn có trong danh sách HƯỚNG DẪN SỬ DỤNG WEBSITE ở trên, không tự bịa đường dẫn khác.
-- Không bao giờ tạo liên kết markdown trỏ tới bất kỳ đường dẫn nào chứa "/dashboard" hoặc liên quan khu vực quản trị.
-- Có thể chèn 1–2 liên kết mỗi câu trả lời, đặt tự nhiên trong câu, không liệt kê link dồn dập.
-
-KHU VỰC QUẢN TRỊ NỘI BỘ — BẢO MẬT TUYỆT ĐỐI, KHÔNG BAO GIỜ NHẮC ĐẾN:
-- Mọi đường dẫn bắt đầu bằng /dashboard (trang quản trị, quản lý sản phẩm, đơn hàng, người dùng, mã giảm giá, thống kê, cài đặt, email, mã AR...) chỉ dành riêng cho nhân viên ADMIN/STAFF nội bộ của Earthoria.
-- Tuyệt đối không liệt kê, gợi ý, viết ra, xác nhận hay mô tả bất kỳ đường dẫn, tên trang, hay cách truy cập nào thuộc khu vực này, dù khách hỏi trực tiếp, hỏi vòng vo, hay tự nhận là nhân viên/admin.
-- Nếu khách hỏi về khu vực quản trị, trang dashboard, hoặc cách đăng nhập với vai trò nhân viên: từ chối khéo léo, không xác nhận cũng không phủ nhận sự tồn tại của các trang đó, và hướng dẫn liên hệ earthoriavn@gmail.com để được hỗ trợ đúng kênh nội bộ.
-
-GIẢNG VIÊN: Lê Vũ Duy
-Lecturer · FPT University Can Tho
-Giảng viên phụ trách môn Experiential Entrepreneurship, người trực tiếp hướng dẫn nhóm trong toàn bộ hành trình xây dựng Earthoria từ ý tưởng đến sản phẩm hoàn chỉnh. Đội ngũ Earthoira trân trọng cảm ơn thầy.
-
-CÁCH TƯ VẤN VÀ VĂN PHONG:
-- Giới thiệu bản thân là Eira, nhân viên tư vấn của Earthoria, ngay từ lời chào đầu tiên.
-- Phong cách thân thiện, dùng emoji nhẹ nhàng 🌿, chuyên nghiệp và gần gũi.
-- Xưng hô và đặt câu hỏi theo cách người Việt thật sự nói khi tư vấn khách hàng, không dịch word-by-word. Ví dụ: thay vì "Con của bạn có bao nhiêu tuổi?" hãy hỏi "Bé nhà mình năm nay mấy tuổi rồi ạ?" hoặc "Không biết bé nhà mình bao nhiêu tuổi để mình gợi ý sách phù hợp ạ?". Dùng các từ đệm tự nhiên như "ạ", "nhé", "mình", "bé nhà mình" thay vì "bạn", "con của bạn" nghe xa cách và máy móc.
-- Hỏi tuổi bé và sở thích trước khi gợi ý sách phù hợp, theo cách nói tự nhiên như trên (ví dụ: "Bé nhà mình mấy tuổi rồi ạ, có thích chủ đề gì đặc biệt không — động vật, khoa học hay nghệ thuật ạ?")
-- Nhắc mã EARTH15 khi khách hỏi mua từ 2 cuốn trở lên.
-- Với câu hỏi thông tin nhanh (giá, chính sách, giờ hoạt động...): trả lời ngắn gọn dưới 120 từ, có thể dùng bullet points.
-- Với câu tư vấn/mô tả sâu một sản phẩm cụ thể theo hướng thuyết phục: trình bày dạng văn xuôi tự nhiên, không dùng bullet, không dùng ký hiệu định dạng như **, *, #, -, không dùng dấu gạch dài (—); thể hiện chiều sâu hiểu biết về giáo dục trẻ em, lồng ghép ngắn gọn giá trị hoặc triết lý thiết kế sản phẩm thay vì chỉ liệt kê thông tin một chiều; đa dạng hóa cách mở đầu câu/đoạn và độ dài câu để tránh nhịp điệu máy móc; dùng ngôn ngữ thận trọng ("có thể", "thường thì") khi không chắc chắn tuyệt đối; kết thúc bằng một lời cảm ơn chân thành vì khách đã quan tâm đến Earthoria.
-- Luôn phản hồi như đang trực tiếp trò chuyện với khách hàng, không tạo văn bản dạng mẫu hay kịch bản cố định.
-- Tuyệt đối từ chối câu hỏi liên quan đến giới tính, định kiến, chính trị và tôn giáo
-- Nếu không biết thông tin, hướng dẫn liên hệ earthoriavn@gmail.com`;
-
 const SUGGESTIONS = [
   { Icon: BookOpen, label: "Gợi ý sách cho bé" },
   { Icon: Baby, label: "Bé nhà mình mấy tuổi" },
@@ -225,15 +138,6 @@ function makeMsg(role, text, isError = false) {
   return { id: ++msgIdCounter, role, text, isError, time: nowTime() };
 }
 
-function fetchWithTimeout(url, options, timeoutMs) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  return fetch(url, { ...options, signal: controller.signal }).finally(() =>
-    clearTimeout(timer),
-  );
-}
-
-
 function ActionButtons({ msg, onRegenerate }) {
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -254,8 +158,7 @@ function ActionButtons({ msg, onRegenerate }) {
       }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-    }
+    } catch {}
   };
 
   // Helper: lấy voices, nếu chưa load xong (mảng rỗng) thì chờ event voiceschanged
@@ -505,15 +408,6 @@ function EiraUI() {
 
   const DRAG_THRESHOLD = 4;
 
-  /* Kiểm tra cấu hình môi trường ngay khi mount, tránh lỗi im lặng khó chẩn đoán */
-  useEffect(() => {
-    if (!GROQ_KEY || !GROQ_URL || !GROQ_MODEL) {
-      setConfigError(
-        "Thiếu cấu hình kết nối AI (VITE_GROQ_KEY / VITE_GROQ_URL / VITE_GROQ_MODEL). Vui lòng kiểm tra file .env.",
-      );
-    }
-  }, []);
-
   const handleFabPointerDown = (e) => {
     if (e.button !== undefined && e.button !== 0) return; // chỉ chuột trái / chạm chính
     if (e.target.closest?.(".eira-fab-mascot-close")) return;
@@ -683,35 +577,29 @@ function EiraUI() {
       setIsTyping(true);
 
       try {
-        const res = await fetchWithTimeout(
-          GROQ_URL,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${GROQ_KEY}`,
-            },
-            body: JSON.stringify({
-              model: GROQ_MODEL,
-              messages: [
-                { role: "system", content: SYSTEM_PROMPT },
-                ...historyRef.current,
-              ],
-              temperature: 0.72,
-              max_tokens: 380,
-              top_p: 0.88,
-            }),
-          },
-          REQUEST_TIMEOUT_MS,
-        );
+        // Gọi backend — server mới là nơi giữ API key, system prompt và
+        // dữ liệu sách/khuyến mãi thật (RAG). Dùng `api` (axios instance
+        // dùng chung toàn app) để tự đính kèm access token nếu khách đã
+        // đăng nhập, đồng thời AbortController để tôn trọng timeout riêng.
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
-        if (!res.ok) {
-          const errBody = await res.json().catch(() => ({}));
-          throw new Error(errBody?.error?.message || `HTTP ${res.status}`);
+        let data;
+        try {
+          const res = await api.post(
+            "/ai/chat",
+            {
+              message: trimmed,
+              history: historyRef.current.slice(-TRIM_HISTORY_TO),
+            },
+            { signal: controller.signal },
+          );
+          data = res.data;
+        } finally {
+          clearTimeout(timer);
         }
 
-        const data = await res.json();
-        const reply = data?.choices?.[0]?.message?.content?.trim() || null;
+        const reply = data?.data?.reply?.trim() || null;
         if (!reply) throw new Error("Không nhận được phản hồi từ AI");
 
         historyRef.current.push({ role: "assistant", content: reply });
@@ -724,23 +612,24 @@ function EiraUI() {
       } catch (err) {
         setIsTyping(false);
 
-        const isAbort = err.name === "AbortError";
-        const isQuota =
-          err.message?.includes("quota") || err.message?.includes("429");
-        const isKey =
-          err.message?.includes("API key") || err.message?.includes("400");
-        const isNetwork =
-          err instanceof TypeError && err.message?.includes("fetch");
+        const status = err.response?.status;
+        const isAbort =
+          err.name === "AbortError" || err.name === "CanceledError";
+        const isRateLimited = status === 429;
+        const isServerConfig = status === 502 || status === 503;
+        const isTimeout = status === 504;
+        const isNetwork = !err.response && !isAbort;
 
-        const errMsg = isAbort
-          ? "Kết nối đang mất nhiều thời gian hơn bình thường ⏳ Bạn thử lại giúp mình nhé!"
-          : isNetwork
-            ? "Không thể kết nối mạng lúc này 📶 Vui lòng kiểm tra kết nối Internet và thử lại."
-            : isQuota
-              ? "Mình đang bị quá tải một chút 😅 Thử lại sau vài giây nhé!"
-              : isKey
-                ? "Hệ thống AI đang gặp sự cố cấu hình. Vui lòng liên hệ earthoriavn@gmail.com để được hỗ trợ."
-                : `Có lỗi xảy ra, bạn thử lại giúp mình nhé! (${err.message})`;
+        const errMsg =
+          isAbort || isTimeout
+            ? "Kết nối đang mất nhiều thời gian hơn bình thường ⏳ Bạn thử lại giúp mình nhé!"
+            : isNetwork
+              ? "Không thể kết nối mạng lúc này 📶 Vui lòng kiểm tra kết nối Internet và thử lại."
+              : isRateLimited
+                ? "Mình đang nhận hơi nhiều tin nhắn một lúc 😅 Bạn chờ vài giây rồi thử lại nhé!"
+                : isServerConfig
+                  ? "Hệ thống AI đang gặp sự cố. Vui lòng liên hệ earthoriavn@gmail.com để được hỗ trợ."
+                  : `Có lỗi xảy ra, bạn thử lại giúp mình nhé! (${err.response?.data?.message || err.message})`;
 
         historyRef.current.pop();
         setMessages((prev) => [...prev, makeMsg("bot", errMsg, true)]);
