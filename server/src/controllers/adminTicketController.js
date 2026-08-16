@@ -11,7 +11,6 @@ function serverError(res, err, tag) {
 const staffSelect = { id: true, name: true, email: true, role: true, avatar: true }
 
  //  GET /admin/tickets — danh sách đầy đủ, staff/admin đều xem được
-   Query: page, limit, status, subject, search (tên/email/mã ticket)
 exports.getTickets = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1)
