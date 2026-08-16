@@ -470,6 +470,10 @@ export default function ParentDashboard() {
   const oldPinRefs = useRef([]);
   const newPinRefs = useRef([]);
   const confirmPinRefs = useRef([]);
+
+  // Tạo cặp (onChange, onKeyDown) cho 1 bộ 4 ô số PIN — dùng chung 1 kiểu
+  // component với bước OTP (đã test ổn định) thay vì <input type="password">
+  // gốc của trình duyệt (gây lệch dấu chấm/con trỏ khi kết hợp letter-spacing).
   const makePinDigitHandlers = (digits, setDigits, refs) => ({
     onChange: (idx, val) => {
       const digit = val.replace(/[^0-9]/g, "").slice(-1);
@@ -489,6 +493,11 @@ export default function ParentDashboard() {
   const oldPinHandlers = makePinDigitHandlers(oldPinDigits, setOldPinDigits, oldPinRefs);
   const newPinHandlers = makePinDigitHandlers(newPinDigits, setNewPinDigits, newPinRefs);
   const confirmPinHandlers = makePinDigitHandlers(confirmPinDigits, setConfirmPinDigits, confirmPinRefs);
+
+  // Các bước hiển thị phụ thuộc vào 2 trường hợp:
+  // - Chưa từng đặt PIN (!hasPin): chỉ cần "new" → "confirm" (không có PIN cũ để xác thực, không cần OTP)
+  // - Quên PIN (isForgotFlow): "otp" → "new" → "confirm" (xác thực qua email)
+  // - Đổi PIN bình thường: "old" → "new" → "confirm" (PIN cũ chính là yếu tố xác thực)
   const pinFlowSteps = !hasPin ? ["new", "confirm"] : isForgotFlow ? ["otp", "new", "confirm"] : ["old", "new", "confirm"];
 
   useEffect(() => {
@@ -750,6 +759,8 @@ export default function ParentDashboard() {
           isOpen={wizardOpen}
           onClose={() => setWizardOpen(false)}
           onCreated={handleChildCreated}
+          hasPin={hasPin}
+          onPinCreated={() => setHasPin(true)}
         />
       </div>
     );
@@ -1525,23 +1536,8 @@ export default function ParentDashboard() {
 
           {isLockedOut ? (
             <div className="pkd-lockout-msg">
-              <AlertTriangle size={14} />
-              <span>
-                Bạn đã nhập sai quá {MAX_PIN_ATTEMPTS} lần. Vui lòng thử lại sau ít phút hoặc{" "}
-                <button
-                  type="button"
-                  className="pkd-text-link"
-                  onClick={() => {
-                    setUnlockPinOpen(false);
-                    setUnlockError("");
-                    setUnlockPinDigits(["", "", "", ""]);
-                    openForgotPin();
-                  }}
-                >
-                  dùng "Quên mã PIN?"
-                </button>
-                .
-              </span>
+              <AlertTriangle size={14} /> Bạn đã nhập sai quá {MAX_PIN_ATTEMPTS} lần. Vui lòng thử
+              lại sau ít phút hoặc dùng "Quên mã PIN?".
             </div>
           ) : (
             <>
@@ -1769,6 +1765,8 @@ export default function ParentDashboard() {
         isOpen={wizardOpen}
         onClose={() => setWizardOpen(false)}
         onCreated={handleChildCreated}
+        hasPin={hasPin}
+        onPinCreated={() => setHasPin(true)}
       />
     </div>
   );

@@ -25,7 +25,7 @@ router.post("/", createChild);
 router.get("/:childId/dashboard", getChildDashboard);
 router.patch("/:childId/settings", updateChildSettings);
 router.delete("/:childId", archiveChild); // xoá mềm (ẩn hồ sơ)
-router.delete("/:childId/permanent", deleteChildPermanently); // xoá vĩnh viễn, cần gõ đúng tên
+router.delete("/:childId/permanent", parentPinLimiter, deleteChildPermanently); // xoá vĩnh viễn, cần PIN + gõ đúng tên
 
 router.get("/:childId/kid-link", getKidLink);
 router.post("/:childId/kid-link/regenerate", parentPinLimiter, regenerateKidLink);

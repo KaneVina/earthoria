@@ -160,8 +160,6 @@ const getMe = async (req, res) => {
     }
 
     const { password, ...safeUser } = user;
-    // hasPassword: tài khoản đăng nhập Google chưa từng tạo mật khẩu sẽ là false
-    // → client dùng cờ này để hiển thị "Tạo mật khẩu" (kèm OTP) thay vì "Đổi mật khẩu"
     return formatResponse(res, 200, "OK", { ...safeUser, hasPassword: !!password });
   } catch (error) {
     return formatResponse(res, 500, "Lỗi server");
@@ -246,8 +244,6 @@ const googleAuth = passport.authenticate("google", {
 const googleCallback = async (req, res) => {
   try {
     const user = req.user;
-    // Đăng nhập Google mặc định coi như "remember" = true (không có checkbox
-    // để user chọn), giữ phiên dài như hành vi quen thuộc của OAuth login.
     const { rawToken, expiresAt } = await tokenService.createRefreshToken(
       user.id,
       true,

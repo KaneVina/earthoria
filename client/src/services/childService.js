@@ -12,11 +12,9 @@ export const childService = {
   setBookVisibility: (childId, bookId, visible) =>
     api.patch(`/children/${childId}/books/${bookId}`, { visible }),
 
-  // Link/QR riêng cho bé (chế độ Kiosk)
   getKidLink: (childId) => api.get(`/children/${childId}/kid-link`),
   regenerateKidLink: (childId) => api.post(`/children/${childId}/kid-link/regenerate`),
 
-  // Xoá vĩnh viễn
-  deletePermanently: (childId, confirmName) =>
-    api.delete(`/children/${childId}/permanent`, { data: { confirmName } }),
+  deletePermanently: (childId, pin, confirmName) =>
+    api.delete(`/children/${childId}/permanent`, { data: { pin, confirmName } }),
 }

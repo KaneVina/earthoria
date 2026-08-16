@@ -10,10 +10,8 @@ function serverError(res, err, tag) {
 
 const staffSelect = { id: true, name: true, email: true, role: true, avatar: true }
 
-/* ══════════════════════════════════════════════
-   GET /admin/tickets — danh sách đầy đủ, staff/admin đều xem được
+ //  GET /admin/tickets — danh sách đầy đủ, staff/admin đều xem được
    Query: page, limit, status, subject, search (tên/email/mã ticket)
-══════════════════════════════════════════════ */
 exports.getTickets = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1)
@@ -74,9 +72,7 @@ exports.getTickets = async (req, res) => {
   }
 }
 
-/* ══════════════════════════════════════════════
-   GET /admin/tickets/:id — chi tiết ticket + toàn bộ lịch sử phản hồi
-══════════════════════════════════════════════ */
+  //  GET /admin/tickets/:id — chi tiết ticket + toàn bộ lịch sử phản hồi
 exports.getTicketById = async (req, res) => {
   try {
     const ticket = await prisma.ticket.findUnique({
@@ -101,9 +97,7 @@ exports.getTicketById = async (req, res) => {
   }
 }
 
-/* ══════════════════════════════════════════════
-   PATCH /admin/tickets/:id/status — cập nhật trạng thái xử lý
-══════════════════════════════════════════════ */
+  //  PATCH /admin/tickets/:id/status — cập nhật trạng thái xử lý
 exports.updateTicketStatus = async (req, res) => {
   try {
     const { status } = req.body
@@ -126,10 +120,7 @@ exports.updateTicketStatus = async (req, res) => {
   }
 }
 
-/* ══════════════════════════════════════════════
-   PATCH /admin/tickets/:id/assign — phân công staff/admin phụ trách
-   Body: { assignedToId: string | null }  — null = bỏ phân công
-══════════════════════════════════════════════ */
+  //  PATCH /admin/tickets/:id/assign — phân công staff/admin phụ trách
 exports.assignTicket = async (req, res) => {
   try {
     const { assignedToId } = req.body
@@ -166,11 +157,7 @@ exports.assignTicket = async (req, res) => {
   }
 }
 
-/* ══════════════════════════════════════════════
-   POST /admin/tickets/:id/reply — staff/admin phản hồi
-   → lưu vào lịch sử + tự động gửi email thông báo cho khách
-   Body: { message: string, nextStatus?: TicketStatus }
-══════════════════════════════════════════════ */
+  //  POST /admin/tickets/:id/reply — staff/admin phản hồi
 exports.replyToTicket = async (req, res) => {
   try {
     const { message, nextStatus } = req.body
@@ -185,9 +172,6 @@ exports.replyToTicket = async (req, res) => {
     if (!ticket) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy yêu cầu liên hệ' })
     }
-
-    // Trạng thái mặc định sau khi phản hồi: nếu còn NEW thì chuyển IN_PROGRESS,
-    // admin/staff có thể chỉ định thẳng RESOLVED/CLOSED qua nextStatus.
     const resolvedStatus = nextStatus || (ticket.status === 'NEW' ? 'IN_PROGRESS' : ticket.status)
 
     const [reply, updatedTicket] = await prisma.$transaction([
@@ -210,9 +194,6 @@ exports.replyToTicket = async (req, res) => {
       }),
     ])
 
-    // ─ Gửi email tự động cho khách hàng — chờ gửi xong rồi mới trả response để
-    //   trạng thái emailSent phản ánh đúng thực tế (không còn kẹt mãi ở "đang gửi"),
-    //   nhưng nếu gửi mail lỗi thì vẫn không xoá/chặn phản hồi đã lưu.
     let emailSent = false
     try {
       await sendTicketReplyEmail({

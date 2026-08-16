@@ -529,6 +529,8 @@ const regenerateKidLink = async (req, res) => {
 };
 
 // DELETE /api/v1/children/:childId/permanent — XOÁ VĨNH VIỄN
+// Yêu cầu cả PIN phụ huynh lẫn gõ đúng tên bé, vì đây là hành động nguy
+// hiểm hơn unlock nên phải được bảo vệ tối thiểu bằng PIN.
 const deleteChildPermanently = async (req, res) => {
   try {
     const child = await prisma.childProfile.findFirst({
@@ -536,6 +538,14 @@ const deleteChildPermanently = async (req, res) => {
       select: { id: true, name: true },
     });
     if (!child) return formatResponse(res, 404, "Không tìm thấy hồ sơ trẻ");
+
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    const verify = await verifyParentPin(user, req.body.pin);
+    if (!verify.ok) {
+      return formatResponse(res, verify.code === "LOCKED_OUT" ? 429 : 400, verify.message, {
+        code: verify.code,
+      });
+    }
 
     const { confirmName } = req.body;
     if (typeof confirmName !== "string" || confirmName.trim() !== child.name) {

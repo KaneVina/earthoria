@@ -17,8 +17,9 @@ import {
 
 import { useAuthStore } from "../../store/authStore";
 import { childService } from "../../services/childService";
+import { parentPinService } from "../../services/parentPinService";
 
-const STEPS = ["intro", "email", "info", "terms"];
+const BASE_STEPS = ["intro", "email", "info", "terms"];
 
 const AVATAR_CHOICES = [
   { emoji: "🦊", color: "#c9793f" },
@@ -91,8 +92,12 @@ function IntroIllustration() {
   );
 }
 
-export default function CreateChildWizard({ isOpen, onClose, onCreated }) {
+export default function CreateChildWizard({ isOpen, onClose, onCreated, hasPin, onPinCreated }) {
   const user = useAuthStore((s) => s.user);
+  // Chưa có PIN thì chèn bước "pin" ngay sau intro — bắt buộc thiết lập
+  // trước khi tạo hồ sơ trẻ, vì PIN là thứ duy nhất bảo vệ các hành động
+  // nhạy cảm (mở khoá AR, xoá hồ sơ...) sau này.
+  const STEPS = hasPin ? BASE_STEPS : ["intro", "pin", "email", "info", "terms"];
   const [stepIdx, setStepIdx] = useState(0);
   const [name, setName] = useState("");
   const [dob, setDob] = useState("");
@@ -101,6 +106,10 @@ export default function CreateChildWizard({ isOpen, onClose, onCreated }) {
   const [agreePolicy, setAgreePolicy] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  const [newPin, setNewPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
+  const [pinSubmitting, setPinSubmitting] = useState(false);
 
   const age = useMemo(() => calcAge(dob), [dob]);
   const maxDob = useMemo(() => new Date().toISOString().slice(0, 10), []);
@@ -119,6 +128,8 @@ export default function CreateChildWizard({ isOpen, onClose, onCreated }) {
       setAgreeGuardian(false);
       setAgreePolicy(false);
       setError("");
+      setNewPin("");
+      setConfirmPin("");
     }
   }, [isOpen]);
 
@@ -148,6 +159,22 @@ export default function CreateChildWizard({ isOpen, onClose, onCreated }) {
   const goBack = () => {
     setError("");
     setStepIdx((i) => Math.max(i - 1, 0));
+  };
+
+  const submitPinStep = async () => {
+    if (!/^[0-9]{4}$/.test(newPin)) return setError("Mã PIN gồm đúng 4 chữ số.");
+    if (newPin !== confirmPin) return setError("Hai mã PIN không khớp, thử lại nhé.");
+    setPinSubmitting(true);
+    setError("");
+    try {
+      await parentPinService.set(newPin);
+      onPinCreated?.();
+      setStepIdx((i) => i + 1);
+    } catch (err) {
+      setError(err.response?.data?.message || "Không thể lưu mã PIN, thử lại nhé.");
+    } finally {
+      setPinSubmitting(false);
+    }
   };
 
   const handleCreate = async () => {
@@ -211,6 +238,51 @@ export default function CreateChildWizard({ isOpen, onClose, onCreated }) {
             <div className="pf-confirm-actions" style={{ justifyContent: "center" }}>
               <button className="pf-confirm-ok pf-btn-tactile" onClick={goNext}>
                 Bắt đầu <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {step === "pin" && (
+          <div className="auth-otp-step">
+            <div className="pf-confirm-icon">
+              <Lock size={18} />
+            </div>
+            <h3 className="pf-confirm-title">Thiết lập mã PIN phụ huynh</h3>
+            <p className="pf-confirm-msg">
+              Mã PIN gồm 4 số dùng để mở khoá AR và xác nhận các thao tác nhạy cảm (ví dụ xoá hồ
+              sơ của bé). <b>Đây là lớp bảo vệ quan trọng nhất</b> cho tài khoản trẻ em — hãy chọn
+              mã bạn nhớ được nhưng người khác khó đoán, và đừng chia sẻ với bé.
+            </p>
+            <div className="pkd-wizard-field">
+              <label>Mã PIN mới</label>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={4}
+                className="pf-pw-input pkd-wizard-input"
+                value={newPin}
+                onChange={(e) => setNewPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+              />
+            </div>
+            <div className="pkd-wizard-field">
+              <label>Nhập lại mã PIN</label>
+              <input
+                type="password"
+                inputMode="numeric"
+                maxLength={4}
+                className="pf-pw-input pkd-wizard-input"
+                value={confirmPin}
+                onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+              />
+            </div>
+            {error && <p className="pf-field-error">{error}</p>}
+            <div className="pf-confirm-actions">
+              <button className="pf-confirm-cancel pf-btn-tactile" onClick={onClose} disabled={pinSubmitting}>
+                Hủy
+              </button>
+              <button className="pf-confirm-ok pf-btn-tactile" onClick={submitPinStep} disabled={pinSubmitting}>
+                {pinSubmitting ? <Loader2 size={14} className="pkd-spin" /> : "Lưu mã PIN"} <ChevronRight size={14} />
               </button>
             </div>
           </div>

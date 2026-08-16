@@ -3,16 +3,11 @@ const { formatResponse } = require('../utils/helpers')
 const { encodeId, decodeId } = require('../utils/hashids')
 const { userOwnsDigitalBook } = require('../utils/bookOwnership')
 
-// Chuẩn hoá quan hệ authors (BookAuthor[] -> Author[] phẳng) để khớp cách
-// frontend đang đọc book.authors (mảng { id, name }). Chỉ map nếu field authors
-// thực sự có trong query (tránh set undefined -> [] sai lệch ở nơi chưa include).
 const mapAuthors = (book) =>
   book?.authors
     ? { ...book, authors: book.authors.map((ba) => ba.author).filter(Boolean) }
     : book
 
-// Chuỗi hiển thị độ tuổi dựng sẵn ở backend để tránh logic format rải rác
-// nhiều nơi trong frontend.
 const getAgeRangeLabel = (book) => {
   if (book.ageMin != null && book.ageMax != null) return `${book.ageMin}–${book.ageMax} tuổi`
   if (book.ageMin != null) return `Từ ${book.ageMin} tuổi`
@@ -194,8 +189,6 @@ const getBooks = async (req, res) => {
   }
 }
 
-// Đếm số sách thật cho từng lựa chọn filter ở sidebar (Danh Mục / Tính Năng / Đánh Giá),
-// tôn trọng các filter khác đang được áp dụng — không hardcode số nữa.
 const getFilterCounts = async (req, res) => {
   try {
     const [categories, whereNoCategory, whereNoFeatures, whereNoRating] = await Promise.all([
