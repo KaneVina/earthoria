@@ -124,7 +124,6 @@ const DIGITAL_STEP_LABELS = {
   COMPLETED: "Hoàn tất",
 };
 
-
 // ════════════════════ ICONS ════════════════════
 const Icon = {
   user: (
@@ -1701,9 +1700,7 @@ function MiniOrderCard({ order, delay, onClick }) {
       <span className="pf-sheen-glow" aria-hidden="true" />
       <div className="pf-mini-order-accent" />
       <div style={{ paddingLeft: "4px" }}>
-        <div className="pf-mini-order-code">
-          Đơn #{getOrderCode(order)}
-        </div>
+        <div className="pf-mini-order-code">Đơn #{getOrderCode(order)}</div>
         <div className="pf-mini-order-meta">
           {order.items?.length || 0} sản phẩm · {formatDate(order.createdAt)}
         </div>
@@ -1897,9 +1894,7 @@ function OrderCard({ order, delay, onClick }) {
             rowGap: "8px",
           }}
         >
-          <span className="pf-order-code">
-            Đơn #{getOrderCode(order)}
-          </span>
+          <span className="pf-order-code">Đơn #{getOrderCode(order)}</span>
           <CopyButton text={getOrderCode(order)} />
           <div className="pf-vdivider" />
           <span className="pf-order-date">{formatDate(order.createdAt)}</span>
@@ -2120,9 +2115,7 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
               flexWrap: "wrap",
             }}
           >
-            <h2 className="pf-detail-title">
-              #{getOrderCode(order)}
-            </h2>
+            <h2 className="pf-detail-title">#{getOrderCode(order)}</h2>
             <CopyButton text={getOrderCode(order)} />
           </div>
           <div className="pf-detail-date">
@@ -2230,11 +2223,10 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
 
           {order.isDigital ? (
             <div className="pf-shipping-card">
-              <div className="pf-shipping-head">
-                {Icon.truck} Sách điện tử
-              </div>
+              <div className="pf-shipping-head">{Icon.truck} Sách điện tử</div>
               <div className="pf-shipping-detail">
-                Đơn hàng chỉ gồm sách điện tử — không cần giao hàng. Sau khi thanh toán, bạn có thể đọc ngay trong mục Sách điện tử của tôi.
+                Đơn hàng chỉ gồm sách điện tử — không cần giao hàng. Sau khi
+                thanh toán, bạn có thể đọc ngay trong mục Sách điện tử của tôi.
               </div>
             </div>
           ) : (
@@ -3744,8 +3736,10 @@ function ArTab({ arCodes, loading }) {
 
       <div className="pf-ar-book-grid">
         {Object.values(grouped).map((group) => {
-          consParentdashboardt total = group.items.length;
-          const activatedCount = group.items.filter((it) => (it.scanCount || 0) > 0).length;
+          const total = group.items.length;
+          const activatedCount = group.items.filter(
+            (it) => (it.scanCount || 0) > 0,
+          ).length;
           const allActivated = total > 0 && activatedCount === total;
           const noneActivated = activatedCount === 0;
 
@@ -3753,9 +3747,14 @@ function ArTab({ arCodes, loading }) {
             <div key={group.book?.id} className="pf-ar-book-card">
               <div className="pf-ar-book-cover">
                 {group.book?.coverImage ? (
-                  <img src={group.book.coverImage} alt={group.book?.title || ""} />
+                  <img
+                    src={group.book.coverImage}
+                    alt={group.book?.title || ""}
+                  />
                 ) : (
-                  <span className="pf-ar-book-cover-fallback">{Icon.compass}</span>
+                  <span className="pf-ar-book-cover-fallback">
+                    {Icon.compass}
+                  </span>
                 )}
               </div>
               <div className="pf-ar-book-info">
@@ -3778,7 +3777,11 @@ function ArTab({ arCodes, loading }) {
                         key={item.id}
                         to={`/ar/${group.book?.slug}/${item.code}`}
                         className={`pf-ar-code-chip ${isActivated ? "is-activated" : ""}`}
-                        title={isActivated ? `Đã xem ${item.scanCount} lần · Bấm để xem lại` : "Bấm để kích hoạt & xem mô hình 3D"}
+                        title={
+                          isActivated
+                            ? `Đã xem ${item.scanCount} lần · Bấm để xem lại`
+                            : "Bấm để kích hoạt & xem mô hình 3D"
+                        }
                       >
                         <span className="pf-ar-code-dot" />
                         {item.label}
