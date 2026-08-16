@@ -3742,60 +3742,55 @@ function ArTab({ arCodes, loading }) {
       />
       <ParentDashboardBanner />
 
-      {Object.values(grouped).map((group) => (
-        <div key={group.book?.id} style={{ marginBottom: 36 }}>
-          <div
-            className="pf-addr-name"
-            style={{ marginBottom: 14, fontSize: 15 }}
-          >
-            {group.book?.title}
-          </div>
-          <div className="pf-addr-grid">
-            {group.items.map((item) => {
-              const isActivated = (item.scanCount || 0) > 0;
-              return (
-                <Link
-                  key={item.id}
-                  to={`/ar/${group.book?.slug}/${item.code}`}
-                  className="pf-addr-card pf-ar-card"
-                  style={{
-                    textDecoration: "none",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 14,
-                  }}
+      <div className="pf-ar-book-grid">
+        {Object.values(grouped).map((group) => {
+          const total = group.items.length;
+          const activatedCount = group.items.filter((it) => (it.scanCount || 0) > 0).length;
+          const allActivated = total > 0 && activatedCount === total;
+          const noneActivated = activatedCount === 0;
+
+          return (
+            <div key={group.book?.id} className="pf-ar-book-card">
+              <div className="pf-ar-book-cover">
+                {group.book?.coverImage ? (
+                  <img src={group.book.coverImage} alt={group.book?.title || ""} />
+                ) : (
+                  <span className="pf-ar-book-cover-fallback">{Icon.compass}</span>
+                )}
+              </div>
+              <div className="pf-ar-book-info">
+                <div className="pf-ar-book-title">{group.book?.title}</div>
+                <span
+                  className={`pf-ar-status ${allActivated ? "is-activated" : noneActivated ? "is-pending" : "is-partial"}`}
                 >
-                  <div className="pf-ar-badge">{Icon.compass}</div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div
-                      className="pf-addr-name"
-                      style={{
-                        marginBottom: 3,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
-                      {item.label}
-                      <span
-                        className={`pf-ar-status ${isActivated ? "is-activated" : "is-pending"}`}
+                  {allActivated
+                    ? "Đã kích hoạt"
+                    : noneActivated
+                      ? "Chưa kích hoạt"
+                      : `Đã kích hoạt ${activatedCount}/${total}`}
+                </span>
+
+                <div className="pf-ar-code-list">
+                  {group.items.map((item) => {
+                    const isActivated = (item.scanCount || 0) > 0;
+                    return (
+                      <Link
+                        key={item.id}
+                        to={`/ar/${group.book?.slug}/${item.code}`}
+                        className={`pf-ar-code-chip ${isActivated ? "is-activated" : ""}`}
+                        title={isActivated ? `Đã xem ${item.scanCount} lần · Bấm để xem lại` : "Bấm để kích hoạt & xem mô hình 3D"}
                       >
-                        {isActivated ? "Đã kích hoạt" : "Chưa kích hoạt"}
-                      </span>
-                    </div>
-                    <div className="pf-addr-phone">
-                      {isActivated
-                        ? `Đã xem ${item.scanCount} lần · Bấm để xem lại`
-                        : "Bấm để kích hoạt & xem mô hình 3D"}
-                    </div>
-                  </div>
-                  <span className="pf-ar-card-arrow">{Icon.arrowRight}</span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      ))}
+                        <span className="pf-ar-code-dot" />
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

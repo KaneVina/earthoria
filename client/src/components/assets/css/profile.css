@@ -2680,6 +2680,61 @@
   color: var(--gold);
   background: rgba(212, 168, 67, 0.12);
 }
+.pf-ar-status.is-partial {
+  color: var(--gold);
+  background: rgba(212, 168, 67, 0.14);
+}
+
+/* Danh sách SÁCH AR — mỗi cuốn sách 1 thẻ (ảnh bìa + tên), các mã AR bên
+   trong chỉ là chip phụ để chọn mô hình cụ thể */
+.pf-ar-book-grid { display: flex; flex-direction: column; gap: 18px; }
+.pf-ar-book-card {
+  display: flex;
+  gap: 18px;
+  background: var(--white);
+  border: 0.5px solid var(--border);
+  border-radius: var(--pf-radius-md);
+  padding: 18px;
+}
+.pf-ar-book-cover {
+  width: 74px;
+  height: 96px;
+  flex-shrink: 0;
+  border-radius: var(--pf-radius-sm);
+  overflow: hidden;
+  background: var(--cream);
+  border: 0.5px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pf-ar-book-cover img { width: 100%; height: 100%; object-fit: cover; }
+.pf-ar-book-cover-fallback { color: var(--gold); opacity: 0.5; }
+.pf-ar-book-info { flex: 1; min-width: 0; }
+.pf-ar-book-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--forest);
+  margin-bottom: 8px;
+}
+.pf-ar-code-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.pf-ar-code-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 0.5px solid var(--border);
+  background: var(--cream);
+  color: var(--forest);
+  font-size: 11.5px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+.pf-ar-code-chip:hover { border-color: var(--border-gold); background: var(--gold-pale); }
+.pf-ar-code-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); opacity: 0.4; flex-shrink: 0; }
+.pf-ar-code-chip.is-activated .pf-ar-code-dot { background: var(--forest); opacity: 1; }
 
 /* ═══════════ EMPTY STATE ═══════════ */
 .pf-empty-state {
