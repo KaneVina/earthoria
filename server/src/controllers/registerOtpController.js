@@ -2,8 +2,10 @@ const crypto = require('crypto')
 const bcrypt = require('bcryptjs')
 const prisma = require('../config/db')
 const { sendOtpEmail } = require('../services/emailService')
-const { generateToken, formatResponse } = require('../utils/helpers')
+const { generateAccessToken, formatResponse } = require('../utils/helpers')
 const { validatePasswordPolicy } = require('../utils/passwordPolicy')
+const tokenService = require('../services/tokenService')
+const { setRefreshCookie } = require('../utils/cookies')
 
 const OTP_LENGTH = 6
 const OTP_EXPIRY_MINUTES = 10
@@ -86,7 +88,7 @@ async function sendRegisterOtp(req, res) {
 
 // ════════════════════════════════════════════
 // POST /api/v1/auth/verify-register-otp
-// Xác thực OTP → tạo User thật → xóa PendingUser → trả token
+// Xác thực OTP → tạo User thật → xóa PendingUser → trả accessToken + refresh cookie
 // ════════════════════════════════════════════
 async function verifyRegisterOtp(req, res) {
   try {
@@ -155,8 +157,15 @@ async function verifyRegisterOtp(req, res) {
       return created
     })
 
-    const token = generateToken(user.id)
-    return formatResponse(res, 201, 'Đăng ký thành công.', { user, token })
+    const accessToken = generateAccessToken(user.id)
+    const { rawToken, expiresAt } = await tokenService.createRefreshToken(
+      user.id,
+      false,
+      { userAgent: req.headers['user-agent'], ip: req.ip }
+    )
+    setRefreshCookie(res, rawToken, expiresAt)
+
+    return formatResponse(res, 201, 'Đăng ký thành công.', { user, accessToken })
   } catch (err) {
     console.error('[verifyRegisterOtp] Error:', err)
     return formatResponse(res, 500, 'Đã xảy ra lỗi. Vui lòng thử lại sau.')

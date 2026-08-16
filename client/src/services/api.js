@@ -22,10 +22,10 @@ function notifySessionExpired(message) {
   setTimeout(() => { sessionExpiredNotified = false }, 3000)
 }
 
-export function refreshSession() {
+export function refreshSession({ silent = false } = {}) {
   if (!refreshPromise) {
     refreshPromise = api
-      .post('/auth/refresh')
+      .post('/auth/refresh', {}, { __silentAuth: silent })
       .then((res) => {
         const { accessToken, user } = res.data.data
         useAuthStore.getState().setAuth(user, accessToken)
@@ -57,6 +57,7 @@ api.interceptors.response.use(
     const isAuthEndpoint =
       originalRequest?.url?.includes('/auth/login') ||
       originalRequest?.url?.includes('/auth/refresh')
+    const isSilentAuth = originalRequest?.__silentAuth === true
 
     if (status === 401 && !isArRequest && !isPublicGameRequest && !isAuthEndpoint && !originalRequest._retry) {
       originalRequest._retry = true
@@ -73,7 +74,9 @@ api.interceptors.response.use(
 
     if (status === 401 && isAuthEndpoint) {
       useAuthStore.getState().logout()
-      notifySessionExpired(error.response?.data?.message)
+      if (!isSilentAuth) {
+        notifySessionExpired(error.response?.data?.message)
+      }
     }
 
     return Promise.reject(error)

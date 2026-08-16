@@ -4,28 +4,7 @@ const { generateAccessToken, formatResponse } = require("../utils/helpers");
 const tokenService = require("../services/tokenService");
 const passport = require("passport");
 const { validatePasswordPolicy } = require("../utils/passwordPolicy");
-
-const REFRESH_COOKIE_NAME = "refreshToken";
-const REFRESH_COOKIE_PATH = "/";
-
-function setRefreshCookie(res, rawToken, expiresAt) {
-  res.cookie(REFRESH_COOKIE_NAME, rawToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    expires: expiresAt,
-    path: REFRESH_COOKIE_PATH,
-  });
-}
-
-function clearRefreshCookie(res) {
-  res.clearCookie(REFRESH_COOKIE_NAME, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    path: REFRESH_COOKIE_PATH,
-  });
-}
+const { setRefreshCookie, clearRefreshCookie } = require("../utils/cookies");
 
 function getRequestMeta(req) {
   return { userAgent: req.headers["user-agent"], ip: req.ip };
@@ -160,6 +139,8 @@ const getMe = async (req, res) => {
     }
 
     const { password, ...safeUser } = user;
+    // hasPassword: tài khoản đăng nhập Google chưa từng tạo mật khẩu sẽ là false
+    // → client dùng cờ này để hiển thị "Tạo mật khẩu" (kèm OTP) thay vì "Đổi mật khẩu"
     return formatResponse(res, 200, "OK", { ...safeUser, hasPassword: !!password });
   } catch (error) {
     return formatResponse(res, 500, "Lỗi server");
@@ -230,6 +211,19 @@ const changePassword = async (req, res) => {
       data: { password: hashed },
     });
 
+    // Đổi mật khẩu thành công → thu hồi toàn bộ refresh token cũ (mọi thiết bị/phiên khác)
+    // để một session bị lộ trước đó không thể tiếp tục refresh access token mới.
+    await tokenService.revokeAllForUser(req.user.id);
+
+    // Cấp lại refresh token mới cho chính phiên vừa đổi mật khẩu này, để user không bị
+    // văng ra ngoài ngay sau khi đổi mật khẩu thành công.
+    const { rawToken, expiresAt } = await tokenService.createRefreshToken(
+      req.user.id,
+      false,
+      getRequestMeta(req),
+    );
+    setRefreshCookie(res, rawToken, expiresAt);
+
     return formatResponse(res, 200, "Đổi mật khẩu thành công");
   } catch (error) {
     return formatResponse(res, 500, "Lỗi server");
@@ -244,6 +238,8 @@ const googleAuth = passport.authenticate("google", {
 const googleCallback = async (req, res) => {
   try {
     const user = req.user;
+    // Đăng nhập Google mặc định coi như "remember" = true (không có checkbox
+    // để user chọn), giữ phiên dài như hành vi quen thuộc của OAuth login.
     const { rawToken, expiresAt } = await tokenService.createRefreshToken(
       user.id,
       true,
@@ -259,14 +255,14 @@ const googleCallback = async (req, res) => {
 
 const refresh = async (req, res) => {
   try {
-    const rawToken = req.cookies?.[REFRESH_COOKIE_NAME];
+    const rawToken = req.cookies?.refreshToken;
     if (!rawToken) {
       return formatResponse(res, 401, "Không có refresh token");
     }
 
-    let record;
+    let rotated;
     try {
-      record = await tokenService.verifyAndConsume(rawToken);
+      rotated = await tokenService.verifyAndRotate(rawToken, getRequestMeta(req));
     } catch (err) {
       clearRefreshCookie(res);
       return formatResponse(
@@ -276,15 +272,13 @@ const refresh = async (req, res) => {
       );
     }
 
-    const user = await prisma.user.findUnique({ where: { id: record.userId } });
+    const user = await prisma.user.findUnique({ where: { id: rotated.userId } });
     if (!user || !user.isActive) {
       clearRefreshCookie(res);
       return formatResponse(res, 401, "Tài khoản không hợp lệ");
     }
 
-    const { rawToken: newRawToken, expiresAt } =
-      await tokenService.rotateRefreshToken(record, getRequestMeta(req));
-    setRefreshCookie(res, newRawToken, expiresAt);
+    setRefreshCookie(res, rotated.rawToken, rotated.expiresAt);
 
     const accessToken = generateAccessToken(user.id);
     return formatResponse(res, 200, "OK", {
@@ -306,7 +300,7 @@ const refresh = async (req, res) => {
 
 const logout = async (req, res) => {
   try {
-    const rawToken = req.cookies?.[REFRESH_COOKIE_NAME];
+    const rawToken = req.cookies?.refreshToken;
     if (rawToken) {
       await tokenService.revokeByRawToken(rawToken);
     }

@@ -11,20 +11,27 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        const email  = profile.emails?.[0]?.value
-        const avatar = profile.photos?.[0]?.value
+        const email        = profile.emails?.[0]?.value
+        const emailVerified = profile.emails?.[0]?.verified
+        const avatar        = profile.photos?.[0]?.value
 
         if (!email) {
           return done(new Error('Không lấy được email từ Google'), null)
         }
-
-        // Tìm user theo googleId trước
         let user = await prisma.user.findUnique({
           where: { googleId: profile.id }
         })
 
         if (user) {
           return done(null, user)
+        }
+
+        // Từ đây trở đi là tạo user mới hoặc tự động link vào tài khoản có sẵn theo email —
+        // cả 2 trường hợp đều tin tưởng "email" do Google trả về là chủ sở hữu hợp lệ, nên
+        // bắt buộc Google phải xác nhận email đó đã verified. Nếu không, từ chối đăng nhập
+        // để tránh 1 email chưa xác minh tự động chiếm quyền truy cập 1 tài khoản đã tồn tại.
+        if (emailVerified === false) {
+          return done(new Error('Email Google chưa được xác thực.'), null)
         }
 
         // Kiểm tra email đã tồn tại chưa (đăng ký thường trước đó)

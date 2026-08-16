@@ -113,8 +113,11 @@ export default function App() {
       if (!cancelled) setShowLoader(true);
     }, 300);
 
+    // silent: true — đây là lần refresh khi app khởi động, không phải do 1 API bảo vệ
+    // trả 401. Khách chưa từng đăng nhập cũng đi qua đây và sẽ nhận 401 (không có cookie),
+    // đó là chuyện bình thường nên không hiện toast "phiên đăng nhập đã hết hạn".
     authService
-      .refresh()
+      .refresh({ silent: true })
       .catch(() => {
       })
       .finally(() => {

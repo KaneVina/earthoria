@@ -152,13 +152,13 @@ export default function Register() {
   const submitOtp = async (otpStr) => {
     try {
       setOtpLoading(true);
-      // Xác thực OTP → backend tạo user thật → trả { user, token }
+      // Xác thực OTP → backend tạo user thật → trả { user, accessToken }
       const res = await authService.verifyRegisterOtp({
         email: pendingData.email,
         otp: otpStr,
       });
-      const { user, token } = res.data.data;
-      setAuth(user, token);
+      const { user, accessToken } = res.data.data;
+      setAuth(user, accessToken);
       toast.success(`Chào mừng đến với Earthoria, ${user.name}! 🌿`);
       navigate("/");
     } catch (err) {

@@ -4,6 +4,7 @@ const prisma = require('../config/db')
 const { sendOtpEmail, sendPasswordChangedEmail } = require('../services/emailService')
 const { formatResponse } = require('../utils/helpers')
 const { validatePasswordPolicy } = require('../utils/passwordPolicy')
+const tokenService = require('../services/tokenService')
 
 const OTP_LENGTH = 6
 const OTP_EXPIRY_MINUTES = 10
@@ -57,9 +58,8 @@ async function forgotPassword(req, res) {
   }
 }
 
-// ════════════════════════════════════════════
+
 // POST /api/v1/auth/verify-otp
-// ════════════════════════════════════════════
 async function verifyOtp(req, res) {
   try {
     const { email, otp } = req.body
@@ -118,9 +118,7 @@ async function verifyOtp(req, res) {
   }
 }
 
-// ════════════════════════════════════════════
 // POST /api/v1/auth/reset-password
-// ════════════════════════════════════════════
 async function resetPassword(req, res) {
   try {
     const { email, otp, newPassword } = req.body
@@ -172,8 +170,8 @@ async function resetPassword(req, res) {
 
     const hashedPassword = await bcrypt.hash(newPassword, 12)
 
-    await prisma.user.update({
-      where: { id: user.id },
+    const updateResult = await prisma.user.updateMany({
+      where: { id: user.id, resetOtpHash: user.resetOtpHash },
       data: {
         password: hashedPassword,
         resetOtpHash: null,
@@ -181,6 +179,12 @@ async function resetPassword(req, res) {
         resetOtpAttempts: 0,
       },
     })
+
+    if (updateResult.count === 0) {
+      return formatResponse(res, 400, 'Mã xác thực đã được sử dụng hoặc không còn hiệu lực. Vui lòng thử lại từ đầu.')
+    }
+
+    await tokenService.revokeAllForUser(user.id)
 
     sendPasswordChangedEmail({ to: user.email, name: user.name }).catch(err =>
       console.error('[resetPassword] Failed to send confirmation email:', err.message)

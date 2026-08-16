@@ -1,9 +1,8 @@
 import api, { refreshSession } from './api'
 
 export const authService = {
-  register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
-  refresh: refreshSession,
+  refresh: (opts) => refreshSession(opts),
   logout: () => api.post('/auth/logout'),
   getMe: () => api.get('/auth/me'),
   updateProfile: (data) => api.put('/auth/update-profile', data),

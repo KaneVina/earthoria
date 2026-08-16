@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const passport = require("../config/passport");
 const {
-  register,
   login,
   getMe,
   updateProfile,
@@ -36,7 +35,6 @@ const {
 } = require("../middlewares/rateLimiters");
 const { protect } = require("../middlewares/authMiddleware");
 
-router.post("/register", registerLimiter, register);
 router.post("/send-register-otp", registerLimiter, sendRegisterOtp);
 router.post("/verify-register-otp", verifyOtpLimiter, verifyRegisterOtp);
 router.post("/login", loginLimiter, login);
@@ -56,12 +54,7 @@ router.post(
   createPasswordOtpLimiter,
   sendCreatePasswordOtp,
 );
-router.post(
-  "/create-password",
-  protect,
-  createPasswordLimiter,
-  createPassword,
-);
+router.post("/create-password", protect, createPasswordLimiter, createPassword);
 
 // Google OAuth
 router.get("/google", googleAuth);
