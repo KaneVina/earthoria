@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Trash2, ShieldCheck } from "lucide-react";
 import { childService } from "../../services/childService";
-import { parentPinService } from "../../services/parentPinService";
+
+const PIN_ERROR_CODES = ["NO_PIN", "LOCKED_OUT", "INVALID_FORMAT", "WRONG_PIN"];
 
 export default function DeleteChildModal({ childId, childName, onClose, onDeleted }) {
   const [step, setStep] = useState("pin"); // 'pin' -> 'name'
@@ -13,25 +14,13 @@ export default function DeleteChildModal({ childId, childName, onClose, onDelete
   const pinValid = /^[0-9]{4}$/.test(pin);
   const nameMatches = confirmName.trim() === childName;
 
-  // Bước 1: xác thực PIN trước khi cho gõ tên — tránh xoá nhầm chỉ vì
-  // đoán được tên bé.
-  const handleVerifyPin = async () => {
+  // Bước 1 chỉ kiểm tra định dạng ở client, không gọi API
+  const goToNameStep = () => {
     if (!pinValid) return;
-    setLoading(true);
     setError("");
-    try {
-      await parentPinService.verify(pin);
-      setStep("name");
-    } catch (err) {
-      setError(err?.response?.data?.message || "Mã PIN không đúng.");
-      setPin("");
-    } finally {
-      setLoading(false);
-    }
+    setStep("name");
   };
 
-  // Bước 2: gõ đúng tên bé rồi mới gọi API xoá vĩnh viễn (server vẫn kiểm
-  // tra lại PIN một lần nữa để chắc chắn).
   const handleDelete = async () => {
     if (!nameMatches) return;
     setLoading(true);
@@ -41,7 +30,17 @@ export default function DeleteChildModal({ childId, childName, onClose, onDelete
       onDeleted?.();
       onClose?.();
     } catch (err) {
-      setError(err?.response?.data?.message || "Không xoá được, thử lại sau.");
+      const code = err?.response?.data?.data?.code;
+      const message = err?.response?.data?.message || "Không xoá được, thử lại sau.";
+      if (PIN_ERROR_CODES.includes(code)) {
+        // Lỗi thuộc về PIN → đưa người dùng về lại bước nhập PIN thay vì
+        // hiện lỗi ở bước tên, để thông báo đúng chỗ gây ra nó.
+        setPin("");
+        setStep("pin");
+        setError(message);
+      } else {
+        setError(message);
+      }
     } finally {
       setLoading(false);
     }
@@ -84,10 +83,10 @@ export default function DeleteChildModal({ childId, childName, onClose, onDelete
               <button
                 className="pf-confirm-ok pf-btn-tactile"
                 disabled={!pinValid || loading}
-                onClick={handleVerifyPin}
+                onClick={goToNameStep}
                 type="button"
               >
-                {loading ? "Đang kiểm tra..." : "Tiếp tục"}
+                Tiếp tục
               </button>
             </div>
           </>
@@ -114,8 +113,13 @@ export default function DeleteChildModal({ childId, childName, onClose, onDelete
             />
             {error && <p className="pf-field-error">{error}</p>}
             <div className="pf-confirm-actions">
-              <button className="pf-confirm-cancel pf-btn-tactile" onClick={onClose} disabled={loading} type="button">
-                Huỷ
+              <button
+                className="pf-confirm-cancel pf-btn-tactile"
+                onClick={() => setStep("pin")}
+                disabled={loading}
+                type="button"
+              >
+                Quay lại
               </button>
               <button
                 className="pf-confirm-ok danger pf-btn-tactile"
