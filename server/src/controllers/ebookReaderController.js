@@ -5,6 +5,7 @@ const { encodeId } = require('../utils/hashids')
 exports.getEbookForReading = async (req, res) => {
   try {
     const { slug } = req.params
+    const { kidToken } = req.query
 
     const book = await prisma.book.findUnique({
       where: { slug },
@@ -35,11 +36,35 @@ exports.getEbookForReading = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Sách này chưa có bản điện tử' })
     }
 
-    if (!req.user) {
-      return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập để đọc sách điện tử' })
+    // Phiên của bé (link/QR riêng, không đăng nhập tài khoản chính) — xác
+    // thực bằng kidToken thay vì req.user, vẫn tôn trọng sách bị ẩn mà phụ
+    // huynh đã đặt cho bé.
+    let child = null
+    if (!req.user && kidToken) {
+      child = await prisma.childProfile.findFirst({
+        where: { kidLinkToken: kidToken, isActive: true },
+      })
     }
 
-    if (req.user.role !== 'ADMIN' && req.user.role !== 'STAFF') {
+    if (child) {
+      const access = await prisma.childBookAccess.findFirst({
+        where: { childId: child.id, bookId: book.id },
+        select: { visible: true },
+      })
+      if (access && access.visible === false) {
+        return res.status(403).json({ success: false, message: 'Sách này đã bị ẩn khỏi tủ sách của bé' })
+      }
+
+      const owns = await userOwnsDigitalBook(prisma, child.parentId, book.id)
+      if (!owns) {
+        return res.status(403).json({
+          success: false,
+          message: 'Gia đình bạn cần mua bản sách điện tử này để đọc',
+        })
+      }
+    } else if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập để đọc sách điện tử' })
+    } else if (req.user.role !== 'ADMIN' && req.user.role !== 'STAFF') {
       const owns = await userOwnsDigitalBook(prisma, req.user.id, book.id)
       if (!owns) {
         return res.status(403).json({

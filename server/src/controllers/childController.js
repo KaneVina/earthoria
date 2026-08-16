@@ -668,12 +668,29 @@ const getKidPublicBooks = async (req, res) => {
       (arCodeMap[ar.bookId] ??= []).push({ code: ar.code, label: ar.label });
     }
 
+    // Sách điện tử (ebook) — là bản DIGITAL riêng, phải mua đúng bản điện tử
+    // (không tự có kèm bản in) mới đọc được, đúng như luồng người lớn.
+    const digitalOrderItems = await prisma.orderItem.findMany({
+      where: {
+        variant: { format: "DIGITAL" },
+        order: { userId: child.parentId, status: { in: ["DELIVERED", "COMPLETED"] } },
+      },
+      select: { variant: { select: { bookId: true } } },
+    });
+    const digitalOwnedBookIds = new Set(digitalOrderItems.map((i) => i.variant?.bookId).filter(Boolean));
+    const ebooks = await prisma.ebook.findMany({
+      where: { isActive: true, bookId: { in: [...digitalOwnedBookIds] } },
+      select: { bookId: true },
+    });
+    const ebookBookIds = new Set(ebooks.map((e) => e.bookId));
+
     const books = [...bookMap.values()]
       .map((book) => ({
         ...book,
         visible: visibilityMap[book.id] ?? true,
         isDelivered: deliveredBookIds.has(book.id),
         arCodes: arCodeMap[book.id] || [],
+        hasEbook: ebookBookIds.has(book.id),
       }))
       .filter((b) => b.visible);
 

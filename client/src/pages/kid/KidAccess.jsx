@@ -22,6 +22,7 @@ import {
   Type,
   ShieldCheck,
   Search,
+  Package,
 } from "lucide-react";
 import { kidAccessService } from "../../services/kidAccessService";
 import FullScreenLoader from "../../components/FullScreenLoader";
@@ -368,25 +369,34 @@ export default function KidAccess() {
 
   const handleReadNow = useCallback(
     (book) => {
-      if (child?.isLocked) {
-        toast("AR đang bị khoá, nhờ ba mẹ mở khoá nhé!", { icon: "🔒" });
+      // Đọc ngay = mở sách điện tử (đúng nghĩa "đọc"). AR chỉ dùng làm dự
+      // phòng khi sách chưa có bản điện tử nhưng đã có mô hình AR.
+      if (book.hasEbook) {
+        navigate(`/e-kid/${slug}/${token}/ebook/${book.slug}`);
         return;
       }
-      if (!book.isDelivered) {
-        toast("Sách đang trên đường giao, chưa xem AR được nhé!", {
-          icon: "📦",
-        });
+      if (book.arCodes?.length) {
+        if (child?.isLocked) {
+          toast("AR đang bị khoá, nhờ ba mẹ mở khoá nhé!", { icon: <Lock size={16} /> });
+          return;
+        }
+        if (!book.isDelivered) {
+          toast("Sách đang trên đường giao, chưa xem AR được nhé!", { icon: <Package size={16} /> });
+          return;
+        }
+        navigate(`/e-kid/${slug}/${token}/ar/${book.arCodes[0].code}`);
         return;
       }
-      if (!book.arCodes?.length) {
-        toast.success(`Nhờ ba mẹ mở AR để cùng đọc "${book.title}" nhé!`, {
-          icon: "📖",
-        });
-        return;
-      }
-      navigate(`/e-kid/${slug}/${token}/ar/${book.arCodes[0].code}`);
+      toast.success(`Nhờ ba mẹ mở sách điện tử để cùng đọc "${book.title}" nhé!`, {
+        icon: <BookOpen size={16} />,
+      });
     },
     [child?.isLocked, navigate, slug, token],
+  );
+
+  const canReadBook = useCallback(
+    (book) => book.hasEbook || (!!book.arCodes?.length && book.isDelivered && !child?.isLocked),
+    [child?.isLocked],
   );
 
   //   tilt + shine mượt cho thẻ sách, cập nhật trực tiếp qua DOM để không re-render
@@ -784,14 +794,14 @@ export default function KidAccess() {
                         {b.ageMin ?? "0"}–{b.ageMax ?? "17"} tuổi
                       </span>
                     )}
-                    <span className={`kid-book-cta${limitReached || !b.isDelivered ? " is-locked" : ""}`}>
+                    <span className={`kid-book-cta${limitReached || !canReadBook(b) ? " is-locked" : ""}`}>
                       {limitReached ? (
                         <>
                           <Lock size={13} /> Hết giờ hôm nay
                         </>
-                      ) : !b.isDelivered ? (
+                      ) : !canReadBook(b) ? (
                         <>
-                          <Clock size={13} /> Đang giao hàng
+                          <Clock size={13} /> Đang chờ sách
                         </>
                       ) : (
                         <>

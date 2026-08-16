@@ -441,6 +441,7 @@ export default function App() {
         <Route path="/ebook/:slug" element={<EbookReader />} />
         <Route path="/e-kid/:slug/:token" element={<KidAccess />} />
         <Route path="/e-kid/:slug/:token/ar/:code" element={<ArView />} />
+        <Route path="/e-kid/:slug/:token/ebook/:bookSlug" element={<EbookReader />} />
       </Routes>
     </BrowserRouter>
   );

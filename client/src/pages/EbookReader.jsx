@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { Loader2, Lock, SearchX } from "lucide-react";
 import { ebookService } from "../services/ebookService";
 import { PreviewOverlay } from "./admin/EbookEditor";
 import "../components/assets/css/gameplay.css";
 
 export default function EbookReader() {
-  const { slug } = useParams();
+  // :token + :bookSlug chỉ có khi vào từ link riêng của bé
+  // (route /e-kid/:slug/:token/ebook/:bookSlug)
+  const { slug, bookSlug, token } = useParams();
   const navigate = useNavigate();
+  const isKidMode = !!token;
+  const effectiveSlug = isKidMode ? bookSlug : slug;
 
   const [state, setState] = useState({ status: "loading", data: null });
 
@@ -16,7 +20,7 @@ export default function EbookReader() {
 
     async function fetchEbook() {
       try {
-        const res = await ebookService.readBySlug(slug);
+        const res = await ebookService.readBySlug(effectiveSlug, token);
         if (cancelled) return;
         const data = res.data?.data;
         if (!data) {
@@ -29,6 +33,12 @@ export default function EbookReader() {
         const httpStatus = err.response?.status;
 
         if (httpStatus === 401) {
+          // Phiên của bé không có tài khoản để đăng nhập lại — hiện màn
+          // hình "không tìm thấy" thân thiện thay vì đá về /login.
+          if (isKidMode) {
+            setState({ status: "not-found", data: null });
+            return;
+          }
           const currentUrl = `${window.location.pathname}${window.location.search}`;
           navigate(`/login?redirect=${encodeURIComponent(currentUrl)}`, { replace: true });
           return;
@@ -45,7 +55,7 @@ export default function EbookReader() {
     return () => {
       cancelled = true;
     };
-  }, [slug, navigate]);
+  }, [effectiveSlug, token, isKidMode, navigate]);
 
   if (state.status === "loading") {
     return (
@@ -66,14 +76,21 @@ export default function EbookReader() {
             <Lock size={22} />
           </div>
           <span className="gp-eyebrow">Sách điện tử</span>
-          <h1>Bạn chưa có quyền đọc sách điện tử này</h1>
+          <h1>{isKidMode ? "Chưa đọc được sách này" : "Bạn chưa có quyền đọc sách điện tử này"}</h1>
           <p>
-            Sách điện tử chỉ dành cho khách hàng đã mua bản điện tử (ebook) của cuốn sách này. Nếu bạn đã mua,
-            vui lòng kiểm tra lại tài khoản đang đăng nhập hoặc liên hệ với chúng tôi để được hỗ trợ.
+            {isKidMode
+              ? "Sách điện tử chỉ đọc được khi gia đình đã mua bản điện tử của cuốn sách này. Nhờ ba mẹ kiểm tra lại nhé!"
+              : "Sách điện tử chỉ dành cho khách hàng đã mua bản điện tử (ebook) của cuốn sách này. Nếu bạn đã mua, vui lòng kiểm tra lại tài khoản đang đăng nhập hoặc liên hệ với chúng tôi để được hỗ trợ."}
           </p>
-          <button className="gp-cta" style={{ marginTop: 12 }} onClick={() => navigate("/")}>
-            Về trang chủ
-          </button>
+          {isKidMode ? (
+            <Link to={`/e-kid/${slug}/${token}`} className="gp-cta" style={{ marginTop: 12 }}>
+              Quay lại tủ sách
+            </Link>
+          ) : (
+            <button className="gp-cta" style={{ marginTop: 12 }} onClick={() => navigate("/")}>
+              Về trang chủ
+            </button>
+          )}
         </div>
       </main>
     );
@@ -89,13 +106,22 @@ export default function EbookReader() {
           <span className="gp-eyebrow">Sách điện tử</span>
           <h1>Không tìm thấy sách điện tử này</h1>
           <p>Sách này chưa có bản điện tử hoặc đường dẫn không còn hiệu lực.</p>
+          {isKidMode && (
+            <Link to={`/e-kid/${slug}/${token}`} className="gp-cta" style={{ marginTop: 12 }}>
+              Quay lại tủ sách
+            </Link>
+          )}
         </div>
       </main>
     );
   }
 
   const { data } = state;
-  const bookUrl = data.book?.slug && data.book?.hashId ? `/books/${data.book.slug}/${data.book.hashId}` : "/";
+  const bookUrl = isKidMode
+    ? `/e-kid/${slug}/${token}`
+    : data.book?.slug && data.book?.hashId
+      ? `/books/${data.book.slug}/${data.book.hashId}`
+      : "/";
 
   return (
     <PreviewOverlay

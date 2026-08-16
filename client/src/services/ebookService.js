@@ -19,5 +19,5 @@ export const ebookService = {
   deleteImage: (url) => api.post("/admin/ebooks/delete-image", { url }),
 
   // ── Public (đọc sách, yêu cầu đã mua bản điện tử) ──
-  readBySlug: (slug) => api.get(`/ebook-reader/${slug}`),
+  readBySlug: (slug, kidToken) => api.get(`/ebook-reader/${slug}`, kidToken ? { params: { kidToken } } : undefined),
 };
