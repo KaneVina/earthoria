@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
+import { ExternalLink } from "lucide-react";
 import { childService } from "../../services/childService";
 
 export default function KidLinkCard({ childId, childName }) {
@@ -31,6 +32,11 @@ export default function KidLinkCard({ childId, childName }) {
     await navigator.clipboard.writeText(link);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleOpenLink = () => {
+    if (!link) return;
+    window.open(link, "_blank", "noopener,noreferrer");
   };
 
   const handleRegenerate = async () => {
@@ -71,16 +77,19 @@ export default function KidLinkCard({ childId, childName }) {
       </p>
 
       {loading ? (
-        <p>Đang tải link...</p>
+        <div className="kid-link-skeleton" aria-hidden="true" />
       ) : (
         <>
           <div className="kid-link-url-row">
             <input readOnly value={link || ""} onClick={(e) => e.target.select()} />
+            <button onClick={handleOpenLink} disabled={!link} title="Mở liên kết trong tab mới" className="kid-link-icon-btn">
+              <ExternalLink size={13} />
+            </button>
             <button onClick={handleCopy}>{copied ? "Đã chép ✓" : "Chép link"}</button>
           </div>
 
           <div ref={qrWrapRef} className="kid-link-qr">
-            {link && <QRCodeCanvas value={link} size={180} includeMargin />}
+            {link && <QRCodeCanvas value={link} size={200} includeMargin className="kid-link-qr-canvas" />}
           </div>
 
           <div className="kid-link-actions">

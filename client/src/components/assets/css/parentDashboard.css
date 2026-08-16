@@ -927,10 +927,11 @@
 .pkd-actions-modal-footer { display: flex; flex-direction: column; gap: 10px; }
 .pkd-actions-modal-delete {
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-  background: none; border: none; color: #b25450; font-size: 12px; cursor: pointer;
-  padding: 6px; text-decoration: underline;
+  background: rgba(178,84,80,0.06); border: 0.5px solid rgba(178,84,80,0.3);
+  color: #b25450; font-size: 12px; cursor: pointer;
+  padding: 10px 14px; border-radius: 6px; transition: all 0.2s ease;
 }
-.pkd-actions-modal-delete:hover { color: #8a4440; }
+.pkd-actions-modal-delete:hover { background: #b25450; color: #fff; border-color: #b25450; }
 
 /* Link & QR riêng cho bé (KidLinkCard) — dùng cả trong modal trên và
    trong section "Link cho bé" ở cuối trang */
@@ -940,7 +941,12 @@
   color: var(--forest); margin: 0;
 }
 .kid-link-hint { font-size: 12px; line-height: 1.7; color: var(--text-muted); font-weight: 300; margin: 0; }
-.kid-link-card > p:not(.kid-link-hint) { color: var(--text-muted); font-size: 12.5px; text-align: center; padding: 24px 0; margin: 0; }
+.kid-link-skeleton {
+  height: 300px; border-radius: 10px;
+  background: linear-gradient(90deg, var(--cream) 25%, var(--pale) 37%, var(--cream) 63%);
+  background-size: 400% 100%; animation: kidLinkShimmer 1.4s ease infinite;
+}
+@keyframes kidLinkShimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
 .kid-link-url-row { display: flex; gap: 8px; }
 .kid-link-url-row input {
   flex: 1; min-width: 0; background: var(--cream); border: 0.5px solid var(--border);
@@ -952,11 +958,16 @@
   color: var(--forest); border-radius: 6px; padding: 0 16px; font-size: 11.5px;
   cursor: pointer; transition: all 0.2s ease;
 }
-.kid-link-url-row button:hover { background: var(--gold); color: var(--ivory); }
+.kid-link-url-row button:hover:not(:disabled) { background: var(--gold); color: var(--ivory); }
+.kid-link-url-row button:disabled { opacity: 0.5; cursor: not-allowed; }
+.kid-link-url-row button.kid-link-icon-btn {
+  padding: 0; width: 36px; display: flex; align-items: center; justify-content: center;
+}
 .kid-link-qr {
   display: flex; justify-content: center; padding: 20px;
   background: var(--white); border: 0.5px solid var(--border); border-radius: 10px;
 }
+.kid-link-qr-canvas { width: 100%; height: auto; max-width: 180px; }
 .kid-link-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .kid-link-actions button {
   flex: 1; min-width: 140px; display: inline-flex; align-items: center; justify-content: center;
