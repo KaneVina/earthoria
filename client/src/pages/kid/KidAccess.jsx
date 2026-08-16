@@ -430,11 +430,18 @@ export default function KidAccess() {
   const isSearching = normalizeSearch(searchQuery).length > 0;
 
   if (status === "loading") {
+    // Vẽ sẵn đúng lớp nền "meadow horizon" của trang chính ngay từ lúc
+    // chờ API, thay vì để lộ màu nền trắng/ivory mặc định của <body>.
+    // Nếu không, lúc dữ liệu tải xong trang sẽ "nháy trắng" một nhịp
+    // trước khi đổi sang nền xanh rừng của header thật.
     return (
-      <FullScreenLoader
-        eyebrow="Đang mở tủ sách"
-        message="Chờ bé một chút xíu nhé..."
-      />
+      <div className="kid-state-page kid-state-page--loading">
+        <StateBg />
+        <FullScreenLoader
+          eyebrow="Đang mở tủ sách"
+          message="Chờ bé một chút xíu nhé..."
+        />
+      </div>
     );
   }
 
@@ -1041,9 +1048,12 @@ export default function KidAccess() {
 function StateBg() {
   return (
     <div className="kid-bg" aria-hidden="true">
-      <div className="kid-bg-wash" style={{ background: "var(--ivory)" }} />
+      <div className="kid-bg-wash" />
       <div className="kid-bg-hills" />
       <span className="kid-bg-hills-front" />
+      <span className="kid-bg-sun" />
+      <span className="kid-bg-cloud kid-bg-cloud-1" />
+      <span className="kid-bg-cloud kid-bg-cloud-2" />
       <span className="kid-bg-orb kid-bg-orb-1" style={{ top: "10%" }} />
       <span className="kid-bg-orb kid-bg-orb-2" style={{ top: "60%" }} />
     </div>

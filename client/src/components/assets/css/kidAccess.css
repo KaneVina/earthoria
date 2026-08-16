@@ -69,11 +69,16 @@
 .kid-page {
   position: relative;
   min-height: 100vh;
-  background: var(--ivory);
+  min-height: 100dvh;
+  background: var(--forest);
   overflow-x: hidden;
   isolation: isolate;
   font-family: var(--kid-font-body);
   animation: kidPageIn 0.6s var(--kid-ease-soft) both;
+  /* Chặn "rubber-band" overscroll trên mobile Safari/Chrome lộ ra màu
+     nền trắng mặc định của body phía sau — vốn là nguồn gốc chính của
+     cảm giác "giật nháy trắng" khi bé kéo/lướt nhanh trên điện thoại. */
+  overscroll-behavior-y: contain;
 }
 @keyframes kidPageIn { from { opacity: 0; } to { opacity: 1; } }
 
@@ -295,10 +300,14 @@
   justify-content: space-between;
   gap: 16px;
   margin: -28px -28px 0;
-  padding: 26px 28px 20px;
+  padding: 22px 28px 18px;
   border-radius: 0 0 var(--kid-radius-lg) var(--kid-radius-lg);
-  background: transparent;
-  border-bottom: 1px solid transparent;
+  /* Thanh kính mờ nhẹ ngay từ đầu (thay vì trong suốt hoàn toàn) để
+     header có điểm tựa thị giác trên nền trời, không bị "lơ lửng"
+     trống trải trước khi cuộn. */
+  background: linear-gradient(180deg, rgba(13, 51, 48, 0.34) 0%, rgba(13, 51, 48, 0.06) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05) inset;
   transition: background var(--kid-t-med), box-shadow var(--kid-t-med), border-color var(--kid-t-med), padding var(--kid-t-med), backdrop-filter var(--kid-t-med);
   animation: kidFadeDown 0.7s var(--kid-ease) both;
 }
@@ -1381,9 +1390,12 @@
 .kid-state-page {
   position: relative;
   min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--forest);
   display: flex; align-items: center; justify-content: center;
   padding: 24px;
   overflow: hidden;
+  overscroll-behavior-y: contain;
 }
 .kid-state-page .kid-bg-hills,
 .kid-state-page .kid-bg-hills-front {

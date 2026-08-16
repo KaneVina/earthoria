@@ -3744,7 +3744,7 @@ function ArTab({ arCodes, loading }) {
 
       <div className="pf-ar-book-grid">
         {Object.values(grouped).map((group) => {
-          const total = group.items.length;
+          consParentdashboardt total = group.items.length;
           const activatedCount = group.items.filter((it) => (it.scanCount || 0) > 0).length;
           const allActivated = total > 0 && activatedCount === total;
           const noneActivated = activatedCount === 0;
