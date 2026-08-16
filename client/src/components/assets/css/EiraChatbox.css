@@ -1,15 +1,3 @@
-/* ══════════════════════════════════════════════════
-   EIRA CHATBOX — MESSENGER STYLE
-
-   Giống Messenger desktop/mobile:
-   - Window có fixed height, không bao giờ overflow màn hình
-   - FAB + window nằm trong vùng nhìn thấy được
-   - Messages area scroll bên trong
-   ══════════════════════════════════════════════════ */
-
-/* ══════════════════════════════════════════════════
-   DESIGN TOKENS
-   ══════════════════════════════════════════════════ */
 #eira-root {
   --eg: #3d9e32;
   --egl: #52c244;
@@ -54,12 +42,6 @@
   padding: 0;
 }
 
-/* ══════════════════════════════════════════════════
-   ACCESSIBILITY — focus-visible rõ ràng cho bàn phím
-   (các nút bên dưới có outline:none nên cần thay thế
-   bằng một chỉ báo focus tương đương, tránh mất dấu vết
-   khi điều hướng bằng Tab)
-   ══════════════════════════════════════════════════ */
 #eira-root button:focus-visible,
 #eira-root [role="button"]:focus-visible {
   outline: 2px solid var(--egl);
@@ -74,9 +56,6 @@
   outline: none; /* viền đã được xử lý qua #eira-input-row:focus-within */
 }
 
-/* ══════════════════════════════════════════════════
-   FAB
-   ══════════════════════════════════════════════════ */
 #eira-fab {
   position: fixed;
   bottom: 86px;
@@ -1476,4 +1455,160 @@
 .eira-close-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/*  Trạng thái đang gọi tool (thay cho 3 chấm nhảy khi model đang tra
+    tồn kho / đơn hàng / mã giảm giá / chọn sách gợi ý...)  */
+.em-status-label {
+  font-size: 13px;
+  color: #3d6b3a;
+  font-weight: 500;
+  padding: 10px 16px;
+}
+
+/*  Card sách gợi ý (từ tool suggest_books)  */
+.em-book-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+.em-book-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.em-book-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  border-color: rgba(21, 128, 61, 0.3);
+}
+.em-book-cover {
+  width: 44px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: #f3f4f6;
+}
+.em-book-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.em-book-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0d3330;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.em-book-age {
+  font-size: 11.5px;
+  color: #6b7280;
+}
+.em-book-price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 13px;
+}
+.em-book-price strong {
+  color: #15803d;
+}
+.em-book-price s {
+  color: #9ca3af;
+  font-size: 11.5px;
+}
+.em-book-oos {
+  font-size: 11px;
+  color: #b91c1c;
+  font-weight: 600;
+}
+.em-book-card svg {
+  flex-shrink: 0;
+  color: #9ca3af;
+}
+
+/*  Chip mã giảm giá (từ tool apply_coupon)  */
+.em-coupon-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #fff7ed;
+  border: 1px dashed rgba(194, 120, 3, 0.4);
+  border-radius: 12px;
+  color: #9a3412;
+}
+.em-coupon-chip > svg {
+  flex-shrink: 0;
+  color: #c27803;
+}
+.em-coupon-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+.em-coupon-code {
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.em-coupon-detail {
+  font-size: 11.5px;
+  color: #92400e;
+}
+.em-coupon-copy {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border: 1px solid rgba(194, 120, 3, 0.35);
+  border-radius: 999px;
+  background: #fff;
+  color: #9a3412;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+.em-coupon-copy:hover {
+  background: #ffedd5;
+}
+
+/*  Thông báo chuyển nhân viên (từ tool escalate_to_human)  */
+.em-escalate {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #eff6ff;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  border-radius: 12px;
+  color: #1e3a8a;
+  font-size: 13px;
+}
+.em-escalate > svg {
+  flex-shrink: 0;
+  color: #2563eb;
+}
+.em-escalate-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }

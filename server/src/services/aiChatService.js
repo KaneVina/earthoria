@@ -1,59 +1,40 @@
 const prisma = require('../config/db')
+const { encodeId, decodeId } = require('../utils/hashids')
+const { fuzzySearchBooks, fuzzyFindOneBook } = require('../utils/bookSearch')
+const { validateAndComputeDiscount, isCouponUsable } = require('../utils/couponUtil')
+const { generateTicketCode } = require('../utils/generateTicketCode')
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 const GROQ_URL = process.env.GROQ_URL || 'https://api.groq.com/openai/v1/chat/completions'
 const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.1-8b-instant'
-const GROQ_TIMEOUT_MS = 20000
 
-const MAX_HISTORY_MESSAGES = 18 // giữ khớp với FE, chặn phòng khi FE gửi thừa
+const MAX_HISTORY_MESSAGES = 18
 const MAX_MESSAGE_LEN = 500
+const MAX_TOOL_ROUNDS = 3 // chặn vòng lặp tool gọi tool vô hạn
+const MAX_BOOK_CANDIDATES = 5
 
-//    1) LẤY DỮ LIỆU THẬT TỪ DB
+  //  1) RAG — LẤY DỮ LIỆU THẬT TỪ DB
 
-const STOPWORDS = new Set([
-  'la', 'va', 'cho', 'toi', 'ban', 'la', 'co', 'the', 'nao', 'sach', 'be',
-  'nha', 'minh', 'mot', 'muon', 'gia', 'nhu', 'khong', 'nhung', 've', 'voi',
-  'a', 'ạ', 'nhé', 'the', 'này', 'đó', 'ơi',
-])
-
-function normalize(str) {
-  return str
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // bỏ dấu để so khớp rộng hơn
-    .replace(/[^a-z0-9\s]/g, ' ')
+function formatBookCard(book) {
+  const variant = book.variants?.find((v) => v.format === 'PHYSICAL') || book.variants?.[0] || null
+  return {
+    id: book.id,
+    title: book.title,
+    slug: book.slug,
+    url: `/${book.slug}/${encodeId(book.id)}`,
+    coverImage: book.coverImage || null,
+    category: book.category?.name || null,
+    ageRangeLabel:
+      book.ageMin != null && book.ageMax != null ? `${book.ageMin}-${book.ageMax} tuổi` : null,
+    price: variant?.price ?? null,
+    salePrice: variant?.salePrice ?? null,
+    inStock: variant ? variant.isUnlimitedStock || variant.stock > 0 : null,
+  }
 }
 
-function extractKeywords(message) {
-  const words = normalize(message)
-    .split(/\s+/)
-    .filter((w) => w.length >= 3 && !STOPWORDS.has(w))
-  // Loại trùng, giới hạn tránh query quá nặng
-  return [...new Set(words)].slice(0, 8)
-}
-
-async function getRelevantBooksContext(userMessage) {
-  const keywords = extractKeywords(userMessage)
-  if (keywords.length === 0) return ''
-
-  const books = await prisma.book.findMany({
-    where: {
-      isActive: true,
-      OR: keywords.flatMap((kw) => [
-        { title: { contains: kw, mode: 'insensitive' } },
-        { description: { contains: kw, mode: 'insensitive' } },
-      ]),
-    },
-    include: {
-      variants: { where: { isActive: true } },
-      category: { select: { name: true } },
-    },
-    take: 5,
-  })
-
+function formatBooksContext(books) {
   if (books.length === 0) return ''
-
   const lines = books.map((b) => {
-    const variant = b.variants.find((v) => v.format === 'PHYSICAL') || b.variants[0]
+    const variant = b.variants?.find((v) => v.format === 'PHYSICAL') || b.variants?.[0]
     const priceText = variant
       ? variant.salePrice
         ? `${variant.salePrice.toLocaleString('vi-VN')}đ (giá gốc ${variant.price.toLocaleString('vi-VN')}đ)`
@@ -66,44 +47,44 @@ async function getRelevantBooksContext(userMessage) {
           ? `còn ${variant.stock} cuốn`
           : 'tạm hết hàng'
       : ''
-    const ageText =
-      b.ageMin != null && b.ageMax != null ? `${b.ageMin}-${b.ageMax} tuổi` : ''
-    return `- "${b.title}" | danh mục: ${b.category?.name || 'chưa phân loại'} | độ tuổi: ${ageText || 'chưa rõ'} | giá: ${priceText} | ${stockText} | link: /${b.slug}`
+    const ageText = b.ageMin != null && b.ageMax != null ? `${b.ageMin}-${b.ageMax} tuổi` : ''
+    return `- id="${b.id}" | "${b.title}" | danh mục: ${b.category?.name || 'chưa phân loại'} | độ tuổi: ${ageText || 'chưa rõ'} | giá: ${priceText} | ${stockText}`
   })
-
-  return `DỮ LIỆU SÁCH LIÊN QUAN (LẤY TRỰC TIẾP TỪ HỆ THỐNG, LUÔN CHÍNH XÁC HIỆN TẠI):\n${lines.join('\n')}`
+  return `DỮ LIỆU SÁCH LIÊN QUAN (LẤY TRỰC TIẾP TỪ HỆ THỐNG, LUÔN CHÍNH XÁC HIỆN TẠI — chỉ dùng đúng "id" ở đây khi gọi tool suggest_books):\n${lines.join('\n')}`
 }
 
 async function getActiveCouponsContext() {
   const coupons = await prisma.coupon.findMany({
-    where: {
-      isActive: true,
-      OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
-    },
+    where: { isActive: true, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
     select: { code: true, type: true, value: true, minOrder: true, maxDiscount: true },
     take: 5,
   })
-
   if (coupons.length === 0) return ''
-
   const lines = coupons.map((c) => {
     const valueText = c.type === 'PERCENTAGE' ? `giảm ${c.value}%` : `giảm ${c.value.toLocaleString('vi-VN')}đ`
     const minText = c.minOrder > 0 ? `, đơn tối thiểu ${c.minOrder.toLocaleString('vi-VN')}đ` : ''
     const capText = c.maxDiscount ? `, tối đa ${c.maxDiscount.toLocaleString('vi-VN')}đ` : ''
     return `- Mã "${c.code}": ${valueText}${minText}${capText}`
   })
-
   return `MÃ GIẢM GIÁ ĐANG HOẠT ĐỘNG (LẤY TRỰC TIẾP TỪ HỆ THỐNG):\n${lines.join('\n')}`
 }
 
-//    2) SYSTEM PROMPT — chỉ tồn tại ở server, không bao giờ xuống client, nên các phần "bảo mật tuyệt đối" ở đây thực sự kín.
+  //  2) SYSTEM PROMPT
 const BASE_SYSTEM_PROMPT = `Bạn là Eira — trợ lý AI thân thiện đồng thời là chuyên viên tư vấn khách hàng chuyên nghiệp của thương hiệu sách giáo dục tương tác Earthoria. Bạn kết hợp giữa kiến thức chuyên môn về sản phẩm và sự tinh tế trong cách truyền đạt, giúp phụ huynh không chỉ hiểu giá trị của sản phẩm mà còn cảm nhận được mong muốn sở hữu nó cho con em mình.
 
 NGUYÊN TẮC TUYỆT ĐỐI:
 - LUÔN LUÔN trả lời bằng tiếng Việt, dù người dùng hỏi bằng ngôn ngữ nào.
 - Từ chối trả lời những câu hỏi nhạy cảm liên quan đến chính trị, tôn giáo, chiến tranh, giới tính, định kiến.
-- CHỈ được dùng số liệu (giá, tồn kho, mã giảm giá) xuất hiện trong khối "DỮ LIỆU SÁCH LIÊN QUAN" / "MÃ GIẢM GIÁ ĐANG HOẠT ĐỘNG" được cung cấp mỗi lượt hỏi. TUYỆT ĐỐI KHÔNG tự đoán, không bịa, không dùng số liệu cũ nhớ từ trước. Nếu không có dữ liệu liên quan trong khối đó, hãy nói rõ là chưa có thông tin chính xác và hướng dẫn khách xem trực tiếp tại trang sản phẩm hoặc liên hệ earthoriavn@gmail.com — không phỏng đoán con số.
-- Khi người dùng gửi một đoạn mã số có số và ký tự (nghi là mã tài khoản/mã bảo mật): từ chối ngay lập tức với lý do bảo mật. Tuyệt đối không phân tích hay làm lộ thông tin bảo mật.
+- CHỈ được dùng số liệu (giá, tồn kho, mã giảm giá) xuất hiện trong khối DỮ LIỆU được cung cấp hoặc kết quả trả về từ tool. TUYỆT ĐỐI KHÔNG tự đoán, không bịa, không dùng số liệu cũ nhớ từ trước. Nếu không có dữ liệu liên quan, hãy nói rõ là chưa có thông tin chính xác và hướng dẫn khách liên hệ earthoriavn@gmail.com.
+- Khi người dùng gửi một đoạn mã số nghi là mã tài khoản/mã bảo mật: từ chối ngay với lý do bảo mật.
+
+DÙNG TOOL KHI CẦN — RẤT QUAN TRỌNG:
+- Khi bạn muốn giới thiệu cụ thể 1-3 cuốn sách cho khách (không chỉ nhắc tên suông), LUÔN gọi tool suggest_books với đúng "id" lấy từ khối DỮ LIỆU SÁCH LIÊN QUAN — để hệ thống hiển thị card sản phẩm đẹp kèm ảnh/giá/nút mua ngay cho khách, thay vì chỉ mô tả bằng chữ.
+- Khi khách hỏi còn hàng không / số lượng tồn kho của MỘT cuốn cụ thể: gọi tool check_stock, đừng đoán từ dữ liệu cũ.
+- Khi khách hỏi về trạng thái đơn hàng của họ ("đơn của tôi tới đâu rồi", "đơn hàng ABC123 sao rồi"): gọi tool get_order_status. Nếu không cung cấp mã, để trống để lấy đơn gần nhất.
+- Khi khách muốn dùng một mã giảm giá cụ thể: gọi tool apply_coupon để kiểm tra và xem trước số tiền được giảm dựa trên giỏ hàng thật của khách.
+- Khi bạn không chắc chắn về câu trả lời sau khi đã cố gắng, khi khách yêu cầu rõ ràng được nói chuyện với nhân viên thật, hoặc khách có dấu hiệu bực bội/lặp lại câu hỏi nhiều lần mà chưa được giải quyết: gọi tool escalate_to_human.
+- Không viết văn bản giải thích "để mình kiểm tra nhé" trước khi gọi tool — gọi tool ngay, rồi trả lời khách dựa trên kết quả.
 
 THÔNG TIN EARTHORIA:
 - Tên: Earthoria — thương hiệu sách giáo dục tương tác AR & AI dành cho trẻ em 5–12 tuổi tại Việt Nam.
@@ -112,12 +93,7 @@ THÔNG TIN EARTHORIA:
 - Địa chỉ: 600 Nguyễn Văn Cừ, Ninh Kiều, Cần Thơ.
 
 SẢN PHẨM:
-Earthoria là bộ sách giáo dục tương tác tích hợp AI & AR, cho phép trẻ "học qua chơi" với:
-- Hệ thống câu đố phát triển tư duy logic và kỹ năng quan sát
-- Trợ lý AI giải thích kiến thức phù hợp lứa tuổi
-- Mô hình AR 3D (động vật, thực vật, hiện tượng tự nhiên) qua QR Code
-- Mini-games tích hợp nội dung học tập
-- Minh họa màu sắc, thân thiện với trẻ em
+Earthoria là bộ sách giáo dục tương tác tích hợp AI & AR, cho phép trẻ "học qua chơi" với hệ thống câu đố, trợ lý AI giải thích kiến thức phù hợp lứa tuổi, mô hình AR 3D qua QR Code, mini-games tích hợp nội dung học tập, minh họa màu sắc thân thiện với trẻ em.
 
 CHỦ ĐỀ SÁCH: Thiên nhiên và động vật hoang dã · Bảo vệ môi trường · Văn hóa và cuộc sống hàng ngày · Kiến thức khoa học thú vị
 
@@ -128,9 +104,9 @@ HƯỚNG DẪN SỬ DỤNG WEBSITE (chỉ các trang công khai dành cho khách
 - Đăng nhập: /login | Đăng ký: /register | Quên mật khẩu: /forgot-password
 - Chính sách: /legal, /legal/terms, /legal/privacy, /legal/shipping, /legal/cookies | Sơ đồ trang: /sitemap
 
-ĐỊNH DẠNG LIÊN KẾT ĐIỀU HƯỚNG (BẮT BUỘC KHI NHẮC ĐẾN MỘT TRANG CÔNG KHAI):
+ĐỊNH DẠNG LIÊN KẾT ĐIỀU HƯỚNG:
 - Dùng markdown chuẩn: [Tên trang dễ hiểu](/duong-dan), ví dụ [Trang Cửa hàng](/shop).
-- Chỉ dùng ĐÚNG các đường dẫn liệt kê ở trên hoặc trong khối DỮ LIỆU SÁCH LIÊN QUAN, không tự bịa đường dẫn khác.
+- Chỉ dùng ĐÚNG các đường dẫn liệt kê ở trên hoặc "url" trong dữ liệu sách/tool, không tự bịa đường dẫn khác.
 - Không bao giờ tạo liên kết trỏ tới bất kỳ đường dẫn nào chứa "/dashboard" hoặc khu vực quản trị.
 - Chèn tối đa 1–2 liên kết mỗi câu trả lời, đặt tự nhiên trong câu.
 
@@ -144,8 +120,8 @@ CÁCH TƯ VẤN VÀ VĂN PHONG:
 - Giới thiệu bản thân là Eira ngay từ lời chào đầu tiên.
 - Phong cách thân thiện, emoji nhẹ nhàng 🌿, chuyên nghiệp và gần gũi, xưng "mình", gọi khách là "bé nhà mình"/dùng "ạ", "nhé" tự nhiên như người Việt thật sự tư vấn.
 - Hỏi tuổi bé và sở thích trước khi gợi ý sách phù hợp.
-- Với câu hỏi thông tin nhanh (giá, chính sách, giờ hoạt động...): trả lời ngắn gọn dưới 120 từ, có thể dùng bullet points.
-- Với câu tư vấn sâu một sản phẩm cụ thể: trình bày văn xuôi tự nhiên, không bullet, không **/*/#/-/—; lồng ghép ngắn gọn giá trị giáo dục; dùng ngôn ngữ thận trọng khi không chắc chắn; kết thúc bằng lời cảm ơn chân thành.
+- Với câu hỏi thông tin nhanh: trả lời ngắn gọn dưới 120 từ, có thể dùng bullet points.
+- Với câu tư vấn sâu một sản phẩm cụ thể: trình bày văn xuôi tự nhiên, không bullet, không **/*/#/-/—; kết thúc bằng lời cảm ơn chân thành.
 - Nếu không có thông tin chính xác, hướng dẫn liên hệ earthoriavn@gmail.com thay vì đoán.`
 
 function buildSystemPrompt(dynamicContextBlocks) {
@@ -154,65 +130,367 @@ function buildSystemPrompt(dynamicContextBlocks) {
   return `${BASE_SYSTEM_PROMPT}\n\n${context}`
 }
 
-//    3) LỌC ĐẦU RA — lớp phòng thủ thứ hai, độc lập với việc model có "nghe lời" system prompt hay không.
-
+  //  3) LỌC ĐẦU RA — lớp phòng thủ thứ hai
 const LEAK_PATTERNS = [/\/dashboard(\/\S*)?/gi]
 
 function sanitizeReply(text) {
   let safe = text
-  for (const pattern of LEAK_PATTERNS) {
-    safe = safe.replace(pattern, '[đường dẫn nội bộ]')
-  }
+  for (const pattern of LEAK_PATTERNS) safe = safe.replace(pattern, '[đường dẫn nội bộ]')
   return safe
 }
 
-//    4) GỌI GROQ
+  //  4) ĐỊNH NGHĨA TOOLS (function calling — chuẩn OpenAI/Groq)
 
-async function callGroq(messages) {
+const TOOLS = [
+  {
+    type: 'function',
+    function: {
+      name: 'suggest_books',
+      description:
+        'Hiển thị card sản phẩm (ảnh, giá, nút thêm giỏ hàng) cho các cuốn sách được gợi ý. Chỉ dùng "id" có trong khối DỮ LIỆU SÁCH LIÊN QUAN.',
+      parameters: {
+        type: 'object',
+        properties: {
+          book_ids: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Danh sách id sách (tối đa 3), lấy đúng từ DỮ LIỆU SÁCH LIÊN QUAN',
+          },
+        },
+        required: ['book_ids'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'check_stock',
+      description: 'Kiểm tra tồn kho thực tế ngay lúc này của một cuốn sách cụ thể theo tên.',
+      parameters: {
+        type: 'object',
+        properties: {
+          book_query: { type: 'string', description: 'Tên sách hoặc mô tả ngắn để tìm' },
+        },
+        required: ['book_query'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'get_order_status',
+      description:
+        'Tra cứu trạng thái đơn hàng của khách đang đăng nhập. Để trống order_code để lấy đơn gần nhất.',
+      parameters: {
+        type: 'object',
+        properties: {
+          order_code: { type: 'string', description: 'Mã đơn hàng khách cung cấp, có thể để trống' },
+        },
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'apply_coupon',
+      description:
+        'Kiểm tra một mã giảm giá và xem trước số tiền được giảm dựa trên giỏ hàng hiện tại của khách.',
+      parameters: {
+        type: 'object',
+        properties: { code: { type: 'string', description: 'Mã giảm giá khách muốn dùng' } },
+        required: ['code'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'escalate_to_human',
+      description:
+        'Chuyển cuộc trò chuyện cho nhân viên thật khi không chắc câu trả lời, khách yêu cầu người thật, hoặc khách có vẻ bực bội.',
+      parameters: {
+        type: 'object',
+        properties: {
+          reason: { type: 'string', description: 'Tóm tắt ngắn gọn lý do cần chuyển cho nhân viên' },
+        },
+        required: ['reason'],
+      },
+    },
+  },
+]
+
+const TOOL_STATUS_LABELS = {
+  suggest_books: 'Đang chọn sách phù hợp...',
+  check_stock: 'Đang kiểm tra tồn kho...',
+  get_order_status: 'Đang tra cứu đơn hàng...',
+  apply_coupon: 'Đang kiểm tra mã giảm giá...',
+  escalate_to_human: 'Đang kết nối nhân viên hỗ trợ...',
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   5) THỰC THI TOOL — TẤT CẢ TRUY VẤN DB THẬT, KHÔNG BỊA
+   ═══════════════════════════════════════════════════════════════ */
+
+async function toolSuggestBooks(args, ctx) {
+  const requestedIds = Array.isArray(args.book_ids) ? args.book_ids : []
+  // Whitelist: model chỉ được chọn trong đúng tập candidate đã RAG ra cho lượt
+  // này — không bao giờ tin tưởng ID model tự đưa ra nằm ngoài whitelist.
+  const validIds = requestedIds.filter((id) => ctx.candidateBooksById.has(id)).slice(0, 3)
+  if (validIds.length === 0) {
+    return { ok: false, message: 'Không có id hợp lệ nằm trong danh sách gợi ý hiện tại.' }
+  }
+  const cards = validIds.map((id) => formatBookCard(ctx.candidateBooksById.get(id)))
+  ctx.emit('books', { books: cards })
+  return { ok: true, shown: cards.map((c) => c.title) }
+}
+
+async function toolCheckStock(args) {
+  const book = await fuzzyFindOneBook(args.book_query || '')
+  if (!book) return { ok: false, message: 'Không tìm thấy sách phù hợp với tên này trong hệ thống.' }
+  const variant = book.variants?.find((v) => v.format === 'PHYSICAL') || book.variants?.[0]
+  if (!variant) return { ok: false, message: 'Sách này chưa có phiên bản để bán.' }
+  return {
+    ok: true,
+    title: book.title,
+    unlimited: variant.isUnlimitedStock,
+    stock: variant.isUnlimitedStock ? null : variant.stock,
+    inStock: variant.isUnlimitedStock || variant.stock > 0,
+  }
+}
+
+async function toolGetOrderStatus(args, ctx) {
+  if (!ctx.user) {
+    return {
+      ok: false,
+      needsLogin: true,
+      message: 'Khách chưa đăng nhập nên không thể tra cứu đơn hàng — hãy mời khách đăng nhập trước.',
+    }
+  }
+
+  let order
+  const rawCode = String(args.order_code || '').trim()
+  if (rawCode) {
+    const id = decodeId(rawCode)
+    if (!id) return { ok: false, message: 'Mã đơn hàng không hợp lệ.' }
+    // QUAN TRỌNG: luôn kèm userId để không bao giờ trả về đơn của người khác.
+    order = await prisma.order.findFirst({ where: { id, userId: ctx.user.id } })
+  } else {
+    order = await prisma.order.findFirst({
+      where: { userId: ctx.user.id },
+      orderBy: { createdAt: 'desc' },
+    })
+  }
+
+  if (!order) return { ok: false, message: 'Không tìm thấy đơn hàng này thuộc tài khoản đang đăng nhập.' }
+
+  return {
+    ok: true,
+    orderCode: encodeId(order.id),
+    status: order.status,
+    paymentStatus: order.paymentStatus,
+    total: order.total,
+    createdAt: order.createdAt,
+  }
+}
+
+async function toolApplyCoupon(args, ctx) {
+  const cleanCode = String(args.code || '').trim().toUpperCase()
+  if (!cleanCode) return { ok: false, message: 'Thiếu mã giảm giá.' }
+
+  const coupon = await prisma.coupon.findUnique({ where: { code: cleanCode } })
+  const usable = isCouponUsable(coupon)
+  if (!usable.ok) return { ok: false, message: usable.reason }
+
+  let subtotal = null
+  let discount = null
+
+  if (ctx.user) {
+    const cart = await prisma.cart.findUnique({
+      where: { userId: ctx.user.id },
+      include: { items: { include: { variant: true } } },
+    })
+    if (cart && cart.items.length > 0) {
+      subtotal = cart.items.reduce(
+        (sum, it) => sum + (it.variant.salePrice ?? it.variant.price) * it.quantity,
+        0,
+      )
+      const result = validateAndComputeDiscount(coupon, subtotal)
+      if (!result.ok) return { ok: false, message: result.reason }
+      discount = result.discount
+    }
+  }
+
+  ctx.emit('coupon', { code: coupon.code, discount, subtotal })
+
+  return {
+    ok: true,
+    code: coupon.code,
+    type: coupon.type,
+    value: coupon.value,
+    minOrder: coupon.minOrder,
+    maxDiscount: coupon.maxDiscount,
+    subtotal,
+    discount,
+  }
+}
+
+async function toolEscalateToHuman(args, ctx) {
+  const reason = String(args.reason || '').trim().slice(0, 500) || 'Khách cần hỗ trợ thêm từ nhân viên.'
+
+  if (ctx.user) {
+    const code = await generateTicketCode(prisma)
+    await prisma.ticket.create({
+      data: {
+        code,
+        userId: ctx.user.id,
+        name: ctx.user.name,
+        email: ctx.user.email,
+        subject: 'OTHER',
+        message: `[Từ chatbot Eira] ${reason}`,
+        contactMethods: ['email'],
+      },
+    })
+    ctx.emit('escalate', { ticketCode: code })
+    return { ok: true, ticketCode: code, message: `Đã tạo ticket ${code}, nhân viên sẽ liên hệ qua email.` }
+  }
+
+  ctx.emit('escalate', { needsContactForm: true, prefill: { message: reason } })
+  return {
+    ok: true,
+    needsContactForm: true,
+    message: 'Khách chưa đăng nhập — đã mở sẵn form liên hệ để khách điền thông tin.',
+  }
+}
+
+const TOOL_EXECUTORS = {
+  suggest_books: toolSuggestBooks,
+  check_stock: toolCheckStock,
+  get_order_status: toolGetOrderStatus,
+  apply_coupon: toolApplyCoupon,
+  escalate_to_human: toolEscalateToHuman,
+}
+
+async function executeTool(name, args, ctx) {
+  const fn = TOOL_EXECUTORS[name]
+  if (!fn) return { ok: false, message: `Tool không tồn tại: ${name}` }
+  try {
+    return await fn(args, ctx)
+  } catch (err) {
+    console.error(`[aiChat] tool "${name}" error:`, err.message)
+    return { ok: false, message: 'Có lỗi khi thực hiện thao tác này, vui lòng thử lại.' }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   6) GỌI GROQ — STREAMING + PHÁT HIỆN TOOL CALLS TRONG STREAM
+   ═══════════════════════════════════════════════════════════════ */
+
+async function streamGroqCompletion(messages, { onToken, signal } = {}) {
   if (!GROQ_API_KEY) {
     const err = new Error('Thiếu GROQ_API_KEY trên server')
     err.code = 'CONFIG_MISSING'
     throw err
   }
 
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), GROQ_TIMEOUT_MS)
+  const res = await fetch(GROQ_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${GROQ_API_KEY}` },
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      messages,
+      tools: TOOLS,
+      tool_choice: 'auto',
+      temperature: 0.72,
+      max_tokens: 500,
+      top_p: 0.88,
+      stream: true,
+    }),
+    signal,
+  })
 
-  try {
-    const res = await fetch(GROQ_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${GROQ_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        messages,
-        temperature: 0.72,
-        max_tokens: 380,
-        top_p: 0.88,
-      }),
-      signal: controller.signal,
-    })
+  if (!res.ok || !res.body) {
+    const body = await res.json().catch(() => ({}))
+    const err = new Error(body?.error?.message || `Groq HTTP ${res.status}`)
+    err.status = res.status
+    throw err
+  }
 
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}))
-      const err = new Error(body?.error?.message || `Groq HTTP ${res.status}`)
-      err.status = res.status
-      throw err
+  const reader = res.body.getReader()
+  const decoder = new TextDecoder()
+  let buffer = ''
+  let fullText = ''
+  let sawToolCall = false
+  let finishReason = null
+  const toolCallsByIndex = new Map()
+
+  while (true) {
+    const { value, done } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+
+    const lines = buffer.split('\n')
+    buffer = lines.pop() // dòng cuối có thể chưa hoàn chỉnh, giữ lại cho lần đọc sau
+
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (!trimmed.startsWith('data:')) continue
+      const payload = trimmed.slice(5).trim()
+      if (payload === '[DONE]') continue
+
+      let json
+      try {
+        json = JSON.parse(payload)
+      } catch {
+        continue
+      }
+
+      const choice = json?.choices?.[0]
+      if (!choice) continue
+      if (choice.finish_reason) finishReason = choice.finish_reason
+
+      const delta = choice.delta || {}
+
+      if (delta.tool_calls) {
+        sawToolCall = true
+        for (const tc of delta.tool_calls) {
+          const idx = tc.index ?? 0
+          if (!toolCallsByIndex.has(idx)) toolCallsByIndex.set(idx, { id: '', name: '', arguments: '' })
+          const entry = toolCallsByIndex.get(idx)
+          if (tc.id) entry.id = tc.id
+          if (tc.function?.name) entry.name += tc.function.name
+          if (tc.function?.arguments) entry.arguments += tc.function.arguments
+        }
+      }
+
+      // Chỉ stream token thật cho client khi lượt này KHÔNG phải là tool call
+      // (theo chuẩn OpenAI/Groq, 1 lượt chỉ là text HOẶC tool_calls, không lẫn cả hai).
+      if (delta.content && !sawToolCall) {
+        fullText += delta.content
+        onToken?.(delta.content)
+      }
     }
+  }
 
-    const data = await res.json()
-    const reply = data?.choices?.[0]?.message?.content?.trim()
-    if (!reply) throw new Error('Groq không trả về nội dung')
-    return reply
-  } finally {
-    clearTimeout(timer)
+  return {
+    text: fullText,
+    finishReason,
+    toolCalls: [...toolCallsByIndex.values()].filter((tc) => tc.name),
   }
 }
 
-//    5) ENTRYPOINT
-async function getChatReply({ message, history = [] }) {
+/* ═══════════════════════════════════════════════════════════════
+   7) ORCHESTRATOR — vòng lặp text ⇄ tool call, phát sự kiện qua emit()
+   ═══════════════════════════════════════════════════════════════ */
+
+/**
+ * @param {object} params
+ * @param {string} params.message
+ * @param {Array<{role:string, content:string}>} params.history
+ * @param {object|null} params.user - req.user (từ optionalAuth), null nếu khách
+ * @param {(event:string, data:object) => void} params.emit - đẩy sự kiện SSE
+ * @param {AbortSignal} [params.signal]
+ */
+async function runChatTurn({ message, history = [], user = null, emit, signal }) {
   const trimmedMessage = String(message).trim().slice(0, MAX_MESSAGE_LEN)
 
   const safeHistory = history
@@ -220,20 +498,59 @@ async function getChatReply({ message, history = [] }) {
     .slice(-MAX_HISTORY_MESSAGES)
     .map((m) => ({ role: m.role, content: m.content.slice(0, MAX_MESSAGE_LEN) }))
 
-  const [booksContext, couponsContext] = await Promise.all([
-    getRelevantBooksContext(trimmedMessage),
+  const [candidateBooks, couponsContext] = await Promise.all([
+    fuzzySearchBooks(trimmedMessage, MAX_BOOK_CANDIDATES),
     getActiveCouponsContext(),
   ])
+  const candidateBooksById = new Map(candidateBooks.map((b) => [b.id, b]))
+  const booksContext = formatBooksContext(candidateBooks)
 
   const systemPrompt = buildSystemPrompt([booksContext, couponsContext])
 
-  const reply = await callGroq([
+  const messages = [
     { role: 'system', content: systemPrompt },
     ...safeHistory,
     { role: 'user', content: trimmedMessage },
-  ])
+  ]
 
-  return sanitizeReply(reply)
+  const ctx = { user, candidateBooksById, emit }
+
+  for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
+    const result = await streamGroqCompletion(messages, {
+      signal,
+      onToken: (text) => emit('token', { text }),
+    })
+
+    if (result.toolCalls.length === 0) {
+      return sanitizeReply(result.text)
+    }
+
+    // Model chọn gọi tool: đẩy message assistant (có tool_calls) + kết quả
+    // từng tool vào lịch sử, rồi lặp lại để model trả lời dựa trên kết quả.
+    messages.push({
+      role: 'assistant',
+      content: result.text || null,
+      tool_calls: result.toolCalls.map((tc) => ({
+        id: tc.id,
+        type: 'function',
+        function: { name: tc.name, arguments: tc.arguments },
+      })),
+    })
+
+    for (const tc of result.toolCalls) {
+      let args = {}
+      try {
+        args = JSON.parse(tc.arguments || '{}')
+      } catch {
+        // arguments lỗi JSON -> coi như rỗng, tool tự validate lại
+      }
+      emit('status', { label: TOOL_STATUS_LABELS[tc.name] || 'Đang xử lý...' })
+      const toolResult = await executeTool(tc.name, args, ctx)
+      messages.push({ role: 'tool', tool_call_id: tc.id, content: JSON.stringify(toolResult) })
+    }
+  }
+
+  throw new Error('Vượt quá số lần gọi công cụ cho phép trong một lượt trả lời')
 }
 
-module.exports = { getChatReply }
+module.exports = { runChatTurn }

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { useAuthStore } from "../store/authStore";
 import "./assets/css/EiraChatbox.css";
 
 /* ═══════════════════════════════════════════════════════════════
@@ -134,9 +135,48 @@ function toSpeakableText(raw) {
 }
 
 let msgIdCounter = 0;
-function makeMsg(role, text, isError = false) {
-  return { id: ++msgIdCounter, role, text, isError, time: nowTime() };
+function makeMsg(role, text, isError = false, data = null) {
+  return { id: ++msgIdCounter, role, text, isError, time: nowTime(), data };
 }
+
+/**
+ * Đọc một response SSE (Server-Sent Events) từ fetch() theo từng chunk,
+ * gọi onEvent(eventName, data) ngay khi nhận đủ 1 "record" (event+data
+ * cách nhau bởi dòng trống, theo chuẩn SSE) — cho phép hiển thị token
+ * ngay khi tới, không cần đợi toàn bộ response như JSON thường.
+ */
+async function consumeSse(response, onEvent) {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    const records = buffer.split("\n\n");
+    buffer = records.pop(); // phần cuối có thể chưa đủ 1 record, giữ lại
+
+    for (const record of records) {
+      let event = "message";
+      let dataStr = "";
+      for (const line of record.split("\n")) {
+        if (line.startsWith("event:")) event = line.slice(6).trim();
+        else if (line.startsWith("data:")) dataStr += line.slice(5).trim();
+      }
+      if (!dataStr) continue;
+      try {
+        onEvent(event, JSON.parse(dataStr));
+      } catch {
+        // bỏ qua record lỗi định dạng, không làm gãy cả stream
+      }
+    }
+  }
+}
+
+
+
 
 function ActionButtons({ msg, onRegenerate }) {
   const [copied, setCopied] = useState(false);
@@ -158,7 +198,8 @@ function ActionButtons({ msg, onRegenerate }) {
       }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {}
+    } catch {
+    }
   };
 
   // Helper: lấy voices, nếu chưa load xong (mảng rỗng) thì chờ event voiceschanged
@@ -326,6 +367,123 @@ function MessageBody({ text, onNavigateAway }) {
   );
 }
 
+function BookCardsBody({ books, onNavigateAway }) {
+  const navigate = useNavigate();
+  if (!books || books.length === 0) return null;
+
+  return (
+    <div className="em-bubble em-book-cards">
+      {books.map((b) => (
+        <button
+          type="button"
+          key={b.id}
+          className="em-book-card"
+          onClick={() => {
+            navigate(b.url);
+            onNavigateAway?.();
+          }}
+        >
+          {b.coverImage && (
+            <img src={b.coverImage} alt={b.title} className="em-book-cover" />
+          )}
+          <div className="em-book-info">
+            <span className="em-book-title">{b.title}</span>
+            {b.ageRangeLabel && (
+              <span className="em-book-age">{b.ageRangeLabel}</span>
+            )}
+            <span className="em-book-price">
+              {b.salePrice ? (
+                <>
+                  <strong>{b.salePrice.toLocaleString("vi-VN")}đ</strong>
+                  <s>{b.price?.toLocaleString("vi-VN")}đ</s>
+                </>
+              ) : b.price ? (
+                <strong>{b.price.toLocaleString("vi-VN")}đ</strong>
+              ) : (
+                <span>Đang cập nhật</span>
+              )}
+            </span>
+            {b.inStock === false && (
+              <span className="em-book-oos">Tạm hết hàng</span>
+            )}
+          </div>
+          <ArrowUpRight size={14} strokeWidth={2.5} />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function CouponChipBody({ data }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard?.writeText(data.code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1800);
+  };
+
+  return (
+    <div className="em-bubble em-coupon-chip">
+      <Tag size={14} strokeWidth={2.5} />
+      <div className="em-coupon-info">
+        <span className="em-coupon-code">{data.code}</span>
+        {data.discount != null ? (
+          <span className="em-coupon-detail">
+            Giảm {data.discount.toLocaleString("vi-VN")}đ cho giỏ hàng hiện tại
+          </span>
+        ) : (
+          <span className="em-coupon-detail">Nhập mã này ở bước thanh toán</span>
+        )}
+      </div>
+      <button type="button" className="em-coupon-copy" onClick={handleCopy}>
+        {copied ? (
+          <Check size={13} strokeWidth={2.5} />
+        ) : (
+          <Copy size={13} strokeWidth={2} />
+        )}
+        {copied ? "Đã chép" : "Sao chép"}
+      </button>
+    </div>
+  );
+}
+
+function EscalateBody({ data, onNavigateAway }) {
+  const navigate = useNavigate();
+
+  if (data.ticketCode) {
+    return (
+      <div className="em-bubble em-escalate">
+        <MessageCircle size={14} strokeWidth={2.5} />
+        <span>
+          Mình đã tạo yêu cầu hỗ trợ <strong>{data.ticketCode}</strong>, nhân
+          viên Earthoria sẽ liên hệ qua email sớm nhé.
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="em-bubble em-escalate">
+      <MessageCircle size={14} strokeWidth={2.5} />
+      <div className="em-escalate-info">
+        <span>Bạn cần nói chuyện trực tiếp với nhân viên Earthoria phải không ạ?</span>
+        <button
+          type="button"
+          className="em-link-btn"
+          onClick={() => {
+            navigate("/contact", { state: { prefillMessage: data.prefill?.message } });
+            onNavigateAway?.();
+          }}
+        >
+          Mở form liên hệ
+          <ArrowUpRight size={12} strokeWidth={2.5} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function BotMessage({ msg, onRegenerate, onNavigateAway }) {
   return (
     <div className={`em bot${msg.isError ? " em-error" : ""}`}>
@@ -339,8 +497,18 @@ function BotMessage({ msg, onRegenerate, onNavigateAway }) {
         {msg.isError && (
           <WifiOff size={13} className="em-error-icon" aria-hidden="true" />
         )}
-        <MessageBody text={msg.text} onNavigateAway={onNavigateAway} />
-        <ActionButtons msg={msg} onRegenerate={onRegenerate} />
+        {msg.data?.type === "books" ? (
+          <BookCardsBody books={msg.data.books} onNavigateAway={onNavigateAway} />
+        ) : msg.data?.type === "coupon" ? (
+          <CouponChipBody data={msg.data} />
+        ) : msg.data?.type === "escalate" ? (
+          <EscalateBody data={msg.data} onNavigateAway={onNavigateAway} />
+        ) : (
+          <>
+            <MessageBody text={msg.text} onNavigateAway={onNavigateAway} />
+            <ActionButtons msg={msg} onRegenerate={onRegenerate} />
+          </>
+        )}
       </div>
       <div className="em-time">{msg.time}</div>
     </div>
@@ -373,6 +541,7 @@ function EiraUI() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [statusLabel, setStatusLabel] = useState(null);
   const [isBusy, setIsBusy] = useState(false);
   const [suggHidden, setSuggHidden] = useState(false);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
@@ -510,7 +679,7 @@ function EiraUI() {
     if (distFromBottom < SCROLL_BOTTOM_THRESHOLD * 2) {
       msgsEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages, isTyping]);
+  }, [messages, isTyping, statusLabel]);
 
   /* Theo dõi vị trí cuộn để hiện nút "xuống cuối" khi người dùng cuộn lên xem lại lịch sử */
   useEffect(() => {
@@ -554,7 +723,9 @@ function EiraUI() {
     return () => document.removeEventListener("keydown", handler);
   }, [isOpen]);
 
-  /* Core send */
+  /* Core send — giờ đọc phản hồi dạng SSE (Server-Sent Events) từ backend:
+     token từng chữ hiện ngay giống ChatGPT, cộng với các sự kiện phụ khi
+     Eira gọi tool thật (books/coupon/escalate/status). */
   const sendMessage = useCallback(
     async (text) => {
       const trimmed = text?.trim().slice(0, MAX_INPUT_LEN);
@@ -575,63 +746,130 @@ function EiraUI() {
       setMessages((prev) => [...prev, makeMsg("user", trimmed)]);
       historyRef.current.push({ role: "user", content: trimmed });
       setIsTyping(true);
+      setStatusLabel(null);
+
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+      let botMsgId = null;
+      let streamedText = "";
+
+      // Token text stream vào đúng 1 bong bóng bot, tạo bong bóng đó ngay
+      // khi token đầu tiên tới (không tạo trước, tránh 1 bong bóng rỗng
+      // chớp nháy nếu lượt này hoá ra chỉ toàn tool call).
+      const appendToken = (chunk) => {
+        streamedText += chunk;
+        setIsTyping(false);
+        setStatusLabel(null);
+        setMessages((prev) => {
+          if (botMsgId == null) {
+            const msg = makeMsg("bot", chunk);
+            botMsgId = msg.id;
+            return [...prev, msg];
+          }
+          return prev.map((m) =>
+            m.id === botMsgId ? { ...m, text: m.text + chunk } : m,
+          );
+        });
+      };
 
       try {
-        // Gọi backend — server mới là nơi giữ API key, system prompt và
-        // dữ liệu sách/khuyến mãi thật (RAG). Dùng `api` (axios instance
-        // dùng chung toàn app) để tự đính kèm access token nếu khách đã
-        // đăng nhập, đồng thời AbortController để tôn trọng timeout riêng.
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+        const token = useAuthStore.getState().accessToken;
+        const baseURL = api.defaults.baseURL || "";
 
-        let data;
-        try {
-          const res = await api.post(
-            "/ai/chat",
-            {
-              message: trimmed,
-              history: historyRef.current.slice(-TRIM_HISTORY_TO),
-            },
-            { signal: controller.signal },
-          );
-          data = res.data;
-        } finally {
-          clearTimeout(timer);
+        const res = await fetch(`${baseURL}/ai/chat`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            message: trimmed,
+            history: historyRef.current.slice(-TRIM_HISTORY_TO),
+          }),
+          signal: controller.signal,
+        });
+
+        if (!res.ok || !res.body) {
+          const errBody = await res.json().catch(() => ({}));
+          const err = new Error(errBody?.message || `HTTP ${res.status}`);
+          err.status = res.status;
+          throw err;
         }
 
-        const reply = data?.data?.reply?.trim() || null;
-        if (!reply) throw new Error("Không nhận được phản hồi từ AI");
+        let finalReply = null;
+        let sawError = null;
 
-        historyRef.current.push({ role: "assistant", content: reply });
-        if (historyRef.current.length > MAX_HISTORY_TURNS)
-          historyRef.current = historyRef.current.slice(-TRIM_HISTORY_TO);
+        await consumeSse(res, (event, data) => {
+          if (event === "token") {
+            appendToken(data.text);
+          } else if (event === "status") {
+            // Không đè chữ đang lỡ đang stream — chỉ hiện trạng thái khi
+            // chưa có token text nào (đầu lượt, model vừa quyết định gọi tool).
+            if (!streamedText) setStatusLabel(data.label);
+          } else if (event === "books") {
+            setStatusLabel(null);
+            setMessages((prev) => [
+              ...prev,
+              makeMsg("bot", "", false, { type: "books", books: data.books }),
+            ]);
+          } else if (event === "coupon") {
+            setStatusLabel(null);
+            setMessages((prev) => [
+              ...prev,
+              makeMsg("bot", "", false, { type: "coupon", ...data }),
+            ]);
+          } else if (event === "escalate") {
+            setStatusLabel(null);
+            setMessages((prev) => [
+              ...prev,
+              makeMsg("bot", "", false, { type: "escalate", ...data }),
+            ]);
+          } else if (event === "done") {
+            finalReply = data.reply;
+          } else if (event === "error") {
+            sawError = data.message;
+          }
+        });
 
+        clearTimeout(timer);
         setIsTyping(false);
-        setMessages((prev) => [...prev, makeMsg("bot", reply)]);
+        setStatusLabel(null);
+
+        if (sawError && !streamedText) throw new Error(sawError);
+
+        const reply = (finalReply ?? streamedText).trim();
+        if (reply) {
+          historyRef.current.push({ role: "assistant", content: reply });
+          if (historyRef.current.length > MAX_HISTORY_TURNS)
+            historyRef.current = historyRef.current.slice(-TRIM_HISTORY_TO);
+        }
+
         if (!isOpenRef.current) setUnreadCount((c) => c + 1);
       } catch (err) {
+        clearTimeout(timer);
         setIsTyping(false);
+        setStatusLabel(null);
 
-        const status = err.response?.status;
-        const isAbort =
-          err.name === "AbortError" || err.name === "CanceledError";
-        const isRateLimited = status === 429;
-        const isServerConfig = status === 502 || status === 503;
-        const isTimeout = status === 504;
-        const isNetwork = !err.response && !isAbort;
+        const isAbort = err.name === "AbortError";
+        const isRateLimited = err.status === 429;
+        const isServerConfig = err.status === 502 || err.status === 503;
+        const isNetwork = !err.status && !isAbort;
 
-        const errMsg =
-          isAbort || isTimeout
-            ? "Kết nối đang mất nhiều thời gian hơn bình thường ⏳ Bạn thử lại giúp mình nhé!"
-            : isNetwork
-              ? "Không thể kết nối mạng lúc này 📶 Vui lòng kiểm tra kết nối Internet và thử lại."
-              : isRateLimited
-                ? "Mình đang nhận hơi nhiều tin nhắn một lúc 😅 Bạn chờ vài giây rồi thử lại nhé!"
-                : isServerConfig
-                  ? "Hệ thống AI đang gặp sự cố. Vui lòng liên hệ earthoriavn@gmail.com để được hỗ trợ."
-                  : `Có lỗi xảy ra, bạn thử lại giúp mình nhé! (${err.response?.data?.message || err.message})`;
+        const errMsg = isAbort
+          ? "Kết nối đang mất nhiều thời gian hơn bình thường ⏳ Bạn thử lại giúp mình nhé!"
+          : isNetwork
+            ? "Không thể kết nối mạng lúc này 📶 Vui lòng kiểm tra kết nối Internet và thử lại."
+            : isRateLimited
+              ? "Mình đang nhận hơi nhiều tin nhắn một lúc 😅 Bạn chờ vài giây rồi thử lại nhé!"
+              : isServerConfig
+                ? "Hệ thống AI đang gặp sự cố. Vui lòng liên hệ earthoriavn@gmail.com để được hỗ trợ."
+                : `Có lỗi xảy ra, bạn thử lại giúp mình nhé! (${err.message})`;
 
         historyRef.current.pop();
+        // Nếu đã lỡ stream được vài chữ trước khi lỗi, giữ nguyên bong bóng
+        // đó và thêm bong bóng lỗi riêng, thay vì xoá mất phần đã trả lời.
         setMessages((prev) => [...prev, makeMsg("bot", errMsg, true)]);
       } finally {
         setIsBusy(false);
@@ -871,7 +1109,7 @@ function EiraUI() {
             ),
           )}
 
-          {isTyping && (
+          {(isTyping || statusLabel) && (
             <div className="eira-typing">
               <div className="typing-label-row">
                 <div className="em-av">
@@ -881,11 +1119,17 @@ function EiraUI() {
                   Eira
                 </span>
               </div>
-              <div className="typing-bubble">
-                <div className="typing-dot" />
-                <div className="typing-dot" />
-                <div className="typing-dot" />
-              </div>
+              {statusLabel ? (
+                <div className="typing-bubble em-status-label">
+                  {statusLabel}
+                </div>
+              ) : (
+                <div className="typing-bubble">
+                  <div className="typing-dot" />
+                  <div className="typing-dot" />
+                  <div className="typing-dot" />
+                </div>
+              )}
             </div>
           )}
 
