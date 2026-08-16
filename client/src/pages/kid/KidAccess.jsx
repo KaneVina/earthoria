@@ -23,6 +23,7 @@ import {
   ShieldCheck,
   Search,
   Package,
+  Lightbulb,
 } from "lucide-react";
 import { kidAccessService } from "../../services/kidAccessService";
 import FullScreenLoader from "../../components/FullScreenLoader";
@@ -320,7 +321,7 @@ export default function KidAccess() {
   //   mẹo hiển thị lúc mở app (tipsFrequency === 'open')
   useEffect(() => {
     if (isOk && child?.tipsEnabled && child?.tipsFrequency === "open") {
-      toast(eyeTip, { icon: "💡", duration: 5000 });
+      toast(eyeTip, { icon: <Lightbulb size={16} />, duration: 5000 });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOk]);
@@ -369,8 +370,6 @@ export default function KidAccess() {
 
   const handleReadNow = useCallback(
     (book) => {
-      // Đọc ngay = mở sách điện tử (đúng nghĩa "đọc"). AR chỉ dùng làm dự
-      // phòng khi sách chưa có bản điện tử nhưng đã có mô hình AR.
       if (book.hasEbook) {
         navigate(`/e-kid/${slug}/${token}/ebook/${book.slug}`);
         return;
