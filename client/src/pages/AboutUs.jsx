@@ -881,7 +881,7 @@ export default function AboutUs() {
                 <span
                   className="tech-editor-number"
                   id="tech-loc-counter"
-                  data-target="   116803"
+                  data-target="  118176"
                 >
                   0
                 </span>

@@ -18,17 +18,10 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import api from "../services/api";
 import { useAuthStore } from "../store/authStore";
 import "./assets/css/EiraChatbox.css";
-
-/* ═══════════════════════════════════════════════════════════════
-   CONFIG
-   Lưu ý: KHÔNG gọi Groq trực tiếp từ client nữa — key và system
-   prompt giờ chỉ tồn tại ở backend (/api/v1/ai/chat), để không bị
-   lộ qua DevTools/bundle JS.
-   ═══════════════════════════════════════════════════════════════ */
 
 const MASCOT_HIDE_DURATION = 5 * 60 * 1000; // 5 phút — ẩn tạm, không lưu vĩnh viễn
 const MASCOT_FIRST_SHOW_DELAY = 3000; // 3 giây sau khi trang sẵn sàng
@@ -537,6 +530,9 @@ function UserMessage({ msg }) {
 }
 
 function EiraUI() {
+  const location = useLocation();
+  const isDashboard = location.pathname.startsWith("/dashboard");
+
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -978,7 +974,7 @@ function EiraUI() {
             <span className="eira-firefly eira-firefly-3" aria-hidden="true" />
             <img
               className="eira-fab-mascot-img"
-              src="/eira/eira-sayhi.png"
+              src={isDashboard ? "/eira/eira-staff.png" : "/eira/eira-sayhi.png"}
               alt="Eira vẫy chào"
               draggable="false"
             />
