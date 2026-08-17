@@ -1,8 +1,12 @@
 const prisma = require('../config/db')
-const { encodeId, decodeId } = require('../utils/hashids')
+const { encodeId } = require('../utils/hashids')
 const { fuzzySearchBooks, fuzzyFindOneBook } = require('../utils/bookSearch')
 const { validateAndComputeDiscount, isCouponUsable } = require('../utils/couponUtil')
 const { generateTicketCode } = require('../utils/generateTicketCode')
+
+/* ═══════════════════════════════════════════════════════════════
+   CẤU HÌNH (server-side only — không tiền tố VITE_/REACT_APP_)
+   ═══════════════════════════════════════════════════════════════ */
 const GROQ_API_KEY = process.env.GROQ_API_KEY
 const GROQ_URL = process.env.GROQ_URL || 'https://api.groq.com/openai/v1/chat/completions'
 const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.1-8b-instant'
@@ -12,7 +16,9 @@ const MAX_MESSAGE_LEN = 500
 const MAX_TOOL_ROUNDS = 3 // chặn vòng lặp tool gọi tool vô hạn
 const MAX_BOOK_CANDIDATES = 5
 
-  //  1) RAG — LẤY DỮ LIỆU THẬT TỪ DB
+/* ═══════════════════════════════════════════════════════════════
+   1) RAG — LẤY DỮ LIỆU THẬT TỪ DB
+   ═══════════════════════════════════════════════════════════════ */
 
 function formatBookCard(book) {
   const variant = book.variants?.find((v) => v.format === 'PHYSICAL') || book.variants?.[0] || null
@@ -20,7 +26,7 @@ function formatBookCard(book) {
     id: book.id,
     title: book.title,
     slug: book.slug,
-    url: `/${book.slug}/${encodeId(book.id)}`,
+    url: `/books/${book.slug}/${encodeId(book.id)}`,
     coverImage: book.coverImage || null,
     category: book.category?.name || null,
     ageRangeLabel:
@@ -69,14 +75,17 @@ async function getActiveCouponsContext() {
   return `MÃ GIẢM GIÁ ĐANG HOẠT ĐỘNG (LẤY TRỰC TIẾP TỪ HỆ THỐNG):\n${lines.join('\n')}`
 }
 
-  //  2) SYSTEM PROMPT
+/* ═══════════════════════════════════════════════════════════════
+   2) SYSTEM PROMPT
+   ═══════════════════════════════════════════════════════════════ */
+
 const BASE_SYSTEM_PROMPT = `Bạn là Eira — trợ lý AI thân thiện đồng thời là chuyên viên tư vấn khách hàng chuyên nghiệp của thương hiệu sách giáo dục tương tác Earthoria. Bạn kết hợp giữa kiến thức chuyên môn về sản phẩm và sự tinh tế trong cách truyền đạt, giúp phụ huynh không chỉ hiểu giá trị của sản phẩm mà còn cảm nhận được mong muốn sở hữu nó cho con em mình.
 
 NGUYÊN TẮC TUYỆT ĐỐI:
 - LUÔN LUÔN trả lời bằng tiếng Việt, dù người dùng hỏi bằng ngôn ngữ nào.
 - Từ chối trả lời những câu hỏi nhạy cảm liên quan đến chính trị, tôn giáo, chiến tranh, giới tính, định kiến.
 - CHỈ được dùng số liệu (giá, tồn kho, mã giảm giá) xuất hiện trong khối DỮ LIỆU được cung cấp hoặc kết quả trả về từ tool. TUYỆT ĐỐI KHÔNG tự đoán, không bịa, không dùng số liệu cũ nhớ từ trước. Nếu không có dữ liệu liên quan, hãy nói rõ là chưa có thông tin chính xác và hướng dẫn khách liên hệ earthoriavn@gmail.com.
-- Khi người dùng gửi một đoạn mã số nghi là mã tài khoản/mã bảo mật: từ chối ngay với lý do bảo mật.
+- Mã đơn hàng (dạng ODE-xxxxxxx) khách gửi để tra cứu đơn KHÔNG phải thông tin nhạy cảm — hãy dùng tool get_order_status bình thường, đừng từ chối. Chỉ từ chối khi khách gửi một chuỗi rõ ràng là mã xác thực/mã bảo mật tài khoản (không phải mã đơn hàng, mã giảm giá, hay mã sản phẩm).
 
 DÙNG TOOL KHI CẦN — RẤT QUAN TRỌNG:
 - Khi bạn muốn giới thiệu cụ thể 1-3 cuốn sách cho khách (không chỉ nhắc tên suông), LUÔN gọi tool suggest_books với đúng "id" lấy từ khối DỮ LIỆU SÁCH LIÊN QUAN — để hệ thống hiển thị card sản phẩm đẹp kèm ảnh/giá/nút mua ngay cho khách, thay vì chỉ mô tả bằng chữ.
@@ -130,7 +139,10 @@ function buildSystemPrompt(dynamicContextBlocks) {
   return `${BASE_SYSTEM_PROMPT}\n\n${context}`
 }
 
-  //  3) LỌC ĐẦU RA — lớp phòng thủ thứ hai
+/* ═══════════════════════════════════════════════════════════════
+   3) LỌC ĐẦU RA — lớp phòng thủ thứ hai
+   ═══════════════════════════════════════════════════════════════ */
+
 const LEAK_PATTERNS = [/\/dashboard(\/\S*)?/gi]
 
 function sanitizeReply(text) {
@@ -139,7 +151,9 @@ function sanitizeReply(text) {
   return safe
 }
 
-  //  4) ĐỊNH NGHĨA TOOLS (function calling — chuẩn OpenAI/Groq)
+/* ═══════════════════════════════════════════════════════════════
+   4) ĐỊNH NGHĨA TOOLS (function calling — chuẩn OpenAI/Groq)
+   ═══════════════════════════════════════════════════════════════ */
 
 const TOOLS = [
   {
@@ -180,11 +194,14 @@ const TOOLS = [
     function: {
       name: 'get_order_status',
       description:
-        'Tra cứu trạng thái đơn hàng của khách đang đăng nhập. Để trống order_code để lấy đơn gần nhất.',
+        'Tra cứu trạng thái đơn hàng của khách đang đăng nhập. Mã đơn có dạng ODE-xxxxxxx (khách copy từ trang Đơn Hàng của họ). Để trống order_code để lấy đơn gần nhất.',
       parameters: {
         type: 'object',
         properties: {
-          order_code: { type: 'string', description: 'Mã đơn hàng khách cung cấp, có thể để trống' },
+          order_code: {
+            type: 'string',
+            description: 'Mã đơn hàng dạng ODE-xxxxxxx khách cung cấp, có thể để trống',
+          },
         },
       },
     },
@@ -258,6 +275,30 @@ async function toolCheckStock(args) {
   }
 }
 
+// Bản sao CHÍNH XÁC của getOrderCode() trong orderController.js — mã đơn
+// hiển thị dạng ODE-xxxxxxx là hash 1 CHIỀU sinh từ order.id + ngày tạo,
+// KHÔNG giải mã ngược được như hashids. Nên thay vì decode, ta tính lại mã
+// này cho từng đơn của CHÍNH khách đang đăng nhập rồi so khớp chuỗi.
+const ORDER_CODE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+
+function computeOrderCode(order) {
+  if (!order) return ''
+  if (order.orderCode) return order.orderCode
+  const d = new Date(order.createdAt || Date.now())
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  const yy = String(d.getFullYear()).slice(-2)
+  const seed = String(order.id || '')
+  let hash = 0
+  for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0
+  let suffix = ''
+  for (let i = 0; i < 3; i++) {
+    suffix += ORDER_CODE_CHARS[hash % ORDER_CODE_CHARS.length]
+    hash = Math.floor(hash / ORDER_CODE_CHARS.length) + i + 1
+  }
+  return `ODE-${mm}${dd}${yy}${suffix}`
+}
+
 async function toolGetOrderStatus(args, ctx) {
   if (!ctx.user) {
     return {
@@ -267,25 +308,28 @@ async function toolGetOrderStatus(args, ctx) {
     }
   }
 
+  const rawCode = String(args.order_code || '').trim().toUpperCase()
+
+  // QUAN TRỌNG: luôn giới hạn trong đơn của CHÍNH khách đang đăng nhập —
+  // không bao giờ query toàn bộ bảng Order, tránh rò đơn của người khác.
+  const myOrders = await prisma.order.findMany({
+    where: { userId: ctx.user.id },
+    orderBy: { createdAt: 'desc' },
+    take: 50,
+  })
+
   let order
-  const rawCode = String(args.order_code || '').trim()
   if (rawCode) {
-    const id = decodeId(rawCode)
-    if (!id) return { ok: false, message: 'Mã đơn hàng không hợp lệ.' }
-    // QUAN TRỌNG: luôn kèm userId để không bao giờ trả về đơn của người khác.
-    order = await prisma.order.findFirst({ where: { id, userId: ctx.user.id } })
+    order = myOrders.find((o) => computeOrderCode(o).toUpperCase() === rawCode)
   } else {
-    order = await prisma.order.findFirst({
-      where: { userId: ctx.user.id },
-      orderBy: { createdAt: 'desc' },
-    })
+    order = myOrders[0]
   }
 
   if (!order) return { ok: false, message: 'Không tìm thấy đơn hàng này thuộc tài khoản đang đăng nhập.' }
 
   return {
     ok: true,
-    orderCode: encodeId(order.id),
+    orderCode: computeOrderCode(order),
     status: order.status,
     paymentStatus: order.paymentStatus,
     total: order.total,

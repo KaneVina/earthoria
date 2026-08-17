@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Mail, Phone, MapPin, Clock, ArrowRight, ShieldCheck,
   CheckCheck, MessageCircle, ChevronDown, Send, Users,
@@ -144,6 +145,17 @@ export default function ContactPage() {
   const [form, setForm] = useState({
     name: "", email: "", phone: "", company: "", message: "",
   });
+
+  /* Nếu được điều hướng tới từ chatbot Eira (tool escalate_to_human) khi
+     khách chưa đăng nhập, tự điền sẵn lý do vào ô tin nhắn cho đỡ gõ lại. */
+  const location = useLocation();
+  useEffect(() => {
+    const prefill = location.state?.prefillMessage;
+    if (prefill) {
+      setForm((prev) => ({ ...prev, message: prefill }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* refs */
   const introContentRef = useRef(null);
