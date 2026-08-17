@@ -174,10 +174,26 @@ export default function Navbar() {
           <Link to="/" className="nav-logo">
             <span className="nav-logo-swap">
               <img src={logoImg} alt="EARTHORIA" className="nav-logo-full" />
+              <span
+                className="nav-logo-shine nav-logo-shine-full"
+                aria-hidden="true"
+                style={{
+                  WebkitMaskImage: `url(${logoImg})`,
+                  maskImage: `url(${logoImg})`,
+                }}
+              />
               <img
                 src={logoCompactImg}
                 alt="EARTHORIA"
                 className="nav-logo-compact"
+              />
+              <span
+                className="nav-logo-shine nav-logo-shine-compact"
+                aria-hidden="true"
+                style={{
+                  WebkitMaskImage: `url(${logoCompactImg})`,
+                  maskImage: `url(${logoCompactImg})`,
+                }}
               />
             </span>
           </Link>
