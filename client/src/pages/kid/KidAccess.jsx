@@ -11,12 +11,11 @@ import {
   Moon,
   ChevronRight,
   X,
-  Info,
+  Compass,
   Smile,
   BookMarked,
   ArrowLeft,
   Star,
-  Leaf,
   Wind,
   Settings,
   Type,
@@ -24,6 +23,8 @@ import {
   Search,
   Package,
   Lightbulb,
+  PartyPopper,
+  Heart,
 } from "lucide-react";
 import { kidAccessService } from "../../services/kidAccessService";
 import FullScreenLoader from "../../components/FullScreenLoader";
@@ -47,8 +48,9 @@ const EYE_TIPS = [
 
 const BREATH_PHASES = ["Hít vào thật sâu…", "Thở ra thật chậm…"];
 
-// Bảng màu xoay vòng cho "tủ sách" — mỗi cuốn có một tông riêng để kệ sách
-// trông sống động, giống sách thật xếp cạnh nhau chứ không đơn sắc.
+// Bảng "tem màu" xoay vòng cho tủ sách — mỗi cuốn có một sắc riêng
+// lấy từ chính quả địa cầu nhiều màu trong logo, để tủ sách trông
+// sống động như một bộ hộ chiếu phiêu lưu, không đơn sắc.
 const SHELF_ACCENTS = ["leaf", "sky", "berry", "sun", "grape", "coral"];
 
 // Các mức cỡ chữ bé có thể tự chọn trong bảng cài đặt (giữ nút bánh răng để mở).
@@ -113,7 +115,7 @@ function normalizeSearch(str) {
     .trim();
 }
 
-// Chọn màu "gáy sách" ổn định theo id, dùng cho modal (để trùng khớp cảm
+// Chọn "tem màu" ổn định theo id, dùng cho modal (để trùng khớp cảm
 // giác với thẻ sách tương ứng ngoài lưới dù ta không truyền index vào đây).
 function accentForId(id) {
   const str = String(id ?? "");
@@ -139,6 +141,37 @@ function spawnRipple(e) {
   span.addEventListener("animationend", () => span.remove());
 }
 
+// Chùm "pháo hoa" nhiều màu khi bé chạm vào một khoảnh khắc đáng ăn
+// mừng (mở sách, đọc ngay, chọn cỡ chữ...). Gắn vào <body> ở toạ độ
+// con trỏ để không bị cắt bởi overflow:hidden của thẻ sách, tự dọn
+// dẹp sau khi chạy xong — không đụng tới state React nào cả.
+const SPARKLE_COLORS = ["#12A8E0", "#FF6E93", "#FF9F45", "#63CC4A", "#FFC53D", "#1FC2C2"];
+
+function spawnSparklesAt(x, y, count = 10) {
+  if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+  const layer = document.createElement("div");
+  layer.className = "kid-sparkle-layer";
+  layer.style.left = `${x}px`;
+  layer.style.top = `${y}px`;
+  document.body.appendChild(layer);
+  for (let i = 0; i < count; i++) {
+    const piece = document.createElement("span");
+    piece.className = "kid-sparkle-piece";
+    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
+    const dist = 36 + Math.random() * 46;
+    piece.style.setProperty("--dx", `${Math.cos(angle) * dist}px`);
+    piece.style.setProperty("--dy", `${Math.sin(angle) * dist}px`);
+    piece.style.setProperty("--sc", SPARKLE_COLORS[i % SPARKLE_COLORS.length]);
+    piece.style.animationDelay = `${Math.random() * 70}ms`;
+    layer.appendChild(piece);
+  }
+  setTimeout(() => layer.remove(), 950);
+}
+
+function spawnSparkles(e, count = 10) {
+  spawnSparklesAt(e.clientX, e.clientY, count);
+}
+
 export default function KidAccess() {
   const { slug, token } = useParams(); // :slug không dùng để tra cứu, chỉ để đẹp URL
   const navigate = useNavigate();
@@ -161,6 +194,7 @@ export default function KidAccess() {
   const [isHolding, setIsHolding] = useState(false);
   const [holdPct, setHoldPct] = useState(0);
   const holdRafRef = useRef(null);
+  const holdOriginRef = useRef({ x: 0, y: 0 }); // toạ độ giữ, để bắn pháo hoa đúng chỗ khi mở khoá thành công
 
   //   thanh điều hướng đổi diện mạo khi cuộn
   const [isScrolled, setIsScrolled] = useState(false);
@@ -346,6 +380,7 @@ export default function KidAccess() {
     (e) => {
       e.preventDefault();
       setIsHolding(true);
+      holdOriginRef.current = { x: e.clientX, y: e.clientY };
       const startedAt = performance.now();
       const tick = (t) => {
         const pct = Math.min(100, ((t - startedAt) / HOLD_DURATION_MS) * 100);
@@ -355,6 +390,7 @@ export default function KidAccess() {
           setIsHolding(false);
           setHoldPct(0);
           setShowSettings(true);
+          spawnSparklesAt(holdOriginRef.current.x, holdOriginRef.current.y, 14);
           return;
         }
         holdRafRef.current = requestAnimationFrame(tick);
@@ -398,7 +434,9 @@ export default function KidAccess() {
     [child?.isLocked],
   );
 
-  //   tilt + shine mượt cho thẻ sách, cập nhật trực tiếp qua DOM để không re-render
+  //   tilt 3D + ánh sáng theo con trỏ cho thẻ sách, cập nhật trực tiếp
+  // qua DOM để không re-render — CSS đọc lại các biến này để nghiêng
+  // thẻ thật (perspective/rotateX/rotateY) và di chuyển đốm sáng.
   const handleCardMove = useCallback((e) => {
     const el = e.currentTarget;
     const rect = el.getBoundingClientRect();
@@ -430,10 +468,10 @@ export default function KidAccess() {
   const isSearching = normalizeSearch(searchQuery).length > 0;
 
   if (status === "loading") {
-    // Vẽ sẵn đúng lớp nền "meadow horizon" của trang chính ngay từ lúc
-    // chờ API, thay vì để lộ màu nền trắng/ivory mặc định của <body>.
-    // Nếu không, lúc dữ liệu tải xong trang sẽ "nháy trắng" một nhịp
-    // trước khi đổi sang nền xanh rừng của header thật.
+    // Vẽ sẵn đúng bầu trời "sky wash" của trang chính ngay từ lúc chờ
+    // API, thay vì để lộ màu nền trắng mặc định của <body>. Nếu không,
+    // lúc dữ liệu tải xong trang sẽ "nháy trắng" một nhịp trước khi
+    // đổi sang bầu trời xanh dương thật.
     return (
       <div className="kid-state-page kid-state-page--loading">
         <StateBg />
@@ -450,15 +488,22 @@ export default function KidAccess() {
       <div className="kid-state-page">
         <StateBg />
         <div className="kid-state-card">
-          <div className="kid-state-icon kid-state-icon--sky">
-            <Info size={30} />
+          <div className="kid-state-icon kid-state-icon--blue">
+            <Compass size={30} />
           </div>
           <h1 className="kid-state-title">Link này không đúng rồi bé ơi</h1>
           <p className="kid-state-text">
             Liên kết không hợp lệ hoặc đã bị thu hồi. Bé nhờ ba mẹ lấy lại
             link mới trong trang quản lý nhé!
           </p>
-          <Link to="/" className="kid-state-btn" onClick={spawnRipple}>
+          <Link
+            to="/"
+            className="kid-btn kid-btn--primary kid-state-btn"
+            onClick={(e) => {
+              spawnRipple(e);
+              spawnSparkles(e, 8);
+            }}
+          >
             <ArrowLeft size={16} /> Về trang chủ
           </Link>
         </div>
@@ -471,7 +516,7 @@ export default function KidAccess() {
       <div className="kid-state-page">
         <StateBg />
         <div className="kid-state-card">
-          <div className="kid-state-icon kid-state-icon--coral">
+          <div className="kid-state-icon kid-state-icon--orange">
             <Lock size={28} />
           </div>
           <h1 className="kid-state-title">Đến giờ nghỉ rồi, {child.name} ơi!</h1>
@@ -483,7 +528,14 @@ export default function KidAccess() {
             <BookOpen size={14} /> Hôm nay bé đã đọc {child.todayMinutes || 0} phút
           </span>
           <br />
-          <Link to="/" className="kid-state-btn" onClick={spawnRipple}>
+          <Link
+            to="/"
+            className="kid-btn kid-btn--primary kid-state-btn"
+            onClick={(e) => {
+              spawnRipple(e);
+              spawnSparkles(e, 8);
+            }}
+          >
             <ArrowLeft size={16} /> Về trang chủ
           </Link>
         </div>
@@ -501,7 +553,7 @@ export default function KidAccess() {
   const inWindow = child.allowWindowEnabled ? withinWindow(child.allowStart, child.allowEnd) : true;
   const showRestTip =
     child.tipsEnabled && (child.tipsFrequency === "rest" || child.tipsFrequency === "interval");
-  const modalAccent = activeBook ? accentForId(activeBook.id) : "leaf";
+  const modalAccent = activeBook ? accentForId(activeBook.id) : "sky";
 
   //   viền đếm ngược quanh logo trên header — chỉ hiện khi phụ huynh có
   // đặt giới hạn thời gian đọc/ngày. Nội suy thêm giây của phiên hiện tại
@@ -516,28 +568,26 @@ export default function KidAccess() {
   const crestRingState = limitReached ? "is-empty" : crestRemainPercent <= 20 ? "is-warning" : "";
 
   return (
-    <div className="kid-page" style={{ "--kid-accent": child.avatarColor || "var(--gold)", "--kid-font-scale": fontScale }}>
-      <div className="kid-bg" aria-hidden="true">
-        <div className="kid-bg-wash" />
-        <div className="kid-bg-hills" />
-        <span className="kid-bg-hills-front" />
-        <span className="kid-bg-sun" />
-        <span className="kid-bg-cloud kid-bg-cloud-1" />
-        <span className="kid-bg-cloud kid-bg-cloud-2" />
-        <div className="kid-bg-art" />
-        <div className="kid-bg-grain" />
-        <span className="kid-bg-orb kid-bg-orb-1" />
-        <span className="kid-bg-orb kid-bg-orb-2" />
-        <span className="kid-bg-icon kid-bg-icon-1">
-          <Star size={16} fill="currentColor" />
+    <div className="kid-page" style={{ "--kid-accent": child.avatarColor || "var(--kid-blue)", "--kid-font-scale": fontScale }}>
+      <div className="kid-sky" aria-hidden="true">
+        <div className="kid-sky-wash" />
+        <span className="kid-sun" />
+        <span className="kid-cloud kid-cloud-1" />
+        <span className="kid-cloud kid-cloud-2" />
+        <span className="kid-cloud kid-cloud-3" />
+        <span className="kid-star kid-star-1" />
+        <span className="kid-star kid-star-2" />
+        <span className="kid-star kid-star-3" />
+        <span className="kid-star kid-star-4" />
+        <span className="kid-star kid-star-5" />
+        <span className="kid-star kid-star-6" />
+        <span className="kid-float-icon kid-float-icon-1">
+          <Star size={18} fill="currentColor" />
         </span>
-        <span className="kid-bg-icon kid-bg-icon-2">
-          <Leaf size={18} />
+        <span className="kid-float-icon kid-float-icon-2">
+          <Sparkles size={20} />
         </span>
-        <span className="kid-firefly" />
-        <span className="kid-firefly" />
-        <span className="kid-firefly" />
-        <span className="kid-firefly" />
+        <div className="kid-sky-grain" />
       </div>
 
       <div className="kid-shell">
@@ -547,6 +597,13 @@ export default function KidAccess() {
               {dailyLimit > 0 ? (
                 <svg className="kid-crest-countdown" viewBox="0 0 100 100" aria-hidden="true">
                   <title>{`Còn ${crestRemainMinutes} phút đọc hôm nay`}</title>
+                  <defs>
+                    <linearGradient id="kidCountdownGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#12A8E0" />
+                      <stop offset="55%" stopColor="#1FC2C2" />
+                      <stop offset="100%" stopColor="#FF6E93" />
+                    </linearGradient>
+                  </defs>
                   <circle className="kid-crest-countdown-track" cx="50" cy="50" r={crestRingRadius} />
                   <circle
                     className={`kid-crest-countdown-fill${crestRingState ? ` ${crestRingState}` : ""}`}
@@ -560,8 +617,6 @@ export default function KidAccess() {
               ) : (
                 <span className="kid-crest-ring" aria-hidden="true" />
               )}
-              <span className="kid-crest-badge-ring" aria-hidden="true" />
-              <span className="kid-crest-sparkle" aria-hidden="true">✦</span>
               <span className="kid-crest">
                 <img src="/logo/logo-mau/lg-m-kid-studio.png" alt="Earthoria" className="kid-crest-img" />
               </span>
@@ -609,7 +664,7 @@ export default function KidAccess() {
           </div>
           <p className="kid-hero-eyebrow">Thư viện của {child.name}</p>
           <h1 className="kid-hero-title">
-            {timeGreeting()}, {child.name}!
+            {timeGreeting()}, <span className="kid-name-highlight">{child.name}</span>!
           </h1>
           <div className="kid-hero-bubble">
             <Sparkles size={15} className="kid-hero-bubble-icon" />
@@ -670,6 +725,12 @@ export default function KidAccess() {
             {dailyLimit > 0 ? (
               <div className="kid-ring">
                 <svg viewBox="0 0 52 52" width="52" height="52">
+                  <defs>
+                    <linearGradient id="kidRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#12A8E0" />
+                      <stop offset="100%" stopColor="#FF6E93" />
+                    </linearGradient>
+                  </defs>
                   <circle className="kid-ring-track" cx="26" cy="26" r={ringRadius} />
                   <circle
                     className={`kid-ring-fill${limitReached ? " is-full" : ""}`}
@@ -730,7 +791,7 @@ export default function KidAccess() {
         {child.tipsEnabled && child.tipsFrequency === "open" && (
           <div className="kid-tip-banner">
             <span className="kid-tip-banner-icon">
-              <Sparkles size={16} />
+              <Lightbulb size={16} />
             </span>
             <span>{eyeTip}</span>
           </div>
@@ -739,7 +800,7 @@ export default function KidAccess() {
         {limitReached && (
           <div className="kid-limit-banner">
             <span className="kid-limit-banner-icon">
-              <Lock size={16} />
+              <PartyPopper size={16} />
             </span>
             <span>
               Hôm nay bé đã đọc đủ giờ rồi, giỏi lắm! Mai mình đọc tiếp nhé.
@@ -750,7 +811,9 @@ export default function KidAccess() {
         <section className="kid-shelf">
           <div className="kid-shelf-heading">
             <div className="kid-shelf-title-wrap">
-              <Leaf size={17} className="kid-shelf-leaf" aria-hidden="true" />
+              <span className="kid-shelf-leaf" aria-hidden="true">
+                <BookOpen size={17} />
+              </span>
               <h2 className="kid-shelf-title">Tủ sách của bé</h2>
             </div>
             <span className="kid-shelf-count">
@@ -772,6 +835,7 @@ export default function KidAccess() {
                   onMouseLeave={handleCardLeave}
                   onClick={(e) => {
                     spawnRipple(e);
+                    spawnSparkles(e, 8);
                     handleOpenBook(b);
                   }}
                 >
@@ -786,15 +850,17 @@ export default function KidAccess() {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          color: "var(--forest-mid)",
-                          opacity: 0.4,
+                          color: "var(--kid-blue)",
+                          opacity: 0.45,
                         }}
                       >
                         <BookMarked size={32} />
                       </div>
                     )}
                     <span className="kid-book-shine" aria-hidden="true" />
-                    <span className="kid-book-cover-inset" aria-hidden="true" />
+                    <span className="kid-book-stamp" aria-hidden="true">
+                      <Star size={14} fill="currentColor" />
+                    </span>
                     {(b.ageMin || b.ageMax) && (
                       <span className="kid-book-age">
                         {b.ageMin ?? "0"}–{b.ageMax ?? "17"} tuổi
@@ -833,7 +899,7 @@ export default function KidAccess() {
                   Bé thử gõ tên khác xem sao, hoặc nhờ ba mẹ mua thêm sách mới
                   nhé!
                 </p>
-                <button type="button" className="kid-empty-clear" onClick={clearSearch}>
+                <button type="button" className="kid-btn kid-btn--ghost kid-empty-clear" onClick={clearSearch}>
                   Xoá tìm kiếm
                 </button>
               </div>
@@ -855,10 +921,10 @@ export default function KidAccess() {
         </section>
 
         <div className="kid-footer-divider" aria-hidden="true">
-          <Leaf size={14} />
+          <Star size={14} fill="currentColor" />
         </div>
         <footer className="kid-footer">
-          <span>🌿 Earthoria — Mở sách, mở ra thế giới</span>
+          <span>🌈 Earthoria — Mở sách, mở ra thế giới</span>
           <Link to="/" className="kid-parent-link">
             Dành cho ba mẹ
           </Link>
@@ -879,8 +945,8 @@ export default function KidAccess() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "var(--forest-mid)",
-                    opacity: 0.4,
+                    color: "var(--kid-blue)",
+                    opacity: 0.45,
                   }}
                 >
                   <BookMarked size={40} />
@@ -904,11 +970,12 @@ export default function KidAccess() {
               </p>
               <button
                 type="button"
-                className={`kid-modal-cta${limitReached || !activeBook.isDelivered ? " is-disabled" : ""}`}
+                className={`kid-btn kid-modal-cta${limitReached || !activeBook.isDelivered ? " is-disabled" : ""}`}
                 disabled={limitReached || !activeBook.isDelivered}
                 onClick={(e) => {
                   if (limitReached || !activeBook.isDelivered) return;
                   spawnRipple(e);
+                  spawnSparkles(e, 12);
                   handleReadNow(activeBook);
                 }}
               >
@@ -957,7 +1024,10 @@ export default function KidAccess() {
                     key={opt.key}
                     type="button"
                     className={`kid-font-option${fontKey === opt.key ? " is-active" : ""}`}
-                    onClick={() => setFontKey(opt.key)}
+                    onClick={(e) => {
+                      setFontKey(opt.key);
+                      spawnSparkles(e, 6);
+                    }}
                   >
                     <span className="kid-font-glyph">Aa</span>
                     <span className="kid-font-option-label">{opt.label}</span>
@@ -975,13 +1045,13 @@ export default function KidAccess() {
               <div className="kid-settings-label">
                 <ShieldCheck size={14} /> Quản lý nâng cao
               </div>
-              <Link to="/parent-dashboard" className="kid-settings-cta">
+              <Link to="/parent-dashboard" className="kid-btn kid-btn--primary kid-btn--block kid-settings-cta">
                 Mở trang quản lý cho phụ huynh <ChevronRight size={16} />
               </Link>
             </div>
 
             <div className="kid-settings-footnote">
-              <Leaf size={13} /> Giờ đọc, giới hạn thời gian và nhắc nghỉ mắt được quản lý ở đó.
+              <Heart size={13} fill="currentColor" /> Giờ đọc, giới hạn thời gian và nhắc nghỉ mắt được quản lý ở đó.
             </div>
           </div>
         </div>
@@ -1047,15 +1117,17 @@ export default function KidAccess() {
 
 function StateBg() {
   return (
-    <div className="kid-bg" aria-hidden="true">
-      <div className="kid-bg-wash" />
-      <div className="kid-bg-hills" />
-      <span className="kid-bg-hills-front" />
-      <span className="kid-bg-sun" />
-      <span className="kid-bg-cloud kid-bg-cloud-1" />
-      <span className="kid-bg-cloud kid-bg-cloud-2" />
-      <span className="kid-bg-orb kid-bg-orb-1" style={{ top: "10%" }} />
-      <span className="kid-bg-orb kid-bg-orb-2" style={{ top: "60%" }} />
+    <div className="kid-sky" aria-hidden="true">
+      <div className="kid-sky-wash" />
+      <span className="kid-sun" />
+      <span className="kid-cloud kid-cloud-1" />
+      <span className="kid-cloud kid-cloud-2" />
+      <span className="kid-cloud kid-cloud-3" />
+      <span className="kid-star kid-star-1" />
+      <span className="kid-star kid-star-2" />
+      <span className="kid-star kid-star-3" />
+      <span className="kid-star kid-star-4" />
+      <div className="kid-sky-grain" />
     </div>
   );
 }
