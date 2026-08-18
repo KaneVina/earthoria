@@ -87,7 +87,7 @@ const GuestRoute = ({ children }) => {
 };
 // Khởi động trang bảo trì (test tay — luôn ưu tiên cao nhất, ghi đè cả lịch/tự động của admin)
 // const MAINTENANCE_MODE = false;
-const MAINTENANCE_MODE = true;
+const MAINTENANCE_MODE = false;
 
 export default function App() {
   const { setAuth, setAuthChecked, authChecked, user, isAuthenticated } = useAuthStore();
