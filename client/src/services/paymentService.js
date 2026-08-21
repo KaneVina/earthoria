@@ -22,5 +22,13 @@ export const paymentService = {
     ),
   verifyMomoReturn: (queryString) => api.get(`/payments/momo/verify?${queryString}`),
 
+  createBankQrPayment: (orderId, idempotencyKey = newIdempotencyKey()) =>
+    api.post(
+      '/payments/bankqr/create',
+      { orderId },
+      { headers: { 'Idempotency-Key': idempotencyKey } }
+    ),
+  getBankQrStatus: (orderId) => api.get(`/payments/bankqr/status/${orderId}`),
+
   newIdempotencyKey,
 }

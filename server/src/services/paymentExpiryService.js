@@ -1,26 +1,8 @@
 const prisma = require("../config/db");
-
-// Đơn "mồ côi": tạo bằng VNPay/MoMo nhưng chưa từng gọi create-payment-url nên
-// paymentSessionExpiresAt vẫn NULL — vẫn giữ chỗ kho/coupon vô thời hạn nếu không xử lý.
-// Coi như hết hạn sau ORPHAN_SESSION_TTL_MS kể từ lúc tạo đơn.
 const ORPHAN_SESSION_TTL_MS = 30 * 60 * 1000; // 30 phút
-
-// Đơn COD không có khái niệm "phiên thanh toán" (không trả tiền trước), nên không dùng
-// paymentSessionExpiresAt được. Rủi ro thật: đặt COD trừ kho NGAY lúc tạo đơn, đơn nằm PENDING
-// (chưa được admin bấm "Đã xác nhận") có thể bị dùng để giữ chết hàng vô thời hạn không tốn 1 đồng.
-// Coi như bỏ đơn nếu quá lâu mà vẫn chưa được xác nhận. Đây là quyết định nghiệp vụ — chỉnh theo
-// nhu cầu thực tế (thời gian nhân viên xử lý đơn) bằng biến môi trường COD_PENDING_TTL_HOURS.
 const COD_PENDING_TTL_MS = (Number(process.env.COD_PENDING_TTL_HOURS) || 24) * 60 * 60 * 1000;
-
-// Số đơn xử lý tối đa mỗi lượt quét, tránh 1 lượt ôm quá nhiều nếu job bị dừng lâu rồi chạy lại.
 const BATCH_SIZE = 200;
 
-/**
- * Hoàn kho + hoàn lượt dùng coupon + huỷ đơn — dùng chung logic với cancelOrder (orderController.js)
- * nhưng chạy nguyên tử theo kiểu "update có điều kiện" giống markOrderPaidAtomic: chỉ đơn nào VẪN còn
- * đúng điều kiện mới bị chuyển, chống race với IPN/admin xử lý gần như cùng lúc (thua race thì
- * updateMany khớp 0 dòng, không hoàn kho nhầm).
- */
 async function expireOneOrder(order, reason) {
   const isCod = order.paymentMethod === "COD";
 
@@ -60,7 +42,7 @@ async function expireOneOrder(order, reason) {
       await tx.paymentTransaction.create({
         data: {
           orderId: order.id,
-          gateway: order.paymentMethod, // 'VNPAY' | 'MOMO' — trùng giá trị PaymentGateway
+          gateway: order.paymentMethod, // 'VNPAY' | 'MOMO' | 'BANKQR' — trùng giá trị PaymentGateway
           type: "EXPIRE",
           paymentRef: order.paymentRef || "",
           amount: order.total,
@@ -81,15 +63,6 @@ async function expireOneOrder(order, reason) {
   });
 }
 
-/**
- * Quét & tự động huỷ:
- * - Đơn VNPay/MoMo còn UNPAID mà phiên thanh toán đã qua hạn, hoặc chưa từng mở phiên (orphan) quá lâu.
- * - Đơn COD còn PENDING (chưa được admin xác nhận) quá lâu.
- * Hoàn kho + hoàn lượt coupon cho từng đơn. An toàn khi gọi lặp lại/chồng lấn vì mỗi đơn chỉ bị
- * hoàn đúng 1 lần (update có điều kiện status=PENDING, riêng online payment còn thêm paymentStatus=UNPAID).
- *
- * @returns {{ scanned: number, expired: number, failed: number }}
- */
 async function expireStalePaymentSessions() {
   const now = new Date();
   const orphanCutoff = new Date(now.getTime() - ORPHAN_SESSION_TTL_MS);
@@ -100,9 +73,8 @@ async function expireStalePaymentSessions() {
       status: "PENDING",
       OR: [
         {
-          paymentMethod: { in: ["VNPAY", "MOMO"] },
-          paymentStatus: "UNPAID",
-          OR: [
+          paymentMethod: { in: ["VNPAY", "MOMO", "BANKQR"] },
+          paymentStatus: "UNPAID",          OR: [
             { paymentSessionExpiresAt: { lt: now } },
             { paymentSessionExpiresAt: null, createdAt: { lt: orphanCutoff } },
           ],
@@ -142,12 +114,7 @@ async function expireStalePaymentSessions() {
 let intervalHandle = null;
 let isRunning = false;
 
-/**
- * Bắt đầu quét định kỳ. Tự bỏ qua nếu lượt trước còn đang chạy (tránh chồng lấn khi DB chậm).
- * LƯU Ý: dùng setInterval trong-process — đủ cho 1 instance server. Nếu scale nhiều instance,
- * cần chuyển sang cron có lock phân tán (vd: advisory lock của Postgres, hoặc lock qua Redis đã
- * có sẵn trong dự án) để tránh N instance cùng quét/hoàn kho trùng nhau tại 1 thời điểm.
- */
+
 function startPaymentExpiryJob({ intervalMs = 60 * 1000 } = {}) {
   if (intervalHandle) return intervalHandle;
 

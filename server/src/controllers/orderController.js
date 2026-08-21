@@ -27,7 +27,7 @@ const { calcShippingFee: calcFee, WAREHOUSE } = require("../utils/shipping");
 const genPaymentRef = () =>
   `EARTH${Date.now()}${crypto.randomBytes(3).toString("hex").toUpperCase()}`;
 
-const ONLINE_PAYMENT_METHODS = ["VNPAY", "MOMO"];
+const ONLINE_PAYMENT_METHODS = ["VNPAY", "MOMO", "BANKQR"];
 
 const ORDER_CODE_CHARS =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -198,10 +198,11 @@ const createOrder = async (req, res) => {
 
     const total = afterDiscount + shippingFee;
 
-    const methodMap = {
+  const methodMap = {
       cod: "COD",
       vnpay: "VNPAY",
       momo: "MOMO",
+      bankqr: "BANKQR",
     };
     const prismaMethod = methodMap[paymentMethod];
     if (!prismaMethod) {
@@ -215,7 +216,7 @@ const createOrder = async (req, res) => {
       return formatResponse(
         res,
         400,
-        "Sách điện tử chỉ hỗ trợ thanh toán online qua VNPay hoặc MoMo",
+         "Sách điện tử chỉ hỗ trợ thanh toán online qua VNPay, MoMo hoặc chuyển khoản QR",
       );
     }
     const isOnlinePayment = ONLINE_PAYMENT_METHODS.includes(prismaMethod);

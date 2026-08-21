@@ -9,18 +9,22 @@ const {
   createMomoPaymentUrl,
   verifyMomoReturn,
   momoIpn,
+  createBankQrPayment,
+  getBankQrStatus,
+  bankqrWebhook,
 } = require('../controllers/paymentController')
 const { protect } = require('../middlewares/authMiddleware')
 const idempotency = require('../middlewares/idempotency')
 
 router.get('/vnpay/ipn', vnpayIpn)
 router.post('/momo/ipn', momoIpn)
+router.post('/bankqr/webhook', bankqrWebhook)
 
 router.use(protect)
 
 const createPaymentLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 phút
-  max: 5, // tối đa 5 phiên thanh toán mới / user / 10 phút (đủ cho các lần "thanh toán lại" hợp lệ)
+  windowMs: 10 * 60 * 1000,
+  max: 5,
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (req) => req.user?.id || ipKeyGenerator(req.ip),
@@ -45,5 +49,13 @@ router.post(
   createMomoPaymentUrl
 )
 router.get('/momo/verify', verifyMomoReturn)
+
+router.post(
+  '/bankqr/create',
+  createPaymentLimiter,
+  idempotency('bankqr-create'),
+  createBankQrPayment
+)
+router.get('/bankqr/status/:orderId', getBankQrStatus)
 
 module.exports = router

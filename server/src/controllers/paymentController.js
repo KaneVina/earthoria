@@ -2,6 +2,7 @@ const prisma = require("../config/db");
 const { formatResponse } = require("../utils/helpers");
 const vnpay = require("../utils/vnpayUtil");
 const momo = require("../utils/momoUtil");
+const bankqr = require("../utils/bankqrUtil");
 const { genPaymentRef, getOrderCode } = require("./orderController");
 
 // Đơn vị tiền tệ duy nhất của hệ thống hiện tại — dùng để đối chiếu với field currency mà vnpayUtil/momoUtil trả về (2 cổng đều chỉ hỗ trợ VND, không có field currency thật trong callback).
@@ -24,18 +25,23 @@ const clientOrigin = (req) => {
   return allowed[0] || "";
 };
 
-const getIp = (req) => req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.ip;
+const getIp = (req) =>
+  req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.ip;
 
 // Đơn phải thuộc về user hiện tại, đúng phương thức thanh toán online, và CHƯA thanh toán.
 async function findPayableOrder({ orderId, userId, method }) {
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order) return { error: [404, "Không tìm thấy đơn hàng"] };
-  if (order.userId !== userId) return { error: [403, "Không có quyền với đơn hàng này"] };
+  if (order.userId !== userId)
+    return { error: [403, "Không có quyền với đơn hàng này"] };
   if (order.paymentMethod !== method)
     return { error: [400, `Đơn hàng này không dùng phương thức ${method}`] };
-  if (order.paymentStatus === "PAID") return { error: [400, "Đơn hàng đã được thanh toán"] };
+  if (order.paymentStatus === "PAID")
+    return { error: [400, "Đơn hàng đã được thanh toán"] };
   if (!["PENDING", "CONFIRMED"].includes(order.status))
-    return { error: [400, "Đơn hàng không còn ở trạng thái có thể thanh toán"] };
+    return {
+      error: [400, "Đơn hàng không còn ở trạng thái có thể thanh toán"],
+    };
   return { order };
 }
 
@@ -114,7 +120,8 @@ async function findOrderByPaymentRef(paymentRef, gateway) {
   if (!paymentRef) return { order: null, sessionExpiresAt: null };
 
   const direct = await prisma.order.findFirst({ where: { paymentRef } });
-  if (direct) return { order: direct, sessionExpiresAt: direct.paymentSessionExpiresAt };
+  if (direct)
+    return { order: direct, sessionExpiresAt: direct.paymentSessionExpiresAt };
 
   const txn = await prisma.paymentTransaction.findFirst({
     where: { paymentRef, gateway, type: "CREATE" },
@@ -123,7 +130,9 @@ async function findOrderByPaymentRef(paymentRef, gateway) {
   if (!txn?.orderId) return { order: null, sessionExpiresAt: null };
 
   const order = await prisma.order.findUnique({ where: { id: txn.orderId } });
-  const sessionExpiresAt = new Date(txn.createdAt.getTime() + PAYMENT_SESSION_TTL_MS);
+  const sessionExpiresAt = new Date(
+    txn.createdAt.getTime() + PAYMENT_SESSION_TTL_MS,
+  );
   return { order, sessionExpiresAt };
 }
 
@@ -133,6 +142,10 @@ function vnpayAmountMatches(order, vnpAmount) {
 }
 
 function momoAmountMatches(order, amount) {
+  return Math.round(Number(amount)) === Math.round(order.total);
+}
+
+function bankqrAmountMatches(order, amount) {
   return Math.round(Number(amount)) === Math.round(order.total);
 }
 
@@ -153,7 +166,9 @@ const createVnpayPaymentUrl = async (req, res) => {
 
     // Sinh paymentRef MỚI mỗi lần bấm thanh toán (kể cả thanh toán lại) vì VNPay không cho trùng TxnRef
     const paymentRef = genPaymentRef();
-    const paymentSessionExpiresAt = new Date(Date.now() + PAYMENT_SESSION_TTL_MS);
+    const paymentSessionExpiresAt = new Date(
+      Date.now() + PAYMENT_SESSION_TTL_MS,
+    );
     await prisma.order.update({
       where: { id: order.id },
       data: { paymentRef, paymentSessionExpiresAt },
@@ -182,7 +197,10 @@ const createVnpayPaymentUrl = async (req, res) => {
       message: `Tạo phiên thanh toán mới, hết hạn lúc ${paymentSessionExpiresAt.toISOString()}`,
     });
 
-    return formatResponse(res, 200, "OK", { paymentUrl, expiresAt: paymentSessionExpiresAt });
+    return formatResponse(res, 200, "OK", {
+      paymentUrl,
+      expiresAt: paymentSessionExpiresAt,
+    });
   } catch (error) {
     console.error("[createVnpayPaymentUrl]", error);
     return formatResponse(res, 500, "Lỗi server");
@@ -198,9 +216,13 @@ const createVnpayPaymentUrl = async (req, res) => {
 const verifyVnpayReturn = async (req, res) => {
   const query = req.query;
   try {
-    const { isValid, isSuccess, signatureValid, tmnCodeValid, currency } = vnpay.verifyReturn(query);
+    const { isValid, isSuccess, signatureValid, tmnCodeValid, currency } =
+      vnpay.verifyReturn(query);
 
-    let { order, sessionExpiresAt } = await findOrderByPaymentRef(query.vnp_TxnRef, "VNPAY");
+    let { order, sessionExpiresAt } = await findOrderByPaymentRef(
+      query.vnp_TxnRef,
+      "VNPAY",
+    );
     // Chặn user A xem/verify được đơn của user B qua paymentRef — coi như không tìm thấy.
     if (order && order.userId !== req.user.id) {
       order = null;
@@ -222,19 +244,28 @@ const verifyVnpayReturn = async (req, res) => {
       message: !signatureValid
         ? "Chữ ký không hợp lệ"
         : !tmnCodeValid
-        ? "TmnCode không khớp — nghi callback giả mạo"
-        : "FE gọi verify sau khi được redirect về",
+          ? "TmnCode không khớp — nghi callback giả mạo"
+          : "FE gọi verify sau khi được redirect về",
     });
 
     if (!isValid) return formatResponse(res, 400, "Chữ ký không hợp lệ");
-    if (!order) return formatResponse(res, 404, "Không tìm thấy đơn hàng tương ứng");
+    if (!order)
+      return formatResponse(res, 404, "Không tìm thấy đơn hàng tương ứng");
 
-    if (!vnpayAmountMatches(order, query.vnp_Amount) || currency !== ORDER_CURRENCY) {
-      return formatResponse(res, 200, "Thông tin giao dịch không khớp với đơn hàng", {
-        orderId: order.id,
-        success: false,
-        pending: false,
-      });
+    if (
+      !vnpayAmountMatches(order, query.vnp_Amount) ||
+      currency !== ORDER_CURRENCY
+    ) {
+      return formatResponse(
+        res,
+        200,
+        "Thông tin giao dịch không khớp với đơn hàng",
+        {
+          orderId: order.id,
+          success: false,
+          pending: false,
+        },
+      );
     }
 
     if (order.paymentStatus === "PAID") {
@@ -290,8 +321,12 @@ const vnpayIpn = async (req, res) => {
   const query = req.query;
   const ip = getIp(req);
   try {
-    const { isValid, isSuccess, signatureValid, tmnCodeValid, currency } = vnpay.verifyReturn(query);
-    const { order, sessionExpiresAt } = await findOrderByPaymentRef(query.vnp_TxnRef, "VNPAY");
+    const { isValid, isSuccess, signatureValid, tmnCodeValid, currency } =
+      vnpay.verifyReturn(query);
+    const { order, sessionExpiresAt } = await findOrderByPaymentRef(
+      query.vnp_TxnRef,
+      "VNPAY",
+    );
 
     const baseLog = {
       orderId: order?.id || null,
@@ -312,17 +347,29 @@ const vnpayIpn = async (req, res) => {
       return res.json({ RspCode: "97", Message: "Invalid signature" });
     }
     if (!tmnCodeValid) {
-      await logTransaction({ ...baseLog, message: "TmnCode không khớp — nghi callback giả mạo" });
+      await logTransaction({
+        ...baseLog,
+        message: "TmnCode không khớp — nghi callback giả mạo",
+      });
       return res.json({ RspCode: "97", Message: "Invalid signature" });
     }
     if (!order) {
-      await logTransaction({ ...baseLog, message: "Không tìm thấy đơn hàng tương ứng paymentRef" });
+      await logTransaction({
+        ...baseLog,
+        message: "Không tìm thấy đơn hàng tương ứng paymentRef",
+      });
       return res.json({ RspCode: "01", Message: "Order not found" });
     }
 
     if (isSessionExpired(sessionExpiresAt)) {
-      await logTransaction({ ...baseLog, message: "Phiên thanh toán đã hết hạn, từ chối xác nhận" });
-      return res.json({ RspCode: "01", Message: "Order not found or session expired" });
+      await logTransaction({
+        ...baseLog,
+        message: "Phiên thanh toán đã hết hạn, từ chối xác nhận",
+      });
+      return res.json({
+        RspCode: "01",
+        Message: "Order not found or session expired",
+      });
     }
 
     if (!vnpayAmountMatches(order, query.vnp_Amount)) {
@@ -333,17 +380,26 @@ const vnpayIpn = async (req, res) => {
       return res.json({ RspCode: "04", Message: "Invalid amount" });
     }
     if (currency !== ORDER_CURRENCY) {
-      await logTransaction({ ...baseLog, message: `Sai đơn vị tiền tệ: ${currency}` });
+      await logTransaction({
+        ...baseLog,
+        message: `Sai đơn vị tiền tệ: ${currency}`,
+      });
       return res.json({ RspCode: "04", Message: "Invalid amount" });
     }
 
     if (order.paymentStatus === "PAID") {
-      await logTransaction({ ...baseLog, message: "Đơn đã được xác nhận trước đó (IPN gọi lặp lại)" });
+      await logTransaction({
+        ...baseLog,
+        message: "Đơn đã được xác nhận trước đó (IPN gọi lặp lại)",
+      });
       return res.json({ RspCode: "02", Message: "Order already confirmed" });
     }
 
     if (isSuccess) {
-      const { alreadyPaid } = await markOrderPaidAtomic(order.id, query.vnp_TransactionNo);
+      const { alreadyPaid } = await markOrderPaidAtomic(
+        order.id,
+        query.vnp_TransactionNo,
+      );
       await logTransaction({
         ...baseLog,
         message: alreadyPaid
@@ -353,7 +409,10 @@ const vnpayIpn = async (req, res) => {
       return res.json({ RspCode: "00", Message: "Confirm Success" });
     }
 
-    await logTransaction({ ...baseLog, message: "Gateway báo giao dịch không thành công" });
+    await logTransaction({
+      ...baseLog,
+      message: "Gateway báo giao dịch không thành công",
+    });
     // RspCode 00 = đã NHẬN và xử lý callback hợp lệ (dù kết quả giao dịch là fail) — đúng theo tài liệu VNPay.
     return res.json({ RspCode: "00", Message: "Confirm Success" });
   } catch (error) {
@@ -378,13 +437,16 @@ const createMomoPaymentUrl = async (req, res) => {
     if (error) return formatResponse(res, ...error);
 
     const paymentRef = genPaymentRef();
-    const paymentSessionExpiresAt = new Date(Date.now() + PAYMENT_SESSION_TTL_MS);
+    const paymentSessionExpiresAt = new Date(
+      Date.now() + PAYMENT_SESSION_TTL_MS,
+    );
     await prisma.order.update({
       where: { id: order.id },
       data: { paymentRef, paymentSessionExpiresAt },
     });
 
-    const serverBaseUrl = process.env.SERVER_URL || `${req.protocol}://${req.get("host")}`;
+    const serverBaseUrl =
+      process.env.SERVER_URL || `${req.protocol}://${req.get("host")}`;
     const ip = getIp(req);
 
     const momoRes = await momo.createPaymentRequest({
@@ -409,7 +471,11 @@ const createMomoPaymentUrl = async (req, res) => {
         ip,
         message: `Tạo phiên thanh toán MoMo thất bại: ${momoRes.message || "không rõ lý do"}`,
       });
-      return formatResponse(res, 502, momoRes.message || "Không tạo được giao dịch MoMo");
+      return formatResponse(
+        res,
+        502,
+        momoRes.message || "Không tạo được giao dịch MoMo",
+      );
     }
 
     await logTransaction({
@@ -425,7 +491,10 @@ const createMomoPaymentUrl = async (req, res) => {
       message: `Tạo phiên thanh toán mới, hết hạn lúc ${paymentSessionExpiresAt.toISOString()}`,
     });
 
-    return formatResponse(res, 200, "OK", { paymentUrl: momoRes.payUrl, expiresAt: paymentSessionExpiresAt });
+    return formatResponse(res, 200, "OK", {
+      paymentUrl: momoRes.payUrl,
+      expiresAt: paymentSessionExpiresAt,
+    });
   } catch (error) {
     console.error("[createMomoPaymentUrl]", error);
     return formatResponse(res, 500, "Lỗi server");
@@ -437,9 +506,13 @@ const createMomoPaymentUrl = async (req, res) => {
 const verifyMomoReturn = async (req, res) => {
   const query = req.query;
   try {
-    const { isValid, isSuccess, signatureValid, partnerCodeValid, currency } = momo.verifyReturn(query);
+    const { isValid, isSuccess, signatureValid, partnerCodeValid, currency } =
+      momo.verifyReturn(query);
 
-    let { order, sessionExpiresAt } = await findOrderByPaymentRef(query.orderId, "MOMO");
+    let { order, sessionExpiresAt } = await findOrderByPaymentRef(
+      query.orderId,
+      "MOMO",
+    );
     if (order && order.userId !== req.user.id) {
       order = null;
       sessionExpiresAt = null;
@@ -460,19 +533,28 @@ const verifyMomoReturn = async (req, res) => {
       message: !signatureValid
         ? "Chữ ký không hợp lệ"
         : !partnerCodeValid
-        ? "partnerCode không khớp — nghi callback giả mạo"
-        : "FE gọi verify sau khi được redirect về",
+          ? "partnerCode không khớp — nghi callback giả mạo"
+          : "FE gọi verify sau khi được redirect về",
     });
 
     if (!isValid) return formatResponse(res, 400, "Chữ ký không hợp lệ");
-    if (!order) return formatResponse(res, 404, "Không tìm thấy đơn hàng tương ứng");
+    if (!order)
+      return formatResponse(res, 404, "Không tìm thấy đơn hàng tương ứng");
 
-    if (!momoAmountMatches(order, query.amount) || currency !== ORDER_CURRENCY) {
-      return formatResponse(res, 200, "Thông tin giao dịch không khớp với đơn hàng", {
-        orderId: order.id,
-        success: false,
-        pending: false,
-      });
+    if (
+      !momoAmountMatches(order, query.amount) ||
+      currency !== ORDER_CURRENCY
+    ) {
+      return formatResponse(
+        res,
+        200,
+        "Thông tin giao dịch không khớp với đơn hàng",
+        {
+          orderId: order.id,
+          success: false,
+          pending: false,
+        },
+      );
     }
 
     if (order.paymentStatus === "PAID") {
@@ -526,8 +608,12 @@ const momoIpn = async (req, res) => {
   const query = req.body;
   const ip = getIp(req);
   try {
-    const { isValid, isSuccess, signatureValid, partnerCodeValid, currency } = momo.verifyReturn(query);
-    const { order, sessionExpiresAt } = await findOrderByPaymentRef(query.orderId, "MOMO");
+    const { isValid, isSuccess, signatureValid, partnerCodeValid, currency } =
+      momo.verifyReturn(query);
+    const { order, sessionExpiresAt } = await findOrderByPaymentRef(
+      query.orderId,
+      "MOMO",
+    );
 
     const baseLog = {
       orderId: order?.id || null,
@@ -548,17 +634,28 @@ const momoIpn = async (req, res) => {
       return res.status(400).json({ message: "Invalid signature" });
     }
     if (!partnerCodeValid) {
-      await logTransaction({ ...baseLog, message: "partnerCode không khớp — nghi callback giả mạo" });
+      await logTransaction({
+        ...baseLog,
+        message: "partnerCode không khớp — nghi callback giả mạo",
+      });
       return res.status(400).json({ message: "Invalid signature" });
     }
     if (!order) {
-      await logTransaction({ ...baseLog, message: "Không tìm thấy đơn hàng tương ứng paymentRef" });
+      await logTransaction({
+        ...baseLog,
+        message: "Không tìm thấy đơn hàng tương ứng paymentRef",
+      });
       return res.status(404).json({ message: "Order not found" });
     }
 
     if (isSessionExpired(sessionExpiresAt)) {
-      await logTransaction({ ...baseLog, message: "Phiên thanh toán đã hết hạn, từ chối xác nhận" });
-      return res.status(200).json({ message: "Session expired, not confirmed" });
+      await logTransaction({
+        ...baseLog,
+        message: "Phiên thanh toán đã hết hạn, từ chối xác nhận",
+      });
+      return res
+        .status(200)
+        .json({ message: "Session expired, not confirmed" });
     }
 
     if (!momoAmountMatches(order, query.amount)) {
@@ -569,17 +666,26 @@ const momoIpn = async (req, res) => {
       return res.status(400).json({ message: "Invalid amount" });
     }
     if (currency !== ORDER_CURRENCY) {
-      await logTransaction({ ...baseLog, message: `Sai đơn vị tiền tệ: ${currency}` });
+      await logTransaction({
+        ...baseLog,
+        message: `Sai đơn vị tiền tệ: ${currency}`,
+      });
       return res.status(400).json({ message: "Invalid currency" });
     }
 
     if (order.paymentStatus === "PAID") {
-      await logTransaction({ ...baseLog, message: "Đơn đã được xác nhận trước đó (IPN gọi lặp lại)" });
+      await logTransaction({
+        ...baseLog,
+        message: "Đơn đã được xác nhận trước đó (IPN gọi lặp lại)",
+      });
       return res.status(200).json({ message: "Already confirmed" });
     }
 
     if (isSuccess) {
-      const { alreadyPaid } = await markOrderPaidAtomic(order.id, query.transId);
+      const { alreadyPaid } = await markOrderPaidAtomic(
+        order.id,
+        query.transId,
+      );
       await logTransaction({
         ...baseLog,
         message: alreadyPaid
@@ -589,11 +695,245 @@ const momoIpn = async (req, res) => {
       return res.status(200).json({ message: "Received" });
     }
 
-    await logTransaction({ ...baseLog, message: "Gateway báo giao dịch không thành công" });
+    await logTransaction({
+      ...baseLog,
+      message: "Gateway báo giao dịch không thành công",
+    });
     return res.status(200).json({ message: "Received" });
   } catch (error) {
     console.error("[momoIpn]", error);
     return res.status(500).json({ message: "Server error" });
+  }
+};
+
+/* ══════════════════════════ BANKQR (chuyển khoản ngân hàng qua SePay) ══════════════════════════ */
+
+// POST /payments/bankqr/create  { orderId }
+// Khác VNPay/MoMo: không có "payment URL" để redirect — trả về ảnh QR + thông tin chuyển khoản để
+// FE hiển thị ngay tại trang Checkout, người dùng quét bằng app ngân hàng bất kỳ (không cần app cụ thể).
+const createBankQrPayment = async (req, res) => {
+  try {
+    if (!bankqr.isConfigured()) {
+      console.error(
+        "[createBankQrPayment] Thiếu BANKQR_ACCOUNT_NO / BANKQR_ACCOUNT_NAME trong .env",
+      );
+      return formatResponse(
+        res,
+        503,
+        "Phương thức chuyển khoản QR hiện chưa khả dụng, vui lòng chọn phương thức khác",
+      );
+    }
+
+    const { orderId } = req.body;
+    if (!orderId) return formatResponse(res, 400, "Thiếu orderId");
+
+    const { order, error } = await findPayableOrder({
+      orderId,
+      userId: req.user.id,
+      method: "BANKQR",
+    });
+    if (error) return formatResponse(res, ...error);
+
+    const paymentRef = genPaymentRef();
+    const paymentSessionExpiresAt = new Date(
+      Date.now() + PAYMENT_SESSION_TTL_MS,
+    );
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { paymentRef, paymentSessionExpiresAt },
+    });
+
+    const addInfo = paymentRef;
+    const qrImageUrl = bankqr.buildQrImageUrl({ amount: order.total, addInfo });
+
+    await logTransaction({
+      orderId: order.id,
+      gateway: "BANKQR",
+      type: "CREATE",
+      paymentRef,
+      amount: order.total,
+      currency: ORDER_CURRENCY,
+      isValidSignature: true,
+      rawPayload: { orderId: order.id, amount: order.total, addInfo },
+      ip: getIp(req),
+      message: `Tạo phiên chuyển khoản QR, hết hạn lúc ${paymentSessionExpiresAt.toISOString()}`,
+    });
+
+    return formatResponse(res, 200, "OK", {
+      qrImageUrl,
+      bankCode: bankqr.BANK_CODE,
+      accountNo: bankqr.ACCOUNT_NO,
+      accountName: bankqr.ACCOUNT_NAME,
+      amount: order.total,
+      addInfo,
+      expiresAt: paymentSessionExpiresAt,
+    });
+  } catch (error) {
+    console.error("[createBankQrPayment]", error);
+    return formatResponse(res, 500, "Lỗi server");
+  }
+};
+
+// GET /payments/bankqr/status/:orderId — FE polling định kỳ trong lúc hiển thị QR chờ chuyển khoản.
+// CHỈ ĐỌC — nguồn xác nhận chính thức duy nhất vẫn là bankqrWebhook.
+const getBankQrStatus = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    const order = await prisma.order.findUnique({ where: { id: orderId } });
+
+    if (!order || order.userId !== req.user.id) {
+      return formatResponse(res, 404, "Không tìm thấy đơn hàng");
+    }
+
+    if (order.paymentStatus === "PAID") {
+      return formatResponse(res, 200, "Đơn hàng đã được thanh toán", {
+        orderId: order.id,
+        success: true,
+        pending: false,
+      });
+    }
+
+    if (isSessionExpired(order.paymentSessionExpiresAt)) {
+      return formatResponse(res, 200, "Phiên chuyển khoản đã hết hạn", {
+        orderId: order.id,
+        success: false,
+        pending: false,
+        expired: true,
+      });
+    }
+
+    return formatResponse(res, 200, "Đang chờ chuyển khoản", {
+      orderId: order.id,
+      success: false,
+      pending: true,
+    });
+  } catch (error) {
+    console.error("[getBankQrStatus]", error);
+    return formatResponse(res, 500, "Lỗi server");
+  }
+};
+
+// POST /payments/bankqr/webhook — SePay gọi server-to-server khi tài khoản ngân hàng nhận tiền.
+// Không dùng `protect`, xác thực bằng API Key trong header Authorization.
+// NGUỒN XÁC NHẬN CHÍNH THỨC DUY NHẤT để chuyển đơn BANKQR sang PAID.
+const bankqrWebhook = async (req, res) => {
+  const body = req.body;
+  const ip = getIp(req);
+  try {
+    const authHeader = req.headers["authorization"];
+    const authValid = bankqr.verifyWebhookAuth(authHeader);
+
+    const parsed = bankqr.parseWebhookPayload(body);
+    const { order, sessionExpiresAt } = await findOrderByPaymentRef(
+      parsed.paymentRef,
+      "BANKQR",
+    );
+
+    const baseLog = {
+      orderId: order?.id || null,
+      gateway: "BANKQR",
+      type: "IPN",
+      paymentRef: parsed.paymentRef || "",
+      amount: parsed.amount,
+      currency: ORDER_CURRENCY,
+      gatewayTxnId: parsed.gatewayTxnId,
+      resultCode: null,
+      isValidSignature: authValid,
+      rawPayload: body,
+      ip,
+    };
+
+    if (!authValid) {
+      await logTransaction({
+        ...baseLog,
+        message: "Sai/thiếu API Key xác thực webhook — nghi giả mạo",
+      });
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid webhook auth" });
+    }
+
+    if (!parsed.isIncoming) {
+      await logTransaction({
+        ...baseLog,
+        message: "Bỏ qua giao dịch tiền ra (transferType != in)",
+      });
+      return res
+        .status(200)
+        .json({ success: true, message: "Ignored (outgoing transaction)" });
+    }
+
+    if (!parsed.paymentRef) {
+      await logTransaction({
+        ...baseLog,
+        message: `Không tìm thấy mã đơn hàng (paymentRef) trong nội dung chuyển khoản: "${parsed.rawContent}"`,
+      });
+      return res
+        .status(200)
+        .json({ success: true, message: "No matching paymentRef, ignored" });
+    }
+
+    if (!order) {
+      await logTransaction({
+        ...baseLog,
+        message: "Không tìm thấy đơn hàng tương ứng paymentRef",
+      });
+      return res
+        .status(200)
+        .json({ success: true, message: "Order not found, ignored" });
+    }
+
+    if (order.paymentStatus === "PAID") {
+      await logTransaction({
+        ...baseLog,
+        message: "Đơn đã được xác nhận trước đó (webhook gọi lặp lại)",
+      });
+      return res
+        .status(200)
+        .json({ success: true, message: "Already confirmed" });
+    }
+
+    if (isSessionExpired(sessionExpiresAt)) {
+      await logTransaction({
+        ...baseLog,
+        message:
+          "Phiên chuyển khoản đã hết hạn khi tiền về — cần admin đối soát thủ công",
+      });
+      return res
+        .status(200)
+        .json({
+          success: true,
+          message: "Session expired, needs manual review",
+        });
+    }
+
+    if (!bankqrAmountMatches(order, parsed.amount)) {
+      await logTransaction({
+        ...baseLog,
+        message: `Sai số tiền: chuyển khoản=${parsed.amount}, cần=${order.total} — cần admin đối soát thủ công`,
+      });
+      return res
+        .status(200)
+        .json({
+          success: true,
+          message: "Amount mismatch, needs manual review",
+        });
+    }
+
+    const { alreadyPaid } = await markOrderPaidAtomic(
+      order.id,
+      parsed.gatewayTxnId,
+    );
+    await logTransaction({
+      ...baseLog,
+      message: alreadyPaid
+        ? "Đơn đã được đánh dấu PAID bởi 1 request khác cùng lúc (race condition đã được chặn)"
+        : "Xác nhận thanh toán thành công qua chuyển khoản QR",
+    });
+    return res.status(200).json({ success: true, message: "Confirmed" });
+  } catch (error) {
+    console.error("[bankqrWebhook]", error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -604,4 +944,7 @@ module.exports = {
   createMomoPaymentUrl,
   verifyMomoReturn,
   momoIpn,
+  createBankQrPayment,
+  getBankQrStatus,
+  bankqrWebhook,
 };

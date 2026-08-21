@@ -22,6 +22,7 @@ import {
   X,
   Eye,
   EyeOff,
+  QrCode,
 } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
 import { formatPrice } from "../utils/helpers";
@@ -331,6 +332,12 @@ const PAYMENT_OPTIONS = [
     icon: Wallet,
     label: "Ví MoMo",
     sub: "Ví điện tử MoMo",
+  },
+  {
+    id: "bankqr",
+    icon: QrCode,
+    label: "Chuyển khoản QR",
+    sub: "Quét mã, chuyển khoản ngân hàng bất kỳ",
   },
 ];
 
@@ -1226,6 +1233,9 @@ export default function Checkout() {
   const [placing, setPlacing] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [placedOrderId, setPlacedOrderId] = useState(null);
+  const [bankQrData, setBankQrData] = useState(null);
+  const [bankQrStatus, setBankQrStatus] = useState("pending");
+  const [bankQrExpired, setBankQrExpired] = useState(false);
   const [requestInvoice, setRequestInvoice] = useState(false);
   const [deliveryMode, setDeliveryMode] = useState("shipping");
   const [savedAddresses, setSavedAddresses] = useState([]);
@@ -1557,6 +1567,28 @@ export default function Checkout() {
     // VNPay / MoMo → đơn đã tạo (giữ trạng thái UNPAID), giờ lấy link cổng thanh toán rồi chuyển hướng.
     // Tách try/catch riêng: nếu bước này lỗi, đơn hàng VẪN đã tồn tại — báo rõ để người dùng
     // vào lịch sử đơn hàng bấm "Thanh toán lại" thay vì tưởng nhầm là chưa đặt được gì.
+    if (method === "bankqr") {
+      try {
+        const { data: qrData } =
+          await paymentService.createBankQrPayment(orderId);
+        setBankQrData(qrData.data);
+        setBankQrStatus("pending");
+        setBankQrExpired(false);
+        toast.success("Đã tạo mã QR — quét để chuyển khoản");
+        setStep(4);
+        scrollTop();
+      } catch (err) {
+        toast.error(
+          (err?.response?.data?.message ||
+            "Không tạo được mã QR chuyển khoản") +
+            " — đơn hàng đã được lưu, bạn có thể thanh toán lại trong Đơn hàng của tôi.",
+        );
+      } finally {
+        setPlacing(false);
+      }
+      return;
+    }
+
     try {
       const getUrl =
         method === "vnpay"
@@ -1574,8 +1606,42 @@ export default function Checkout() {
     }
   };
 
-  /*  empty cart guard  */
-  if (!cart || items.length === 0) {
+  useEffect(() => {
+    if (!bankQrData || !placedOrderId || bankQrStatus !== "pending") return;
+
+    const POLL_INTERVAL_MS = 3000;
+    let cancelled = false;
+
+    const poll = async () => {
+      try {
+        const { data } = await paymentService.getBankQrStatus(placedOrderId);
+        if (cancelled) return;
+        const result = data.data;
+        if (result.success) {
+          setBankQrStatus("success");
+          toast.success("Thanh toán thành công!");
+          setOrderPlaced(true);
+          fetchCart();
+        } else if (result.expired) {
+          setBankQrStatus("expired");
+          setBankQrExpired(true);
+          toast.error(
+            "Mã QR đã hết hạn, vui lòng đặt lại đơn hàng hoặc thanh toán lại trong Đơn hàng của tôi.",
+          );
+        }
+      } catch {
+        // Lỗi mạng tạm thời khi polling — chờ lượt sau tự thử lại.
+      }
+    };
+
+    const intervalId = setInterval(poll, POLL_INTERVAL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+    };
+  }, [bankQrData, placedOrderId, bankQrStatus]);
+
+  /*  empty cart guard  */ if (!cart || items.length === 0) {
     return (
       <div
         style={{
@@ -3422,6 +3488,25 @@ export default function Checkout() {
                 </div>
               )}
 
+              {method === "bankqr" && (
+                <div
+                  style={{
+                    padding: "16px 20px",
+                    marginTop: 16,
+                    background: "var(--cream)",
+                    border: "0.5px solid var(--border)",
+                    fontSize: 13,
+                    color: "var(--text-muted)",
+                    fontWeight: 300,
+                  }}
+                >
+                  Mã QR chuyển khoản sẽ hiện ra ngay sau khi bạn xác nhận đơn
+                  hàng. Quét bằng app ngân hàng bất kỳ, đơn được xác nhận{" "}
+                  <strong style={{ color: "var(--forest)" }}>tự động</strong>{" "}
+                  trong ít phút.
+                </div>
+              )}
+
               {/* shipping method display */}
               <div
                 style={{
@@ -3754,7 +3839,192 @@ export default function Checkout() {
           {/* ┌──────────────────────────────────┐
               │  STEP 4 — Hoàn tất               │
               └──────────────────────────────────┘ */}
-          {step === 4 && (
+          {step === 4 && bankQrData && bankQrStatus !== "success" && (
+            <div className="co-step" style={{ padding: "20px 20px 40px" }}>
+              <SectionHead icon={QrCode} title="Quét mã để chuyển khoản" />
+
+              {bankQrStatus === "expired" ? (
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 12,
+                    alignItems: "flex-start",
+                    padding: "18px 20px",
+                    marginTop: 12,
+                    background: "#fdf2f0",
+                    border: "0.5px solid #e8b4ab",
+                  }}
+                >
+                  <AlertCircle
+                    size={16}
+                    strokeWidth={1.5}
+                    style={{ color: "#c0392b", flexShrink: 0, marginTop: 2 }}
+                  />
+                  <div>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        color: "var(--forest)",
+                        fontWeight: 500,
+                        marginBottom: 4,
+                      }}
+                    >
+                      Mã QR đã hết hạn
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: "var(--text-muted)",
+                        fontWeight: 300,
+                        marginBottom: 16,
+                      }}
+                    >
+                      Đơn hàng của bạn vẫn được lưu. Vào Đơn hàng của tôi để
+                      thanh toán lại và nhận mã QR mới.
+                    </div>
+                    <Link
+                      to="/profile"
+                      state={{ tab: "orders", orderId: placedOrderId }}
+                      style={{ textDecoration: "none" }}
+                    >
+                      <button
+                        style={{
+                          background: "var(--forest)",
+                          border: "none",
+                          padding: "12px 24px",
+                          cursor: "pointer",
+                          fontFamily: "Be Vietnam Pro, sans-serif",
+                          fontSize: 11,
+                          letterSpacing: "0.18em",
+                          textTransform: "uppercase",
+                          color: "var(--ivory)",
+                        }}
+                      >
+                        Xem đơn hàng của bạn
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      padding: "28px 20px",
+                      marginTop: 12,
+                      background: "var(--white)",
+                      border: "0.5px solid var(--border-gold)",
+                    }}
+                  >
+                    <img
+                      src={bankQrData.qrImageUrl}
+                      alt="Mã QR chuyển khoản ngân hàng"
+                      style={{
+                        width: 220,
+                        height: 220,
+                        objectFit: "contain",
+                        border: "0.5px solid var(--border)",
+                      }}
+                    />
+
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        marginTop: 20,
+                        fontSize: 12,
+                        color: "var(--gold)",
+                        fontWeight: 400,
+                      }}
+                    >
+                      <Loader2
+                        size={13}
+                        style={{ animation: "spin 0.8s linear infinite" }}
+                      />
+                      Đang chờ chuyển khoản — tự động xác nhận trong ít phút
+                    </div>
+
+                    <div
+                      style={{
+                        width: "100%",
+                        marginTop: 24,
+                        paddingTop: 20,
+                        borderTop: "0.5px solid var(--border)",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 10,
+                      }}
+                    >
+                      {[
+                        ["Ngân hàng", bankQrData.bankCode],
+                        ["Số tài khoản", bankQrData.accountNo],
+                        ["Chủ tài khoản", bankQrData.accountName],
+                        ["Số tiền", formatPrice(bankQrData.amount)],
+                        ["Nội dung CK", bankQrData.addInfo],
+                      ].map(([label, value]) => (
+                        <div
+                          key={label}
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            gap: 12,
+                            fontSize: 12.5,
+                          }}
+                        >
+                          <span
+                            style={{
+                              color: "var(--text-muted)",
+                              fontWeight: 300,
+                            }}
+                          >
+                            {label}
+                          </span>
+                          <span
+                            style={{
+                              color: "var(--forest)",
+                              fontWeight: 500,
+                              textAlign: "right",
+                            }}
+                          >
+                            {value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 8,
+                      alignItems: "flex-start",
+                      padding: "14px 18px",
+                      marginTop: 16,
+                      background: "var(--cream)",
+                      border: "0.5px solid var(--border)",
+                      fontSize: 12,
+                      color: "var(--text-muted)",
+                      fontWeight: 300,
+                    }}
+                  >
+                    <AlertCircle
+                      size={14}
+                      strokeWidth={1.5}
+                      style={{ flexShrink: 0, marginTop: 1 }}
+                    />
+                    Vui lòng giữ nguyên nội dung chuyển khoản để hệ thống tự
+                    động xác nhận đơn hàng. Không đóng trang này cho đến khi
+                    thanh toán hoàn tất.
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {step === 4 && !(bankQrData && bankQrStatus !== "success") && (
             <div
               className="co-step"
               style={{ textAlign: "center", padding: "40px 20px" }}
