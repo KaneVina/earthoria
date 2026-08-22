@@ -2,9 +2,6 @@ const prisma = require("../config/db");
 const { formatResponse } = require("../utils/helpers");
 const { validateAndComputeDiscount } = require("../utils/couponUtil");
 
-// POST /api/v1/coupons/validate  { code, subtotal }
-// Dùng ở trang giỏ hàng / checkout để xem trước số tiền được giảm TRƯỚC khi đặt hàng.
-// Không tăng usedCount ở đây — chỉ tăng thật khi order được tạo (orderController).
 const validateCoupon = async (req, res) => {
   try {
     const { code, subtotal } = req.body;
@@ -34,4 +31,27 @@ const validateCoupon = async (req, res) => {
   }
 };
 
-module.exports = { validateCoupon };
+const getAvailableCoupons = async (req, res) => {
+  try {
+    const now = new Date();
+
+    const coupons = await prisma.coupon.findMany({
+      where: {
+        isActive: true,
+        OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const available = coupons.filter(
+      (c) => c.usageLimit == null || c.usedCount < c.usageLimit
+    );
+
+    return formatResponse(res, 200, "Lấy danh sách ưu đãi thành công", available);
+  } catch (error) {
+    console.error("[getAvailableCoupons]", error);
+    return formatResponse(res, 500, "Lỗi server");
+  }
+};
+
+module.exports = { validateCoupon, getAvailableCoupons };
