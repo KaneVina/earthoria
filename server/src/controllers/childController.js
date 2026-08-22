@@ -642,6 +642,14 @@ const deleteChildPermanently = async (req, res) => {
     });
     if (!child) return formatResponse(res, 404, "Không tìm thấy hồ sơ trẻ");
 
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    const verify = await verifyParentPin(user, req.body.pin);
+    if (!verify.ok) {
+      return formatResponse(res, verify.code === "LOCKED_OUT" ? 429 : 400, verify.message, {
+        code: verify.code,
+      });
+    }
+
     const { confirmName } = req.body;
     if (typeof confirmName !== "string" || confirmName.trim() !== child.name) {
       return formatResponse(

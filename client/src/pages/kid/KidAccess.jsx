@@ -9,6 +9,8 @@ import {
   Sparkles,
   Sun,
   Moon,
+  Sunrise,
+  Sunset,
   ChevronRight,
   X,
   Compass,
@@ -47,14 +49,7 @@ const EYE_TIPS = [
 ];
 
 const BREATH_PHASES = ["Hít vào thật sâu…", "Thở ra thật chậm…"];
-
-// Bảng "tem màu" xoay vòng cho tủ sách — mỗi cuốn có một sắc riêng
-// lấy từ chính quả địa cầu nhiều màu trong logo, để tủ sách trông
-// sống động như một bộ hộ chiếu phiêu lưu, không đơn sắc.
 const SHELF_ACCENTS = ["leaf", "sky", "berry", "sun", "grape", "coral"];
-
-// Các mức cỡ chữ bé có thể tự chọn trong bảng cài đặt (giữ nút bánh răng để mở).
-// Lưu theo từng token trên máy của bé để lần sau ghé lại vẫn giữ đúng cỡ chữ.
 const FONT_SCALES = [
   { key: "sm", label: "Nhỏ", value: 0.88 },
   { key: "md", label: "Vừa", value: 1 },
@@ -104,8 +99,6 @@ function withinWindow(start, end) {
   return s <= e ? cur >= s && cur <= e : cur >= s || cur <= e;
 }
 
-// Bỏ dấu tiếng Việt để tìm kiếm "dễ dãi" hơn — bé gõ không dấu vẫn ra
-// đúng sách (vd. "co tich" vẫn khớp "Cổ tích").
 function normalizeSearch(str) {
   return String(str ?? "")
     .toLowerCase()
@@ -115,8 +108,6 @@ function normalizeSearch(str) {
     .trim();
 }
 
-// Chọn "tem màu" ổn định theo id, dùng cho modal (để trùng khớp cảm
-// giác với thẻ sách tương ứng ngoài lưới dù ta không truyền index vào đây).
 function accentForId(id) {
   const str = String(id ?? "");
   let hash = 0;
@@ -141,10 +132,6 @@ function spawnRipple(e) {
   span.addEventListener("animationend", () => span.remove());
 }
 
-// Chùm "pháo hoa" nhiều màu khi bé chạm vào một khoảnh khắc đáng ăn
-// mừng (mở sách, đọc ngay, chọn cỡ chữ...). Gắn vào <body> ở toạ độ
-// con trỏ để không bị cắt bởi overflow:hidden của thẻ sách, tự dọn
-// dẹp sau khi chạy xong — không đụng tới state React nào cả.
 const SPARKLE_COLORS = ["#12A8E0", "#FF6E93", "#FF9F45", "#63CC4A", "#FFC53D", "#1FC2C2"];
 
 function spawnSparklesAt(x, y, count = 10) {
@@ -172,9 +159,167 @@ function spawnSparkles(e, count = 10) {
   spawnSparklesAt(e.clientX, e.clientY, count);
 }
 
+const SUNRISE_HOUR = 6; // 06:00 — mặt trời mọc
+const SUNSET_HOUR = 18; // 18:00 — mặt trời lặn
+const NIGHT_SKY_STOPS = ["#050B1F", "#0B1B3A", "#16294F", "#20386A", "#2B4570", "#182647"];
+const DAY_SKY_STOPS = ["#063A57", "#1AAEE8", "#12A8E0", "#6FD3F2", "#EAF8FF", "#F5FBFF"];
+
+function clamp01(n) {
+  return Math.min(1, Math.max(0, n));
+}
+
+function hexToRgb(hex) {
+  const n = parseInt(hex.slice(1), 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+function mixHex(a, b, t) {
+  const [ar, ag, ab] = hexToRgb(a);
+  const [br, bg, bb] = hexToRgb(b);
+  const r = Math.round(ar + (br - ar) * t);
+  const g = Math.round(ag + (bg - ag) * t);
+  const bl = Math.round(ab + (bb - ab) * t);
+  return `rgb(${r}, ${g}, ${bl})`;
+}
+
+function arcPosition(h, start, end) {
+  let span = end - start;
+  if (span <= 0) span += 24;
+  let hh = h - start;
+  if (hh < 0) hh += 24;
+  const progress = clamp01(hh / span);
+  const elevation = Math.sin(progress * Math.PI); // 0 chân trời → 1 đỉnh trời
+  return {
+    progress,
+    elevation,
+    x: 6 + progress * 88,
+    y: 88 - elevation * 80,
+  };
+}
+
+function computeSkyState(date) {
+  const h = date.getHours() + date.getMinutes() / 60 + date.getSeconds() / 3600;
+
+  const dayness = Math.cos(((h - 12) / 12) * Math.PI);
+  const dayT = clamp01((dayness + 0.15) / 0.3); // 0 = màu đêm, 1 = màu ngày
+  const edge = clamp01(1 - Math.abs(dayness) * 2.2); // đỉnh đúng lúc rạng đông/hoàng hôn
+
+  const stops = NIGHT_SKY_STOPS.map((c, i) => mixHex(c, DAY_SKY_STOPS[i], dayT));
+
+  const sunVisible = h >= SUNRISE_HOUR && h <= SUNSET_HOUR;
+  const sunArc = arcPosition(h, SUNRISE_HOUR, SUNSET_HOUR);
+  const sunOpacity = sunVisible ? clamp01(sunArc.elevation * 4) : 0;
+
+  const moonVisible = !sunVisible;
+  const moonArc = arcPosition(h, SUNSET_HOUR, SUNRISE_HOUR + 24);
+  const moonOpacity = moonVisible ? clamp01(moonArc.elevation * 4) : 0;
+
+  const starOpacity = clamp01(1 - dayT * 1.35);
+
+  let phase = "day";
+  if (dayT <= 0.15) phase = "night";
+  else if (dayT < 0.85) phase = h < 12 ? "dawn" : "dusk";
+
+  return {
+    phase,
+    stops,
+    starOpacity,
+    warmOpacity: edge,
+    warmX: sunVisible ? sunArc.x : moonArc.x,
+    sun: { visible: sunVisible, opacity: sunOpacity, x: sunArc.x, y: sunArc.y },
+    moon: { visible: moonVisible, opacity: moonOpacity, x: moonArc.x, y: moonArc.y },
+  };
+}
+
+function useSkyState() {
+  const [date, setDate] = useState(() => new Date());
+  useEffect(() => {
+    const id = setInterval(() => setDate(new Date()), 60000);
+    return () => clearInterval(id);
+  }, []);
+  return useMemo(() => computeSkyState(date), [date]);
+}
+
+
+function PhaseIcon({ phase, ...props }) {
+  if (phase === "night") return <Moon {...props} />;
+  if (phase === "dawn") return <Sunrise {...props} />;
+  if (phase === "dusk") return <Sunset {...props} />;
+  return <Sun {...props} />;
+}
+
+function DynamicSky({ skyState, minimal = false }) {
+  const { stops, sun, moon, starOpacity, warmOpacity, warmX, phase } = skyState;
+  const skyStyle = {
+    "--sky-s1": stops[0],
+    "--sky-s2": stops[1],
+    "--sky-s3": stops[2],
+    "--sky-s4": stops[3],
+    "--sky-s5": stops[4],
+    "--sky-s6": stops[5],
+    "--warm-opacity": warmOpacity,
+    "--warm-x": `${warmX}%`,
+  };
+
+  return (
+    <div className="kid-sky" aria-hidden="true" style={skyStyle} data-phase={phase}>
+      <div className="kid-sky-wash" />
+      <div className="kid-sky-warm" />
+
+      {sun.opacity > 0.01 && (
+        <span
+          className="kid-sun"
+          style={{ left: `${sun.x}%`, top: `${sun.y}%`, opacity: sun.opacity }}
+        />
+      )}
+
+      {moon.opacity > 0.01 && (
+        <span
+          className="kid-moon"
+          style={{ left: `${moon.x}%`, top: `${moon.y}%`, opacity: moon.opacity }}
+        >
+          <span className="kid-moon-crater c1" />
+          <span className="kid-moon-crater c2" />
+          <span className="kid-moon-crater c3" />
+        </span>
+      )}
+
+      <span className="kid-cloud kid-cloud-1" />
+      <span className="kid-cloud kid-cloud-2" />
+      <span className="kid-cloud kid-cloud-3" />
+
+      <div className="kid-stars-layer" style={{ opacity: starOpacity }}>
+        <span className="kid-star kid-star-1" />
+        <span className="kid-star kid-star-2" />
+        <span className="kid-star kid-star-3" />
+        <span className="kid-star kid-star-4" />
+        <span className="kid-star kid-star-5" />
+        <span className="kid-star kid-star-6" />
+        <span className="kid-star kid-star-7" />
+        <span className="kid-star kid-star-8" />
+        {starOpacity > 0.45 && <span className="kid-shooting-star" />}
+      </div>
+
+      {!minimal && (
+        <>
+          <span className="kid-float-icon kid-float-icon-1">
+            <Star size={18} fill="currentColor" />
+          </span>
+          <span className="kid-float-icon kid-float-icon-2">
+            <Sparkles size={20} />
+          </span>
+        </>
+      )}
+
+      <div className="kid-sky-grain" />
+    </div>
+  );
+}
+
 export default function KidAccess() {
   const { slug, token } = useParams(); // :slug không dùng để tra cứu, chỉ để đẹp URL
   const navigate = useNavigate();
+  const skyState = useSkyState(); // bầu trời theo giờ thực — chạy cho mọi trạng thái của trang
   const [status, setStatus] = useState("loading"); // loading | ok | invalid
   const [child, setChild] = useState(null);
   const [books, setBooks] = useState([]);
@@ -434,9 +579,6 @@ export default function KidAccess() {
     [child?.isLocked],
   );
 
-  //   tilt 3D + ánh sáng theo con trỏ cho thẻ sách, cập nhật trực tiếp
-  // qua DOM để không re-render — CSS đọc lại các biến này để nghiêng
-  // thẻ thật (perspective/rotateX/rotateY) và di chuyển đốm sáng.
   const handleCardMove = useCallback((e) => {
     const el = e.currentTarget;
     const rect = el.getBoundingClientRect();
@@ -468,16 +610,12 @@ export default function KidAccess() {
   const isSearching = normalizeSearch(searchQuery).length > 0;
 
   if (status === "loading") {
-    // Vẽ sẵn đúng bầu trời "sky wash" của trang chính ngay từ lúc chờ
-    // API, thay vì để lộ màu nền trắng mặc định của <body>. Nếu không,
-    // lúc dữ liệu tải xong trang sẽ "nháy trắng" một nhịp trước khi
-    // đổi sang bầu trời xanh dương thật.
     return (
-      <div className="kid-state-page kid-state-page--loading">
-        <StateBg />
+      <div className="kid-state-page kid-state-page--loading" data-phase={skyState.phase}>
+        <DynamicSky skyState={skyState} minimal />
         <FullScreenLoader
           eyebrow="Đang mở tủ sách"
-          message="Chờ bé một chút xíu nhé..."
+          message="Bé một chút xíu nhé..."
         />
       </div>
     );
@@ -485,14 +623,15 @@ export default function KidAccess() {
 
   if (status === "invalid") {
     return (
-      <div className="kid-state-page">
-        <StateBg />
+      <div className="kid-state-page" data-phase={skyState.phase}>
+        <DynamicSky skyState={skyState} minimal />
         <div className="kid-state-card">
           <div className="kid-state-icon kid-state-icon--blue">
             <Compass size={30} />
           </div>
           <h1 className="kid-state-title">Link này không đúng rồi bé ơi</h1>
           <p className="kid-state-text">
+
             Liên kết không hợp lệ hoặc đã bị thu hồi. Bé nhờ ba mẹ lấy lại
             link mới trong trang quản lý nhé!
           </p>
@@ -513,8 +652,8 @@ export default function KidAccess() {
 
   if (child?.isLocked) {
     return (
-      <div className="kid-state-page">
-        <StateBg />
+      <div className="kid-state-page" data-phase={skyState.phase}>
+        <DynamicSky skyState={skyState} minimal />
         <div className="kid-state-card">
           <div className="kid-state-icon kid-state-icon--orange">
             <Lock size={28} />
@@ -555,10 +694,7 @@ export default function KidAccess() {
     child.tipsEnabled && (child.tipsFrequency === "rest" || child.tipsFrequency === "interval");
   const modalAccent = activeBook ? accentForId(activeBook.id) : "sky";
 
-  //   viền đếm ngược quanh logo trên header — chỉ hiện khi phụ huynh có
-  // đặt giới hạn thời gian đọc/ngày. Nội suy thêm giây của phiên hiện tại
-  // (chỉ để hiển thị, không phải nguồn sự thật) để viền vơi dần mượt theo
-  // thời gian thực thay vì nhảy cách phút như số liệu từ server.
+
   const liveTodayMinutes = dailyLimit > 0 ? Math.min(dailyLimit, todayMinutes + sessionSeconds / 60) : 0;
   const crestRemainPercent = dailyLimit > 0 ? Math.max(0, 100 - (liveTodayMinutes / dailyLimit) * 100) : 100;
   const crestRingRadius = 46;
@@ -568,27 +704,12 @@ export default function KidAccess() {
   const crestRingState = limitReached ? "is-empty" : crestRemainPercent <= 20 ? "is-warning" : "";
 
   return (
-    <div className="kid-page" style={{ "--kid-accent": child.avatarColor || "var(--kid-blue)", "--kid-font-scale": fontScale }}>
-      <div className="kid-sky" aria-hidden="true">
-        <div className="kid-sky-wash" />
-        <span className="kid-sun" />
-        <span className="kid-cloud kid-cloud-1" />
-        <span className="kid-cloud kid-cloud-2" />
-        <span className="kid-cloud kid-cloud-3" />
-        <span className="kid-star kid-star-1" />
-        <span className="kid-star kid-star-2" />
-        <span className="kid-star kid-star-3" />
-        <span className="kid-star kid-star-4" />
-        <span className="kid-star kid-star-5" />
-        <span className="kid-star kid-star-6" />
-        <span className="kid-float-icon kid-float-icon-1">
-          <Star size={18} fill="currentColor" />
-        </span>
-        <span className="kid-float-icon kid-float-icon-2">
-          <Sparkles size={20} />
-        </span>
-        <div className="kid-sky-grain" />
-      </div>
+    <div
+      className="kid-page"
+      data-phase={skyState.phase}
+      style={{ "--kid-accent": child.avatarColor || "var(--kid-blue)", "--kid-font-scale": fontScale }}
+    >
+      <DynamicSky skyState={skyState} />
 
       <div className="kid-shell">
         <header className={`kid-topbar${isScrolled ? " is-scrolled" : ""}`}>
@@ -622,8 +743,8 @@ export default function KidAccess() {
               </span>
             </div>
             <div className="kid-brandtext">
-              <span className="kid-brand-word">EARTHORIA</span>
-              <span className="kid-brand-tagline">kids · thư viện diệu kỳ</span>
+              <span className="kid-brand-word">KID STUDIO</span>
+              <span className="kid-brand-tagline">Tài khoản của {child.name}</span>
             </div>
           </div>
           <div className="kid-topbar-actions">
@@ -662,15 +783,14 @@ export default function KidAccess() {
               <i>✦</i>
             </span>
           </div>
-          <p className="kid-hero-eyebrow">Thư viện của {child.name}</p>
           <h1 className="kid-hero-title">
             {timeGreeting()}, <span className="kid-name-highlight">{child.name}</span>!
           </h1>
-          <div className="kid-hero-bubble">
-            <Sparkles size={15} className="kid-hero-bubble-icon" />
-            <p className="kid-hero-sub">{inspireLine}</p>
-            <span className="kid-hero-bubble-tail" aria-hidden="true" />
-          </div>
+          {/* <div className="kid-hero-bubble"> */}
+            {/* <Sparkles size={15} className="kid-hero-bubble-icon" /> */}
+            {/* <p className="kid-hero-sub">{inspireLine}</p> */}
+            {/* <span className="kid-hero-bubble-tail" aria-hidden="true" /> */}
+          {/* </div> */}
           {Number.isFinite(child.age) && (
             <div className="kid-hero-age">
               <Smile size={13} /> {child.age} tuổi
@@ -708,7 +828,7 @@ export default function KidAccess() {
         <section className="kid-stats-row">
           <div className="kid-stat-card kid-stat-card--time">
             <div className="kid-clock-icon">
-              <Clock size={18} />
+              <PhaseIcon phase={skyState.phase} size={18} />
             </div>
             <div>
               <div className="kid-stat-label">Bây giờ là</div>
@@ -814,7 +934,7 @@ export default function KidAccess() {
               <span className="kid-shelf-leaf" aria-hidden="true">
                 <BookOpen size={17} />
               </span>
-              <h2 className="kid-shelf-title">Tủ sách của bé</h2>
+              <h2 className="kid-shelf-title">{"Tủ sách của bé".normalize("NFC")}</h2>
             </div>
             <span className="kid-shelf-count">
               {isSearching ? `${filteredBooks.length}/${books.length} cuốn` : `${books.length} cuốn`}
@@ -1111,23 +1231,6 @@ export default function KidAccess() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-function StateBg() {
-  return (
-    <div className="kid-sky" aria-hidden="true">
-      <div className="kid-sky-wash" />
-      <span className="kid-sun" />
-      <span className="kid-cloud kid-cloud-1" />
-      <span className="kid-cloud kid-cloud-2" />
-      <span className="kid-cloud kid-cloud-3" />
-      <span className="kid-star kid-star-1" />
-      <span className="kid-star kid-star-2" />
-      <span className="kid-star kid-star-3" />
-      <span className="kid-star kid-star-4" />
-      <div className="kid-sky-grain" />
     </div>
   );
 }

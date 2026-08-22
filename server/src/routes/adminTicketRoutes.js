@@ -8,8 +8,6 @@ const {
   replyToTicket,
 } = require('../controllers/adminTicketController')
 
-// Middleware protect + staffOrAdmin đã được áp dụng ở adminRoutes.js trước khi vào router này
-
 router.get('/', getTickets)
 router.get('/:id', getTicketById)
 router.patch('/:id/status', updateTicketStatus)
