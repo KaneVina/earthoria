@@ -86,14 +86,14 @@ const GuestRoute = ({ children }) => {
   return !isAuthenticated ? children : <Navigate to="/" replace />;
 };
 // Khởi động trang bảo trì (test tay — luôn ưu tiên cao nhất, ghi đè cả lịch/tự động của admin)
-// const MAINTENANCE_MODE = false;
-const MAINTENANCE_MODE = true;
+const MAINTENANCE_MODE = false;
+// const MAINTENANCE_MODE = true;
 
 export default function App() {
   const { setAuth, setAuthChecked, authChecked, user, isAuthenticated } = useAuthStore();
   const [showLoader, setShowLoader] = useState(false);
 
-  // Trạng thái bảo trì lấy từ dashboard admin (bật tay hoặc theo lịch tự động).
+  // Trạng thái bảo trì lấy từ dashboard admin
   const { data: siteSettings } = useQuery({
     queryKey: ["public-site-settings"],
     queryFn: () => settingsService.getPublic().then((r) => r.data.data),
