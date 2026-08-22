@@ -166,7 +166,10 @@ export default function CustomCursor() {
       ty = -300; // target: cập nhật ngay khi có mousemove
     let mx = -300,
       my = -300; // smoothed: theo sau tx/ty một cách mượt mà
-    const CURSOR_SMOOTH = 0.22; // 0..1 — càng nhỏ càng "trễ"/mượt, càng lớn càng bám sát
+    /* Hệ số làm mượt theo từng chế độ — 0..1, càng lớn càng bám sát chuột thật,
+       càng nhỏ càng "trễ"/trôi. /dashboard cần bám gần như tức thời để thao tác
+       chính xác (click nút, bảng dữ liệu...), nên đặt rất cao (gần như không trễ). */
+    const CURSOR_SMOOTH = { default: 0.35, kid: 0.32, dashboard: 0.98 };
 
     /* Vòng ring giãn nở mượt khi nhấn/nhả thay vì đổi kích thước tức thời */
     let ringR = isMobile ? 0 : 21;
@@ -528,9 +531,10 @@ export default function CustomCursor() {
 
       /* 2. Làm mượt vị trí con trỏ + bán kính ring (desktop only) */
       if (!isMobile) {
-        mx += (tx - mx) * CURSOR_SMOOTH;
-        my += (ty - my) * CURSOR_SMOOTH;
-        ringR += (ringTarget - ringR) * 0.25;
+        const smooth = CURSOR_SMOOTH[mode] ?? CURSOR_SMOOTH.default;
+        mx += (tx - mx) * smooth;
+        my += (ty - my) * smooth;
+        ringR += (ringTarget - ringR) * (mode === "dashboard" ? 0.6 : 0.25);
       }
 
       const visible = !isMobile && enabledRef.current && tx > -200;
@@ -870,7 +874,7 @@ export default function CustomCursor() {
         left: 0,
         width: "100%",
         height: "100%",
-        pointerEvents: "none" /* ← không chặn click bất kỳ nút nào */,
+        pointerEvents: "none",
         zIndex: 999999,
       }}
     />
