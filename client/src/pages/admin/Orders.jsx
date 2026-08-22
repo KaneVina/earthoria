@@ -23,8 +23,15 @@ export const PAYMENT_STATUS = {
   PAID:    'Đã TT',
   FAILED:  'Thất bại',
   REFUNDED:'Hoàn tiền',
+  EXPIRED: 'Hết hạn TT',
 }
-
+export const PAYMENT_METHOD_LABEL = {
+  COD:    'COD',
+  VNPAY:  'VNPay',
+  MOMO:   'MoMo',
+  BANKQR: 'Chuyển khoản QR',
+  STRIPE: 'Stripe',
+}
 const ORDER_BADGE = {
   PENDING:   'warning',
   CONFIRMED: 'info',
@@ -40,6 +47,7 @@ const PAY_BADGE = {
   PAID:     'success',
   FAILED:   'danger',
   REFUNDED: 'warning',
+  EXPIRED:  'danger',
 }
 
 /*  Order detail drawer (mini)  */
@@ -104,11 +112,13 @@ function OrderDrawer({ order, onClose }) {
             <span className={`a-badge ${PAY_BADGE[order.paymentStatus] ?? 'neutral'}`}>
               {PAYMENT_STATUS[order.paymentStatus]}
             </span>
+            <span className="a-badge neutral">
+              {PAYMENT_METHOD_LABEL[order.paymentMethod] ?? order.paymentMethod}
+            </span>
             {order.isDigital && (
               <span className="a-badge info">Sách điện tử — không giao hàng</span>
             )}
           </div>
-
           {/* Shipping address */}
           {order.shippingAddress && (
             <div style={{ marginBottom: 20, background: 'var(--a-surface)', borderRadius: 8, padding: '13px 16px' }}>
@@ -262,8 +272,10 @@ export default function Orders() {
                     <span className={`a-badge ${PAY_BADGE[order.paymentStatus] ?? 'neutral'}`}>
                       {PAYMENT_STATUS[order.paymentStatus]}
                     </span>
-                  </td>
-                  <td onClick={e => e.stopPropagation()}>
+                    <div className="a-td-muted" style={{ marginTop: 4 }}>
+                      {PAYMENT_METHOD_LABEL[order.paymentMethod] ?? order.paymentMethod}
+                    </div>
+                  </td>                  <td onClick={e => e.stopPropagation()}>
                     <span className={`a-badge ${ORDER_BADGE[order.status] ?? 'neutral'}`}>
                       {ORDER_STATUS[order.status]}
                     </span>
