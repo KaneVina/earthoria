@@ -23,7 +23,9 @@ const {
   backfillUserCodes,
   getCoupons,
   createCoupon,
+  updateCoupon,
   toggleCoupon,
+  deleteCoupon,
   getArCodes,
   createArCode,
   updateArCode,
@@ -101,6 +103,8 @@ router.put("/users/:id/role", staffOrAdmin, updateUserRole);
 router.get("/coupons", adminOnly, getCoupons);
 router.post("/coupons", adminOnly, createCoupon);
 router.put("/coupons/:id/toggle", adminOnly, toggleCoupon);
+router.put("/coupons/:id", adminOnly, updateCoupon);
+router.delete("/coupons/:id", adminOnly, deleteCoupon);
 
 router.get("/ar-codes", staffOrAdmin, getArCodesGroupedAll);
 router.get("/ar-codes/:id", staffOrAdmin, getArCodeById);

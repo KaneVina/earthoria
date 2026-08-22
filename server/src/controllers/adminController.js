@@ -1907,6 +1907,95 @@ exports.toggleCoupon = async (req, res) => {
   }
 };
 
+exports.updateCoupon = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { code, type, value, minOrder, maxDiscount, usageLimit, expiresAt, isActive } =
+      req.body;
+
+    const coupon = await prisma.coupon.findUnique({ where: { id } });
+    if (!coupon) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy mã giảm giá" });
+    }
+
+    if (type) {
+      const validTypes = ["PERCENTAGE", "FIXED"];
+      if (!validTypes.includes(type)) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Loại mã không hợp lệ" });
+      }
+    }
+    const effectiveType = type || coupon.type;
+    if (
+      effectiveType === "PERCENTAGE" &&
+      value !== undefined &&
+      (value < 1 || value > 100)
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Giá trị phần trăm phải từ 1–100" });
+    }
+
+    if (code) {
+      const cleanCode = code.toUpperCase();
+      const existing = await prisma.coupon.findUnique({
+        where: { code: cleanCode },
+      });
+      if (existing && existing.id !== id) {
+        return res
+          .status(409)
+          .json({ success: false, message: "Mã code đã tồn tại" });
+      }
+    }
+
+    const data = {};
+    if (code !== undefined) data.code = code.toUpperCase();
+    if (type !== undefined) data.type = type;
+    if (value !== undefined) data.value = Number(value);
+    if (minOrder !== undefined) data.minOrder = Number(minOrder) || 0;
+    if (maxDiscount !== undefined)
+      data.maxDiscount = maxDiscount === null ? null : Number(maxDiscount);
+    if (usageLimit !== undefined)
+      data.usageLimit = usageLimit === null ? null : Number(usageLimit);
+    if (expiresAt !== undefined)
+      data.expiresAt = expiresAt ? new Date(expiresAt) : null;
+    if (isActive !== undefined) data.isActive = Boolean(isActive);
+
+    const updated = await prisma.coupon.update({
+      where: { id },
+      data,
+    });
+
+    return res.json({ success: true, data: updated });
+  } catch (err) {
+    console.error("[updateCoupon]", err);
+    return res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+exports.deleteCoupon = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const coupon = await prisma.coupon.findUnique({ where: { id } });
+    if (!coupon) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy mã giảm giá" });
+    }
+
+    await prisma.coupon.delete({ where: { id } });
+
+    return res.json({ success: true, message: "Đã xóa mã giảm giá" });
+  } catch (err) {
+    console.error("[deleteCoupon]", err);
+    return res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
 /* ══════════════════════════════════════════════
    AR CODE MANAGEMENT (staff)
 ══════════════════════════════════════════════ */
