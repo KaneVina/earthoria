@@ -477,12 +477,12 @@ function EscalateBody({ data, onNavigateAway }) {
   );
 }
 
-function BotMessage({ msg, onRegenerate, onNavigateAway }) {
+function BotMessage({ msg, onRegenerate, onNavigateAway, avatarSrc }) {
   return (
     <div className={`em bot${msg.isError ? " em-error" : ""}`}>
       <div className="em-label-row">
         <div className="em-av">
-          <img src="/eira/avatar.png" alt="" />
+          <img src={avatarSrc || "/eira/avatar.png"} alt="" />
         </div>
         <span className="em-name">Eira</span>
       </div>
@@ -532,6 +532,8 @@ function UserMessage({ msg }) {
 function EiraUI() {
   const location = useLocation();
   const isDashboard = location.pathname.startsWith("/dashboard");
+  const isKid = location.pathname.startsWith("/e-kid");
+  const avatarSrc = isKid ? "/eira/eira-kid-avatar.png" : "/eira/avatar.png";
 
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -974,7 +976,13 @@ function EiraUI() {
             <span className="eira-firefly eira-firefly-3" aria-hidden="true" />
             <img
               className="eira-fab-mascot-img"
-              src={isDashboard ? "/eira/eira-staff.png" : "/eira/eira-sayhi.png"}
+              src={
+                isDashboard
+                  ? "/eira/eira-staff.png"
+                  : isKid
+                    ? "/eira/eira-kid.png"
+                    : "/eira/eira-sayhi.png"
+              }
               alt="Eira vẫy chào"
               draggable="false"
             />
@@ -1023,7 +1031,7 @@ function EiraUI() {
         <div id="eira-hdr">
           <div className="eira-avatar">
             <div className="eira-avatar-inner">
-              <img src="/eira/avatar.png" alt="" />
+              <img src={avatarSrc} alt="" />
             </div>
             <div className="eira-av-online" />
           </div>
@@ -1058,7 +1066,7 @@ function EiraUI() {
         <div id="eira-msgs" ref={msgsWrapRef} aria-live="polite">
           <div className="eira-welcome">
             <div className="eira-welcome-avatar">
-              <img src="/eira/avatar.png" alt="" />
+              <img src={avatarSrc} alt="" />
             </div>
             <div className="eira-welcome-title">
               Chào bạn, mình là <strong>Eira</strong> 🌿
@@ -1097,6 +1105,7 @@ function EiraUI() {
               <BotMessage
                 key={msg.id}
                 msg={msg}
+                avatarSrc={avatarSrc}
                 onRegenerate={
                   idx === messages.length - 1 ? handleRegenerate : null
                 }
@@ -1109,7 +1118,7 @@ function EiraUI() {
             <div className="eira-typing">
               <div className="typing-label-row">
                 <div className="em-av">
-                  <img src="/eira/avatar.png" alt="" />
+                  <img src={avatarSrc} alt="" />
                 </div>
                 <span className="em-name" style={{ color: "#0d3330" }}>
                   Eira
