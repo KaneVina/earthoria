@@ -13,6 +13,7 @@ const {
   getCategories,
   createCategory,
   updateCategory,
+  deleteCategory,
   getOrders,
   updateOrderStatus,
   getUsers,
@@ -83,6 +84,7 @@ router.post("/products/:id/ai-draft-content", adminOnly, draftBookAiContent);
 router.get("/categories", adminOnly, getCategories);
 router.post("/categories", adminOnly, createCategory);
 router.put("/categories/:id", adminOnly, updateCategory);
+router.delete("/categories/:id", adminOnly, deleteCategory);
 
 router.get("/orders", adminOnly, getOrders);
 router.put("/orders/:id", adminOnly, updateOrderStatus);

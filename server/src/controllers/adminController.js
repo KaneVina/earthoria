@@ -1120,10 +1120,43 @@ exports.updateCategory = async (req, res) => {
   }
 };
 
+exports.deleteCategory = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const category = await prisma.category.findUnique({
+      where: { id },
+      include: { _count: { select: { books: true } } },
+    });
+    if (!category) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy danh mục" });
+    }
+
+    if (category._count.books > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Không thể xóa vì danh mục vẫn còn sách. Hãy chuyển sách sang danh mục khác trước.",
+      });
+    }
+
+    await prisma.category.delete({ where: { id } });
+
+    return res.json({ success: true, message: "Đã xóa danh mục" });
+  } catch (err) {
+    if (err.code === "P2025") {
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy danh mục" });
+    }
+    console.error("[deleteCategory]", err);
+    return res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
 /* ══════════════════════════════════════════════
    ORDERS
-   (đã sửa: item.book -> item.variant.book, vì OrderItem giờ
-   chỉ trỏ tới BookVariant, không trỏ thẳng tới Book nữa)
 ══════════════════════════════════════════════ */
 exports.getOrders = async (req, res) => {
   try {
