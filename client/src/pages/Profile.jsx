@@ -2010,6 +2010,7 @@ function PaymentSessionCountdown({ expiresAt, onExpire }) {
 function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
   const [retrying, setRetrying] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [bankQrData, setBankQrData] = useState(null);
   const qc = useQueryClient();
 
   const cancelMutation = useMutation({
@@ -2054,7 +2055,7 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
       : ORDER_STEPS.indexOf(order.status);
   const fillPct = (Math.max(0, stepIdx) / (steps.length - 1)) * 100;
   const canRetryPayment =
-    ["VNPAY", "MOMO"].includes(order.paymentMethod) &&
+    ["VNPAY", "MOMO", "BANKQR"].includes(order.paymentMethod) &&
     order.paymentStatus !== "PAID" &&
     ["PENDING", "CONFIRMED"].includes(order.status);
   const canCancel =
@@ -2063,8 +2064,23 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
   // Chỉ sách giấy mới có bước DELIVERED chờ người nhận bấm xác nhận; ebook đã tự COMPLETED khi thanh toán.
   const canConfirmReceived = !order.isDigital && order.status === "DELIVERED";
 
-  const retryPayment = async () => {
+   const retryPayment = async () => {
     setRetrying(true);
+    if (order.paymentMethod === "BANKQR") {
+      try {
+        const { data } = await paymentService.createBankQrPayment(order.id);
+        setBankQrData(data.data);
+        toast.success("Đã tạo mã QR — quét để chuyển khoản");
+      } catch (err) {
+        toast.error(
+          err?.response?.data?.message || "Không tạo được mã QR chuyển khoản",
+        );
+      } finally {
+        setRetrying(false);
+      }
+      return;
+    }
+
     try {
       const create =
         order.paymentMethod === "VNPAY"
@@ -2079,6 +2095,38 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
       setRetrying(false);
     }
   };
+
+  useEffect(() => {
+    if (!bankQrData || order?.paymentStatus === "PAID") return;
+
+    const POLL_INTERVAL_MS = 3000;
+    let cancelled = false;
+
+    const poll = async () => {
+      try {
+        const { data } = await paymentService.getBankQrStatus(order.id);
+        if (cancelled) return;
+        const result = data.data;
+        if (result.success) {
+          toast.success("Thanh toán thành công!");
+          setBankQrData(null);
+          qc.invalidateQueries({ queryKey: ["order", order.id] });
+          qc.invalidateQueries({ queryKey: ["orders"] });
+        } else if (result.expired) {
+          toast.error("Mã QR đã hết hạn, vui lòng bấm thanh toán lại để lấy mã mới.");
+          setBankQrData(null);
+        }
+      } catch {
+        // Lỗi mạng tạm thời khi polling — chờ lượt sau tự thử lại.
+      }
+    };
+
+    const intervalId = setInterval(poll, POLL_INTERVAL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+    };
+  }, [bankQrData, order?.id, order?.paymentStatus, qc]);
   const shippingName =
     order.shippingName || order.address?.name || "Chưa cập nhật";
   const shippingPhone =
@@ -2289,7 +2337,7 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
                 onExpire={onSessionExpire}
               />
             )}
-            {canRetryPayment && (
+            {canRetryPayment && !bankQrData && (
               <button
                 onClick={retryPayment}
                 disabled={retrying}
@@ -2298,12 +2346,90 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
               >
                 {retrying ? (
                   <>
-                    <span className="pf-spinner-sm" /> Đang chuyển hướng…
+                    <span className="pf-spinner-sm" />{" "}
+                    {order.paymentMethod === "BANKQR"
+                      ? "Đang tạo mã QR…"
+                      : "Đang chuyển hướng…"}
                   </>
+                ) : order.paymentMethod === "BANKQR" ? (
+                  "Thanh toán lại qua chuyển khoản QR"
                 ) : (
                   `Thanh toán lại qua ${order.paymentMethod === "VNPAY" ? "VNPay" : "MoMo"}`
                 )}
               </button>
+            )}
+            {canRetryPayment && bankQrData && (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  padding: "20px 16px",
+                  marginTop: 14,
+                  background: "var(--white)",
+                  border: "0.5px solid var(--border-gold)",
+                }}
+              >
+                <img
+                  src={bankQrData.qrImageUrl}
+                  alt="Mã QR chuyển khoản ngân hàng"
+                  style={{
+                    width: 180,
+                    height: 180,
+                    objectFit: "contain",
+                    border: "0.5px solid var(--border)",
+                  }}
+                />
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    marginTop: 16,
+                    fontSize: 12,
+                    color: "var(--gold)",
+                  }}
+                >
+                  <span className="pf-spinner-sm" />
+                  Đang chờ chuyển khoản — tự động xác nhận trong ít phút
+                </div>
+                <div
+                  style={{
+                    width: "100%",
+                    marginTop: 18,
+                    paddingTop: 16,
+                    borderTop: "0.5px solid var(--border)",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 8,
+                  }}
+                >
+                  {[
+                    ["Ngân hàng", bankQrData.bankCode],
+                    ["Số tài khoản", bankQrData.accountNo],
+                    ["Chủ tài khoản", bankQrData.accountName],
+                    ["Số tiền", formatPrice(bankQrData.amount)],
+                    ["Nội dung CK", bankQrData.addInfo],
+                  ].map(([label, value]) => (
+                    <div
+                      key={label}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        gap: 10,
+                        fontSize: 12,
+                      }}
+                    >
+                      <span style={{ color: "var(--text-muted)" }}>
+                        {label}
+                      </span>
+                      <span style={{ color: "var(--forest)", fontWeight: 500 }}>
+                        {value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
             {canConfirmReceived && (
               <button

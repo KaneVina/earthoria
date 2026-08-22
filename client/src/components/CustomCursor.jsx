@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 
 /* ─ Vẽ lá cây bằng canvas path ─ */
 function drawLeaf(ctx, x, y, size, angle, alpha, colorStr) {
@@ -66,6 +67,10 @@ function detectMobile() {
 export default function CustomCursor() {
   const canvasRef = useRef(null);
   const enabledRef = useRef(true);
+  const { pathname } = useLocation();
+  const hideLeavesRef = useRef(false);
+  hideLeavesRef.current =
+    pathname.startsWith("/dashboard") || pathname.startsWith("/e-kid");
 
   useEffect(() => {
     _setEnabled = (v) => {
@@ -312,7 +317,7 @@ export default function CustomCursor() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       /* 1. Lá cây — vẽ trước, dưới cùng */
-      if (enabledRef.current) {
+      if (enabledRef.current && !hideLeavesRef.current) {
         updateLeaves();
         drawLeaves();
       }
