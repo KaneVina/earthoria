@@ -1194,7 +1194,7 @@ function EiraUI() {
             {messages.length > 0 && (
               <button
                 type="button"
-                className="eira-close-btn"
+                className="eira-close-btn eira-trash-btn"
                 aria-label="Xóa hội thoại"
                 title="Xóa hội thoại"
                 onClick={handleClearChat}
@@ -1319,7 +1319,7 @@ function EiraUI() {
         </div>
 
         <div id="eira-input-wrap">
-          <div id="eira-input-row">
+          <div id="eira-input-row" className={input.trim() ? "has-text" : ""}>
             <textarea
               id="eira-inp"
               ref={inpRef}
