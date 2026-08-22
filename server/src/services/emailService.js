@@ -748,6 +748,7 @@ const PAYMENT_METHOD_LABEL_VI = {
   COD: 'Thanh toán khi nhận hàng (COD)',
   VNPAY: 'VNPay',
   MOMO: 'MoMo',
+  BANKQR: 'Chuyển khoản QR',
   STRIPE: 'Stripe',
 }
 
@@ -784,18 +785,25 @@ function shortOrderCode(order) {
 
 function buildOrderItemsTable(items) {
   const rows = (items || [])
-    .map(
-      (item) => `
+    .map((item) => {
+      const formatBadge =
+        item.format === 'DIGITAL'
+          ? `<span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:20px;background:rgba(74,158,63,0.1);color:#3f7d35;font-size:9.5px;font-weight:600;letter-spacing:0.3px;vertical-align:middle;font-family:'Be Vietnam Pro',Arial,sans-serif;">SÁCH ĐIỆN TỬ</span>`
+          : item.format === 'PHYSICAL'
+            ? `<span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:20px;background:rgba(11,46,43,0.06);color:#5a6b60;font-size:9.5px;font-weight:600;letter-spacing:0.3px;vertical-align:middle;font-family:'Be Vietnam Pro',Arial,sans-serif;">SÁCH GIẤY</span>`
+            : ''
+      return `
     <tr>
       <td style="padding:10px 0;border-bottom:1px solid rgba(11,46,43,0.06);font-size:13px;color:#0b2e2b;font-family:'Be Vietnam Pro',Arial,sans-serif;">
         ${item.title}
         <span style="color:#8a9690;font-weight:300;"> × ${item.quantity}</span>
+        ${formatBadge}
       </td>
       <td style="padding:10px 0;border-bottom:1px solid rgba(11,46,43,0.06);font-size:13px;color:#0b2e2b;text-align:right;white-space:nowrap;font-family:'Be Vietnam Pro',Arial,sans-serif;">
         ${formatVnd(item.price * item.quantity)}
       </td>
-    </tr>`,
-    )
+    </tr>`
+    })
     .join('')
 
   return `
@@ -891,6 +899,8 @@ function buildOrderAddressBlock(order) {
 // ─ Order: Xác nhận đặt hàng thành công (gửi ngay sau khi tạo đơn) ─
 async function sendOrderConfirmedEmail({ to, name, order }) {
   const paymentLabel = PAYMENT_METHOD_LABEL_VI[order.paymentMethod] || order.paymentMethod
+  const hasDigitalItem = (order.items || []).some((item) => item.format === 'DIGITAL')
+  const isOnlinePayment = order.paymentMethod !== 'COD'
 
   const bodyHtml = `
     <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
@@ -910,6 +920,22 @@ async function sendOrderConfirmedEmail({ to, name, order }) {
 
     ${buildOrderSummaryCard(order)}
     ${buildOrderAddressBlock(order)}
+
+    ${
+      hasDigitalItem
+        ? `
+    <div style="background:rgba(74,158,63,0.05);border:1px solid rgba(74,158,63,0.18);border-radius:8px;padding:16px 20px;margin-bottom:12px;">
+      <p style="font-size:12px;color:#3f7d35;line-height:1.85;font-weight:300;margin:0;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+        <strong style="font-weight:600;">Sách điện tử:</strong>
+        ${
+          isOnlinePayment
+            ? `Các tựa sách điện tử trong đơn sẽ được <strong style="font-weight:500;">tự động kích hoạt ngay khi thanh toán thành công</strong> — bạn có thể đọc trong mục "Sách điện tử của tôi" mà không cần chờ giao hàng.`
+            : `Các tựa sách điện tử trong đơn sẽ được <strong style="font-weight:500;">tự động kích hoạt ngay khi đơn hàng được xác nhận thanh toán</strong> — bạn có thể đọc trong mục "Sách điện tử của tôi" mà không cần chờ giao hàng.`
+        }
+      </p>
+    </div>`
+        : ''
+    }
 
     <div style="background:rgba(74,158,63,0.04);border:1px solid rgba(74,158,63,0.14);border-radius:8px;padding:16px 20px;margin-bottom:8px;">
       <p style="font-size:12px;color:#5a6b60;line-height:1.85;font-weight:300;margin:0;font-family:'Be Vietnam Pro',Arial,sans-serif;">

@@ -1160,10 +1160,11 @@ exports.updateOrderStatus = async (req, res) => {
       const emailOrder = {
         id: order.id,
         createdAt: order.createdAt,
-        items: order.items.map((item) => ({
+         items: order.items.map((item) => ({
           title: item.variant?.book?.title || "",
           quantity: item.quantity,
           price: item.price,
+          format: item.variant?.format,
         })),
         subtotal: order.subtotal,
         discount: order.discount,

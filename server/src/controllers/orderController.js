@@ -357,10 +357,11 @@ const createOrder = async (req, res) => {
       order: {
         id: order.id,
         createdAt: order.createdAt,
-        items: cart.items.map((item) => ({
+         items: cart.items.map((item) => ({
           title: item.variant.book?.title || "",
           quantity: item.quantity,
           price: item.variant.salePrice ?? item.variant.price,
+          format: item.variant.format,
         })),
         subtotal,
         discount,
@@ -552,10 +553,11 @@ const cancelOrder = async (req, res) => {
       order: {
         id: order.id,
         createdAt: order.createdAt,
-        items: order.items.map((item) => ({
+       items: order.items.map((item) => ({
           title: item.variant.book?.title || "",
           quantity: item.quantity,
           price: item.price,
+          format: item.variant.format,
         })),
         subtotal: order.subtotal,
         discount: order.discount,
