@@ -2013,6 +2013,40 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
   const [bankQrData, setBankQrData] = useState(null);
   const qc = useQueryClient();
 
+  useEffect(() => {
+    if (!bankQrData || !order || order.paymentStatus === "PAID") return;
+
+    const POLL_INTERVAL_MS = 3000;
+    let cancelled = false;
+
+    const poll = async () => {
+      try {
+        const { data } = await paymentService.getBankQrStatus(order.id);
+        if (cancelled) return;
+        const result = data.data;
+        if (result.success) {
+          toast.success("Thanh toán thành công!");
+          setBankQrData(null);
+          qc.invalidateQueries({ queryKey: ["order", order.id] });
+          qc.invalidateQueries({ queryKey: ["orders"] });
+        } else if (result.expired) {
+          toast.error(
+            "Mã QR đã hết hạn, vui lòng bấm thanh toán lại để lấy mã mới.",
+          );
+          setBankQrData(null);
+        }
+      } catch {
+        // Lỗi mạng tạm thời khi polling — chờ lượt sau tự thử lại.
+      }
+    };
+
+    const intervalId = setInterval(poll, POLL_INTERVAL_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(intervalId);
+    };
+  }, [bankQrData, order?.id, order?.paymentStatus, qc]);
+
   const cancelMutation = useMutation({
     mutationFn: (payload) => orderService.cancelOrder(order.id, payload),
     onSuccess: () => {
@@ -2064,7 +2098,7 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
   // Chỉ sách giấy mới có bước DELIVERED chờ người nhận bấm xác nhận; ebook đã tự COMPLETED khi thanh toán.
   const canConfirmReceived = !order.isDigital && order.status === "DELIVERED";
 
-   const retryPayment = async () => {
+  const retryPayment = async () => {
     setRetrying(true);
     if (order.paymentMethod === "BANKQR") {
       try {
@@ -2096,37 +2130,6 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
     }
   };
 
-  useEffect(() => {
-    if (!bankQrData || order?.paymentStatus === "PAID") return;
-
-    const POLL_INTERVAL_MS = 3000;
-    let cancelled = false;
-
-    const poll = async () => {
-      try {
-        const { data } = await paymentService.getBankQrStatus(order.id);
-        if (cancelled) return;
-        const result = data.data;
-        if (result.success) {
-          toast.success("Thanh toán thành công!");
-          setBankQrData(null);
-          qc.invalidateQueries({ queryKey: ["order", order.id] });
-          qc.invalidateQueries({ queryKey: ["orders"] });
-        } else if (result.expired) {
-          toast.error("Mã QR đã hết hạn, vui lòng bấm thanh toán lại để lấy mã mới.");
-          setBankQrData(null);
-        }
-      } catch {
-        // Lỗi mạng tạm thời khi polling — chờ lượt sau tự thử lại.
-      }
-    };
-
-    const intervalId = setInterval(poll, POLL_INTERVAL_MS);
-    return () => {
-      cancelled = true;
-      clearInterval(intervalId);
-    };
-  }, [bankQrData, order?.id, order?.paymentStatus, qc]);
   const shippingName =
     order.shippingName || order.address?.name || "Chưa cập nhật";
   const shippingPhone =
