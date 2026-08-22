@@ -35,6 +35,7 @@ const {
   createInventoryImport,
   updateUserRole,
   createManagedUser,
+  draftBookAiContent,
 } = require("../controllers/adminController");
 const {
   protect,
@@ -75,6 +76,7 @@ router.post(
 );
 router.delete("/products/:id/images", adminOnly, deleteProductImage);
 router.patch("/products/:id/cover", adminOnly, setProductCover);
+router.post("/products/:id/ai-draft-content", adminOnly, draftBookAiContent);
 
 router.get("/categories", adminOnly, getCategories);
 router.post("/categories", adminOnly, createCategory);

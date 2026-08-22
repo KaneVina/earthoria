@@ -33,13 +33,17 @@ async function fuzzyQuery(text, limit) {
     SELECT b.id,
            GREATEST(
              earthoria_similarity(earthoria_unaccent(lower(b.title)), earthoria_unaccent(lower(${text}))),
-             earthoria_similarity(earthoria_unaccent(lower(COALESCE(b.description, ''))), earthoria_unaccent(lower(${text}))) * 0.6
+             earthoria_similarity(earthoria_unaccent(lower(COALESCE(b.description, ''))), earthoria_unaccent(lower(${text}))) * 0.6,
+             earthoria_similarity(earthoria_unaccent(lower(COALESCE(b.synopsis, ''))), earthoria_unaccent(lower(${text}))) * 0.6,
+             earthoria_similarity(earthoria_unaccent(lower(COALESCE(array_to_string(b.themes, ' '), ''))), earthoria_unaccent(lower(${text}))) * 0.7
            ) AS score
     FROM "Book" b
     WHERE b."isActive" = true
       AND (
         earthoria_is_similar(earthoria_unaccent(lower(b.title)), earthoria_unaccent(lower(${text})))
         OR earthoria_is_similar(earthoria_unaccent(lower(COALESCE(b.description, ''))), earthoria_unaccent(lower(${text})))
+        OR earthoria_is_similar(earthoria_unaccent(lower(COALESCE(b.synopsis, ''))), earthoria_unaccent(lower(${text})))
+        OR earthoria_is_similar(earthoria_unaccent(lower(COALESCE(array_to_string(b.themes, ' '), ''))), earthoria_unaccent(lower(${text})))
         OR earthoria_unaccent(lower(b.title)) ILIKE '%' || earthoria_unaccent(lower(${text})) || '%'
       )
     ORDER BY score DESC
@@ -48,10 +52,6 @@ async function fuzzyQuery(text, limit) {
   return rows
 }
 
-/**
- * Trả về tối đa `limit` cuốn sách liên quan nhất tới câu hỏi của khách,
- * kèm điểm khớp (để debug/log nếu cần).
- */
 async function fuzzySearchBooks(userMessage, limit = 5) {
   const raw = String(userMessage || '').trim()
   if (!raw) return []
@@ -97,6 +97,8 @@ async function fuzzySearchBooks(userMessage, limit = 5) {
         OR: keywords.flatMap((kw) => [
           { title: { contains: kw, mode: 'insensitive' } },
           { description: { contains: kw, mode: 'insensitive' } },
+          { synopsis: { contains: kw, mode: 'insensitive' } },
+          { themes: { has: kw } },
         ]),
       },
       include: BOOK_INCLUDE,
@@ -105,10 +107,6 @@ async function fuzzySearchBooks(userMessage, limit = 5) {
   }
 }
 
-/**
- * Tìm 1 cuốn sách khớp nhất với một tên/nhắc tới cụ thể — dùng cho tool
- * check_stock khi model cần tra 1 cuốn xác định (không phải gợi ý danh sách).
- */
 async function fuzzyFindOneBook(query) {
   const results = await fuzzySearchBooks(query, 1)
   return results[0] || null

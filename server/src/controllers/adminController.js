@@ -1,6 +1,7 @@
 const prisma = require("../config/db");
 const { generateProductCode } = require("../utils/generateProductCode");
 const { getOrderCode } = require("./orderController");
+const { groqCompleteJSON } = require("../services/groqClient");
 const bcrypt = require("bcryptjs");
 const {
   sendAccountProvisionedEmail,
@@ -416,6 +417,11 @@ async function resolveAuthorIds(authorsInput) {
 
   return authors.map((a) => a.id);
 }
+function normalizeThemes(themesInput) {
+  if (themesInput === undefined) return undefined;
+  const list = Array.isArray(themesInput) ? themesInput : String(themesInput || "").split(",");
+  return [...new Set(list.map((t) => String(t).trim()).filter(Boolean))];
+}
 
 function withAuthorNames(book) {
   return {
@@ -644,6 +650,9 @@ exports.createProduct = async (req, res) => {
       paperType,
       ageMin,
       ageMax,
+      synopsis,
+      themes,
+      suitableFor,
       variants,
     } = req.body;
 
@@ -684,6 +693,9 @@ exports.createProduct = async (req, res) => {
           paperType: paperType ?? null,
           ageMin: ageMin !== undefined && ageMin !== "" ? Number(ageMin) : null,
           ageMax: ageMax !== undefined && ageMax !== "" ? Number(ageMax) : null,
+          synopsis: synopsis ?? null,
+          themes: normalizeThemes(themes) ?? [],
+          suitableFor: suitableFor ?? null,
           authors: {
             create: authorIds.map((authorId, i) => ({ authorId, order: i })),
           },
@@ -732,6 +744,9 @@ exports.updateProduct = async (req, res) => {
       paperType,
       ageMin,
       ageMax,
+      synopsis,
+      themes,
+      suitableFor,
       variants,
     } = req.body;
 
@@ -777,6 +792,9 @@ exports.updateProduct = async (req, res) => {
           ...(ageMax !== undefined && {
             ageMax: ageMax !== "" ? Number(ageMax) : null,
           }),
+          ...(synopsis !== undefined && { synopsis: synopsis || null }),
+          ...(themes !== undefined && { themes: normalizeThemes(themes) }),
+          ...(suitableFor !== undefined && { suitableFor: suitableFor || null }),
           ...(authorsUpdate && { authors: authorsUpdate }),
         },
       });
@@ -808,6 +826,92 @@ exports.updateProduct = async (req, res) => {
     }
     console.error("[updateProduct]", err);
     return res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
+/* POST /admin/products/:id/ai-draft-content */
+exports.draftBookAiContent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const book = await prisma.book.findUnique({
+      where: { id },
+      select: { id: true, title: true, description: true },
+    });
+    if (!book) {
+      return res.status(404).json({ success: false, message: "Không tìm thấy sách" });
+    }
+
+    const ebook = await prisma.ebook.findFirst({
+      where: { bookId: id },
+      orderBy: [{ isActive: "desc" }, { createdAt: "asc" }],
+    });
+
+    if (!ebook || !Array.isArray(ebook.pages) || ebook.pages.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Sách này chưa có sách điện tử (ebook) nào để AI đọc nội dung — hãy tạo ebook trước, hoặc tự nhập tay các trường bên dưới.",
+      });
+    }
+
+    const pageTexts = ebook.pages
+      .map((page, idx) => {
+        const texts = (page.layers || [])
+          .filter((l) => l && l.type === "text" && typeof l.text === "string" && l.text.trim())
+          .map((l) => l.text.trim());
+        return texts.length ? `Trang ${idx + 1}: ${texts.join(" ")}` : null;
+      })
+      .filter(Boolean);
+
+    if (pageTexts.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Các trang ebook chưa có nội dung chữ nào để AI đọc — hãy tự nhập tay bên dưới.",
+      });
+    }
+
+    const fullText = pageTexts.join("\n").slice(0, 6000);
+
+    const system =
+      'Bạn là biên tập viên nội bộ của Earthoria — thương hiệu sách giáo dục tương tác cho trẻ 5–12 tuổi. Nhiệm vụ: đọc nội dung thô trích từ ebook rồi soạn NHÁP dữ liệu nội bộ để đội tư vấn dùng, KHÔNG phải để đăng nguyên văn công khai. Trả lời bằng tiếng Việt, CHỈ trả về đúng 1 JSON object theo schema được yêu cầu, không thêm chữ nào khác.';
+
+    const user = `Tên sách: "${book.title}"
+Mô tả ngắn hiện có: ${book.description || "(chưa có)"}
+
+Nội dung thô trích từ các trang ebook:
+"""
+${fullText}
+"""
+
+Trả về JSON đúng schema:
+{
+  "synopsis": "Tóm tắt cốt truyện bằng 3-4 câu, giọng thân thiện, diễn đạt lại bằng lời văn riêng — KHÔNG chép nguyên câu chữ trong sách, KHÔNG tiết lộ đoạn kết/twist quan trọng",
+  "themes": ["3-5 chủ đề/bài học chính, mỗi mục vài từ, ví dụ: Lòng dũng cảm"],
+  "suitableFor": "1-2 câu gợi ý kiểu bé hoặc hoàn cảnh phù hợp đọc cuốn này"
+}`;
+
+    const draft = await groqCompleteJSON({ system, user, temperature: 0.5, maxTokens: 500 });
+
+    return res.json({
+      success: true,
+      data: {
+        synopsis: typeof draft.synopsis === "string" ? draft.synopsis.trim() : "",
+        themes: Array.isArray(draft.themes)
+          ? [...new Set(draft.themes.map((t) => String(t).trim()).filter(Boolean))]
+          : [],
+        suitableFor: typeof draft.suitableFor === "string" ? draft.suitableFor.trim() : "",
+      },
+      message: "Đây là bản nháp do AI soạn từ nội dung ebook — vui lòng đọc lại và chỉnh sửa trước khi lưu.",
+    });
+  } catch (err) {
+    if (err.code === "CONFIG_MISSING") {
+      return res.status(503).json({ success: false, message: "Server chưa cấu hình GROQ_API_KEY." });
+    }
+    console.error("[draftBookAiContent]", err);
+    return res.status(500).json({
+      success: false,
+      message: "AI soạn nháp thất bại, vui lòng thử lại hoặc nhập tay.",
+    });
   }
 };
 

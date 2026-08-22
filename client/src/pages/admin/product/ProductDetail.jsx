@@ -340,7 +340,7 @@ export default function ProductDetail() {
               <p className="a-chart-sub">Chỉnh sửa trực tiếp bên dưới rồi bấm Lưu thay đổi</p>
             </div>
             <form onSubmit={handleSubmit}>
-              <ProductFormFields form={form} setForm={handleFormChange} categories={categories} onDeleteVariant={handleDeleteVariant} />
+              <ProductFormFields form={form} setForm={handleFormChange} categories={categories} onDeleteVariant={handleDeleteVariant} productId={id} />
               <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
                 <button type="submit" className="a-btn-primary" disabled={!dirty || updateMutation.isPending}>
                   {updateMutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}

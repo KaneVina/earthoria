@@ -22,6 +22,9 @@ export const EMPTY_FORM = {
   weightGrams: "",
   coverType: "",
   paperType: "",
+  synopsis: "",
+  themes: "",
+  suitableFor: "",
   variants: [],
 };
 
@@ -81,6 +84,9 @@ export const bookToForm = (product) => ({
   weightGrams: product.weightGrams ?? "",
   coverType: product.coverType ?? "",
   paperType: product.paperType ?? "",
+  synopsis: product.synopsis ?? "",
+  themes: (product.themes ?? []).join(", "),
+  suitableFor: product.suitableFor ?? "",
   variants: (product.variants ?? []).map((v) => ({
     _key: clientKey(),
     id: v.id,
@@ -118,6 +124,12 @@ export const formToPayload = (form) => ({
   weightGrams: form.weightGrams ? Number(form.weightGrams) : null,
   coverType: form.coverType,
   paperType: form.paperType,
+  synopsis: form.synopsis,
+  themes: form.themes
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean),
+  suitableFor: form.suitableFor,
   variants: form.variants.map((v) => {
     const basePrice = Number(v.price) || 0;
     return {

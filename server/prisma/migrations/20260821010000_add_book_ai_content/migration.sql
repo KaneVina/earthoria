@@ -1,0 +1,3 @@
+ALTER TABLE "Book" ADD COLUMN "synopsis" TEXT;
+ALTER TABLE "Book" ADD COLUMN "themes" TEXT[] NOT NULL DEFAULT '{}';
+ALTER TABLE "Book" ADD COLUMN "suitableFor" TEXT;

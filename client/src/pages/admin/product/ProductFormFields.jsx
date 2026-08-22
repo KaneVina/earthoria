@@ -1,8 +1,12 @@
-// ProductFormFields.jsx — Field chung của 1 cuốn sách. Giá/tồn kho/mã sách
-// KHÔNG còn ở đây nữa — mỗi định dạng bán có giá riêng, xem ProductVariantsEditor.
+import { useMutation } from "@tanstack/react-query";
+import { Sparkles, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
+import api from "../../../services/api";
 import ProductVariantsEditor from "./ProductVariantsEditor";
 
-export default function ProductFormFields({ form, setForm, categories = [], onDeleteVariant }) {
+// productId chỉ có khi đang SỬA sách đã tồn tại (ProductDetail) — sách mới
+// tạo (ProductCreate) chưa có ebook nên nút "AI soạn nháp" sẽ không hiện.
+export default function ProductFormFields({ form, setForm, categories = [], onDeleteVariant, productId }) {
   const f = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
   const setVariants = (updater) =>
@@ -10,6 +14,23 @@ export default function ProductFormFields({ form, setForm, categories = [], onDe
       ...prev,
       variants: typeof updater === "function" ? updater(prev.variants) : updater,
     }));
+
+  // Nhờ AI đọc nội dung ebook đã có rồi soạn NHÁP synopsis/themes/suitableFor.
+  // Chỉ điền vào form, KHÔNG tự lưu — admin luôn phải đọc lại & bấm Lưu thay đổi.
+  const aiDraftMutation = useMutation({
+    mutationFn: () => api.post(`/admin/products/${productId}/ai-draft-content`).then((r) => r.data),
+    onSuccess: (res) => {
+      const draft = res.data || {};
+      setForm((prev) => ({
+        ...prev,
+        synopsis: draft.synopsis || prev.synopsis,
+        themes: draft.themes?.length ? draft.themes.join(", ") : prev.themes,
+        suitableFor: draft.suitableFor || prev.suitableFor,
+      }));
+      toast.success(res.message || "AI đã soạn nháp xong — nhớ đọc lại trước khi lưu!");
+    },
+    onError: (e) => toast.error(e.response?.data?.message || "AI soạn nháp thất bại, thử lại sau nhé"),
+  });
 
   return (
     <div className="a-form-grid">
@@ -47,6 +68,60 @@ export default function ProductFormFields({ form, setForm, categories = [], onDe
             Hiển thị trên cửa hàng
           </label>
         </div>
+      </div>
+
+      <div className="a-form-group span-2" style={{ borderTop: "1px solid #e8e5de", paddingTop: 14, marginTop: 4 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+          <label className="a-form-label" style={{ fontWeight: 600, fontSize: 13 }}>
+            Nội dung cho AI tư vấn (Eira)
+          </label>
+          {productId && (
+            <button
+              type="button"
+              className="a-btn-ghost"
+              onClick={() => aiDraftMutation.mutate()}
+              disabled={aiDraftMutation.isPending}
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, padding: "6px 10px" }}
+            >
+              {aiDraftMutation.isPending ? <Loader2 size={14} className="a-spin" /> : <Sparkles size={14} />}
+              {aiDraftMutation.isPending ? "Đang soạn..." : "AI soạn nháp từ ebook"}
+            </button>
+          )}
+        </div>
+        <span style={{ fontSize: 10, color: "rgba(13,51,48,0.4)" }}>
+          Dùng để Eira trả lời sâu câu hỏi về nội dung/bài học — đây là TÓM TẮT do đội biên soạn (có thể nhờ AI soạn nháp từ ebook rồi tự chỉnh lại), không phải toàn văn sách.
+        </span>
+      </div>
+
+      <div className="a-form-group span-2">
+        <label className="a-form-label">Tóm tắt cốt truyện</label>
+        <textarea
+          className="a-input a-textarea"
+          value={form.synopsis}
+          onChange={f("synopsis")}
+          placeholder="Tóm tắt ngắn gọn 3-4 câu, tránh lộ đoạn kết..."
+        />
+      </div>
+
+      <div className="a-form-group span-2">
+        <label className="a-form-label">Chủ đề / bài học chính</label>
+        <input
+          className="a-input"
+          value={form.themes}
+          onChange={f("themes")}
+          placeholder="Lòng dũng cảm, Bảo vệ môi trường..."
+        />
+        <span style={{ fontSize: 10, color: "rgba(13,51,48,0.4)" }}>Nhiều chủ đề cách nhau bằng dấu phẩy</span>
+      </div>
+
+      <div className="a-form-group span-2">
+        <label className="a-form-label">Gợi ý mức độ phù hợp</label>
+        <textarea
+          className="a-input a-textarea"
+          value={form.suitableFor}
+          onChange={f("suitableFor")}
+          placeholder="Vd: Hợp với bé nhút nhát, đang sợ động vật hoang dã..."
+        />
       </div>
 
       <ProductVariantsEditor variants={form.variants} setVariants={setVariants} onDeleteVariant={onDeleteVariant} />

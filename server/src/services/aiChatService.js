@@ -3,13 +3,7 @@ const { encodeId } = require('../utils/hashids')
 const { fuzzySearchBooks, fuzzyFindOneBook } = require('../utils/bookSearch')
 const { validateAndComputeDiscount, isCouponUsable } = require('../utils/couponUtil')
 const { generateTicketCode } = require('../utils/generateTicketCode')
-
-/* ═══════════════════════════════════════════════════════════════
-   CẤU HÌNH (server-side only — không tiền tố VITE_/REACT_APP_)
-   ═══════════════════════════════════════════════════════════════ */
-const GROQ_API_KEY = process.env.GROQ_API_KEY
-const GROQ_URL = process.env.GROQ_URL || 'https://api.groq.com/openai/v1/chat/completions'
-const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.1-8b-instant'
+const { GROQ_API_KEY, GROQ_URL, GROQ_MODEL } = require('./groqClient')
 
 const MAX_HISTORY_MESSAGES = 18
 const MAX_MESSAGE_LEN = 500
@@ -37,6 +31,12 @@ function formatBookCard(book) {
   }
 }
 
+function truncate(str, max) {
+  if (!str) return ''
+  const clean = String(str).trim()
+  return clean.length > max ? `${clean.slice(0, max).trim()}…` : clean
+}
+
 function formatBooksContext(books) {
   if (books.length === 0) return ''
   const lines = books.map((b) => {
@@ -54,9 +54,11 @@ function formatBooksContext(books) {
           : 'tạm hết hàng'
       : ''
     const ageText = b.ageMin != null && b.ageMax != null ? `${b.ageMin}-${b.ageMax} tuổi` : ''
-    return `- id="${b.id}" | "${b.title}" | danh mục: ${b.category?.name || 'chưa phân loại'} | độ tuổi: ${ageText || 'chưa rõ'} | giá: ${priceText} | ${stockText}`
+    const themesText = b.themes?.length ? ` | chủ đề: ${b.themes.join(', ')}` : ''
+    const synopsisText = b.synopsis ? ` | tóm tắt: ${truncate(b.synopsis, 100)}` : ''
+    return `- id="${b.id}" | "${b.title}" | danh mục: ${b.category?.name || 'chưa phân loại'} | độ tuổi: ${ageText || 'chưa rõ'} | giá: ${priceText} | ${stockText}${themesText}${synopsisText}`
   })
-  return `DỮ LIỆU SÁCH LIÊN QUAN (LẤY TRỰC TIẾP TỪ HỆ THỐNG, LUÔN CHÍNH XÁC HIỆN TẠI — chỉ dùng đúng "id" ở đây khi gọi tool suggest_books):\n${lines.join('\n')}`
+  return `DỮ LIỆU SÁCH LIÊN QUAN (LẤY TRỰC TIẾP TỪ HỆ THỐNG, LUÔN CHÍNH XÁC HIỆN TẠI — chỉ dùng đúng "id" ở đây khi gọi tool suggest_books hoặc get_book_details):\n${lines.join('\n')}`
 }
 
 async function getActiveCouponsContext() {
@@ -85,10 +87,12 @@ NGUYÊN TẮC TUYỆT ĐỐI:
 - LUÔN LUÔN trả lời bằng tiếng Việt, dù người dùng hỏi bằng ngôn ngữ nào.
 - Từ chối trả lời những câu hỏi nhạy cảm liên quan đến chính trị, tôn giáo, chiến tranh, giới tính, định kiến.
 - CHỈ được dùng số liệu (giá, tồn kho, mã giảm giá) xuất hiện trong khối DỮ LIỆU được cung cấp hoặc kết quả trả về từ tool. TUYỆT ĐỐI KHÔNG tự đoán, không bịa, không dùng số liệu cũ nhớ từ trước. Nếu không có dữ liệu liên quan, hãy nói rõ là chưa có thông tin chính xác và hướng dẫn khách liên hệ earthoriavn@gmail.com.
+- Khi trả lời về nội dung/cốt truyện/bài học của một cuốn sách, CHỈ dùng đúng "synopsis"/"themes"/"suitableFor" lấy từ tool get_book_details — đây là TÓM TẮT do Earthoria biên soạn, KHÔNG PHẢI toàn văn sách. Tuyệt đối không tự bịa thêm chi tiết truyện, nhân vật hay đoạn kết ngoài dữ liệu này. Nếu "hasContentData" là false, chỉ dùng "description" ngắn gọn hiện có và nói rõ đây là mô tả tổng quan, mời khách xem thêm khi đọc thử.
 - Mã đơn hàng (dạng ODE-xxxxxxx) khách gửi để tra cứu đơn KHÔNG phải thông tin nhạy cảm — hãy dùng tool get_order_status bình thường, đừng từ chối. Chỉ từ chối khi khách gửi một chuỗi rõ ràng là mã xác thực/mã bảo mật tài khoản (không phải mã đơn hàng, mã giảm giá, hay mã sản phẩm).
 
 DÙNG TOOL KHI CẦN — RẤT QUAN TRỌNG:
 - Khi bạn muốn giới thiệu cụ thể 1-3 cuốn sách cho khách (không chỉ nhắc tên suông), LUÔN gọi tool suggest_books với đúng "id" lấy từ khối DỮ LIỆU SÁCH LIÊN QUAN — để hệ thống hiển thị card sản phẩm đẹp kèm ảnh/giá/nút mua ngay cho khách, thay vì chỉ mô tả bằng chữ.
+- Khi khách hỏi sâu về nội dung/câu chuyện/bài học của MỘT cuốn cụ thể, hoặc hỏi cuốn đó có hợp với tính cách/hoàn cảnh riêng của bé không (vd: bé nhút nhát, sợ động vật, thích khoa học, đang học về môi trường...): LUÔN gọi tool get_book_details trước khi trả lời, để lấy đúng tóm tắt + chủ đề + gợi ý phù hợp từ hệ thống thay vì suy diễn.
 - Khi khách hỏi còn hàng không / số lượng tồn kho của MỘT cuốn cụ thể: gọi tool check_stock, đừng đoán từ dữ liệu cũ.
 - Khi khách hỏi về trạng thái đơn hàng của họ ("đơn của tôi tới đâu rồi", "đơn hàng ABC123 sao rồi"): gọi tool get_order_status. Nếu không cung cấp mã, để trống để lấy đơn gần nhất.
 - Khi khách muốn dùng một mã giảm giá cụ thể: gọi tool apply_coupon để kiểm tra và xem trước số tiền được giảm dựa trên giỏ hàng thật của khách.
@@ -128,7 +132,7 @@ KHU VỰC QUẢN TRỊ NỘI BỘ — BẢO MẬT TUYỆT ĐỐI, KHÔNG BAO GI�
 CÁCH TƯ VẤN VÀ VĂN PHONG:
 - Giới thiệu bản thân là Eira ngay từ lời chào đầu tiên.
 - Phong cách thân thiện, emoji nhẹ nhàng 🌿, chuyên nghiệp và gần gũi, xưng "mình", gọi khách là "bé nhà mình"/dùng "ạ", "nhé" tự nhiên như người Việt thật sự tư vấn.
-- Hỏi tuổi bé và sở thích trước khi gợi ý sách phù hợp.
+- Hỏi tuổi bé, sở thích, và nếu phù hợp cả tính cách/mối quan tâm riêng (nhút nhát, hiếu động, đang sợ điều gì, thích chủ đề gì...) trước khi gợi ý sách — dùng "suitableFor" từ get_book_details để tư vấn sát nhu cầu hơn thay vì chỉ dựa vào độ tuổi.
 - Với câu hỏi thông tin nhanh: trả lời ngắn gọn dưới 120 từ, có thể dùng bullet points.
 - Với câu tư vấn sâu một sản phẩm cụ thể: trình bày văn xuôi tự nhiên, không bullet, không **/*/#/-/—; kết thúc bằng lời cảm ơn chân thành.
 - Nếu không có thông tin chính xác, hướng dẫn liên hệ earthoriavn@gmail.com thay vì đoán.`
@@ -192,6 +196,24 @@ const TOOLS = [
   {
     type: 'function',
     function: {
+      name: 'get_book_details',
+      description:
+        'Lấy đầy đủ tóm tắt nội dung, chủ đề/bài học và gợi ý mức độ phù hợp của MỘT cuốn sách cụ thể. Dùng khi khách hỏi đào sâu về nội dung/câu chuyện/bài học, hoặc hỏi sách có hợp với bé nhà mình không.',
+      parameters: {
+        type: 'object',
+        properties: {
+          book_query: {
+            type: 'string',
+            description: 'Tên sách (hoặc "id" nếu đã có trong DỮ LIỆU SÁCH LIÊN QUAN) cần tra cứu chi tiết',
+          },
+        },
+        required: ['book_query'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
       name: 'get_order_status',
       description:
         'Tra cứu trạng thái đơn hàng của khách đang đăng nhập. Mã đơn có dạng ODE-xxxxxxx (khách copy từ trang Đơn Hàng của họ). Để trống order_code để lấy đơn gần nhất.',
@@ -239,6 +261,7 @@ const TOOLS = [
 const TOOL_STATUS_LABELS = {
   suggest_books: 'Đang chọn sách phù hợp...',
   check_stock: 'Đang kiểm tra tồn kho...',
+  get_book_details: 'Đang tìm hiểu nội dung sách...',
   get_order_status: 'Đang tra cứu đơn hàng...',
   apply_coupon: 'Đang kiểm tra mã giảm giá...',
   escalate_to_human: 'Đang kết nối nhân viên hỗ trợ...',
@@ -272,6 +295,37 @@ async function toolCheckStock(args) {
     unlimited: variant.isUnlimitedStock,
     stock: variant.isUnlimitedStock ? null : variant.stock,
     inStock: variant.isUnlimitedStock || variant.stock > 0,
+  }
+}
+
+async function toolGetBookDetails(args, ctx) {
+  const query = String(args.book_query || '').trim()
+  if (!query) return { ok: false, message: 'Thiếu tên sách cần tra cứu.' }
+
+  let book =
+    ctx.candidateBooksById.get(query) ||
+    [...ctx.candidateBooksById.values()].find((b) => b.title.toLowerCase().includes(query.toLowerCase())) ||
+    null
+  if (!book) book = await fuzzyFindOneBook(query)
+  if (!book) return { ok: false, message: 'Không tìm thấy sách phù hợp với tên này trong hệ thống.' }
+
+  const full = await prisma.book.findUnique({
+    where: { id: book.id },
+    include: { authors: { include: { author: true }, orderBy: { order: 'asc' } } },
+  })
+  if (!full) return { ok: false, message: 'Không tìm thấy sách phù hợp với tên này trong hệ thống.' }
+
+  return {
+    ok: true,
+    title: full.title,
+    description: full.description || null,
+    synopsis: full.synopsis || null,
+    themes: full.themes || [],
+    suitableFor: full.suitableFor || null,
+    ageRangeLabel: full.ageMin != null && full.ageMax != null ? `${full.ageMin}-${full.ageMax} tuổi` : null,
+    authors: full.authors.map((a) => a.author.name),
+    pages: full.pages,
+    hasContentData: Boolean(full.synopsis || (full.themes && full.themes.length) || full.suitableFor),
   }
 }
 
@@ -409,6 +463,7 @@ async function toolEscalateToHuman(args, ctx) {
 const TOOL_EXECUTORS = {
   suggest_books: toolSuggestBooks,
   check_stock: toolCheckStock,
+  get_book_details: toolGetBookDetails,
   get_order_status: toolGetOrderStatus,
   apply_coupon: toolApplyCoupon,
   escalate_to_human: toolEscalateToHuman,

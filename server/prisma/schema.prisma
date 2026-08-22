@@ -180,8 +180,11 @@ model Book {
   publishYear   Int?
   dimensions    String?  // chuỗi tự do, vd "21 x 28 x 1.2 cm"
   weightGrams   Int?
-  coverType     String?  // vd "Cứng, chống nước"
+   coverType     String?  // vd "Cứng, chống nước"
   paperType     String?  // vd "FSC Certified 150gsm"
+  synopsis      String?  @db.Text // Tóm tắt cốt truyện, ngắn gọn, tránh lộ đoạn kết
+  themes        String[] @default([]) // Chủ đề / bài học chính, vd ["Bảo vệ môi trường", "Lòng dũng cảm"]
+  suitableFor   String?  @db.Text // Gợi ý kiểu bé / tình huống phù hợp, dùng để tư vấn sát nhu cầu hơn
   coverImage    String?
   images        String[]
   arModelUrl    String?
