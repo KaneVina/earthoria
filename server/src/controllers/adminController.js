@@ -1166,9 +1166,37 @@ exports.getOrders = async (req, res) => {
       prisma.order.count({ where }),
     ]);
 
+    const unpaidBankQrIds = orders
+      .filter((o) => o.paymentMethod === "BANKQR" && o.paymentStatus !== "PAID")
+      .map((o) => o.id);
+
+    let mismatchByOrderId = {};
+    if (unpaidBankQrIds.length > 0) {
+      const mismatchTxns = await prisma.paymentTransaction.findMany({
+        where: {
+          orderId: { in: unpaidBankQrIds },
+          gateway: "BANKQR",
+          type: "IPN",
+          message: { startsWith: "Sai số tiền" },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+      for (const txn of mismatchTxns) {
+        if (!mismatchByOrderId[txn.orderId]) {
+          mismatchByOrderId[txn.orderId] = {
+            transferredAmount: txn.amount,
+            at: txn.createdAt,
+          };
+        }
+      }
+    }
+
     const mapped = orders.map((o) => ({
       ...o,
       paymentStatus: mapPaymentStatus(o.paymentStatus),
+      paymentMismatch: mismatchByOrderId[o.id]
+        ? { ...mismatchByOrderId[o.id], expectedAmount: o.total }
+        : null,
       shippingAddress: o.address
         ? {
             name: o.address.fullName,

@@ -802,6 +802,29 @@ const getBankQrStatus = async (req, res) => {
       });
     }
 
+    if (order.paymentRef) {
+      const mismatchTxn = await prisma.paymentTransaction.findFirst({
+        where: {
+          orderId: order.id,
+          gateway: "BANKQR",
+          type: "IPN",
+          paymentRef: order.paymentRef,
+          message: { startsWith: "Sai số tiền" },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+      if (mismatchTxn) {
+        return formatResponse(res, 200, "Số tiền chuyển khoản không khớp đơn hàng", {
+          orderId: order.id,
+          success: false,
+          pending: false,
+          mismatch: true,
+          transferredAmount: mismatchTxn.amount,
+          expectedAmount: order.total,
+        });
+      }
+    }
+
     return formatResponse(res, 200, "Đang chờ chuyển khoản", {
       orderId: order.id,
       success: false,

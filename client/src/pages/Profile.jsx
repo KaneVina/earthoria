@@ -6,6 +6,7 @@ import {
   useCallback,
 } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { AlertCircle } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authService } from "../services/authService";
 import { orderService } from "../services/orderService";
@@ -2011,6 +2012,7 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
   const [retrying, setRetrying] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [bankQrData, setBankQrData] = useState(null);
+  const [bankQrMismatch, setBankQrMismatch] = useState(null);
   const qc = useQueryClient();
 
   useEffect(() => {
@@ -2029,6 +2031,14 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
           setBankQrData(null);
           qc.invalidateQueries({ queryKey: ["order", order.id] });
           qc.invalidateQueries({ queryKey: ["orders"] });
+        } else if (result.mismatch) {
+          setBankQrMismatch({
+            transferredAmount: result.transferredAmount,
+            expectedAmount: result.expectedAmount,
+          });
+          toast.error(
+            "Số tiền chuyển khoản không khớp với đơn hàng, vui lòng liên hệ hỗ trợ.",
+          );
         } else if (result.expired) {
           toast.error(
             "Mã QR đã hết hạn, vui lòng bấm thanh toán lại để lấy mã mới.",
@@ -2104,6 +2114,7 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
       try {
         const { data } = await paymentService.createBankQrPayment(order.id);
         setBankQrData(data.data);
+        setBankQrMismatch(null);
         toast.success("Đã tạo mã QR — quét để chuyển khoản");
       } catch (err) {
         toast.error(
@@ -2361,7 +2372,55 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
                 )}
               </button>
             )}
-            {canRetryPayment && bankQrData && (
+            {canRetryPayment && bankQrData && bankQrMismatch && (
+              <div
+                style={{
+                  display: "flex",
+                  gap: 12,
+                  alignItems: "flex-start",
+                  padding: "16px 16px",
+                  marginTop: 14,
+                  background: "#fdf2f0",
+                  border: "0.5px solid #e8b4ab",
+                }}
+              >
+                <AlertCircle
+                  size={16}
+                  strokeWidth={1.5}
+                  style={{ color: "#c0392b", flexShrink: 0, marginTop: 2 }}
+                />
+                <div>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      color: "var(--forest)",
+                      fontWeight: 500,
+                      marginBottom: 4,
+                    }}
+                  >
+                    Số tiền chuyển khoản không khớp
+                  </div>
+                  <div
+                    style={{
+                      fontSize: 12,
+                      color: "var(--text-muted)",
+                      fontWeight: 300,
+                    }}
+                  >
+                    Chúng tôi ghi nhận bạn đã chuyển{" "}
+                    <strong style={{ color: "var(--forest)" }}>
+                      {formatPrice(bankQrMismatch.transferredAmount)}
+                    </strong>
+                    , nhưng đơn hàng cần{" "}
+                    <strong style={{ color: "var(--forest)" }}>
+                      {formatPrice(bankQrMismatch.expectedAmount)}
+                    </strong>
+                    . Vui lòng liên hệ hỗ trợ để được đối soát và xử lý.
+                  </div>
+                </div>
+              </div>
+            )}
+            {canRetryPayment && bankQrData && !bankQrMismatch && (
               <div
                 style={{
                   display: "flex",

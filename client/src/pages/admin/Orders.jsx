@@ -119,6 +119,19 @@ function OrderDrawer({ order, onClose }) {
               <span className="a-badge info">Sách điện tử — không giao hàng</span>
             )}
           </div>
+          {order.paymentMismatch && (
+            <div style={{ marginBottom: 20, background: '#fdf2f0', border: '0.5px solid #e8b4ab', borderRadius: 8, padding: '13px 16px' }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: '#c0392b', marginBottom: 4 }}>
+                ⚠ Sai số tiền — cần đối soát thủ công
+              </div>
+              <div style={{ fontSize: 12, color: 'rgba(13,51,48,0.6)' }}>
+                Khách đã chuyển <strong>{formatPrice(order.paymentMismatch.transferredAmount)}</strong>,
+                {' '}đơn cần <strong>{formatPrice(order.paymentMismatch.expectedAmount)}</strong>.
+                Kiểm tra thực tế rồi đổi trạng thái đơn sang "Hoàn thành"/"Đã giao" để xác nhận thanh toán,
+                hoặc liên hệ khách để xử lý.
+              </div>
+            </div>
+          )}
           {/* Shipping address */}
           {order.shippingAddress && (
             <div style={{ marginBottom: 20, background: 'var(--a-surface)', borderRadius: 8, padding: '13px 16px' }}>
@@ -275,6 +288,15 @@ export default function Orders() {
                     <div className="a-td-muted" style={{ marginTop: 4 }}>
                       {PAYMENT_METHOD_LABEL[order.paymentMethod] ?? order.paymentMethod}
                     </div>
+                    {order.paymentMismatch && (
+                      <span
+                        className="a-badge warning"
+                        style={{ marginTop: 4, display: 'inline-block' }}
+                        title={`Khách đã chuyển ${formatPrice(order.paymentMismatch.transferredAmount)}, cần ${formatPrice(order.paymentMismatch.expectedAmount)}`}
+                      >
+                        ⚠ Sai số tiền — cần đối soát
+                      </span>
+                    )}
                   </td>                  <td onClick={e => e.stopPropagation()}>
                     <span className={`a-badge ${ORDER_BADGE[order.status] ?? 'neutral'}`}>
                       {ORDER_STATUS[order.status]}

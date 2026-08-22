@@ -1236,6 +1236,7 @@ export default function Checkout() {
   const [bankQrData, setBankQrData] = useState(null);
   const [bankQrStatus, setBankQrStatus] = useState("pending");
   const [bankQrExpired, setBankQrExpired] = useState(false);
+  const [bankQrMismatch, setBankQrMismatch] = useState(null);
   const [requestInvoice, setRequestInvoice] = useState(false);
   const [deliveryMode, setDeliveryMode] = useState("shipping");
   const [savedAddresses, setSavedAddresses] = useState([]);
@@ -1622,6 +1623,15 @@ export default function Checkout() {
           toast.success("Thanh toán thành công!");
           setOrderPlaced(true);
           fetchCart();
+        } else if (result.mismatch) {
+          setBankQrStatus("mismatch");
+          setBankQrMismatch({
+            transferredAmount: result.transferredAmount,
+            expectedAmount: result.expectedAmount,
+          });
+          toast.error(
+            "Số tiền chuyển khoản không khớp với đơn hàng, vui lòng liên hệ hỗ trợ.",
+          );
         } else if (result.expired) {
           setBankQrStatus("expired");
           setBankQrExpired(true);
@@ -3881,6 +3891,76 @@ export default function Checkout() {
                     >
                       Đơn hàng của bạn vẫn được lưu. Vào Đơn hàng của tôi để
                       thanh toán lại và nhận mã QR mới.
+                    </div>
+                    <Link
+                      to="/profile"
+                      state={{ tab: "orders", orderId: placedOrderId }}
+                      style={{ textDecoration: "none" }}
+                    >
+                      <button
+                        style={{
+                          background: "var(--forest)",
+                          border: "none",
+                          padding: "12px 24px",
+                          cursor: "pointer",
+                          fontFamily: "Be Vietnam Pro, sans-serif",
+                          fontSize: 11,
+                          letterSpacing: "0.18em",
+                          textTransform: "uppercase",
+                          color: "var(--ivory)",
+                        }}
+                      >
+                        Xem đơn hàng của bạn
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              ) : bankQrStatus === "mismatch" ? (
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 12,
+                    alignItems: "flex-start",
+                    padding: "18px 20px",
+                    marginTop: 12,
+                    background: "#fdf2f0",
+                    border: "0.5px solid #e8b4ab",
+                  }}
+                >
+                  <AlertCircle
+                    size={16}
+                    strokeWidth={1.5}
+                    style={{ color: "#c0392b", flexShrink: 0, marginTop: 2 }}
+                  />
+                  <div>
+                    <div
+                      style={{
+                        fontSize: 13,
+                        color: "var(--forest)",
+                        fontWeight: 500,
+                        marginBottom: 4,
+                      }}
+                    >
+                      Số tiền chuyển khoản không khớp
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 12,
+                        color: "var(--text-muted)",
+                        fontWeight: 300,
+                        marginBottom: 16,
+                      }}
+                    >
+                      Chúng tôi ghi nhận bạn đã chuyển{" "}
+                      <strong style={{ color: "var(--forest)" }}>
+                        {formatPrice(bankQrMismatch?.transferredAmount)}
+                      </strong>
+                      , nhưng đơn hàng cần{" "}
+                      <strong style={{ color: "var(--forest)" }}>
+                        {formatPrice(bankQrMismatch?.expectedAmount)}
+                      </strong>
+                      . Đơn hàng của bạn vẫn được lưu, vui lòng liên hệ hỗ trợ
+                      để được đối soát và xử lý.
                     </div>
                     <Link
                       to="/profile"
