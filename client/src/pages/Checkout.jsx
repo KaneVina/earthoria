@@ -23,6 +23,8 @@ import {
   Eye,
   EyeOff,
   QrCode,
+  Ticket,
+  Copy,
 } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
 import { formatPrice } from "../utils/helpers";
@@ -762,6 +764,7 @@ function OrderSummary({
   onApply,
   onRemoveCoupon,
   couponLoading,
+  onOpenVouchers,
 }) {
   const afterDiscount = subtotal - discount;
   const pct = Math.min((afterDiscount / FREE_SHIP_THRESHOLD) * 100, 100);
@@ -937,6 +940,22 @@ function OrderSummary({
               <strong>{couponApplied.code}</strong> — {couponApplied.label}
             </span>
             <button
+              onClick={onOpenVouchers}
+              style={{
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                fontSize: 11,
+                letterSpacing: "0.06em",
+                color: "var(--gold)",
+                fontFamily: "Be Vietnam Pro, sans-serif",
+                textDecoration: "underline",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Đổi mã
+            </button>
+            <button
               onClick={onRemoveCoupon}
               style={{
                 background: "transparent",
@@ -955,22 +974,44 @@ function OrderSummary({
               style={{
                 display: "flex",
                 alignItems: "center",
+                justifyContent: "space-between",
                 gap: 6,
                 marginBottom: 10,
               }}
             >
-              <Tag size={13} style={{ color: "var(--gold)" }} />
-              <span
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <Tag size={13} style={{ color: "var(--gold)" }} />
+                <span
+                  style={{
+                    fontSize: 11,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                    color: "var(--forest)",
+                    fontWeight: 500,
+                  }}
+                >
+                  Bạn có mã giảm giá?
+                </span>
+              </div>
+              <button
+                onClick={onOpenVouchers}
                 style={{
-                  fontSize: 11,
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                  color: "var(--forest)",
-                  fontWeight: 500,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  background: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: 10.5,
+                  letterSpacing: "0.06em",
+                  color: "var(--gold)",
+                  fontFamily: "Be Vietnam Pro, sans-serif",
+                  textDecoration: "underline",
+                  whiteSpace: "nowrap",
                 }}
               >
-                Bạn có mã giảm giá?
-              </span>
+                <Ticket size={12} /> Xem tất cả ưu đãi
+              </button>
             </div>
             <div style={{ display: "flex" }}>
               <input
@@ -1179,6 +1220,280 @@ function OrderSummary({
     </aside>
   );
 }
+/** Voucher list modal — cho khách xem TẤT CẢ mã đang có, biết ngay mã nào
+ *  dùng được với đơn hiện tại (đủ minOrder) và mã nào còn thiếu bao nhiêu. */
+function VoucherModal({
+  coupons,
+  loading,
+  subtotal,
+  applyingCode,
+  onApply,
+  onClose,
+}) {
+  const describeCoupon = (c) =>
+    c.type === "PERCENTAGE"
+      ? `Giảm ${c.value}%${c.maxDiscount ? ` — tối đa ${formatPrice(c.maxDiscount)}` : ""}`
+      : `Giảm ${formatPrice(c.value)}`;
+
+  const copyCode = async (code) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      toast.success(`Đã sao chép mã ${code}`);
+    } catch {
+      /* clipboard không khả dụng — bỏ qua, khách vẫn bấm "Dùng mã này" được */
+    }
+  };
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 2000,
+        background: "rgba(10,14,12,0.6)",
+        backdropFilter: "blur(4px)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          background: "var(--ivory)",
+          border: "0.5px solid var(--border-gold)",
+          width: "100%",
+          maxWidth: 520,
+          maxHeight: "85vh",
+          display: "flex",
+          flexDirection: "column",
+          boxShadow: "0 40px 80px rgba(13,43,30,0.35)",
+        }}
+      >
+        {/* Header */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "20px 24px",
+            borderBottom: "0.5px solid var(--border)",
+            flexShrink: 0,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div
+              style={{
+                width: 32,
+                height: 32,
+                border: "0.5px solid var(--border-gold)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "var(--gold)",
+                flexShrink: 0,
+              }}
+            >
+              <Ticket size={15} strokeWidth={1.5} />
+            </div>
+            <h3
+              style={{
+                fontFamily: "Playfair Display, serif",
+                fontSize: 20,
+                fontWeight: 400,
+                color: "var(--forest)",
+                margin: 0,
+              }}
+            >
+              Tất cả{" "}
+              <em style={{ color: "var(--gold)", fontStyle: "italic" }}>
+                ưu đãi
+              </em>
+            </h3>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "var(--text-muted)",
+              fontSize: 22,
+              lineHeight: 1,
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Body */}
+        <div style={{ overflowY: "auto", padding: "18px 24px 24px" }}>
+          {loading ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+                padding: "48px 0",
+                fontSize: 13,
+                color: "var(--text-muted)",
+              }}
+            >
+              <Loader2
+                size={16}
+                style={{ animation: "spin 0.8s linear infinite" }}
+              />
+              Đang tải ưu đãi…
+            </div>
+          ) : coupons.length === 0 ? (
+            <div
+              style={{
+                padding: "48px 0",
+                textAlign: "center",
+                fontSize: 13,
+                color: "var(--text-muted)",
+                fontWeight: 300,
+              }}
+            >
+              Hiện chưa có mã giảm giá nào khả dụng.
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {coupons.map((c) => {
+                const eligible = subtotal >= (c.minOrder || 0);
+                const missing = (c.minOrder || 0) - subtotal;
+                return (
+                  <div
+                    key={c.code}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 14,
+                      padding: "16px 18px",
+                      background: eligible
+                        ? "var(--gold-pale)"
+                        : "var(--white)",
+                      border: `0.5px solid ${eligible ? "var(--border-gold)" : "var(--border)"}`,
+                      opacity: eligible ? 1 : 0.75,
+                    }}
+                  >
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          marginBottom: 4,
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontFamily: "Be Vietnam Pro, sans-serif",
+                            fontSize: 14,
+                            fontWeight: 600,
+                            letterSpacing: "0.06em",
+                            color: "var(--forest)",
+                          }}
+                        >
+                          {c.code}
+                        </span>
+                        <button
+                          onClick={() => copyCode(c.code)}
+                          title="Sao chép mã"
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            color: "var(--text-muted)",
+                            display: "flex",
+                            padding: 0,
+                          }}
+                        >
+                          <Copy size={12} />
+                        </button>
+                        {eligible && (
+                          <span
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 3,
+                              fontSize: 9.5,
+                              letterSpacing: "0.1em",
+                              textTransform: "uppercase",
+                              color: "#4a9e3f",
+                              background: "rgba(74,158,63,0.1)",
+                              padding: "2px 8px",
+                            }}
+                          >
+                            <Check size={10} /> Áp dụng được
+                          </span>
+                        )}
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: "Playfair Display, serif",
+                          fontSize: 15,
+                          color: "var(--forest)",
+                          marginBottom: 3,
+                        }}
+                      >
+                        {describeCoupon(c)}
+                      </div>
+                      <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                        {c.minOrder > 0
+                          ? `Đơn tối thiểu ${formatPrice(c.minOrder)}`
+                          : "Không yêu cầu đơn tối thiểu"}
+                        {!eligible &&
+                          missing > 0 &&
+                          ` — mua thêm ${formatPrice(missing)} để dùng được`}
+                        {c.expiresAt &&
+                          ` · HSD: ${new Date(c.expiresAt).toLocaleDateString("vi-VN")}`}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => eligible && onApply(c.code)}
+                      disabled={!eligible || applyingCode === c.code}
+                      style={{
+                        flexShrink: 0,
+                        background: eligible
+                          ? "var(--forest)"
+                          : "var(--border)",
+                        border: "none",
+                        padding: "10px 18px",
+                        cursor: eligible ? "pointer" : "not-allowed",
+                        fontFamily: "Be Vietnam Pro, sans-serif",
+                        fontSize: 10.5,
+                        letterSpacing: "0.12em",
+                        textTransform: "uppercase",
+                        color: eligible ? "var(--ivory)" : "var(--text-muted)",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {applyingCode === c.code ? (
+                        <Loader2
+                          size={12}
+                          style={{ animation: "spin 0.8s linear infinite" }}
+                        />
+                      ) : (
+                        "Dùng mã này"
+                      )}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 function MapClickHandler({ onPick }) {
   useMapEvents({
     click(e) {
@@ -1228,6 +1543,11 @@ export default function Checkout() {
   const [couponInput, setCouponInput] = useState("");
   const [couponApplied, setCouponApplied] = useState(null);
   const [couponLoading, setCouponLoading] = useState(false);
+  const [showVoucherModal, setShowVoucherModal] = useState(false);
+  const [availableCoupons, setAvailableCoupons] = useState([]);
+  const [vouchersLoading, setVouchersLoading] = useState(false);
+  const [vouchersLoaded, setVouchersLoaded] = useState(false);
+  const [applyingVoucherCode, setApplyingVoucherCode] = useState(null);
 
   /*  submission  */
   const [placing, setPlacing] = useState(false);
@@ -1463,10 +1783,11 @@ export default function Checkout() {
   };
 
   /*  coupon  */
-  const applyCoupon = async () => {
-    const key = couponInput.trim().toUpperCase();
+  const applyCoupon = async (codeOverride) => {
+    const key = (codeOverride ?? couponInput).trim().toUpperCase();
     if (!key) return toast.error("Vui lòng nhập mã giảm giá");
     setCouponLoading(true);
+    if (codeOverride) setApplyingVoucherCode(key);
     try {
       const { data } = await couponService.validate(key, subtotal);
       const c = data.data;
@@ -1475,11 +1796,29 @@ export default function Checkout() {
           ? `Giảm ${c.value}%`
           : `Giảm ${formatPrice(c.value)}`;
       setCouponApplied({ ...c, label });
+      setCouponInput(key);
+      setShowVoucherModal(false);
       toast.success(`Áp dụng ${c.code} thành công!`);
     } catch (err) {
       toast.error(err?.response?.data?.message || "Mã giảm giá không hợp lệ");
     } finally {
       setCouponLoading(false);
+      setApplyingVoucherCode(null);
+    }
+  };
+
+  const openVoucherModal = async () => {
+    setShowVoucherModal(true);
+    if (vouchersLoaded) return;
+    setVouchersLoading(true);
+    try {
+      const { data } = await couponService.getAvailable();
+      setAvailableCoupons(data.data || []);
+      setVouchersLoaded(true);
+    } catch {
+      toast.error("Không tải được danh sách ưu đãi, vui lòng thử lại");
+    } finally {
+      setVouchersLoading(false);
     }
   };
 
@@ -4470,12 +4809,24 @@ export default function Checkout() {
           setCouponInput={setCouponInput}
           onApply={applyCoupon}
           couponLoading={couponLoading}
+          onOpenVouchers={openVoucherModal}
           onRemoveCoupon={() => {
             setCouponApplied(null);
             setCouponInput("");
           }}
         />
       </div>
+
+      {showVoucherModal && (
+        <VoucherModal
+          coupons={availableCoupons}
+          loading={vouchersLoading}
+          subtotal={subtotal}
+          applyingCode={applyingVoucherCode}
+          onApply={applyCoupon}
+          onClose={() => setShowVoucherModal(false)}
+        />
+      )}
     </div>
   );
 }
