@@ -1037,7 +1037,7 @@ function OrderSummary({
                 }}
               />
               <button
-                onClick={onApply}
+                onClick={() => onApply()}
                 disabled={couponLoading}
                 style={{
                   display: "flex",
@@ -1220,8 +1220,6 @@ function OrderSummary({
     </aside>
   );
 }
-/** Voucher list modal — cho khách xem TẤT CẢ mã đang có, biết ngay mã nào
- *  dùng được với đơn hiện tại (đủ minOrder) và mã nào còn thiếu bao nhiêu. */
 function VoucherModal({
   coupons,
   loading,
@@ -1244,6 +1242,12 @@ function VoucherModal({
     }
   };
 
+  const sorted = [...coupons].sort((a, b) => {
+    const aOk = subtotal >= (a.minOrder || 0);
+    const bOk = subtotal >= (b.minOrder || 0);
+    return aOk === bOk ? 0 : aOk ? -1 : 1;
+  });
+
   return (
     <div
       onClick={onClose}
@@ -1259,6 +1263,16 @@ function VoucherModal({
         padding: 24,
       }}
     >
+      <style>{`
+        .eo-voucher-scroll::-webkit-scrollbar { width: 6px; }
+        .eo-voucher-scroll::-webkit-scrollbar-track { background: transparent; }
+        .eo-voucher-scroll::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 3px; }
+        .eo-voucher-close:hover { background: var(--pale); color: var(--forest) !important; }
+        .eo-voucher-copy:hover { color: var(--gold) !important; }
+        .eo-voucher-card { transition: box-shadow 0.2s ease, transform 0.2s ease; }
+        .eo-voucher-card:hover { box-shadow: 0 10px 24px rgba(13,43,30,0.1); transform: translateY(-1px); }
+        .eo-voucher-btn:not(:disabled):hover { background: var(--forest-mid) !important; }
+      `}</style>
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
@@ -1272,7 +1286,6 @@ function VoucherModal({
           boxShadow: "0 40px 80px rgba(13,43,30,0.35)",
         }}
       >
-        {/* Header */}
         <div
           style={{
             display: "flex",
@@ -1283,7 +1296,7 @@ function VoucherModal({
             flexShrink: 0,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
             <div
               style={{
                 width: 32,
@@ -1305,31 +1318,59 @@ function VoucherModal({
                 fontWeight: 400,
                 color: "var(--forest)",
                 margin: 0,
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
               }}
             >
               Tất cả{" "}
               <em style={{ color: "var(--gold)", fontStyle: "italic" }}>
                 ưu đãi
               </em>
+              {!loading && coupons.length > 0 && (
+                <span
+                  style={{
+                    fontFamily: "Be Vietnam Pro, sans-serif",
+                    fontStyle: "normal",
+                    fontSize: 10.5,
+                    fontWeight: 500,
+                    letterSpacing: "0.08em",
+                    color: "var(--gold)",
+                    background: "var(--gold-pale)",
+                    border: "0.5px solid var(--border-gold)",
+                    padding: "3px 9px",
+                  }}
+                >
+                  {coupons.length}
+                </span>
+              )}
             </h3>
           </div>
           <button
             onClick={onClose}
+            className="eo-voucher-close"
             style={{
               background: "none",
               border: "none",
               cursor: "pointer",
               color: "var(--text-muted)",
-              fontSize: 22,
-              lineHeight: 1,
+              width: 30,
+              height: 30,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              transition: "background 0.15s ease",
             }}
           >
-            ✕
+            <X size={18} strokeWidth={1.5} />
           </button>
         </div>
 
-        {/* Body */}
-        <div style={{ overflowY: "auto", padding: "18px 24px 24px" }}>
+        <div
+          className="eo-voucher-scroll"
+          style={{ overflowY: "auto", padding: "18px 24px 24px" }}
+        >
           {loading ? (
             <div
               style={{
@@ -1337,7 +1378,7 @@ function VoucherModal({
                 alignItems: "center",
                 justifyContent: "center",
                 gap: 10,
-                padding: "48px 0",
+                padding: "56px 0",
                 fontSize: 13,
                 color: "var(--text-muted)",
               }}
@@ -1349,44 +1390,50 @@ function VoucherModal({
               Đang tải ưu đãi…
             </div>
           ) : coupons.length === 0 ? (
-            <div
-              style={{
-                padding: "48px 0",
-                textAlign: "center",
-                fontSize: 13,
-                color: "var(--text-muted)",
-                fontWeight: 300,
-              }}
-            >
-              Hiện chưa có mã giảm giá nào khả dụng.
+            <div style={{ padding: "56px 0", textAlign: "center" }}>
+              <Ticket
+                size={30}
+                strokeWidth={1}
+                style={{ color: "var(--border-gold)", marginBottom: 12 }}
+              />
+              <div
+                style={{
+                  fontSize: 13,
+                  color: "var(--text-muted)",
+                  fontWeight: 300,
+                }}
+              >
+                Hiện chưa có mã giảm giá nào khả dụng.
+              </div>
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {coupons.map((c) => {
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {sorted.map((c) => {
                 const eligible = subtotal >= (c.minOrder || 0);
                 const missing = (c.minOrder || 0) - subtotal;
+                const progress = c.minOrder
+                  ? Math.min((subtotal / c.minOrder) * 100, 100)
+                  : 100;
                 return (
                   <div
                     key={c.code}
+                    className="eo-voucher-card"
                     style={{
+                      position: "relative",
                       display: "flex",
-                      alignItems: "center",
-                      gap: 14,
-                      padding: "16px 18px",
-                      background: eligible
-                        ? "var(--gold-pale)"
-                        : "var(--white)",
+                      background: eligible ? "var(--gold-pale)" : "var(--white)",
                       border: `0.5px solid ${eligible ? "var(--border-gold)" : "var(--border)"}`,
-                      opacity: eligible ? 1 : 0.75,
+                      opacity: eligible ? 1 : 0.8,
                     }}
                   >
-                    <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ flex: 1, minWidth: 0, padding: "16px 16px" }}>
                       <div
                         style={{
                           display: "flex",
                           alignItems: "center",
                           gap: 8,
-                          marginBottom: 4,
+                          marginBottom: 6,
+                          flexWrap: "wrap",
                         }}
                       >
                         <span
@@ -1403,6 +1450,7 @@ function VoucherModal({
                         <button
                           onClick={() => copyCode(c.code)}
                           title="Sao chép mã"
+                          className="eo-voucher-copy"
                           style={{
                             background: "none",
                             border: "none",
@@ -1410,6 +1458,7 @@ function VoucherModal({
                             color: "var(--text-muted)",
                             display: "flex",
                             padding: 0,
+                            transition: "color 0.15s ease",
                           }}
                         >
                           <Copy size={12} />
@@ -1424,7 +1473,8 @@ function VoucherModal({
                               letterSpacing: "0.1em",
                               textTransform: "uppercase",
                               color: "#4a9e3f",
-                              background: "rgba(74,158,63,0.1)",
+                              background: "rgba(74,158,63,0.12)",
+                              border: "0.5px solid rgba(74,158,63,0.25)",
                               padding: "2px 8px",
                             }}
                           >
@@ -1435,14 +1485,20 @@ function VoucherModal({
                       <div
                         style={{
                           fontFamily: "Playfair Display, serif",
-                          fontSize: 15,
+                          fontSize: 17,
                           color: "var(--forest)",
-                          marginBottom: 3,
+                          marginBottom: 5,
                         }}
                       >
                         {describeCoupon(c)}
                       </div>
-                      <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: "var(--text-muted)",
+                          marginBottom: !eligible && c.minOrder > 0 ? 6 : 0,
+                        }}
+                      >
                         {c.minOrder > 0
                           ? `Đơn tối thiểu ${formatPrice(c.minOrder)}`
                           : "Không yêu cầu đơn tối thiểu"}
@@ -1452,38 +1508,94 @@ function VoucherModal({
                         {c.expiresAt &&
                           ` · HSD: ${new Date(c.expiresAt).toLocaleDateString("vi-VN")}`}
                       </div>
+                      {!eligible && c.minOrder > 0 && (
+                        <div
+                          style={{ height: 3, background: "var(--border)", maxWidth: 200 }}
+                        >
+                          <div
+                            style={{
+                              height: "100%",
+                              width: `${progress}%`,
+                              background: "linear-gradient(90deg, #4a9e3f, #5cb84f)",
+                              transition: "width 0.4s ease",
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
-                    <button
-                      onClick={() => eligible && onApply(c.code)}
-                      disabled={!eligible || applyingCode === c.code}
+
+                    <div
                       style={{
+                        position: "relative",
+                        width: 0,
                         flexShrink: 0,
-                        background: eligible
-                          ? "var(--forest)"
-                          : "var(--border)",
-                        border: "none",
-                        padding: "10px 18px",
-                        cursor: eligible ? "pointer" : "not-allowed",
-                        fontFamily: "Be Vietnam Pro, sans-serif",
-                        fontSize: 10.5,
-                        letterSpacing: "0.12em",
-                        textTransform: "uppercase",
-                        color: eligible ? "var(--ivory)" : "var(--text-muted)",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 6,
-                        whiteSpace: "nowrap",
+                        borderLeft: `1.5px dashed ${eligible ? "var(--border-gold)" : "var(--border)"}`,
                       }}
                     >
-                      {applyingCode === c.code ? (
-                        <Loader2
-                          size={12}
-                          style={{ animation: "spin 0.8s linear infinite" }}
-                        />
-                      ) : (
-                        "Dùng mã này"
-                      )}
-                    </button>
+                      <span
+                        style={{
+                          position: "absolute",
+                          top: -6,
+                          left: -6,
+                          width: 12,
+                          height: 12,
+                          borderRadius: "50%",
+                          background: "var(--ivory)",
+                        }}
+                      />
+                      <span
+                        style={{
+                          position: "absolute",
+                          bottom: -6,
+                          left: -6,
+                          width: 12,
+                          height: 12,
+                          borderRadius: "50%",
+                          background: "var(--ivory)",
+                        }}
+                      />
+                    </div>
+
+                    <div
+                      style={{
+                        flexShrink: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        padding: "0 16px",
+                      }}
+                    >
+                      <button
+                        onClick={() => eligible && onApply(c.code)}
+                        disabled={!eligible || applyingCode === c.code}
+                        className="eo-voucher-btn"
+                        style={{
+                          flexShrink: 0,
+                          background: eligible ? "var(--forest)" : "var(--border)",
+                          border: "none",
+                          padding: "10px 16px",
+                          cursor: eligible ? "pointer" : "not-allowed",
+                          fontFamily: "Be Vietnam Pro, sans-serif",
+                          fontSize: 10.5,
+                          letterSpacing: "0.1em",
+                          textTransform: "uppercase",
+                          color: eligible ? "var(--ivory)" : "var(--text-muted)",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          whiteSpace: "nowrap",
+                          transition: "background 0.15s ease",
+                        }}
+                      >
+                        {applyingCode === c.code ? (
+                          <Loader2
+                            size={12}
+                            style={{ animation: "spin 0.8s linear infinite" }}
+                          />
+                        ) : (
+                          "Dùng mã"
+                        )}
+                      </button>
+                    </div>
                   </div>
                 );
               })}
@@ -1494,6 +1606,7 @@ function VoucherModal({
     </div>
   );
 }
+
 function MapClickHandler({ onPick }) {
   useMapEvents({
     click(e) {
@@ -1784,10 +1897,11 @@ export default function Checkout() {
 
   /*  coupon  */
   const applyCoupon = async (codeOverride) => {
-    const key = (codeOverride ?? couponInput).trim().toUpperCase();
+    const override = typeof codeOverride === "string" ? codeOverride : null;
+    const key = (override ?? couponInput).trim().toUpperCase();
     if (!key) return toast.error("Vui lòng nhập mã giảm giá");
     setCouponLoading(true);
-    if (codeOverride) setApplyingVoucherCode(key);
+    if (override) setApplyingVoucherCode(key);
     try {
       const { data } = await couponService.validate(key, subtotal);
       const c = data.data;
