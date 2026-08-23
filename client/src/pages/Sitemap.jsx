@@ -10,7 +10,8 @@ const SECTIONS = [
       { label: 'Trang Chủ',        sub: 'Giới thiệu Earthoria & tính năng nổi bật',  to: '/' },
       { label: 'Cửa Hàng',         sub: 'Duyệt và mua sách theo chủ đề',             to: '/shop' },
       { label: 'Chi Tiết Sách',    sub: 'Xem thông tin, AR preview & đánh giá sản phẩm', to: '/shop' },
-      { label: 'Hướng Dẫn AR',     sub: 'Cách sử dụng Thực tế Tăng cường trên sách', to: '/ar' },
+      { label: 'So Sánh Sản Phẩm', sub: 'Đối chiếu nhiều sản phẩm cạnh nhau',        to: '/compare' },
+      { label: 'Hướng Dẫn AR',     sub: 'Cách sử dụng Thực tế Tăng cường trên sách', to: '/technology' },
     ],
   },
   {
@@ -21,6 +22,7 @@ const SECTIONS = [
     links: [
       { label: 'Blog',             sub: 'Bài viết về giáo dục, thiên nhiên & công nghệ', to: '/blog' },
       { label: 'Về Chúng Tôi',     sub: 'Câu chuyện Earthoria, đội ngũ & sứ mệnh',    to: '/about' },
+      { label: 'Liên Hệ',          sub: 'Gửi câu hỏi hoặc phản hồi cho Earthoria',    to: '/contact' },
     ],
   },
   {
@@ -33,6 +35,7 @@ const SECTIONS = [
       { label: 'Đăng Ký',          sub: 'Tạo tài khoản mới — miễn phí',               to: '/register' },
       { label: 'Quên Mật Khẩu',    sub: 'Khôi phục mật khẩu qua email',               to: '/forgot-password' },
       { label: 'Hồ Sơ Của Tôi',    sub: 'Thông tin cá nhân & lịch sử mua hàng',       to: '/profile' },
+      { label: 'Bảng Điều Khiển Phụ Huynh', sub: 'Quản lý & giám sát tài khoản của con', to: '/parent-dashboard' },
     ],
   },
   {
@@ -42,6 +45,7 @@ const SECTIONS = [
     color: 'var(--forest-mid)',
     links: [
       { label: 'Giỏ Hàng',         sub: 'Xem và chỉnh sửa sản phẩm đã chọn',         to: '/cart' },
+      { label: 'Danh Sách Yêu Thích', sub: 'Lưu lại sản phẩm để mua sau',            to: '/wishlist' },
       { label: 'Thanh Toán',        sub: 'Hoàn tất đơn hàng & chọn phương thức thanh toán', to: '/checkout' },
     ],
   },
@@ -55,6 +59,7 @@ const SECTIONS = [
       { label: 'Điều Khoản Dịch Vụ', sub: 'Quy định sử dụng nền tảng',              to: '/legal/terms' },
       { label: 'Chính Sách Quyền Riêng Tư', sub: 'Cách chúng tôi bảo vệ dữ liệu của bạn', to: '/legal/privacy' },
       { label: 'Chính Sách Vận Chuyển', sub: 'Thời gian & phí giao hàng',            to: '/legal/shipping' },
+      { label: 'Chính Sách Cookie', sub: 'Cách chúng tôi sử dụng cookie trên trang', to: '/legal/cookies' },
     ],
   },
 ]
@@ -168,7 +173,7 @@ export default function Sitemap() {
             fontSize: '13px', fontStyle: 'italic',
             color: 'var(--text-muted)',
           }}>
-            Earthoria © 2026 · FPT University Cần Thơ · EXE101 Group 05
+            Earthoria © 2026
           </span>
           <div style={{ marginLeft: 'auto' }}>
             <Link to="/" style={{

@@ -440,7 +440,7 @@ export default function Footer() {
               letterSpacing: "0.01em",
             }}
           >
-            &copy; 2026 Earthoria. All rights reserved
+            &copy; 2026 Hệ sinh thái Earthoria. Mọi quyền được bảo lưu.
           </span>
           <span className="footer-tagline">Phiên bản thử nghiệm Beta 26.4.1</span>
         </div>
