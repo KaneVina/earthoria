@@ -108,6 +108,39 @@ function normalizeSearch(str) {
     .trim();
 }
 
+const SENSITIVE_KEYWORDS = [
+  "tu tu", "tu tu di", "muon tu tu",
+  "tu sat",
+  "tu ky",
+  "tram cam",
+  "muon chet", "chan song", "khong muon song",
+  "cai chet",
+  "tu hai", "tu lam hai ban than", "rach tay", "cat tay",
+  "tuyet vong",
+].map(normalizeSearch);
+
+function isSensitiveQuery(text) {
+  const nq = normalizeSearch(text);
+  if (!nq) return false;
+  return SENSITIVE_KEYWORDS.some((k) => nq.includes(k));
+}
+
+/** Highlight phần khớp trong tên sách — đổi tên tránh đụng Highlight API của trình duyệt */
+function SearchHighlight({ text, query }) {
+  if (!query || !query.trim() || !text) return <>{text}</>;
+  const norm = normalizeSearch(text);
+  const normQ = normalizeSearch(query.trim());
+  const idx = norm.indexOf(normQ);
+  if (idx === -1) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <mark className="kid-search-mark">{text.slice(idx, idx + query.trim().length)}</mark>
+      {text.slice(idx + query.trim().length)}
+    </>
+  );
+}
+
 function accentForId(id) {
   const str = String(id ?? "");
   let hash = 0;
@@ -346,6 +379,7 @@ export default function KidAccess() {
 
   //   tìm sách theo tên trong tủ sách của bé
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
   const searchInputRef = useRef(null);
 
   //   nhắc nghỉ mắt
@@ -608,6 +642,8 @@ export default function KidAccess() {
     return books.filter((b) => normalizeSearch(b.title).includes(q));
   }, [books, searchQuery]);
   const isSearching = normalizeSearch(searchQuery).length > 0;
+  const isSensitiveSearch = useMemo(() => isSensitiveQuery(searchQuery), [searchQuery]);
+  const isSearchActive = isSearching || searchFocused;
 
   if (status === "loading") {
     return (
@@ -771,7 +807,7 @@ export default function KidAccess() {
           </div>
         </header>
 
-        <section className="kid-hero">
+        <section className={`kid-hero${isSearchActive ? " kid-blurred" : ""}`}>
           <div className="kid-avatar-wrap">
             <span className="kid-avatar-orbit" aria-hidden="true" />
             <span className="kid-avatar-glow" />
@@ -799,32 +835,116 @@ export default function KidAccess() {
         </section>
 
         <section className="kid-search-section">
-          <label className="kid-search-bar" htmlFor="kid-book-search">
-            <Search size={19} className="kid-search-icon" aria-hidden="true" />
-            <input
-              id="kid-book-search"
-              ref={searchInputRef}
-              type="text"
-              inputMode="search"
-              autoComplete="off"
-              className="kid-search-input"
-              placeholder="Bé muốn tìm sách gì nào?"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            {isSearching && (
-              <button
-                type="button"
-                className="kid-search-clear"
-                onClick={clearSearch}
-                aria-label="Xoá tìm kiếm"
+          <div className={`kid-search-wrap${isSearchActive ? " is-active" : ""}`}>
+            <label className={`kid-search-bar${isSearchActive ? " is-active" : ""}`} htmlFor="kid-book-search">
+              <Search size={19} className="kid-search-icon" aria-hidden="true" />
+              <input
+                id="kid-book-search"
+                ref={searchInputRef}
+                type="text"
+                inputMode="search"
+                autoComplete="off"
+                className="kid-search-input"
+                placeholder="Bé muốn tìm sách gì nào?"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+                onBlur={() => setSearchFocused(false)}
+              />
+              {isSearching && (
+                <button
+                  type="button"
+                  className="kid-search-clear"
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={clearSearch}
+                  aria-label="Xoá tìm kiếm"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </label>
+
+            {isSearchActive && (
+              <div
+                className="kid-search-dropdown"
+                role="listbox"
+                onMouseDown={(e) => e.preventDefault()}
               >
-                <X size={14} />
-              </button>
+                {!isSearching ? (
+                  <div className="kid-search-dropdown-empty">
+                    <span className="kid-search-dropdown-empty-icon">
+                      <Search size={26} />
+                    </span>
+                    <span>Gõ tên sách để bé tìm nhé</span>
+                  </div>
+                ) : isSensitiveSearch ? (
+                  <div className="kid-search-help">
+                    <img src="/ekid-help.png" alt="" className="kid-search-help-img" />
+                    <p className="kid-search-help-text">
+                      Bé không đơn độc đâu nhé. Nếu bé hoặc bạn bè đang cảm thấy
+                      buồn hay khó khăn, hãy nói chuyện với ba mẹ hoặc thầy cô
+                      để được giúp đỡ nhé.
+                    </p>
+                  </div>
+                ) : filteredBooks.length > 0 ? (
+                  <>
+                    <div className="kid-search-dropdown-head">
+                      <Sparkles size={14} />
+                      <span>{filteredBooks.length}/{books.length} cuốn tìm thấy</span>
+                    </div>
+                    <div className="kid-search-dropdown-list">
+                      {filteredBooks.map((b) => {
+                        const accent = accentForId(b.id);
+                        return (
+                          <button
+                            type="button"
+                            key={b.id}
+                            className={`kid-search-result-row kid-search-result-row--${accent}`}
+                            onClick={(e) => {
+                              spawnRipple(e);
+                              handleOpenBook(b);
+                            }}
+                          >
+                            <span className="kid-search-result-thumb">
+                              {b.coverImage ? (
+                                <img src={b.coverImage} alt="" loading="lazy" />
+                              ) : (
+                                <BookMarked size={20} />
+                              )}
+                              <span className="kid-search-result-star" aria-hidden="true">
+                                <Star size={9} fill="currentColor" />
+                              </span>
+                            </span>
+                            <span className="kid-search-result-info">
+                              <span className="kid-search-result-title">
+                                <SearchHighlight text={b.title} query={searchQuery} />
+                              </span>
+                              {(b.ageMin || b.ageMax) && (
+                                <span className="kid-search-result-age">
+                                  {b.ageMin ?? "0"}–{b.ageMax ?? "17"} tuổi
+                                </span>
+                              )}
+                            </span>
+                            <ChevronRight size={18} className="kid-search-result-arrow" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                ) : (
+                  <div className="kid-search-dropdown-empty">
+                    <span className="kid-search-dropdown-empty-icon">
+                      <Search size={26} />
+                    </span>
+                    <span>Không tìm thấy sách nào</span>
+                  </div>
+                )}
+              </div>
             )}
-          </label>
+          </div>
         </section>
 
+        <div className={`kid-blur-wrap${isSearchActive ? " kid-blurred" : ""}`}>
         <section className="kid-stats-row">
           <div className="kid-stat-card kid-stat-card--time">
             <div className="kid-clock-icon">
@@ -937,12 +1057,12 @@ export default function KidAccess() {
               <h2 className="kid-shelf-title">{"Tủ sách của bé".normalize("NFC")}</h2>
             </div>
             <span className="kid-shelf-count">
-              {isSearching ? `${filteredBooks.length}/${books.length} cuốn` : `${books.length} cuốn`}
+              {books.length} cuốn
             </span>
           </div>
 
           <div className="kid-book-grid">
-            {filteredBooks.map((b, i) => {
+            {books.map((b, i) => {
               const accent = SHELF_ACCENTS[i % SHELF_ACCENTS.length];
               return (
                 <button
@@ -1009,22 +1129,6 @@ export default function KidAccess() {
               );
             })}
 
-            {filteredBooks.length === 0 && isSearching && (
-              <div className="kid-empty">
-                <div className="kid-empty-icon">
-                  <Search size={24} />
-                </div>
-                <div className="kid-empty-title">Không tìm thấy sách nào</div>
-                <p className="kid-empty-sub">
-                  Bé thử gõ tên khác xem sao, hoặc nhờ ba mẹ mua thêm sách mới
-                  nhé!
-                </p>
-                <button type="button" className="kid-btn kid-btn--ghost kid-empty-clear" onClick={clearSearch}>
-                  Xoá tìm kiếm
-                </button>
-              </div>
-            )}
-
             {books.length === 0 && !isSearching && (
               <div className="kid-empty">
                 <div className="kid-empty-icon">
@@ -1039,6 +1143,7 @@ export default function KidAccess() {
             )}
           </div>
         </section>
+        </div>
 
         <div className="kid-footer-divider" aria-hidden="true">
           <Star size={14} fill="currentColor" />
