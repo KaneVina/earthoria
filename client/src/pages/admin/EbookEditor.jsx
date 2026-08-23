@@ -100,7 +100,9 @@ function resizeImageFileIfNeeded(file, maxDim = 1600, quality = 0.86) {
         const canvas = document.createElement("canvas");
         canvas.width = Math.round(img.width * ratio);
         canvas.height = Math.round(img.height * ratio);
-        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas
+          .getContext("2d")
+          .drawImage(img, 0, 0, canvas.width, canvas.height);
         canvas.toBlob(
           (blob) => {
             if (!blob) {
@@ -970,7 +972,9 @@ export function PreviewOverlay({
   const toggleFullscreen = () => {
     const el = document.documentElement;
     const request =
-      el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+      el.requestFullscreen ||
+      el.webkitRequestFullscreen ||
+      el.msRequestFullscreen;
     const exit =
       document.exitFullscreen ||
       document.webkitExitFullscreen ||
@@ -1069,7 +1073,10 @@ export function PreviewOverlay({
         ? prev.filter((id) => id !== pageId)
         : [...prev, pageId];
       try {
-        localStorage.setItem(`${STORAGE_PREFIX}:bookmarks`, JSON.stringify(next));
+        localStorage.setItem(
+          `${STORAGE_PREFIX}:bookmarks`,
+          JSON.stringify(next),
+        );
       } catch {
         // localStorage không khả dụng — bỏ qua
       }
@@ -1136,7 +1143,12 @@ export function PreviewOverlay({
   }, [autoPlay]);
 
   const onLineHover = (layer) => {
-    if (readMode !== "hover" || reading || !speechAvailable() || !layer.text?.trim())
+    if (
+      readMode !== "hover" ||
+      reading ||
+      !speechAvailable() ||
+      !layer.text?.trim()
+    )
       return;
     if (lineHoverTimer.current) clearTimeout(lineHoverTimer.current);
     lineHoverTimer.current = setTimeout(() => {
@@ -1414,42 +1426,46 @@ export function PreviewOverlay({
                 gap: SPREAD_GAP,
               }}
             >
-            {visiblePages.map((p, i) => {
-              const globalIndex = idx + i;
-              return (
-                <div
-                  key={p.id}
-                  className="er-page"
-                  style={{ width: PAGE_W, height: PAGE_H, background: p.background }}
-                >
-                  {p.layers.map((layer) => (
-                    <LayerView
-                      key={layer.id}
-                      layer={layer}
-                      selected={false}
-                      readOnly
-                      isReadingThis={reading?.layerId === layer.id}
-                      readingWordIndex={reading?.wordIndex}
-                      onSelect={() => {}}
-                      onDragStart={() => {}}
-                      onResizeStart={() => {}}
-                      onLineHover={onLineHover}
-                      onLineLeave={onLineLeave}
-                      onAskAI={askAboutText}
-                      onLayerClick={goToPageId}
-                    />
-                  ))}
-                  {!(globalIndex === 0 && hidePageNumberOnCover) && (
-                    <PageNumberBadge
-                      page={p}
-                      number={globalIndex + 1}
-                      pos={pageNumberPos}
-                      showTitle={showTitleWithPageNumber}
-                    />
-                  )}
-                </div>
-              );
-            })}
+              {visiblePages.map((p, i) => {
+                const globalIndex = idx + i;
+                return (
+                  <div
+                    key={p.id}
+                    className="er-page"
+                    style={{
+                      width: PAGE_W,
+                      height: PAGE_H,
+                      background: p.background,
+                    }}
+                  >
+                    {p.layers.map((layer) => (
+                      <LayerView
+                        key={layer.id}
+                        layer={layer}
+                        selected={false}
+                        readOnly
+                        isReadingThis={reading?.layerId === layer.id}
+                        readingWordIndex={reading?.wordIndex}
+                        onSelect={() => {}}
+                        onDragStart={() => {}}
+                        onResizeStart={() => {}}
+                        onLineHover={onLineHover}
+                        onLineLeave={onLineLeave}
+                        onAskAI={askAboutText}
+                        onLayerClick={goToPageId}
+                      />
+                    ))}
+                    {!(globalIndex === 0 && hidePageNumberOnCover) && (
+                      <PageNumberBadge
+                        page={p}
+                        number={globalIndex + 1}
+                        pos={pageNumberPos}
+                        showTitle={showTitleWithPageNumber}
+                      />
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -1478,7 +1494,9 @@ export function PreviewOverlay({
                 }}
               >
                 {i + 1}
-                {bookmarks.includes(p.id) && <span className="er-page-dot-mark" />}
+                {bookmarks.includes(p.id) && (
+                  <span className="er-page-dot-mark" />
+                )}
               </button>
             );
           })}
@@ -1493,7 +1511,10 @@ export function PreviewOverlay({
           <div className="er-info-drawer" onClick={(e) => e.stopPropagation()}>
             <div className="er-info-drawer-head">
               <h3>Thông tin sách</h3>
-              <button className="er-icon-btn" onClick={() => setInfoOpen(false)}>
+              <button
+                className="er-icon-btn"
+                onClick={() => setInfoOpen(false)}
+              >
                 <X size={16} />
               </button>
             </div>
@@ -1516,7 +1537,9 @@ export function PreviewOverlay({
                     )}
                     <div className="er-info-meta">
                       {bookInfo.categoryName && (
-                        <span className="er-info-tag">{bookInfo.categoryName}</span>
+                        <span className="er-info-tag">
+                          {bookInfo.categoryName}
+                        </span>
                       )}
                       {(bookInfo.ageMin || bookInfo.ageMax) && (
                         <span className="er-info-tag">
@@ -1528,17 +1551,25 @@ export function PreviewOverlay({
                         </span>
                       )}
                       {bookInfo.publisher && (
-                        <span className="er-info-tag">NXB {bookInfo.publisher}</span>
+                        <span className="er-info-tag">
+                          NXB {bookInfo.publisher}
+                        </span>
                       )}
                       {bookInfo.publishYear && (
-                        <span className="er-info-tag">{bookInfo.publishYear}</span>
+                        <span className="er-info-tag">
+                          {bookInfo.publishYear}
+                        </span>
                       )}
                       {bookInfo.pages ? (
-                        <span className="er-info-tag">{bookInfo.pages} trang</span>
+                        <span className="er-info-tag">
+                          {bookInfo.pages} trang
+                        </span>
                       ) : null}
                       {bookInfo.language && (
                         <span className="er-info-tag">
-                          {bookInfo.language === "VI" ? "Tiếng Việt" : bookInfo.language}
+                          {bookInfo.language === "VI"
+                            ? "Tiếng Việt"
+                            : bookInfo.language}
                         </span>
                       )}
                     </div>
@@ -1552,8 +1583,12 @@ export function PreviewOverlay({
                 </>
               ) : (
                 <div className="er-info-body">
-                  <h2 className="er-info-title">{page?.title || "Sách điện tử"}</h2>
-                  <p className="er-info-desc">Chưa có thông tin chi tiết cho sách này.</p>
+                  <h2 className="er-info-title">
+                    {page?.title || "Sách điện tử"}
+                  </h2>
+                  <p className="er-info-desc">
+                    Chưa có thông tin chi tiết cho sách này.
+                  </p>
                 </div>
               )}
             </div>
@@ -1965,13 +2000,13 @@ export default function BookBuilder() {
     selectLayer(layer.id);
   };
   const addImageLayer = () => {
-    const layer = defaultImageLayer();
-    setPagesCommit((prev) =>
-      prev.map((p, i) =>
-        i === pageIndex ? { ...p, layers: [...p.layers, layer] } : p,
-      ),
-    );
-    selectLayer(layer.id);
+    multiImageInputRef.current?.click();
+  };
+  const handleMultiImageInputChange = (e) => {
+    const files = e.target.files;
+    e.target.value = "";
+    if (!files || !files.length) return;
+    applyMultipleImageFiles(files);
   };
   const addShapeLayer = () => {
     const layer = defaultShapeLayer();
@@ -2039,7 +2074,9 @@ export default function BookBuilder() {
       return;
     }
     if (file.size > MAX_IMAGE_MB * 1024 * 1024) {
-      toast.error(`Ảnh quá lớn (tối đa ${MAX_IMAGE_MB}MB), vui lòng chọn ảnh nhỏ hơn.`);
+      toast.error(
+        `Ảnh quá lớn (tối đa ${MAX_IMAGE_MB}MB), vui lòng chọn ảnh nhỏ hơn.`,
+      );
       return;
     }
 
@@ -2063,7 +2100,9 @@ export default function BookBuilder() {
       }
     } catch (err) {
       toast.error(
-        err?.response?.data?.message || err?.message || "Không tải được ảnh lên, vui lòng thử lại.",
+        err?.response?.data?.message ||
+          err?.message ||
+          "Không tải được ảnh lên, vui lòng thử lại.",
       );
     } finally {
       setUploadingLayerIds((prev) => {
@@ -2085,7 +2124,10 @@ export default function BookBuilder() {
       return;
     }
     const newLayers = list.map((_, i) =>
-      defaultImageLayer({ x: defaultImageLayer().x + i * 18, y: defaultImageLayer().y + i * 18 }),
+      defaultImageLayer({
+        x: defaultImageLayer().x + i * 18,
+        y: defaultImageLayer().y + i * 18,
+      }),
     );
     setPagesCommit((prev) =>
       prev.map((p, i) =>
@@ -2134,11 +2176,15 @@ export default function BookBuilder() {
     setImageDropActive(false);
     const files = e.dataTransfer.files;
     if (!files || !files.length) return;
-    const imageFiles = Array.from(files).filter((f) => f.type?.startsWith("image/"));
+    const imageFiles = Array.from(files).filter((f) =>
+      f.type?.startsWith("image/"),
+    );
     if (!imageFiles.length) return;
 
     const rect = canvasRef.current?.getBoundingClientRect();
-    const dropX = rect ? (e.clientX - rect.left) / scale : defaultImageLayer().x;
+    const dropX = rect
+      ? (e.clientX - rect.left) / scale
+      : defaultImageLayer().x;
     const dropY = rect ? (e.clientY - rect.top) / scale : defaultImageLayer().y;
 
     const newLayers = imageFiles.map((_, i) =>
@@ -2166,7 +2212,9 @@ export default function BookBuilder() {
   const handleImagePaste = (e) => {
     const items = e.clipboardData?.items;
     if (!items) return;
-    const imageItem = Array.from(items).find((it) => it.type?.startsWith("image/"));
+    const imageItem = Array.from(items).find((it) =>
+      it.type?.startsWith("image/"),
+    );
     if (!imageItem) return;
     const file = imageItem.getAsFile();
     if (!file) return;
@@ -2755,6 +2803,19 @@ export default function BookBuilder() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId, multiIds, pages, pageIndex]);
 
+  useEffect(() => {
+    const onPaste = (e) => {
+      const tag = document.activeElement && document.activeElement.tagName;
+      const typing = tag === "INPUT" || tag === "TEXTAREA";
+      if (typing) return;
+      handleImagePaste(e);
+    };
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId, pages, pageIndex]);
+
+
   const onWordHover = (wordObj) => {
     if (!speechAvailable() || !wordObj.word.trim()) return;
     if (lastHoverWord.current === wordObj.word) return;
@@ -2947,7 +3008,7 @@ export default function BookBuilder() {
         .bb-layer-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .bb-mini-btn { border: none; background: transparent; color: #6b7a72; cursor: pointer; font-size: 12px; width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: background 0.12s ease, color 0.12s ease; }
         .bb-mini-btn:hover { background: rgba(20,51,42,0.08); color: #14332a; }
-
+        .bb-layer-thumb { width: 18px; height: 18px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(20,51,42,0.12); }
         .bb-field { margin-bottom: 14px; }
         .bb-field label { display: block; font-size: 12px; font-weight: 700; color: #45524b; margin-bottom: 6px; }
         .bb-field input[type="text"], .bb-field textarea, .bb-field select { width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 9px; border: 1px solid rgba(20,51,42,0.16); font-size: 13px; font-family: inherit; background: #fbfaf7; transition: border-color 0.12s ease, box-shadow 0.12s ease; }
@@ -2970,7 +3031,12 @@ export default function BookBuilder() {
         .bb-float-toolbar { position: absolute; display: flex; gap: 3px; background: #14332a; border-radius: 10px; padding: 5px; box-shadow: 0 10px 24px rgba(0,0,0,0.30); z-index: 30; }
         .bb-float-toolbar button { border: none; background: transparent; color: #fff; cursor: pointer; font-size: 13px; width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; transition: background 0.12s ease; }
         .bb-float-toolbar button:hover { background: rgba(255,255,255,0.16); }
-
+        .bb-image-dropzone:hover { border-color: #4a9e3f !important; background: rgba(74,158,63,0.06) !important; }
+        .bb-image-dropzone:hover > div { color: #3f6b52 !important; }
+        .bb-image-replace-btn { position: absolute; top: 6px; right: 6px; display: flex; align-items: center; gap: 4px; background: rgba(20,51,42,0.82); color: #fff; border: none; border-radius: 7px; padding: 5px 9px; font-size: 10.5px; font-weight: 600; cursor: pointer; backdrop-filter: blur(2px); transition: background 0.12s ease; }
+        .bb-image-replace-btn:hover { background: #14332a; }
+        .bb-spinner { width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid rgba(74,158,63,0.25); border-top-color: #4a9e3f; animation: bb-spin 0.7s linear infinite; }
+        @keyframes bb-spin { to { transform: rotate(360deg); } }
 
         @media (max-width: 720px) { .bb-flyout { width: calc(100% - 64px); } }
       `}</style>
@@ -3244,6 +3310,14 @@ export default function BookBuilder() {
             <Image size={18} />
             <span>Ảnh</span>
           </button>
+          <input
+            ref={multiImageInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            style={{ display: "none" }}
+            onChange={handleMultiImageInputChange}
+          />
           <button
             className="bb-rail-btn"
             onClick={addShapeLayer}
@@ -3452,10 +3526,17 @@ export default function BookBuilder() {
                       Sách chưa có mã AR nào. Tạo ở mục "Quản lý mã QR" trước.
                     </div>
                   ) : (
-                   bookLinkables.arCodes.map((ac) => (
-                      <button key={ac.id} type="button" className="bb-btn bb-qr-pick-btn"
-                        onClick={() => addQrLayer("AR", ac)}>
-                        <span className="bb-qr-pick-label"><Sparkles size={13} />{ac.label}</span>
+                    bookLinkables.arCodes.map((ac) => (
+                      <button
+                        key={ac.id}
+                        type="button"
+                        className="bb-btn bb-qr-pick-btn"
+                        onClick={() => addQrLayer("AR", ac)}
+                      >
+                        <span className="bb-qr-pick-label">
+                          <Sparkles size={13} />
+                          {ac.label}
+                        </span>
                         <span className="bb-qr-pick-code">{ac.code}</span>
                       </button>
                     ))
@@ -3469,10 +3550,17 @@ export default function BookBuilder() {
                       trước.
                     </div>
                   ) : (
-                   bookLinkables.games.map((g) => (
-                      <button key={g.id} type="button" className="bb-btn bb-qr-pick-btn"
-                        onClick={() => addQrLayer("GAME", g)}>
-                        <span className="bb-qr-pick-label"><Play size={13} />{g.title}</span>
+                    bookLinkables.games.map((g) => (
+                      <button
+                        key={g.id}
+                        type="button"
+                        className="bb-btn bb-qr-pick-btn"
+                        onClick={() => addQrLayer("GAME", g)}
+                      >
+                        <span className="bb-qr-pick-label">
+                          <Play size={13} />
+                          {g.title}
+                        </span>
                         <span className="bb-qr-pick-code">{g.code}</span>
                       </button>
                     ))
@@ -3540,7 +3628,18 @@ export default function BookBuilder() {
                 </span>
                 <span className="bb-layer-type">
                   {layer.type === "image" ? (
-                    <Image size={12} />
+                    layer.src ? (
+                      <img
+                        src={layer.src}
+                        alt=""
+                        className="bb-layer-thumb"
+                        style={{
+                          opacity: uploadingLayerIds.has(layer.id) ? 0.4 : 1,
+                        }}
+                      />
+                    ) : (
+                      <Image size={12} />
+                    )
                   ) : layer.type === "qr" ? (
                     <QrCode size={12} />
                   ) : (
@@ -3554,7 +3653,11 @@ export default function BookBuilder() {
                 )}
                 <span className="bb-layer-label">
                   {layer.type === "image"
-                    ? layer.src || "(chưa có ảnh)"
+                    ? uploadingLayerIds.has(layer.id)
+                      ? "Đang tải ảnh lên…"
+                      : layer.src
+                        ? "Hình ảnh"
+                        : "(chưa có ảnh)"
                     : layer.type === "qr"
                       ? layer.label || "(chưa gắn liên kết)"
                       : layer.text || "(trống)"}
@@ -4351,12 +4454,61 @@ export default function BookBuilder() {
                 setSelectedId(null);
                 setMultiIds([]);
               }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                if (
+                  Array.from(e.dataTransfer.items || []).some(
+                    (it) => it.kind === "file",
+                  )
+                ) {
+                  setImageDropActive(true);
+                }
+              }}
+              onDragLeave={(e) => {
+                if (e.currentTarget === e.target) setImageDropActive(false);
+              }}
+              onDrop={handleImageDropOnCanvas}
               style={{
                 width: PAGE_W * scale,
                 height: PAGE_H * scale,
                 flexShrink: 0,
+                position: "relative",
               }}
             >
+              {imageDropActive && (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    zIndex: 40,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "rgba(74,158,63,0.10)",
+                    border: "2.5px dashed #4a9e3f",
+                    borderRadius: 10,
+                    pointerEvents: "none",
+                  }}
+                >
+                  <div
+                    style={{
+                      background: "#14332a",
+                      color: "#fff",
+                      padding: "10px 18px",
+                      borderRadius: 10,
+                      fontSize: 13,
+                      fontWeight: 600,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      boxShadow: "0 10px 24px rgba(0,0,0,0.25)",
+                    }}
+                  >
+                    <Image size={16} />
+                    Thả ảnh vào đây để thêm vào trang
+                  </div>
+                </div>
+              )}
               <div
                 style={{
                   width: PAGE_W,
@@ -4380,6 +4532,7 @@ export default function BookBuilder() {
                     readOnly={false}
                     isReadingThis={reading?.layerId === layer.id}
                     readingWordIndex={reading?.wordIndex}
+                    isUploading={uploadingLayerIds.has(layer.id)}
                     onSelect={selectLayer}
                     onDragStart={onLayerDragStart}
                     onResizeStart={onLayerResizeStart}
