@@ -81,28 +81,42 @@ const clone = (v) => JSON.parse(JSON.stringify(v));
 const speechAvailable = () =>
   typeof window !== "undefined" && "speechSynthesis" in window;
 
-function fileToResizedDataUrl(file, maxDim = 900, quality = 0.85) {
-  return new Promise((resolve, reject) => {
+function resizeImageFileIfNeeded(file, maxDim = 1600, quality = 0.86) {
+  return new Promise((resolve) => {
+    if (!file.type?.startsWith("image/") || file.type === "image/gif") {
+      // GIF (có thể animated) resize qua canvas sẽ làm mất animation — bỏ qua, upload nguyên bản.
+      resolve(file);
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       const img = new Image();
       img.onload = () => {
-        let { width, height } = img;
-        if (width > maxDim || height > maxDim) {
-          const ratio = Math.min(maxDim / width, maxDim / height);
-          width = Math.round(width * ratio);
-          height = Math.round(height * ratio);
+        if (img.width <= maxDim && img.height <= maxDim) {
+          resolve(file); // Ảnh đã đủ nhỏ, không cần resize — giữ nguyên chất lượng gốc.
+          return;
         }
+        const ratio = Math.min(maxDim / img.width, maxDim / img.height);
         const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", quality));
+        canvas.width = Math.round(img.width * ratio);
+        canvas.height = Math.round(img.height * ratio);
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              resolve(file); // Resize thất bại vì lý do nào đó — vẫn upload file gốc thay vì chặn hẳn.
+              return;
+            }
+            resolve(new File([blob], file.name, { type: "image/jpeg" }));
+          },
+          "image/jpeg",
+          quality,
+        );
       };
-      img.onerror = () => reject(new Error("Không đọc được ảnh"));
+      img.onerror = () => resolve(file);
       img.src = reader.result;
     };
-    reader.onerror = () => reject(new Error("Không đọc được file"));
+    reader.onerror = () => resolve(file);
     reader.readAsDataURL(file);
   });
 }
@@ -408,6 +422,7 @@ function LayerView({
   isReadingThis,
   readingWordIndex,
   fontScale,
+  isUploading,
   onSelect,
   onDragStart,
   onResizeStart,
@@ -415,6 +430,7 @@ function LayerView({
   onWordLeave,
   onLayerClick,
   onImageDrop,
+  onOpenFilePicker,
   onLineHover,
   onLineLeave,
   onAskAI,
@@ -625,17 +641,29 @@ function LayerView({
   }
 
   if (layer.type === "image") {
+    const empty = !layer.src;
+    const canEdit = !readOnly && !layer.locked;
+
+    const openPicker = (e) => {
+      e.stopPropagation();
+      if (canEdit && onOpenFilePicker) onOpenFilePicker(layer.id);
+    };
+
     return (
       <div
         style={{ ...wrapStyle, width: layer.width, height: layer.height }}
         onPointerDown={handleDragStart}
         onClick={handleClick}
-        onDragOver={(e) => !readOnly && e.preventDefault()}
+        onDoubleClick={canEdit ? openPicker : undefined}
+        onDragOver={(e) => {
+          if (!readOnly) e.preventDefault();
+        }}
         onDrop={(e) =>
           !readOnly && !layer.locked && onImageDrop && onImageDrop(e, layer.id)
         }
       >
         <div
+          className={empty && canEdit ? "bb-image-dropzone" : undefined}
           style={{
             position: "relative",
             width: "100%",
@@ -647,7 +675,7 @@ function LayerView({
             outlineOffset: 4,
             borderRadius: 10,
             overflow: "hidden",
-            cursor: readOnly ? "default" : "grab",
+            cursor: readOnly ? "default" : empty ? "pointer" : "grab",
             touchAction: "none",
             boxShadow:
               !readOnly && selected ? "0 0 0 4px rgba(74,158,63,0.14)" : "none",
@@ -655,20 +683,37 @@ function LayerView({
           }}
         >
           {layer.src ? (
-            <img
-              src={layer.src}
-              alt=""
-              draggable={false}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                display: "block",
-                pointerEvents: "none",
-              }}
-            />
+            <>
+              <img
+                src={layer.src}
+                alt=""
+                draggable={false}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  display: "block",
+                  pointerEvents: "none",
+                  opacity: isUploading ? 0.4 : 1,
+                  transition: "opacity 0.15s ease",
+                }}
+              />
+              {canEdit && !isUploading && selected && (
+                <button
+                  type="button"
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={openPicker}
+                  title="Thay ảnh khác (hoặc nhấp đúp vào ảnh)"
+                  className="bb-image-replace-btn"
+                >
+                  <Upload size={12} />
+                  Thay ảnh
+                </button>
+              )}
+            </>
           ) : (
             <div
+              onClick={canEdit ? openPicker : undefined}
               style={{
                 width: "100%",
                 height: "100%",
@@ -683,13 +728,41 @@ function LayerView({
                 justifyContent: "center",
                 gap: 6,
                 color: "#8a978f",
-                fontSize: 12,
+                fontSize: 11.5,
                 textAlign: "center",
                 padding: 8,
               }}
             >
-              {!readOnly && <Image size={18} strokeWidth={1.6} />}
-              {readOnly ? "" : "Dán link ảnh ở bảng Định dạng"}
+              {!readOnly && !isUploading && (
+                <>
+                  <Image size={18} strokeWidth={1.6} />
+                  <span>
+                    Bấm hoặc kéo ảnh vào đây
+                    <br />
+                    <span style={{ opacity: 0.75 }}>(hoặc dán Ctrl+V)</span>
+                  </span>
+                </>
+              )}
+            </div>
+          )}
+          {isUploading && (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                background: "rgba(255,255,255,0.55)",
+                color: "#3f6b52",
+                fontSize: 11,
+                fontWeight: 600,
+              }}
+            >
+              <span className="bb-spinner" />
+              Đang tải lên…
             </div>
           )}
         </div>
@@ -1608,6 +1681,11 @@ export default function BookBuilder() {
   const [bgRemoveTolerance, setBgRemoveTolerance] = useState(20);
   const [bgRemoving, setBgRemoving] = useState(false);
 
+  // Set các layer ảnh đang trong quá trình upload lên Cloudinary — không lưu vào
+  // `pages` (tránh polluting payload autosave), chỉ là state UI thuần tuý.
+  const [uploadingLayerIds, setUploadingLayerIds] = useState(() => new Set());
+  const [imageDropActive, setImageDropActive] = useState(false);
+
   const [dragLayerId, setDragLayerId] = useState(null);
   const [dragOverLayerId, setDragOverLayerId] = useState(null);
   const [dragPageId, setDragPageId] = useState(null);
@@ -1616,6 +1694,8 @@ export default function BookBuilder() {
   const wrapRef = useRef(null);
   const canvasRef = useRef(null);
   const imageFileInputRef = useRef(null);
+  const imageUploadTargetIdRef = useRef(null);
+  const multiImageInputRef = useRef(null);
   const lastHoverWord = useRef(null);
   const pastRef = useRef([]);
   const futureRef = useRef([]);
@@ -1945,27 +2025,166 @@ export default function BookBuilder() {
     selectLayer(copy.id);
   };
 
+  const MAX_IMAGE_MB = 15;
+
+  // Upload 1 ảnh lên Cloudinary và gán vào layer đã tồn tại (thêm mới hoặc thay ảnh cũ).
+  // Khác bản cũ (nhúng base64 trực tiếp vào `pages`): giờ chỉ lưu URL Cloudinary — payload
+  // autosave nhẹ hơn nhiều, ảnh có CDN + cache trình duyệt, và có thể xoá khỏi Cloudinary
+  // khi không còn dùng (tránh rác lưu trữ tích luỹ qua nhiều lần chỉnh sửa).
   const applyImageFile = async (file, layerId) => {
-    if (!file || !layerId || !file.type?.startsWith("image/")) return;
+    if (!file || !layerId || !file.type?.startsWith("image/")) {
+      if (file && !file.type?.startsWith("image/")) {
+        toast.error("Chỉ chấp nhận file ảnh (JPG, PNG, WebP...).");
+      }
+      return;
+    }
+    if (file.size > MAX_IMAGE_MB * 1024 * 1024) {
+      toast.error(`Ảnh quá lớn (tối đa ${MAX_IMAGE_MB}MB), vui lòng chọn ảnh nhỏ hơn.`);
+      return;
+    }
+
+    const prevSrc = currentPage.layers.find((l) => l.id === layerId)?.src || "";
+    setUploadingLayerIds((prev) => new Set(prev).add(layerId));
     try {
-      const dataUrl = await fileToResizedDataUrl(file);
+      // Resize trước khi upload — giảm dung lượng thật sự (không chỉ chặn cứng theo MB), ảnh
+      // chụp điện thoại/máy ảnh hiện đại thường 3000-4000px trong khi khung hiển thị ebook nhỏ hơn nhiều.
+      const optimized = await resizeImageFileIfNeeded(file);
+      const res = await ebookService.uploadImage(optimized, ebookIdRef.current);
+      const url = res.data?.data?.url;
+      if (!url) throw new Error("Không nhận được URL ảnh từ máy chủ");
       beginEdit();
-      updateLayer(layerId, { src: dataUrl });
+      updateLayer(layerId, { src: url });
       endEdit();
+      // Xoá ảnh cũ trên Cloudinary sau khi đã gán ảnh mới thành công (thay ảnh) — không
+      // chặn UI chờ việc này, và không báo lỗi nếu xoá thất bại (ảnh cũ mồ côi chấp nhận được,
+      // còn hơn để lỗi xoá làm gián đoạn luồng chính là "đổi ảnh mới").
+      if (prevSrc && prevSrc.includes("cloudinary")) {
+        ebookService.deleteImage(prevSrc).catch(() => {});
+      }
     } catch (err) {
-      toast.error(err?.message || "Không tải được ảnh lên, vui lòng thử lại.");
+      toast.error(
+        err?.response?.data?.message || err?.message || "Không tải được ảnh lên, vui lòng thử lại.",
+      );
+    } finally {
+      setUploadingLayerIds((prev) => {
+        const next = new Set(prev);
+        next.delete(layerId);
+        return next;
+      });
     }
   };
+
+  // Nhiều ảnh cùng lúc (chọn nhiều file, kéo-thả nhiều file, hoặc dán nhiều ảnh) — mỗi ảnh
+  // tạo 1 layer mới, xếp lệch nhau 1 chút để không đè hoàn toàn lên nhau, và tự chọn ảnh cuối.
+  const applyMultipleImageFiles = (files) => {
+    const list = Array.from(files || []).filter((f) =>
+      f.type?.startsWith("image/"),
+    );
+    if (!list.length) {
+      toast.error("Không tìm thấy file ảnh hợp lệ.");
+      return;
+    }
+    const newLayers = list.map((_, i) =>
+      defaultImageLayer({ x: defaultImageLayer().x + i * 18, y: defaultImageLayer().y + i * 18 }),
+    );
+    setPagesCommit((prev) =>
+      prev.map((p, i) =>
+        i === pageIndex ? { ...p, layers: [...p.layers, ...newLayers] } : p,
+      ),
+    );
+    list.forEach((file, i) => applyImageFile(file, newLayers[i].id));
+    if (newLayers.length === 1) {
+      selectLayer(newLayers[0].id);
+    } else {
+      setSelectedId(null);
+      setMultiIds(newLayers.map((l) => l.id));
+      setActivePanel("layers");
+    }
+  };
+
   const handleImageFileChange = async (e) => {
-    const file = e.target.files && e.target.files[0];
+    const files = e.target.files;
     e.target.value = "";
-    if (!file || !selectedId) return;
-    applyImageFile(file, selectedId);
+    const targetId = imageUploadTargetIdRef.current || selectedId;
+    imageUploadTargetIdRef.current = null;
+    if (!files || !files.length || !targetId) return;
+    // Panel Định dạng chỉ có 1 layer đang chọn — dù người dùng chọn nhiều file ở đây,
+    // chỉ file đầu tiên áp vào layer hiện tại để tránh hành vi bất ngờ (thay ảnh layer khác).
+    applyImageFile(files[0], targetId);
+  };
+  // Mở dialog chọn file cho MỘT layer cụ thể (click trực tiếp trên canvas / double-click để thay
+  // ảnh) — không phụ thuộc layer đó có đang được `selectedId` hay không, tránh trường hợp bấm
+  // nhanh 2 lần liên tiếp mà React chưa kịp cập nhật selectedId trước khi input mở ra.
+  const openFilePickerForLayer = (layerId) => {
+    imageUploadTargetIdRef.current = layerId;
+    selectLayer(layerId);
+    imageFileInputRef.current?.click();
   };
   const handleImageDropOnLayer = (e, layerId) => {
     e.preventDefault();
+    e.stopPropagation();
+    setImageDropActive(false);
     const file = e.dataTransfer.files && e.dataTransfer.files[0];
     if (file) applyImageFile(file, layerId);
+  };
+  // Thả ảnh vào vùng trống của canvas (không trúng layer nào) — tự tạo layer mới tại đúng
+  // vị trí con trỏ thả xuống, quy đổi từ toạ độ màn hình sang toạ độ trang theo `scale` hiện tại.
+  const handleImageDropOnCanvas = (e) => {
+    e.preventDefault();
+    setImageDropActive(false);
+    const files = e.dataTransfer.files;
+    if (!files || !files.length) return;
+    const imageFiles = Array.from(files).filter((f) => f.type?.startsWith("image/"));
+    if (!imageFiles.length) return;
+
+    const rect = canvasRef.current?.getBoundingClientRect();
+    const dropX = rect ? (e.clientX - rect.left) / scale : defaultImageLayer().x;
+    const dropY = rect ? (e.clientY - rect.top) / scale : defaultImageLayer().y;
+
+    const newLayers = imageFiles.map((_, i) =>
+      defaultImageLayer({
+        x: Math.max(0, dropX - 80) + i * 18,
+        y: Math.max(0, dropY - 60) + i * 18,
+      }),
+    );
+    setPagesCommit((prev) =>
+      prev.map((p, i) =>
+        i === pageIndex ? { ...p, layers: [...p.layers, ...newLayers] } : p,
+      ),
+    );
+    imageFiles.forEach((file, i) => applyImageFile(file, newLayers[i].id));
+    if (newLayers.length === 1) {
+      selectLayer(newLayers[0].id);
+    } else {
+      setSelectedId(null);
+      setMultiIds(newLayers.map((l) => l.id));
+      setActivePanel("layers");
+    }
+  };
+  // Dán ảnh từ clipboard (Ctrl+V sau khi copy ảnh từ nơi khác, hoặc screenshot). Nếu đang chọn
+  // sẵn 1 layer ảnh, dán để THAY ảnh layer đó; nếu không, tạo layer mới ở giữa trang.
+  const handleImagePaste = (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    const imageItem = Array.from(items).find((it) => it.type?.startsWith("image/"));
+    if (!imageItem) return;
+    const file = imageItem.getAsFile();
+    if (!file) return;
+    e.preventDefault();
+
+    const selectedLayer = currentPage.layers.find((l) => l.id === selectedId);
+    if (selectedLayer && selectedLayer.type === "image") {
+      applyImageFile(file, selectedId);
+      return;
+    }
+    const layer = defaultImageLayer();
+    setPagesCommit((prev) =>
+      prev.map((p, i) =>
+        i === pageIndex ? { ...p, layers: [...p.layers, layer] } : p,
+      ),
+    );
+    selectLayer(layer.id);
+    applyImageFile(file, layer.id);
   };
 
   const handleRemoveBackground = async () => {

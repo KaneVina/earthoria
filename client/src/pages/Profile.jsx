@@ -6,7 +6,7 @@ import {
   useCallback,
 } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, FileText } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authService } from "../services/authService";
 import { orderService } from "../services/orderService";
@@ -23,6 +23,7 @@ import {
 import toast from "react-hot-toast";
 import "../components/assets/css/profile.css";
 import LogoutConfirmModal from "../components/LogoutConfirmModal";
+import InvoiceModal from "../components/InvoiceModal";
 
 const F = {
   serif: "'Playfair Display', serif",
@@ -2011,8 +2012,10 @@ function PaymentSessionCountdown({ expiresAt, onExpire }) {
 function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
   const [retrying, setRetrying] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [showInvoice, setShowInvoice] = useState(false);
   const [bankQrData, setBankQrData] = useState(null);
   const [bankQrMismatch, setBankQrMismatch] = useState(null);
+  const { user } = useAuthStore();
   const qc = useQueryClient();
 
   useEffect(() => {
@@ -2518,6 +2521,30 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
                 Huỷ đơn hàng
               </button>
             )}
+            <button
+              onClick={() => setShowInvoice(true)}
+              className="pf-btn-tactile"
+              style={{
+                width: "100%",
+                marginTop: 10,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                background: "transparent",
+                border: "0.5px solid var(--border-gold)",
+                color: "var(--forest)",
+                borderRadius: 10,
+                padding: "12px 20px",
+                fontFamily: F.sans,
+                fontSize: 11.5,
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+              }}
+            >
+              <FileText size={14} strokeWidth={1.5} />
+              {order.requestInvoice ? "Xem / In hoá đơn" : "Xem / In phiếu mua hàng"}
+            </button>
           </div>
         </div>
       </div>
@@ -2528,6 +2555,14 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
           submitting={cancelMutation.isPending}
           onClose={() => !cancelMutation.isPending && setShowCancelModal(false)}
           onConfirm={(payload) => cancelMutation.mutate(payload)}
+        />
+      )}
+
+      {showInvoice && (
+        <InvoiceModal
+          order={order}
+          buyerEmail={user?.email}
+          onClose={() => setShowInvoice(false)}
         />
       )}
     </div>

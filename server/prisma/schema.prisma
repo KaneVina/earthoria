@@ -436,6 +436,8 @@ model Order {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
+  requestInvoice  Boolean       @default(false)
+
   user                User                 @relation(fields: [userId], references: [id])
   address             Address              @relation(fields: [addressId], references: [id])
   items               OrderItem[]

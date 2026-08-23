@@ -110,7 +110,7 @@ const flattenOrderItems = (order) => {
 const createOrder = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { shipping, paymentMethod, couponCode, note } = req.body;
+    const { shipping, paymentMethod, couponCode, note, requestInvoice } = req.body;
     // shipping: { fullName, phone, email, province, district, ward, street }
     // district là tên (ví dụ "Ninh Kiều") từ form frontend
 
@@ -296,6 +296,7 @@ const createOrder = async (req, res) => {
           total,
           couponCode: appliedCoupon ? appliedCoupon.code : null,
           note: note || null,
+          requestInvoice: Boolean(requestInvoice),
           // Online payment (VNPay/MoMo) cần 1 mã tham chiếu để đối chiếu lúc gateway redirect về
           paymentRef: isOnlinePayment ? genPaymentRef() : null,
           items: {
