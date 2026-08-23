@@ -31,6 +31,7 @@ import ForgotPassword from "./pages/auth/ForgotPassword";
 import TermsOfService from "./pages/legal/TermsOfService";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import ShippingPolicy from "./pages/legal/ShippingPolicy";
+import ReturnPolicy from "./pages/legal/ReturnPolicy";
 import LegalHub from "./pages/legal/LegalHub";
 import Sitemap from "./pages/Sitemap";
 import EiraChatbox from "./components/EiraChatbox";
@@ -183,6 +184,7 @@ export default function App() {
           <Route path="/legal/privacy" element={<PrivacyPolicy />} />
           <Route path="/legal/shipping" element={<ShippingPolicy />} />
           <Route path="/legal/cookies" element={<CookiePolicy />} />
+          <Route path="/legal/returns" element={<ReturnPolicy />} />
           <Route path="/sitemap" element={<Sitemap />} />
 
           <Route
