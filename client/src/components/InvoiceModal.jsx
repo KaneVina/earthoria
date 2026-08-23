@@ -292,9 +292,9 @@ export default function InvoiceModal({ order, buyerEmail, onClose }) {
           >
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <img
-                src="/logo-ngang.png"
+                src="/logo-chinh.png"
                 alt={seller.name}
-                style={{ height: 32, width: "auto", objectFit: "contain" }}
+                style={{ height: 75, width: "auto", objectFit: "contain" }}
               />
               <div style={{ fontSize: 11, color: MUTED, lineHeight: 1.8 }}>
                 <div>{seller.address}</div>
@@ -454,13 +454,32 @@ export default function InvoiceModal({ order, buyerEmail, onClose }) {
                 <div style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>
                   Người mua hàng
                 </div>
-                <div style={{ fontSize: 10, color: MUTED, marginTop: 2 }}>(Ký, ghi rõ họ tên)</div>
+                <div style={{ height: 64 }} />
+                <div style={{ fontSize: 10, color: MUTED }}>(Ký, ghi rõ họ tên)</div>
               </div>
               <div>
                 <div style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>
                   Đại diện {seller.name}
                 </div>
-                <div style={{ fontSize: 10, color: MUTED, marginTop: 2 }}>(Ký, ghi rõ họ tên)</div>
+                <div
+                  style={{
+                    height: 64,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div style={{ fontFamily: F.serif, fontStyle: "italic", fontSize: 21, color: INK }}>
+                    {seller.name}
+                  </div>
+                  <div style={{ fontSize: 9, color: GOLD, marginTop: 4 }}>
+                    ✓ Đã ký điện tử
+                  </div>
+                </div>
+                <div style={{ fontSize: 10, color: MUTED }}>
+                  Xác thực bởi hệ thống {seller.name}
+                </div>
               </div>
             </div>
             <div style={{ fontSize: 9.5, color: FAINT, textAlign: "center", marginTop: 32 }}>
