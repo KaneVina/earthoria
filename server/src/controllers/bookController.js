@@ -106,12 +106,34 @@ const buildWhere = async (query, exclude = {}) => {
 
   const andConditions = []
   if (search) {
-    andConditions.push({
-      OR: [
-        { title: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } }
-      ]
-    })
+    const searchText = String(search).trim()
+    if (searchText) {
+      try {
+        // Tìm theo tiêu đề/mô tả đã bỏ dấu, tái dùng đúng hàm/index đã tạo
+        // cho fuzzy search của chatbot (earthoria_unaccent) — nhờ vậy gõ
+        // không dấu ("khong lo") vẫn ra sách "Khổng Lồ".
+        const matches = await prisma.$queryRaw`
+          SELECT id FROM "Book"
+          WHERE "isActive" = true
+            AND (
+              earthoria_unaccent(lower(title)) ILIKE '%' || earthoria_unaccent(lower(${searchText})) || '%'
+              OR earthoria_unaccent(lower(COALESCE(description, ''))) ILIKE '%' || earthoria_unaccent(lower(${searchText})) || '%'
+            )
+        `
+        const matchedIds = matches.map((m) => m.id)
+        andConditions.push({ id: { in: matchedIds.length ? matchedIds : ['__no_match__'] } })
+      } catch (err) {
+        // Hàm/extension chưa migrate trên môi trường này -> fallback contains()
+        // thường (không bỏ dấu), tránh sập toàn bộ trang Shop chỉ vì 1 chiều lọc.
+        console.warn('[bookController] earthoria_unaccent unavailable, falling back to contains():', err.message)
+        andConditions.push({
+          OR: [
+            { title: { contains: searchText, mode: 'insensitive' } },
+            { description: { contains: searchText, mode: 'insensitive' } }
+          ]
+        })
+      }
+    }
   }
   // Độ tuổi: lấy sách có khoảng tuổi giao với khoảng lọc [minAge, maxAge]
   if (minAge) {

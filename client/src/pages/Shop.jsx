@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { bookService } from "../services/bookService";
 import { useCartStore } from "../store/cartStore";
@@ -836,8 +836,14 @@ function ProductCard({ book, onAddToCart, delay, isAdding }) {
 
 export default function Shop() {
   const { addToCart } = useCartStore();
+  const [searchParams] = useSearchParams();
 
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeCategory, setActiveCategory] = useState(
+    () => searchParams.get("category") || "all",
+  );
+  const [searchQuery, setSearchQuery] = useState(
+    () => searchParams.get("search") || "",
+  );
 const [activeFeatures, setActiveFeatures] = useState([]);
 const [priceRange, setPriceRange] = useState([PRICE_BOUNDS[0], PRICE_BOUNDS[1]]);
 const [ageRange, setAgeRange] = useState([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
@@ -846,6 +852,13 @@ const [ageRange, setAgeRange] = useState([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
   const [sortValue, setSortValue] = useState("Nổi bật");
   const [activePage, setActivePage] = useState(1);
   const { isAuthenticated } = useAuthStore();
+
+  // Đồng bộ lại filter mỗi khi URL search/category đổi (vd: bấm tìm kiếm
+  // lần nữa từ SearchOverlay trong lúc đang đứng sẵn ở trang Shop)
+  useEffect(() => {
+    setSearchQuery(searchParams.get("search") || "");
+    setActiveCategory(searchParams.get("category") || "all");
+  }, [searchParams]);
 
   const ctaVideoRef = useRef(null);
 
@@ -878,6 +891,7 @@ const [ageRange, setAgeRange] = useState([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
   // Tham số filter dùng chung cho cả danh sách sách và số đếm facet (không hardcode)
   const facetParams = {
     category: activeCategory !== "all" ? activeCategory : undefined,
+    search: searchQuery.trim() ? searchQuery.trim() : undefined,
     minPrice: priceRange[0] > PRICE_BOUNDS[0] ? priceRange[0] : undefined,
     maxPrice: priceRange[1] < PRICE_BOUNDS[1] ? priceRange[1] : undefined,
     minAge: ageRange[0] > AGE_BOUNDS[0] ? ageRange[0] : undefined,
@@ -943,6 +957,7 @@ const [ageRange, setAgeRange] = useState([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
 
   const hasActiveFilters =
     activeCategory !== "all" ||
+    searchQuery.trim() !== "" ||
     priceRange[0] !== PRICE_BOUNDS[0] ||
     priceRange[1] !== PRICE_BOUNDS[1] ||
     ageRange[0] !== AGE_BOUNDS[0] ||
@@ -952,6 +967,7 @@ const [ageRange, setAgeRange] = useState([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
 
   const clearAllFilters = () => {
     setActiveCategory("all");
+    setSearchQuery("");
     setPriceRange([PRICE_BOUNDS[0], PRICE_BOUNDS[1]]);
     setAgeRange([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
     setMinRating(0);
@@ -1312,6 +1328,52 @@ const [ageRange, setAgeRange] = useState([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
 
         {/* MAIN */}
         <main>
+          {/* SEARCH BANNER — chỉ hiện khi đến từ link tìm kiếm (?search=) */}
+          {searchQuery.trim() && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "12px 16px",
+                marginBottom: "20px",
+                background: "var(--gold-pale, #f7f0dc)",
+                border: "0.5px solid var(--border-gold, #e3d3a0)",
+                fontFamily: "'Be Vietnam Pro', sans-serif",
+                fontSize: "13px",
+                color: "var(--forest, #0d2b1e)",
+              }}
+            >
+              <span>
+                Kết quả tìm kiếm cho <strong>“{searchQuery.trim()}”</strong>
+                {!isLoading && (
+                  <span style={{ opacity: 0.65 }}>
+                    {" "}
+                    — {pagination.total ?? books.length} sản phẩm
+                  </span>
+                )}
+              </span>
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                style={{
+                  marginLeft: "auto",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: "12px",
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  color: "var(--gold, #b8912f)",
+                  textDecoration: "underline",
+                  textUnderlineOffset: "3px",
+                }}
+              >
+                Xóa tìm kiếm
+              </button>
+            </div>
+          )}
+
           {/* TOOLBAR */}
           <div className="shop-toolbar">
             <div className="toolbar-right">
