@@ -1,23 +1,3 @@
-/**
- * SearchOverlay — command-palette style search
- * ───────────────────────────────────────────
- * • Tìm kiếm sản phẩm thật từ API: GET /api/v1/books?search=...&category=...&limit=7
- * • Tìm kiếm trang / chức năng (Hồ sơ, Đơn hàng, Giỏ hàng...) ngay lập tức
- * • Debounce 280ms, skeleton loading, highlight match tiếng Việt
- * • Lịch sử tìm kiếm có TTL 7 ngày, tự dọn khi quá hạn
- * • Keyboard navigation: ↑↓ Enter Esc / Ctrl+K / Cmd+K
- * • Auth-aware: hiện trang cá nhân chỉ khi đăng nhập
- *
- * Props:
- *  isOpen          boolean
- *  onClose         () => void
- *  onOpen          () => void   — bật phím tắt
- *  isAuthenticated boolean
- *  isAdmin         boolean
- *  onLogout        () => void
- *  getProductLink  (book) => string   — default: /books/:slug/:hashId
- */
-
 import {
   useState, useEffect, useRef, useCallback, useMemo,
 } from "react";
@@ -132,6 +112,229 @@ function nvn(str) {
   return String(str).toLowerCase().split("").map(c => VN_MAP[c] || c).join("");
 }
 
+/* ════════════════════════════════════════════════
+   TỪ KHOÁ NHẠY CẢM / TỰ HẠI — CHẶN & HIỂN THỊ HỖ TRỢ
+   ════════════════════════════════════════════════ */
+
+const SENSITIVE_KEYWORDS = [
+  // ===== TỰ TỬ / TỰ SÁT =====
+  "tu tu",
+  "tu tu di",
+  "muon tu tu",
+  "dang tu tu",
+  "se tu tu",
+  "toi muon tu tu",
+  "minh muon tu tu",
+  "muon ket thuc cuoc doi",
+  "ket thuc cuoc song",
+  "ket thuc moi thu",
+  "khong muon song",
+  "khong muon ton tai",
+  "khong muon tiep tuc song",
+  "song lam gi",
+  "song de lam gi",
+  "song khong co y nghia",
+  "chet di",
+  "muon chet",
+  "muon duoc chet",
+  "muon bien mat",
+  "muon bien mat khoi cuoc doi",
+  "uoc gi minh chet",
+  "uoc minh chua tung ton tai",
+  "gia nhu minh khong ton tai",
+  "gia nhu minh chet",
+  "toi muon chet",
+  "minh muon chet",
+  "minh muon bien mat",
+  "khong muon song nua",
+  "khong the song tiep",
+  "khong the tiep tuc",
+  "khong muon tiep tuc",
+  "khong con muon song",
+  "tu sat",
+  "tu sat di",
+  "muon tu sat",
+  "dang nghi tu sat",
+  "nghi den tu sat",
+  "nghi den cai chet",
+  "nghi den viec chet",
+  "nghi cach chet",
+  "cach tu tu",
+  "cach tu sat",
+  "cach chet",
+  "lam sao de chet",
+  "lam sao de tu tu",
+  "lam sao de tu sat",
+  "muon tim cach chet",
+
+  // ===== TỰ HẠI / TỰ GÂY THƯƠNG TÍCH =====
+  "tu hai",
+  "tu lam hai",
+  "tu lam hai ban than",
+  "tu gay thuong tich",
+  "tu gay ton thuong",
+  "lam hai ban than",
+  "lam dau ban than",
+  "muon lam dau ban than",
+  "muon lam hai ban than",
+  "muon tu lam hai",
+  "muon tu hai",
+  "tu lam dau",
+  "tu lam thuong",
+  "tu gay dau",
+  "tu gay thuong",
+  "tu thuong",
+  "tu thuong ban than",
+  "self harm",
+  "self-harm",
+  "selfharm",
+  "tu cat",
+  "cat tay",
+  "rach tay",
+  "rach da",
+  "cat da",
+  "danh ban than",
+  "dap dau",
+  "tu danh",
+  "tu hanh ha",
+  "hanh ha ban than",
+  "lam dau minh",
+  "lam thuong minh",
+
+  // ===== TUYỆT VỌNG / KHỦNG HOẢNG =====
+  "tuyet vong",
+  "cam thay tuyet vong",
+  "hoan toan tuyet vong",
+  "khong con hy vong",
+  "mat het hy vong",
+  "khong con ly do de song",
+  "khong con ly do de tiep tuc",
+  "khong thay y nghia cuoc song",
+  "cuoc song vo nghia",
+  "cuoc doi vo nghia",
+  "khong con y nghia",
+  "bat luc",
+  "be tac",
+  "qua be tac",
+  "khong co loi thoat",
+  "khong thay loi thoat",
+  "khong con loi thoat",
+  "khong chiu noi nua",
+  "khong the chiu noi",
+  "met moi voi cuoc song",
+  "met moi voi tat ca",
+  "chan song",
+  "chan doi",
+  "chan cuoc doi",
+  "muon bo cuoc",
+  "muon bo tat ca",
+  "khong muon lam gi nua",
+
+  // ===== TRẦM CẢM / SỨC KHỎE TÂM THẦN =====
+  "tram cam",
+  "bi tram cam",
+  "dau tram cam",
+  "trieu chung tram cam",
+  "khung hoang tam ly",
+  "khung hoang tinh than",
+  "suy sup tinh than",
+  "suy sup",
+  "suy sup tam ly",
+  "suc khoe tam than",
+  "benh tam ly",
+  "roi loan tam ly",
+  "roi loan tam than",
+  "lo au",
+  "lo lang qua muc",
+  "hoang mang",
+  "stress nang",
+  "ap luc tam ly",
+  "ap luc tinh than",
+  "met moi tinh than",
+  "kien suc tinh than",
+
+  // ===== CÔ ĐƠN / CẦU CỨU =====
+  "khong ai can toi",
+  "khong ai quan tam toi",
+  "khong ai hieu toi",
+  "khong ai hieu minh",
+  "khong co ai ben canh",
+  "khong co ai",
+  "toi co don",
+  "minh co don",
+  "cam thay co don",
+  "cam thay bi bo roi",
+  "bi bo roi",
+  "khong thuoc ve dau ca",
+  "khong ai can minh",
+  "minh vo dung",
+  "toi vo dung",
+  "minh la ganh nang",
+  "toi la ganh nang",
+  "minh chi lam phien moi nguoi",
+  "toi chi lam phien moi nguoi",
+  "khong muon lam phien ai",
+  "khong muon lam ganh nang",
+
+  // ===== Ý NGHĨA CÁI CHẾT =====
+  "cai chet",
+  "ve cai chet",
+  "nghi ve cai chet",
+  "nghi ve cai chet cua minh",
+  "muon chet trong im lang",
+  "chet se tot hon",
+  "chet co phai tot hon",
+  "neu toi chet",
+  "neu minh chet",
+  "neu toi khong con",
+  "neu minh khong con",
+  "neu minh bien mat",
+  "truoc khi chet",
+  "sau khi chet",
+  "ngay minh chet",
+
+  // ===== CÁCH VIẾT TIẾNG ANH THƯỜNG GẶP =====
+  "suicide",
+  "suicidal",
+  "suicidal thoughts",
+  "kill myself",
+  "want to die",
+  "wanna die",
+  "wish i was dead",
+  "wish i were dead",
+  "dont want to live",
+  "don't want to live",
+  "no reason to live",
+  "life is meaningless",
+  "end my life",
+  "end it all",
+  "take my own life",
+  "thinking about suicide",
+  "thinking about dying",
+  "thoughts of suicide",
+  "self harm",
+  "self-harm",
+  "hurt myself",
+  "harm myself",
+  "cut myself",
+  "depression",
+  "depressed",
+  "hopeless",
+  "no hope",
+  "cant go on",
+  "can't go on",
+  "give up",
+  "want to disappear",
+  "feel worthless",
+  "feel like a burden",
+].map(nvn);
+
+function isSensitiveQuery(text) {
+  const nq = nvn(text.trim());
+  if (!nq) return false;
+  return SENSITIVE_KEYWORDS.some(k => nq.includes(k));
+}
+
 function formatPrice(price) {
   if (!price || price === 0) return "Miễn phí";
   return price.toLocaleString("vi-VN") + "đ";
@@ -210,6 +413,7 @@ export default function SearchOverlay({
   const [apiError,       setApiError]       = useState(false);
 
   const hasQuery = query.trim().length > 0;
+  const sensitive = useMemo(() => isSensitiveQuery(query), [query]);
 
   /* ─ Danh sách trang theo auth ─ */
   const availablePages = useMemo(() => {
@@ -265,7 +469,7 @@ export default function SearchOverlay({
 
   /* ─ Tìm kiếm sản phẩm qua API thật — debounce 280ms ─ */
   useEffect(() => {
-    if (!hasQuery) {
+    if (!hasQuery || sensitive) {
       setResults([]);
       setLoading(false);
       setApiError(false);
@@ -304,7 +508,7 @@ export default function SearchOverlay({
       clearTimeout(t);
       controller.abort();
     };
-  }, [query, activeCategory, hasQuery]);
+  }, [query, activeCategory, hasQuery, sensitive]);
 
   /* ─ Reset activeIndex khi query/category thay đổi ─ */
   useEffect(() => { setActiveIndex(-1); }, [query, activeCategory]);
@@ -548,6 +752,15 @@ export default function SearchOverlay({
                   </div>
                 </div>
               </div>
+            ) : sensitive ? (
+              /* ══ MÀN HÌNH HỖ TRỢ — TỪ KHOÁ NHẠY CẢM ══ */
+              <div className="so-help-block">
+                <img src="/e-help.png" alt="" className="so-help-img" />
+                <p className="so-help-text">
+                  Bạn không đơn độc. Nếu bạn hoặc ai đó mà bạn biết đang trải qua
+                  thời kỳ khó khăn, hãy nói chuyện với một người nào đó.
+                </p>
+              </div>
             ) : (
               /* ══ MÀN HÌNH KẾT QUẢ ══ */
               <>
@@ -672,7 +885,7 @@ export default function SearchOverlay({
           </div>
 
           {/*  FOOTER  */}
-          {hasQuery && !loading && results.length > 0 && (
+          {hasQuery && !sensitive && !loading && results.length > 0 && (
             <div className="so-footer">
               <button type="button" className="so-view-all" onClick={handleSubmit}>
                 Xem tất cả kết quả cho &ldquo;{query.trim()}&rdquo;
@@ -1201,6 +1414,24 @@ const CSS = `
 @keyframes so-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.45; }
+}
+
+/*  Help block — từ khoá nhạy cảm  */
+.so-help-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  padding: 32px 20px 28px;
+}
+.so-help-img { max-width: 220px; width: 100%; height: auto; }
+.so-help-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--so-text-1);
+  max-width: 380px;
+  margin: 0;
 }
 
 /*  Empty / Error  */
