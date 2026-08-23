@@ -31,27 +31,24 @@ const TRIM_HISTORY_TO = 18;
 const REQUEST_TIMEOUT_MS = 25000; // timeout gọi API
 const SCROLL_BOTTOM_THRESHOLD = 120; // px — dưới mức này coi như đang ở cuối khung chat
 
-function clamp01(n) {
-  return Math.min(1, Math.max(0, n));
-}
 function hexToRgb(hex) {
   const n = parseInt(hex.slice(1), 16);
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   BẢNG MÀU THEO GIỜ THỰC — CHỈ DÙNG CHO TRANG /e-kid
+   BẢNG MÀU SÁNG / CHIỀU — CHỈ DÙNG CHO TRANG /e-kid
    Xanh lá vẫn là màu GỐC/mặc định cho toàn hệ thống (khai báo trong
-   EiraChatbox.css). Ở trang /e-kid, ta không đổi 1-2 biến rời rạc mà
-   xoay TÔNG MÀU (hue) của toàn bộ bảng màu thương hiệu — giữ nguyên
-   độ bão hòa/độ sáng gốc của từng biến — theo giờ thực trong ngày:
-   đêm (chàm) → ngày (xanh dương) → bình minh/hoàng hôn (cam ấm).
-   Nhờ vậy mọi mảng màu trong khung chat (FAB, header, avatar, chip,
-   nút gửi, linh vật...) đổi màu đồng bộ, mượt mà, thay vì chỉ có
-   glow của linh vật đổi như bản cũ.
+   EiraChatbox.css). Ở trang /e-kid, nền phía sau đổi theo 2 khung
+   giờ (nền sáng ban ngày / nền chiều-tối có sao), nên khung chat
+   cũng chỉ cần 2 TÔNG MÀU cố định tương ứng — không cần xoay liên
+   tục theo từng phút. Mỗi tông màu vẫn giữ nguyên độ bão hòa/độ
+   sáng gốc của từng biến thương hiệu (chỉ đổi Hue), nên toàn bộ
+   khung chat (FAB, header, avatar, chip, nút gửi, linh vật...) đổi
+   màu đồng bộ, ăn khớp với nền phía sau.
    ═══════════════════════════════════════════════════════════════ */
 
-// Các biến thương hiệu (xanh lá gốc) sẽ được xoay tông màu ở trang /e-kid.
+// Các biến thương hiệu (xanh lá gốc) sẽ được đổi tông màu ở trang /e-kid.
 // Giá trị hex dưới đây PHẢI khớp với giá trị mặc định khai báo trong CSS.
 const BRAND_PALETTE_HEX = {
   "--eg": "#3d9e32",
@@ -70,10 +67,15 @@ const BRAND_PALETTE_HEX = {
   "--gh4": "#1f5948",
 };
 
-// Hue theo giờ thực: đêm chàm → ngày xanh dương → bình minh/hoàng hôn cam ấm
-const NIGHT_HUE = 232;
-const DAY_HUE = 202;
-const WARM_HUE = 26;
+// Khung giờ ban ngày (nền sáng) — ngoài khoảng này coi là chiều/tối (nền có sao)
+const DAY_START_HOUR = 6;
+const DAY_END_HOUR = 18;
+
+// Hue cố định cho từng khung giờ:
+// - Ban ngày: xanh dương da trời tươi sáng, hợp nền sáng.
+// - Chiều/tối: chàm xanh dương đậm, hợp nền có sao như trong ảnh chụp.
+const DAY_HUE = 200;
+const EVENING_HUE = 234;
 
 function hexToHsl(hex) {
   const [r0, g0, b0] = hexToRgb(hex);
@@ -124,29 +126,24 @@ function hslToHex(h, s, l) {
   return `#${toHex(r1)}${toHex(g1)}${toHex(b1)}`;
 }
 
-// Giữ nguyên S/L gốc của mỗi biến — chỉ thay Hue theo giờ thực
+// Giữ nguyên S/L gốc của mỗi biến — chỉ thay Hue theo khung giờ
 function rotateHue(hex, hue) {
   const [, s, l] = hexToHsl(hex);
   return hslToHex(hue, s, l);
 }
 
-function computeTimeHue(date) {
-  const h = date.getHours() + date.getMinutes() / 60;
-  const dayness = Math.cos(((h - 12) / 12) * Math.PI); // -1 nửa đêm, +1 giữa trưa
-  const dayT = clamp01((dayness + 1) / 2);
-  const edge = clamp01(1 - Math.abs(dayness) * 1.7); // ~1 lúc bình minh/hoàng hôn
-  let hue = NIGHT_HUE + (DAY_HUE - NIGHT_HUE) * dayT;
-  hue += (WARM_HUE - hue) * edge * 0.55;
-  return hue;
+function isDaytime(date) {
+  const h = date.getHours();
+  return h >= DAY_START_HOUR && h < DAY_END_HOUR;
 }
 
 function buildKidPalette(date) {
-  const hue = computeTimeHue(date);
+  const hue = isDaytime(date) ? DAY_HUE : EVENING_HUE;
   const palette = {};
   for (const [cssVar, hex] of Object.entries(BRAND_PALETTE_HEX)) {
     palette[cssVar] = rotateHue(hex, hue);
   }
-  // Glow của linh vật/đốm sáng ăn theo egl vừa xoay màu
+  // Glow của linh vật/đốm sáng ăn theo egl vừa đổi màu
   palette["--time-glow"] = palette["--egl"];
   return palette;
 }
@@ -703,7 +700,8 @@ function EiraUI() {
   const [dragPos, setDragPos] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   // Xanh lá vẫn là màu gốc/mặc định cho toàn hệ thống (đặt trong CSS).
-  // Chỉ ở trang /e-kid mới có bảng màu xoay theo giờ thực; các trang khác
+  // Chỉ ở trang /e-kid mới đổi sang 1 trong 2 tông màu (sáng/chiều) khớp
+  // với nền phía sau; các trang khác
   // trả về null nên không override gì — giữ nguyên 100% màu xanh lá gốc.
   const kidPalette = useKidTimePalette(isKid);
   const fabRef = useRef(null);
@@ -1194,7 +1192,7 @@ function EiraUI() {
             {messages.length > 0 && (
               <button
                 type="button"
-                className="eira-close-btn eira-trash-btn"
+                className="eira-close-btn"
                 aria-label="Xóa hội thoại"
                 title="Xóa hội thoại"
                 onClick={handleClearChat}
@@ -1319,7 +1317,7 @@ function EiraUI() {
         </div>
 
         <div id="eira-input-wrap">
-          <div id="eira-input-row" className={input.trim() ? "has-text" : ""}>
+          <div id="eira-input-row">
             <textarea
               id="eira-inp"
               ref={inpRef}
