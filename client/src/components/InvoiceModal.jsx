@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { X, Printer, Download } from "lucide-react";
 import toast from "react-hot-toast";
@@ -189,7 +190,7 @@ export default function InvoiceModal({ order, buyerEmail, onClose }) {
     }
   };
 
-  return (
+  return createPortal(
     <div
       onClick={(e) => e.target === e.currentTarget && onClose()}
       style={{
@@ -487,6 +488,7 @@ export default function InvoiceModal({ order, buyerEmail, onClose }) {
           }
         }
       `}</style>
-    </div>
+    </div>,
+    document.body,
   );
 }
