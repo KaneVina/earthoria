@@ -1163,20 +1163,24 @@ export default function KidAccess() {
               {activeBook.coverImage ? (
                 <img src={activeBook.coverImage} alt={activeBook.title} />
               ) : (
-                <div
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "var(--kid-blue)",
-                    opacity: 0.45,
-                  }}
-                >
-                  <BookMarked size={40} />
+                <div className="kid-modal-cover-placeholder">
+                  <span className="kid-modal-cover-deco kid-modal-cover-deco--1">
+                    <Star size={14} fill="currentColor" />
+                  </span>
+                  <span className="kid-modal-cover-deco kid-modal-cover-deco--2">
+                    <Sparkles size={16} />
+                  </span>
+                  <span className="kid-modal-cover-deco kid-modal-cover-deco--3">
+                    <Star size={10} fill="currentColor" />
+                  </span>
+                  <span className="kid-modal-cover-icon">
+                    <BookMarked size={38} />
+                  </span>
                 </div>
               )}
+              <span className="kid-modal-cover-tag">
+                <Sparkles size={12} /> Trải nghiệm AR
+              </span>
             </div>
             <div className="kid-modal-body">
               <button type="button" className="kid-modal-close" onClick={closeModal} aria-label="Đóng">
@@ -1184,7 +1188,7 @@ export default function KidAccess() {
               </button>
               {(activeBook.ageMin || activeBook.ageMax) && (
                 <span className="kid-modal-age">
-                  Dành cho {activeBook.ageMin ?? "0"}–{activeBook.ageMax ?? "17"} tuổi
+                  <Smile size={12} /> Dành cho {activeBook.ageMin ?? "0"}–{activeBook.ageMax ?? "17"} tuổi
                 </span>
               )}
               <h3 className="kid-modal-title">{activeBook.title}</h3>
@@ -1193,6 +1197,11 @@ export default function KidAccess() {
                   ? `Sẵn sàng cùng ${child.name} bước vào câu chuyện này chưa nào? Chạm nút bên dưới để mô hình AR bừng sáng thành thế giới thật nhé!`
                   : "Sách đang trên đường giao tới nhà. Khi nhận được sách, bé có thể mở AR ở đây nhé!"}
               </p>
+              <div className="kid-modal-stars" aria-hidden="true">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <Star key={i} size={15} fill="currentColor" />
+                ))}
+              </div>
               <button
                 type="button"
                 className={`kid-btn kid-modal-cta${limitReached || !activeBook.isDelivered ? " is-disabled" : ""}`}
