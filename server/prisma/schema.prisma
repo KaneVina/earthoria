@@ -441,12 +441,17 @@ model Order {
 
   requestInvoice  Boolean       @default(false)
 
+  // ─ Hạng thành viên (hệ thống "Vùng Đất") áp dụng tại thời điểm đặt đơn ─
+  loyaltyTier     String?       // code hạng lúc đặt đơn, vd "DAK_LAK" — lưu vết để không đổi ngược khi hạng user thay đổi sau này
+  loyaltyDiscount Float         @default(0) // số tiền được giảm nhờ hạng thành viên, tách riêng khỏi discount coupon
+
   user                User                 @relation(fields: [userId], references: [id])
   address             Address              @relation(fields: [addressId], references: [id])
   items               OrderItem[]
   paymentTransactions PaymentTransaction[]
 
   @@index([paymentRef])
+  @@index([userId, paymentStatus, status])
 }
 
 model OrderItem {

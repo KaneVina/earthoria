@@ -1394,13 +1394,90 @@
 .pf-stack-16 {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+   gap: 16px;
 }
 
-/* ═══════════ POINTER SHEEN (used across order/address cards) ═══════════
-   A soft radial spotlight that tracks the cursor via --mx/--my custom
-   props (set from JS in useSheen). Purely additive — falls back to a
-   normal hover state if JS hasn't set the vars yet. */
+/* ═══════════ LOYALTY (HẠNG THÀNH VIÊN) ═══════════ */
+.pf-loyalty-card {
+  background: var(--white);
+  border: 0.5px solid var(--border);
+  border-radius: var(--pf-radius-lg);
+  padding: 24px 26px;
+  margin-bottom: 32px;
+}
+.pf-loyalty-current {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.pf-loyalty-current-label {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.pf-loyalty-current-name {
+  font-family: "Playfair Display", serif;
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--forest);
+}
+.pf-loyalty-current-perk {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+.pf-loyalty-progress {
+  margin-top: 18px;
+}
+.pf-loyalty-progress-track {
+  height: 5px;
+  border-radius: 3px;
+  background: var(--pale);
+  overflow: hidden;
+}
+.pf-loyalty-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.5s var(--pf-ease);
+}
+.pf-loyalty-progress-caption {
+  margin: 10px 0 0;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+.pf-loyalty-progress-caption strong {
+  color: var(--forest);
+  font-weight: 600;
+}
+.pf-loyalty-roadmap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 0.5px solid var(--border);
+}
+.pf-loyalty-chip {
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 0.5px solid var(--border);
+  background: var(--cream);
+  opacity: 0.5;
+  transition:
+    opacity 0.25s ease,
+    border-color 0.25s ease,
+    background 0.25s ease;
+}
+.pf-loyalty-chip.is-unlocked {
+  opacity: 1;
+  background: var(--lb-accent-soft, var(--pale));
+  border-color: var(--lb-accent, var(--border-gold));
+}
+
+/* POINTER SHEEN  */
 .pf-sheen-surface {
   position: relative;
   --mx: 50%;

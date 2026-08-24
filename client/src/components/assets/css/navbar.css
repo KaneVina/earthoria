@@ -6,11 +6,6 @@ nav {
     box-shadow 0.4s ease !important;
 }
 
-/* ────────────────────────────────────────────────────────────
-   CHIỀU CAO HEADER — thu nhỏ lại
-   Mặc định height: 80px (trong main.css) → giảm xuống 64px
-   Khi cuộn: thu thêm chút nữa cho gọn (60px)
-   ──────────────────────────────────────────────────────────── */
 .nav-inner {
   height: 64px;
   transition: height 0.35s ease;
@@ -895,10 +890,6 @@ body.dark-mode .cart-dropdown-empty-icon {
 
 /* ────────────────────────────────────────────────────────────
    HAMBURGER
-   Gộp toàn bộ rule của hamburger vào 1 chỗ duy nhất (trước bị rải
-   rác 3 nơi khác nhau → dễ đè nhầm nhau). Luôn ghim bên phải,
-   không co lại, luôn nằm trên cùng để chắc chắn bấm trúng, kể cả
-   khi panel mobile đang mở.
    ──────────────────────────────────────────────────────────── */
 .nav-hamburger {
   display: none;
@@ -923,14 +914,7 @@ body.dark-mode .nav-hamburger {
 }
 
 /* ────────────────────────────────────────────────────────────
-   MOBILE FIX (nguyên nhân chính khiến bấm X không trúng)
-   1) Ẩn cụm icon phụ (search/theme/wishlist/cart) trên mobile —
-      trước đây các icon này + hamburger cùng chen chỗ trong
-      nav-actions, tràn ra ngoài / đẩy lệch hamburger.
-   2) Hamburger luôn hiện, luôn ghim đúng vị trí (khai báo ở trên).
-   3) Panel mobile giới hạn chiều cao + cuộn được thay vì tràn
-      khỏi màn hình khiến không thấy/không bấm được nút đóng.
-   4) Toàn bộ chuyển động mở/đóng mượt bằng max-height.
+   MOBILE
    ──────────────────────────────────────────────────────────── */
 @media (max-width: 900px) {
   nav {
@@ -971,9 +955,6 @@ body.dark-mode .nav-hamburger {
   }
 }
 
-/* Panel trượt mở/đóng mượt bằng max-height, luôn giới hạn chiều
-   cao trong viewport + tự cuộn nếu danh sách dài, không bao giờ
-   tràn khỏi màn hình khiến bấm không tới nút đóng */
 .nav-mobile-panel {
   display: flex;
   flex-direction: column;
@@ -1004,8 +985,7 @@ body.dark-mode .nav-hamburger {
 }
 
 /* ────────────────────────────────────────────────────────────
-   NAV MOBILE LINK — style cho từng mục trong panel
-   (phần này trước nằm ở main.css, đã chuyển hẳn về đây)
+   NAV MOBILE LINK
    ──────────────────────────────────────────────────────────── */
 .nav-mobile-link {
   display: flex;
@@ -1200,10 +1180,7 @@ body.dark-mode .nav-mobile-link {
 }
 
 /* ────────────────────────────────────────────────────────────
-   TOAST "ĐÃ XOÁ ... HOÀN TÁC" (Wishlist, v.v.)
-   Trước đây chưa có CSS nên nút Hoàn tác bị vỡ layout, dùng style
-   mặc định của trình duyệt. Style lại đồng bộ với theme (viền
-   vàng mảnh, góc vuông, giống các nút khác trong site).
+   TOAST
    ──────────────────────────────────────────────────────────── */
 .wl-undo-toast {
   display: flex;
@@ -1256,8 +1233,7 @@ body.dark-mode .nav-mobile-link {
 }
 
 /* ────────────────────────────────────────────────────────────
-   FLY-TO-CART — ảnh sản phẩm bay vào icon giỏ hàng khi bấm
-   "Thêm vào giỏ" ở bất kỳ trang nào (xem src/utils/flyToCart.js)
+   FLY-TO-CART
    ──────────────────────────────────────────────────────────── */
 .fly-to-cart-ghost {
   position: fixed;

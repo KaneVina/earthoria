@@ -4,6 +4,11 @@ const { formatResponse } = require("../utils/helpers");
 const { encodeId } = require("../utils/hashids");
 const { validateAndComputeDiscount } = require("../utils/couponUtil");
 const {
+  getUserLoyaltyProfile,
+  computeTierDiscount,
+  getFreeShipThreshold,
+} = require("../utils/loyaltyTier");
+const {
   sendOrderConfirmedEmail,
   sendOrderCancelledEmail,
 } = require("../services/emailService");
@@ -19,7 +24,6 @@ const sendOrderEmailSafe = (sendFn, payload) => {
   });
 };
 
-const FREE_SHIP_THRESHOLD = 300_000;
 const { calcShippingFee: calcFee, WAREHOUSE } = require("../utils/shipping");
 
 // Sinh mã tham chiếu gửi cho cổng thanh toán (VNPay vnp_TxnRef / MoMo orderId).
@@ -158,8 +162,13 @@ const createOrder = async (req, res) => {
       return sum + price * item.quantity;
     }, 0);
 
+    // 3b. Hạng thành viên (hệ thống "Vùng Đất") — tính từ lịch sử chi tiêu đã thanh toán
+    // thành công TRƯỚC đơn này, luôn tự động áp dụng, không cần user tự nhập mã.
+    const loyaltyProfile = await getUserLoyaltyProfile(userId);
+    const tierDiscount = computeTierDiscount(loyaltyProfile.tier, subtotal);
+
     // 4. Tính discount từ coupon (tra DB, kiểm tra đầy đủ: active/hết hạn/hết lượt/minOrder)
-    let discount = 0;
+    let couponDiscount = 0;
     let appliedCoupon = null;
     if (couponCode) {
       const coupon = await prisma.coupon.findUnique({
@@ -173,20 +182,24 @@ const createOrder = async (req, res) => {
           result.reason || "Mã giảm giá không hợp lệ",
         );
       }
-      discount = result.discount;
+      couponDiscount = result.discount;
       appliedCoupon = coupon;
     }
 
+    // Tổng giảm giá = ưu đãi hạng + coupon, không vượt quá giá trị đơn hàng.
+    const discount = Math.min(tierDiscount + couponDiscount, subtotal);
     const afterDiscount = subtotal - discount;
 
     // 5. Tính phí ship theo km (dùng cùng hàm calcFee với endpoint xem trước /orders/shipping-fee)
-    // Sách điện tử không giao hàng nên luôn miễn phí ship.
+    // Sách điện tử không giao hàng nên luôn miễn phí ship. Ngưỡng miễn phí ship co giãn theo hạng
+    // thành viên — hạng càng cao ngưỡng càng thấp (Gia Lai/Lâm Đồng luôn miễn phí).
+    const freeShipThreshold = getFreeShipThreshold(loyaltyProfile.tier);
     let shippingFee;
     if (isDigitalOrder) {
       shippingFee = 0;
     } else if (shipping.deliveryMode === "pickup") {
       shippingFee = 0;
-    } else if (afterDiscount >= FREE_SHIP_THRESHOLD) {
+    } else if (afterDiscount >= freeShipThreshold) {
       shippingFee = 0;
     } else if (shipping.lat != null && shipping.lng != null) {
       const result = calcFee(shipping.lat, shipping.lng);
@@ -295,6 +308,8 @@ const createOrder = async (req, res) => {
           shippingFee,
           total,
           couponCode: appliedCoupon ? appliedCoupon.code : null,
+          loyaltyTier: loyaltyProfile.tier.code,
+          loyaltyDiscount: tierDiscount,
           note: note || null,
           requestInvoice: Boolean(requestInvoice),
           // Online payment (VNPay/MoMo) cần 1 mã tham chiếu để đối chiếu lúc gateway redirect về
@@ -418,7 +433,10 @@ const calcShippingFee = async (req, res) => {
 
     if (!lat || !lng) return formatResponse(res, 400, "Thiếu tọa độ lat/lng");
 
-    if (subtotal >= FREE_SHIP_THRESHOLD) {
+    const loyaltyProfile = await getUserLoyaltyProfile(req.user.id);
+    const freeShipThreshold = getFreeShipThreshold(loyaltyProfile.tier);
+
+    if (subtotal >= freeShipThreshold) {
       return formatResponse(res, 200, "OK", {
         km: null,
         fee: 0,

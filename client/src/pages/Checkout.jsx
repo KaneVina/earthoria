@@ -27,7 +27,9 @@ import {
   Copy,
 } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
-import { formatPrice } from "../utils/helpers";
+import { formatPrice, computeTierDiscount } from "../utils/helpers";
+import { loyaltyService } from "../services/loyaltyService";
+import LoyaltyBadge from "../components/LoyaltyBadge";
 import toast from "react-hot-toast";
 import { orderService } from "../services/orderService";
 import { couponService } from "../services/couponService";
@@ -757,6 +759,8 @@ function OrderSummary({
   subtotal,
   discount,
   couponApplied,
+  tierDiscount,
+  loyaltyProfile,
   shippingFee,
   total,
   couponInput,
@@ -766,8 +770,14 @@ function OrderSummary({
   couponLoading,
   onOpenVouchers,
 }) {
-  const afterDiscount = subtotal - discount;
-  const pct = Math.min((afterDiscount / FREE_SHIP_THRESHOLD) * 100, 100);
+  const totalDiscount = discount + tierDiscount;
+  const afterDiscount = subtotal - totalDiscount;
+  const freeShipThreshold =
+    loyaltyProfile?.tier?.freeShipThreshold ?? FREE_SHIP_THRESHOLD;
+  const pct =
+    freeShipThreshold <= 0
+      ? 100
+      : Math.min((afterDiscount / freeShipThreshold) * 100, 100);
 
   return (
     <aside
@@ -788,7 +798,7 @@ function OrderSummary({
             fontWeight: 300,
           }}
         >
-          {afterDiscount >= FREE_SHIP_THRESHOLD ? (
+          {afterDiscount >= freeShipThreshold ? (
             <span>
               <Truck size={16} color="var(--forest)" /> Bạn được{" "}
               <strong style={{ color: "var(--ivory)" }}>
@@ -799,7 +809,7 @@ function OrderSummary({
             <>
               Mua thêm{" "}
               <strong style={{ color: "var(--ivory)" }}>
-                {formatPrice(FREE_SHIP_THRESHOLD - afterDiscount)}
+                {formatPrice(freeShipThreshold - afterDiscount)}
               </strong>{" "}
               để <span style={{ color: "var(--gold)" }}>miễn phí ship</span>
             </>
@@ -1084,6 +1094,24 @@ function OrderSummary({
             label: `Giảm giá (${couponApplied?.label})`,
             val: `−${formatPrice(discount)}`,
             color: "#4a9e3f",
+          },
+          tierDiscount > 0 && {
+            label: (
+              <span
+                style={{ display: "inline-flex", alignItems: "center", gap: 5 }}
+              >
+                Ưu đãi hạng{" "}
+                <LoyaltyBadge
+                  tier={loyaltyProfile.tier}
+                  progress={loyaltyProfile}
+                  variant="light"
+                  align="left"
+                  showDot={false}
+                />
+              </span>
+            ),
+            val: `−${formatPrice(tierDiscount)}`,
+            color: loyaltyProfile?.tier?.color || "#4a9e3f",
           },
           {
             label: "Phí giao hàng",
@@ -1793,6 +1821,7 @@ export default function Checkout() {
     lat: null,
     lng: null,
   });
+  const [loyaltyProfile, setLoyaltyProfile] = useState(null);
   /*  scroll helper  */
   const topRef = useRef(null);
   const scrollTop = () =>
@@ -1802,6 +1831,14 @@ export default function Checkout() {
   useEffect(() => {
     fetchCart();
   }, [fetchCart]);
+
+  /*  fetch hồ sơ hạng thành viên — quyết định % giảm giá & ngưỡng freeship tự động  */
+  useEffect(() => {
+    loyaltyService
+      .getMyProfile()
+      .then((res) => setLoyaltyProfile(res.data.data))
+      .catch(() => {});
+  }, []);
 
   /*  chặn back để sửa lại thông tin sau khi đã xác nhận đặt hàng  */
   useEffect(() => {
@@ -1920,6 +1957,7 @@ export default function Checkout() {
     if (couponApplied.maxDiscount) d = Math.min(d, couponApplied.maxDiscount);
     return Math.min(d, subtotal);
   })();
+  const tierDiscount = computeTierDiscount(loyaltyProfile?.tier, subtotal);
   const [shipCalc, setShipCalc] = useState({
     km: null,
     fee: 30_000,
@@ -1928,11 +1966,13 @@ export default function Checkout() {
   });
   const [showPriceModal, setShowPriceModal] = useState(false);
 
-  const afterDiscount = subtotal - discount;
+  const afterDiscount = subtotal - discount - tierDiscount;
+  const freeShipThreshold =
+    loyaltyProfile?.tier?.freeShipThreshold ?? FREE_SHIP_THRESHOLD;
   // Sách điện tử luôn miễn phí ship (không giao hàng) — không phụ thuộc shipCalc/ngưỡng freeship.
   const shippingFee = isDigitalOrder
     ? 0
-    : afterDiscount >= FREE_SHIP_THRESHOLD
+    : afterDiscount >= freeShipThreshold
       ? 0
       : (shipCalc.fee ?? SHIP_FEE);
   const total = afterDiscount + shippingFee;
@@ -4314,6 +4354,18 @@ export default function Checkout() {
                       {formatPrice(discount)})
                     </div>
                   )}
+                  {tierDiscount > 0 && (
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "rgba(255,255,255,0.45)",
+                        marginTop: 5,
+                      }}
+                    >
+                      Ưu đãi hạng {loyaltyProfile?.tier?.name} (−
+                      {formatPrice(tierDiscount)})
+                    </div>
+                  )}
                 </div>
 
                 <button
@@ -4987,8 +5039,21 @@ export default function Checkout() {
                 />
 
                 <span>
-                  Miễn phí giao hàng cho đơn từ{" "}
-                  <strong style={{ color: "var(--forest)" }}>300.000đ</strong>
+                  {freeShipThreshold <= 0 ? (
+                    <>
+                      Hạng <strong style={{ color: "var(--forest)" }}>
+                        {loyaltyProfile?.tier?.name}
+                      </strong>{" "}
+                      của bạn được miễn phí giao hàng cho mọi đơn hàng
+                    </>
+                  ) : (
+                    <>
+                      Miễn phí giao hàng cho đơn từ{" "}
+                      <strong style={{ color: "var(--forest)" }}>
+                        {formatPrice(freeShipThreshold)}
+                      </strong>
+                    </>
+                  )}
                 </span>
               </div>
               {shipCalc.km && (
@@ -5016,6 +5081,8 @@ export default function Checkout() {
           subtotal={subtotal}
           discount={discount}
           couponApplied={couponApplied}
+          tierDiscount={tierDiscount}
+          loyaltyProfile={loyaltyProfile}
           shippingFee={shippingFee}
           total={total}
           couponInput={couponInput}

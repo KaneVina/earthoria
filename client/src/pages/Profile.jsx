@@ -12,6 +12,7 @@ import { authService } from "../services/authService";
 import { orderService } from "../services/orderService";
 import { paymentService } from "../services/paymentService";
 import { arService } from "../services/arService";
+import { loyaltyService } from "../services/loyaltyService";
 import { useAuthStore } from "../store/authStore";
 import {
   formatPrice,
@@ -24,6 +25,7 @@ import toast from "react-hot-toast";
 import "../components/assets/css/profile.css";
 import LogoutConfirmModal from "../components/LogoutConfirmModal";
 import InvoiceModal from "../components/InvoiceModal";
+import LoyaltyBadge from "../components/LoyaltyBadge";
 
 const F = {
   serif: "'Playfair Display', serif",
@@ -1007,6 +1009,12 @@ export default function Profile() {
     enabled: activeTab === "ar",
   });
 
+  const { data: loyaltyProfile } = useQuery({
+    queryKey: ["loyalty-profile"],
+    queryFn: () => loyaltyService.getMyProfile().then((r) => r.data.data),
+    staleTime: 60_000,
+  });
+
   const updateProfileMutation = useMutation({
     mutationFn: (patch) => authService.updateProfile(patch),
     onSuccess: (res, patch) => {
@@ -1054,12 +1062,6 @@ export default function Profile() {
   const initials =
     `${profile.firstName?.[0] || ""}${profile.lastName?.[0] || ""}`.toUpperCase() ||
     "U";
-  const memberTier =
-    totalSpent > 3000000
-      ? "Thành Viên Bạch Kim"
-      : totalSpent > 1000000
-        ? "Thành Viên Vàng"
-        : "Thành Viên Mới";
   // const accountCode = (profile.memberCode || profile.id || "").toString();
   const formattedCode = profile.userCode || "—";
   // const formattedCode = formatAccountCode(accountCode);
@@ -1097,7 +1099,7 @@ export default function Profile() {
       <PassportHero
         profile={profile}
         initials={initials}
-        memberTier={memberTier}
+        loyaltyProfile={loyaltyProfile}
         formattedCode={formattedCode}
         animatedOrderCount={ordersLoading ? "—" : animatedOrderCount}
         animatedSpent={ordersLoading ? "—" : formatPrice(animatedSpent)}
@@ -1142,6 +1144,7 @@ export default function Profile() {
                 recentOrders={recentOrders}
                 ordersLoading={ordersLoading}
                 saveField={saveField}
+                loyaltyProfile={loyaltyProfile}
                 onViewOrders={() => selectTab("orders")}
                 onViewOrder={(id) => {
                   setActiveTab("orders");
@@ -1239,7 +1242,7 @@ function GuestState() {
 function PassportHero({
   profile,
   initials,
-  memberTier,
+  loyaltyProfile,
   formattedCode,
   animatedOrderCount,
   animatedSpent,
@@ -1306,8 +1309,19 @@ function PassportHero({
                     className="pf-passport-tier pf-stagger"
                     style={{ "--d": "0.1s" }}
                   >
-                    <span className="pf-tier-dot" />
-                    <span className="pf-tier-shimmer-text">{memberTier}</span>
+                    {loyaltyProfile ? (
+                      <LoyaltyBadge
+                        tier={loyaltyProfile.tier}
+                        progress={loyaltyProfile}
+                        variant="dark"
+                        align="left"
+                      />
+                    ) : (
+                      <>
+                        <span className="pf-tier-dot" />
+                        <span className="pf-tier-shimmer-text">—</span>
+                      </>
+                    )}
                   </div>
                   <h1
                     className="pf-passport-name pf-stagger"
@@ -1510,6 +1524,7 @@ function OverviewTab({
   recentOrders,
   ordersLoading,
   saveField,
+  loyaltyProfile,
   onViewOrders,
   onViewOrder,
 }) {
@@ -1620,6 +1635,84 @@ function OverviewTab({
           </div>
         </div>
       </div>
+
+      <div className="pf-ornament-sm">
+        <span />
+        <span className="pf-ornament-mark" />
+        <span />
+      </div>
+
+      <div className="pf-subheader-row">
+        <h3 className="pf-subheader-title">
+          Hạng <em>Thành Viên</em>
+        </h3>
+      </div>
+
+      {!loyaltyProfile ? (
+        <div className="pf-loyalty-card">
+          <div className="pf-skel" style={{ width: "140px", height: "14px" }} />
+          <div
+            className="pf-skel"
+            style={{ width: "100%", height: "6px", marginTop: "16px" }}
+          />
+        </div>
+      ) : (
+        <div className="pf-loyalty-card">
+          <div className="pf-loyalty-current">
+            <div>
+              <div className="pf-loyalty-current-label">Hạng hiện tại</div>
+              <div
+                className="pf-loyalty-current-name"
+                style={{ color: loyaltyProfile.tier.color }}
+              >
+                {loyaltyProfile.tier.name}
+              </div>
+            </div>
+            <div className="pf-loyalty-current-perk">
+              Giảm {loyaltyProfile.tier.discountPercent}% mỗi đơn
+              {loyaltyProfile.tier.freeShipThreshold === 0
+                ? " · Miễn phí ship mọi đơn"
+                : ` · Miễn phí ship từ ${formatPrice(loyaltyProfile.tier.freeShipThreshold)}`}
+            </div>
+          </div>
+
+          {loyaltyProfile.isMaxTier ? (
+            <p className="pf-loyalty-progress-caption">
+              Bạn đang ở hạng cao nhất — cảm ơn đã đồng hành cùng Earthoria!
+            </p>
+          ) : (
+            <div className="pf-loyalty-progress">
+              <div className="pf-loyalty-progress-track">
+                <div
+                  className="pf-loyalty-progress-fill"
+                  style={{
+                    width: `${loyaltyProfile.progressPercent}%`,
+                    background: loyaltyProfile.tier.color,
+                  }}
+                />
+              </div>
+              <p className="pf-loyalty-progress-caption">
+                Chi thêm{" "}
+                <strong>{formatPrice(loyaltyProfile.amountToNext)}</strong> để
+                lên hạng <strong>{loyaltyProfile.nextTier.name}</strong>
+              </p>
+            </div>
+          )}
+
+          <div className="pf-loyalty-roadmap">
+            {loyaltyProfile.tiers.map((t) => (
+              <LoyaltyBadge
+                key={t.code}
+                tier={t}
+                progress={t.isCurrent ? loyaltyProfile : null}
+                variant="light"
+                align="left"
+                className={`pf-loyalty-chip${t.unlocked ? " is-unlocked" : ""}`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="pf-ornament-sm">
         <span />

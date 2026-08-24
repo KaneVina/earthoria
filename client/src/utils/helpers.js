@@ -68,3 +68,12 @@ export const getOrderCode = (order) => {
   }
   return `ODE-${mm}${dd}${yy}${suffix}`
 }
+
+// Tiền giảm nhờ hạng thành viên trên 1 đơn — khớp 100% công thức server (server/src/utils/loyaltyTier.js)
+// để preview ở Checkout trùng khớp với số tiền server tính khi tạo đơn thật.
+export const computeTierDiscount = (tier, subtotal) => {
+  if (!tier || !subtotal || subtotal <= 0 || !tier.discountPercent) return 0
+  let discount = Math.round((subtotal * tier.discountPercent) / 100)
+  if (tier.maxDiscountPerOrder > 0) discount = Math.min(discount, tier.maxDiscountPerOrder)
+  return Math.min(discount, subtotal)
+}

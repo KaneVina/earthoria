@@ -13,15 +13,17 @@ import {
   ShieldCheck,
   Search,
 } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
-import { useAuthStore } from "../../store/authStore";
-import { useCartStore } from "../../store/cartStore";
-import { useWishlistStore } from "../../store/wishlistStore";
-import { useTheme } from "../../hooks/useTheme";
+import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useauthstore } from "../../store/authstore";
+import { usecartstore } from "../../store/cartstore";
+import { usewishliststore } from "../../store/wishliststore";
+import { usetheme } from "../../hooks/usetheme";
+import { loyaltyservice } from "../../services/loyaltyservice";
+import loyaltybadge from "../loyaltybadge";
 import toast from "react-hot-toast";
 import logoImg from "../assets/img/logoBT-ngangtext.png";
 import SearchOverlay from "./SearchOverlay";
-import { useQueryClient } from "@tanstack/react-query";
 import "../assets/css/navbar.css";
 import { authService } from "../../services/authService";
 import LogoutConfirmModal from "../LogoutConfirmModal";
@@ -38,9 +40,15 @@ export default function Navbar() {
   const cart = useCartStore((s) => s.cart);
   const fetchCart = useCartStore((s) => s.fetchCart);
   const removeCartItem = useCartStore((s) => s.removeItem);
-  const [removingItemId, setRemovingItemId] = useState(null);
+    const [removingItemId, setRemovingItemId] = useState(null);
   const { wishlistCount, fetchWishlist } = useWishlistStore();
   const { isDark, toggleTheme } = useTheme();
+  const { data: loyaltyProfile } = useQuery({
+    queryKey: ["loyalty-profile"],
+    queryFn: () => loyaltyService.getMyProfile().then((r) => r.data.data),
+    enabled: isAuthenticated,
+    staleTime: 60_000,
+  });
 
   //  State ──────────────────────────────────────────
   const [scrolled, setScrolled] = useState(false);
@@ -52,7 +60,7 @@ export default function Navbar() {
   const prevItemCountRef = useRef(itemCount);
   const cartPeekTimeoutRef = useRef(null);
 
-  //  Effects ────────────────────────────────────────
+  //  Effects
   useEffect(() => {
     if (isAuthenticated) {
       fetchCart();
@@ -94,7 +102,7 @@ export default function Navbar() {
     setSearchOpen(false);
   }, [location.pathname, location.search]);
 
-  //  Helpers ─────────────────────────────────────────
+  //  Helpers
   const handleLogout = async () => {
     setShowLogoutModal(false);
     try {
@@ -174,7 +182,7 @@ export default function Navbar() {
             border: "rgba(74,158,63,0.22)",
           };
 
-  //  Render ──────────────────────────────────────────
+  //  Render
   return (
     <>
       {/* Progress bar */}
@@ -409,28 +417,45 @@ export default function Navbar() {
                       )}
                       <div
                         style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "5px",
-                          marginTop: "6px",
-                          padding: "3px 8px",
-                          background: roleMeta.bg,
-                          border: `0.5px solid ${roleMeta.border}`,
-                          borderRadius: "2px",
+                          display: "flex",
+                          flexwrap: "wrap",
+                          alignitems: "center",
+                          gap: "6px",
+                          margintop: "6px",
                         }}
                       >
-                        <span
+                        <div
                           style={{
-                            fontSize: "9px",
-                            letterSpacing: "0.16em",
-                            textTransform: "uppercase",
-                            color: roleMeta.color,
-                            fontWeight: 500,
-                            fontFamily: "'Be Vietnam Pro', sans-serif",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "5px",
+                            padding: "3px 8px",
+                            background: roleMeta.bg,
+                            border: `0.5px solid ${roleMeta.border}`,
+                            borderRadius: "2px",
                           }}
                         >
-                          {roleMeta.label}
-                        </span>
+                          <span
+                            style={{
+                              fontSize: "9px",
+                              letterSpacing: "0.16em",
+                              textTransform: "uppercase",
+                              color: roleMeta.color,
+                              fontWeight: 500,
+                              fontFamily: "'Be Vietnam Pro', sans-serif",
+                            }}
+                          >
+                            {roleMeta.label}
+                          </span>
+                        </div>
+                        {loyaltyProfile && (
+                          <LoyaltyBadge
+                            tier={loyaltyProfile.tier}
+                            progress={loyaltyProfile}
+                            variant="light"
+                            align="right"
+                          />
+                        )}
                       </div>
                     </div>
                   </div>

@@ -14,7 +14,7 @@ import toast from 'react-hot-toast'
 
 const PAGE_SIZE = 12
 
-// ─ Skeleton card ──────────────────────────────────────────────────────────
+// ─ Skeleton card
 function SkeletonCard() {
   return (
     <div className="wl-card">
@@ -131,7 +131,7 @@ function WishlistCard({ book, onRemove, onMoveToCart, isRemoving, isMoving, just
   )
 }
 
-// ─ Empty state ────────────────────────────────────────────────────────────
+// ─ Empty state  ──
 function EmptyWishlist({ filtered, onReset }) {
   if (filtered) {
     return (
@@ -186,7 +186,7 @@ function ConfirmDialog({ open, title, message, confirmLabel, onConfirm, onCancel
   )
 }
 
-// ─ Page ───────────────────────────────────────────────────────────────────
+// ─ Page  ─────────
 const SORT_OPTIONS = [
   { value: 'default',       label: 'Mặc định' },
   { value: 'price-asc',     label: 'Giá: Thấp → Cao' },
@@ -287,7 +287,7 @@ export default function Wishlist() {
     [displayedItems, visibleCount]
   )
 
-  //  Handlers ────────────────────────────────────────────────────────────
+  //  Handlers  ──
 
   // Xoá 1 item — optimistic từ store, kèm tuỳ chọn hoàn tác
   const handleRemove = async (book) => {

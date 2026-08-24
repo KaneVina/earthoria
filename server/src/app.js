@@ -66,6 +66,7 @@ v1.use('/parent-pin', require('./routes/parentPinRoutes'))
 v1.use('/tickets', require('./routes/ticketRoutes'))
 v1.use('/payments', require('./routes/paymentRoutes'))
 v1.use('/coupons', require('./routes/couponRoutes'))
+v1.use('/loyalty', require('./routes/loyaltyRoutes'))
 v1.use('/ai', require('./routes/aiChatRoutes'))
 
 // Public route
