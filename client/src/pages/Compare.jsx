@@ -79,6 +79,7 @@ export default function Compare() {
   const { items, removeItem, clear } = useCompareStore();
   const { addToCart } = useCartStore();
   const [showStickyHeader, setShowStickyHeader] = useState(false);
+  const [addedIds, setAddedIds] = useState(new Set());
 
   useEffect(() => {
     const onScroll = () => setShowStickyHeader(window.scrollY > 420);
@@ -120,6 +121,15 @@ export default function Compare() {
   };
 
   const handleAdd = async (hashId, title, format = "PHYSICAL") => {
+    if (addedIds.has(hashId)) return;
+    setAddedIds((prev) => new Set(prev).add(hashId));
+    setTimeout(() => {
+      setAddedIds((prev) => {
+        const s = new Set(prev);
+        s.delete(hashId);
+        return s;
+      });
+    }, 1400);
     try {
       await addToCart(hashId, 1, format);
       toast.success(`Đã thêm "${title}" vào giỏ hàng`);
@@ -418,15 +428,22 @@ export default function Compare() {
                         </div>
                       </Link>
                       <button
-                        className="btn-add-main compare-actions-noprint"
+                        className={`btn-add-main compare-actions-noprint${addedIds.has(item.hashId) ? " btn-add-main--added" : ""}`}
                         style={{ width: "100%", height: "40px", fontSize: "10px" }}
                         onClick={(e) => {
                           const cardImg = e.currentTarget.parentElement?.querySelector("img");
                           if (cardImg) flyToCart(cardImg);
                           handleAdd(item.hashId, item.title, getPreferredCartFormat(item));
                         }}
+                        disabled={addedIds.has(item.hashId)}
                       >
-                        Thêm vào giỏ
+                        {addedIds.has(item.hashId) ? (
+                          <>
+                            <IconCheck color="var(--ivory)" /> Đã thêm
+                          </>
+                        ) : (
+                          "Thêm vào giỏ"
+                        )}
                       </button>
                     </td>
                   ))}

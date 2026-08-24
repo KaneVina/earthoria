@@ -35,7 +35,7 @@ function SkeletonCard() {
 }
 
 // ─ Wishlist item card ─────────────────────────────────────────────────────
-function WishlistCard({ book, onRemove, onMoveToCart, isRemoving, isMoving, selectMode, selected, onToggleSelect }) {
+function WishlistCard({ book, onRemove, onMoveToCart, isRemoving, isMoving, justAdded, selectMode, selected, onToggleSelect }) {
   const navigate = useNavigate()
 
   const displayPrice = book.salePrice ? formatPrice(book.salePrice) : formatPrice(book.price)
@@ -100,7 +100,7 @@ function WishlistCard({ book, onRemove, onMoveToCart, isRemoving, isMoving, sele
         </div>
         <div className="wl-card-actions">
           <button
-            className="wl-btn-cart"
+            className={`wl-btn-cart${justAdded ? ' wl-btn-cart--added' : ''}`}
             onClick={(e) => {
               const cardImg = e.currentTarget
                 .closest(".wl-card")
@@ -108,11 +108,13 @@ function WishlistCard({ book, onRemove, onMoveToCart, isRemoving, isMoving, sele
               if (cardImg) flyToCart(cardImg);
               onMoveToCart(book);
             }}
-            disabled={book.stock === 0 || isMoving}
+            disabled={book.stock === 0 || isMoving || justAdded}
             title={book.stock === 0 ? 'Hết hàng' : 'Thêm vào giỏ hàng'}
           >
-            {isMoving ? <Loader2 size={14} className="wl-spin" /> : <ShoppingCart size={14} strokeWidth={1.6} />}
-            {book.stock === 0 ? 'Hết hàng' : 'Thêm vào giỏ'}
+            {justAdded
+              ? <Check size={14} strokeWidth={2} />
+              : isMoving ? <Loader2 size={14} className="wl-spin" /> : <ShoppingCart size={14} strokeWidth={1.6} />}
+            {justAdded ? 'Đã thêm' : book.stock === 0 ? 'Hết hàng' : 'Thêm vào giỏ'}
           </button>
           <button
             className="wl-btn-remove"
@@ -210,6 +212,7 @@ export default function Wishlist() {
 
   const [removingIds, setRemovingIds] = useState(new Set())
   const [movingIds,   setMovingIds]   = useState(new Set())
+  const [justAddedIds, setJustAddedIds] = useState(new Set())
   const [sort,        setSort]        = useState('default')
   const [filter,      setFilter]      = useState('all')
   const [copied,      setCopied]      = useState(false)
@@ -320,19 +323,28 @@ export default function Wishlist() {
     }
   }
 
-  // Thêm 1 item vào cart → xoá khỏi wishlist → toast
+  // Thêm 1 item vào cart → hiện trạng thái "Đã thêm" trên nút → xoá khỏi wishlist → toast
   const handleMoveToCart = async (book) => {
     if (movingIds.has(book.hashId)) return
     setMovingIds((prev) => new Set(prev).add(book.hashId))
     try {
       await addToCart(book.hashId, 1, getPreferredCartFormat(book))
-      await toggleWishlist(book.slug, book.hashId)   // xoá khỏi wishlist
-      setSelectedIds((prev) => { const s = new Set(prev); s.delete(book.hashId); return s })
-      toast.success(`Đã thêm "${book.title}" vào giỏ hàng`)
-    } catch {
-      toast.error('Không thể thêm vào giỏ, vui lòng thử lại')
-    } finally {
       setMovingIds((prev) => { const s = new Set(prev); s.delete(book.hashId); return s })
+      setJustAddedIds((prev) => new Set(prev).add(book.hashId))
+      setRemovingIds((prev) => new Set(prev).add(book.hashId))
+      toast.success(`Đã thêm "${book.title}" vào giỏ hàng`)
+      setTimeout(async () => {
+        try {
+          await toggleWishlist(book.slug, book.hashId)
+          setSelectedIds((prev) => { const s = new Set(prev); s.delete(book.hashId); return s })
+        } finally {
+          setJustAddedIds((prev) => { const s = new Set(prev); s.delete(book.hashId); return s })
+          setRemovingIds((prev) => { const s = new Set(prev); s.delete(book.hashId); return s })
+        }
+      }, 380)
+    } catch {
+      setMovingIds((prev) => { const s = new Set(prev); s.delete(book.hashId); return s })
+      toast.error('Không thể thêm vào giỏ, vui lòng thử lại')
     }
   }
 
@@ -871,6 +883,7 @@ export default function Wishlist() {
         }
         .wl-btn-cart:hover:not(:disabled) { background: var(--forest-mid); }
         .wl-btn-cart:disabled { background: var(--pale); color: var(--text-muted); cursor: not-allowed; }
+        .wl-btn-cart--added:disabled { background: var(--gold); color: var(--ivory); opacity: 1; }
         .wl-btn-remove {
           width: 44px; height: 44px;
           display: flex; align-items: center; justify-content: center;
@@ -1249,6 +1262,7 @@ export default function Wishlist() {
                   onMoveToCart={handleMoveToCart}
                   isRemoving={removingIds.has(book.hashId)}
                   isMoving={movingIds.has(book.hashId)}
+                  justAdded={justAddedIds.has(book.hashId)}
                   selectMode={selectMode}
                   selected={selectedIds.has(book.hashId)}
                   onToggleSelect={handleToggleSelectItem}

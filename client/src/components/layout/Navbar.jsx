@@ -13,7 +13,7 @@ import {
   ShieldCheck,
   Search,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuthStore } from "../../store/authStore";
 import { useCartStore } from "../../store/cartStore";
 import { useWishlistStore } from "../../store/wishlistStore";
@@ -48,6 +48,9 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [cartPeek, setCartPeek] = useState(false);
+  const prevItemCountRef = useRef(itemCount);
+  const cartPeekTimeoutRef = useRef(null);
 
   //  Effects ────────────────────────────────────────
   useEffect(() => {
@@ -56,6 +59,21 @@ export default function Navbar() {
       fetchWishlist();
     }
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (itemCount > prevItemCountRef.current) {
+      setCartPeek(true);
+      if (cartPeekTimeoutRef.current) clearTimeout(cartPeekTimeoutRef.current);
+      cartPeekTimeoutRef.current = setTimeout(() => setCartPeek(false), 2600);
+    }
+    prevItemCountRef.current = itemCount;
+  }, [itemCount]);
+
+  useEffect(() => {
+    return () => {
+      if (cartPeekTimeoutRef.current) clearTimeout(cartPeekTimeoutRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     const handler = () => {
@@ -262,7 +280,7 @@ export default function Navbar() {
               </Link>
 
               {/* Cart */}
-              <div className="nav-cart-wrapper">
+              <div className={`nav-cart-wrapper${cartPeek ? " cart-peek" : ""}`}>
                 <Link
                   to="/cart"
                   className="nav-icon icon-cart"
@@ -463,6 +481,11 @@ export default function Navbar() {
               aria-label={mobileOpen ? "Đóng menu" : "Mở menu"}
             >
               {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+              {!mobileOpen && itemCount > 0 && (
+                <span key={itemCount} className="nav-badge nav-badge-pop">
+                  {itemCount > 99 ? "99+" : itemCount}
+                </span>
+              )}
             </button>
           </div>
         </div>

@@ -5358,6 +5358,12 @@ body.dark-mode .promo-strip {
   background: var(--forest-mid);
   gap: 14px;
 }
+.btn-add-main--added,
+.btn-add-main--added:hover {
+  background: var(--gold);
+  gap: 8px;
+  cursor: default;
+}
 .btn-wishlist-main {
   position: relative;
   width: 52px;

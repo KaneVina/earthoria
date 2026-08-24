@@ -1,8 +1,11 @@
 export function flyToCart(sourceEl, imageSrc) {
   if (typeof window === "undefined" || !sourceEl) return;
 
-  const cartIcon = document.querySelector(".icon-cart");
-  if (!cartIcon) return;
+  let cartIcon = document.querySelector(".icon-cart");
+  if (!cartIcon || cartIcon.offsetParent === null) {
+    cartIcon = document.querySelector(".nav-hamburger");
+  }
+  if (!cartIcon || cartIcon.offsetParent === null) return;
 
   const src =
     imageSrc || sourceEl.currentSrc || sourceEl.src || sourceEl.querySelector?.("img")?.src;

@@ -584,7 +584,8 @@ body.dark-mode .nav-icon[data-tooltip]::after {
 }
 
 .nav-cart-wrapper:hover .cart-dropdown,
-.nav-cart-wrapper:focus-within .cart-dropdown {
+.nav-cart-wrapper:focus-within .cart-dropdown,
+.nav-cart-wrapper.cart-peek .cart-dropdown {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
@@ -1283,4 +1284,7 @@ body.dark-mode .nav-mobile-link {
 }
 .nav-icon.icon-cart.cart-icon-bump svg {
   color: var(--gold);
+}
+.nav-hamburger.cart-icon-bump {
+  animation: cartIconBump 0.42s ease;
 }
