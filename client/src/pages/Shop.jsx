@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { bookService } from "../services/bookService";
 import { useCartStore } from "../store/cartStore";
-import { formatPrice, getBookUrl } from "../utils/helpers";
+import { formatPrice, getBookUrl, getPreferredCartFormat } from "../utils/helpers";
 import { flyToCart } from "../utils/flyToCart";
 import { useAuthStore } from "../store/authStore";
 import { useWishlistStore } from "../store/wishlistStore";
@@ -823,7 +823,8 @@ function ProductCard({ book, onAddToCart, delay, isAdding }) {
                   .closest(".product-card")
                   ?.querySelector(".product-img-wrap img");
                 if (cardImg) flyToCart(cardImg);
-                onAddToCart && onAddToCart(book.hashId);
+                onAddToCart &&
+                  onAddToCart(book.hashId, getPreferredCartFormat(book));
               }}
               disabled={isAdding}
             />
@@ -836,14 +837,8 @@ function ProductCard({ book, onAddToCart, delay, isAdding }) {
 
 export default function Shop() {
   const { addToCart } = useCartStore();
-  const [searchParams] = useSearchParams();
 
-  const [activeCategory, setActiveCategory] = useState(
-    () => searchParams.get("category") || "all",
-  );
-  const [searchQuery, setSearchQuery] = useState(
-    () => searchParams.get("search") || "",
-  );
+  const [activeCategory, setActiveCategory] = useState("all");
 const [activeFeatures, setActiveFeatures] = useState([]);
 const [priceRange, setPriceRange] = useState([PRICE_BOUNDS[0], PRICE_BOUNDS[1]]);
 const [ageRange, setAgeRange] = useState([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
@@ -853,18 +848,11 @@ const [ageRange, setAgeRange] = useState([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
   const [activePage, setActivePage] = useState(1);
   const { isAuthenticated } = useAuthStore();
 
-  // Đồng bộ lại filter mỗi khi URL search/category đổi (vd: bấm tìm kiếm
-  // lần nữa từ SearchOverlay trong lúc đang đứng sẵn ở trang Shop)
-  useEffect(() => {
-    setSearchQuery(searchParams.get("search") || "");
-    setActiveCategory(searchParams.get("category") || "all");
-  }, [searchParams]);
-
   const ctaVideoRef = useRef(null);
 
   const [addingIds, setAddingIds] = useState(new Set());
 
-  const handleAddToCart = async (id) => {
+  const handleAddToCart = async (id, format = "PHYSICAL") => {
     if (!isAuthenticated) {
       toast.error("Vui lòng đăng nhập để mua hàng");
       return;
@@ -875,7 +863,7 @@ const [ageRange, setAgeRange] = useState([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
     toast.success("Đã thêm vào giỏ hàng"); // hiện NGAY, không chờ API
 
     try {
-      await addToCart(id, 1);
+      await addToCart(id, 1, format);
     } catch {
       toast.error("Có lỗi xảy ra, vui lòng thử lại");
     } finally {
@@ -891,7 +879,6 @@ const [ageRange, setAgeRange] = useState([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
   // Tham số filter dùng chung cho cả danh sách sách và số đếm facet (không hardcode)
   const facetParams = {
     category: activeCategory !== "all" ? activeCategory : undefined,
-    search: searchQuery.trim() ? searchQuery.trim() : undefined,
     minPrice: priceRange[0] > PRICE_BOUNDS[0] ? priceRange[0] : undefined,
     maxPrice: priceRange[1] < PRICE_BOUNDS[1] ? priceRange[1] : undefined,
     minAge: ageRange[0] > AGE_BOUNDS[0] ? ageRange[0] : undefined,
@@ -957,7 +944,6 @@ const [ageRange, setAgeRange] = useState([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
 
   const hasActiveFilters =
     activeCategory !== "all" ||
-    searchQuery.trim() !== "" ||
     priceRange[0] !== PRICE_BOUNDS[0] ||
     priceRange[1] !== PRICE_BOUNDS[1] ||
     ageRange[0] !== AGE_BOUNDS[0] ||
@@ -967,7 +953,6 @@ const [ageRange, setAgeRange] = useState([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
 
   const clearAllFilters = () => {
     setActiveCategory("all");
-    setSearchQuery("");
     setPriceRange([PRICE_BOUNDS[0], PRICE_BOUNDS[1]]);
     setAgeRange([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
     setMinRating(0);
@@ -1328,52 +1313,6 @@ const [ageRange, setAgeRange] = useState([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
 
         {/* MAIN */}
         <main>
-          {/* SEARCH BANNER — chỉ hiện khi đến từ link tìm kiếm (?search=) */}
-          {searchQuery.trim() && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                padding: "12px 16px",
-                marginBottom: "20px",
-                background: "var(--gold-pale, #f7f0dc)",
-                border: "0.5px solid var(--border-gold, #e3d3a0)",
-                fontFamily: "'Be Vietnam Pro', sans-serif",
-                fontSize: "13px",
-                color: "var(--forest, #0d2b1e)",
-              }}
-            >
-              <span>
-                Kết quả tìm kiếm cho <strong>“{searchQuery.trim()}”</strong>
-                {!isLoading && (
-                  <span style={{ opacity: 0.65 }}>
-                    {" "}
-                    — {pagination.total ?? books.length} sản phẩm
-                  </span>
-                )}
-              </span>
-              <button
-                type="button"
-                onClick={() => setSearchQuery("")}
-                style={{
-                  marginLeft: "auto",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "12px",
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                  color: "var(--gold, #b8912f)",
-                  textDecoration: "underline",
-                  textUnderlineOffset: "3px",
-                }}
-              >
-                Xóa tìm kiếm
-              </button>
-            </div>
-          )}
-
           {/* TOOLBAR */}
           <div className="shop-toolbar">
             <div className="toolbar-right">
@@ -1552,7 +1491,10 @@ const [ageRange, setAgeRange] = useState([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
                           .closest(".featured-product-card")
                           ?.querySelector(".product-img-wrap img");
                         flyToCart(featuredImg);
-                        handleAddToCart(featuredBook.hashId);
+                        handleAddToCart(
+                          featuredBook.hashId,
+                          getPreferredCartFormat(featuredBook),
+                        );
                       }}
                       disabled={addingIds.has(featuredBook.hashId)}
                     >

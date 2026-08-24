@@ -8,7 +8,7 @@ import {
 import { useWishlistStore } from '../store/wishlistStore'
 import { useCartStore } from '../store/cartStore'
 import { useAuthStore } from '../store/authStore'
-import { formatPrice } from '../utils/helpers'
+import { formatPrice, getPreferredCartFormat } from '../utils/helpers'
 import { flyToCart } from '../utils/flyToCart'
 import toast from 'react-hot-toast'
 
@@ -325,7 +325,7 @@ export default function Wishlist() {
     if (movingIds.has(book.hashId)) return
     setMovingIds((prev) => new Set(prev).add(book.hashId))
     try {
-      await addToCart(book.hashId, 1)
+      await addToCart(book.hashId, 1, getPreferredCartFormat(book))
       await toggleWishlist(book.slug, book.hashId)   // xoá khỏi wishlist
       setSelectedIds((prev) => { const s = new Set(prev); s.delete(book.hashId); return s })
       toast.success(`Đã thêm "${book.title}" vào giỏ hàng`)
@@ -344,7 +344,7 @@ export default function Wishlist() {
     const ids = new Set(inStockItems.map((b) => b.hashId))
     setMovingIds(ids)
     try {
-      await Promise.all(inStockItems.map((b) => addToCart(b.hashId, 1)))
+      await Promise.all(inStockItems.map((b) => addToCart(b.hashId, 1, getPreferredCartFormat(b))))
       await Promise.all(inStockItems.map((b) => toggleWishlist(b.slug, b.hashId)))
       toast.success(`Đã chuyển ${inStockItems.length} sản phẩm vào giỏ hàng`)
       setSelectedIds(new Set())
@@ -416,7 +416,7 @@ export default function Wishlist() {
     if (targets.length === 0) { toast.error('Không có sản phẩm còn hàng trong lựa chọn'); return }
     setBulkMoving(true)
     try {
-      await Promise.all(targets.map((b) => addToCart(b.hashId, 1)))
+      await Promise.all(targets.map((b) => addToCart(b.hashId, 1, getPreferredCartFormat(b))))
       await Promise.all(targets.map((b) => toggleWishlist(b.slug, b.hashId)))
       toast.success(`Đã thêm ${targets.length} sản phẩm vào giỏ hàng`)
       setSelectedIds(new Set())

@@ -106,34 +106,12 @@ const buildWhere = async (query, exclude = {}) => {
 
   const andConditions = []
   if (search) {
-    const searchText = String(search).trim()
-    if (searchText) {
-      try {
-        // Tìm theo tiêu đề/mô tả đã bỏ dấu, tái dùng đúng hàm/index đã tạo
-        // cho fuzzy search của chatbot (earthoria_unaccent) — nhờ vậy gõ
-        // không dấu ("khong lo") vẫn ra sách "Khổng Lồ".
-        const matches = await prisma.$queryRaw`
-          SELECT id FROM "Book"
-          WHERE "isActive" = true
-            AND (
-              earthoria_unaccent(lower(title)) ILIKE '%' || earthoria_unaccent(lower(${searchText})) || '%'
-              OR earthoria_unaccent(lower(COALESCE(description, ''))) ILIKE '%' || earthoria_unaccent(lower(${searchText})) || '%'
-            )
-        `
-        const matchedIds = matches.map((m) => m.id)
-        andConditions.push({ id: { in: matchedIds.length ? matchedIds : ['__no_match__'] } })
-      } catch (err) {
-        // Hàm/extension chưa migrate trên môi trường này -> fallback contains()
-        // thường (không bỏ dấu), tránh sập toàn bộ trang Shop chỉ vì 1 chiều lọc.
-        console.warn('[bookController] earthoria_unaccent unavailable, falling back to contains():', err.message)
-        andConditions.push({
-          OR: [
-            { title: { contains: searchText, mode: 'insensitive' } },
-            { description: { contains: searchText, mode: 'insensitive' } }
-          ]
-        })
-      }
-    }
+    andConditions.push({
+      OR: [
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } }
+      ]
+    })
   }
   // Độ tuổi: lấy sách có khoảng tuổi giao với khoảng lọc [minAge, maxAge]
   if (minAge) {
@@ -540,13 +518,25 @@ const getWishlist = async (req, res) => {
         book: {
           include: {
             category: { select: { name: true, slug: true } },
-            authors: { include: { author: true }, orderBy: { order: 'asc' } }
+            authors: { include: { author: true }, orderBy: { order: 'asc' } },
+            variants: { where: { isActive: true } }
           }
         }
       }
     })
 
-    const result = wishlist.map(w => encodeBook(w.book))
+    // Trước đây chỉ encodeBook() nên FE không có price/salePrice/stock/variants
+    // (những field này không nằm trực tiếp trên Book mà nằm trên BookVariant) —
+    // dẫn tới hiển thị giá/tồn kho sai và không biết sách thật sự bán format nào
+    // để gửi đúng `format` khi thêm vào giỏ (luôn hardcode PHYSICAL -> 404 nếu
+    // sách chỉ có bản DIGITAL). Bổ sung variants + tính lại price/salePrice/stock.
+    const result = wishlist.map((w) => {
+      const variant = pickDisplayVariant(w.book.variants)
+      return {
+        ...withDisplayPrice(encodeBook(w.book)),
+        stock: variant?.stock ?? 0
+      }
+    })
     return formatResponse(res, 200, 'OK', result)
   } catch (error) {
     return formatResponse(res, 500, 'Lỗi server')

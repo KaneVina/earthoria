@@ -14,8 +14,14 @@ export function flyToCart(sourceEl, imageSrc) {
 
   const startW = Math.min(startRect.width, 80);
   const startH = Math.min(startRect.height, 104);
-  const startX = startRect.left + startRect.width / 2 - startW / 2;
-  const startY = startRect.top + startRect.height / 2 - startH / 2;
+  const rawStartX = startRect.left + startRect.width / 2 - startW / 2;
+  const rawStartY = startRect.top + startRect.height / 2 - startH / 2;
+
+  const PADDING = 8;
+  const maxX = window.innerWidth - startW - PADDING;
+  const maxY = window.innerHeight - startH - PADDING;
+  const startX = Math.min(Math.max(rawStartX, PADDING), Math.max(maxX, PADDING));
+  const startY = Math.min(Math.max(rawStartY, PADDING), Math.max(maxY, PADDING));
   const endW = 14;
   const endH = 14;
 

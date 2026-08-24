@@ -6,7 +6,7 @@ import { bookService } from "../services/bookService";
 import { useCartStore } from "../store/cartStore";
 import { useAuthStore } from "../store/authStore";
 import { useWishlistStore } from "../store/wishlistStore";
-import { formatPrice, getBookUrl } from "../utils/helpers";
+import { formatPrice, getBookUrl, getPreferredCartFormat } from "../utils/helpers";
 import { flyToCart } from "../utils/flyToCart";
 import toast from "react-hot-toast";
 import {
@@ -599,7 +599,7 @@ function BookCard({
                   .closest(".product-card")
                   ?.querySelector(".product-img-wrap img");
                 if (cardImg) flyToCart(cardImg);
-                onAddCart && onAddCart(book.hashId);
+                onAddCart && onAddCart(book.hashId, getPreferredCartFormat(book));
               }}
               disabled={isAdding}
             />
@@ -1727,7 +1727,7 @@ function FlashDealSection({ books, onAddCart }) {
             ) : (
               <button
                 onClick={() => {
-                  onAddCart(book.hashId);
+                  onAddCart(book.hashId, getPreferredCartFormat(book));
                   setClaimed(true);
                   setTimeout(() => setClaimed(false), 3000);
                 }}
@@ -2123,7 +2123,7 @@ function TopRatedSection({ books, onAddCart }) {
 
                   {/* add to cart */}
                   <button
-                    onClick={() => onAddCart(book.hashId)}
+                    onClick={() => onAddCart(book.hashId, getPreferredCartFormat(book))}
                     style={{
                       width: "36px",
                       height: "36px",
@@ -2417,7 +2417,7 @@ export default function Home() {
   const [addingIds, setAddingIds] = useState(new Set());
   const { isAuthenticated } = useAuthStore();
 
-  const handleAddToCart = async (hashId) => {
+  const handleAddToCart = async (hashId, format = "PHYSICAL") => {
     if (!isAuthenticated) {
       toast.error("Vui lòng đăng nhập để mua hàng");
       return;
@@ -2426,7 +2426,7 @@ export default function Home() {
     setAddingIds((prev) => new Set(prev).add(hashId));
     toast.success("Đã thêm vào giỏ hàng");
     try {
-      await addToCart(hashId, 1);
+      await addToCart(hashId, 1, format);
     } catch {
       toast.error("Có lỗi xảy ra, vui lòng thử lại");
     } finally {
@@ -3131,7 +3131,7 @@ export default function Home() {
                               .closest("div")
                               ?.querySelector("img");
                             flyToCart(cardImg);
-                            handleAddToCart(book.hashId);
+                            handleAddToCart(book.hashId, getPreferredCartFormat(book));
                           }}
                           style={{
                             background: isFirst

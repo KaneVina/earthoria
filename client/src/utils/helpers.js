@@ -23,6 +23,16 @@ export const truncate = (str, n) => {
 
 export const getBookUrl = (slug, hashId) => `/books/${slug}/${hashId}`
 
+export const getPreferredCartFormat = (book, preferred = 'PHYSICAL') => {
+  const variants = book?.variants
+  if (!variants?.length) return preferred
+  return (
+    variants.find((v) => v.format === preferred)?.format ||
+    variants.find((v) => v.format === 'PHYSICAL')?.format ||
+    variants[0].format
+  )
+}
+
 // weightGrams (Int, gram) -> chuỗi hiển thị, vd 680 -> "680g"
 export const formatWeight = (weightGrams) => {
   if (weightGrams == null) return null

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useCompareStore } from "../store/compareStore";
-import { formatPrice, getBookUrl } from "../utils/helpers";
+import { formatPrice, getBookUrl, getPreferredCartFormat } from "../utils/helpers";
 import { flyToCart } from "../utils/flyToCart";
 import { useCartStore } from "../store/cartStore";
 import toast from "react-hot-toast";
@@ -119,9 +119,9 @@ export default function Compare() {
     return new Set(values.map((v) => JSON.stringify(v))).size > 1;
   };
 
-  const handleAdd = async (hashId, title) => {
+  const handleAdd = async (hashId, title, format = "PHYSICAL") => {
     try {
-      await addToCart(hashId, 1);
+      await addToCart(hashId, 1, format);
       toast.success(`Đã thêm "${title}" vào giỏ hàng`);
     } catch {
       toast.error("Có lỗi xảy ra, vui lòng thử lại");
@@ -423,7 +423,7 @@ export default function Compare() {
                         onClick={(e) => {
                           const cardImg = e.currentTarget.parentElement?.querySelector("img");
                           if (cardImg) flyToCart(cardImg);
-                          handleAdd(item.hashId, item.title);
+                          handleAdd(item.hashId, item.title, getPreferredCartFormat(item));
                         }}
                       >
                         Thêm vào giỏ
