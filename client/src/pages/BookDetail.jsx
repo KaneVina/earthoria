@@ -6,6 +6,7 @@ import { useCartStore } from "../store/cartStore";
 import { useAuthStore } from "../store/authStore";
 import { formatPrice, formatDate, formatWeight, formatAgeRange } from "../utils/helpers";
 import { flyToCart } from "../utils/flyToCart";
+import { useWishlistStore } from "../store/wishlistStore";
 import { useHeartBurst, WishlistParticles } from "../hooks/useWishlistBurst";
 import toast from "react-hot-toast";
 import CompareModal from "../components/CompareModal";
@@ -176,8 +177,9 @@ export default function BookDetail() {
   const [imgFading, setImgFading] = useState(false);
   const [qty, setQty] = useState(1);
   const [selectedFormat, setSelectedFormat] = useState("PHYSICAL");
-  const [wishlist, setWishlist] = useState(false);
   const heartBurst = useHeartBurst();
+  const { isInWishlist, toggleWishlist: toggleWishlistStore } = useWishlistStore();
+  const wishlist = isInWishlist(hashId);
   const [addedToCart, setAddedToCart] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
   const [openFaq, setOpenFaq] = useState(null);
@@ -256,10 +258,6 @@ export default function BookDetail() {
     };
   }, [book]);
 
-  //  Sync wishlist from book data
-  useEffect(() => {
-    if (book?.isWishlisted !== undefined) setWishlist(book.isWishlisted);
-  }, [book]);
 
   //  Derived data
   const images = book
@@ -362,7 +360,6 @@ export default function BookDetail() {
   const handleRebuyCancel = () => {
     setRebuyModalOpen(false);
   };
-
   const handleWishlist = async () => {
     if (!isAuthenticated) {
       toast.error("Vui lòng đăng nhập!");
@@ -370,14 +367,8 @@ export default function BookDetail() {
     }
     const prev = wishlist;
     heartBurst.trigger(!prev);
-    setWishlist(!prev); // optimistic
-    try {
-      await bookService.toggleWishlist(slug, hashId);
-      toast.success(!prev ? "Đã thêm vào yêu thích" : "Đã xóa khỏi yêu thích");
-    } catch {
-      setWishlist(prev); // rollback
-      toast.error("Thao tác thất bại!");
-    }
+    await toggleWishlistStore(slug, hashId);
+    toast.success(!prev ? "Đã thêm vào yêu thích" : "Đã xóa khỏi yêu thích");
   };
 
   const handleReview = async (e) => {

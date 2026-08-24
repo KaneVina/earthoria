@@ -437,9 +437,9 @@ function WishlistBtn({ wishlisted, onToggle }) {
     setHovered(true);
   };
 
-  const handleClick = () => {
+  const handleClick = (e) => {
     trigger(!wishlisted);
-    onToggle();
+    onToggle(e);
   };
 
   return (

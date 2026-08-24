@@ -1051,7 +1051,7 @@ export default function Wishlist() {
           <div>
             <div className="wl-eyebrow">
               <div className="wl-eyebrow-line" />
-              <span className="wl-eyebrow-text">Của tôi</span>
+              <span className="wl-eyebrow-text">Danh sách Của tôi</span>
             </div>
             <h1 className="wl-title">
               Sách <em>Yêu Thích</em>
