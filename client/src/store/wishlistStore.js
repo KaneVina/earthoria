@@ -24,7 +24,7 @@ export const useWishlistStore = create((set, get) => ({
     const { toggling, items } = get()
 
     // Chặn nếu đang xử lý
-    if (toggling.has(hashId)) return
+    if (toggling.has(hashId)) return false
 
     // Lock
     const newToggling = new Set(toggling)
@@ -46,9 +46,11 @@ export const useWishlistStore = create((set, get) => ({
       const res = await wishlistService.getWishlist()
       const synced = res.data.data || []
       set({ items: synced, wishlistCount: synced.length })
+      return true
     } catch {
       // Rollback
       set({ items, wishlistCount: items.length })
+      return false
     } finally {
       // Unlock
       const finalToggling = new Set(get().toggling)
@@ -59,5 +61,9 @@ export const useWishlistStore = create((set, get) => ({
 
   isInWishlist: (hashId) => {
     return get().items.some((b) => b.hashId === hashId)
+  },
+
+  isToggling: (hashId) => {
+    return get().toggling.has(hashId)
   },
 }))

@@ -9,6 +9,7 @@ import { flyToCart } from "../utils/flyToCart";
 import { useAuthStore } from "../store/authStore";
 import { useWishlistStore } from "../store/wishlistStore";
 import { useHeartBurst, WishlistParticles } from "../hooks/useWishlistBurst";
+import { flyHeartToWishlist } from "../components/FlyingWishlistHeart";
 import toast from "react-hot-toast";
 import { SkeletonProductGrid } from "../components/skeletons/SkeletonShop";
 import RangeSlider from "../components/RangeSlider";
@@ -420,7 +421,7 @@ function TagList({ tags, maxVisible = 2 }) {
   );
 }
 
-function WishlistBtn({ wishlisted, onToggle }) {
+function WishlistBtn({ wishlisted, onToggle, disabled }) {
   const btnRef = useRef(null);
   const [hovered, setHovered] = useState(false);
   const [pos, setPos] = useState({ top: 0, left: 0 });
@@ -438,8 +439,13 @@ function WishlistBtn({ wishlisted, onToggle }) {
   };
 
   const handleClick = (e) => {
+    // Chỉ chạy hiệu ứng khi onToggle xác nhận hành động thực sự được thực hiện
+    const proceeded = onToggle(e);
+    if (!proceeded) return;
     trigger(!wishlisted);
-    onToggle(e);
+    if (!wishlisted && btnRef.current) {
+      flyHeartToWishlist(btnRef.current);
+    }
   };
 
   return (
@@ -450,6 +456,7 @@ function WishlistBtn({ wishlisted, onToggle }) {
         onClick={handleClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={() => setHovered(false)}
+        disabled={disabled}
         style={{ opacity: 1, transform: "translateY(0)", position: "relative" }}
         aria-label="Yêu thích"
       >
@@ -553,17 +560,22 @@ function CountdownPrice({ from, to, duration = 1200 }) {
 function ProductCard({ book, onAddToCart, delay, isAdding }) {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
-  const { isInWishlist, toggleWishlist } = useWishlistStore();
+  const { isInWishlist, toggleWishlist, isToggling } = useWishlistStore();
   const wishlisted = isInWishlist(book.hashId);
+  const wishlistBusy = isToggling(book.hashId);
 
-  const handleWishlist = async (e) => {
+  // Trả về true/false để WishlistBtn biết có nên chạy hiệu ứng hay không
+  const handleWishlist = (e) => {
     e.stopPropagation();
     if (!isAuthenticated) {
       toast.error("Vui lòng đăng nhập để lưu yêu thích");
-      return;
+      return false;
     }
-    if (!book.slug || !book.hashId) return;
-    await toggleWishlist(book.slug, book.hashId);
+    if (!book.slug || !book.hashId) return false;
+    toggleWishlist(book.slug, book.hashId).then((ok) => {
+      if (!ok) toast.error("Có lỗi xảy ra, vui lòng thử lại");
+    });
+    return true;
   };
 
   const desc =
@@ -625,7 +637,7 @@ function ProductCard({ book, onAddToCart, delay, isAdding }) {
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <WishlistBtn wishlisted={wishlisted} onToggle={handleWishlist} />
+          <WishlistBtn wishlisted={wishlisted} onToggle={handleWishlist} disabled={wishlistBusy} />
         </div>
       </div>
 

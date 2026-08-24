@@ -4418,6 +4418,11 @@ body.dark-mode .social-card-handle {
   opacity: 1 !important;
   transform: translateY(0) !important;
 }
+.card-wishlist:disabled,
+.btn-wishlist-main:disabled {
+  cursor: not-allowed;
+  opacity: 0.6 !important;
+}
 /* ─── Heart-burst: icon "nảy" + hạt bắn ra khi thêm vào yêu thích ─── */
 .card-wishlist svg,
 .btn-wishlist-main svg {
@@ -4444,12 +4449,12 @@ body.dark-mode .social-card-handle {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 5px;
-  height: 5px;
+  width: var(--wl-size, 5px);
+  height: var(--wl-size, 5px);
   border-radius: 50%;
   background: var(--gold);
   transform: translate(-50%, -50%);
-  animation: wl-particle-fly 0.5s ease-out forwards;
+  animation: wl-particle-fly 0.55s ease-out forwards;
 }
 @keyframes wl-particle-fly {
   0% {
@@ -4459,6 +4464,44 @@ body.dark-mode .social-card-handle {
   100% {
     opacity: 0;
     transform: translate(-50%, -50%) rotate(var(--wl-angle)) translateX(var(--wl-distance)) scale(0.3);
+  }
+}
+/* Hạt xám khi BỎ yêu thích — rơi xuống + tan biến, khác hẳn hiệu ứng "thêm" */
+.wl-particle.wl-particle-unlike {
+  animation: wl-particle-poof 0.5s ease-in forwards;
+}
+@keyframes wl-particle-poof {
+  0% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) rotate(var(--wl-angle)) translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--wl-angle)) translateX(var(--wl-distance)) scale(0.5);
+  }
+}
+
+/* ─── Tim bay từ nút wishlist về icon Wishlist trên Navbar ─── */
+.wl-flying-heart {
+  position: fixed;
+  top: var(--wl-fly-y);
+  left: var(--wl-fly-x);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 99999;
+  animation: wl-fly-to-nav 0.6s cubic-bezier(0.34, 1.15, 0.4, 1) forwards;
+}
+@keyframes wl-fly-to-nav {
+  0% {
+    transform: translate(-50%, -50%) translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) translate(var(--wl-fly-tx), var(--wl-fly-ty)) scale(0.25);
+    opacity: 0;
   }
 }
 /*  Featured product (wide card)  */

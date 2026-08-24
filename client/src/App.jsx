@@ -58,6 +58,7 @@ import KidAccess from "./pages/kid/KidAccess";
 import Tickets from "./pages/admin/Tickets";
 import PaymentReturn from "./pages/PaymentReturn";
 import GameManager from "./pages/admin/GameManager";
+import FlyingWishlistHeart from "./components/FlyingWishlistHeart";
 import GameDetail from "./pages/admin/GameDetail";
 import GamePlay from "./pages/GamePlay";
 import EbookReader from "./pages/EbookReader";
@@ -168,6 +169,7 @@ export default function App() {
       <CustomCursor />
       <EiraChatbox />
       <FloatingCompareBar />
+      <FlyingWishlistHeart />
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />

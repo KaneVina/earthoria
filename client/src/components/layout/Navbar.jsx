@@ -241,6 +241,7 @@ export default function Navbar() {
 
               {/* Wishlist */}
               <Link
+                id="wishlist-nav-icon"
                 to="/wishlist"
                 className="nav-icon icon-wishlist"
                 aria-label="Sản phẩm yêu thích"
