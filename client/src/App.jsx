@@ -25,6 +25,7 @@ import CustomCursor from "./components/CustomCursor";
 import ARGuide from "./pages/ARGuide";
 import Checkout from "./pages/Checkout";
 import Profile from "./pages/Profile";
+import LoyaltyJourney from "./pages/LoyaltyJourney";
 import Blog from "./pages/Blog";
 import ScrollToTop from "./components/ScrollToTop";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -188,6 +189,7 @@ export default function App() {
           <Route path="/legal/cookies" element={<CookiePolicy />} />
           <Route path="/legal/returns" element={<ReturnPolicy />} />
           <Route path="/sitemap" element={<Sitemap />} />
+          <Route path="/loyalty" element={<LoyaltyJourney />} />
 
           <Route
             path="/checkout"

@@ -99,7 +99,10 @@ export default function Footer() {
               >
                 Nhận thông báo mới
               </div>
-              <div className="footer-newsletter-row" style={{ display: "flex" }}>
+              <div
+                className="footer-newsletter-row"
+                style={{ display: "flex" }}
+              >
                 <input
                   type="email"
                   placeholder="Email của bạn"
@@ -149,7 +152,7 @@ export default function Footer() {
                 <Link to="/ar">Hướng Dẫn AR</Link>
               </li>
               <li>
-                <Link to="/blog">Blog & Tin Tức</Link>
+                <Link to="/loyalty">Hạng Thành Viên</Link>
               </li>
             </ul>
 
@@ -442,7 +445,9 @@ export default function Footer() {
           >
             &copy; 2026 Hệ sinh thái Earthoria. Mọi quyền được bảo lưu.
           </span>
-          <span className="footer-tagline">Phiên bản thử nghiệm Beta 26.4.1</span>
+          <span className="footer-tagline">
+            Phiên bản thử nghiệm Beta 26.4.1
+          </span>
         </div>
       </div>
 

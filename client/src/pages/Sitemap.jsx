@@ -9,6 +9,7 @@ const SECTIONS = [
     links: [
       { label: 'Trang Chủ',        sub: 'Giới thiệu Earthoria & tính năng nổi bật',  to: '/' },
       { label: 'Cửa Hàng',         sub: 'Duyệt và mua sách theo chủ đề',             to: '/shop' },
+      { label: 'Hạng Thành Viên',  sub: 'Hành trình 5 hạng thành viên & ưu đãi',     to: '/loyalty' },
       { label: 'Chi Tiết Sách',    sub: 'Xem thông tin, AR preview & đánh giá sản phẩm', to: '/shop' },
       { label: 'So Sánh Sản Phẩm', sub: 'Đối chiếu nhiều sản phẩm cạnh nhau',        to: '/compare' },
       { label: 'Hướng Dẫn AR',     sub: 'Cách sử dụng Thực tế Tăng cường trên sách', to: '/technology' },
