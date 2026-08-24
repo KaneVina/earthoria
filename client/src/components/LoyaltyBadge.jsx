@@ -37,7 +37,7 @@ export default function LoyaltyBadge({
 
   return (
     <span
-      className={`lb-badge lb-${variant} ${open ? "lb-open" : ""} ${className}`}
+      className={`lb-badge lb-${variant} ${open ? "lb-open" : ""}`}
       style={{ "--lb-accent": tier.color, "--lb-accent-soft": tier.colorSoft }}
       tabIndex={0}
       onMouseEnter={() => setOpen(true)}
@@ -46,8 +46,10 @@ export default function LoyaltyBadge({
       onBlur={() => setOpen(false)}
       onClick={() => setOpen((v) => !v)}
     >
-      {showDot && <span className="lb-dot" />}
-      <span className="lb-name">{tier.name}</span>
+      <span className={`lb-chip ${className}`}>
+        {showDot && <span className="lb-dot" />}
+        <span className="lb-name">{tier.name}</span>
+      </span>
 
       <div className={`lb-panel lb-align-${align}`} role="tooltip">
         <div className="lb-panel-head">

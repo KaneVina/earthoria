@@ -2,10 +2,15 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
   cursor: default;
   font-family: "Be Vietnam Pro", sans-serif;
   outline: none;
+}
+
+.lb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .lb-dot {
