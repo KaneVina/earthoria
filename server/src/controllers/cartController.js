@@ -4,7 +4,7 @@ const { decodeId, encodeId } = require('../utils/hashids')
 
 const CART_ITEM_INCLUDE = {
   items: {
-    orderBy: { id: 'asc' }, // TODO: đổi sang { createdAt: 'asc' } nếu CartItem có field này
+    orderBy: { createdAt: 'asc' },
     include: {
       variant: {
         include: {
