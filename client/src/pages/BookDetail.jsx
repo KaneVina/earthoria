@@ -6,6 +6,7 @@ import { useCartStore } from "../store/cartStore";
 import { useAuthStore } from "../store/authStore";
 import { formatPrice, formatDate, formatWeight, formatAgeRange } from "../utils/helpers";
 import { flyToCart } from "../utils/flyToCart";
+import { useHeartBurst, WishlistParticles } from "../hooks/useWishlistBurst";
 import toast from "react-hot-toast";
 import CompareModal from "../components/CompareModal";
 import RebuyConfirmModal from "../components/RebuyConfirmModal";
@@ -176,6 +177,7 @@ export default function BookDetail() {
   const [qty, setQty] = useState(1);
   const [selectedFormat, setSelectedFormat] = useState("PHYSICAL");
   const [wishlist, setWishlist] = useState(false);
+  const heartBurst = useHeartBurst();
   const [addedToCart, setAddedToCart] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
   const [openFaq, setOpenFaq] = useState(null);
@@ -367,6 +369,7 @@ export default function BookDetail() {
       return;
     }
     const prev = wishlist;
+    heartBurst.trigger(!prev);
     setWishlist(!prev); // optimistic
     try {
       await bookService.toggleWishlist(slug, hashId);
@@ -752,7 +755,7 @@ export default function BookDetail() {
               )}
             </button>
             <button
-              className={`btn-wishlist-main${wishlist ? " active" : ""}`}
+              className={`btn-wishlist-main${wishlist ? " active" : ""}${heartBurst.bursting ? " wl-bursting" : ""}`}
               onClick={handleWishlist}
               title={wishlist ? "Xóa khỏi yêu thích" : "Thêm vào yêu thích"}
             >
@@ -761,6 +764,7 @@ export default function BookDetail() {
                 strokeWidth={1.5}
                 fill={wishlist ? "currentColor" : "none"}
               />
+              <WishlistParticles particles={heartBurst.particles} />
             </button>
           </div>
 
