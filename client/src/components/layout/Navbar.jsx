@@ -13,14 +13,14 @@ import {
   ShieldCheck,
   Search,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useauthstore } from "../../store/authstore";
-import { usecartstore } from "../../store/cartstore";
-import { usewishliststore } from "../../store/wishliststore";
-import { usetheme } from "../../hooks/usetheme";
-import { loyaltyservice } from "../../services/loyaltyservice";
-import loyaltybadge from "../loyaltybadge";
+import { useAuthStore } from "../../store/authStore";
+import { useCartStore } from "../../store/cartStore";
+import { useWishlistStore } from "../../store/wishlistStore";
+import { useTheme } from "../../hooks/useTheme";
+import { loyaltyService } from "../../services/loyaltyService";
+import LoyaltyBadge from "../LoyaltyBadge";
 import toast from "react-hot-toast";
 import logoImg from "../assets/img/logoBT-ngangtext.png";
 import SearchOverlay from "./SearchOverlay";
@@ -40,7 +40,7 @@ export default function Navbar() {
   const cart = useCartStore((s) => s.cart);
   const fetchCart = useCartStore((s) => s.fetchCart);
   const removeCartItem = useCartStore((s) => s.removeItem);
-    const [removingItemId, setRemovingItemId] = useState(null);
+  const [removingItemId, setRemovingItemId] = useState(null);
   const { wishlistCount, fetchWishlist } = useWishlistStore();
   const { isDark, toggleTheme } = useTheme();
   const { data: loyaltyProfile } = useQuery({
@@ -288,7 +288,9 @@ export default function Navbar() {
               </Link>
 
               {/* Cart */}
-              <div className={`nav-cart-wrapper${cartPeek ? " cart-peek" : ""}`}>
+              <div
+                className={`nav-cart-wrapper${cartPeek ? " cart-peek" : ""}`}
+              >
                 <Link
                   to="/cart"
                   className="nav-icon icon-cart"
@@ -312,8 +314,7 @@ export default function Navbar() {
                           <ShoppingCart size={13} strokeWidth={2} />
                         </span>
                         <span>
-                          Giỏ hàng của bạn có{" "}
-                          <strong>{itemCount}</strong>{" "}
+                          Giỏ hàng của bạn có <strong>{itemCount}</strong>{" "}
                           {itemCount > 1 ? "sản phẩm" : "sản phẩm"}
                         </span>
                       </div>
@@ -418,10 +419,10 @@ export default function Navbar() {
                       <div
                         style={{
                           display: "flex",
-                          flexwrap: "wrap",
-                          alignitems: "center",
+                          flexWrap: "wrap",
+                          alignItems: "center",
                           gap: "6px",
-                          margintop: "6px",
+                          marginTop: "6px",
                         }}
                       >
                         <div
@@ -553,13 +554,17 @@ export default function Navbar() {
           <Link to="/wishlist" className="nav-mobile-link">
             <Heart size={15} /> Yêu thích
             {wishlistCount > 0 && (
-              <span className="nav-mobile-badge">{wishlistCount > 99 ? "99+" : wishlistCount}</span>
+              <span className="nav-mobile-badge">
+                {wishlistCount > 99 ? "99+" : wishlistCount}
+              </span>
             )}
           </Link>
           <Link to="/cart" className="nav-mobile-link">
             <ShoppingCart size={15} /> Giỏ hàng
             {itemCount > 0 && (
-              <span className="nav-mobile-badge">{itemCount > 99 ? "99+" : itemCount}</span>
+              <span className="nav-mobile-badge">
+                {itemCount > 99 ? "99+" : itemCount}
+              </span>
             )}
           </Link>
 
@@ -605,7 +610,7 @@ export default function Navbar() {
         </div>
       </nav>
 
-    {/* Search Overlay */}
+      {/* Search Overlay */}
       <SearchOverlay
         isOpen={searchOpen}
         onClose={() => setSearchOpen(false)}
