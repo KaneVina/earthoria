@@ -8,6 +8,7 @@ import { formatPrice, getBookUrl, getPreferredCartFormat } from "../utils/helper
 import { flyToCart } from "../utils/flyToCart";
 import { useAuthStore } from "../store/authStore";
 import { useWishlistStore } from "../store/wishlistStore";
+import { useHeartBurst, WishlistParticles } from "../hooks/useWishlistBurst";
 import toast from "react-hot-toast";
 import { SkeletonProductGrid } from "../components/skeletons/SkeletonShop";
 import RangeSlider from "../components/RangeSlider";
@@ -423,6 +424,7 @@ function WishlistBtn({ wishlisted, onToggle }) {
   const btnRef = useRef(null);
   const [hovered, setHovered] = useState(false);
   const [pos, setPos] = useState({ top: 0, left: 0 });
+  const { bursting, particles, trigger } = useHeartBurst();
 
   const handleMouseEnter = () => {
     if (btnRef.current) {
@@ -435,18 +437,24 @@ function WishlistBtn({ wishlisted, onToggle }) {
     setHovered(true);
   };
 
+  const handleClick = () => {
+    trigger(!wishlisted);
+    onToggle();
+  };
+
   return (
     <>
       <button
         ref={btnRef}
-        className={`card-wishlist${wishlisted ? " active" : ""}`}
-        onClick={onToggle}
+        className={`card-wishlist${wishlisted ? " active" : ""}${bursting ? " wl-bursting" : ""}`}
+        onClick={handleClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={() => setHovered(false)}
         style={{ opacity: 1, transform: "translateY(0)", position: "relative" }}
         aria-label="Yêu thích"
       >
         <HeartIcon filled={wishlisted} />
+        <WishlistParticles particles={particles} />
       </button>
       {hovered &&
         createPortal(

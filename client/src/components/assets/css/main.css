@@ -4418,7 +4418,49 @@ body.dark-mode .social-card-handle {
   opacity: 1 !important;
   transform: translateY(0) !important;
 }
+/* ─── Heart-burst: icon "nảy" + hạt bắn ra khi thêm vào yêu thích ─── */
+.card-wishlist svg,
+.btn-wishlist-main svg {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.card-wishlist.wl-bursting svg,
+.btn-wishlist-main.wl-bursting svg {
+  animation: wl-pop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes wl-pop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.35); }
+  60% { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
 
+.wl-particle-field {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+.wl-particle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--gold);
+  transform: translate(-50%, -50%);
+  animation: wl-particle-fly 0.5s ease-out forwards;
+}
+@keyframes wl-particle-fly {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--wl-angle)) translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--wl-angle)) translateX(var(--wl-distance)) scale(0.3);
+  }
+}
 /*  Featured product (wide card)  */
 .featured-product-card {
   grid-column: 1 / -1;
@@ -5274,6 +5316,7 @@ body.dark-mode .promo-strip {
   gap: 14px;
 }
 .btn-wishlist-main {
+  position: relative;
   width: 52px;
   height: 52px;
   border: 0.5px solid var(--border);
