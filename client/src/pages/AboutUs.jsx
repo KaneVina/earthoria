@@ -65,9 +65,11 @@ export default function AboutUs() {
       );
       rows.forEach((r) => valObserver.observe(r));
     }
-    // Tech stats — line of code counter
-    const counterEl = document.getElementById("tech-loc-counter");
-    if (counterEl) {
+    // Tech stats — line of code counter + file counter (đếm số lên khi cuộn tới)
+    const counterEls = document.querySelectorAll(
+      "#tech-loc-counter, #tech-file-counter",
+    );
+    counterEls.forEach((counterEl) => {
       const target = parseInt(counterEl.dataset.target, 10) || 0;
       let counted = false;
       const counterObserver = new IntersectionObserver(
@@ -95,7 +97,7 @@ export default function AboutUs() {
         { threshold: 0.5 },
       );
       counterObserver.observe(counterEl);
-    }
+    });
     // Logo analysis: mục đang active phát sáng + xương sống tô dần theo scroll
     const logoItems = document.querySelectorAll(".logo-analysis-item");
     const logoContent = document.querySelector(".logo-analysis-content");
@@ -855,12 +857,10 @@ export default function AboutUs() {
               ></div>
             </div>
             <h2 className="tech-stats-title">
-              Được Kiến Tạo Bằng <em>Từng Dòng Code</em>
+             Đằng Sau Mỗi Trải Nghiệm Là <em>Từng Dòng Code</em>
             </h2>
             <p className="tech-stats-sub">
-              Từ giao diện tương tác, mô hình 3D dựng lại chính logo thương
-              hiệu, đến trợ lý AI đồng hành cùng trẻ nhỏ — mỗi tính năng của
-              Earthoria đều bắt đầu từ một dòng code.
+              Từ hiệu năng, trải nghiệm đến những tính năng mới được phát triển mỗi ngày, tất cả đều hướng đến một trải nghiệm tốt hơn cho khách hàng.
             </p>
           </div>
 
@@ -881,14 +881,30 @@ export default function AboutUs() {
                 <span
                   className="tech-editor-number"
                   id="tech-loc-counter"
-                  data-target="  129357"
+                  data-target="129385"
                 >
                   0
                 </span>
                 <span className="tech-editor-cursor">|</span>
               </div>
               <div className="tech-editor-caption">
-                dòng code đã viết — và vẫn đang tăng mỗi ngày
+                dòng code đã viết với gần
+              </div>
+
+              <div className="tech-editor-counter tech-editor-counter--secondary">
+                <span
+                  className="tech-editor-number tech-editor-number--secondary"
+                  id="tech-file-counter"
+                  data-target="325"
+                >
+                  0
+                </span>
+                <span className="tech-editor-cursor tech-editor-cursor--secondary">
+                  |
+                </span>
+              </div>
+              <div className="tech-editor-caption">
+                file dự án hệ thống và vẫn đang tăng mỗi ngày
               </div>
 
               <div className="tech-stack-tags">

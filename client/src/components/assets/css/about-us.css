@@ -1125,6 +1125,18 @@ body.dark-mode .team-avatar { background: #222e28; border-color: rgba(74,158,63,
   animation: tech-cursor-blink 1s steps(1) infinite;
 }
 
+.tech-editor-counter--secondary {
+  margin-top: 28px;
+}
+
+.tech-editor-number--secondary {
+  font-size: clamp(32px, 5vw, 56px);
+}
+
+.tech-editor-cursor--secondary {
+  font-size: clamp(24px, 3.5vw, 40px);
+}
+
 .tech-editor-caption {
   margin-top: 14px;
   font-family: "JetBrains Mono", monospace;
