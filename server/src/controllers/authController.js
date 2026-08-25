@@ -1,9 +1,12 @@
-const bcrypt = require("bcryptjs");
+ const bcrypt = require("bcryptjs");
 const prisma = require("../config/db");
 const { generateAccessToken, formatResponse } = require("../utils/helpers");
 const tokenService = require("../services/tokenService");
 const passport = require("passport");
-const { validatePasswordPolicy } = require("../utils/passwordPolicy");
+const {
+  validatePasswordPolicy,
+  isPasswordTooSimilar,
+} = require("../utils/passwordPolicy");
 const { setRefreshCookie, clearRefreshCookie } = require("../utils/cookies");
 
 function getRequestMeta(req) {
@@ -203,6 +206,14 @@ const changePassword = async (req, res) => {
     const passwordPolicyError = validatePasswordPolicy(newPassword);
     if (passwordPolicyError) {
       return formatResponse(res, 400, passwordPolicyError);
+    }
+
+    if (isPasswordTooSimilar(currentPassword, newPassword)) {
+      return formatResponse(
+        res,
+        400,
+        "Mật khẩu mới không được quá giống mật khẩu hiện tại",
+      );
     }
 
     const hashed = await bcrypt.hash(newPassword, 12);

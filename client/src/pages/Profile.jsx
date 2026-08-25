@@ -9,6 +9,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AlertCircle, FileText } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authService } from "../services/authService";
+import { isPasswordTooSimilar } from "../utils/passwordSimilarity";
 import { orderService } from "../services/orderService";
 import { paymentService } from "../services/paymentService";
 import { arService } from "../services/arService";
@@ -3246,6 +3247,10 @@ function ChangePasswordFlow() {
   const confirmMatches =
     form.confirmPassword.length > 0 &&
     form.confirmPassword === form.newPassword;
+  const isTooSimilar =
+    form.oldPassword.length > 0 &&
+    form.newPassword.length > 0 &&
+    isPasswordTooSimilar(form.oldPassword, form.newPassword);
 
   const handleChange = (field, val) => {
     setForm((f) => ({ ...f, [field]: val }));
@@ -3274,6 +3279,8 @@ function ChangePasswordFlow() {
       newErrors.oldPassword = "Vui lòng nhập mật khẩu hiện tại";
     if (!isStrongEnough)
       newErrors.newPassword = "Mật khẩu mới chưa đạt đủ các tiêu chí bên dưới";
+    else if (isTooSimilar)
+      newErrors.newPassword = "Mật khẩu mới không được quá giống mật khẩu hiện tại";
     if (form.newPassword !== form.confirmPassword)
       newErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
     if (Object.keys(newErrors).length) {
@@ -3299,6 +3306,7 @@ function ChangePasswordFlow() {
     !mutation.isPending &&
     form.oldPassword.length > 0 &&
     isStrongEnough &&
+    !isTooSimilar &&
     confirmMatches;
 
   return (
@@ -3386,8 +3394,17 @@ function ChangePasswordFlow() {
                   </div>
                 ))}
               </div>
+              {isTooSimilar && (
+                <div
+                  className="pf-pw-check-item"
+                  style={{ marginTop: "8px", color: "#e05c5c" }}
+                >
+                  <span className="pf-pw-dot" />
+                  Mật khẩu mới quá giống mật khẩu hiện tại, vui lòng chọn mật
+                  khẩu khác
+                </div>
+              )}
             </div>
-
             <div>
               <PasswordField
                 label="Xác Nhận Mật Khẩu Mới"
