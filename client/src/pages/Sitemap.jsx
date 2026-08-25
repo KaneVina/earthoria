@@ -62,6 +62,7 @@ const SECTIONS = [
       { label: 'Chính Sách Vận Chuyển', sub: 'Thời gian & phí giao hàng',            to: '/legal/shipping' },
       { label: 'Chính Sách Cookie', sub: 'Cách chúng tôi sử dụng cookie trên trang', to: '/legal/cookies' },
       { label: 'Chính Sách Trả Hàng & Hoàn Tiền', sub: 'Đổi trả, bảo hành & quy trình hoàn tiền', to: '/legal/returns' },
+      { label: 'Chính Sách Hạng Thành Viên', sub: 'Cách xác định hạng & quyền lợi tương ứng', to: '/legal/membership' },
     ],
   },
 ]
@@ -175,7 +176,7 @@ export default function Sitemap() {
             fontSize: '13px', fontStyle: 'italic',
             color: 'var(--text-muted)',
           }}>
-            Earthoria © 2026 · FPT University Cần Thơ · EXE101 Group 05
+            Earthoria © 2026 Pháp lý & Chính sách
           </span>
           <div style={{ marginLeft: 'auto' }}>
             <Link to="/" style={{
