@@ -14,8 +14,11 @@ import {
   Truck,
 } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
-import { formatPrice } from "../utils/helpers";
+import { useAuthStore } from "../store/authStore";
+import { formatPrice, computeTierDiscount } from "../utils/helpers";
 import { orderService } from "../services/orderService";
+import { loyaltyService } from "../services/loyaltyService";
+import LoyaltyBadge from "../components/LoyaltyBadge";
 import toast from "react-hot-toast";
 import StepBar from "../components/StepBar";
 import { SkeletonCartItem, SkeletonCartSummary } from "../components/skeletons/SkeletonCart";
@@ -26,14 +29,29 @@ const VALID_COUPON = { code: "EARTH15", pct: 0.15 };
 
 export default function Cart() {
   const { cart, fetchCart, updateItem, removeItem, clearCart, loading } = useCartStore();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [coupon, setCoupon] = useState("");
   const [couponApplied, setCouponApplied] = useState(null);
   const [pendingItemId, setPendingItemId] = useState(null);
+  const [loyaltyProfile, setLoyaltyProfile] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchCart();
   }, []);
+
+  // Hồ sơ hạng thành viên — quyết định % giảm giá & ngưỡng freeship tự động,
+  // dùng chung công thức computeTierDiscount với Checkout để 2 trang luôn khớp số.
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setLoyaltyProfile(null);
+      return;
+    }
+    loyaltyService
+      .getMyProfile()
+      .then((res) => setLoyaltyProfile(res.data.data))
+      .catch(() => {});
+  }, [isAuthenticated]);
 
   const qtyDebounceRef = useRef({});
 
@@ -89,13 +107,23 @@ export default function Cart() {
     return sum + (item.variant.salePrice ?? item.variant.price) * item.quantity;
   }, 0);
 
+  // Ưu đãi hạng thành viên — tự động áp dụng, KHÔNG cần nhập mã, cùng công thức
+  // computeTierDiscount() dùng ở Checkout.jsx và server (loyaltyTier.js) để số tiền
+  // hiển thị ở giỏ hàng luôn khớp với số tiền thực tế lúc đặt hàng.
+  const tierDiscount = computeTierDiscount(loyaltyProfile?.tier, subtotal);
+
   const couponDiscount = couponApplied
     ? Math.round(subtotal * VALID_COUPON.pct)
     : 0;
-  const afterCoupon = subtotal - couponDiscount;
-  const shippingFee = afterCoupon >= SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
-  const total = afterCoupon + shippingFee;
-  const shippingPct = Math.min((afterCoupon / SHIPPING_THRESHOLD) * 100, 100);
+  const afterDiscount = subtotal - couponDiscount - tierDiscount;
+  const freeShipThreshold =
+    loyaltyProfile?.tier?.freeShipThreshold ?? SHIPPING_THRESHOLD;
+  const shippingFee = afterDiscount >= freeShipThreshold ? 0 : SHIPPING_FEE;
+  const total = afterDiscount + shippingFee;
+  const shippingPct =
+    freeShipThreshold <= 0
+      ? 100
+      : Math.min((afterDiscount / freeShipThreshold) * 100, 100);
 
   const handleApplyCoupon = () => {
     setCouponApplied(true);
@@ -499,7 +527,7 @@ export default function Cart() {
           {/* Shipping progress */}
           <div style={{ background: "var(--forest)", padding: "24px 28px" }}>
             <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)", marginBottom: "12px", fontWeight: 300 }}>
-              {afterCoupon >= SHIPPING_THRESHOLD ? (
+              {afterDiscount >= freeShipThreshold ? (
                 <span style={{ color: "var(--gold)" }}>
                   Bạn được{" "}
                   <strong style={{ color: "var(--ivory)" }}>miễn phí giao hàng!</strong>
@@ -507,7 +535,7 @@ export default function Cart() {
               ) : (
                 <>
                   <strong style={{ color: "var(--ivory)" }}>
-                    Còn {formatPrice(SHIPPING_THRESHOLD - afterCoupon)}
+                    Còn {formatPrice(freeShipThreshold - afterDiscount)}
                   </strong>{" "}
                   nữa để được{" "}
                   <span style={{ color: "var(--gold)" }}>miễn phí giao hàng!</span>
@@ -526,8 +554,8 @@ export default function Cart() {
               />
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px", color: "rgba(255,255,255,0.35)" }}>
-              <span style={{ color: "var(--gold)" }}>{formatPrice(afterCoupon)}</span>
-              <span>{formatPrice(SHIPPING_THRESHOLD)}</span>
+              <span style={{ color: "var(--gold)" }}>{formatPrice(afterDiscount)}</span>
+              <span>{formatPrice(freeShipThreshold)}</span>
             </div>
           </div>
 
@@ -560,12 +588,30 @@ export default function Cart() {
                 ...(couponApplied
                   ? [{ label: "Mã EARTH15 (−15%)", val: `-${formatPrice(couponDiscount)}`, red: true }]
                   : []),
+                ...(tierDiscount > 0
+                  ? [{
+                      label: (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+                          Ưu đãi hạng{" "}
+                          <LoyaltyBadge
+                            tier={loyaltyProfile.tier}
+                            progress={loyaltyProfile}
+                            variant="light"
+                            align="left"
+                            showDot={false}
+                          />
+                        </span>
+                      ),
+                      val: `-${formatPrice(tierDiscount)}`,
+                      tierColor: loyaltyProfile?.tier?.color,
+                    }]
+                  : []),
               ].map((line, i) => (
                 <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
                   <span style={{ color: "var(--text-muted)", fontWeight: 300 }}>{line.label}</span>
                   <span
                     style={{
-                      color: line.green ? "var(--gold)" : line.red ? "#c05050" : line.free ? "var(--gold)" : "var(--forest)",
+                      color: line.tierColor || (line.green ? "var(--gold)" : line.red ? "#c05050" : line.free ? "var(--gold)" : "var(--forest)"),
                       fontWeight: 400,
                     }}
                   >

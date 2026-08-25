@@ -415,13 +415,28 @@ export default function InvoiceModal({ order, buyerEmail, onClose }) {
           <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 18 }}>
             <div style={{ width: 270 }}>
               <TotalRow label="Tạm tính" value={formatPrice(order.subtotal ?? order.total)} />
-              {order.discount > 0 && (
-                <TotalRow
-                  label={`Giảm giá${order.couponCode ? ` (${order.couponCode})` : ""}`}
-                  value={`−${formatPrice(order.discount)}`}
-                  accent
-                />
-              )}
+              {(() => {
+                const tierPortion = order.loyaltyDiscount || 0;
+                const couponPortion = Math.max((order.discount || 0) - tierPortion, 0);
+                return (
+                  <>
+                    {couponPortion > 0 && (
+                      <TotalRow
+                        label={`Giảm giá${order.couponCode ? ` (${order.couponCode})` : ""}`}
+                        value={`−${formatPrice(couponPortion)}`}
+                        accent
+                      />
+                    )}
+                    {tierPortion > 0 && (
+                      <TotalRow
+                        label="Ưu đãi hạng thành viên"
+                        value={`−${formatPrice(tierPortion)}`}
+                        accent
+                      />
+                    )}
+                  </>
+                );
+              })()}
               <TotalRow
                 label="Phí vận chuyển"
                 value={order.shippingFee ? formatPrice(order.shippingFee) : "Miễn phí"}

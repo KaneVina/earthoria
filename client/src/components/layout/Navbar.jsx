@@ -28,7 +28,7 @@ import SearchOverlay from "./SearchOverlay";
 import "../assets/css/navbar.css";
 import { authService } from "../../services/authService";
 import LogoutConfirmModal from "../LogoutConfirmModal";
-import { formatPrice } from "../../utils/helpers";
+import { formatPrice, computeTierDiscount } from "../../utils/helpers";
 const logoCompactImg = "/logo-nho.png";
 export default function Navbar() {
   const queryClient = useQueryClient();
@@ -361,10 +361,46 @@ export default function Navbar() {
                           </li>
                         )}
                       </ul>
-                      <div className="cart-dropdown-footer">
-                        <span>Tổng cộng</span>
-                        <strong>{formatPrice(cart?.total ?? 0)}</strong>
-                      </div>
+                      {(() => {
+                        const cartSubtotal = cart?.total ?? 0;
+                        const cartTierDiscount = computeTierDiscount(
+                          loyaltyProfile?.tier,
+                          cartSubtotal,
+                        );
+                        return (
+                          <>
+                            {cartTierDiscount > 0 && (
+                              <div className="cart-dropdown-tier-row">
+                                <span
+                                  style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: "5px",
+                                  }}
+                                >
+                                  Ưu đãi hạng
+                                  <LoyaltyBadge
+                                    tier={loyaltyProfile.tier}
+                                    progress={loyaltyProfile}
+                                    variant="light"
+                                    align="left"
+                                    showDot={false}
+                                  />
+                                </span>
+                                <strong style={{ color: loyaltyProfile?.tier?.color }}>
+                                  −{formatPrice(cartTierDiscount)}
+                                </strong>
+                              </div>
+                            )}
+                            <div className="cart-dropdown-footer">
+                              <span>{cartTierDiscount > 0 ? "Tạm tính sau ưu đãi" : "Tạm tính"}</span>
+                              <strong>
+                                {formatPrice(cartSubtotal - cartTierDiscount)}
+                              </strong>
+                            </div>
+                          </>
+                        );
+                      })()}
                     </>
                   ) : (
                     <div className="cart-dropdown-empty">

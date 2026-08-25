@@ -2420,8 +2420,17 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
                 "Phí giao hàng",
                 order.shippingFee ? formatPrice(order.shippingFee) : "Miễn phí",
               ],
-              ...(order.discount
-                ? [["Giảm giá", `−${formatPrice(order.discount)}`]]
+              ...(order.discount - (order.loyaltyDiscount || 0) > 0
+                ? [[
+                    "Giảm giá",
+                    `−${formatPrice(order.discount - (order.loyaltyDiscount || 0))}`,
+                  ]]
+                : []),
+              ...(order.loyaltyDiscount > 0
+                ? [[
+                    "Ưu đãi hạng thành viên",
+                    `−${formatPrice(order.loyaltyDiscount)}`,
+                  ]]
                 : []),
             ].map(([k, v]) => (
               <div key={k} className="pf-summary-line">
