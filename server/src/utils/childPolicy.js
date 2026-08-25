@@ -43,10 +43,27 @@ function isWithinAllowedWindow(child, date = new Date()) {
   const [eh, em] = String(child.allowEnd).split(":").map(Number);
   if ([sh, sm, eh, em].some((n) => Number.isNaN(n))) return true; // dữ liệu hỏng -> không chặn nhầm
 
-  const s = sh * 60 + sm;
+const s = sh * 60 + sm;
   const e = eh * 60 + em;
   const cur = currentMinuteOfDayVn(date);
   return s <= e ? cur >= s && cur <= e : cur >= s || cur <= e;
+}
+
+function vnDateStr(date = new Date()) {
+  const { year, month, day } = getVnParts(date);
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function shiftVnDateStr(dateStr, days) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const base = new Date(Date.UTC(y, m - 1, d));
+  base.setUTCDate(base.getUTCDate() + days);
+  return `${base.getUTCFullYear()}-${String(base.getUTCMonth() + 1).padStart(2, "0")}-${String(base.getUTCDate()).padStart(2, "0")}`;
+}
+
+function vnDateStrToUtcStart(dateStr) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d, -TIMEZONE_OFFSET_HOURS, 0, 0, 0));
 }
 
 async function getTodayMinutes(prisma, childId, date = new Date()) {
@@ -72,4 +89,7 @@ module.exports = {
   isWithinAllowedWindow,
   getTodayMinutes,
   isDailyLimitReached,
+  vnDateStr,
+  shiftVnDateStr,
+  vnDateStrToUtcStart,
 };

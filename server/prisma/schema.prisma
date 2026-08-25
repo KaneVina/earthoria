@@ -679,9 +679,10 @@ model ChildProfile {
 
   parent      User               @relation(fields: [parentId], references: [id], onDelete: Cascade)
   bookAccess  ChildBookAccess[]
-  activities  ChildActivityLog[]
+ activities  ChildActivityLog[]
   auditLogs   ChildAuditLog[]
   gameResults GameResult[]
+  garden      ChildGarden?
 
   @@index([parentId])
 }
@@ -745,8 +746,50 @@ model ChildAuditLog {
   child  ChildProfile? @relation(fields: [childId], references: [id], onDelete: SetNull)
   parent User          @relation(fields: [parentId], references: [id], onDelete: Cascade)
 
-  @@index([childId])
+ @@index([childId])
   @@index([parentId, createdAt])
+}
+
+model ChildGarden {
+  id             String  @id @default(uuid())
+  childId        String  @unique
+  forestLevel    Int     @default(0)
+  currentStreak  Int     @default(0)
+  longestStreak  Int     @default(0)
+  missedStreak   Int     @default(0)
+  lastActiveDate String?
+  lastTickDate   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  child ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  trees ChildTree[]
+}
+
+enum TreeStatus {
+  ALIVE
+  MATURE
+  DEAD
+}
+
+model ChildTree {
+  id             String     @id @default(uuid())
+  gardenId       String
+  slot           Int
+  readingXp      Int        @default(0)
+  gameXp         Int        @default(0)
+  readingMinutes Int        @default(0)
+  health         Int        @default(100)
+  status         TreeStatus @default(ALIVE)
+  plantedAt      DateTime   @default(now())
+  maturedAt      DateTime?
+  diedAt         DateTime?
+  updatedAt      DateTime   @updatedAt
+
+  garden ChildGarden @relation(fields: [gardenId], references: [id], onDelete: Cascade)
+
+  @@unique([gardenId, slot])
+  @@index([gardenId])
 }
 
 // ─ SITE SETTING ─

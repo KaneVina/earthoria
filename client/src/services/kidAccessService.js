@@ -8,4 +8,6 @@ export const kidAccessService = {
     api.post(`/kid-access/${token}/activity/start`, { bookId }),
   pingActivity: (token, activityId) =>
     api.post(`/kid-access/${token}/activity/${activityId}/ping`),
+
+  getGarden: (token) => api.get(`/kid-access/${token}/garden`),
 }

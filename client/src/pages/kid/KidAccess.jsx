@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { kidAccessService } from "../../services/kidAccessService";
 import FullScreenLoader from "../../components/FullScreenLoader";
+import KnowledgeGarden from "../../components/knowledgeGarden/KnowledgeGarden";
 import "../../components/assets/css/kidAccess.css";
 
 const INSPIRE_LINES = [
@@ -58,7 +59,15 @@ const FONT_SCALES = [
 ];
 const HOLD_DURATION_MS = 900;
 
-const WEEKDAYS_VI = ["Chủ nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+const WEEKDAYS_VI = [
+  "Chủ nhật",
+  "Thứ Hai",
+  "Thứ Ba",
+  "Thứ Tư",
+  "Thứ Năm",
+  "Thứ Sáu",
+  "Thứ Bảy",
+];
 
 function fmtTimeParts(date) {
   const h = pad2(date.getHours());
@@ -109,13 +118,20 @@ function normalizeSearch(str) {
 }
 
 const SENSITIVE_KEYWORDS = [
-  "tu tu", "tu tu di", "muon tu tu",
+  "tu tu",
+  "tu tu di",
+  "muon tu tu",
   "tu sat",
   "tu ky",
   "tram cam",
-  "muon chet", "chan song", "khong muon song",
+  "muon chet",
+  "chan song",
+  "khong muon song",
   "cai chet",
-  "tu hai", "tu lam hai ban than", "rach tay", "cat tay",
+  "tu hai",
+  "tu lam hai ban than",
+  "rach tay",
+  "cat tay",
   "tuyet vong",
 ].map(normalizeSearch);
 
@@ -135,7 +151,9 @@ function SearchHighlight({ text, query }) {
   return (
     <>
       {text.slice(0, idx)}
-      <mark className="kid-search-mark">{text.slice(idx, idx + query.trim().length)}</mark>
+      <mark className="kid-search-mark">
+        {text.slice(idx, idx + query.trim().length)}
+      </mark>
       {text.slice(idx + query.trim().length)}
     </>
   );
@@ -165,10 +183,21 @@ function spawnRipple(e) {
   span.addEventListener("animationend", () => span.remove());
 }
 
-const SPARKLE_COLORS = ["#12A8E0", "#FF6E93", "#FF9F45", "#63CC4A", "#FFC53D", "#1FC2C2"];
+const SPARKLE_COLORS = [
+  "#12A8E0",
+  "#FF6E93",
+  "#FF9F45",
+  "#63CC4A",
+  "#FFC53D",
+  "#1FC2C2",
+];
 
 function spawnSparklesAt(x, y, count = 10) {
-  if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+  if (
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+  )
+    return;
   const layer = document.createElement("div");
   layer.className = "kid-sparkle-layer";
   layer.style.left = `${x}px`;
@@ -194,8 +223,22 @@ function spawnSparkles(e, count = 10) {
 
 const SUNRISE_HOUR = 6; // 06:00 — mặt trời mọc
 const SUNSET_HOUR = 18; // 18:00 — mặt trời lặn
-const NIGHT_SKY_STOPS = ["#050B1F", "#0B1B3A", "#16294F", "#20386A", "#2B4570", "#182647"];
-const DAY_SKY_STOPS = ["#063A57", "#1AAEE8", "#12A8E0", "#6FD3F2", "#EAF8FF", "#F5FBFF"];
+const NIGHT_SKY_STOPS = [
+  "#050B1F",
+  "#0B1B3A",
+  "#16294F",
+  "#20386A",
+  "#2B4570",
+  "#182647",
+];
+const DAY_SKY_STOPS = [
+  "#063A57",
+  "#1AAEE8",
+  "#12A8E0",
+  "#6FD3F2",
+  "#EAF8FF",
+  "#F5FBFF",
+];
 
 function clamp01(n) {
   return Math.min(1, Math.max(0, n));
@@ -237,7 +280,9 @@ function computeSkyState(date) {
   const dayT = clamp01((dayness + 0.15) / 0.3); // 0 = màu đêm, 1 = màu ngày
   const edge = clamp01(1 - Math.abs(dayness) * 2.2); // đỉnh đúng lúc rạng đông/hoàng hôn
 
-  const stops = NIGHT_SKY_STOPS.map((c, i) => mixHex(c, DAY_SKY_STOPS[i], dayT));
+  const stops = NIGHT_SKY_STOPS.map((c, i) =>
+    mixHex(c, DAY_SKY_STOPS[i], dayT),
+  );
 
   const sunVisible = h >= SUNRISE_HOUR && h <= SUNSET_HOUR;
   const sunArc = arcPosition(h, SUNRISE_HOUR, SUNSET_HOUR);
@@ -260,7 +305,12 @@ function computeSkyState(date) {
     warmOpacity: edge,
     warmX: sunVisible ? sunArc.x : moonArc.x,
     sun: { visible: sunVisible, opacity: sunOpacity, x: sunArc.x, y: sunArc.y },
-    moon: { visible: moonVisible, opacity: moonOpacity, x: moonArc.x, y: moonArc.y },
+    moon: {
+      visible: moonVisible,
+      opacity: moonOpacity,
+      x: moonArc.x,
+      y: moonArc.y,
+    },
   };
 }
 
@@ -272,7 +322,6 @@ function useSkyState() {
   }, []);
   return useMemo(() => computeSkyState(date), [date]);
 }
-
 
 function PhaseIcon({ phase, ...props }) {
   if (phase === "night") return <Moon {...props} />;
@@ -295,7 +344,12 @@ function DynamicSky({ skyState, minimal = false }) {
   };
 
   return (
-    <div className="kid-sky" aria-hidden="true" style={skyStyle} data-phase={phase}>
+    <div
+      className="kid-sky"
+      aria-hidden="true"
+      style={skyStyle}
+      data-phase={phase}
+    >
       <div className="kid-sky-wash" />
       <div className="kid-sky-warm" />
 
@@ -309,7 +363,11 @@ function DynamicSky({ skyState, minimal = false }) {
       {moon.opacity > 0.01 && (
         <span
           className="kid-moon"
-          style={{ left: `${moon.x}%`, top: `${moon.y}%`, opacity: moon.opacity }}
+          style={{
+            left: `${moon.x}%`,
+            top: `${moon.y}%`,
+            opacity: moon.opacity,
+          }}
         >
           <span className="kid-moon-crater c1" />
           <span className="kid-moon-crater c2" />
@@ -486,7 +544,12 @@ export default function KidAccess() {
     }, periodMs);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOk, child?.ruleEnabled, child?.ruleIntervalMinutes, child?.ruleRestSeconds]);
+  }, [
+    isOk,
+    child?.ruleEnabled,
+    child?.ruleIntervalMinutes,
+    child?.ruleRestSeconds,
+  ]);
 
   // đếm ngược khi overlay nghỉ mắt đang mở
   useEffect(() => {
@@ -510,7 +573,12 @@ export default function KidAccess() {
     }, periodMs);
     return () => clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOk, child?.mandatoryBreakEnabled, child?.breakAfterMinutes, child?.breakDurationMinutes]);
+  }, [
+    isOk,
+    child?.mandatoryBreakEnabled,
+    child?.breakAfterMinutes,
+    child?.breakDurationMinutes,
+  ]);
 
   // đếm ngược khi đang giải lao bắt buộc
   useEffect(() => {
@@ -527,7 +595,10 @@ export default function KidAccess() {
   useEffect(() => {
     if (!showRest && !showBreak) return;
     setBreathPhase(0);
-    const id = setInterval(() => setBreathPhase((p) => (p + 1) % BREATH_PHASES.length), 2250);
+    const id = setInterval(
+      () => setBreathPhase((p) => (p + 1) % BREATH_PHASES.length),
+      2250,
+    );
     return () => clearInterval(id);
   }, [showRest, showBreak]);
 
@@ -555,33 +626,33 @@ export default function KidAccess() {
     setHoldPct(0);
   }, []);
 
-  const startGearHold = useCallback(
-    (e) => {
-      e.preventDefault();
-      setIsHolding(true);
-      holdOriginRef.current = { x: e.clientX, y: e.clientY };
-      const startedAt = performance.now();
-      const tick = (t) => {
-        const pct = Math.min(100, ((t - startedAt) / HOLD_DURATION_MS) * 100);
-        setHoldPct(pct);
-        if (pct >= 100) {
-          holdRafRef.current = null;
-          setIsHolding(false);
-          setHoldPct(0);
-          setShowSettings(true);
-          spawnSparklesAt(holdOriginRef.current.x, holdOriginRef.current.y, 14);
-          return;
-        }
-        holdRafRef.current = requestAnimationFrame(tick);
-      };
+  const startGearHold = useCallback((e) => {
+    e.preventDefault();
+    setIsHolding(true);
+    holdOriginRef.current = { x: e.clientX, y: e.clientY };
+    const startedAt = performance.now();
+    const tick = (t) => {
+      const pct = Math.min(100, ((t - startedAt) / HOLD_DURATION_MS) * 100);
+      setHoldPct(pct);
+      if (pct >= 100) {
+        holdRafRef.current = null;
+        setIsHolding(false);
+        setHoldPct(0);
+        setShowSettings(true);
+        spawnSparklesAt(holdOriginRef.current.x, holdOriginRef.current.y, 14);
+        return;
+      }
       holdRafRef.current = requestAnimationFrame(tick);
+    };
+    holdRafRef.current = requestAnimationFrame(tick);
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (holdRafRef.current) cancelAnimationFrame(holdRafRef.current);
     },
     [],
   );
-
-  useEffect(() => () => {
-    if (holdRafRef.current) cancelAnimationFrame(holdRafRef.current);
-  }, []);
 
   const handleReadNow = useCallback(
     (book) => {
@@ -591,25 +662,34 @@ export default function KidAccess() {
       }
       if (book.arCodes?.length) {
         if (child?.isLocked) {
-          toast("AR đang bị khoá, nhờ ba mẹ mở khoá nhé!", { icon: <Lock size={16} /> });
+          toast("AR đang bị khoá, nhờ ba mẹ mở khoá nhé!", {
+            icon: <Lock size={16} />,
+          });
           return;
         }
         if (!book.isDelivered) {
-          toast("Sách đang trên đường giao, chưa xem AR được nhé!", { icon: <Package size={16} /> });
+          toast("Sách đang trên đường giao, chưa xem AR được nhé!", {
+            icon: <Package size={16} />,
+          });
           return;
         }
         navigate(`/e-kid/${slug}/${token}/ar/${book.arCodes[0].code}`);
         return;
       }
-      toast.success(`Nhờ ba mẹ mở sách điện tử để cùng đọc "${book.title}" nhé!`, {
-        icon: <BookOpen size={16} />,
-      });
+      toast.success(
+        `Nhờ ba mẹ mở sách điện tử để cùng đọc "${book.title}" nhé!`,
+        {
+          icon: <BookOpen size={16} />,
+        },
+      );
     },
     [child?.isLocked, navigate, slug, token],
   );
 
   const canReadBook = useCallback(
-    (book) => book.hasEbook || (!!book.arCodes?.length && book.isDelivered && !child?.isLocked),
+    (book) =>
+      book.hasEbook ||
+      (!!book.arCodes?.length && book.isDelivered && !child?.isLocked),
     [child?.isLocked],
   );
 
@@ -642,12 +722,18 @@ export default function KidAccess() {
     return books.filter((b) => normalizeSearch(b.title).includes(q));
   }, [books, searchQuery]);
   const isSearching = normalizeSearch(searchQuery).length > 0;
-  const isSensitiveSearch = useMemo(() => isSensitiveQuery(searchQuery), [searchQuery]);
+  const isSensitiveSearch = useMemo(
+    () => isSensitiveQuery(searchQuery),
+    [searchQuery],
+  );
   const isSearchActive = isSearching || searchFocused;
 
   if (status === "loading") {
     return (
-      <div className="kid-state-page kid-state-page--loading" data-phase={skyState.phase}>
+      <div
+        className="kid-state-page kid-state-page--loading"
+        data-phase={skyState.phase}
+      >
         <DynamicSky skyState={skyState} minimal />
         <FullScreenLoader
           eyebrow="Đang mở tủ sách"
@@ -667,9 +753,8 @@ export default function KidAccess() {
           </div>
           <h1 className="kid-state-title">Link này không đúng rồi bé ơi</h1>
           <p className="kid-state-text">
-
-            Liên kết không hợp lệ hoặc đã bị thu hồi. Bé nhờ ba mẹ lấy lại
-            link mới trong trang quản lý nhé!
+            Liên kết không hợp lệ hoặc đã bị thu hồi. Bé nhờ ba mẹ lấy lại link
+            mới trong trang quản lý nhé!
           </p>
           <Link
             to="/"
@@ -694,13 +779,16 @@ export default function KidAccess() {
           <div className="kid-state-icon kid-state-icon--orange">
             <Lock size={28} />
           </div>
-          <h1 className="kid-state-title">Đến giờ nghỉ rồi, {child.name} ơi!</h1>
+          <h1 className="kid-state-title">
+            Đến giờ nghỉ rồi, {child.name} ơi!
+          </h1>
           <p className="kid-state-text">
-            Ba mẹ đã tạm khoá sách của bé lúc này. Bé nhờ ba mẹ mở lại khi
-            muốn đọc tiếp nhé!
+            Ba mẹ đã tạm khoá sách của bé lúc này. Bé nhờ ba mẹ mở lại khi muốn
+            đọc tiếp nhé!
           </p>
           <span className="kid-state-stat">
-            <BookOpen size={14} /> Hôm nay bé đã đọc {child.todayMinutes || 0} phút
+            <BookOpen size={14} /> Hôm nay bé đã đọc {child.todayMinutes || 0}{" "}
+            phút
           </span>
           <br />
           <Link
@@ -721,29 +809,48 @@ export default function KidAccess() {
   const dailyLimit = child.dailyLimitMinutes || 0;
   const todayMinutes = child.todayMinutes || 0;
   const limitReached = dailyLimit > 0 && todayMinutes >= dailyLimit;
-  const ringPercent = dailyLimit > 0 ? Math.min(100, (todayMinutes / dailyLimit) * 100) : 0;
+  const ringPercent =
+    dailyLimit > 0 ? Math.min(100, (todayMinutes / dailyLimit) * 100) : 0;
   const ringRadius = 23;
   const ringCirc = 2 * Math.PI * ringRadius;
   const ringOffset = ringCirc * (1 - ringPercent / 100);
-  const inWindow = child.allowWindowEnabled ? withinWindow(child.allowStart, child.allowEnd) : true;
+  const inWindow = child.allowWindowEnabled
+    ? withinWindow(child.allowStart, child.allowEnd)
+    : true;
   const showRestTip =
-    child.tipsEnabled && (child.tipsFrequency === "rest" || child.tipsFrequency === "interval");
+    child.tipsEnabled &&
+    (child.tipsFrequency === "rest" || child.tipsFrequency === "interval");
   const modalAccent = activeBook ? accentForId(activeBook.id) : "sky";
 
-
-  const liveTodayMinutes = dailyLimit > 0 ? Math.min(dailyLimit, todayMinutes + sessionSeconds / 60) : 0;
-  const crestRemainPercent = dailyLimit > 0 ? Math.max(0, 100 - (liveTodayMinutes / dailyLimit) * 100) : 100;
+  const liveTodayMinutes =
+    dailyLimit > 0
+      ? Math.min(dailyLimit, todayMinutes + sessionSeconds / 60)
+      : 0;
+  const crestRemainPercent =
+    dailyLimit > 0
+      ? Math.max(0, 100 - (liveTodayMinutes / dailyLimit) * 100)
+      : 100;
   const crestRingRadius = 46;
   const crestRingCirc = 2 * Math.PI * crestRingRadius;
   const crestRingOffset = crestRingCirc * (1 - crestRemainPercent / 100);
-  const crestRemainMinutes = dailyLimit > 0 ? Math.max(0, Math.ceil(dailyLimit - liveTodayMinutes)) : null;
-  const crestRingState = limitReached ? "is-empty" : crestRemainPercent <= 20 ? "is-warning" : "";
+  const crestRemainMinutes =
+    dailyLimit > 0
+      ? Math.max(0, Math.ceil(dailyLimit - liveTodayMinutes))
+      : null;
+  const crestRingState = limitReached
+    ? "is-empty"
+    : crestRemainPercent <= 20
+      ? "is-warning"
+      : "";
 
   return (
     <div
       className="kid-page"
       data-phase={skyState.phase}
-      style={{ "--kid-accent": child.avatarColor || "var(--kid-blue)", "--kid-font-scale": fontScale }}
+      style={{
+        "--kid-accent": child.avatarColor || "var(--kid-blue)",
+        "--kid-font-scale": fontScale,
+      }}
     >
       <DynamicSky skyState={skyState} />
 
@@ -752,16 +859,31 @@ export default function KidAccess() {
           <div className="kid-brand">
             <div className="kid-crest-wrap">
               {dailyLimit > 0 ? (
-                <svg className="kid-crest-countdown" viewBox="0 0 100 100" aria-hidden="true">
+                <svg
+                  className="kid-crest-countdown"
+                  viewBox="0 0 100 100"
+                  aria-hidden="true"
+                >
                   <title>{`Còn ${crestRemainMinutes} phút đọc hôm nay`}</title>
                   <defs>
-                    <linearGradient id="kidCountdownGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <linearGradient
+                      id="kidCountdownGrad"
+                      x1="0%"
+                      y1="0%"
+                      x2="100%"
+                      y2="100%"
+                    >
                       <stop offset="0%" stopColor="#12A8E0" />
                       <stop offset="55%" stopColor="#1FC2C2" />
                       <stop offset="100%" stopColor="#FF6E93" />
                     </linearGradient>
                   </defs>
-                  <circle className="kid-crest-countdown-track" cx="50" cy="50" r={crestRingRadius} />
+                  <circle
+                    className="kid-crest-countdown-track"
+                    cx="50"
+                    cy="50"
+                    r={crestRingRadius}
+                  />
                   <circle
                     className={`kid-crest-countdown-fill${crestRingState ? ` ${crestRingState}` : ""}`}
                     cx="50"
@@ -775,19 +897,27 @@ export default function KidAccess() {
                 <span className="kid-crest-ring" aria-hidden="true" />
               )}
               <span className="kid-crest">
-                <img src="/logo/logo-mau/lg-m-kid-studio.png" alt="Earthoria" className="kid-crest-img" />
+                <img
+                  src="/logo/logo-mau/lg-m-kid-studio.png"
+                  alt="Earthoria"
+                  className="kid-crest-img"
+                />
               </span>
             </div>
             <div className="kid-brandtext">
               <span className="kid-brand-word">KID STUDIO</span>
-              <span className="kid-brand-tagline">Tài khoản của {child.name}</span>
+              <span className="kid-brand-tagline">
+                Tài khoản của {child.name}
+              </span>
             </div>
           </div>
           <div className="kid-topbar-actions">
             <span className="kid-live-chip">
               <Clock size={12} />
               <span className="kid-live-dot" />
-              <span className="kid-live-label">Đang đọc · {fmtClock(sessionSeconds)}</span>
+              <span className="kid-live-label">
+                Đang đọc · {fmtClock(sessionSeconds)}
+              </span>
             </span>
             <button
               type="button"
@@ -820,12 +950,13 @@ export default function KidAccess() {
             </span>
           </div>
           <h1 className="kid-hero-title">
-            {timeGreeting()}, <span className="kid-name-highlight">{child.name}</span>!
+            {timeGreeting()},{" "}
+            <span className="kid-name-highlight">{child.name}</span>!
           </h1>
           {/* <div className="kid-hero-bubble"> */}
-            {/* <Sparkles size={15} className="kid-hero-bubble-icon" /> */}
-            {/* <p className="kid-hero-sub">{inspireLine}</p> */}
-            {/* <span className="kid-hero-bubble-tail" aria-hidden="true" /> */}
+          {/* <Sparkles size={15} className="kid-hero-bubble-icon" /> */}
+          {/* <p className="kid-hero-sub">{inspireLine}</p> */}
+          {/* <span className="kid-hero-bubble-tail" aria-hidden="true" /> */}
           {/* </div> */}
           {Number.isFinite(child.age) && (
             <div className="kid-hero-age">
@@ -835,9 +966,18 @@ export default function KidAccess() {
         </section>
 
         <section className="kid-search-section">
-          <div className={`kid-search-wrap${isSearchActive ? " is-active" : ""}`}>
-            <label className={`kid-search-bar${isSearchActive ? " is-active" : ""}`} htmlFor="kid-book-search">
-              <Search size={19} className="kid-search-icon" aria-hidden="true" />
+          <div
+            className={`kid-search-wrap${isSearchActive ? " is-active" : ""}`}
+          >
+            <label
+              className={`kid-search-bar${isSearchActive ? " is-active" : ""}`}
+              htmlFor="kid-book-search"
+            >
+              <Search
+                size={19}
+                className="kid-search-icon"
+                aria-hidden="true"
+              />
               <input
                 id="kid-book-search"
                 ref={searchInputRef}
@@ -879,7 +1019,11 @@ export default function KidAccess() {
                   </div>
                 ) : isSensitiveSearch ? (
                   <div className="kid-search-help">
-                    <img src="/ekid-help.png" alt="" className="kid-search-help-img" />
+                    <img
+                      src="/ekid-help.png"
+                      alt=""
+                      className="kid-search-help-img"
+                    />
                     <p className="kid-search-help-text">
                       Bé không đơn độc đâu nhé. Nếu bé hoặc bạn bè đang cảm thấy
                       buồn hay khó khăn, hãy nói chuyện với ba mẹ hoặc thầy cô
@@ -890,7 +1034,9 @@ export default function KidAccess() {
                   <>
                     <div className="kid-search-dropdown-head">
                       <Sparkles size={14} />
-                      <span>{filteredBooks.length}/{books.length} cuốn tìm thấy</span>
+                      <span>
+                        {filteredBooks.length}/{books.length} cuốn tìm thấy
+                      </span>
                     </div>
                     <div className="kid-search-dropdown-list">
                       {filteredBooks.map((b) => {
@@ -911,13 +1057,19 @@ export default function KidAccess() {
                               ) : (
                                 <BookMarked size={20} />
                               )}
-                              <span className="kid-search-result-star" aria-hidden="true">
+                              <span
+                                className="kid-search-result-star"
+                                aria-hidden="true"
+                              >
                                 <Star size={9} fill="currentColor" />
                               </span>
                             </span>
                             <span className="kid-search-result-info">
                               <span className="kid-search-result-title">
-                                <SearchHighlight text={b.title} query={searchQuery} />
+                                <SearchHighlight
+                                  text={b.title}
+                                  query={searchQuery}
+                                />
                               </span>
                               {(b.ageMin || b.ageMax) && (
                                 <span className="kid-search-result-age">
@@ -925,7 +1077,10 @@ export default function KidAccess() {
                                 </span>
                               )}
                             </span>
-                            <ChevronRight size={18} className="kid-search-result-arrow" />
+                            <ChevronRight
+                              size={18}
+                              className="kid-search-result-arrow"
+                            />
                           </button>
                         );
                       })}
@@ -945,204 +1100,221 @@ export default function KidAccess() {
         </section>
 
         <div className={`kid-blur-wrap${isSearchActive ? " kid-blurred" : ""}`}>
-        <section className="kid-stats-row">
-          <div className="kid-stat-card kid-stat-card--time">
-            <div className="kid-clock-icon">
-              <PhaseIcon phase={skyState.phase} size={18} />
-            </div>
-            <div>
-              <div className="kid-stat-label">Bây giờ là</div>
-              <div className="kid-clock-value">
-                {fmtTimeParts(now).h}
-                <span className="kid-clock-colon">:</span>
-                {fmtTimeParts(now).m}
-              </div>
-              <div className="kid-clock-date">{fmtDateVi(now)}</div>
-            </div>
-          </div>
-
-          <div className="kid-stat-card kid-ring-card">
-            {dailyLimit > 0 ? (
-              <div className="kid-ring">
-                <svg viewBox="0 0 52 52" width="52" height="52">
-                  <defs>
-                    <linearGradient id="kidRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#12A8E0" />
-                      <stop offset="100%" stopColor="#FF6E93" />
-                    </linearGradient>
-                  </defs>
-                  <circle className="kid-ring-track" cx="26" cy="26" r={ringRadius} />
-                  <circle
-                    className={`kid-ring-fill${limitReached ? " is-full" : ""}`}
-                    cx="26"
-                    cy="26"
-                    r={ringRadius}
-                    strokeDasharray={ringCirc}
-                    strokeDashoffset={ringOffset}
-                  />
-                </svg>
-              </div>
-            ) : (
-              <div className="kid-stat-icon">
-                <Clock size={18} />
-              </div>
-            )}
-            <div>
-              <div className="kid-stat-label">Hôm nay đã đọc</div>
-              <div className="kid-stat-value">
-                {todayMinutes} phút
-                {dailyLimit > 0 && <small>/ {dailyLimit} phút</small>}
-              </div>
-            </div>
-          </div>
-
-          {child.allowWindowEnabled && (
-            <div className="kid-stat-card kid-stat-card--sky">
-              <div className="kid-stat-icon">
-                {inWindow ? <Sun size={18} /> : <Moon size={18} />}
+          <section className="kid-stats-row">
+            <div className="kid-stat-card kid-stat-card--time">
+              <div className="kid-clock-icon">
+                <PhaseIcon phase={skyState.phase} size={18} />
               </div>
               <div>
-                <div className="kid-stat-label">Giờ được đọc</div>
-                <div className="kid-stat-value" style={{ fontSize: 15 }}>
-                  {child.allowStart} – {child.allowEnd}
+                <div className="kid-stat-label">Bây giờ là</div>
+                <div className="kid-clock-value">
+                  {fmtTimeParts(now).h}
+                  <span className="kid-clock-colon">:</span>
+                  {fmtTimeParts(now).m}
                 </div>
-              </div>
-              <span className={`kid-stat-status ${inWindow ? "is-open" : "is-closed"}`}>
-                {inWindow ? "Đang mở" : "Ngoài giờ"}
-              </span>
-            </div>
-          )}
-
-          {child.ruleEnabled && (
-            <div className="kid-stat-card kid-stat-card--berry">
-              <div className="kid-stat-icon">
-                <Eye size={18} />
-              </div>
-              <div>
-                <div className="kid-stat-label">Bảo vệ mắt</div>
-                <div className="kid-stat-value" style={{ fontSize: 15 }}>
-                  Nghỉ mỗi {child.ruleIntervalMinutes} phút
-                </div>
+                <div className="kid-clock-date">{fmtDateVi(now)}</div>
               </div>
             </div>
-          )}
-        </section>
 
-        {child.tipsEnabled && child.tipsFrequency === "open" && (
-          <div className="kid-tip-banner">
-            <span className="kid-tip-banner-icon">
-              <Lightbulb size={16} />
-            </span>
-            <span>{eyeTip}</span>
-          </div>
-        )}
-
-        {limitReached && (
-          <div className="kid-limit-banner">
-            <span className="kid-limit-banner-icon">
-              <PartyPopper size={16} />
-            </span>
-            <span>
-              Hôm nay bé đã đọc đủ giờ rồi, giỏi lắm! Mai mình đọc tiếp nhé.
-            </span>
-          </div>
-        )}
-
-        <section className="kid-shelf">
-          <div className="kid-shelf-heading">
-            <div className="kid-shelf-title-wrap">
-              <span className="kid-shelf-leaf" aria-hidden="true">
-                <BookOpen size={17} />
-              </span>
-              <h2 className="kid-shelf-title">{"Tủ sách của bé".normalize("NFC")}</h2>
-            </div>
-            <span className="kid-shelf-count">
-              {books.length} cuốn
-            </span>
-          </div>
-
-          <div className="kid-book-grid">
-            {books.map((b, i) => {
-              const accent = SHELF_ACCENTS[i % SHELF_ACCENTS.length];
-              return (
-                <button
-                  key={b.id}
-                  type="button"
-                  className={`kid-book-card kid-book-card--${accent}`}
-                  style={{ animationDelay: `${Math.min(i, 10) * 0.05}s` }}
-                  onMouseEnter={handleCardEnter}
-                  onMouseMove={handleCardMove}
-                  onMouseLeave={handleCardLeave}
-                  onClick={(e) => {
-                    spawnRipple(e);
-                    spawnSparkles(e, 8);
-                    handleOpenBook(b);
-                  }}
-                >
-                  <div className="kid-book-cover">
-                    {b.coverImage ? (
-                      <img src={b.coverImage} alt={b.title} loading="lazy" />
-                    ) : (
-                      <div
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "var(--kid-blue)",
-                          opacity: 0.45,
-                        }}
+            <div className="kid-stat-card kid-ring-card">
+              {dailyLimit > 0 ? (
+                <div className="kid-ring">
+                  <svg viewBox="0 0 52 52" width="52" height="52">
+                    <defs>
+                      <linearGradient
+                        id="kidRingGrad"
+                        x1="0%"
+                        y1="0%"
+                        x2="100%"
+                        y2="100%"
                       >
-                        <BookMarked size={32} />
-                      </div>
-                    )}
-                    <span className="kid-book-shine" aria-hidden="true" />
-                    <span className="kid-book-stamp" aria-hidden="true">
-                      <Star size={14} fill="currentColor" />
-                    </span>
-                    {(b.ageMin || b.ageMax) && (
-                      <span className="kid-book-age">
-                        {b.ageMin ?? "0"}–{b.ageMax ?? "17"} tuổi
-                      </span>
-                    )}
-                    <span className={`kid-book-cta${limitReached || !canReadBook(b) ? " is-locked" : ""}`}>
-                      {limitReached ? (
-                        <>
-                          <Lock size={13} /> Hết giờ hôm nay
-                        </>
-                      ) : !canReadBook(b) ? (
-                        <>
-                          <Clock size={13} /> Đang chờ sách
-                        </>
-                      ) : (
-                        <>
-                          Đọc ngay <ChevronRight size={13} />
-                        </>
-                      )}
-                    </span>
-                  </div>
-                  <div className="kid-book-info">
-                    <div className="kid-book-title">{b.title}</div>
-                  </div>
-                </button>
-              );
-            })}
-
-            {books.length === 0 && !isSearching && (
-              <div className="kid-empty">
-                <div className="kid-empty-icon">
-                  <BookMarked size={26} />
+                        <stop offset="0%" stopColor="#12A8E0" />
+                        <stop offset="100%" stopColor="#FF6E93" />
+                      </linearGradient>
+                    </defs>
+                    <circle
+                      className="kid-ring-track"
+                      cx="26"
+                      cy="26"
+                      r={ringRadius}
+                    />
+                    <circle
+                      className={`kid-ring-fill${limitReached ? " is-full" : ""}`}
+                      cx="26"
+                      cy="26"
+                      r={ringRadius}
+                      strokeDasharray={ringCirc}
+                      strokeDashoffset={ringOffset}
+                    />
+                  </svg>
                 </div>
-                <div className="kid-empty-title">Chưa có sách nào cả</div>
-                <p className="kid-empty-sub">
-                  Nhờ ba mẹ mua thêm sách để tủ sách của bé đầy ắp truyện hay
-                  nhé!
-                </p>
+              ) : (
+                <div className="kid-stat-icon">
+                  <Clock size={18} />
+                </div>
+              )}
+              <div>
+                <div className="kid-stat-label">Hôm nay đã đọc</div>
+                <div className="kid-stat-value">
+                  {todayMinutes} phút
+                  {dailyLimit > 0 && <small>/ {dailyLimit} phút</small>}
+                </div>
+              </div>
+            </div>
+
+            {child.allowWindowEnabled && (
+              <div className="kid-stat-card kid-stat-card--sky">
+                <div className="kid-stat-icon">
+                  {inWindow ? <Sun size={18} /> : <Moon size={18} />}
+                </div>
+                <div>
+                  <div className="kid-stat-label">Giờ được đọc</div>
+                  <div className="kid-stat-value" style={{ fontSize: 15 }}>
+                    {child.allowStart} – {child.allowEnd}
+                  </div>
+                </div>
+                <span
+                  className={`kid-stat-status ${inWindow ? "is-open" : "is-closed"}`}
+                >
+                  {inWindow ? "Đang mở" : "Ngoài giờ"}
+                </span>
               </div>
             )}
-          </div>
-        </section>
+
+            {child.ruleEnabled && (
+              <div className="kid-stat-card kid-stat-card--berry">
+                <div className="kid-stat-icon">
+                  <Eye size={18} />
+                </div>
+                <div>
+                  <div className="kid-stat-label">Bảo vệ mắt</div>
+                  <div className="kid-stat-value" style={{ fontSize: 15 }}>
+                    Nghỉ mỗi {child.ruleIntervalMinutes} phút
+                  </div>
+                </div>
+              </div>
+            )}
+          </section>
+
+          {child.tipsEnabled && child.tipsFrequency === "open" && (
+            <div className="kid-tip-banner">
+              <span className="kid-tip-banner-icon">
+                <Lightbulb size={16} />
+              </span>
+              <span>{eyeTip}</span>
+            </div>
+          )}
+
+          {limitReached && (
+            <div className="kid-limit-banner">
+              <span className="kid-limit-banner-icon">
+                <PartyPopper size={16} />
+              </span>
+              <span>
+                Hôm nay bé đã đọc đủ giờ rồi, giỏi lắm! Mai mình đọc tiếp nhé.
+              </span>
+            </div>
+          )}
+
+          <KnowledgeGarden token={token} />
+
+          <section className="kid-shelf">
+            <div className="kid-shelf-heading">
+              <div className="kid-shelf-title-wrap">
+                <span className="kid-shelf-leaf" aria-hidden="true">
+                  <BookOpen size={17} />
+                </span>
+                <h2 className="kid-shelf-title">
+                  {"Tủ sách của bé".normalize("NFC")}
+                </h2>
+              </div>
+              <span className="kid-shelf-count">{books.length} cuốn</span>
+            </div>
+
+            <div className="kid-book-grid">
+              {books.map((b, i) => {
+                const accent = SHELF_ACCENTS[i % SHELF_ACCENTS.length];
+                return (
+                  <button
+                    key={b.id}
+                    type="button"
+                    className={`kid-book-card kid-book-card--${accent}`}
+                    style={{ animationDelay: `${Math.min(i, 10) * 0.05}s` }}
+                    onMouseEnter={handleCardEnter}
+                    onMouseMove={handleCardMove}
+                    onMouseLeave={handleCardLeave}
+                    onClick={(e) => {
+                      spawnRipple(e);
+                      spawnSparkles(e, 8);
+                      handleOpenBook(b);
+                    }}
+                  >
+                    <div className="kid-book-cover">
+                      {b.coverImage ? (
+                        <img src={b.coverImage} alt={b.title} loading="lazy" />
+                      ) : (
+                        <div
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "var(--kid-blue)",
+                            opacity: 0.45,
+                          }}
+                        >
+                          <BookMarked size={32} />
+                        </div>
+                      )}
+                      <span className="kid-book-shine" aria-hidden="true" />
+                      <span className="kid-book-stamp" aria-hidden="true">
+                        <Star size={14} fill="currentColor" />
+                      </span>
+                      {(b.ageMin || b.ageMax) && (
+                        <span className="kid-book-age">
+                          {b.ageMin ?? "0"}–{b.ageMax ?? "17"} tuổi
+                        </span>
+                      )}
+                      <span
+                        className={`kid-book-cta${limitReached || !canReadBook(b) ? " is-locked" : ""}`}
+                      >
+                        {limitReached ? (
+                          <>
+                            <Lock size={13} /> Hết giờ hôm nay
+                          </>
+                        ) : !canReadBook(b) ? (
+                          <>
+                            <Clock size={13} /> Đang chờ sách
+                          </>
+                        ) : (
+                          <>
+                            Đọc ngay <ChevronRight size={13} />
+                          </>
+                        )}
+                      </span>
+                    </div>
+                    <div className="kid-book-info">
+                      <div className="kid-book-title">{b.title}</div>
+                    </div>
+                  </button>
+                );
+              })}
+
+              {books.length === 0 && !isSearching && (
+                <div className="kid-empty">
+                  <div className="kid-empty-icon">
+                    <BookMarked size={26} />
+                  </div>
+                  <div className="kid-empty-title">Chưa có sách nào cả</div>
+                  <p className="kid-empty-sub">
+                    Nhờ ba mẹ mua thêm sách để tủ sách của bé đầy ắp truyện hay
+                    nhé!
+                  </p>
+                </div>
+              )}
+            </div>
+          </section>
         </div>
 
         <div className="kid-footer-divider" aria-hidden="true">
@@ -1158,7 +1330,10 @@ export default function KidAccess() {
 
       {activeBook && (
         <div className="kid-modal-overlay" onClick={closeModal}>
-          <div className={`kid-modal kid-modal--${modalAccent}`} onClick={(e) => e.stopPropagation()}>
+          <div
+            className={`kid-modal kid-modal--${modalAccent}`}
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="kid-modal-cover">
               {activeBook.coverImage ? (
                 <img src={activeBook.coverImage} alt={activeBook.title} />
@@ -1183,12 +1358,18 @@ export default function KidAccess() {
               </span>
             </div>
             <div className="kid-modal-body">
-              <button type="button" className="kid-modal-close" onClick={closeModal} aria-label="Đóng">
+              <button
+                type="button"
+                className="kid-modal-close"
+                onClick={closeModal}
+                aria-label="Đóng"
+              >
                 <X size={16} />
               </button>
               {(activeBook.ageMin || activeBook.ageMax) && (
                 <span className="kid-modal-age">
-                  <Smile size={12} /> Dành cho {activeBook.ageMin ?? "0"}–{activeBook.ageMax ?? "17"} tuổi
+                  <Smile size={12} /> Dành cho {activeBook.ageMin ?? "0"}–
+                  {activeBook.ageMax ?? "17"} tuổi
                 </span>
               )}
               <h3 className="kid-modal-title">{activeBook.title}</h3>
@@ -1234,16 +1415,26 @@ export default function KidAccess() {
 
       {showSettings && (
         <div className="kid-modal-overlay" onClick={closeSettings}>
-          <div className="kid-settings-panel" onClick={(e) => e.stopPropagation()}>
+          <div
+            className="kid-settings-panel"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="kid-settings-header">
               <div className="kid-settings-icon">
                 <Settings size={20} />
               </div>
               <div>
                 <div className="kid-settings-title">Cài đặt cho ba mẹ</div>
-                <div className="kid-settings-sub">Tuỳ chỉnh nhanh cho {child.name}</div>
+                <div className="kid-settings-sub">
+                  Tuỳ chỉnh nhanh cho {child.name}
+                </div>
               </div>
-              <button type="button" className="kid-settings-close" onClick={closeSettings} aria-label="Đóng">
+              <button
+                type="button"
+                className="kid-settings-close"
+                onClick={closeSettings}
+                aria-label="Đóng"
+              >
                 <X size={16} />
               </button>
             </div>
@@ -1268,7 +1459,10 @@ export default function KidAccess() {
                   </button>
                 ))}
               </div>
-              <div className="kid-font-preview" style={{ "--kid-font-scale": fontScale }}>
+              <div
+                className="kid-font-preview"
+                style={{ "--kid-font-scale": fontScale }}
+              >
                 Bé thích đọc sách cùng Earthoria Kid Studio!
               </div>
             </div>
@@ -1279,13 +1473,17 @@ export default function KidAccess() {
               <div className="kid-settings-label">
                 <ShieldCheck size={14} /> Quản lý nâng cao
               </div>
-              <Link to="/parent-dashboard" className="kid-btn kid-btn--primary kid-btn--block kid-settings-cta">
+              <Link
+                to="/parent-dashboard"
+                className="kid-btn kid-btn--primary kid-btn--block kid-settings-cta"
+              >
                 Mở trang quản lý cho phụ huynh <ChevronRight size={16} />
               </Link>
             </div>
 
             <div className="kid-settings-footnote">
-              <Heart size={13} fill="currentColor" /> Giờ đọc, giới hạn thời gian và nhắc nghỉ mắt được quản lý ở đó.
+              <Heart size={13} fill="currentColor" /> Giờ đọc, giới hạn thời
+              gian và nhắc nghỉ mắt được quản lý ở đó.
             </div>
           </div>
         </div>
@@ -1299,12 +1497,18 @@ export default function KidAccess() {
               <span className="kid-breathe-ring d2" />
               <span className="kid-breathe-ring d3" />
               <span className="kid-breathe-core">
-                <Eye size={16} className="kid-breathe-icon" aria-hidden="true" />
+                <Eye
+                  size={16}
+                  className="kid-breathe-icon"
+                  aria-hidden="true"
+                />
                 <span className="kid-breathe-count">{restLeft}</span>
                 <span className="kid-breathe-unit">giây</span>
               </span>
             </div>
-            <span className="kid-breathe-phase">{BREATH_PHASES[breathPhase]}</span>
+            <span className="kid-breathe-phase">
+              {BREATH_PHASES[breathPhase]}
+            </span>
             <h2 className="kid-overlay-title">Cho mắt nghỉ ngơi nào!</h2>
             <p className="kid-overlay-text">
               Bé hãy nhìn ra xa và hít thở thật sâu trong giây lát nhé.
@@ -1315,7 +1519,11 @@ export default function KidAccess() {
               </div>
             )}
             <div>
-              <button type="button" className="kid-overlay-skip" onClick={() => setShowRest(false)}>
+              <button
+                type="button"
+                className="kid-overlay-skip"
+                onClick={() => setShowRest(false)}
+              >
                 Đã nghỉ xong, đọc tiếp nào →
               </button>
             </div>
@@ -1331,16 +1539,22 @@ export default function KidAccess() {
               <span className="kid-breathe-ring d2" />
               <span className="kid-breathe-ring d3" />
               <span className="kid-breathe-core">
-                <Wind size={16} className="kid-breathe-icon" aria-hidden="true" />
+                <Wind
+                  size={16}
+                  className="kid-breathe-icon"
+                  aria-hidden="true"
+                />
                 <span className="kid-breathe-count">{fmtClock(breakLeft)}</span>
                 <span className="kid-breathe-unit">còn lại</span>
               </span>
             </div>
-            <span className="kid-breathe-phase">{BREATH_PHASES[breathPhase]}</span>
+            <span className="kid-breathe-phase">
+              {BREATH_PHASES[breathPhase]}
+            </span>
             <h2 className="kid-overlay-title">Giờ giải lao rồi!</h2>
             <p className="kid-overlay-text">
-              Bé đã đọc miệt mài rồi đó — đứng dậy vươn vai, uống nước, rồi
-              quay lại đọc tiếp nhé!
+              Bé đã đọc miệt mài rồi đó — đứng dậy vươn vai, uống nước, rồi quay
+              lại đọc tiếp nhé!
             </p>
           </div>
         </div>
