@@ -14,6 +14,7 @@ import { orderService } from "../services/orderService";
 import { paymentService } from "../services/paymentService";
 import { arService } from "../services/arService";
 import { loyaltyService } from "../services/loyaltyService";
+import { addressService } from "../services/addressService";
 import { useAuthStore } from "../store/authStore";
 import {
   formatPrice,
@@ -3729,68 +3730,81 @@ function useWards(provinceCode) {
   }, [provinceCode]);
   return { wards, loading };
 }
-
-function AddressesTab({ profile, confirm }) {
-  const storageKey = `earthoria_addresses_${profile.id || profile.email || "guest"}`;
-
-  const [addresses, setAddresses] = useState(() => {
-    try {
-      const saved =
-        typeof window !== "undefined"
-          ? window.localStorage.getItem(storageKey)
-          : null;
-      if (saved) return JSON.parse(saved);
-    } catch {
-      /* ignore malformed cache */
-    }
-    return profile.addresses || [];
-  });
+function AddressesTab({ confirm }) {
+  const [addresses, setAddresses] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(EMPTY_ADDR_FORM);
+  const [submitting, setSubmitting] = useState(false);
+  const [pendingWardName, setPendingWardName] = useState(null);
 
   const { provinces, loading: provincesLoading } = useProvinces();
   const { wards, loading: wardsLoading } = useWards(form.provinceCode);
 
+  const loadAddresses = useCallback(() => {
+    setLoading(true);
+    addressService
+      .getAll()
+      .then(({ data }) => setAddresses(data.data || []))
+      .catch(() =>
+        toast.error("Không tải được sổ địa chỉ, vui lòng thử lại"),
+      )
+      .finally(() => setLoading(false));
+  }, []);
+
   useEffect(() => {
-    try {
-      window.localStorage.setItem(storageKey, JSON.stringify(addresses));
-    } catch {
-      /* storage unavailable */
-    }
-  }, [addresses, storageKey]);
+    loadAddresses();
+  }, [loadAddresses]);
 
   const openAddForm = () => {
     setEditingId(null);
     setForm(EMPTY_ADDR_FORM);
+    setPendingWardName(null);
     setShowForm(true);
   };
   const closeForm = () => {
     setShowForm(false);
     setEditingId(null);
     setForm(EMPTY_ADDR_FORM);
+    setPendingWardName(null);
   };
   const openEditForm = (addr) => {
     setEditingId(addr.id);
+    const matchedProvince = provinces.find((p) => p.name === addr.province);
     setForm({
-      name: addr.name,
+      name: addr.fullName,
       phone: addr.phone,
       street: addr.street,
-      provinceCode: addr.provinceCode || "",
-      provinceName: addr.provinceName || addr.city || "",
-      wardCode: addr.wardCode || "",
-      wardName: addr.wardName || addr.ward || "",
+      provinceCode: matchedProvince ? matchedProvince.code : "",
+      provinceName: addr.province || "",
+      wardCode: "",
+      wardName: addr.ward || "",
       isDefault: !!addr.isDefault,
     });
+    setPendingWardName(addr.ward || null);
     setShowForm(true);
   };
+
+  useEffect(() => {
+    if (pendingWardName && wards.length > 0) {
+      const matchedWard = wards.find((w) => w.name === pendingWardName);
+      if (matchedWard) {
+        setForm((f) => ({
+          ...f,
+          wardCode: matchedWard.code,
+          wardName: matchedWard.name,
+        }));
+      }
+      setPendingWardName(null);
+    }
+  }, [wards, pendingWardName]);
 
   const selectProvince = (opt) => {
     setForm((f) => ({
       ...f,
       provinceCode: opt ? opt.code : "",
       provinceName: opt ? opt.name : "",
-      // Changing province invalidates whatever ward was chosen for the old province.
       wardCode: "",
       wardName: "",
     }));
@@ -3803,30 +3817,39 @@ function AddressesTab({ profile, confirm }) {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.provinceCode || !form.wardCode) {
       toast.error("Vui lòng chọn đầy đủ Tỉnh/Thành và Phường/Xã");
       return;
     }
-    if (editingId) {
-      setAddresses((a) =>
-        a.map((x) => {
-          if (x.id === editingId) return { ...x, ...form };
-          return form.isDefault ? { ...x, isDefault: false } : x;
-        }),
+    const payload = {
+      fullName: form.name,
+      phone: form.phone,
+      street: form.street,
+      province: form.provinceName,
+      ward: form.wardName,
+      ...(addresses.length > 0 ? { isDefault: form.isDefault } : {}),
+    };
+    setSubmitting(true);
+    try {
+      if (editingId) {
+        await addressService.update(editingId, payload);
+        toast.success("Đã cập nhật địa chỉ");
+      } else {
+        await addressService.create(payload);
+        toast.success("Đã thêm địa chỉ mới!");
+      }
+      closeForm();
+      loadAddresses();
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.message ||
+          "Lưu địa chỉ thất bại, vui lòng thử lại",
       );
-      toast.success("Đã cập nhật địa chỉ");
-    } else {
-      const newAddr = { ...form, id: Date.now() };
-      setAddresses((a) =>
-        form.isDefault
-          ? [newAddr, ...a.map((x) => ({ ...x, isDefault: false }))]
-          : [...a, newAddr],
-      );
-      toast.success("Đã thêm địa chỉ mới!");
+    } finally {
+      setSubmitting(false);
     }
-    closeForm();
   };
 
   const handleDelete = async (id) => {
@@ -3839,13 +3862,25 @@ function AddressesTab({ profile, confirm }) {
       danger: true,
     });
     if (!ok) return;
-    setAddresses((a) => a.filter((x) => x.id !== id));
-    toast.success("Đã xóa địa chỉ");
+    try {
+      await addressService.remove(id);
+      toast.success("Đã xóa địa chỉ");
+      loadAddresses();
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.message || "Xóa địa chỉ thất bại, vui lòng thử lại",
+      );
+    }
   };
 
-  const setDefault = (id) => {
-    setAddresses((a) => a.map((x) => ({ ...x, isDefault: x.id === id })));
-    toast.success("Đã đặt làm địa chỉ mặc định");
+  const setDefault = async (id) => {
+    try {
+      await addressService.setDefault(id);
+      toast.success("Đã đặt làm địa chỉ mặc định");
+      loadAddresses();
+    } catch {
+      toast.error("Không thể đặt làm mặc định, vui lòng thử lại");
+    }
   };
 
   return (
@@ -3918,26 +3953,36 @@ function AddressesTab({ profile, confirm }) {
             />
           </div>
 
-          <label className="pf-addr-default-check">
-            <input
-              type="checkbox"
-              checked={form.isDefault}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, isDefault: e.target.checked }))
-              }
-            />
-            Đặt làm địa chỉ mặc định
-          </label>
+          {addresses.length > 0 && (
+            <label className="pf-addr-default-check">
+              <input
+                type="checkbox"
+                checked={form.isDefault}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, isDefault: e.target.checked }))
+                }
+              />
+              Đặt làm địa chỉ mặc định
+            </label>
+          )}
           <div style={{ display: "flex", gap: "12px" }}>
             <button
               type="submit"
+              disabled={submitting}
               className="pf-btn-tactile pf-btn-shine pf-addr-save-btn"
             >
-              {editingId ? "Lưu Thay Đổi" : "Lưu Địa Chỉ"}
+              {submitting ? (
+                <span className="pf-spinner-sm" />
+              ) : editingId ? (
+                "Lưu Thay Đổi"
+              ) : (
+                "Lưu Địa Chỉ"
+              )}
             </button>
             <button
               type="button"
               onClick={closeForm}
+              disabled={submitting}
               className="pf-btn-tactile pf-addr-cancel-btn"
             >
               Hủy Bỏ
@@ -3946,7 +3991,23 @@ function AddressesTab({ profile, confirm }) {
         </form>
       )}
 
-      {addresses.length === 0 && !showForm ? (
+      {loading ? (
+        <div className="pf-addr-grid">
+          {[0, 1].map((i) => (
+            <div key={i} className="pf-addr-card" style={{ gap: 8 }}>
+              <div
+                className="pf-skel"
+                style={{ width: "120px", height: "13px", marginBottom: 8 }}
+              />
+              <div
+                className="pf-skel"
+                style={{ width: "90px", height: "11px", marginBottom: 12 }}
+              />
+              <div className="pf-skel" style={{ width: "100%", height: "13px" }} />
+            </div>
+          ))}
+        </div>
+      ) : addresses.length === 0 && !showForm ? (
         <EmptyState
           icon={Icon.map}
           text="Chưa có địa chỉ giao hàng nào"
@@ -3984,11 +4045,10 @@ function AddressCard({ addr, onSetDefault, onEdit, onDelete }) {
       {addr.isDefault && (
         <span className="pf-addr-default-badge">Mặc Định</span>
       )}
-      <div className="pf-addr-name">{addr.name}</div>
+      <div className="pf-addr-name">{addr.fullName}</div>
       <div className="pf-addr-phone">{addr.phone}</div>
       <div className="pf-addr-text">
-        {addr.street}, {addr.wardName || addr.ward},{" "}
-        {addr.provinceName || addr.city}
+        {[addr.street, addr.ward, addr.province].filter(Boolean).join(", ")}
       </div>
       <div className="pf-addr-actions">
         {!addr.isDefault && (
@@ -4012,10 +4072,6 @@ function AddressCard({ addr, onSetDefault, onEdit, onDelete }) {
 
 /* ══════════════════════════════════════════════
    TAB: SÁCH AR CỦA TÔI
-   Chỉ liệt kê ArCode thuộc sách đã mua + đơn DELIVERED (backend đã lọc
-   sẵn qua endpoint /ar/my-books) — không cần lọc lại ở frontend.
-   Bấm vào 1 mục sẽ đi thẳng tới /ar/:slug/:code để xem mô hình 3D,
-   không cần quét lại QR giấy.
 ══════════════════════════════════════════════ */
 function ParentDashboardBanner() {
   return (
