@@ -111,12 +111,68 @@ export default function KnowledgeGarden({ token }) {
 
       {isFreshStart ? (
         <div className="kg-empty">
-          <span className="kg-empty-emoji" aria-hidden="true">🌱</span>
-          <div className="kg-empty-title">Con chưa có cây nào.</div>
+          <span className="kg-empty-deco kg-empty-deco--1" aria-hidden="true" />
+          <span className="kg-empty-deco kg-empty-deco--2" aria-hidden="true" />
+
+          <div className="kg-empty-pot" aria-hidden="true">
+            <svg viewBox="0 0 120 120" className="kg-empty-seed-svg">
+              <ellipse className="kg-empty-soil-shadow" cx="60" cy="96" rx="34" ry="7" />
+              <path
+                className="kg-empty-pot-body"
+                d="M34 62 L86 62 L78 100 Q60 106 42 100 Z"
+              />
+              <rect className="kg-empty-pot-rim" x="30" y="54" width="60" height="12" rx="6" />
+              <motion.g
+                initial={{ y: 6, opacity: 0.6 }}
+                animate={{ y: [6, -2, 6], opacity: 1 }}
+                transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <path
+                  className="kg-empty-sprout-stem"
+                  d="M60 62 C60 48 60 42 60 34"
+                />
+                <path className="kg-empty-sprout-leaf" d="M60 40 C48 36 42 26 46 16 C58 20 62 32 60 40 Z" />
+                <path className="kg-empty-sprout-leaf" d="M60 34 C72 30 78 20 74 10 C62 14 58 26 60 34 Z" />
+              </motion.g>
+              <motion.circle
+                className="kg-empty-sparkle"
+                cx="86" cy="30" r="3"
+                animate={{ opacity: [0.2, 1, 0.2], scale: [0.7, 1.15, 0.7] }}
+                transition={{ duration: 2.1, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <motion.circle
+                className="kg-empty-sparkle"
+                cx="32" cy="22" r="2.2"
+                animate={{ opacity: [0.15, 0.9, 0.15], scale: [0.7, 1.1, 0.7] }}
+                transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+              />
+            </svg>
+          </div>
+
+          <div className="kg-empty-title">Con chưa có cây nào</div>
           <p className="kg-empty-text">Đọc cuốn sách đầu tiên để gieo hạt cho Vườn Tri Thức nhé!</p>
-          <button type="button" className="kg-cta-btn" onClick={scrollToShelf}>
-            Đọc sách
+
+          <button type="button" className="kg-cta-btn kg-cta-btn--lg" onClick={scrollToShelf}>
+            <BookOpen size={16} />
+            Đọc sách ngay
           </button>
+
+          <div className="kg-empty-steps">
+            <div className="kg-empty-step">
+              <span className="kg-empty-step-icon"><BookOpen size={14} /></span>
+              <span>Đọc &amp; học</span>
+            </div>
+            <span className="kg-empty-step-arrow">→</span>
+            <div className="kg-empty-step">
+              <span className="kg-empty-step-icon"><Sprout size={14} /></span>
+              <span>Gieo hạt</span>
+            </div>
+            <span className="kg-empty-step-arrow">→</span>
+            <div className="kg-empty-step">
+              <span className="kg-empty-step-icon"><TreeDeciduous size={14} /></span>
+              <span>Cây lớn lên</span>
+            </div>
+          </div>
         </div>
       ) : (
         <>
