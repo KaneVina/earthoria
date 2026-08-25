@@ -3584,7 +3584,7 @@
     transparent 70%
   );
   transform: translateX(-130%);
-  transition: transform 0.7s var(--kid-ease);
+  transition: transform 0.6s ease;
 }
 .kid-back-to-top:hover::before {
   transform: translateX(130%);

@@ -725,13 +725,13 @@ const getKidPublicBooks = async (req, res) => {
       select: { id: true, parentId: true },
     });
     if (!child) return formatResponse(res, 404, "Link không hợp lệ hoặc đã bị thu hồi");
-
-    const purchasedItems = await prisma.orderItem.findMany({
+    const digitalOrderItems = await prisma.orderItem.findMany({
       where: {
+        variant: { format: "DIGITAL" },
         order: {
           userId: child.parentId,
           paymentStatus: "PAID",
-          status: { in: ["CONFIRMED", "SHIPPING", "DELIVERED", "COMPLETED"] },
+          status: { in: ["DELIVERED", "COMPLETED"] },
         },
       },
       select: {
@@ -742,63 +742,33 @@ const getKidPublicBooks = async (req, res) => {
             },
           },
         },
-        // Cần biết trạng thái đơn thật để tách "đã mua" khỏi "đã có thể xem AR"
-        // — chỉ đơn DELIVERED/COMPLETED mới coi là đã giao sách tận tay.
-        order: { select: { status: true } },
       },
     });
 
     const bookMap = new Map();
-    const deliveredBookIds = new Set();
-    for (const item of purchasedItems) {
+    for (const item of digitalOrderItems) {
       const book = item.variant?.book;
-      if (!book) continue;
-      bookMap.set(book.id, book);
-      if (["DELIVERED", "COMPLETED"].includes(item.order?.status)) {
-        deliveredBookIds.add(book.id);
-      }
+      if (book) bookMap.set(book.id, book);
     }
 
-    const access = await prisma.childBookAccess.findMany({
-      where: { childId: child.id, bookId: { in: [...bookMap.keys()] } },
-    });
-    const visibilityMap = Object.fromEntries(access.map((a) => [a.bookId, a.visible]));
-
-    // Mã AR — chỉ lấy cho các sách đã thật sự được giao, để tủ sách của bé
-    // phản ánh đúng trạng thái có thể xem AR hay chưa (không hardcode).
-    const arCodes = await prisma.arCode.findMany({
-      where: { isActive: true, bookId: { in: [...deliveredBookIds] } },
-      select: { code: true, label: true, bookId: true },
-      orderBy: { createdAt: "asc" },
-    });
-    const arCodeMap = {};
-    for (const ar of arCodes) {
-      (arCodeMap[ar.bookId] ??= []).push({ code: ar.code, label: ar.label });
-    }
-
-    // Sách điện tử (ebook) — là bản DIGITAL riêng, phải mua đúng bản điện tử
-    // (không tự có kèm bản in) mới đọc được, đúng như luồng người lớn.
-    const digitalOrderItems = await prisma.orderItem.findMany({
-      where: {
-        variant: { format: "DIGITAL" },
-        order: { userId: child.parentId, status: { in: ["DELIVERED", "COMPLETED"] } },
-      },
-      select: { variant: { select: { bookId: true } } },
-    });
-    const digitalOwnedBookIds = new Set(digitalOrderItems.map((i) => i.variant?.bookId).filter(Boolean));
+    // Xác nhận sách có nội dung ebook thật sự đang bật (isActive) — tránh
+    // trường hợp đã mua bản điện tử nhưng chưa có file ebook nào được tải lên.
     const ebooks = await prisma.ebook.findMany({
-      where: { isActive: true, bookId: { in: [...digitalOwnedBookIds] } },
+      where: { isActive: true, bookId: { in: [...bookMap.keys()] } },
       select: { bookId: true },
     });
     const ebookBookIds = new Set(ebooks.map((e) => e.bookId));
 
+    const access = await prisma.childBookAccess.findMany({
+      where: { childId: child.id, bookId: { in: [...ebookBookIds] } },
+    });
+    const visibilityMap = Object.fromEntries(access.map((a) => [a.bookId, a.visible]));
+
     const books = [...bookMap.values()]
+      .filter((book) => ebookBookIds.has(book.id))
       .map((book) => ({
         ...book,
         visible: visibilityMap[book.id] ?? true,
-        isDelivered: deliveredBookIds.has(book.id),
-        arCodes: arCodeMap[book.id] || [],
-        hasEbook: ebookBookIds.has(book.id),
       }))
       .filter((b) => b.visible);
 
@@ -811,14 +781,6 @@ const getKidPublicBooks = async (req, res) => {
 
 // ════════════════════════════════════════════
 // [PUBLIC] POST /api/v1/kid-access/:token/activity/start
-// Bắt đầu 1 phiên hoạt động (đọc ebook / xem AR) cho bé — tạo 1 dòng
-// ChildActivityLog với minutes=0, dùng createdAt của chính dòng này làm mốc
-// thời gian server để tính phút về sau (xem pingKidActivity).
-//
-// Trước đây KHÔNG có endpoint nào ghi ChildActivityLog cả — Parent Dashboard
-// hiển thị "phút đã dùng hôm nay"/biểu đồ tuần nhưng luôn là dữ liệu rỗng vì
-// không có nguồn ghi. Đây là bước đầu nối "telemetry pipeline" thật cho hệ
-// thống, đo bằng đồng hồ server (không tin số phút client tự báo).
 // ════════════════════════════════════════════
 const startKidActivity = async (req, res) => {
   try {

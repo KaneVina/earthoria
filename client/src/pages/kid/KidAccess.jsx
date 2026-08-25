@@ -24,7 +24,6 @@ import {
   Type,
   ShieldCheck,
   Search,
-  Package,
   Lightbulb,
   PartyPopper,
   Heart,
@@ -34,6 +33,7 @@ import FullScreenLoader from "../../components/FullScreenLoader";
 import KnowledgeGarden from "../../components/knowledgeGarden/KnowledgeGarden";
 import "../../components/assets/css/kidAccess.css";
 import GardenWidget from "../../components/knowledgeGarden/GardenWidget";
+import KidCloudCurtain from "../../components/KidCloudCurtain";
 
 const INSPIRE_LINES = [
   "Mỗi trang sách là một cánh cửa dẫn đến thế giới mới.",
@@ -61,6 +61,12 @@ const FONT_SCALES = [
 ];
 const HOLD_DURATION_MS = 900;
 const BACK_TO_TOP_THRESHOLD = 520;
+
+//   màn mây mù mở đầu trang /e-kid: thời gian che phủ tối thiểu (để không bị
+//   chớp nháy nếu API trả lời quá nhanh) và thời lượng hoạt ảnh mây tản ra —
+//   giá trị này phải khớp với --kid-curtain-leave trong kidAccess.css
+const INTRO_COVER_MIN_MS = 900;
+const INTRO_LEAVE_MS = 1650;
 
 const WEEKDAYS_VI = [
   "Chủ nhật",
@@ -628,6 +634,34 @@ export default function KidAccess() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOk]);
 
+  //   MÀN MÂY MÙ MỞ ĐẦU: "cover" (mây phủ kín, chờ tải) → "leave" (mây tản
+  //   ra để lộ giao diện) → "done" (gỡ hẳn khỏi DOM). Giữ mây hiện đủ
+  //   INTRO_COVER_MIN_MS dù server trả lời nhanh, để tránh chớp nháy.
+  const [introStage, setIntroStage] = useState("cover");
+  const introMountedAtRef = useRef(null);
+  useEffect(() => {
+    introMountedAtRef.current =
+      typeof performance !== "undefined" ? performance.now() : Date.now();
+  }, []);
+  useEffect(() => {
+    if (status === "loading" || introStage !== "cover") return;
+    const now =
+      typeof performance !== "undefined" ? performance.now() : Date.now();
+    const elapsed = now - (introMountedAtRef.current ?? now);
+    const wait = Math.max(0, INTRO_COVER_MIN_MS - elapsed);
+    const id = setTimeout(() => setIntroStage("leave"), wait);
+    return () => clearTimeout(id);
+  }, [status, introStage]);
+  useEffect(() => {
+    if (introStage !== "leave") return;
+    const id = setTimeout(() => setIntroStage("done"), INTRO_LEAVE_MS);
+    return () => clearTimeout(id);
+  }, [introStage]);
+  const introOverlay =
+    introStage !== "done" ? (
+      <KidCloudCurtain stage={introStage} skyState={skyState} />
+    ) : null;
+
   const handleOpenBook = useCallback((book) => setActiveBook(book), []);
   const closeModal = useCallback(() => setActiveBook(null), []);
   const closeSettings = useCallback(() => setShowSettings(false), []);
@@ -684,41 +718,9 @@ export default function KidAccess() {
 
   const handleReadNow = useCallback(
     (book) => {
-      if (book.hasEbook) {
-        navigate(`/e-kid/${slug}/${token}/ebook/${book.slug}`);
-        return;
-      }
-      if (book.arCodes?.length) {
-        if (child?.isLocked) {
-          toast("AR đang bị khoá, nhờ ba mẹ mở khoá nhé!", {
-            icon: <Lock size={16} />,
-          });
-          return;
-        }
-        if (!book.isDelivered) {
-          toast("Sách đang trên đường giao, chưa xem AR được nhé!", {
-            icon: <Package size={16} />,
-          });
-          return;
-        }
-        navigate(`/e-kid/${slug}/${token}/ar/${book.arCodes[0].code}`);
-        return;
-      }
-      toast.success(
-        `Nhờ ba mẹ mở sách điện tử để cùng đọc "${book.title}" nhé!`,
-        {
-          icon: <BookOpen size={16} />,
-        },
-      );
+      navigate(`/e-kid/${slug}/${token}/ebook/${book.slug}`);
     },
-    [child?.isLocked, navigate, slug, token],
-  );
-
-  const canReadBook = useCallback(
-    (book) =>
-      book.hasEbook ||
-      (!!book.arCodes?.length && book.isDelivered && !child?.isLocked),
-    [child?.isLocked],
+    [navigate, slug, token],
   );
 
   const handleCardMove = useCallback((e) => {
@@ -758,79 +760,88 @@ export default function KidAccess() {
 
   if (status === "loading") {
     return (
-      <div
-        className="kid-state-page kid-state-page--loading"
-        data-phase={skyState.phase}
-      >
-        <DynamicSky skyState={skyState} minimal />
-        <FullScreenLoader
-          eyebrow="Đang mở tủ sách"
-          message="Bé một chút xíu nhé..."
-        />
-      </div>
+      <>
+        {introOverlay}
+        <div
+          className="kid-state-page kid-state-page--loading"
+          data-phase={skyState.phase}
+        >
+          <DynamicSky skyState={skyState} minimal />
+          <FullScreenLoader
+            eyebrow="Đang mở tủ sách"
+            message="Bé một chút xíu nhé..."
+          />
+        </div>
+      </>
     );
   }
 
   if (status === "invalid") {
     return (
-      <div className="kid-state-page" data-phase={skyState.phase}>
-        <DynamicSky skyState={skyState} minimal />
-        <div className="kid-state-card">
-          <div className="kid-state-icon kid-state-icon--blue">
-            <Compass size={30} />
+      <>
+        {introOverlay}
+        <div className="kid-state-page" data-phase={skyState.phase}>
+          <DynamicSky skyState={skyState} minimal />
+          <div className="kid-state-card">
+            <div className="kid-state-icon kid-state-icon--blue">
+              <Compass size={30} />
+            </div>
+            <h1 className="kid-state-title">Link này không đúng rồi bé ơi</h1>
+            <p className="kid-state-text">
+              Liên kết không hợp lệ hoặc đã bị thu hồi. Bé nhờ ba mẹ lấy lại
+              link mới trong trang quản lý nhé!
+            </p>
+            <Link
+              to="/"
+              className="kid-btn kid-btn--primary kid-state-btn"
+              onClick={(e) => {
+                spawnRipple(e);
+                spawnSparkles(e, 8);
+              }}
+            >
+              <ArrowLeft size={16} /> Về trang chủ
+            </Link>
           </div>
-          <h1 className="kid-state-title">Link này không đúng rồi bé ơi</h1>
-          <p className="kid-state-text">
-            Liên kết không hợp lệ hoặc đã bị thu hồi. Bé nhờ ba mẹ lấy lại link
-            mới trong trang quản lý nhé!
-          </p>
-          <Link
-            to="/"
-            className="kid-btn kid-btn--primary kid-state-btn"
-            onClick={(e) => {
-              spawnRipple(e);
-              spawnSparkles(e, 8);
-            }}
-          >
-            <ArrowLeft size={16} /> Về trang chủ
-          </Link>
         </div>
-      </div>
+      </>
     );
   }
 
   if (child?.isLocked) {
     return (
-      <div className="kid-state-page" data-phase={skyState.phase}>
-        <DynamicSky skyState={skyState} minimal />
-        <div className="kid-state-card">
-          <div className="kid-state-icon kid-state-icon--orange">
-            <Lock size={28} />
+      <>
+        {introOverlay}
+        <div className="kid-state-page" data-phase={skyState.phase}>
+          <DynamicSky skyState={skyState} minimal />
+          <div className="kid-state-card">
+            <div className="kid-state-icon kid-state-icon--orange">
+              <Lock size={28} />
+            </div>
+            <h1 className="kid-state-title">
+              Đến giờ nghỉ rồi, {child.name} ơi!
+            </h1>
+            <p className="kid-state-text">
+              Ba mẹ đã tạm khoá sách của bé lúc này. Bé nhờ ba mẹ mở lại khi
+              muốn đọc tiếp nhé!
+            </p>
+            <span className="kid-state-stat">
+              <BookOpen size={14} /> Hôm nay bé đã đọc{" "}
+              {child.todayMinutes || 0} phút
+            </span>
+            <br />
+            <Link
+              to="/"
+              className="kid-btn kid-btn--primary kid-state-btn"
+              onClick={(e) => {
+                spawnRipple(e);
+                spawnSparkles(e, 8);
+              }}
+            >
+              <ArrowLeft size={16} /> Về trang chủ
+            </Link>
           </div>
-          <h1 className="kid-state-title">
-            Đến giờ nghỉ rồi, {child.name} ơi!
-          </h1>
-          <p className="kid-state-text">
-            Ba mẹ đã tạm khoá sách của bé lúc này. Bé nhờ ba mẹ mở lại khi muốn
-            đọc tiếp nhé!
-          </p>
-          <span className="kid-state-stat">
-            <BookOpen size={14} /> Hôm nay bé đã đọc {child.todayMinutes || 0}{" "}
-            phút
-          </span>
-          <br />
-          <Link
-            to="/"
-            className="kid-btn kid-btn--primary kid-state-btn"
-            onClick={(e) => {
-              spawnRipple(e);
-              spawnSparkles(e, 8);
-            }}
-          >
-            <ArrowLeft size={16} /> Về trang chủ
-          </Link>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -872,16 +883,18 @@ export default function KidAccess() {
       : "";
 
   return (
-    <div
-      className="kid-page"
-      data-phase={skyState.phase}
-      ref={pageRef}
-      onScroll={handleKidPageScroll}
-      style={{
-        "--kid-accent": child.avatarColor || "var(--kid-blue)",
-        "--kid-font-scale": fontScale,
-      }}
-    >
+    <>
+      {introOverlay}
+      <div
+        className="kid-page"
+        data-phase={skyState.phase}
+        ref={pageRef}
+        onScroll={handleKidPageScroll}
+        style={{
+          "--kid-accent": child.avatarColor || "var(--kid-blue)",
+          "--kid-font-scale": fontScale,
+        }}
+      >
       <DynamicSky skyState={skyState} />
 
       <div className="kid-shell">
@@ -1307,15 +1320,11 @@ export default function KidAccess() {
                         </span>
                       )}
                       <span
-                        className={`kid-book-cta${limitReached || !canReadBook(b) ? " is-locked" : ""}`}
+                        className={`kid-book-cta${limitReached ? " is-locked" : ""}`}
                       >
                         {limitReached ? (
                           <>
                             <Lock size={13} /> Hết giờ hôm nay
-                          </>
-                        ) : !canReadBook(b) ? (
-                          <>
-                            <Clock size={13} /> Đang chờ sách
                           </>
                         ) : (
                           <>
@@ -1396,7 +1405,7 @@ export default function KidAccess() {
                 </div>
               )}
               <span className="kid-modal-cover-tag">
-                <Sparkles size={12} /> Trải nghiệm AR
+                <Sparkles size={12} /> Sách điện tử
               </span>
             </div>
             <div className="kid-modal-body">
@@ -1416,9 +1425,7 @@ export default function KidAccess() {
               )}
               <h3 className="kid-modal-title">{activeBook.title}</h3>
               <p className="kid-modal-desc">
-                {activeBook.isDelivered
-                  ? `Sẵn sàng cùng ${child.name} bước vào câu chuyện này chưa nào? Chạm nút bên dưới để mô hình AR bừng sáng thành thế giới thật nhé!`
-                  : "Sách đang trên đường giao tới nhà. Khi nhận được sách, bé có thể mở AR ở đây nhé!"}
+                {`Sẵn sàng cùng ${child.name} bước vào câu chuyện điện tử này chưa nào? Chạm nút bên dưới để bắt đầu đọc nhé!`}
               </p>
               <div className="kid-modal-stars" aria-hidden="true">
                 {[0, 1, 2, 3, 4].map((i) => (
@@ -1427,10 +1434,10 @@ export default function KidAccess() {
               </div>
               <button
                 type="button"
-                className={`kid-btn kid-modal-cta${limitReached || !activeBook.isDelivered ? " is-disabled" : ""}`}
-                disabled={limitReached || !activeBook.isDelivered}
+                className={`kid-btn kid-modal-cta${limitReached ? " is-disabled" : ""}`}
+                disabled={limitReached}
                 onClick={(e) => {
-                  if (limitReached || !activeBook.isDelivered) return;
+                  if (limitReached) return;
                   spawnRipple(e);
                   spawnSparkles(e, 12);
                   handleReadNow(activeBook);
@@ -1439,10 +1446,6 @@ export default function KidAccess() {
                 {limitReached ? (
                   <>
                     <Lock size={15} /> Hôm nay đã đọc đủ giờ
-                  </>
-                ) : !activeBook.isDelivered ? (
-                  <>
-                    <Clock size={15} /> Đang giao hàng
                   </>
                 ) : (
                   <>
@@ -1601,6 +1604,7 @@ export default function KidAccess() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
