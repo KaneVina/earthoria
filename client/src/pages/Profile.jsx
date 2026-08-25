@@ -3258,6 +3258,12 @@ function ChangePasswordFlow() {
     setErrors((e) => ({ ...e, [field]: null }));
   };
 
+  const handleReset = () => {
+    setForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
+    setErrors({});
+    setTouched(false);
+  };
+
   const mutation = useMutation({
     mutationFn: (data) => authService.changePassword(data),
     onSuccess: () => {
@@ -3428,17 +3434,27 @@ function ChangePasswordFlow() {
               )}
             </div>
 
-            <button
-              type="submit"
-              disabled={!canSubmit}
-              className="pf-btn-tactile pf-btn-shine pf-pw-submit"
-            >
-              {mutation.isPending ? (
-                "Đang Xử Lý..."
-              ) : (
-                <>Cập Nhật Mật Khẩu {Icon.arrowRight}</>
-              )}
-            </button>
+            <div className="pf-pw-btn-row">
+              <button
+                type="button"
+                onClick={handleReset}
+                disabled={mutation.isPending}
+                className="pf-pw-reset"
+              >
+                đặt lại
+              </button>
+                          <button
+                type="submit"
+                disabled={!canSubmit}
+                className="pf-btn-tactile pf-btn-shine pf-pw-submit"
+              >
+                {mutation.isPending ? (
+                  "Đang Xử Lý..."
+                ) : (
+                  <>Cập Nhật Mật Khẩu {Icon.arrowRight}</>
+                )}
+              </button>
+            </div>
           </form>
         </div>
 

@@ -2298,7 +2298,6 @@
   font-size: 11px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  align-self: flex-start;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -2309,6 +2308,37 @@
 }
 .pf-pw-submit:disabled {
   opacity: 0.6;
+  cursor: not-allowed;
+}
+.pf-pw-btn-row {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  align-self: stretch;
+}
+.pf-pw-btn-row .pf-pw-submit {
+  margin-top: 0;
+}
+.pf-pw-reset {
+  background: transparent;
+  color: var(--text-muted);
+  border: 0.5px solid var(--border);
+  border-radius: var(--pf-radius-sm);
+  padding: 16px 20px;
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transition: all 0.25s ease;
+}
+.pf-pw-reset:hover:not(:disabled) {
+  border-color: var(--text-muted);
+  color: var(--text-body);
+}
+.pf-pw-reset:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -3813,5 +3843,17 @@ body.dark-mode .pf-switch-track {
 @media (pointer: coarse) {
   .logo-display-glow {
     display: none;
+  }
+}
+@media (max-width: 480px) {
+  .pf-pw-btn-row {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .pf-pw-btn-row .pf-pw-submit,
+  .pf-pw-btn-row .pf-pw-reset {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
   }
 }

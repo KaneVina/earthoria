@@ -857,10 +857,16 @@ export default function AboutUs() {
               ></div>
             </div>
             <h2 className="tech-stats-title">
-             Đằng Sau Mỗi Trải Nghiệm Là <em>Từng Dòng Code</em>
+              Đằng Sau Mỗi Trải Nghiệm Là{" "}
+              <em>
+                <br />
+                Từng Dòng Code
+              </em>
             </h2>
             <p className="tech-stats-sub">
-              Từ hiệu năng, trải nghiệm đến những tính năng mới được phát triển mỗi ngày, tất cả đều hướng đến một trải nghiệm tốt hơn cho khách hàng.
+              Từ hiệu năng, trải nghiệm đến những tính năng mới được phát triển
+              mỗi ngày, tất cả đều hướng đến một trải nghiệm tốt hơn cho khách
+              hàng.
             </p>
           </div>
 
