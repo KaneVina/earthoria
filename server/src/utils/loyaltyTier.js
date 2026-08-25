@@ -1,7 +1,4 @@
 const prisma = require("../config/db");
-
-// Đơn được tính là "mua thành công" — thống nhất với chuẩn đang dùng ở bookController/
-// childController: đã thanh toán (PAID) và không còn ở trạng thái chờ xác nhận/đã huỷ.
 const SUCCESSFUL_ORDER_STATUSES = ["CONFIRMED", "SHIPPING", "DELIVERED", "COMPLETED"];
 const DEFAULT_FREE_SHIP_THRESHOLD = 300_000;
 const LOYALTY_TIERS = [
@@ -100,18 +97,16 @@ const getNextTier = (tier) => {
   return LOYALTY_TIERS[idx + 1];
 };
 
-// Tổng chi tiêu tích lũy trọn đời của 1 user, tính từ các đơn đã thanh toán thành công.
-// txClient cho phép truyền prisma transaction client khi cần tính nhất quán trong 1 transaction.
 const getUserLifetimeSpend = async (userId, txClient = prisma) => {
   const result = await txClient.order.aggregate({
     where: {
       userId,
       paymentStatus: "PAID",
-      status: { in: SUCCESSFUL_ORDER_STATUSES },
+      status: "COMPLETED",
     },
-    _sum: { subtotal: true },
+    _sum: { total: true },
   });
-  return result._sum.subtotal || 0;
+  return result._sum.total || 0;
 };
 
 // Dựng hồ sơ hạng đầy đủ từ 1 mức chi tiêu — dùng chung cho API /loyalty/me và lúc tạo đơn.
@@ -149,8 +144,7 @@ const getUserLoyaltyProfile = async (userId, txClient = prisma) => {
   return buildLoyaltyProfile(spend);
 };
 
-// Số tiền được giảm nhờ hạng thành viên trên 1 đơn — theo % của subtotal, chặn trần
-// maxDiscountPerOrder và không bao giờ vượt quá subtotal.
+// Số tiền được giảm nhờ hạng thành viên trên 1 đơn — theo % của subtotal, chặn trần maxDiscountPerOrder và không bao giờ vượt quá subtotal.
 const computeTierDiscount = (tier, subtotal) => {
   if (!tier || !subtotal || subtotal <= 0 || tier.discountPercent <= 0) return 0;
   let discount = Math.round((subtotal * tier.discountPercent) / 100);

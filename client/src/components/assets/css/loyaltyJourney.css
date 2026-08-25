@@ -8,6 +8,23 @@
   --lj-shadow-lg: 0 28px 64px rgba(13, 43, 30, 0.14);
   --lj-gold-true: #d4a843;
   --lj-gold-true-soft: rgba(212, 168, 67, 0.16);
+
+  /* Nền theo từng "trạm" của hành trình, tách khỏi token global
+     (--ivory/--cream/--white/--border) để dark-mode chỉ cần đổi lại
+     đúng 1 chỗ thay vì override rải rác trên từng class như bản cũ. */
+  --lj-bg-a: var(--ivory); /* Stats + Steps — cùng một vùng sáng */
+  --lj-bg-b: var(--cream); /* Journey */
+  --lj-surface: var(--white); /* card, step-card, passport, divider */
+  --lj-surface-border: var(--border);
+  --lj-grid-line: var(--border);
+}
+
+body.dark-mode {
+  --lj-bg-a: #121a16;
+  --lj-bg-b: #161e1a;
+  --lj-surface: #1c2822;
+  --lj-surface-border: rgba(255, 255, 255, 0.08);
+  --lj-grid-line: rgba(255, 255, 255, 0.06);
 }
 
 @keyframes ljPulse {
@@ -105,7 +122,22 @@
   position: relative;
   overflow: hidden;
   background: var(--forest);
-  padding: 152px 100px 96px;
+  padding: 152px 100px 160px;
+}
+.lj-hero::after {
+  /* Mờ dần từ forest sang màu của Stats ngay trong Hero, để khi
+     Stats bắt đầu thì mắt đã "quen" tông màu mới — đây là nửa
+     "chuyển màu mượt" của mối nối Hero → Stats. Nửa còn lại là
+     Passport Strip nổi đè lên đúng chỗ này. */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 160px;
+  background: linear-gradient(to bottom, transparent, var(--lj-bg-a));
+  pointer-events: none;
+  z-index: 1;
 }
 .lj-hero-grid {
   position: absolute;
@@ -322,11 +354,11 @@
   position: relative;
   z-index: 5;
   max-width: 900px;
-  margin: -40px auto 0;
+  margin: -56px auto 0;
   padding: 0 40px;
 }
 .lj-passport-strip {
-  background: var(--white);
+  background: var(--lj-surface);
   border: 0.5px solid var(--border-gold);
   border-radius: var(--lj-radius-lg);
   box-shadow: var(--lj-shadow-lg);
@@ -469,10 +501,60 @@
   animation: ljShimmer 1.6s ease-in-out infinite;
 }
 
+/* ═══════════════════ SEAM — mối nối giữa các section ═══════════════════
+   Mỗi seam làm đúng 2 việc cùng lúc, đúng như lựa chọn "kết hợp cả hai":
+   1) route line: 1 đoạn chỉ vàng đứt nét + 1 chấm tròn — cùng tông với
+      .lj-track-line bên dưới nên đọc như MỘT sợi chỉ duy nhất chạy suốt
+      từ Hero đến CTA, không phải nhiều đường rời rạc.
+   2) chuyển màu mượt: nền là gradient từ màu section trên sang màu
+      section dưới, thay cho việc cắt cứng giữa 2 mảng màu khác nhau. */
+.lj-seam {
+  position: relative;
+  overflow: hidden;
+}
+.lj-seam-line {
+  /* Cùng kỹ thuật uốn lượn với .lj-track-line, chỉ thu nhỏ chu kỳ (140px)
+     và biên độ (±9px) cho vừa dải nối ngắn — vẫn cùng 1 "họ" đường cong,
+     cùng màu, cùng nhịp đứt nét, nên đọc như tiếp nối của con đường chính. */
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 24px;
+  transform: translateX(-50%);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='140' viewBox='0 0 24 140'%3E%3Cpath d='M12 0C21 17.5,21 52.5,12 70C3 87.5,3 122.5,12 140' fill='none' stroke='%23d4a843' stroke-width='1.5' stroke-linecap='round' stroke-dasharray='4 5'/%3E%3C/svg%3E");
+  background-repeat: repeat-y;
+  background-position: top center;
+  opacity: 0.4;
+}
+.lj-seam-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--lj-gold-true);
+  box-shadow: 0 0 0 5px var(--lj-gold-true-soft);
+}
+.lj-seam-stats-steps {
+  height: 64px;
+  background: var(--lj-bg-a);
+}
+.lj-seam-steps-journey {
+  height: 100px;
+  background: linear-gradient(to bottom, var(--lj-bg-a), var(--lj-bg-b));
+}
+.lj-seam-journey-cta {
+  height: 120px;
+  background: linear-gradient(to bottom, var(--lj-bg-b), var(--forest));
+}
+
 /* ═══════════════════ STATS STRIP ═══════════════════ */
 .lj-stats {
-  background: var(--ivory);
-  padding: 88px 100px 20px;
+  background: var(--lj-bg-a);
+  padding: 72px 100px 48px;
 }
 .lj-stats-inner {
   max-width: 1200px;
@@ -480,11 +562,11 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1px;
-  background: var(--border);
-  border: 0.5px solid var(--border);
+  background: var(--lj-grid-line);
+  border: 0.5px solid var(--lj-grid-line);
 }
 .lj-stat-item {
-  background: var(--ivory);
+  background: var(--lj-bg-a);
   padding: 32px 24px;
   text-align: center;
   color: var(--lj-gold-true);
@@ -549,8 +631,8 @@
 
 /* ═══════════════════ 3 BƯỚC ═══════════════════ */
 .lj-steps {
-  background: var(--ivory);
-  padding: 60px 100px 100px;
+  background: var(--lj-bg-a);
+  padding: 48px 100px 56px;
 }
 .lj-steps-inner {
   max-width: 1200px;
@@ -560,11 +642,11 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
-  background: var(--border);
-  border: 0.5px solid var(--border);
+  background: var(--lj-grid-line);
+  border: 0.5px solid var(--lj-grid-line);
 }
 .lj-step-card {
-  background: var(--white);
+  background: var(--lj-surface);
   padding: 40px 36px;
   position: relative;
   opacity: 0;
@@ -613,8 +695,8 @@
 
 /* ═══════════════════ CUNG ĐƯỜNG HÀNH TRÌNH ═══════════════════ */
 .lj-journey {
-  background: var(--cream);
-  padding: 100px 100px 60px;
+  background: var(--lj-bg-b);
+  padding: 56px 100px 80px;
 }
 .lj-journey-inner {
   max-width: 1180px;
@@ -626,29 +708,93 @@
 }
 
 .lj-track {
+  position: relative;
   display: flex;
   flex-direction: column;
 }
+.lj-track-line {
+  /* 1 đường DUY NHẤT chạy suốt toàn bộ track — không còn ghép từ nhiều
+     đoạn rời theo từng row như bản cũ (vốn để hở khoảng trống lớn giữa
+     2 hạng liên tiếp vì mỗi card cao thấp khác nhau). Vì được đặt tuyệt
+     đối theo chiều cao của CHÍNH .lj-track nên luôn nối liền bất kể nội
+     dung mỗi card dài ngắn ra sao.
+
+     UỐN LƯỢN thay vì thẳng: nền là 1 ô SVG hình chữ S (rộng 44px, cao
+     480px) lặp lại theo chiều dọc (repeat-y) — điểm đầu/cuối của mỗi ô
+     có cùng toạ độ và cùng hướng tiếp tuyến nên các ô nối vào nhau
+     không bị gãy khúc, tạo cảm giác 1 con đường cong uốn qua từng chặng
+     thay vì kẻ thẳng theo hàng. Biên độ chỉ ±18px nên seal 62px vẫn
+     luôn bao trọn đường, dù đường đang lượn sang bên nào.
+     Lưu ý: SVG data-URI không đọc được var(--lj-gold-true), nên màu
+     #d4a843 dưới đây phải sửa tay nếu đổi --lj-gold-true. Mờ dần 2 đầu
+     bằng mask thay vì cắt cứng. */
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 44px;
+  transform: translateX(-50%);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='480' viewBox='0 0 44 480'%3E%3Cpath d='M22 0C40 60,40 180,22 240C4 300,4 420,22 480' fill='none' stroke='%23d4a843' stroke-width='1.5' stroke-linecap='round' stroke-dasharray='5 6'/%3E%3C/svg%3E");
+  background-repeat: repeat-y;
+  background-position: top center;
+  opacity: 0.5;
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 32px,
+    black calc(100% - 32px),
+    transparent
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    black 32px,
+    black calc(100% - 32px),
+    transparent
+  );
+  pointer-events: none;
+  z-index: 1;
+}
 .lj-track-cap {
+  /* Dùng CHUNG lưới 1fr/84px/1fr với .lj-row để cột giữa (nơi đặt icon)
+     luôn thẳng hàng với các seal — kể cả khi đổi bố cục ở mobile — thay
+     vì canh giữa bằng margin:auto như trước (dễ lệch khỏi rail khi rail
+     chuyển sang bố cục 1 cột). */
+  display: grid;
+  grid-template-columns: 1fr 84px 1fr;
+  column-gap: 36px;
+}
+.lj-track-cap-start {
+  padding: 4px 0 22px;
+}
+.lj-track-cap-end {
+  padding: 22px 0 4px;
+}
+.lj-track-cap-mark {
+  grid-column: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  width: 88px;
-  margin: 0 auto;
+  gap: 8px;
   color: var(--text-muted);
   font-size: 9.5px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
 }
-.lj-track-cap svg {
+.lj-track-cap-icon {
+  position: relative;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--lj-surface);
+  border: 0.5px solid var(--border-gold);
   color: var(--lj-gold-true);
-}
-.lj-track-cap-start {
-  margin-bottom: -4px;
-}
-.lj-track-cap-end {
-  margin-top: -4px;
+  box-shadow: var(--lj-shadow-md);
 }
 
 .lj-row {
@@ -677,22 +823,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
-.lj-rail-line {
-  position: absolute;
-  top: 50%;
-  bottom: -46px;
-  left: 50%;
-  width: 1.5px;
-  transform: translateX(-50%);
-  background-image: repeating-linear-gradient(
-    to bottom,
-    var(--tier-color) 0,
-    var(--tier-color) 6px,
-    transparent 6px,
-    transparent 13px
-  );
-  opacity: 0.55;
 }
 
 .lj-row-ghost {
@@ -749,8 +879,8 @@
 /* ── CARD ── */
 .lj-card {
   grid-row: 1;
-  background: var(--white);
-  border: 0.5px solid var(--border);
+  background: var(--lj-surface);
+  border: 0.5px solid var(--lj-surface-border);
   border-radius: var(--lj-radius-lg);
   padding: 34px 36px 30px;
   position: relative;
@@ -856,9 +986,9 @@
   border: 0.5px solid rgba(74, 158, 63, 0.3);
 }
 .lj-card-badge.is-locked {
-  background: var(--border);
+  background: var(--lj-grid-line);
   color: var(--text-muted);
-  border: 0.5px solid var(--border);
+  border: 0.5px solid var(--lj-grid-line);
 }
 
 .lj-card-name {
@@ -918,7 +1048,7 @@
   z-index: 1;
   width: 8px;
   height: 8px;
-  background: var(--white);
+  background: var(--lj-surface);
   border: 0.5px solid var(--tier-color);
   transform: rotate(45deg);
 }
@@ -962,8 +1092,8 @@
   gap: 10px;
   margin-bottom: 18px;
   padding: 16px 0;
-  border-top: 0.5px solid var(--border);
-  border-bottom: 0.5px solid var(--border);
+  border-top: 0.5px solid var(--lj-surface-border);
+  border-bottom: 0.5px solid var(--lj-surface-border);
 }
 .lj-card-benefits li {
   display: flex;
@@ -1177,41 +1307,15 @@
   transform: translateY(0);
 }
 
-/* ═══════════════════ DARK MODE ═══════════════════ */
-body.dark-mode .lj-stats,
-body.dark-mode .lj-steps {
-  background: #121a16;
-}
-body.dark-mode .lj-stat-item {
-  background: #121a16;
-}
-body.dark-mode .lj-step-card {
-  background: #1c2822;
-}
-body.dark-mode .lj-journey {
-  background: #161e1a;
-}
-body.dark-mode .lj-card {
-  background: #1c2822;
-  border-color: rgba(255, 255, 255, 0.08);
-}
-body.dark-mode .lj-card-benefits {
-  border-color: rgba(255, 255, 255, 0.08);
-}
-body.dark-mode .lj-card-divider span {
-  background: #1c2822;
-}
+/* ═══════════════════ DARK MODE ═══════════════════
+   Phần lớn nền/viền giờ tự đổi qua biến --lj-bg-a / --lj-bg-b / --lj-surface /
+   --lj-surface-border / --lj-grid-line khai báo ở đầu file, nên khối dark-mode
+   chỉ còn 2 ngoại lệ thật sự khác biệt so với biến chung. */
 body.dark-mode .lj-passport-strip {
-  background: #1c2822;
   border-color: rgba(255, 255, 255, 0.1);
 }
 body.dark-mode .lj-card-progress {
   border-top-color: rgba(255, 255, 255, 0.14);
-}
-body.dark-mode .lj-stats-inner,
-body.dark-mode .lj-steps-grid {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.06);
 }
 
 /* ═══════════════════ RESPONSIVE ═══════════════════ */
@@ -1252,10 +1356,6 @@ body.dark-mode .lj-steps-grid {
     align-items: flex-start;
     padding-top: 6px;
   }
-  .lj-rail-line {
-    top: 50%;
-    bottom: -46px;
-  }
   .lj-seal {
     width: 50px;
     height: 50px;
@@ -1264,11 +1364,24 @@ body.dark-mode .lj-steps-grid {
   .lj-card {
     padding: 28px 24px 26px;
   }
+  .lj-track-line {
+    left: 28px;
+  }
+  .lj-track-cap {
+    grid-template-columns: 56px 1fr;
+    column-gap: 20px;
+  }
+  .lj-track-cap-mark {
+    grid-column: 1;
+  }
 }
 
 @media (max-width: 600px) {
   .lj-hero {
-    padding: 128px 24px 72px;
+    padding: 128px 24px 120px;
+  }
+  .lj-hero::after {
+    height: 120px;
   }
   .lj-stats,
   .lj-steps,
@@ -1279,7 +1392,7 @@ body.dark-mode .lj-steps-grid {
   }
   .lj-passport-wrap {
     padding: 0 20px;
-    margin-top: -28px;
+    margin-top: -40px;
   }
   .lj-passport-strip {
     padding: 20px 22px;
@@ -1289,6 +1402,15 @@ body.dark-mode .lj-steps-grid {
   }
   .lj-stats-inner {
     grid-template-columns: 1fr;
+  }
+  .lj-seam-stats-steps {
+    height: 48px;
+  }
+  .lj-seam-steps-journey {
+    height: 72px;
+  }
+  .lj-seam-journey-cta {
+    height: 88px;
   }
   .lj-hero-actions {
     flex-direction: column;

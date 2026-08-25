@@ -272,7 +272,11 @@ export default function LoyaltyJourney() {
         </div>
       </section>
 
-      {/* ═══ PASSPORT STRIP — hộ chiếu / trạng thái của bạn ═══ */}
+      {/* ═══ PASSPORT STRIP — hộ chiếu / trạng thái của bạn.
+           Đây chính là điểm nối giữa Hero và Stats: nó nổi đè lên mép
+           dưới Hero (overlap âm) trong khi nền Hero đang mờ dần sang
+           màu sáng phía sau, nên card không "cắt" đột ngột mà như đang
+           trôi trên đường chuyển màu. ═══ */}
       <PassportStrip
         isAuthenticated={isAuthenticated}
         loading={profileLoading}
@@ -306,6 +310,8 @@ export default function LoyaltyJourney() {
         </div>
       </section>
 
+      <SectionSeam variant="stats-steps" />
+
       {/* ═══ 3 BƯỚC VẬN HÀNH ═══ */}
       <section className="lj-steps">
         <div className="lj-steps-inner">
@@ -338,6 +344,8 @@ export default function LoyaltyJourney() {
         </div>
       </section>
 
+      <SectionSeam variant="steps-journey" />
+
       {/* ═══ CUNG ĐƯỜNG HÀNH TRÌNH ═══ */}
       <section className="lj-journey" id="lj-journey">
         <div className="lj-journey-inner">
@@ -354,9 +362,20 @@ export default function LoyaltyJourney() {
           </div>
 
           <div className="lj-track">
+            {/* Sợi chỉ vàng liên tục — chạy suốt từ "Khởi hành" đến "Đích đến",
+                nằm phía sau tất cả 5 trạm nên không có bất kỳ điểm đứt nào,
+                bất kể mỗi card cao thấp khác nhau ra sao. Toả sáng nhẹ, không
+                cạnh tranh màu sắc với 5 hạng — 5 màu chỉ bừng lên tại chính
+                con dấu (seal) của hạng đó, như hạt cườm trên một sợi dây. */}
+            <span className="lj-track-line" aria-hidden="true" />
+
             <div className="lj-track-cap lj-track-cap-start">
-              <Flag size={13} />
-              <span>Khởi hành</span>
+              <span className="lj-track-cap-mark">
+                <span className="lj-track-cap-icon">
+                  <Flag size={13} />
+                </span>
+                <span>Khởi hành</span>
+              </span>
             </div>
 
             {tiers.map((tier, i) => (
@@ -364,14 +383,17 @@ export default function LoyaltyJourney() {
                 key={tier.code}
                 tier={tier}
                 index={i}
-                isLast={i === tiers.length - 1}
                 loyaltyProfile={isAuthenticated ? loyaltyProfile : null}
               />
             ))}
 
             <div className="lj-track-cap lj-track-cap-end">
-              <Gem size={13} />
-              <span>Đích đến</span>
+              <span className="lj-track-cap-mark">
+                <span className="lj-track-cap-icon">
+                  <Gem size={13} />
+                </span>
+                <span>Đích đến</span>
+              </span>
             </div>
           </div>
 
@@ -383,6 +405,8 @@ export default function LoyaltyJourney() {
           </p>
         </div>
       </section>
+
+      <SectionSeam variant="journey-cta" />
 
       {/* ═══ CTA CUỐI TRANG ═══ */}
       <FinalCta
@@ -486,6 +510,21 @@ function PassportStrip({ isAuthenticated, loading, loyaltyProfile, onLocate }) {
   );
 }
 
+/* ════════════════════════ SECTION SEAM (mối nối giữa các block) ════════════════════════
+   Dải mảnh giữa 2 section, làm đúng 2 việc mà bạn yêu cầu cùng lúc:
+   1) route line — 1 đoạn chỉ vàng đứt nét + 1 chấm, là "mắt xích" của cùng
+      sợi chỉ chạy suốt trang (khớp màu với line trong Journey).
+   2) chuyển màu mượt — nền là gradient từ màu section trên sang màu section
+      dưới, thay vì cắt cứng giữa 2 mảng màu khác nhau. */
+function SectionSeam({ variant }) {
+  return (
+    <div className={`lj-seam lj-seam-${variant}`} aria-hidden="true">
+      <span className="lj-seam-line" />
+      <span className="lj-seam-dot" />
+    </div>
+  );
+}
+
 /* ════════════════════════ STEP CARD ════════════════════════ */
 function StepCard({ icon: Icon, index, title, desc }) {
   const [ref, active] = useReveal();
@@ -502,7 +541,7 @@ function StepCard({ icon: Icon, index, title, desc }) {
 }
 
 /* ════════════════════════ RANK STOP (1 trạm trên hành trình) ════════════════════════ */
-function RankStop({ tier, index, isLast, loyaltyProfile }) {
+function RankStop({ tier, index, loyaltyProfile }) {
   const [ref, active] = useReveal(0.15);
   const areaValue = useCountUp(tier.areaKm2, active);
   const side = index % 2 === 0 ? "left" : "right";
@@ -529,7 +568,6 @@ function RankStop({ tier, index, isLast, loyaltyProfile }) {
       </div>
 
       <div className="lj-row-rail">
-        {!isLast && <span className="lj-rail-line" />}
         <div className="lj-seal">
           <span className="lj-seal-ring" />
           {tier.roman}
