@@ -33,6 +33,7 @@ import TermsOfService from "./pages/legal/TermsOfService";
 import PrivacyPolicy from "./pages/legal/PrivacyPolicy";
 import ShippingPolicy from "./pages/legal/ShippingPolicy";
 import ReturnPolicy from "./pages/legal/ReturnPolicy";
+import MembershipPolicy from "./pages/legal/MembershipPolicy";
 import LegalHub from "./pages/legal/LegalHub";
 import Sitemap from "./pages/Sitemap";
 import EiraChatbox from "./components/EiraChatbox";
@@ -93,7 +94,8 @@ const GuestRoute = ({ children }) => {
 const MAINTENANCE_MODE = true;
 
 export default function App() {
-  const { setAuth, setAuthChecked, authChecked, user, isAuthenticated } = useAuthStore();
+  const { setAuth, setAuthChecked, authChecked, user, isAuthenticated } =
+    useAuthStore();
   const [showLoader, setShowLoader] = useState(false);
 
   // Trạng thái bảo trì lấy từ dashboard admin
@@ -107,7 +109,8 @@ export default function App() {
 
   // Admin đã đăng nhập thì không bao giờ bị chặn bởi bảo trì (kể cả trang ngoài lẫn dashboard)
   const isAdminUser = isAuthenticated && user?.role === "ADMIN";
-  const maintenanceActive = MAINTENANCE_MODE || Boolean(siteSettings?.maintenanceActive);
+  const maintenanceActive =
+    MAINTENANCE_MODE || Boolean(siteSettings?.maintenanceActive);
 
   useEffect(() => {
     let cancelled = false;
@@ -117,8 +120,7 @@ export default function App() {
     }, 300);
     authService
       .refresh({ silent: true })
-      .catch(() => {
-      })
+      .catch(() => {})
       .finally(() => {
         clearTimeout(loaderTimer);
         if (cancelled) return;
@@ -188,6 +190,7 @@ export default function App() {
           <Route path="/legal/shipping" element={<ShippingPolicy />} />
           <Route path="/legal/cookies" element={<CookiePolicy />} />
           <Route path="/legal/returns" element={<ReturnPolicy />} />
+          <Route path="/legal/membership" element={<MembershipPolicy />} />
           <Route path="/sitemap" element={<Sitemap />} />
           <Route path="/loyalty" element={<LoyaltyJourney />} />
 
@@ -199,8 +202,14 @@ export default function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/payment/vnpay/return" element={<PaymentReturn method="vnpay" />} />
-          <Route path="/payment/momo/return" element={<PaymentReturn method="momo" />} />
+          <Route
+            path="/payment/vnpay/return"
+            element={<PaymentReturn method="vnpay" />}
+          />
+          <Route
+            path="/payment/momo/return"
+            element={<PaymentReturn method="momo" />}
+          />
           <Route
             path="/parent-dashboard"
             element={
@@ -446,7 +455,10 @@ export default function App() {
         <Route path="/ebook/:slug" element={<EbookReader />} />
         <Route path="/e-kid/:slug/:token" element={<KidAccess />} />
         <Route path="/e-kid/:slug/:token/ar/:code" element={<ArView />} />
-        <Route path="/e-kid/:slug/:token/ebook/:bookSlug" element={<EbookReader />} />
+        <Route
+          path="/e-kid/:slug/:token/ebook/:bookSlug"
+          element={<EbookReader />}
+        />
       </Routes>
     </BrowserRouter>
   );

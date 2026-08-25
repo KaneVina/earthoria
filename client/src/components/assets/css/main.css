@@ -1694,18 +1694,40 @@ footer {
   justify-content: space-between;
   align-items: center;
 }
+
 .footer-copy {
   font-family: "Be Vietnam Pro", sans-serif !important;
-  font-size: 12px;
-  font-weight: 300;
-  letter-spacing: 0.1em;
-  color: rgba(255, 255, 255, 0.32);
-}
-.footer-tagline {
-  font-family: "Playfair Display", serif;
   font-size: 13px;
-  font-style: italic;
-  color: rgba(255, 255, 255, 0.2);
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+  transition: color 0.35s ease, text-shadow 0.35s ease;
+}
+
+.footer-copy:hover {
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow:
+    0 0 6px rgba(255, 255, 255, 0.45),
+    0 0 14px rgba(255, 255, 255, 0.25);
+}
+
+.footer-tagline {
+  font-family: "Be Vietnam Pro", sans-serif !important;
+  font-size: 13px;
+  font-weight: 300;
+  line-height: 1.8;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.34);
+  transition: color 0.35s ease, text-shadow 0.35s ease;
+}
+
+.footer-tagline:hover {
+  color: rgba(255, 255, 255, 0.82);
+  text-shadow:
+    0 0 6px rgba(255, 255, 255, 0.4),
+    0 0 14px rgba(255, 255, 255, 0.22);
 }
 
 #back-top.visible {

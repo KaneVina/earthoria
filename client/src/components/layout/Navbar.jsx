@@ -145,7 +145,6 @@ export default function Navbar() {
   const navLinks = [
     { to: "/home", label: "Trang chủ" },
     { to: "/shop", label: "Cửa hàng" },
-    { to: "/loyalty", label: "Hạng thành viên" },
     { to: "/blog", label: "Tin tức" },
     { to: "/about", label: "Về chúng tôi" },
     { to: "/contact", label: "Liên hệ" },
@@ -462,10 +461,6 @@ export default function Navbar() {
                       </div>
                     </div>
                   </div>
-
-                  <Link to="/loyalty" className="user-dropdown-item">
-                    <Gem size={16} /> Hạng thành viên
-                  </Link>
                   <Link to="/profile" className="user-dropdown-item">
                     <User size={16} /> Hồ sơ của tôi
                   </Link>
