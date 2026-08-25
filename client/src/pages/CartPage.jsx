@@ -18,6 +18,7 @@ import { useAuthStore } from "../store/authStore";
 import { formatPrice, computeTierDiscount } from "../utils/helpers";
 import { orderService } from "../services/orderService";
 import { loyaltyService } from "../services/loyaltyService";
+import { couponService } from "../services/couponService";
 import LoyaltyBadge from "../components/LoyaltyBadge";
 import toast from "react-hot-toast";
 import StepBar from "../components/StepBar";
@@ -25,13 +26,13 @@ import { SkeletonCartItem, SkeletonCartSummary } from "../components/skeletons/S
 
 const SHIPPING_THRESHOLD = 300000;
 const SHIPPING_FEE = 30000;
-const VALID_COUPON = { code: "EARTH15", pct: 0.15 };
 
 export default function Cart() {
   const { cart, fetchCart, updateItem, removeItem, clearCart, loading } = useCartStore();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [coupon, setCoupon] = useState("");
   const [couponApplied, setCouponApplied] = useState(null);
+  const [couponLoading, setCouponLoading] = useState(false);
   const [pendingItemId, setPendingItemId] = useState(null);
   const [loyaltyProfile, setLoyaltyProfile] = useState(null);
   const navigate = useNavigate();
@@ -112,10 +113,19 @@ export default function Cart() {
   // hiển thị ở giỏ hàng luôn khớp với số tiền thực tế lúc đặt hàng.
   const tierDiscount = computeTierDiscount(loyaltyProfile?.tier, subtotal);
 
-  const couponDiscount = couponApplied
-    ? Math.round(subtotal * VALID_COUPON.pct)
-    : 0;
-  const afterDiscount = subtotal - couponDiscount - tierDiscount;
+  // Giảm giá theo mã coupon — tính lại từ dữ liệu coupon thật (couponService),
+  // không hardcode %, để luôn khớp với số tiền server tính khi đặt hàng thật.
+  const couponDiscount = (() => {
+    if (!couponApplied) return 0;
+    if (subtotal < (couponApplied.minOrder || 0)) return 0; // không còn đủ điều kiện tối thiểu
+    let d =
+      couponApplied.type === "PERCENTAGE"
+        ? Math.round((subtotal * couponApplied.value) / 100)
+        : couponApplied.value;
+    if (couponApplied.maxDiscount) d = Math.min(d, couponApplied.maxDiscount);
+    return Math.min(d, subtotal);
+  })();
+  const afterDiscount = Math.max(subtotal - couponDiscount - tierDiscount, 0);
   const freeShipThreshold =
     loyaltyProfile?.tier?.freeShipThreshold ?? SHIPPING_THRESHOLD;
   const shippingFee = afterDiscount >= freeShipThreshold ? 0 : SHIPPING_FEE;
@@ -125,9 +135,22 @@ export default function Cart() {
       ? 100
       : Math.min((afterDiscount / freeShipThreshold) * 100, 100);
 
-  const handleApplyCoupon = () => {
-    setCouponApplied(true);
-    toast.success("Mã giảm giá đã được áp dụng!");
+  const handleApplyCoupon = async () => {
+    const code = coupon.trim().toUpperCase();
+    if (!code) return toast.error("Vui lòng nhập mã giảm giá");
+    setCouponLoading(true);
+    try {
+      const { data } = await couponService.validate(code, subtotal);
+      const c = data.data;
+      const label = c.type === "PERCENTAGE" ? `Giảm ${c.value}%` : `Giảm ${formatPrice(c.value)}`;
+      setCouponApplied({ ...c, label });
+      setCoupon(c.code);
+      toast.success(`Áp dụng ${c.code} thành công!`);
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Mã giảm giá không hợp lệ");
+    } finally {
+      setCouponLoading(false);
+    }
   };
 
   const handleCheckout = async () => {
@@ -292,39 +315,61 @@ export default function Cart() {
       >
         {/* LEFT */}
         <div>
-          {/* Promo banner */}
-          <div
-            style={{
-              background: "var(--forest)",
-              padding: "16px 24px",
-              display: "flex",
-              alignItems: "center",
-              gap: "14px",
-              marginBottom: "32px",
-              position: "relative",
-              overflow: "hidden",
-            }}
-          >
-            <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)", flex: 1 }}>
-              <strong style={{ color: "var(--ivory)" }}>Mã ưu đãi tháng 6:</strong>{" "}
-              Nhập <strong style={{ color: "var(--ivory)" }}>EARTH15</strong> để giảm 15%
-            </span>
-            <button
-              onClick={handleApplyCoupon}
+          {/* Coupon input */}
+          {!couponApplied && (
+            <div
               style={{
-                background: "var(--gold)",
-                border: "none",
-                padding: "8px 16px",
-                cursor: "pointer",
-                fontSize: "10px",
-                letterSpacing: "0.14em",
-                textTransform: "uppercase",
-                color: "var(--ink)",
+                background: "var(--forest)",
+                padding: "16px 24px",
+                display: "flex",
+                alignItems: "center",
+                gap: "14px",
+                marginBottom: "32px",
+                position: "relative",
+                overflow: "hidden",
               }}
             >
-              Lưu ngay!
-            </button>
-          </div>
+              <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)", flexShrink: 0 }}>
+                <strong style={{ color: "var(--ivory)" }}>Có mã giảm giá?</strong>
+              </span>
+              <input
+                value={coupon}
+                onChange={(e) => setCoupon(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
+                placeholder="Nhập mã giảm giá..."
+                disabled={couponLoading}
+                style={{
+                  flex: 1,
+                  background: "rgba(255,255,255,0.08)",
+                  border: "0.5px solid rgba(255,255,255,0.2)",
+                  color: "var(--ivory)",
+                  padding: "8px 12px",
+                  fontSize: "12px",
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase",
+                  outline: "none",
+                }}
+              />
+              <button
+                onClick={handleApplyCoupon}
+                disabled={couponLoading}
+                style={{
+                  background: "var(--gold)",
+                  border: "none",
+                  padding: "8px 16px",
+                  cursor: couponLoading ? "not-allowed" : "pointer",
+                  opacity: couponLoading ? 0.6 : 1,
+                  fontSize: "10px",
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  color: "var(--ink)",
+                  flexShrink: 0,
+                }}
+              >
+                {couponLoading ? "Đang kiểm tra..." : "Áp dụng"}
+              </button>
+            </div>
+          )}
 
           {/* Coupon applied */}
           {couponApplied && (
@@ -341,10 +386,10 @@ export default function Cart() {
             >
               <Check size={14} color="var(--gold)" strokeWidth={2} />
               <span style={{ fontFamily: "Playfair Display,serif", fontSize: "15px", color: "var(--forest)" }}>
-                EARTH15
+                {couponApplied.code}
               </span>
               <span style={{ fontSize: "11px", color: "var(--text-muted)", flex: 1 }}>
-                Giảm 15% — đã áp dụng
+                {couponApplied.label} — đã áp dụng
               </span>
               <button
                 onClick={() => { setCouponApplied(null); setCoupon(""); }}
@@ -586,7 +631,7 @@ export default function Cart() {
                   green: true,
                 },
                 ...(couponApplied
-                  ? [{ label: "Mã EARTH15 (−15%)", val: `-${formatPrice(couponDiscount)}`, red: true }]
+                  ? [{ label: `Mã ${couponApplied.code} (${couponApplied.label})`, val: `-${formatPrice(couponDiscount)}`, red: true }]
                   : []),
                 ...(tierDiscount > 0
                   ? [{
