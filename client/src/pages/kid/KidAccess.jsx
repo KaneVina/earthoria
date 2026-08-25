@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   BookOpen,
@@ -12,6 +12,7 @@ import {
   Sunrise,
   Sunset,
   ChevronRight,
+  ArrowUp,
   X,
   Compass,
   Smile,
@@ -32,6 +33,7 @@ import { kidAccessService } from "../../services/kidAccessService";
 import FullScreenLoader from "../../components/FullScreenLoader";
 import KnowledgeGarden from "../../components/knowledgeGarden/KnowledgeGarden";
 import "../../components/assets/css/kidAccess.css";
+import GardenWidget from "../../components/knowledgeGarden/GardenWidget";
 
 const INSPIRE_LINES = [
   "Mỗi trang sách là một cánh cửa dẫn đến thế giới mới.",
@@ -58,6 +60,7 @@ const FONT_SCALES = [
   { key: "xl", label: "Rất lớn", value: 1.3 },
 ];
 const HOLD_DURATION_MS = 900;
+const BACK_TO_TOP_THRESHOLD = 520;
 
 const WEEKDAYS_VI = [
   "Chủ nhật",
@@ -410,6 +413,7 @@ function DynamicSky({ skyState, minimal = false }) {
 export default function KidAccess() {
   const { slug, token } = useParams(); // :slug không dùng để tra cứu, chỉ để đẹp URL
   const navigate = useNavigate();
+  const location = useLocation();
   const skyState = useSkyState(); // bầu trời theo giờ thực — chạy cho mọi trạng thái của trang
   const [status, setStatus] = useState("loading"); // loading | ok | invalid
   const [child, setChild] = useState(null);
@@ -434,6 +438,8 @@ export default function KidAccess() {
 
   //   thanh điều hướng đổi diện mạo khi cuộn
   const [isScrolled, setIsScrolled] = useState(false);
+  const pageRef = useRef(null); // tham chiếu vùng cuộn thật sự của trang, dùng cho nút "lên đầu trang"
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
   //   tìm sách theo tên trong tủ sách của bé
   const [searchQuery, setSearchQuery] = useState("");
@@ -500,6 +506,18 @@ export default function KidAccess() {
       /* localStorage có thể bị chặn (chế độ riêng tư) — bỏ qua, dùng mặc định */
     }
   }, [token]);
+
+  //   cuộn tới tủ sách khi quay lại từ trang Vườn Tri Thức (nút "Đọc sách ngay")
+  useEffect(() => {
+    if (!isOk || !location.state?.scrollToShelf) return;
+    const id = setTimeout(() => {
+      document
+        .querySelector(".kid-shelf")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      navigate(location.pathname, { replace: true, state: {} });
+    }, 120);
+    return () => clearTimeout(id);
+  }, [isOk, location.state, location.pathname, navigate]);
 
   //   lưu lại mỗi khi bé/phụ huynh đổi cỡ chữ
   useEffect(() => {
@@ -613,6 +631,16 @@ export default function KidAccess() {
   const handleOpenBook = useCallback((book) => setActiveBook(book), []);
   const closeModal = useCallback(() => setActiveBook(null), []);
   const closeSettings = useCallback(() => setShowSettings(false), []);
+
+  const handleKidPageScroll = useCallback((e) => {
+    setShowBackToTop(e.currentTarget.scrollTop > BACK_TO_TOP_THRESHOLD);
+  }, []);
+
+  const handleBackToTop = useCallback((e) => {
+    spawnRipple(e);
+    spawnSparkles(e, 12);
+    pageRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
   const clearSearch = useCallback(() => {
     setSearchQuery("");
@@ -847,6 +875,8 @@ export default function KidAccess() {
     <div
       className="kid-page"
       data-phase={skyState.phase}
+      ref={pageRef}
+      onScroll={handleKidPageScroll}
       style={{
         "--kid-accent": child.avatarColor || "var(--kid-blue)",
         "--kid-font-scale": fontScale,
@@ -905,9 +935,9 @@ export default function KidAccess() {
               </span>
             </div>
             <div className="kid-brandtext">
-              <span className="kid-brand-word">KID STUDIO</span>
+              <span className="kid-brand-word">TRANG TRẠI TRI THỨC</span>
               <span className="kid-brand-tagline">
-                Tài khoản của {child.name}
+                Chủ trang trại: {child.name}
               </span>
             </div>
           </div>
@@ -1216,7 +1246,7 @@ export default function KidAccess() {
             </div>
           )}
 
-          <KnowledgeGarden token={token} />
+          <GardenWidget token={token} slug={slug} />
 
           <section className="kid-shelf">
             <div className="kid-shelf-heading">
@@ -1327,6 +1357,18 @@ export default function KidAccess() {
           </Link>
         </footer>
       </div>
+
+      <button
+        type="button"
+        className={`kid-back-to-top${showBackToTop ? " is-visible" : ""}`}
+        onClick={handleBackToTop}
+        aria-label="Lên đầu trang"
+        aria-hidden={!showBackToTop}
+        tabIndex={showBackToTop ? 0 : -1}
+      >
+        <span className="kid-back-to-top-ring" aria-hidden="true" />
+        <ArrowUp size={22} strokeWidth={2.6} aria-hidden="true" />
+      </button>
 
       {activeBook && (
         <div className="kid-modal-overlay" onClick={closeModal}>
