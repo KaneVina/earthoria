@@ -6,7 +6,8 @@ import {
   Search, X, Clock, TrendingUp, ArrowRight, SearchX,
   BookOpen, Boxes, Sparkles, Tag, LayoutGrid, User,
   Package, Heart, ShoppingCart, Settings, Home, Store,
-  Info, ShieldCheck, LogOut, LogIn, Zap,
+  Info, ShieldCheck, LogOut, LogIn, Zap, Mail, Crown,
+  GitCompare, Scale, Cookie, RefreshCcw, Truck, Map,
 } from "lucide-react";
 import { bookService } from "../../services/bookService";
 
@@ -35,8 +36,22 @@ const PUBLIC_PAGES = [
   { id: "home",  label: "Trang chủ",    desc: "Quay lại trang chủ",                  icon: Home,        path: "/",         keywords: ["trang chu", "home"] },
   { id: "shop",  label: "Cửa hàng",     desc: "Khám phá tất cả sản phẩm",            icon: Store,       path: "/shop",     keywords: ["cua hang", "shop", "san pham", "mua sam"] },
   { id: "tech",  label: "Công nghệ AR", desc: "Tìm hiểu trải nghiệm thực tế ảo",    icon: Sparkles,    path: "/technology", keywords: ["cong nghe", "ar", "thuc te ao", "technology"] },
+  { id: "compare", label: "So sánh sản phẩm", desc: "Đối chiếu nhiều sản phẩm cạnh nhau", icon: GitCompare, path: "/compare", keywords: ["so sanh", "compare", "doi chieu"] },
+  { id: "loyalty", label: "Hạng thành viên", desc: "Hành trình 5 hạng thành viên & ưu đãi", icon: Crown, path: "/loyalty", keywords: ["hang thanh vien", "loyalty", "uu dai", "vip"] },
   { id: "blog",  label: "Blog",         desc: "Bài viết & kiến thức cho bé",         icon: BookOpen,    path: "/blog",     keywords: ["blog", "bai viet", "kien thuc"] },
   { id: "about", label: "Về chúng tôi", desc: "Câu chuyện thương hiệu Earthoria",    icon: Info,        path: "/about",    keywords: ["ve chung toi", "about", "gioi thieu"] },
+  { id: "contact", label: "Liên hệ",   desc: "Gửi câu hỏi hoặc phản hồi cho Earthoria", icon: Mail,      path: "/contact", keywords: ["lien he", "contact", "ho tro"] },
+  { id: "sitemap", label: "Sơ đồ website", desc: "Toàn bộ trang của Earthoria",     icon: Map,         path: "/sitemap", keywords: ["so do website", "sitemap"] },
+];
+
+const LEGAL_PAGES = [
+  { id: "legal-hub",       label: "Trung tâm pháp lý",              desc: "Tổng hợp các chính sách của Earthoria",          icon: Scale,     path: "/legal",            keywords: ["phap ly", "legal", "chinh sach", "trung tam phap ly"] },
+  { id: "legal-terms",     label: "Điều khoản dịch vụ",             desc: "Quy định sử dụng nền tảng",                       icon: Scale,     path: "/legal/terms",      keywords: ["dieu khoan", "dieu khoan dich vu", "terms"] },
+  { id: "legal-privacy",   label: "Chính sách quyền riêng tư",      desc: "Cách chúng tôi bảo vệ dữ liệu của bạn",           icon: ShieldCheck, path: "/legal/privacy",  keywords: ["bao mat", "rieng tu", "privacy", "du lieu ca nhan"] },
+  { id: "legal-shipping",  label: "Chính sách vận chuyển",          desc: "Thời gian & phí giao hàng",                       icon: Truck,     path: "/legal/shipping",   keywords: ["van chuyen", "giao hang", "shipping", "phi ship"] },
+  { id: "legal-cookies",   label: "Chính sách cookie",              desc: "Cách chúng tôi sử dụng cookie trên trang",        icon: Cookie,    path: "/legal/cookies",    keywords: ["cookie", "chinh sach cookie"] },
+  { id: "legal-returns",   label: "Chính sách trả hàng & hoàn tiền", desc: "Đổi trả, bảo hành & quy trình hoàn tiền",        icon: RefreshCcw, path: "/legal/returns",   keywords: ["tra hang", "hoan tien", "doi tra", "bao hanh", "returns"] },
+  { id: "legal-membership", label: "Chính sách hạng thành viên",    desc: "Cách xác định hạng & quyền lợi tương ứng",        icon: Crown,     path: "/legal/membership", keywords: ["hang thanh vien", "chinh sach hang thanh vien", "membership", "uu dai hang"] },
 ];
 
 const AUTH_PAGES = [
@@ -44,6 +59,7 @@ const AUTH_PAGES = [
   { id: "orders",   label: "Đơn hàng",             desc: "Lịch sử & trạng thái đơn hàng", icon: Package,      path: "/profile",  keywords: ["don hang", "orders", "lich su mua hang"] },
   { id: "wishlist", label: "Sản phẩm yêu thích",  desc: "Danh sách bạn đã lưu",          icon: Heart,        path: "/wishlist", keywords: ["yeu thich", "wishlist", "da luu"] },
   { id: "cart",     label: "Giỏ hàng",            desc: "Xem giỏ hàng hiện tại",         icon: ShoppingCart, path: "/cart",     keywords: ["gio hang", "cart"] },
+  { id: "parent-dashboard", label: "Bảng điều khiển phụ huynh", desc: "Quản lý & giám sát tài khoản của con", icon: LayoutGrid, path: "/parent-dashboard", keywords: ["phu huynh", "parent dashboard", "quan ly con"] },
   { id: "settings", label: "Cài đặt tài khoản",   desc: "Đổi mật khẩu, thông tin liên hệ", icon: Settings,   path: "/profile",  keywords: ["cai dat", "settings", "doi mat khau"] },
 ];
 
@@ -417,7 +433,7 @@ export default function SearchOverlay({
 
   /* ─ Danh sách trang theo auth ─ */
   const availablePages = useMemo(() => {
-    const pages = [...PUBLIC_PAGES];
+    const pages = [...PUBLIC_PAGES, ...LEGAL_PAGES];
     if (isAuthenticated) {
       pages.unshift(...AUTH_PAGES);
       pages.push(LOGOUT_PAGE);
