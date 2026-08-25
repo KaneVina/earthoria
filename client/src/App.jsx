@@ -57,6 +57,7 @@ import Compare from "./pages/Compare";
 import FloatingCompareBar from "./components/FloatingCompareBar";
 import ParentDashboard from "./pages/ParentDashboard";
 import KidAccess from "./pages/kid/KidAccess";
+import GardenPage from "./pages/kid/GardenPage";
 import Tickets from "./pages/admin/Tickets";
 import PaymentReturn from "./pages/PaymentReturn";
 import GameManager from "./pages/admin/GameManager";
@@ -454,6 +455,7 @@ export default function App() {
         <Route path="/game/:slug/:code" element={<GamePlay />} />
         <Route path="/ebook/:slug" element={<EbookReader />} />
         <Route path="/e-kid/:slug/:token" element={<KidAccess />} />
+        <Route path="/e-kid/:slug/:token/garden" element={<GardenPage />} />
         <Route path="/e-kid/:slug/:token/ar/:code" element={<ArView />} />
         <Route
           path="/e-kid/:slug/:token/ebook/:bookSlug"

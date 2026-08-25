@@ -8,10 +8,7 @@
   --lj-shadow-lg: 0 28px 64px rgba(13, 43, 30, 0.14);
   --lj-gold-true: #d4a843;
   --lj-gold-true-soft: rgba(212, 168, 67, 0.16);
-
-  /* Nền theo từng "trạm" của hành trình, tách khỏi token global
-     (--ivory/--cream/--white/--border) để dark-mode chỉ cần đổi lại
-     đúng 1 chỗ thay vì override rải rác trên từng class như bản cũ. */
+  --lj-route-gold: #b8a172;
   --lj-bg-a: var(--ivory); /* Stats + Steps — cùng một vùng sáng */
   --lj-bg-b: var(--cream); /* Journey */
   --lj-surface: var(--white); /* card, step-card, passport, divider */
@@ -503,9 +500,9 @@ body.dark-mode {
 
 /* ═══════════════════ SEAM — mối nối giữa các section ═══════════════════
    Mỗi seam làm đúng 2 việc cùng lúc, đúng như lựa chọn "kết hợp cả hai":
-   1) route line: 1 đoạn chỉ vàng đứt nét + 1 chấm tròn — cùng tông với
-      .lj-track-line bên dưới nên đọc như MỘT sợi chỉ duy nhất chạy suốt
-      từ Hero đến CTA, không phải nhiều đường rời rạc.
+   1) route line: 1 đoạn chỉ vàng đứt nét uốn lượn + 1 chấm tròn — vàng
+      trung tính (không thuộc hạng nào) vì đây là phần khung trang, khác
+      với các đoạn .lj-track-curve bên trong Journey (mỗi đoạn 1 màu hạng).
    2) chuyển màu mượt: nền là gradient từ màu section trên sang màu
       section dưới, thay cho việc cắt cứng giữa 2 mảng màu khác nhau. */
 .lj-seam {
@@ -513,19 +510,24 @@ body.dark-mode {
   overflow: hidden;
 }
 .lj-seam-line {
-  /* Cùng kỹ thuật uốn lượn với .lj-track-line, chỉ thu nhỏ chu kỳ (140px)
-     và biên độ (±9px) cho vừa dải nối ngắn — vẫn cùng 1 "họ" đường cong,
-     cùng màu, cùng nhịp đứt nét, nên đọc như tiếp nối của con đường chính. */
+  /* Cùng "họ" đường với .lj-track-curve trong Journey — cũng là "đường xe
+     chạy" (2 viền liền nét + 1 vạch giữa đứt nét chạy song song theo cùng
+     công thức S-curve, chỉ lệch trục x hằng số), cùng tông
+     var(--lj-route-gold) (#b8a172, phải viết cứng vì data-URI không đọc
+     được biến CSS). Thu nhỏ chu kỳ (140px) cho vừa dải nối ngắn. Vẫn dùng
+     kỹ thuật nền lặp lại (thay vì SVG ghim theo phần tử như track-curve)
+     vì ở đây không có seal nào cần đường đi xuyên qua — chỉ cần liền mạch
+     giữa 2 section. Độ mờ đã tính sẵn trong từng path (viền nhạt hơn vạch
+     giữa) nên không cần opacity ở ngoài nữa. */
   position: absolute;
   top: 0;
   bottom: 0;
   left: 50%;
-  width: 24px;
+  width: 30px;
   transform: translateX(-50%);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='140' viewBox='0 0 24 140'%3E%3Cpath d='M12 0C21 17.5,21 52.5,12 70C3 87.5,3 122.5,12 140' fill='none' stroke='%23d4a843' stroke-width='1.5' stroke-linecap='round' stroke-dasharray='4 5'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='140' viewBox='0 0 30 140'%3E%3Cpath d='M12 0C19 17.5,19 52.5,12 70C5 87.5,5 122.5,12 140' fill='none' stroke='%23b8a172' stroke-width='1' opacity='0.3'/%3E%3Cpath d='M18 0C25 17.5,25 52.5,18 70C11 87.5,11 122.5,18 140' fill='none' stroke='%23b8a172' stroke-width='1' opacity='0.3'/%3E%3Cpath d='M15 0C22 17.5,22 52.5,15 70C8 87.5,8 122.5,15 140' fill='none' stroke='%23b8a172' stroke-width='1.4' stroke-linecap='round' stroke-dasharray='4 5' opacity='0.45'/%3E%3C/svg%3E");
   background-repeat: repeat-y;
   background-position: top center;
-  opacity: 0.4;
 }
 .lj-seam-dot {
   position: absolute;
@@ -712,54 +714,31 @@ body.dark-mode {
   display: flex;
   flex-direction: column;
 }
-.lj-track-line {
-  /* 1 đường DUY NHẤT chạy suốt toàn bộ track — không còn ghép từ nhiều
-     đoạn rời theo từng row như bản cũ (vốn để hở khoảng trống lớn giữa
-     2 hạng liên tiếp vì mỗi card cao thấp khác nhau). Vì được đặt tuyệt
-     đối theo chiều cao của CHÍNH .lj-track nên luôn nối liền bất kể nội
-     dung mỗi card dài ngắn ra sao.
-
-     UỐN LƯỢN thay vì thẳng: nền là 1 ô SVG hình chữ S (rộng 44px, cao
-     480px) lặp lại theo chiều dọc (repeat-y) — điểm đầu/cuối của mỗi ô
-     có cùng toạ độ và cùng hướng tiếp tuyến nên các ô nối vào nhau
-     không bị gãy khúc, tạo cảm giác 1 con đường cong uốn qua từng chặng
-     thay vì kẻ thẳng theo hàng. Biên độ chỉ ±18px nên seal 62px vẫn
-     luôn bao trọn đường, dù đường đang lượn sang bên nào.
-     Lưu ý: SVG data-URI không đọc được var(--lj-gold-true), nên màu
-     #d4a843 dưới đây phải sửa tay nếu đổi --lj-gold-true. Mờ dần 2 đầu
-     bằng mask thay vì cắt cứng. */
+.lj-track-curve {
   position: absolute;
   top: 0;
   bottom: 0;
   left: 50%;
-  width: 44px;
+  width: 60px;
   transform: translateX(-50%);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='480' viewBox='0 0 44 480'%3E%3Cpath d='M22 0C40 60,40 180,22 240C4 300,4 420,22 480' fill='none' stroke='%23d4a843' stroke-width='1.5' stroke-linecap='round' stroke-dasharray='5 6'/%3E%3C/svg%3E");
-  background-repeat: repeat-y;
-  background-position: top center;
-  opacity: 0.5;
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    transparent,
-    black 32px,
-    black calc(100% - 32px),
-    transparent
-  );
-  mask-image: linear-gradient(
-    to bottom,
-    transparent,
-    black 32px,
-    black calc(100% - 32px),
-    transparent
-  );
   pointer-events: none;
   z-index: 1;
 }
+.lj-track-curve svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.lj-track-curve-fade-in {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 100%);
+  mask-image: linear-gradient(to bottom, transparent, black 100%);
+}
+.lj-track-curve-fade-out {
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent);
+  mask-image: linear-gradient(to bottom, black 0%, transparent);
+}
 .lj-track-cap {
-  /* Dùng CHUNG lưới 1fr/84px/1fr với .lj-row để cột giữa (nơi đặt icon)
-     luôn thẳng hàng với các seal — kể cả khi đổi bố cục ở mobile — thay
-     vì canh giữa bằng margin:auto như trước (dễ lệch khỏi rail khi rail
-     chuyển sang bố cục 1 cột). */
+  position: relative;
   display: grid;
   grid-template-columns: 1fr 84px 1fr;
   column-gap: 36px;
@@ -798,6 +777,11 @@ body.dark-mode {
 }
 
 .lj-row {
+  /* position:relative để .lj-track-curve (con trực tiếp, không nằm trong
+     .lj-row-rail) neo theo đúng toàn bộ chiều cao ĐÃ PADDING của row —
+     nhờ padding trên/dưới bằng nhau (46px/46px) nên tâm dọc của span này
+     trùng khít tâm .lj-row-rail, tức đúng vị trí seal. */
+  position: relative;
   display: grid;
   grid-template-columns: 1fr 84px 1fr;
   column-gap: 36px;
@@ -1364,7 +1348,7 @@ body.dark-mode .lj-card-progress {
   .lj-card {
     padding: 28px 24px 26px;
   }
-  .lj-track-line {
+  .lj-track-curve {
     left: 28px;
   }
   .lj-track-cap {

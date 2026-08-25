@@ -362,14 +362,24 @@ export default function LoyaltyJourney() {
           </div>
 
           <div className="lj-track">
-            {/* Sợi chỉ vàng liên tục — chạy suốt từ "Khởi hành" đến "Đích đến",
-                nằm phía sau tất cả 5 trạm nên không có bất kỳ điểm đứt nào,
-                bất kể mỗi card cao thấp khác nhau ra sao. Toả sáng nhẹ, không
-                cạnh tranh màu sắc với 5 hạng — 5 màu chỉ bừng lên tại chính
-                con dấu (seal) của hạng đó, như hạt cườm trên một sợi dây. */}
-            <span className="lj-track-line" aria-hidden="true" />
-
+            {/* Không còn 1 đường dùng chung cho cả track (kiểu pattern nền lặp
+                lại theo chu kỳ cố định sẽ "trôi" tự do, không biết seal nằm ở
+                đâu). Giờ MỖI cap/row tự vẽ đoạn "đường" của chính nó (2 viền
+                liền nét + 1 vạch giữa đứt nét, như đường xe chạy) bằng SVG,
+                co giãn đúng theo chiều cao thật nên luôn đi qua đúng tâm seal
+                dù card cao thấp khác nhau, và mỗi đoạn nhận đúng 1 màu của
+                hạng đó qua var(--tier-color) — không phải 1 màu vàng chung
+                chung nữa. 2 đoạn đầu/cuối (trước hạng I, sau hạng V) dùng
+                var(--lj-route-gold) — tông đồng cổ trầm, không phải vàng
+                sáng var(--lj-gold-true) của nút/badge (dùng màu chói cho 1
+                đường trang trí dài dễ bị "phèn", nên tách riêng 1 tông
+                trầm hơn chỉ dành cho hệ thống đường đi). */}
             <div className="lj-track-cap lj-track-cap-start">
+              <TrackCurve
+                color="var(--lj-route-gold)"
+                opacity={0.42}
+                fade="in"
+              />
               <span className="lj-track-cap-mark">
                 <span className="lj-track-cap-icon">
                   <Flag size={13} />
@@ -388,6 +398,11 @@ export default function LoyaltyJourney() {
             ))}
 
             <div className="lj-track-cap lj-track-cap-end">
+              <TrackCurve
+                color="var(--lj-route-gold)"
+                opacity={0.42}
+                fade="out"
+              />
               <span className="lj-track-cap-mark">
                 <span className="lj-track-cap-icon">
                   <Gem size={13} />
@@ -525,6 +540,53 @@ function SectionSeam({ variant }) {
   );
 }
 
+/* ════════════════════════ TRACK CURVE (đoạn đường của 1 row/cap) ════════════════════════
+   2 lỗi đã sửa so với bản trước:
+   1) SVG là "replaced element" nên position:absolute + top:0/bottom:0 (không
+      khai height) KHÔNG co giãn hết chiều cao cha như div thường — chỉ hiện
+      đúng 1 đoạn ngắn rồi dừng (đây là lý do đường bị đứt đoạn trong ảnh bạn
+      gửi). Sửa bằng cách bọc SVG trong 1 div thường — div đó mới là phần tử
+      absolute co giãn top:0/bottom:0, còn SVG bên trong chỉ cần lấp đầy
+      100%/100% của div (kích thước cha lúc này đã là số cụ thể, SVG co giãn
+      100% hoàn toàn đáng tin cậy).
+   2) Đổi từ 1 đường nét đứt sang bố cục "đường xe chạy": 2 đường liền nét
+      2 bên (viền đường) + 1 đường nét đứt ở giữa (vạch phân làn) — cả 3 đều
+      chạy song song theo cùng 1 công thức S-curve (chỉ lệch trục x hằng số),
+      viewBox theo % chiều cao (không phải px) nên luôn khớp đúng tâm seal
+      như bản trước, chỉ đổi hình thức hiển thị. */
+function TrackCurve({ color, opacity = 0.55, fade }) {
+  const fadeClass = fade ? ` lj-track-curve-fade-${fade}` : "";
+  return (
+    <div className={`lj-track-curve${fadeClass}`} aria-hidden="true">
+      <svg viewBox="0 0 60 100" preserveAspectRatio="none">
+        <path
+          d="M24 0C38 12.5,38 37.5,24 50C10 62.5,10 87.5,24 100"
+          fill="none"
+          stroke={color}
+          strokeWidth="1"
+          opacity={opacity * 0.5}
+        />
+        <path
+          d="M36 0C50 12.5,50 37.5,36 50C22 62.5,22 87.5,36 100"
+          fill="none"
+          stroke={color}
+          strokeWidth="1"
+          opacity={opacity * 0.5}
+        />
+        <path
+          d="M30 0C44 12.5,44 37.5,30 50C16 62.5,16 87.5,30 100"
+          fill="none"
+          stroke={color}
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeDasharray="5 6"
+          opacity={opacity}
+        />
+      </svg>
+    </div>
+  );
+}
+
 /* ════════════════════════ STEP CARD ════════════════════════ */
 function StepCard({ icon: Icon, index, title, desc }) {
   const [ref, active] = useReveal();
@@ -563,6 +625,14 @@ function RankStop({ tier, index, loyaltyProfile }) {
       className={`lj-row lj-row-${side}${active ? " in" : ""}${isCurrent ? " is-current" : ""}`}
       style={{ "--tier-color": tier.color, "--tier-color-soft": tier.colorSoft }}
     >
+      {/* Nằm ngoài .lj-row-rail (đặt trực tiếp trong .lj-row) để span đúng
+          TOÀN BỘ chiều cao đã padding của row — nhờ padding trên/dưới của
+          .lj-row bằng nhau (46px/46px) nên mốc y=50% của SVG này trùng khít
+          với tâm .lj-row-rail, tức đúng vị trí seal, dù không nằm chung
+          element. Đồng thời điểm x=22 ở y=0 và y=100 luôn khớp với biên trên/
+          dưới của chính row này, nên nối liền mạch với row kề bên. */}
+      <TrackCurve color="var(--tier-color)" opacity={0.55} />
+
       <div className="lj-row-ghost" aria-hidden="true">
         {tier.roman}
       </div>
