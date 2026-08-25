@@ -3386,6 +3386,62 @@
   line-height: 1.65;
 }
 
+.pf-settings-subhead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 4px 0 14px;
+}
+.pf-settings-subhead::after {
+  content: "";
+  flex: 1;
+  height: 0.5px;
+  background: var(--border);
+}
+
+.pf-badge-upcoming {
+  margin-left: 8px;
+  background: transparent;
+  border: 0.5px solid var(--border-gold);
+  color: var(--gold);
+}
+
+.pf-settings-info-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.pf-settings-info-item-clock {
+  position: relative;
+}
+.pf-server-clock {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 8px;
+}
+.pf-server-clock-time {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: "courier new", ui-monospace, monospace;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.pf-server-clock-zone {
+  font-family: "be vietnam pro", sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--text-muted);
+}
+
 .pf-theme-row {
   display: flex;
   align-items: center;
@@ -3553,6 +3609,12 @@ body.dark-mode .pf-settings-info-val {
 body.dark-mode .pf-changelog-meta .pf-mono {
   color: #c8d4cc;
 }
+body.dark-mode .pf-settings-subhead {
+  color: #7c8a80;
+}
+body.dark-mode .pf-server-clock-dot {
+  background: #5fc24f;
+}
 body.dark-mode .pf-cookie-group-title {
   color: #c8d4cc;
 }
@@ -3572,6 +3634,9 @@ body.dark-mode .pf-switch-track {
   }
   .pf-settings-info-grid {
     grid-template-columns: 1fr;
+  }
+  .pf-settings-info-item-clock {
+    padding-bottom: 18px;
   }
   .pf-theme-row {
     flex-direction: column;
