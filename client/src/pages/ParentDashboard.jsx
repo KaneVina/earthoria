@@ -76,19 +76,33 @@ function formatRelativeTime(iso) {
   if (diffMin < 1) return "Vừa xong";
   if (diffMin < 60) return `${diffMin} phút trước`;
   const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `Hôm nay, ${date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}`;
+  if (diffH < 24)
+    return `Hôm nay, ${date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}`;
   const diffDays = Math.floor(diffH / 24);
-  if (diffDays === 1) return `Hôm qua, ${date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}`;
+  if (diffDays === 1)
+    return `Hôm qua, ${date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}`;
   if (diffDays < 7) return `${diffDays} ngày trước`;
   return date.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
 }
 
 const EYE_TIPS = [
   { Icon: Timer, text: "Giữ màn hình cách mắt 50–70cm nhé!" },
-  { Icon: Eye, text: "Đặt màn hình hơi thấp hơn tầm mắt một chút sẽ đỡ mỏi cổ hơn đó" },
-  { Icon: Sun, text: "Phòng tối quá? Bật thêm đèn để mắt đỡ phải điều tiết nhiều" },
-  { Icon: Sparkles, text: "Màn hình đang chói không? Thử giảm độ sáng hoặc đổi góc ngồi xem" },
-  { Icon: Moon, text: "Đã tối rồi, bật chế độ lọc ánh sáng xanh cho dễ chịu hơn nhé" },
+  {
+    Icon: Eye,
+    text: "Đặt màn hình hơi thấp hơn tầm mắt một chút sẽ đỡ mỏi cổ hơn đó",
+  },
+  {
+    Icon: Sun,
+    text: "Phòng tối quá? Bật thêm đèn để mắt đỡ phải điều tiết nhiều",
+  },
+  {
+    Icon: Sparkles,
+    text: "Màn hình đang chói không? Thử giảm độ sáng hoặc đổi góc ngồi xem",
+  },
+  {
+    Icon: Moon,
+    text: "Đã tối rồi, bật chế độ lọc ánh sáng xanh cho dễ chịu hơn nhé",
+  },
 ];
 
 const DEFAULT_SETTINGS = {
@@ -139,8 +153,14 @@ function timeToMinutes(hhmm) {
   return h * 60 + m;
 }
 
-
-function Stepper({ value, onChange, min = 5, max = 240, step = 5, suffix = "phút" }) {
+function Stepper({
+  value,
+  onChange,
+  min = 5,
+  max = 240,
+  step = 5,
+  suffix = "phút",
+}) {
   return (
     <div className="pkd-stepper">
       <button
@@ -174,7 +194,11 @@ function SwitchRow({ title, desc, checked, onChange }) {
         {desc && <div className="pkd-switch-row-desc">{desc}</div>}
       </div>
       <label className="pf-switch">
-        <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+        />
         <span className="pf-switch-track">
           <span className="pf-switch-thumb" />
         </span>
@@ -200,7 +224,11 @@ function ModalShell({ onClose, children, wide }) {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className={`pf-confirm pkd-modal ${wide ? "pkd-modal-wide" : ""}`} role="dialog" aria-modal="true">
+      <div
+        className={`pf-confirm pkd-modal ${wide ? "pkd-modal-wide" : ""}`}
+        role="dialog"
+        aria-modal="true"
+      >
         {children}
       </div>
     </div>
@@ -209,7 +237,13 @@ function ModalShell({ onClose, children, wide }) {
 
 // Card bao ngoài gắn class .reveal — tự thêm "in" khi cuộn tới, tái dùng
 // animation .reveal/.reveal.in đã có sẵn trong main.css.
-function RevealCard({ as: Tag = "div", className = "", delay, children, ...rest }) {
+function RevealCard({
+  as: Tag = "div",
+  className = "",
+  delay,
+  children,
+  ...rest
+}) {
   const ref = useRef(null);
   const [inView, setInView] = useState(false);
 
@@ -223,7 +257,7 @@ function RevealCard({ as: Tag = "div", className = "", delay, children, ...rest 
           observer.unobserve(el);
         }
       },
-      { threshold: 0.15 }
+      { threshold: 0.15 },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -264,9 +298,13 @@ export default function ParentDashboard() {
       const res = await childService.list();
       const list = res.data.data.children;
       setChildren(list);
-      setActiveChildId((prev) => (prev && list.some((c) => c.id === prev) ? prev : list[0]?.id ?? null));
+      setActiveChildId((prev) =>
+        prev && list.some((c) => c.id === prev) ? prev : (list[0]?.id ?? null),
+      );
     } catch (err) {
-      toast.error(err.response?.data?.message || "Không thể tải danh sách hồ sơ trẻ em");
+      toast.error(
+        err.response?.data?.message || "Không thể tải danh sách hồ sơ trẻ em",
+      );
     } finally {
       setChildrenLoading(false);
     }
@@ -287,7 +325,9 @@ export default function ParentDashboard() {
       const res = await childService.getDashboard(childId);
       setDashboard(res.data.data);
     } catch (err) {
-      toast.error(err.response?.data?.message || "Không thể tải dữ liệu bảng điều khiển");
+      toast.error(
+        err.response?.data?.message || "Không thể tải dữ liệu bảng điều khiển",
+      );
     } finally {
       setDashboardLoading(false);
     }
@@ -322,18 +362,25 @@ export default function ParentDashboard() {
   };
 
   const toggleBookVisibility = async (bookId, visible) => {
-    setBooks((prev) => prev.map((b) => (b.id === bookId ? { ...b, visible } : b)));
+    setBooks((prev) =>
+      prev.map((b) => (b.id === bookId ? { ...b, visible } : b)),
+    );
     try {
       await childService.setBookVisibility(activeChildId, bookId, visible);
     } catch (err) {
-      toast.error(err.response?.data?.message || "Không thể cập nhật hiển thị sách");
+      toast.error(
+        err.response?.data?.message || "Không thể cập nhật hiển thị sách",
+      );
       loadBooks(activeChildId);
     }
   };
 
   const activeChild = dashboard?.child ?? null;
   const settings = activeChild ?? DEFAULT_SETTINGS;
-  const lockState = { isLocked: !!activeChild?.isLocked, lockedAt: activeChild?.lockedAt ?? null };
+  const lockState = {
+    isLocked: !!activeChild?.isLocked,
+    lockedAt: activeChild?.lockedAt ?? null,
+  };
   const auditLog = (dashboard?.auditLog ?? []).map((a) => ({
     id: a.id,
     type: AUDIT_TYPE_MAP[a.type] || "settings",
@@ -349,13 +396,19 @@ export default function ParentDashboard() {
     minutes: s.minutes,
     date: formatRelativeTime(s.date),
   }));
-  const weekMax = Math.max(...weeklyMinutes, settings.dailyLimitMinutes || 60, 1);
+  const weekMax = Math.max(
+    ...weeklyMinutes,
+    settings.dailyLimitMinutes || 60,
+    1,
+  );
   const weekTotal = weeklyMinutes.reduce((a, b) => a + b, 0);
   const weekAvg = weeklyMinutes.length ? weekTotal / weeklyMinutes.length : 0;
 
   // Xu hướng hôm nay so với trung bình tuần — quy ra badge tăng/giảm
-  const trendDeltaPct = weekAvg > 0 ? Math.round(((todayMinutes - weekAvg) / weekAvg) * 100) : 0;
-  const trendDirection = trendDeltaPct <= -5 ? "down" : trendDeltaPct >= 5 ? "up" : "flat";
+  const trendDeltaPct =
+    weekAvg > 0 ? Math.round(((todayMinutes - weekAvg) / weekAvg) * 100) : 0;
+  const trendDirection =
+    trendDeltaPct <= -5 ? "down" : trendDeltaPct >= 5 ? "up" : "flat";
 
   /*  Autosave feedback  */
   const [saveStatus, setSaveStatus] = useState("idle"); // idle | saving | saved
@@ -364,18 +417,28 @@ export default function ParentDashboard() {
   const updateSettings = async (patch) => {
     if (!activeChildId) return;
     // Optimistic update để UI mượt, rollback bằng cách tải lại nếu API lỗi
-    setDashboard((prev) => (prev ? { ...prev, child: { ...prev.child, ...patch } } : prev));
+    setDashboard((prev) =>
+      prev ? { ...prev, child: { ...prev.child, ...patch } } : prev,
+    );
     clearTimeout(saveTimers.current.toSaved);
     clearTimeout(saveTimers.current.toIdle);
     setSaveStatus("saving");
     try {
       await childService.updateSettings(activeChildId, patch);
-      setChildren((prev) => prev.map((c) => (c.id === activeChildId ? { ...c, ...patch } : c)));
-      saveTimers.current.toSaved = setTimeout(() => setSaveStatus("saved"), 350);
+      setChildren((prev) =>
+        prev.map((c) => (c.id === activeChildId ? { ...c, ...patch } : c)),
+      );
+      saveTimers.current.toSaved = setTimeout(
+        () => setSaveStatus("saved"),
+        350,
+      );
       saveTimers.current.toIdle = setTimeout(() => setSaveStatus("idle"), 2600);
     } catch (err) {
       setSaveStatus("idle");
-      toast.error(err.response?.data?.message || "Không thể lưu thay đổi, đang tải lại...");
+      toast.error(
+        err.response?.data?.message ||
+          "Không thể lưu thay đổi, đang tải lại...",
+      );
       loadDashboard(activeChildId);
     }
   };
@@ -386,6 +449,13 @@ export default function ParentDashboard() {
       clearTimeout(saveTimers.current.toIdle);
     };
   }, []);
+
+  const [allowStartDraft, setAllowStartDraft] = useState(settings.allowStart);
+  const [allowEndDraft, setAllowEndDraft] = useState(settings.allowEnd);
+  useEffect(() => {
+    setAllowStartDraft(settings.allowStart);
+    setAllowEndDraft(settings.allowEnd);
+  }, [settings.allowStart, settings.allowEnd]);
 
   const [tipIndex, setTipIndex] = useState(0);
   const [tipCycling, setTipCycling] = useState(false);
@@ -418,7 +488,13 @@ export default function ParentDashboard() {
   };
 
   const requestLock = (child) => {
-    setLockTarget(child ? { id: child.id, name: child.name } : (activeChild ? { id: activeChildId, name: activeChild.name } : null));
+    setLockTarget(
+      child
+        ? { id: child.id, name: child.name }
+        : activeChild
+          ? { id: activeChildId, name: activeChild.name }
+          : null,
+    );
     setLockConfirmOpen(true);
   };
   const confirmLock = async () => {
@@ -426,9 +502,15 @@ export default function ParentDashboard() {
     try {
       const res = await childService.lock(lockTarget.id);
       if (lockTarget.id === activeChildId) {
-        setDashboard((prev) => (prev ? { ...prev, child: res.data.data.child } : prev));
+        setDashboard((prev) =>
+          prev ? { ...prev, child: res.data.data.child } : prev,
+        );
       }
-      setChildren((prev) => prev.map((c) => (c.id === lockTarget.id ? { ...c, isLocked: true } : c)));
+      setChildren((prev) =>
+        prev.map((c) =>
+          c.id === lockTarget.id ? { ...c, isLocked: true } : c,
+        ),
+      );
       toast.success(res.data.message);
     } catch (err) {
       toast.error(err.response?.data?.message || "Không thể khóa AR");
@@ -438,7 +520,13 @@ export default function ParentDashboard() {
   };
 
   const requestUnlock = (child) => {
-    setLockTarget(child ? { id: child.id, name: child.name } : (activeChild ? { id: activeChildId, name: activeChild.name } : null));
+    setLockTarget(
+      child
+        ? { id: child.id, name: child.name }
+        : activeChild
+          ? { id: activeChildId, name: activeChild.name }
+          : null,
+    );
     setUnlockPinOpen(true);
   };
   // Gọi API thật, xác thực PIN ở server (bcrypt + chống brute-force) —
@@ -447,9 +535,13 @@ export default function ParentDashboard() {
     if (!lockTarget) return;
     const res = await childService.unlock(lockTarget.id, pin);
     if (lockTarget.id === activeChildId) {
-      setDashboard((prev) => (prev ? { ...prev, child: res.data.data.child } : prev));
+      setDashboard((prev) =>
+        prev ? { ...prev, child: res.data.data.child } : prev,
+      );
     }
-    setChildren((prev) => prev.map((c) => (c.id === lockTarget.id ? { ...c, isLocked: false } : c)));
+    setChildren((prev) =>
+      prev.map((c) => (c.id === lockTarget.id ? { ...c, isLocked: false } : c)),
+    );
     setUnlockPinOpen(false);
     toast.success(res.data.message);
   };
@@ -490,15 +582,31 @@ export default function ParentDashboard() {
       }
     },
   });
-  const oldPinHandlers = makePinDigitHandlers(oldPinDigits, setOldPinDigits, oldPinRefs);
-  const newPinHandlers = makePinDigitHandlers(newPinDigits, setNewPinDigits, newPinRefs);
-  const confirmPinHandlers = makePinDigitHandlers(confirmPinDigits, setConfirmPinDigits, confirmPinRefs);
+  const oldPinHandlers = makePinDigitHandlers(
+    oldPinDigits,
+    setOldPinDigits,
+    oldPinRefs,
+  );
+  const newPinHandlers = makePinDigitHandlers(
+    newPinDigits,
+    setNewPinDigits,
+    newPinRefs,
+  );
+  const confirmPinHandlers = makePinDigitHandlers(
+    confirmPinDigits,
+    setConfirmPinDigits,
+    confirmPinRefs,
+  );
 
   // Các bước hiển thị phụ thuộc vào 2 trường hợp:
   // - Chưa từng đặt PIN (!hasPin): chỉ cần "new" → "confirm" (không có PIN cũ để xác thực, không cần OTP)
   // - Quên PIN (isForgotFlow): "otp" → "new" → "confirm" (xác thực qua email)
   // - Đổi PIN bình thường: "old" → "new" → "confirm" (PIN cũ chính là yếu tố xác thực)
-  const pinFlowSteps = !hasPin ? ["new", "confirm"] : isForgotFlow ? ["otp", "new", "confirm"] : ["old", "new", "confirm"];
+  const pinFlowSteps = !hasPin
+    ? ["new", "confirm"]
+    : isForgotFlow
+      ? ["otp", "new", "confirm"]
+      : ["old", "new", "confirm"];
 
   useEffect(() => {
     if (resendCooldown <= 0) return;
@@ -618,10 +726,14 @@ export default function ParentDashboard() {
         await parentPinService.change(oldPinDigits.join(""), newPin);
       }
       setHasPin(true);
-      toast.success(isForgotFlow ? "Đã đặt lại mã PIN mới" : "Đã đổi mã PIN thành công");
+      toast.success(
+        isForgotFlow ? "Đã đặt lại mã PIN mới" : "Đã đổi mã PIN thành công",
+      );
       closePinModal();
     } catch (err) {
-      setPinError(err.response?.data?.message || "Không thể lưu mã PIN, thử lại nhé.");
+      setPinError(
+        err.response?.data?.message || "Không thể lưu mã PIN, thử lại nhé.",
+      );
     } finally {
       setPinSubmitting(false);
     }
@@ -667,7 +779,9 @@ export default function ParentDashboard() {
 
   /*  Scrollspy: mục lục tự nhận diện section đang xem + trạng thái "dính"  */
   useEffect(() => {
-    const sectionEls = SECTIONS.map((s) => document.getElementById(s.id)).filter(Boolean);
+    const sectionEls = SECTIONS.map((s) =>
+      document.getElementById(s.id),
+    ).filter(Boolean);
     if (!sectionEls.length) return;
 
     const observer = new IntersectionObserver(
@@ -677,7 +791,7 @@ export default function ParentDashboard() {
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
         if (visible[0]) setActiveSection(visible[0].target.id);
       },
-      { rootMargin: "-15% 0px -70% 0px", threshold: [0, 0.25, 0.5, 1] }
+      { rootMargin: "-15% 0px -70% 0px", threshold: [0, 0.25, 0.5, 1] },
     );
     sectionEls.forEach((el) => observer.observe(el));
 
@@ -693,7 +807,9 @@ export default function ParentDashboard() {
 
   const scrollToSection = (id) => {
     setActiveSection(id);
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document
+      .getElementById(id)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   // Vị trí % của khung giờ được phép trên dải 24h, để vẽ timeline
@@ -748,10 +864,13 @@ export default function ParentDashboard() {
           <Smile size={40} strokeWidth={1.2} />
           <h3>Chưa có hồ sơ trẻ em nào</h3>
           <p>
-            Tạo hồ sơ riêng cho từng bé — như YouTube Kids — để quản lý sách, giờ xem AR và bảo vệ
-            mắt cho con bạn.
+            Tạo hồ sơ riêng cho từng bé — như YouTube Kids — để quản lý sách,
+            giờ xem AR và bảo vệ mắt cho con bạn.
           </p>
-          <button className="pf-confirm-ok pf-btn-tactile" onClick={() => setWizardOpen(true)}>
+          <button
+            className="pf-confirm-ok pf-btn-tactile"
+            onClick={() => setWizardOpen(true)}
+          >
             <UserPlus size={15} /> Tạo hồ sơ đầu tiên cho bé
           </button>
         </div>
@@ -784,8 +903,14 @@ export default function ParentDashboard() {
         className="pkd-header"
         onMouseMove={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
-          e.currentTarget.style.setProperty("--mx", `${e.clientX - rect.left}px`);
-          e.currentTarget.style.setProperty("--my", `${e.clientY - rect.top}px`);
+          e.currentTarget.style.setProperty(
+            "--mx",
+            `${e.clientX - rect.left}px`,
+          );
+          e.currentTarget.style.setProperty(
+            "--my",
+            `${e.clientY - rect.top}px`,
+          );
         }}
       >
         <div className="pkd-header-bg" aria-hidden="true">
@@ -812,7 +937,8 @@ export default function ParentDashboard() {
                 Bảng điều khiển <em>phụ huynh</em>
               </h1>
               <p className="pkd-sub">
-                Quản lý giờ xem AR, quy tắc 20-20-20, và bảo vệ mắt cho con của bạn.
+                Quản lý giờ xem AR, quy tắc 20-20-20, và bảo vệ mắt cho con của
+                bạn.
               </p>
             </div>
 
@@ -822,7 +948,10 @@ export default function ParentDashboard() {
                 <Wifi size={12} />
                 Hoạt động gần nhất của {activeChild.name}: {lastSessionLabel}
               </span>
-              <span className={`pkd-autosave ${saveStatus !== "idle" ? "is-visible" : ""} is-${saveStatus}`} aria-live="polite">
+              <span
+                className={`pkd-autosave ${saveStatus !== "idle" ? "is-visible" : ""} is-${saveStatus}`}
+                aria-live="polite"
+              >
                 {saveStatus === "saving" ? (
                   <>
                     <Loader2 size={12} /> Đang lưu…
@@ -850,7 +979,10 @@ export default function ParentDashboard() {
                   type="button"
                 >
                   <span className="pkd-child-avatar-wrap">
-                    <span className="pkd-child-avatar" style={{ background: child.avatarColor }}>
+                    <span
+                      className="pkd-child-avatar"
+                      style={{ background: child.avatarColor }}
+                    >
                       {child.avatarEmoji}
                     </span>
                   </span>
@@ -865,7 +997,10 @@ export default function ParentDashboard() {
                     </span>
                     <span className="pkd-child-meta">{child.age} tuổi</span>
                     <span className="pkd-child-bar">
-                      <span className={`pkd-child-bar-fill ${pct >= 100 ? "is-over" : ""}`} style={{ width: `${pct}%` }} />
+                      <span
+                        className={`pkd-child-bar-fill ${pct >= 100 ? "is-over" : ""}`}
+                        style={{ width: `${pct}%` }}
+                      />
                     </span>
                     <span className="pkd-child-mins">
                       {formatMinutes(mins)} / {formatMinutes(limit)} hôm nay
@@ -897,7 +1032,11 @@ export default function ParentDashboard() {
               );
             })}
 
-            <button className="pkd-add-child-card" onClick={() => setWizardOpen(true)} type="button">
+            <button
+              className="pkd-add-child-card"
+              onClick={() => setWizardOpen(true)}
+              type="button"
+            >
               <UserPlus size={20} />
               <span>Thêm hồ sơ cho bé</span>
             </button>
@@ -939,7 +1078,11 @@ export default function ParentDashboard() {
                 </span>
                 {trendDirection !== "flat" && (
                   <span className={`pkd-trend is-${trendDirection}`}>
-                    {trendDirection === "down" ? <TrendingDown size={11} /> : <TrendingUp size={11} />}
+                    {trendDirection === "down" ? (
+                      <TrendingDown size={11} />
+                    ) : (
+                      <TrendingUp size={11} />
+                    )}
                     {Math.abs(trendDeltaPct)}%
                   </span>
                 )}
@@ -950,7 +1093,9 @@ export default function ParentDashboard() {
                 )}
               </div>
               <div className="pkd-stat-val">{formatMinutes(todayMinutes)}</div>
-              <div className="pkd-stat-label">Đã xem hôm nay · so với TB tuần</div>
+              <div className="pkd-stat-label">
+                Đã xem hôm nay · so với TB tuần
+              </div>
             </RevealCard>
 
             <RevealCard className="pkd-stat-card" delay={60}>
@@ -959,7 +1104,9 @@ export default function ParentDashboard() {
                   <CalendarClock size={16} />
                 </span>
               </div>
-              <div className="pkd-stat-val">{formatMinutes(settings.dailyLimitMinutes)}</div>
+              <div className="pkd-stat-val">
+                {formatMinutes(settings.dailyLimitMinutes)}
+              </div>
               <div className="pkd-stat-label">Giới hạn mỗi ngày</div>
             </RevealCard>
 
@@ -973,7 +1120,10 @@ export default function ParentDashboard() {
               <div className="pkd-stat-label">Lượt xem gần đây</div>
             </RevealCard>
 
-            <RevealCard className={`pkd-stat-card ${lockState.isLocked ? "is-danger" : ""}`} delay={180}>
+            <RevealCard
+              className={`pkd-stat-card ${lockState.isLocked ? "is-danger" : ""}`}
+              delay={180}
+            >
               <div className="pkd-stat-icon-row">
                 <span className="pkd-stat-icon-box">
                   {lockState.isLocked ? (
@@ -983,7 +1133,9 @@ export default function ParentDashboard() {
                   )}
                 </span>
               </div>
-              <div className="pkd-stat-val">{lockState.isLocked ? "Đã khóa" : "Đang mở"}</div>
+              <div className="pkd-stat-val">
+                {lockState.isLocked ? "Đã khóa" : "Đang mở"}
+              </div>
               <div className="pkd-stat-label">Trạng thái AR</div>
             </RevealCard>
           </div>
@@ -995,7 +1147,11 @@ export default function ParentDashboard() {
                 <strong>AR đang bị tạm khóa cho {activeChild.name}.</strong>
                 <div>Chỉ phụ huynh mới có thể mở khóa bằng mã PIN.</div>
               </div>
-              <button className="pkd-mini-btn pf-btn-tactile" onClick={() => requestUnlock()} type="button">
+              <button
+                className="pkd-mini-btn pf-btn-tactile"
+                onClick={() => requestUnlock()}
+                type="button"
+              >
                 <Unlock size={13} /> Mở khóa
               </button>
             </RevealCard>
@@ -1008,9 +1164,9 @@ export default function ParentDashboard() {
             <span className="pkd-section-eyebrow">Tuỳ chỉnh</span>
             <h2 className="pkd-section-title">Quản lý giờ giấc</h2>
             <p className="pkd-section-sub">
-              Mọi giới hạn được tính theo giờ máy chủ và đồng bộ theo tài khoản, không phụ thuộc
-              vào giờ trên thiết bị của con — nên không thể "lách" bằng cách chỉnh giờ máy, thoát
-              app, hay gỡ cài lại.
+              Mọi giới hạn được tính theo giờ máy chủ và đồng bộ theo tài khoản,
+              không phụ thuộc vào giờ trên thiết bị của con — nên không thể
+              "lách" bằng cách chỉnh giờ máy, thoát app, hay gỡ cài lại.
             </p>
           </RevealCard>
 
@@ -1088,10 +1244,12 @@ export default function ParentDashboard() {
                     <label>Từ</label>
                     <input
                       type="time"
-                      value={settings.allowStart}
+                      value={allowStartDraft}
                       onChange={(e) => {
-                        if (!e.target.value) return;
-                        updateSettings({ allowStart: e.target.value });
+                        const val = e.target.value;
+                        setAllowStartDraft(val);
+                        if (!val) return;
+                        updateSettings({ allowStart: val });
                       }}
                     />
                   </div>
@@ -1100,10 +1258,12 @@ export default function ParentDashboard() {
                     <label>Đến</label>
                     <input
                       type="time"
-                      value={settings.allowEnd}
+                      value={allowEndDraft}
                       onChange={(e) => {
-                        if (!e.target.value) return;
-                        updateSettings({ allowEnd: e.target.value });
+                        const val = e.target.value;
+                        setAllowEndDraft(val);
+                        if (!val) return;
+                        updateSettings({ allowEnd: val });
                       }}
                     />
                   </div>
@@ -1112,14 +1272,26 @@ export default function ParentDashboard() {
                 <div className="pkd-timeline">
                   <div className="pkd-timeline-head">
                     <span>Trực quan 24 giờ</span>
-                    <span>Hiện tại: {new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}</span>
+                    <span>
+                      Hiện tại:{" "}
+                      {new Date().toLocaleTimeString("vi-VN", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
                   </div>
                   <div className="pkd-timeline-track">
                     <div
                       className="pkd-timeline-allowed"
-                      style={{ left: `${startPct}%`, width: `${Math.max(endPct - startPct, 1)}%` }}
+                      style={{
+                        left: `${startPct}%`,
+                        width: `${Math.max(endPct - startPct, 1)}%`,
+                      }}
                     />
-                    <div className="pkd-timeline-now" style={{ left: `${nowPct}%` }} />
+                    <div
+                      className="pkd-timeline-now"
+                      style={{ left: `${nowPct}%` }}
+                    />
                   </div>
                   <div className="pkd-timeline-labels">
                     <span>00:00</span>
@@ -1156,7 +1328,9 @@ export default function ParentDashboard() {
                   <label>Thì khóa trong</label>
                   <Stepper
                     value={settings.breakDurationMinutes}
-                    onChange={(v) => updateSettings({ breakDurationMinutes: v })}
+                    onChange={(v) =>
+                      updateSettings({ breakDurationMinutes: v })
+                    }
                     min={5}
                     max={30}
                     step={5}
@@ -1177,29 +1351,44 @@ export default function ParentDashboard() {
           <RevealCard className="pkd-card">
             <div className="pkd-card-title-row">
               <span>Thời gian xem trong tuần</span>
-              <span className="pkd-week-total">{formatMinutes(weekTotal)} tổng cộng</span>
+              <span className="pkd-week-total">
+                {formatMinutes(weekTotal)} tổng cộng
+              </span>
             </div>
             <div className="pkd-chart-plot">
               <div className="pkd-chart">
                 <div
                   className="pkd-chart-avg-line"
-                  style={{ bottom: `${clamp((weekAvg / weekMax) * 100, 0, 100)}%` }}
+                  style={{
+                    bottom: `${clamp((weekAvg / weekMax) * 100, 0, 100)}%`,
+                  }}
                 >
-                  <span className="pkd-chart-avg-label">TB {formatMinutes(Math.round(weekAvg))}</span>
+                  <span className="pkd-chart-avg-label">
+                    TB {formatMinutes(Math.round(weekAvg))}
+                  </span>
                 </div>
                 {weeklyMinutes.map((mins, i) => {
                   const h = clamp((mins / weekMax) * 100, 4, 100);
                   const overLimit = mins > settings.dailyLimitMinutes;
                   const isToday = i === TODAY_INDEX;
                   return (
-                    <div className={`pkd-chart-col ${isToday ? "is-today" : ""}`} key={i}>
+                    <div
+                      className={`pkd-chart-col ${isToday ? "is-today" : ""}`}
+                      key={i}
+                    >
                       <div className="pkd-chart-bar-wrap">
                         <div className="pkd-chart-tooltip">
-                          <strong>{WEEK_LABELS[i]}</strong> · {formatMinutes(mins)}
+                          <strong>{WEEK_LABELS[i]}</strong> ·{" "}
+                          {formatMinutes(mins)}
                         </div>
-                        <div className={`pkd-chart-bar ${overLimit ? "is-over" : ""}`} style={{ height: `${h}%` }} />
+                        <div
+                          className={`pkd-chart-bar ${overLimit ? "is-over" : ""}`}
+                          style={{ height: `${h}%` }}
+                        />
                       </div>
-                      <span className="pkd-chart-label">{isToday ? "Hôm nay" : WEEK_LABELS[i]}</span>
+                      <span className="pkd-chart-label">
+                        {isToday ? "Hôm nay" : WEEK_LABELS[i]}
+                      </span>
                     </div>
                   );
                 })}
@@ -1231,7 +1420,9 @@ export default function ParentDashboard() {
                       <span className="pkd-book-title">{s.title}</span>
                       <span className="pkd-book-date">{s.date}</span>
                     </span>
-                    <span className="pkd-book-mins">{formatMinutes(s.minutes)}</span>
+                    <span className="pkd-book-mins">
+                      {formatMinutes(s.minutes)}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -1252,7 +1443,11 @@ export default function ParentDashboard() {
               <div className="pkd-audit-list">
                 {auditLog.map((a) => (
                   <div className="pkd-audit-row" key={a.id}>
-                    <span className={`pkd-audit-icon ${a.type === "lock" ? "is-danger" : ""}`}>{auditIcon(a.type)}</span>
+                    <span
+                      className={`pkd-audit-icon ${a.type === "lock" ? "is-danger" : ""}`}
+                    >
+                      {auditIcon(a.type)}
+                    </span>
                     <span className="pkd-audit-body">
                       <span className="pkd-audit-text">{a.text}</span>
                       <div className="pkd-audit-time">{a.time}</div>
@@ -1283,7 +1478,9 @@ export default function ParentDashboard() {
                 <input
                   type="checkbox"
                   checked={settings.notifyOnLimitExceeded}
-                  onChange={(e) => updateSettings({ notifyOnLimitExceeded: e.target.checked })}
+                  onChange={(e) =>
+                    updateSettings({ notifyOnLimitExceeded: e.target.checked })
+                  }
                 />
                 Khi con vượt giới hạn thời gian trong ngày
               </label>
@@ -1291,7 +1488,9 @@ export default function ParentDashboard() {
                 <input
                   type="checkbox"
                   checked={settings.notifyOnSkippedRest}
-                  onChange={(e) => updateSettings({ notifyOnSkippedRest: e.target.checked })}
+                  onChange={(e) =>
+                    updateSettings({ notifyOnSkippedRest: e.target.checked })
+                  }
                 />
                 Khi con bỏ qua nhắc nghỉ mắt nhiều lần
               </label>
@@ -1305,8 +1504,9 @@ export default function ParentDashboard() {
             <span className="pkd-section-eyebrow">Thư viện riêng</span>
             <h2 className="pkd-section-title">Sách của {activeChild.name}</h2>
             <p className="pkd-section-sub">
-              {activeChild.name} chỉ có thể xem những sách bạn đã mua VÀ bật hiển thị ở đây. Ẩn
-              bớt để lọc theo độ tuổi hoặc chủ đề bạn muốn con tập trung.
+              {activeChild.name} chỉ có thể xem những sách bạn đã mua VÀ bật
+              hiển thị ở đây. Ẩn bớt để lọc theo độ tuổi hoặc chủ đề bạn muốn
+              con tập trung.
             </p>
           </RevealCard>
 
@@ -1318,7 +1518,10 @@ export default function ParentDashboard() {
             ) : books.length === 0 ? (
               <div className="pkd-empty-state" style={{ padding: "32px 0" }}>
                 <BookMarked size={28} strokeWidth={1.2} />
-                <p>Bạn chưa mua sách nào. Sách sau khi mua sẽ tự động xuất hiện ở đây.</p>
+                <p>
+                  Bạn chưa mua sách nào. Sách sau khi mua sẽ tự động xuất hiện ở
+                  đây.
+                </p>
                 <Link to="/products" className="pf-confirm-ok pf-btn-tactile">
                   Khám phá sách
                 </Link>
@@ -1328,7 +1531,11 @@ export default function ParentDashboard() {
                 <div key={book.id} className="pkd-book-visible-row">
                   <div className="pkd-book-visible-info">
                     {book.coverImage && (
-                      <img src={book.coverImage} alt={book.title} className="pkd-book-visible-cover" />
+                      <img
+                        src={book.coverImage}
+                        alt={book.title}
+                        className="pkd-book-visible-cover"
+                      />
                     )}
                     <div>
                       <div className="pkd-book-visible-title">{book.title}</div>
@@ -1343,7 +1550,9 @@ export default function ParentDashboard() {
                     <input
                       type="checkbox"
                       checked={book.visible}
-                      onChange={(e) => toggleBookVisibility(book.id, e.target.checked)}
+                      onChange={(e) =>
+                        toggleBookVisibility(book.id, e.target.checked)
+                      }
                     />
                     <span className="pf-switch-track">
                       <span className="pf-switch-thumb" />
@@ -1361,8 +1570,8 @@ export default function ParentDashboard() {
             <span className="pkd-section-eyebrow">Sức khoẻ thị lực</span>
             <h2 className="pkd-section-title">Nhắc bảo vệ mắt</h2>
             <p className="pkd-section-sub">
-              Chỉ là gợi ý mềm hiển thị dạng thẻ nhỏ, không chặn màn hình — không cần quyền camera
-              hay cảm biến của thiết bị.
+              Chỉ là gợi ý mềm hiển thị dạng thẻ nhỏ, không chặn màn hình —
+              không cần quyền camera hay cảm biến của thiết bị.
             </p>
           </RevealCard>
 
@@ -1380,7 +1589,9 @@ export default function ParentDashboard() {
                   <select
                     className="pkd-select"
                     value={settings.tipsFrequency}
-                    onChange={(e) => updateSettings({ tipsFrequency: e.target.value })}
+                    onChange={(e) =>
+                      updateSettings({ tipsFrequency: e.target.value })
+                    }
                   >
                     <option value="open">Mỗi lần mở app</option>
                     <option value="interval">Mỗi 15 phút</option>
@@ -1392,7 +1603,9 @@ export default function ParentDashboard() {
                   <div className="pkd-tip-preview-head">
                     <Info size={13} /> Xem trước thẻ mẹo
                   </div>
-                  <div className={`pkd-tip-card ${tipCycling ? "is-cycling" : ""}`}>
+                  <div
+                    className={`pkd-tip-card ${tipCycling ? "is-cycling" : ""}`}
+                  >
                     {(() => {
                       const Tip = EYE_TIPS[tipIndex];
                       const Icon = Tip.Icon;
@@ -1404,7 +1617,11 @@ export default function ParentDashboard() {
                       );
                     })()}
                   </div>
-                  <button type="button" className="pkd-mini-btn pf-btn-tactile" onClick={cycleTip}>
+                  <button
+                    type="button"
+                    className="pkd-mini-btn pf-btn-tactile"
+                    onClick={cycleTip}
+                  >
                     <RefreshCcw size={12} /> Xem mẫu khác
                   </button>
                 </div>
@@ -1423,8 +1640,9 @@ export default function ParentDashboard() {
           <RevealCard className="pkd-trust-badge">
             <ShieldCheck size={18} />
             <span>
-              <strong>Mọi lệnh khóa và mã PIN đều được mã hoá.</strong> PIN được băm (hash) trước
-              khi lưu — không ai, kể cả Earthoria, có thể xem lại mã gốc.
+              <strong>Mọi lệnh khóa và mã PIN đều được mã hoá.</strong> PIN được
+              băm (hash) trước khi lưu — không ai, kể cả Earthoria, có thể xem
+              lại mã gốc.
             </span>
           </RevealCard>
 
@@ -1434,16 +1652,22 @@ export default function ParentDashboard() {
               <span>Điều khiển tức thời</span>
             </div>
             <p className="pkd-section-sub" style={{ marginBottom: 18 }}>
-              Dùng khi cần tạm dừng ngay lập tức (họp phụ huynh, giờ ăn đột xuất...). Lệnh khóa
-              được gửi ngay khi thiết bị có mạng; nếu đang mất mạng, lệnh sẽ được áp dụng ngay khi
-              thiết bị kết nối trở lại.
+              Dùng khi cần tạm dừng ngay lập tức (họp phụ huynh, giờ ăn đột
+              xuất...). Lệnh khóa được gửi ngay khi thiết bị có mạng; nếu đang
+              mất mạng, lệnh sẽ được áp dụng ngay khi thiết bị kết nối trở lại.
             </p>
             {lockState.isLocked ? (
-              <button className="pkd-lock-btn is-unlock pf-btn-tactile" onClick={() => requestUnlock()}>
+              <button
+                className="pkd-lock-btn is-unlock pf-btn-tactile"
+                onClick={() => requestUnlock()}
+              >
                 <Unlock size={16} /> Mở khóa cho {activeChild.name}
               </button>
             ) : (
-              <button className="pkd-lock-btn is-lock pf-btn-tactile" onClick={() => requestLock()}>
+              <button
+                className="pkd-lock-btn is-lock pf-btn-tactile"
+                onClick={() => requestLock()}
+              >
                 <Lock size={16} /> Khóa ngay cho {activeChild.name}
               </button>
             )}
@@ -1458,10 +1682,18 @@ export default function ParentDashboard() {
               Mã PIN dùng để mở khóa AR và xác nhận các thao tác quan trọng.
             </p>
             <div className="pkd-pin-actions">
-              <button className="pkd-mini-btn pf-btn-tactile" onClick={openChangePin} type="button">
+              <button
+                className="pkd-mini-btn pf-btn-tactile"
+                onClick={openChangePin}
+                type="button"
+              >
                 <KeyRound size={13} /> Đổi mã PIN
               </button>
-              <button className="pkd-text-link" onClick={openForgotPin} type="button">
+              <button
+                className="pkd-text-link"
+                onClick={openForgotPin}
+                type="button"
+              >
                 Quên mã PIN?
               </button>
             </div>
@@ -1473,12 +1705,15 @@ export default function ParentDashboard() {
               <span>Xoá hồ sơ vĩnh viễn</span>
             </div>
             <p className="pkd-section-sub" style={{ marginBottom: 18 }}>
-              Khác với việc ẩn hồ sơ, thao tác này xoá <b>vĩnh viễn</b> toàn bộ dữ liệu của{" "}
-              {activeChild.name} (cài đặt, nhật ký, link riêng) và không thể khôi phục.
+              Khác với việc ẩn hồ sơ, thao tác này xoá <b>vĩnh viễn</b> toàn bộ
+              dữ liệu của {activeChild.name} (cài đặt, nhật ký, link riêng) và
+              không thể khôi phục.
             </p>
             <button
               className="pkd-lock-btn is-lock pf-btn-tactile"
-              onClick={() => setDeleteTarget({ id: activeChildId, name: activeChild.name })}
+              onClick={() =>
+                setDeleteTarget({ id: activeChildId, name: activeChild.name })
+              }
               type="button"
             >
               <Trash2 size={16} /> Xoá vĩnh viễn hồ sơ của {activeChild.name}
@@ -1490,11 +1725,13 @@ export default function ParentDashboard() {
         <section id="kid-link" className="pkd-section">
           <RevealCard as="div" className="pkd-section-head">
             <span className="pkd-section-eyebrow">Chế độ Kiosk</span>
-            <h2 className="pkd-section-title">Link & QR riêng cho {activeChild.name}</h2>
+            <h2 className="pkd-section-title">
+              Link & QR riêng cho {activeChild.name}
+            </h2>
             <p className="pkd-section-sub">
-              Mở trên thiết bị/tablet riêng của bé — vào thẳng thư viện của bé, không cần đăng
-              nhập tài khoản phụ huynh trên thiết bị đó. Vẫn tôn trọng khoá AR và giờ giấc bạn đã
-              đặt ở trên.
+              Mở trên thiết bị/tablet riêng của bé — vào thẳng thư viện của bé,
+              không cần đăng nhập tài khoản phụ huynh trên thiết bị đó. Vẫn tôn
+              trọng khoá AR và giờ giấc bạn đã đặt ở trên.
             </p>
           </RevealCard>
 
@@ -1512,13 +1749,20 @@ export default function ParentDashboard() {
           </div>
           <h3 className="pf-confirm-title">Khóa AR ngay bây giờ?</h3>
           <p className="pf-confirm-msg">
-            {lockTarget?.name} sẽ không thể mở sách AR nào cho đến khi bạn mở khóa lại bằng mã PIN.
+            {lockTarget?.name} sẽ không thể mở sách AR nào cho đến khi bạn mở
+            khóa lại bằng mã PIN.
           </p>
           <div className="pf-confirm-actions">
-            <button className="pf-confirm-cancel pf-btn-tactile" onClick={() => setLockConfirmOpen(false)}>
+            <button
+              className="pf-confirm-cancel pf-btn-tactile"
+              onClick={() => setLockConfirmOpen(false)}
+            >
               Hủy
             </button>
-            <button className="pf-confirm-ok danger pf-btn-tactile" onClick={confirmLock}>
+            <button
+              className="pf-confirm-ok danger pf-btn-tactile"
+              onClick={confirmLock}
+            >
               Khóa ngay
             </button>
           </div>
@@ -1538,16 +1782,21 @@ export default function ParentDashboard() {
             <Unlock size={18} />
           </div>
           <h3 className="pf-confirm-title">Nhập mã PIN để mở khóa</h3>
-          <p className="pf-confirm-msg">Mở khóa AR cho {lockTarget?.name}. Chỉ phụ huynh mới mở khóa được.</p>
+          <p className="pf-confirm-msg">
+            Mở khóa AR cho {lockTarget?.name}. Chỉ phụ huynh mới mở khóa được.
+          </p>
 
           {isLockedOut ? (
             <div className="pkd-lockout-msg">
-              <AlertTriangle size={14} /> Bạn đã nhập sai quá {MAX_PIN_ATTEMPTS} lần. Vui lòng thử
-              lại sau ít phút hoặc dùng "Quên mã PIN?".
+              <AlertTriangle size={14} /> Bạn đã nhập sai quá {MAX_PIN_ATTEMPTS}{" "}
+              lần. Vui lòng thử lại sau ít phút hoặc dùng "Quên mã PIN?".
             </div>
           ) : (
             <>
-              <div className="otp-inputs" style={{ maxWidth: 220, margin: "20px auto" }}>
+              <div
+                className="otp-inputs"
+                style={{ maxWidth: 220, margin: "20px auto" }}
+              >
                 {unlockPinDigits.map((d, i) => (
                   <input
                     key={i}
@@ -1560,7 +1809,11 @@ export default function ParentDashboard() {
                   />
                 ))}
               </div>
-              {unlockError && <p className="pf-field-error" style={{ textAlign: "center" }}>{unlockError}</p>}
+              {unlockError && (
+                <p className="pf-field-error" style={{ textAlign: "center" }}>
+                  {unlockError}
+                </p>
+              )}
             </>
           )}
 
@@ -1576,8 +1829,16 @@ export default function ParentDashboard() {
               Hủy
             </button>
             {!isLockedOut && (
-              <button className="pf-confirm-ok pf-btn-tactile" onClick={submitUnlockPin} disabled={unlockSubmitting}>
-                {unlockSubmitting ? <Loader2 size={14} className="pkd-spin" /> : "Xác nhận"}
+              <button
+                className="pf-confirm-ok pf-btn-tactile"
+                onClick={submitUnlockPin}
+                disabled={unlockSubmitting}
+              >
+                {unlockSubmitting ? (
+                  <Loader2 size={14} className="pkd-spin" />
+                ) : (
+                  "Xác nhận"
+                )}
               </button>
             )}
           </div>
@@ -1590,7 +1851,10 @@ export default function ParentDashboard() {
           {/* Step indicator */}
           <div className="pkd-pin-steps">
             {pinFlowSteps.map((step) => (
-              <span key={step} className={`pkd-pin-step-dot ${pinModal === step ? "is-active" : ""}`} />
+              <span
+                key={step}
+                className={`pkd-pin-step-dot ${pinModal === step ? "is-active" : ""}`}
+              />
             ))}
           </div>
 
@@ -1600,8 +1864,13 @@ export default function ParentDashboard() {
                 <KeyRound size={18} />
               </div>
               <h3 className="pf-confirm-title">Nhập mã PIN hiện tại</h3>
-              <p className="pf-confirm-msg">Xác nhận mã PIN cũ trước khi đặt mã mới.</p>
-              <div className="otp-inputs" style={{ maxWidth: 220, margin: "20px auto" }}>
+              <p className="pf-confirm-msg">
+                Xác nhận mã PIN cũ trước khi đặt mã mới.
+              </p>
+              <div
+                className="otp-inputs"
+                style={{ maxWidth: 220, margin: "20px auto" }}
+              >
                 {oldPinDigits.map((d, i) => (
                   <input
                     key={i}
@@ -1616,13 +1885,28 @@ export default function ParentDashboard() {
                   />
                 ))}
               </div>
-              {pinError && <p className="pf-field-error" style={{ textAlign: "center" }}>{pinError}</p>}
+              {pinError && (
+                <p className="pf-field-error" style={{ textAlign: "center" }}>
+                  {pinError}
+                </p>
+              )}
               <div className="pf-confirm-actions">
-                <button className="pf-confirm-cancel pf-btn-tactile" onClick={closePinModal}>
+                <button
+                  className="pf-confirm-cancel pf-btn-tactile"
+                  onClick={closePinModal}
+                >
                   Hủy
                 </button>
-                <button className="pf-confirm-ok pf-btn-tactile" onClick={submitOldPin} disabled={pinSubmitting}>
-                  {pinSubmitting ? <Loader2 size={14} className="pkd-spin" /> : "Tiếp tục"}
+                <button
+                  className="pf-confirm-ok pf-btn-tactile"
+                  onClick={submitOldPin}
+                  disabled={pinSubmitting}
+                >
+                  {pinSubmitting ? (
+                    <Loader2 size={14} className="pkd-spin" />
+                  ) : (
+                    "Tiếp tục"
+                  )}
                 </button>
               </div>
             </div>
@@ -1634,8 +1918,12 @@ export default function ParentDashboard() {
                 <Bell size={18} />
               </div>
               <h3 className="pf-confirm-title">Nhập mã OTP</h3>
-              <p className="pf-confirm-msg">Mã xác thực đã được gửi tới email của bạn.</p>
-              <div className="otp-email-mask">{maskedEmail || "email của bạn"}</div>
+              <p className="pf-confirm-msg">
+                Mã xác thực đã được gửi tới email của bạn.
+              </p>
+              <div className="otp-email-mask">
+                {maskedEmail || "email của bạn"}
+              </div>
               <div className="otp-inputs">
                 {otpValues.map((d, i) => (
                   <input
@@ -1651,19 +1939,40 @@ export default function ParentDashboard() {
                   />
                 ))}
               </div>
-              {pinError && <p className="pf-field-error" style={{ textAlign: "center" }}>{pinError}</p>}
+              {pinError && (
+                <p className="pf-field-error" style={{ textAlign: "center" }}>
+                  {pinError}
+                </p>
+              )}
               <div className="otp-resend">
                 Chưa nhận được mã?
-                <button type="button" disabled={resendCooldown > 0} onClick={sendOtp}>
-                  {resendCooldown > 0 ? `Gửi lại (${resendCooldown}s)` : "Gửi lại mã"}
+                <button
+                  type="button"
+                  disabled={resendCooldown > 0}
+                  onClick={sendOtp}
+                >
+                  {resendCooldown > 0
+                    ? `Gửi lại (${resendCooldown}s)`
+                    : "Gửi lại mã"}
                 </button>
               </div>
               <div className="pf-confirm-actions">
-                <button className="pf-confirm-cancel pf-btn-tactile" onClick={closePinModal}>
+                <button
+                  className="pf-confirm-cancel pf-btn-tactile"
+                  onClick={closePinModal}
+                >
                   Hủy
                 </button>
-                <button className="pf-confirm-ok pf-btn-tactile" onClick={submitOtp} disabled={otpSending}>
-                  {otpSending ? <Loader2 size={14} className="pkd-spin" /> : "Xác nhận"}
+                <button
+                  className="pf-confirm-ok pf-btn-tactile"
+                  onClick={submitOtp}
+                  disabled={otpSending}
+                >
+                  {otpSending ? (
+                    <Loader2 size={14} className="pkd-spin" />
+                  ) : (
+                    "Xác nhận"
+                  )}
                 </button>
               </div>
             </div>
@@ -1675,8 +1984,13 @@ export default function ParentDashboard() {
                 <KeyRound size={18} />
               </div>
               <h3 className="pf-confirm-title">Đặt mã PIN mới</h3>
-              <p className="pf-confirm-msg">Chọn 4 chữ số dễ nhớ nhưng không quá đơn giản.</p>
-              <div className="otp-inputs" style={{ maxWidth: 220, margin: "20px auto" }}>
+              <p className="pf-confirm-msg">
+                Chọn 4 chữ số dễ nhớ nhưng không quá đơn giản.
+              </p>
+              <div
+                className="otp-inputs"
+                style={{ maxWidth: 220, margin: "20px auto" }}
+              >
                 {newPinDigits.map((d, i) => (
                   <input
                     key={i}
@@ -1691,12 +2005,22 @@ export default function ParentDashboard() {
                   />
                 ))}
               </div>
-              {pinError && <p className="pf-field-error" style={{ textAlign: "center" }}>{pinError}</p>}
+              {pinError && (
+                <p className="pf-field-error" style={{ textAlign: "center" }}>
+                  {pinError}
+                </p>
+              )}
               <div className="pf-confirm-actions">
-                <button className="pf-confirm-cancel pf-btn-tactile" onClick={closePinModal}>
+                <button
+                  className="pf-confirm-cancel pf-btn-tactile"
+                  onClick={closePinModal}
+                >
                   Hủy
                 </button>
-                <button className="pf-confirm-ok pf-btn-tactile" onClick={submitNewPin}>
+                <button
+                  className="pf-confirm-ok pf-btn-tactile"
+                  onClick={submitNewPin}
+                >
                   Tiếp tục
                 </button>
               </div>
@@ -1709,8 +2033,13 @@ export default function ParentDashboard() {
                 <Check size={18} />
               </div>
               <h3 className="pf-confirm-title">Nhập lại mã PIN mới</h3>
-              <p className="pf-confirm-msg">Xác nhận lại để chắc chắn không gõ nhầm.</p>
-              <div className="otp-inputs" style={{ maxWidth: 220, margin: "20px auto" }}>
+              <p className="pf-confirm-msg">
+                Xác nhận lại để chắc chắn không gõ nhầm.
+              </p>
+              <div
+                className="otp-inputs"
+                style={{ maxWidth: 220, margin: "20px auto" }}
+              >
                 {confirmPinDigits.map((d, i) => (
                   <input
                     key={i}
@@ -1720,18 +2049,37 @@ export default function ParentDashboard() {
                     maxLength={1}
                     autoFocus={i === 0}
                     value={d}
-                    onChange={(e) => confirmPinHandlers.onChange(i, e.target.value)}
+                    onChange={(e) =>
+                      confirmPinHandlers.onChange(i, e.target.value)
+                    }
                     onKeyDown={(e) => confirmPinHandlers.onKeyDown(i, e)}
                   />
                 ))}
               </div>
-              {pinError && <p className="pf-field-error" style={{ textAlign: "center" }}>{pinError}</p>}
+              {pinError && (
+                <p className="pf-field-error" style={{ textAlign: "center" }}>
+                  {pinError}
+                </p>
+              )}
               <div className="pf-confirm-actions">
-                <button className="pf-confirm-cancel pf-btn-tactile" onClick={closePinModal}>
+                <button
+                  className="pf-confirm-cancel pf-btn-tactile"
+                  onClick={closePinModal}
+                >
                   Hủy
                 </button>
-                <button className="pf-confirm-ok pf-btn-tactile" onClick={submitConfirmPin} disabled={pinSubmitting}>
-                  {pinSubmitting ? <Loader2 size={14} className="pkd-spin" /> : (<><Check size={14} /> Lưu mã PIN</>)}
+                <button
+                  className="pf-confirm-ok pf-btn-tactile"
+                  onClick={submitConfirmPin}
+                  disabled={pinSubmitting}
+                >
+                  {pinSubmitting ? (
+                    <Loader2 size={14} className="pkd-spin" />
+                  ) : (
+                    <>
+                      <Check size={14} /> Lưu mã PIN
+                    </>
+                  )}
                 </button>
               </div>
             </div>
