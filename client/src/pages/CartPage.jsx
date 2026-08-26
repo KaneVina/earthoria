@@ -8,7 +8,6 @@ import {
   ArrowLeft,
   ArrowRight,
   X,
-  Check,
   Lock,
   RotateCcw,
   Truck,
@@ -18,7 +17,6 @@ import { useAuthStore } from "../store/authStore";
 import { formatPrice, computeTierDiscount } from "../utils/helpers";
 import { orderService } from "../services/orderService";
 import { loyaltyService } from "../services/loyaltyService";
-import { couponService } from "../services/couponService";
 import LoyaltyBadge from "../components/LoyaltyBadge";
 import toast from "react-hot-toast";
 import StepBar from "../components/StepBar";
@@ -30,11 +28,10 @@ const SHIPPING_FEE = 30000;
 export default function Cart() {
   const { cart, fetchCart, updateItem, removeItem, clearCart, loading } = useCartStore();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const [coupon, setCoupon] = useState("");
-  const [couponApplied, setCouponApplied] = useState(null);
-  const [couponLoading, setCouponLoading] = useState(false);
   const [pendingItemId, setPendingItemId] = useState(null);
   const [loyaltyProfile, setLoyaltyProfile] = useState(null);
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [clearingCart, setClearingCart] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -112,20 +109,7 @@ export default function Cart() {
   // computeTierDiscount() dùng ở Checkout.jsx và server (loyaltyTier.js) để số tiền
   // hiển thị ở giỏ hàng luôn khớp với số tiền thực tế lúc đặt hàng.
   const tierDiscount = computeTierDiscount(loyaltyProfile?.tier, subtotal);
-
-  // Giảm giá theo mã coupon — tính lại từ dữ liệu coupon thật (couponService),
-  // không hardcode %, để luôn khớp với số tiền server tính khi đặt hàng thật.
-  const couponDiscount = (() => {
-    if (!couponApplied) return 0;
-    if (subtotal < (couponApplied.minOrder || 0)) return 0; // không còn đủ điều kiện tối thiểu
-    let d =
-      couponApplied.type === "PERCENTAGE"
-        ? Math.round((subtotal * couponApplied.value) / 100)
-        : couponApplied.value;
-    if (couponApplied.maxDiscount) d = Math.min(d, couponApplied.maxDiscount);
-    return Math.min(d, subtotal);
-  })();
-  const afterDiscount = Math.max(subtotal - couponDiscount - tierDiscount, 0);
+  const afterDiscount = Math.max(subtotal - tierDiscount, 0);
   const freeShipThreshold =
     loyaltyProfile?.tier?.freeShipThreshold ?? SHIPPING_THRESHOLD;
   const shippingFee = afterDiscount >= freeShipThreshold ? 0 : SHIPPING_FEE;
@@ -135,21 +119,17 @@ export default function Cart() {
       ? 100
       : Math.min((afterDiscount / freeShipThreshold) * 100, 100);
 
-  const handleApplyCoupon = async () => {
-    const code = coupon.trim().toUpperCase();
-    if (!code) return toast.error("Vui lòng nhập mã giảm giá");
-    setCouponLoading(true);
+  const handleClearCart = async () => {
+    if (clearingCart) return;
+    setClearingCart(true);
     try {
-      const { data } = await couponService.validate(code, subtotal);
-      const c = data.data;
-      const label = c.type === "PERCENTAGE" ? `Giảm ${c.value}%` : `Giảm ${formatPrice(c.value)}`;
-      setCouponApplied({ ...c, label });
-      setCoupon(c.code);
-      toast.success(`Áp dụng ${c.code} thành công!`);
+      await clearCart();
+      toast.success("Đã dọn sạch giỏ hàng");
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Mã giảm giá không hợp lệ");
+      toast.error(err?.response?.data?.message || "Không thể dọn giỏ hàng");
     } finally {
-      setCouponLoading(false);
+      setClearingCart(false);
+      setConfirmClear(false);
     }
   };
 
@@ -315,90 +295,92 @@ export default function Cart() {
       >
         {/* LEFT */}
         <div>
-          {/* Coupon input */}
-          {!couponApplied && (
-            <div
-              style={{
-                background: "var(--forest)",
-                padding: "16px 24px",
-                display: "flex",
-                alignItems: "center",
-                gap: "14px",
-                marginBottom: "32px",
-                position: "relative",
-                overflow: "hidden",
-              }}
-            >
-              <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)", flexShrink: 0 }}>
-                <strong style={{ color: "var(--ivory)" }}>Có mã giảm giá?</strong>
-              </span>
-              <input
-                value={coupon}
-                onChange={(e) => setCoupon(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
-                placeholder="Nhập mã giảm giá..."
-                disabled={couponLoading}
-                style={{
-                  flex: 1,
-                  background: "rgba(255,255,255,0.08)",
-                  border: "0.5px solid rgba(255,255,255,0.2)",
-                  color: "var(--ivory)",
-                  padding: "8px 12px",
-                  fontSize: "12px",
-                  letterSpacing: "0.06em",
-                  textTransform: "uppercase",
-                  outline: "none",
-                }}
-              />
-              <button
-                onClick={handleApplyCoupon}
-                disabled={couponLoading}
-                style={{
-                  background: "var(--gold)",
-                  border: "none",
-                  padding: "8px 16px",
-                  cursor: couponLoading ? "not-allowed" : "pointer",
-                  opacity: couponLoading ? 0.6 : 1,
-                  fontSize: "10px",
-                  letterSpacing: "0.14em",
-                  textTransform: "uppercase",
-                  color: "var(--ink)",
-                  flexShrink: 0,
-                }}
-              >
-                {couponLoading ? "Đang kiểm tra..." : "Áp dụng"}
-              </button>
-            </div>
-          )}
-
-          {/* Coupon applied */}
-          {couponApplied && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                padding: "10px 14px",
-                background: "var(--gold-pale)",
-                border: "0.5px solid var(--border-gold)",
-                marginBottom: "16px",
-              }}
-            >
-              <Check size={14} color="var(--gold)" strokeWidth={2} />
-              <span style={{ fontFamily: "Playfair Display,serif", fontSize: "15px", color: "var(--forest)" }}>
-                {couponApplied.code}
-              </span>
-              <span style={{ fontSize: "11px", color: "var(--text-muted)", flex: 1 }}>
-                {couponApplied.label} — đã áp dụng
-              </span>
-              <button
-                onClick={() => { setCouponApplied(null); setCoupon(""); }}
-                style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--text-muted)" }}
-              >
-                ×
-              </button>
-            </div>
-          )}
+          {/* Thanh công cụ giỏ hàng — tổng số sản phẩm + nút dọn giỏ hàng */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "14px",
+              padding: "14px 20px",
+              marginBottom: "32px",
+              background: "var(--cream)",
+              border: "0.5px solid var(--border)",
+              minHeight: "48px",
+            }}
+          >
+            {!confirmClear ? (
+              <>
+                <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 300 }}>
+                  <strong style={{ color: "var(--forest)", fontWeight: 500 }}>
+                    {items.reduce((s, i) => s + i.quantity, 0)}
+                  </strong>{" "}
+                  sản phẩm trong giỏ hàng
+                </span>
+                <button
+                  onClick={() => setConfirmClear(true)}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    background: "transparent",
+                    border: "0.5px solid var(--border)",
+                    padding: "8px 14px",
+                    cursor: "pointer",
+                    fontSize: "10px",
+                    letterSpacing: "0.14em",
+                    textTransform: "uppercase",
+                    color: "var(--text-muted)",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Trash2 size={12} />
+                  Dọn giỏ hàng
+                </button>
+              </>
+            ) : (
+              <>
+                <span style={{ fontSize: "12px", color: "#c05050", fontWeight: 300 }}>
+                 Dọn toàn bộ sản phẩm khỏi giỏ hàng?
+                </span>
+                <div style={{ display: "flex", gap: "10px", flexShrink: 0 }}>
+                  <button
+                    onClick={() => setConfirmClear(false)}
+                    disabled={clearingCart}
+                    style={{
+                      background: "transparent",
+                      border: "0.5px solid var(--border)",
+                      padding: "8px 14px",
+                      cursor: clearingCart ? "not-allowed" : "pointer",
+                      fontSize: "10px",
+                      letterSpacing: "0.14em",
+                      textTransform: "uppercase",
+                      color: "var(--text-muted)",
+                    }}
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    onClick={handleClearCart}
+                    disabled={clearingCart}
+                    style={{
+                      background: "#c05050",
+                      border: "none",
+                      padding: "8px 14px",
+                      cursor: clearingCart ? "not-allowed" : "pointer",
+                      opacity: clearingCart ? 0.6 : 1,
+                      fontSize: "10px",
+                      letterSpacing: "0.14em",
+                      textTransform: "uppercase",
+                      color: "var(--ivory)",
+                    }}
+                  >
+                    {clearingCart ? "Đang xóa..." : "Dọn ngay"}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
 
           {/* Header row */}
           <div
@@ -630,9 +612,6 @@ export default function Cart() {
                   val: `-${formatPrice(items.reduce((s, i) => s + (i.variant.price - (i.variant.salePrice ?? i.variant.price)) * i.quantity, 0))}`,
                   green: true,
                 },
-                ...(couponApplied
-                  ? [{ label: `Mã ${couponApplied.code} (${couponApplied.label})`, val: `-${formatPrice(couponDiscount)}`, red: true }]
-                  : []),
                 ...(tierDiscount > 0
                   ? [{
                       label: (
