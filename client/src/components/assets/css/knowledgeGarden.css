@@ -153,8 +153,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 108px;
-  height: 108px;
+  width: 128px;
+  height: 128px;
   border-radius: 50%;
   background: radial-gradient(circle, var(--kid-green-light) 0%, transparent 72%);
 }

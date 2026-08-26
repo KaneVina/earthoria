@@ -144,7 +144,7 @@ export default function GardenPage() {
         {status === "ok" && data && (
           <>
             <div className="gp-hud">
-            <div className="gp-hud-left">
+              <div className="gp-hud-left">
                 <div className="gp-hud-avatar" aria-hidden="true">
                   {String(data.childName || "?")
                     .trim()
@@ -188,6 +188,7 @@ export default function GardenPage() {
                   activeTree.status === "ALIVE" &&
                   (activeTree.healthBand.key === "needs_care" ||
                     activeTree.healthBand.key === "critical");
+                const emptySlots = Math.max(0, 4 - trees.length);
 
                 if (isFreshStart) {
                   return (
@@ -362,110 +363,125 @@ export default function GardenPage() {
                       </div>
                     )}
 
-                    <div className="kg-current-card">
-                      <div className="kg-current-visual">
-                        <GardenTreeVisual
-                          level={activeTree.level.level}
-                          health={activeTree.health}
-                          healthBandKey={activeTree.healthBand.key}
-                          status={activeTree.status}
-                          size={100}
-                          animated
-                        />
-                      </div>
-                      <div className="kg-current-info">
-                        <span className="kg-current-eyebrow">
-                          Cây của hôm nay
-                        </span>
-                        <h3 className="kg-current-name">
-                          {activeTree.level.name}
-                        </h3>
-
-                        {!activeTree.isMaxLevel ? (
-                          <>
-                            <div className="kg-progress-track">
-                              <motion.div
-                                className="kg-progress-fill"
-                                initial={false}
-                                animate={{
-                                  width: `${activeTree.progressPercent}%`,
-                                }}
-                                transition={{
-                                  duration: 0.6,
-                                  ease: [0.16, 1, 0.3, 1],
-                                }}
-                              />
-                            </div>
-                            <span className="kg-current-hint">
-                              Chỉ còn{" "}
-                              {Math.max(0, 100 - activeTree.progressPercent)}%
-                              để thành{" "}
-                              <strong>{activeTree.nextLevel?.name}</strong>!
-                            </span>
-                          </>
-                        ) : (
-                          <span className="kg-current-hint">
-                            Đã đạt cấp cao nhất — tuyệt vời! 🏆
-                          </span>
-                        )}
-
-                        <button
-                          type="button"
-                          className="kg-cta-btn kg-cta-btn--sm"
-                          onClick={goToShelf}
-                        >
-                          Đọc tiếp để chăm cây
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="kg-garden-scene">
-                      <span
-                        className="kg-garden-deco kg-garden-deco--flower1"
-                        aria-hidden="true"
-                      />
-                      <span
-                        className="kg-garden-deco kg-garden-deco--flower2"
-                        aria-hidden="true"
-                      />
-                      <span
-                        className="kg-garden-deco kg-garden-deco--rock"
-                        aria-hidden="true"
-                      />
-                      <span
-                        className="kg-garden-deco kg-garden-deco--firefly"
-                        aria-hidden="true"
-                      />
-                      <div className="kg-garden-trees">
-                        {trees.map((t) => (
-                          <button
-                            type="button"
-                            key={t.id}
-                            className={`kg-garden-tree-btn${t.id === activeTree.id ? " is-active" : ""}`}
-                            onClick={() => setSelectedTreeId(t.id)}
-                            aria-label={`Xem chi tiết ${t.level.name}${t.id === activeTree.id ? " — cây đang trồng" : ""}`}
-                          >
+                    <div className="gp-layout">
+                      <div className="gp-layout-main">
+                        <div className="kg-current-card">
+                          <div className="kg-current-visual">
                             <GardenTreeVisual
-                              level={t.level.level}
-                              health={t.health}
-                              healthBandKey={t.healthBand.key}
-                              status={t.status}
-                              size={56}
-                              animated={
-                                t.id === activeTree.id && t.status === "ALIVE"
-                              }
+                              level={activeTree.level.level}
+                              health={activeTree.health}
+                              healthBandKey={activeTree.healthBand.key}
+                              status={activeTree.status}
+                              size={124}
+                              animated
                             />
-                          </button>
-                        ))}
+                          </div>
+                          <div className="kg-current-info">
+                            <span className="kg-current-eyebrow">
+                              Cây của hôm nay
+                            </span>
+                            <h3 className="kg-current-name">
+                              {activeTree.level.name}
+                            </h3>
+
+                            {!activeTree.isMaxLevel ? (
+                              <>
+                                <div className="kg-progress-track">
+                                  <motion.div
+                                    className="kg-progress-fill"
+                                    initial={false}
+                                    animate={{
+                                      width: `${activeTree.progressPercent}%`,
+                                    }}
+                                    transition={{
+                                      duration: 0.6,
+                                      ease: [0.16, 1, 0.3, 1],
+                                    }}
+                                  />
+                                </div>
+                                <span className="kg-current-hint">
+                                  Chỉ còn{" "}
+                                  {Math.max(0, 100 - activeTree.progressPercent)}%
+                                  để thành{" "}
+                                  <strong>{activeTree.nextLevel?.name}</strong>!
+                                </span>
+                              </>
+                            ) : (
+                              <span className="kg-current-hint">
+                                Đã đạt cấp cao nhất — tuyệt vời! 🏆
+                              </span>
+                            )}
+
+                            <button
+                              type="button"
+                              className="kg-cta-btn kg-cta-btn--sm"
+                              onClick={goToShelf}
+                            >
+                              Đọc tiếp để chăm cây
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="gp-layout-side">
+                        <div className="kg-garden-scene">
+                          <span
+                            className="kg-garden-deco kg-garden-deco--flower1"
+                            aria-hidden="true"
+                          />
+                          <span
+                            className="kg-garden-deco kg-garden-deco--flower2"
+                            aria-hidden="true"
+                          />
+                          <span
+                            className="kg-garden-deco kg-garden-deco--rock"
+                            aria-hidden="true"
+                          />
+                          <span
+                            className="kg-garden-deco kg-garden-deco--firefly"
+                            aria-hidden="true"
+                          />
+                          <div className="kg-garden-trees">
+                            {trees.map((t) => (
+                              <button
+                                type="button"
+                                key={t.id}
+                                className={`kg-garden-tree-btn${t.id === activeTree.id ? " is-active" : ""}`}
+                                onClick={() => setSelectedTreeId(t.id)}
+                                aria-label={`Xem chi tiết ${t.level.name}${t.id === activeTree.id ? " — cây đang trồng" : ""}`}
+                              >
+                                <GardenTreeVisual
+                                  level={t.level.level}
+                                  health={t.health}
+                                  healthBandKey={t.healthBand.key}
+                                  status={t.status}
+                                  size={68}
+                                  animated={
+                                    t.id === activeTree.id && t.status === "ALIVE"
+                                  }
+                                />
+                              </button>
+                            ))}
+                            {Array.from({ length: emptySlots }).map((_, i) => (
+                              <div
+                                key={`empty-${i}`}
+                                className="kg-garden-tree-slot kg-garden-tree-slot--empty"
+                                aria-hidden="true"
+                              >
+                                <Sprout size={20} />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {garden.forestUnlocked && (
+                          <p className="kg-forest-note">
+                            🌲 Rừng Tri Thức đã mở — mỗi lần có cây trưởng thành,
+                            một cây mới lại được trồng thêm!
+                          </p>
+                        )}
                       </div>
                     </div>
-
-                    {garden.forestUnlocked && (
-                      <p className="kg-forest-note">
-                        🌲 Rừng Tri Thức đã mở — mỗi lần có cây trưởng thành,
-                        một cây mới lại được trồng thêm!
-                      </p>
-                    )}
                   </>
                 );
               })()}

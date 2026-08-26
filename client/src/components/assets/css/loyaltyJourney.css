@@ -8,15 +8,7 @@
   --lj-shadow-lg: 0 28px 64px rgba(13, 43, 30, 0.14);
   --lj-gold-true: #d4a843;
   --lj-gold-true-soft: rgba(212, 168, 67, 0.16);
-  /* Tông riêng cho HỆ THỐNG ĐƯỜNG ĐI (track-curve + seam-line) — trầm và
-     ít bão hoà hơn hẳn --lj-gold-true. Dùng thẳng màu vàng chói của nút/
-     badge cho 1 đường trang trí kéo dài suốt trang rất dễ bị "phèn" trên
-     nền cream/ivory, nên tách riêng token này để chỉnh độc lập. */
   --lj-route-gold: #b8a172;
-
-  /* Nền theo từng "trạm" của hành trình, tách khỏi token global
-     (--ivory/--cream/--white/--border) để dark-mode chỉ cần đổi lại
-     đúng 1 chỗ thay vì override rải rác trên từng class như bản cũ. */
   --lj-bg-a: var(--ivory); /* Stats + Steps — cùng một vùng sáng */
   --lj-bg-b: var(--cream); /* Journey */
   --lj-surface: var(--white); /* card, step-card, passport, divider */
@@ -127,20 +119,20 @@ body.dark-mode {
   position: relative;
   overflow: hidden;
   background: var(--forest);
-  padding: 152px 100px 160px;
+  padding: 132px 100px 132px;
 }
 .lj-hero::after {
-  /* Mờ dần từ forest sang màu của Stats ngay trong Hero, để khi
-     Stats bắt đầu thì mắt đã "quen" tông màu mới — đây là nửa
-     "chuyển màu mượt" của mối nối Hero → Stats. Nửa còn lại là
-     Passport Strip nổi đè lên đúng chỗ này. */
+  /* Mờ dần từ forest sang màu của Journey (giờ là section theo ngay sau
+     Hero/Passport, không còn là Stats nữa) — để mắt "quen" tông màu mới
+     trước khi Journey bắt đầu. Nửa còn lại của mối nối là Passport Strip
+     nổi đè lên đúng chỗ này. */
   content: "";
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  height: 160px;
-  background: linear-gradient(to bottom, transparent, var(--lj-bg-a));
+  height: 132px;
+  background: linear-gradient(to bottom, transparent, var(--lj-bg-b));
   pointer-events: none;
   z-index: 1;
 }
@@ -548,23 +540,27 @@ body.dark-mode {
   background: var(--lj-gold-true);
   box-shadow: 0 0 0 5px var(--lj-gold-true-soft);
 }
+.lj-seam-journey-stats {
+  /* Journey giờ đứng trước Stats (thứ tự mới) — đảo hướng gradient so
+     với bản trước (khi đó Stats đứng trước Journey). */
+  height: 100px;
+  background: linear-gradient(to bottom, var(--lj-bg-b), var(--lj-bg-a));
+}
 .lj-seam-stats-steps {
   height: 64px;
   background: var(--lj-bg-a);
 }
-.lj-seam-steps-journey {
-  height: 100px;
-  background: linear-gradient(to bottom, var(--lj-bg-a), var(--lj-bg-b));
-}
-.lj-seam-journey-cta {
+.lj-seam-steps-cta {
+  /* Thay cho .lj-seam-journey-cta cũ — giờ Steps đứng ngay trước CTA
+     (thứ tự mới), không phải Journey nữa. */
   height: 120px;
-  background: linear-gradient(to bottom, var(--lj-bg-b), var(--forest));
+  background: linear-gradient(to bottom, var(--lj-bg-a), var(--forest));
 }
 
 /* ═══════════════════ STATS STRIP ═══════════════════ */
 .lj-stats {
   background: var(--lj-bg-a);
-  padding: 72px 100px 48px;
+  padding: 56px 100px 36px;
 }
 .lj-stats-inner {
   max-width: 1200px;
@@ -577,7 +573,7 @@ body.dark-mode {
 }
 .lj-stat-item {
   background: var(--lj-bg-a);
-  padding: 32px 24px;
+  padding: 30px 22px;
   text-align: center;
   color: var(--lj-gold-true);
   opacity: 0;
@@ -604,6 +600,15 @@ body.dark-mode {
   font-weight: 300;
   line-height: 1.5;
 }
+.lj-stat-sub {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 0.5px dashed var(--lj-surface-border);
+  font-size: 10.5px;
+  color: var(--text-muted);
+  opacity: 0.75;
+  font-weight: 300;
+}
 
 /* ═══════════════════ SECTION HEAD (dùng chung) ═══════════════════ */
 .lj-eyebrow {
@@ -617,7 +622,7 @@ body.dark-mode {
 }
 .lj-section-head {
   max-width: 640px;
-  margin: 0 0 56px;
+  margin: 0 0 44px;
 }
 .lj-section-title {
   font-family: "Playfair Display", serif;
@@ -642,7 +647,7 @@ body.dark-mode {
 /* ═══════════════════ 3 BƯỚC ═══════════════════ */
 .lj-steps {
   background: var(--lj-bg-a);
-  padding: 48px 100px 56px;
+  padding: 40px 100px 44px;
 }
 .lj-steps-inner {
   max-width: 1200px;
@@ -657,7 +662,7 @@ body.dark-mode {
 }
 .lj-step-card {
   background: var(--lj-surface);
-  padding: 40px 36px;
+  padding: 36px 32px;
   position: relative;
   opacity: 0;
   transform: translateY(24px);
@@ -701,6 +706,19 @@ body.dark-mode {
   line-height: 1.75;
   color: var(--text-muted);
   font-weight: 300;
+}
+.lj-step-tag {
+  display: inline-block;
+  margin-top: 18px;
+  padding: 5px 13px;
+  border-radius: 20px;
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--forest);
+  background: var(--gold-pale, rgba(74, 158, 63, 0.1));
 }
 
 /* ═══════════════════ CUNG ĐƯỜNG HÀNH TRÌNH ═══════════════════ */
@@ -807,25 +825,27 @@ body.dark-mode {
 .lj-row {
   /* position:relative để .lj-track-curve (con trực tiếp, không nằm trong
      .lj-row-rail) neo theo đúng toàn bộ chiều cao ĐÃ PADDING của row —
-     nhờ padding trên/dưới bằng nhau (46px/46px) nên tâm dọc của span này
-     trùng khít tâm .lj-row-rail, tức đúng vị trí seal. */
+     nhờ padding trên/dưới bằng nhau nên tâm dọc của span này trùng khít
+     tâm .lj-row-rail, tức đúng vị trí seal. */
   position: relative;
   display: grid;
   grid-template-columns: 1fr 84px 1fr;
   column-gap: 36px;
   align-items: stretch;
-  padding: 46px 0;
+  padding: 38px 0;
 }
 .lj-row-left .lj-card {
   grid-column: 1;
 }
-.lj-row-left .lj-row-ghost {
+.lj-row-left .lj-row-ghost,
+.lj-row-left .lj-row-waypoint {
   grid-column: 3;
 }
 .lj-row-right .lj-card {
   grid-column: 3;
 }
-.lj-row-right .lj-row-ghost {
+.lj-row-right .lj-row-ghost,
+.lj-row-right .lj-row-waypoint {
   grid-column: 1;
 }
 .lj-row-rail {
@@ -855,6 +875,62 @@ body.dark-mode {
 }
 .lj-row-right .lj-row-ghost {
   justify-content: flex-end;
+}
+
+.lj-row-waypoint {
+  /* Nội dung THẬT lấp khoảng trống bên đối diện card — cùng ô lưới với
+     ghost (đè lên trên, ghost chỉ làm nền mờ phía sau). Neo về phía rail
+     giống hệt ghost (flex-start bên trái cho row-left, flex-end bên phải
+     cho row-right) để nằm gần seal, không trôi ra sát mép ngoài. */
+  grid-row: 1;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.7s var(--lj-ease) 0.15s,
+    transform 0.7s var(--lj-ease) 0.15s;
+}
+.lj-row.in .lj-row-waypoint {
+  opacity: 1;
+  transform: translateY(0);
+}
+.lj-row-left .lj-row-waypoint {
+  align-items: flex-start;
+  text-align: left;
+  padding-left: 8px;
+}
+.lj-row-right .lj-row-waypoint {
+  align-items: flex-end;
+  text-align: right;
+  padding-right: 8px;
+}
+.lj-row-waypoint-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--tier-color);
+  margin-bottom: 16px;
+}
+.lj-row-waypoint-label svg {
+  opacity: 0.75;
+}
+.lj-row-waypoint-quote {
+  font-family: "Playfair Display", serif;
+  font-style: italic;
+  font-weight: 300;
+  font-size: clamp(19px, 1.9vw, 25px);
+  line-height: 1.55;
+  color: var(--forest);
+  max-width: 320px;
 }
 
 .lj-seal {
@@ -1327,7 +1403,8 @@ body.dark-mode .lj-passport-strip {
     grid-template-columns: 56px 1fr;
     column-gap: 20px;
   }
-  .lj-row-ghost {
+  .lj-row-ghost,
+  .lj-row-waypoint {
     display: none;
   }
   .lj-row-left .lj-card,
@@ -1386,13 +1463,13 @@ body.dark-mode .lj-passport-strip {
   .lj-stats-inner {
     grid-template-columns: 1fr;
   }
+  .lj-seam-journey-stats {
+    height: 72px;
+  }
   .lj-seam-stats-steps {
     height: 48px;
   }
-  .lj-seam-steps-journey {
-    height: 72px;
-  }
-  .lj-seam-journey-cta {
+  .lj-seam-steps-cta {
     height: 88px;
   }
   .lj-hero-actions {

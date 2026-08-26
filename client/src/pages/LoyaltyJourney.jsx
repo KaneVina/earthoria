@@ -279,69 +279,8 @@ export default function LoyaltyJourney() {
         onLocate={scrollToStop}
       />
 
-      {/* ═══ STATS STRIP ═══ */}
-      <section className="lj-stats">
-        <div className="lj-stats-inner">
-          <div className="lj-stat-item reveal">
-            <RouteIcon size={20} />
-            <div className="lj-stat-value">5</div>
-            <div className="lj-stat-label">Hạng thành viên</div>
-          </div>
-          <div className="lj-stat-item reveal">
-            <TrendingUp size={20} />
-            <div className="lj-stat-value">14.832 → 24.233 km²</div>
-            <div className="lj-stat-label">Diện tích tượng trưng tăng dần</div>
-          </div>
-          <div className="lj-stat-item reveal">
-            <Percent size={20} />
-            <div className="lj-stat-value">Đến 12%</div>
-            <div className="lj-stat-label">Giảm giá mỗi đơn hàng</div>
-          </div>
-          <div className="lj-stat-item reveal">
-            <Truck size={20} />
-            <div className="lj-stat-value">Từ Hạng IV</div>
-            <div className="lj-stat-label">Miễn phí vận chuyển toàn phần</div>
-          </div>
-        </div>
-      </section>
-
-      <SectionSeam variant="stats-steps" />
-
-      {/* ═══ 3 BƯỚC VẬN HÀNH ═══ */}
-      <section className="lj-steps">
-        <div className="lj-steps-inner">
-          <div className="lj-section-head reveal">
-            <span className="lj-eyebrow">Vận Hành Đơn Giản</span>
-            <h2 className="lj-section-title">
-              Ba Bước Để <em>Nâng Hạng</em>
-            </h2>
-          </div>
-          <div className="lj-steps-grid">
-            <StepCard
-              icon={ShoppingBag}
-              index="01"
-              title="Mua Sắm & Tích Lũy"
-              desc="Mọi đơn hàng thanh toán và giao thành công đều được cộng dồn vào tổng chi tiêu trọn đời của bạn tại Earthoria."
-            />
-            <StepCard
-              icon={TrendingUp}
-              index="02"
-              title="Tự Động Nâng Hạng"
-              desc="Khi tổng chi tiêu chạm ngưỡng của một vùng đất mới, hạng thành viên được nâng ngay — không cần đăng ký hay chờ duyệt."
-            />
-            <StepCard
-              icon={Gem}
-              index="03"
-              title="Nhận Đặc Quyền Ngay"
-              desc="Ưu đãi giảm giá và miễn phí vận chuyển áp dụng tự động cho đơn hàng tiếp theo, ngay khi bạn bước sang hạng mới."
-            />
-          </div>
-        </div>
-      </section>
-
-      <SectionSeam variant="steps-journey" />
-
-      {/* ═══ CUNG ĐƯỜNG HÀNH TRÌNH ═══ */}
+      {/* ═══ CUNG ĐƯỜNG HÀNH TRÌNH — dời lên ngay sau Hero/Passport vì đây
+           là nội dung chính của trang, thay vì để tít dưới Stats/Steps. ═══ */}
       <section className="lj-journey" id="lj-journey">
         <div className="lj-journey-inner">
           <div className="lj-section-head reveal" style={{ textAlign: "center" }}>
@@ -416,7 +355,80 @@ export default function LoyaltyJourney() {
         </div>
       </section>
 
-      <SectionSeam variant="journey-cta" />
+      <SectionSeam variant="journey-stats" />
+
+      {/* ═══ STATS STRIP ═══ */}
+      <section className="lj-stats">
+        <div className="lj-stats-inner">
+          <div className="lj-stat-item reveal">
+            <RouteIcon size={20} />
+            <div className="lj-stat-value">5</div>
+            <div className="lj-stat-label">Hạng thành viên</div>
+            <div className="lj-stat-sub">
+              {tiers[0]?.name} → {tiers[tiers.length - 1]?.name}
+            </div>
+          </div>
+          <div className="lj-stat-item reveal">
+            <TrendingUp size={20} />
+            <div className="lj-stat-value">14.832 → 24.233 km²</div>
+            <div className="lj-stat-label">Diện tích tượng trưng tăng dần</div>
+            <div className="lj-stat-sub">Gấp ~1,6 lần từ hạng I đến V</div>
+          </div>
+          <div className="lj-stat-item reveal">
+            <Percent size={20} />
+            <div className="lj-stat-value">Đến 12%</div>
+            <div className="lj-stat-label">Giảm giá mỗi đơn hàng</div>
+            <div className="lj-stat-sub">
+              Tối đa {formatPrice(tiers[tiers.length - 1]?.maxDiscountPerOrder)}/đơn
+            </div>
+          </div>
+          <div className="lj-stat-item reveal">
+            <Truck size={20} />
+            <div className="lj-stat-value">Từ Hạng IV</div>
+            <div className="lj-stat-label">Miễn phí vận chuyển toàn phần</div>
+            <div className="lj-stat-sub">Không giới hạn giá trị đơn</div>
+          </div>
+        </div>
+      </section>
+
+      <SectionSeam variant="stats-steps" />
+
+      {/* ═══ 3 BƯỚC VẬN HÀNH ═══ */}
+      <section className="lj-steps">
+        <div className="lj-steps-inner">
+          <div className="lj-section-head reveal">
+            <span className="lj-eyebrow">Vận Hành Đơn Giản</span>
+            <h2 className="lj-section-title">
+              Ba Bước Để <em>Nâng Hạng</em>
+            </h2>
+          </div>
+          <div className="lj-steps-grid">
+            <StepCard
+              icon={ShoppingBag}
+              index="01"
+              title="Mua Sắm & Tích Lũy"
+              desc="Mọi đơn hàng thanh toán và giao thành công đều được cộng dồn vào tổng chi tiêu trọn đời của bạn tại Earthoria."
+              tag="Không giới hạn số đơn"
+            />
+            <StepCard
+              icon={TrendingUp}
+              index="02"
+              title="Tự Động Nâng Hạng"
+              desc="Khi tổng chi tiêu chạm ngưỡng của một vùng đất mới, hạng thành viên được nâng ngay — không cần đăng ký hay chờ duyệt."
+              tag="Tự động 100%"
+            />
+            <StepCard
+              icon={Gem}
+              index="03"
+              title="Nhận Đặc Quyền Ngay"
+              desc="Ưu đãi giảm giá và miễn phí vận chuyển áp dụng tự động cho đơn hàng tiếp theo, ngay khi bạn bước sang hạng mới."
+              tag="Áp dụng ngay lập tức"
+            />
+          </div>
+        </div>
+      </section>
+
+      <SectionSeam variant="steps-cta" />
 
       {/* ═══ CTA CUỐI TRANG ═══ */}
       <FinalCta
@@ -577,7 +589,7 @@ function TrackCurve({ color, opacity = 0.55, fade }) {
 }
 
 /* ════════════════════════ STEP CARD ════════════════════════ */
-function StepCard({ icon: Icon, index, title, desc }) {
+function StepCard({ icon: Icon, index, title, desc, tag }) {
   const [ref, active] = useReveal();
   return (
     <div ref={ref} className={`lj-step-card${active ? " in" : ""}`}>
@@ -587,6 +599,7 @@ function StepCard({ icon: Icon, index, title, desc }) {
       </span>
       <h3 className="lj-step-title">{title}</h3>
       <p className="lj-step-desc">{desc}</p>
+      {tag && <span className="lj-step-tag">{tag}</span>}
     </div>
   );
 }
@@ -641,6 +654,19 @@ function RankStop({ tier, index, loyaltyProfile }) {
 
       <div className="lj-row-ghost" aria-hidden="true">
         {tier.roman}
+      </div>
+
+      {/* Lấp khoảng trống bên đối diện card bằng nội dung thật thay vì chỉ
+          để số La Mã mờ ảo — nhãn "Trạm X/5" + chính tagline phóng to kiểu
+          pull-quote báo chí. Cùng ô lưới với ghost (grid-column theo
+          .lj-row-left/.lj-row-right bên CSS) nên 2 lớp chồng lên nhau:
+          ghost làm nền, waypoint làm nội dung đọc được phía trên. */}
+      <div className="lj-row-waypoint">
+        <span className="lj-row-waypoint-label">
+          <Compass size={11} />
+          Trạm {tier.rank}/5
+        </span>
+        <p className="lj-row-waypoint-quote">{tier.tagline}</p>
       </div>
 
       <div className="lj-row-rail">
