@@ -306,9 +306,6 @@ async function consumeSse(response, onEvent) {
   }
 }
 
-
-
-
 function ActionButtons({ msg, onRegenerate }) {
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -329,8 +326,7 @@ function ActionButtons({ msg, onRegenerate }) {
       }
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-    }
+    } catch {}
   };
 
   // Helper: lấy voices, nếu chưa load xong (mảng rỗng) thì chờ event voiceschanged
@@ -564,7 +560,9 @@ function CouponChipBody({ data }) {
             Giảm {data.discount.toLocaleString("vi-VN")}đ cho giỏ hàng hiện tại
           </span>
         ) : (
-          <span className="em-coupon-detail">Nhập mã này ở bước thanh toán</span>
+          <span className="em-coupon-detail">
+            Nhập mã này ở bước thanh toán
+          </span>
         )}
       </div>
       <button type="button" className="em-coupon-copy" onClick={handleCopy}>
@@ -598,12 +596,16 @@ function EscalateBody({ data, onNavigateAway }) {
     <div className="em-bubble em-escalate">
       <MessageCircle size={14} strokeWidth={2.5} />
       <div className="em-escalate-info">
-        <span>Bạn cần nói chuyện trực tiếp với nhân viên Earthoria phải không ạ?</span>
+        <span>
+          Bạn cần nói chuyện trực tiếp với nhân viên Earthoria phải không ạ?
+        </span>
         <button
           type="button"
           className="em-link-btn"
           onClick={() => {
-            navigate("/contact", { state: { prefillMessage: data.prefill?.message } });
+            navigate("/contact", {
+              state: { prefillMessage: data.prefill?.message },
+            });
             onNavigateAway?.();
           }}
         >
@@ -629,7 +631,10 @@ function BotMessage({ msg, onRegenerate, onNavigateAway, avatarSrc }) {
           <WifiOff size={13} className="em-error-icon" aria-hidden="true" />
         )}
         {msg.data?.type === "books" ? (
-          <BookCardsBody books={msg.data.books} onNavigateAway={onNavigateAway} />
+          <BookCardsBody
+            books={msg.data.books}
+            onNavigateAway={onNavigateAway}
+          />
         ) : msg.data?.type === "coupon" ? (
           <CouponChipBody data={msg.data} />
         ) : msg.data?.type === "escalate" ? (
@@ -978,7 +983,11 @@ function EiraUI() {
         setIsTyping(false);
         setStatusLabel(null);
 
-        if (sawError && !streamedText) throw new Error(sawError);
+        if (sawError && !streamedText) {
+          const aiErr = new Error(sawError);
+          aiErr.code = "AI_SERVER_ERROR";
+          throw aiErr;
+        }
 
         const reply = (finalReply ?? streamedText).trim();
         if (reply) {
@@ -994,19 +1003,22 @@ function EiraUI() {
         setStatusLabel(null);
 
         const isAbort = err.name === "AbortError";
+        const isAiServerError = err.code === "AI_SERVER_ERROR";
         const isRateLimited = err.status === 429;
         const isServerConfig = err.status === 502 || err.status === 503;
-        const isNetwork = !err.status && !isAbort;
+        const isNetwork = !err.status && !isAbort && !isAiServerError;
 
         const errMsg = isAbort
           ? "Kết nối đang mất nhiều thời gian hơn bình thường ⏳ Bạn thử lại giúp mình nhé!"
-          : isNetwork
-            ? "Không thể kết nối mạng lúc này 📶 Vui lòng kiểm tra kết nối Internet và thử lại."
-            : isRateLimited
-              ? "Mình đang nhận hơi nhiều tin nhắn một lúc 😅 Bạn chờ vài giây rồi thử lại nhé!"
-              : isServerConfig
-                ? "Hệ thống AI đang gặp sự cố. Vui lòng liên hệ earthoriavn@gmail.com để được hỗ trợ."
-                : `Có lỗi xảy ra, bạn thử lại giúp mình nhé! (${err.message})`;
+          : isAiServerError
+            ? err.message
+            : isNetwork
+              ? "Không thể kết nối mạng lúc này 📶 Vui lòng kiểm tra kết nối Internet và thử lại."
+              : isRateLimited
+                ? "Mình đang nhận hơi nhiều tin nhắn một lúc 😅 Bạn chờ vài giây rồi thử lại nhé!"
+                : isServerConfig
+                  ? "Hệ thống AI đang gặp sự cố. Vui lòng liên hệ earthoriavn@gmail.com để được hỗ trợ."
+                  : `Có lỗi xảy ra, bạn thử lại giúp mình nhé! (${err.message})`;
 
         historyRef.current.pop();
         // Nếu đã lỡ stream được vài chữ trước khi lỗi, giữ nguyên bong bóng
