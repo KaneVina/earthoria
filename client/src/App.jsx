@@ -51,6 +51,7 @@ import Settings from "./pages/admin/Settings";
 import AdminProfile from "./pages/admin/AdminProfile";
 import InventoryImport from "./pages/admin/product/InventoryImport";
 import FullScreenLoader from "./components/FullScreenLoader";
+import PromoBanner from "./components/PromoBanner";
 import ProductCreate from "./pages/admin/product/ProductCreate";
 import ArCodeDetail from "./pages/admin/ArCodeDetail";
 import Compare from "./pages/Compare";
@@ -171,6 +172,7 @@ export default function App() {
       <EarthoriaSecurity />
       <ScrollToTop />
       <CustomCursor />
+      <PromoBanner />
       <EiraChatbox />
       <FloatingCompareBar />
       <FlyingWishlistHeart />
