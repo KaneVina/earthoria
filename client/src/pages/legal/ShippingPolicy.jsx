@@ -177,7 +177,7 @@ const SECTIONS = [
     num: "09",
     title: "Liên Hệ Hỗ Trợ Vận Chuyển",
     paragraphs: [
-      "Nếu bạn có bất kỳ vấn đề nào liên quan đến đơn hàng đang trên đường giao, đội ngũ Chăm sóc Khách hàng của Earthoria sẵn sàng hỗ trợ qua các kênh dưới đây trong giờ hành chính (8:00 – 21:00, kể cả cuối tuần).",
+      "Nếu bạn có bất kỳ vấn đề nào liên quan đến đơn hàng đang trên đường giao, đội ngũ Chăm sóc Khách hàng của Earthoria sẵn sàng hỗ trợ qua các kênh dưới đây trong giờ hành chính (8:00- 21:00, kể cả cuối tuần).",
     ],
   },
 ];

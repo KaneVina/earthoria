@@ -23,13 +23,14 @@ import { useTheme } from "../../hooks/useTheme";
 import { loyaltyService } from "../../services/loyaltyService";
 import LoyaltyBadge from "../LoyaltyBadge";
 import toast from "react-hot-toast";
-import logoImg from "../assets/img/logoBT-ngangtext.png";
+// import logoImg from "../assets/img/logoBT-ngangtext.png";
+import logoImg from "../assets/img/lgBT29.png";
 import SearchOverlay from "./SearchOverlay";
 import "../assets/css/navbar.css";
 import { authService } from "../../services/authService";
 import LogoutConfirmModal from "../LogoutConfirmModal";
 import { formatPrice, computeTierDiscount } from "../../utils/helpers";
-const logoCompactImg = "/logo-nho.png";
+const logoCompactImg = "/logo-nho29.png";
 export default function Navbar() {
   const queryClient = useQueryClient();
   const location = useLocation();

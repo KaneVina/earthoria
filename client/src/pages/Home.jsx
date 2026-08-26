@@ -353,7 +353,7 @@ function BookCard({
   ];
   const tags =
     book.tags || DEMO_TAGS.slice(0, Math.floor(Math.random() * 3) + 2);
-  const ageLabel = book.ageRange || "4 – 10 tuổi";
+  const ageLabel = book.ageRange || "4- 10 tuổi";
   const langLabel = book.language || "Tiếng Việt";
 
   const handleCardClick = () => {

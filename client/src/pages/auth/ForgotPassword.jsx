@@ -15,7 +15,7 @@ const STEPS = [
 const PASSWORD_CHECKS = [
   {
     key: "len",
-    label: "8 – 16 ký tự",
+    label: "8- 16 ký tự",
     test: (v) => v.length >= 8 && v.length <= 16,
   },
   {

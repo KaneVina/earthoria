@@ -283,9 +283,9 @@ const FALLBACK_DATA = {
     slug: "kham-pha-bao-ve-he-sinh-thai-rung",
   },
   specs: [
-    { label: "Chiều cao", value: "30 – 60 m" },
-    { label: "Đường kính thân", value: "1 – 3 m" },
-    { label: "Tuổi thọ", value: "200 – 1.000 năm" },
+    { label: "Chiều cao", value: "30- 60 m" },
+    { label: "Đường kính thân", value: "1- 3 m" },
+    { label: "Tuổi thọ", value: "200- 1.000 năm" },
     { label: "Môi trường sống", value: "Rừng nhiệt đới ẩm" },
     { label: "Tầng phân bố", value: "Tầng tán & tầng vượt tán" },
   ],

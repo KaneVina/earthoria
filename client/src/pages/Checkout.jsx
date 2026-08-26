@@ -2659,7 +2659,7 @@ export default function Checkout() {
                           }}
                         >
                           600 Nguyễn Văn Cừ (nối dài), Phường An Bình · Giờ mở
-                          cửa: 8:00 – 21:00
+                          cửa: 8:00- 21:00
                         </div>
                       </div>
                     </div>
@@ -4589,11 +4589,11 @@ export default function Checkout() {
               </div>
               {[
                 { label: "≤ 10 km", maxKm: 10, fee: "25.000đ" },
-                { label: "10 – 30 km", maxKm: 30, fee: "35.000đ" },
-                { label: "30 – 60 km", maxKm: 60, fee: "45.000đ" },
-                { label: "60 – 100 km", maxKm: 100, fee: "55.000đ" },
-                { label: "100 – 200 km", maxKm: 200, fee: "70.000đ" },
-                { label: "200 – 500 km", maxKm: 500, fee: "90.000đ" },
+                { label: "10- 30 km", maxKm: 30, fee: "35.000đ" },
+                { label: "30- 60 km", maxKm: 60, fee: "45.000đ" },
+                { label: "60- 100 km", maxKm: 100, fee: "55.000đ" },
+                { label: "100- 200 km", maxKm: 200, fee: "70.000đ" },
+                { label: "200- 500 km", maxKm: 500, fee: "90.000đ" },
                 { label: "Trên 500 km", maxKm: Infinity, fee: "120.000đ" },
               ].map((row, i) => {
                 const km = shipCalc.km;

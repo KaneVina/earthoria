@@ -1213,7 +1213,7 @@ export default function KidAccess() {
                 <div>
                   <div className="kid-stat-label">Giờ được đọc</div>
                   <div className="kid-stat-value" style={{ fontSize: 15 }}>
-                    {child.allowStart} – {child.allowEnd}
+                    {child.allowStart}- {child.allowEnd}
                   </div>
                 </div>
                 <span

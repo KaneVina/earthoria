@@ -627,7 +627,7 @@ export default function Register() {
                       {[
                         {
                           key: "length",
-                          label: "8 – 16 ký tự",
+                          label: "8- 16 ký tự",
                           ok: checks.length,
                         },
                         {

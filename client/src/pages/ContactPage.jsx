@@ -32,8 +32,8 @@ const CONTACT_CARDS = [
   },
   {
     icon: Clock, type: "Giờ làm việc",
-    value: "T2–T6: 7:00 – 18:00",
-    sub: "T7–CN: 8:00 – 16:00",
+    value: "T2–T6: 7:00- 18:00",
+    sub: "T7–CN: 8:00- 16:00",
     href: null,
   },
 ];

@@ -580,7 +580,7 @@ function ProductCard({ book, onAddToCart, delay, isAdding }) {
 
   const desc =
     book.desc || (book.description ? book.description.slice(0, 100) + "…" : "");
-  const ageLabel = book.ageRange || "4 – 10 tuổi";
+  const ageLabel = book.ageRange || "4- 10 tuổi";
   const langLabel = book.language || "Tiếng Việt";
   const tags = book.tags || [];
 
@@ -1477,7 +1477,7 @@ const [ageRange, setAgeRange] = useState([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
                     {[
                       {
                         label: "Độ tuổi",
-                        val: featuredBook.ageRange || "4 – 10 tuổi",
+                        val: featuredBook.ageRange || "4- 10 tuổi",
                       },
                       {
                         label: "Ngôn ngữ",

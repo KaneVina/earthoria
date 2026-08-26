@@ -622,7 +622,7 @@ function BotMessage({ msg, onRegenerate, onNavigateAway, avatarSrc }) {
     <div className={`em bot${msg.isError ? " em-error" : ""}`}>
       <div className="em-label-row">
         <div className="em-av">
-          <img src={avatarSrc || "/eira/avatar.png"} alt="" />
+          <img src={avatarSrc || "/eira/avatar29.png"} alt="" />
         </div>
         <span className="em-name">Eira</span>
       </div>
@@ -676,7 +676,7 @@ function EiraUI() {
   const location = useLocation();
   const isDashboard = location.pathname.startsWith("/dashboard");
   const isKid = location.pathname.startsWith("/e-kid");
-  const avatarSrc = isKid ? "/eira/eira-kid-avatar.png" : "/eira/avatar.png";
+  const avatarSrc = isKid ? "/eira/eira-kid-avatar.png" : "/eira/avatar29.png";
 
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -1142,7 +1142,9 @@ function EiraUI() {
                   ? "/eira/eira-staff.png"
                   : isKid
                     ? "/eira/eira-kid.png"
-                    : "/eira/eira-sayhi.png"
+                    // : "/eira/eira-sayhi.png"
+                    : "/eira/eira29.png"
+
               }
               alt="Eira vẫy chào"
               draggable="false"
