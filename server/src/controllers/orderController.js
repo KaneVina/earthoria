@@ -192,7 +192,7 @@ const createOrder = async (req, res) => {
 
     // 5. Tính phí ship theo km (dùng cùng hàm calcFee với endpoint xem trước /orders/shipping-fee)
     // Sách điện tử không giao hàng nên luôn miễn phí ship. Ngưỡng miễn phí ship co giãn theo hạng
-    // thành viên — hạng càng cao ngưỡng càng thấp (Gia Lai/Lâm Đồng luôn miễn phí).
+    // thành viên — hạng càng cao ngưỡng càng thấp (Nha Trang/TP.HCM luôn miễn phí).
     const freeShipThreshold = getFreeShipThreshold(loyaltyProfile.tier);
     let shippingFee;
     if (isDigitalOrder) {

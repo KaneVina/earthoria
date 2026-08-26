@@ -31,7 +31,7 @@ const META = {
 const TIERS = [
   {
     roman: "I",
-    name: "Quảng Ngãi",
+    name: "Chùa Một Cột",
     minSpend: 0,
     discountPercent: 0,
     maxDiscountPerOrder: 0,
@@ -40,7 +40,7 @@ const TIERS = [
   },
   {
     roman: "II",
-    name: "Nghệ An",
+    name: "Cố Đô Huế",
     minSpend: 3_000_000,
     discountPercent: 3,
     maxDiscountPerOrder: 100_000,
@@ -49,7 +49,7 @@ const TIERS = [
   },
   {
     roman: "III",
-    name: "Đắk Lắk",
+    name: "Cầu Rồng",
     minSpend: 7_000_000,
     discountPercent: 5,
     maxDiscountPerOrder: 200_000,
@@ -58,7 +58,7 @@ const TIERS = [
   },
   {
     roman: "IV",
-    name: "Gia Lai",
+    name: "Tháp Bà Ponagar",
     minSpend: 15_000_000,
     discountPercent: 8,
     maxDiscountPerOrder: 350_000,
@@ -67,7 +67,7 @@ const TIERS = [
   },
   {
     roman: "V",
-    name: "Lâm Đồng",
+    name: "Landmark 81",
     minSpend: 30_000_000,
     discountPercent: 12,
     maxDiscountPerOrder: 600_000,
@@ -83,7 +83,7 @@ const SUMMARY_CARDS = [
   {
     icon: TrendingUp,
     title: "5 hạng tích lũy",
-    desc: "Từ Quảng Ngãi đến Lâm Đồng — hạng của bạn tăng dần theo tổng chi tiêu trọn đời, không bao giờ bị reset.",
+    desc: "Từ Chùa Một Cột đến Landmark 81 — hạng của bạn tăng dần theo tổng chi tiêu trọn đời, không bao giờ bị reset.",
   },
   {
     icon: Percent,
@@ -108,7 +108,7 @@ const SECTIONS = [
     num: "01",
     title: "Tổng Quan Hệ Thống Hạng Thành Viên",
     paragraphs: [
-      "Hệ thống Hạng Thành Viên Earthoria ghi nhận hành trình mua sắm của bạn qua 5 hạng, được đặt theo tên các tỉnh thành Việt Nam — từ Hạng I (Quảng Ngãi) đến Hạng V (Lâm Đồng). Hạng của bạn được xác định hoàn toàn tự động dựa trên tổng giá trị các đơn hàng đã mua thành công, không yêu cầu đăng ký hay đóng phí thành viên.",
+      "Hệ thống Hạng Thành Viên Earthoria ghi nhận hành trình mua sắm của bạn qua 5 hạng, được thể hiện như 5 chặng vé máy bay đến những công trình biểu tượng của Việt Nam — từ Hạng I (Chùa Một Cột, Hà Nội) đến Hạng V (Landmark 81, TP.HCM). Hạng của bạn được xác định hoàn toàn tự động dựa trên tổng giá trị các đơn hàng đã mua thành công, không yêu cầu đăng ký hay đóng phí thành viên.",
       "Chính sách này áp dụng cho mọi tài khoản khách hàng cá nhân trên website và ứng dụng Earthoria, và có thể được cập nhật định kỳ để phản ánh chương trình ưu đãi mới nhất.",
     ],
   },
@@ -243,7 +243,7 @@ const FAQS = [
     a: "Đơn hàng bị hủy hoặc chưa thanh toán thành công không được tính vào chi tiêu tích lũy ngay từ đầu, nên không ảnh hưởng đến hạng. Hạng chỉ bị điều chỉnh trong trường hợp đơn đã tính chi tiêu sau đó bị hoàn tiền toàn phần do gian lận.",
   },
   {
-    q: "Đạt Hạng V (Lâm Đồng) rồi thì có ưu đãi nào cao hơn nữa không?",
+    q: "Đạt Hạng V (Landmark 81) rồi thì có ưu đãi nào cao hơn nữa không?",
     a: "Hạng V hiện là hạng cao nhất trong hệ thống với mức giảm 12% mỗi đơn (tối đa 600.000đ) và miễn phí vận chuyển toàn bộ. Earthoria có thể giới thiệu các hạng hoặc đặc quyền mới trong tương lai và sẽ luôn thông báo trước đến thành viên Hạng V.",
   },
 ];

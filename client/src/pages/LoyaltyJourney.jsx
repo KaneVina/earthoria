@@ -17,6 +17,10 @@ import {
   ChevronDown,
   Sparkles,
   Flag,
+  Plane,
+  PlaneTakeoff,
+  PlaneLanding,
+  User,
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { loyaltyService } from "../services/loyaltyService";
@@ -27,14 +31,21 @@ import "../components/assets/css/loyaltyJourney.css";
    DỮ LIỆU 5 HẠNG — mirror 1:1 từ server/src/utils/loyaltyTier.js
    (LOYALTY_TIERS). Dùng làm placeholderData cho query /loyalty/tiers
    để trang render đẹp ngay lập tức, rồi tự đối chiếu lại với API.
+   Mỗi hạng giờ là 1 CHẶNG BAY tới 1 công trình biểu tượng Việt Nam,
+   trình bày dưới dạng vé máy bay (boarding pass) trên hành trình.
 ───────────────────────────────────────────────────────────── */
 const TIERS_FALLBACK = [
   {
     rank: 1,
     roman: "I",
-    code: "QUANG_NGAI",
-    name: "Quảng Ngãi",
-    areaKm2: 14832.6,
+    code: "HANOI",
+    name: "Chùa Một Cột",
+    emoji: "🪷",
+    city: "Hà Nội",
+    cityCode: "HAN",
+    region: "Miền Bắc",
+    spirit: "Khởi nguồn",
+    distanceKm: 0,
     minSpend: 0,
     discountPercent: 0,
     maxDiscountPerOrder: 0,
@@ -46,9 +57,14 @@ const TIERS_FALLBACK = [
   {
     rank: 2,
     roman: "II",
-    code: "NGHE_AN",
-    name: "Nghệ An",
-    areaKm2: 16486.49,
+    code: "HUE",
+    name: "Cố Đô Huế – Đại Nội",
+    emoji: "🏯",
+    city: "Huế",
+    cityCode: "HUI",
+    region: "Bắc Trung Bộ",
+    spirit: "Di sản",
+    distanceKm: 630,
     minSpend: 3000000,
     discountPercent: 3,
     maxDiscountPerOrder: 100000,
@@ -60,52 +76,70 @@ const TIERS_FALLBACK = [
   {
     rank: 3,
     roman: "III",
-    code: "DAK_LAK",
-    name: "Đắk Lắk",
-    areaKm2: 18096.4,
+    code: "DANANG",
+    name: "Cầu Rồng",
+    emoji: "🐉",
+    city: "Đà Nẵng",
+    cityCode: "DAD",
+    region: "Trung Bộ",
+    spirit: "Bứt phá",
+    distanceKm: 765,
     minSpend: 7000000,
     discountPercent: 5,
     maxDiscountPerOrder: 200000,
     freeShipThreshold: 100000,
     color: "#b8862e",
     colorSoft: "rgba(184,134,46,0.12)",
-    tagline: "Vững vàng như cao nguyên đất đỏ",
+    tagline: "Vươn mình bứt phá như rồng bay ra biển lớn",
   },
   {
     rank: 4,
     roman: "IV",
-    code: "GIA_LAI",
-    name: "Gia Lai",
-    areaKm2: 21576.5,
+    code: "NHATRANG",
+    name: "Tháp Bà Ponagar",
+    emoji: "🏛️",
+    city: "Nha Trang",
+    cityCode: "CXR",
+    region: "Nam Trung Bộ",
+    spirit: "Khám phá",
+    distanceKm: 1200,
     minSpend: 15000000,
     discountPercent: 8,
     maxDiscountPerOrder: 350000,
     freeShipThreshold: 0,
     color: "#7a4fb5",
     colorSoft: "rgba(122,79,181,0.12)",
-    tagline: "Trải dài từ núi rừng ra biển lớn",
+    tagline: "Khám phá vùng đất của tháp cổ và biển xanh",
   },
   {
     rank: 5,
     roman: "V",
-    code: "LAM_DONG",
-    name: "Lâm Đồng",
-    areaKm2: 24233.1,
+    code: "HOCHIMINH",
+    name: "Landmark 81",
+    emoji: "🏙️",
+    city: "TP. Hồ Chí Minh",
+    cityCode: "SGN",
+    region: "Miền Nam",
+    spirit: "Vươn tới đỉnh cao",
+    distanceKm: 1710,
     minSpend: 30000000,
     discountPercent: 12,
     maxDiscountPerOrder: 600000,
     freeShipThreshold: 0,
     color: "#c0392b",
     colorSoft: "rgba(192,57,43,0.12)",
-    tagline: "Đỉnh cao — vùng đất rộng nhất hành trình Earthoria",
+    tagline: "Đỉnh cao — chạm tới nóc nhà của Sài Gòn hoa lệ",
   },
 ];
 
-const AREA_MIN = TIERS_FALLBACK[0].areaKm2;
-const AREA_MAX = TIERS_FALLBACK[TIERS_FALLBACK.length - 1].areaKm2;
+const DIST_MIN = TIERS_FALLBACK[0].distanceKm;
+const DIST_MAX = TIERS_FALLBACK[TIERS_FALLBACK.length - 1].distanceKm;
 
-const formatArea = (km2) =>
-  `${new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1 }).format(km2)} km²`;
+const formatArea = (km) =>
+  `${new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(km)} km`;
+
+// Mã sân bay của Earthoria — điểm khởi hành chung cho chặng bay đầu tiên.
+const HUB = { cityCode: "ETR", city: "Earthoria" };
 
 /* ─────────────────────────────────────────────────────────────
    useCountUp — đếm số chạy từ 0 → target khi `active` bật lên.
@@ -167,7 +201,7 @@ function useReveal(threshold = 0.18) {
 
 /* ════════════════════════ COMPONENT CHÍNH ════════════════════════ */
 export default function LoyaltyJourney() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
 
   /* reveal-on-scroll cho các khối tĩnh (hero sub, steps, cta...) —
      giữ đúng quy ước sitewide: class .reveal + IntersectionObserver
@@ -243,15 +277,15 @@ export default function LoyaltyJourney() {
           </h1>
 
           <p className="lj-hero-sub">
-            Năm hạng thành viên, năm vùng đất trên bản đồ Việt Nam — mỗi đơn
-            hàng bạn hoàn tất là một chặng đường mới, mở rộng thêm bản đồ
-            hành trình cùng Earthoria.
+            Năm hạng thành viên, năm tấm vé đến những công trình biểu tượng
+            của Việt Nam — mỗi đơn hàng bạn hoàn tất đưa bạn cất cánh gần
+            hơn một chặng, đến khi chạm đỉnh Landmark 81.
           </p>
 
           <div className="lj-hero-actions">
             <button type="button" className="lj-btn-primary" onClick={scrollToJourney}>
-              <Compass size={15} />
-              Khám Phá 5 Hạng
+              <PlaneTakeoff size={15} />
+              Khám Phá 5 Chặng Bay
             </button>
             {!isAuthenticated && (
               <Link to="/login" className="lj-btn-ghost">
@@ -284,14 +318,14 @@ export default function LoyaltyJourney() {
       <section className="lj-journey" id="lj-journey">
         <div className="lj-journey-inner">
           <div className="lj-section-head reveal" style={{ textAlign: "center" }}>
-            <span className="lj-eyebrow">Cung Đường Hành Trình</span>
+            <span className="lj-eyebrow">Sổ Vé Hành Trình</span>
             <h2 className="lj-section-title">
-              Năm Vùng Đất, <em>Một Hành Trình</em>
+              Năm Tấm Vé, <em>Một Hành Trình</em>
             </h2>
             <p className="lj-section-sub">
-              Từ điểm khởi hành đến đỉnh cao — mỗi hạng là một vùng đất thật
-              trên bản đồ Việt Nam, được kể lại thành hành trình thành viên
-              của riêng bạn.
+              Từ Earthoria đến đỉnh Landmark 81 — mỗi hạng là một tấm vé máy
+              bay tới một công trình biểu tượng có thật của Việt Nam, được
+              kể lại thành hành trình thành viên của riêng bạn.
             </p>
           </div>
 
@@ -326,8 +360,11 @@ export default function LoyaltyJourney() {
               <RankStop
                 key={tier.code}
                 tier={tier}
+                prevTier={i === 0 ? null : tiers[i - 1]}
+                isLast={i === tiers.length - 1}
                 index={i}
                 loyaltyProfile={isAuthenticated ? loyaltyProfile : null}
+                passengerName={isAuthenticated ? user?.name : null}
               />
             ))}
 
@@ -369,10 +406,10 @@ export default function LoyaltyJourney() {
             </div>
           </div>
           <div className="lj-stat-item reveal">
-            <TrendingUp size={20} />
-            <div className="lj-stat-value">14.832 → 24.233 km²</div>
-            <div className="lj-stat-label">Diện tích tượng trưng tăng dần</div>
-            <div className="lj-stat-sub">Gấp ~1,6 lần từ hạng I đến V</div>
+            <Plane size={20} />
+            <div className="lj-stat-value">0 → 1.710 km</div>
+            <div className="lj-stat-label">Quãng đường bay tượng trưng</div>
+            <div className="lj-stat-sub">Từ Hà Nội đến TP.HCM</div>
           </div>
           <div className="lj-stat-item reveal">
             <Percent size={20} />
@@ -604,15 +641,15 @@ function StepCard({ icon: Icon, index, title, desc, tag }) {
   );
 }
 
-/* ════════════════════════ RANK STOP (1 trạm trên hành trình) ════════════════════════ */
-function RankStop({ tier, index, loyaltyProfile }) {
+/* ════════════════════════ RANK STOP (1 tấm vé trên hành trình) ════════════════════════ */
+function RankStop({ tier, prevTier, isLast, index, loyaltyProfile, passengerName }) {
   const [ref, active] = useReveal(0.15);
-  const areaValue = useCountUp(tier.areaKm2, active);
+  const distValue = useCountUp(tier.distanceKm, active);
   const side = index % 2 === 0 ? "left" : "right";
 
   const relativeSizePercent = Math.max(
     6,
-    ((tier.areaKm2 - AREA_MIN) / (AREA_MAX - AREA_MIN || 1)) * 100,
+    ((tier.distanceKm - DIST_MIN) / (DIST_MAX - DIST_MIN || 1)) * 100,
   );
 
   const currentRank = loyaltyProfile?.tier?.rank;
@@ -636,6 +673,16 @@ function RankStop({ tier, index, loyaltyProfile }) {
       ? 100
       : Math.min(100, Math.max(0, loyaltyProfile.progressPercent));
   }
+
+  /* Điểm đi/đến của tấm vé — chặng I luôn khởi hành từ hub EARTHORIA
+     (ETR), các chặng sau nối tiếp từ chính điểm đến của chặng trước, y
+     hệt 1 lịch trình bay nhiều chặng thật. */
+  const from = prevTier
+    ? { cityCode: prevTier.cityCode, city: prevTier.city }
+    : HUB;
+  const flightNo = `ETR-${String(tier.rank).padStart(3, "0")}`;
+  const gate = String.fromCharCode(64 + tier.rank); // A, B, C, D, E
+  const seat = `${tier.rank}${side === "left" ? "A" : "F"}`;
 
   return (
     <div
@@ -664,7 +711,7 @@ function RankStop({ tier, index, loyaltyProfile }) {
       <div className="lj-row-waypoint">
         <span className="lj-row-waypoint-label">
           <Compass size={11} />
-          Trạm {tier.rank}/5
+          Chặng {tier.rank}/5
         </span>
         <p className="lj-row-waypoint-quote">{tier.tagline}</p>
       </div>
@@ -676,104 +723,177 @@ function RankStop({ tier, index, loyaltyProfile }) {
         </div>
       </div>
 
-      <article className="lj-card">
+      {/* ═══ VÉ MÁY BAY (boarding pass) — coupon chính + cuống vé ═══ */}
+      <article className="lj-ticket">
         <span className="lj-card-sheen" aria-hidden="true" />
 
-        <div className="lj-card-top">
-          <span className="lj-card-eyebrow">
-            <span className="lj-card-eyebrow-dot" />
-            Hạng {tier.roman}
-          </span>
-          <span className="lj-card-code">ETR · {tier.roman}</span>
-        </div>
-
-        {isCurrent && (
-          <span className="lj-card-ribbon">
-            <MapPin size={11} /> Bạn đang ở đây
-          </span>
-        )}
-        {isUnlocked && (
-          <span className="lj-card-badge is-unlocked">
-            <CheckCircle2 size={11} /> Đã mở khóa
-          </span>
-        )}
-        {isLocked && (
-          <span className="lj-card-badge is-locked">
-            <Lock size={11} /> Chưa mở khóa
-          </span>
-        )}
-
-        <h3 className="lj-card-name">{tier.name}</h3>
-        <p className="lj-card-tagline">{tier.tagline}</p>
-
-        <div className="lj-card-divider">
-          <span />
-        </div>
-
-        <div className="lj-card-area">
-          <div className="lj-card-area-label">Diện tích tượng trưng</div>
-          <div className="lj-card-area-value">{formatArea(areaValue)}</div>
-          <div className="lj-card-area-track">
-            <div
-              className="lj-card-area-fill"
-              style={{ width: active ? `${travelPercent}%` : "0%" }}
-            />
-          </div>
-          {isUnlocked && (
-            <p className="lj-card-area-caption">
-              <CheckCircle2 size={13} />
-              Bạn đã đi trọn vẹn vùng này
-            </p>
-          )}
-          {isCurrent && loyaltyProfile.isMaxTier && (
-            <p className="lj-card-area-caption is-max">
-              <CheckCircle2 size={13} />
-              Hạng cao nhất — cảm ơn bạn đã đồng hành cùng Earthoria!
-            </p>
-          )}
-          {isCurrent && !loyaltyProfile.isMaxTier && (
-            <p className="lj-card-area-caption">
-              Chi thêm <strong>{formatPrice(loyaltyProfile.amountToNext)}</strong>{" "}
-              để đi hết vùng này, sang{" "}
-              <strong>{loyaltyProfile.nextTier?.name}</strong>
-            </p>
-          )}
-        </div>
-
-        <ul className="lj-card-benefits">
-          <li>
-            <Percent size={14} />
-            {tier.discountPercent > 0 ? (
-              <span>
-                Giảm <strong>{tier.discountPercent}%</strong> mỗi đơn (tối đa{" "}
-                {formatPrice(tier.maxDiscountPerOrder)})
-              </span>
-            ) : (
-              <span>Chưa có ưu đãi giảm giá trực tiếp</span>
-            )}
-          </li>
-          <li>
-            <Truck size={14} />
-            {tier.freeShipThreshold > 0 ? (
-              <span>
-                Miễn phí ship cho đơn từ{" "}
-                <strong>{formatPrice(tier.freeShipThreshold)}</strong>
-              </span>
-            ) : (
-              <span>Miễn phí vận chuyển mọi đơn hàng</span>
-            )}
-          </li>
-        </ul>
-
-        <div className="lj-card-unlock">
-          <KeyRound size={13} />
-          {tier.minSpend > 0 ? (
-            <span>
-              Mở khóa từ tổng chi tiêu <strong>{formatPrice(tier.minSpend)}</strong>
+        <div className="lj-ticket-main">
+          <div className="lj-ticket-top">
+            <span className="lj-ticket-brand">
+              <PlaneTakeoff size={13} />
+              EARTHORIA AIRLINES
             </span>
-          ) : (
-            <span>Mặc định ngay khi bạn tạo tài khoản Earthoria</span>
+            <span className="lj-ticket-class">Hạng {tier.roman}</span>
+          </div>
+
+          {isCurrent && (
+            <span className="lj-card-ribbon">
+              <Plane size={11} /> Bạn đang trên chuyến bay này
+            </span>
           )}
+          {isUnlocked && !isLast && (
+            <span className="lj-card-badge is-unlocked">
+              <CheckCircle2 size={11} /> Đã bay qua
+            </span>
+          )}
+          {(isUnlocked || (isCurrent && loyaltyProfile?.isMaxTier)) && isLast && (
+            <span className="lj-card-badge is-unlocked lj-card-badge-success">
+              <PlaneLanding size={11} /> Thành công — Đã hạ cánh
+            </span>
+          )}
+          {isLocked && (
+            <span className="lj-card-badge is-locked">
+              <Lock size={11} /> Chưa mở khóa
+            </span>
+          )}
+
+          <div className="lj-ticket-route">
+            <div className="lj-ticket-point">
+              <span className="lj-ticket-code">{from.cityCode}</span>
+              <span className="lj-ticket-city">{from.city}</span>
+            </div>
+            <div className="lj-ticket-path" aria-hidden="true">
+              <span className="lj-ticket-path-line" />
+              <span className="lj-ticket-path-plane">
+                <Plane size={14} />
+              </span>
+            </div>
+            <div className="lj-ticket-point lj-ticket-point-end">
+              <span className="lj-ticket-code">{tier.cityCode}</span>
+              <span className="lj-ticket-city">{tier.city}</span>
+            </div>
+          </div>
+
+          <h3 className="lj-card-name">
+            <span className="lj-card-name-emoji" aria-hidden="true">
+              {tier.emoji}
+            </span>
+            {tier.name}
+          </h3>
+          <p className="lj-card-tagline">{tier.tagline}</p>
+
+          <div className="lj-ticket-fields">
+            <div className="lj-ticket-field">
+              <span className="lj-ticket-field-label">
+                <User size={10} /> Hành khách
+              </span>
+              <span className="lj-ticket-field-value">
+                {passengerName || "Quý khách Earthoria"}
+              </span>
+            </div>
+            <div className="lj-ticket-field">
+              <span className="lj-ticket-field-label">Chuyến bay</span>
+              <span className="lj-ticket-field-value">{flightNo}</span>
+            </div>
+            <div className="lj-ticket-field">
+              <span className="lj-ticket-field-label">Cổng</span>
+              <span className="lj-ticket-field-value">{gate}{tier.rank}</span>
+            </div>
+            <div className="lj-ticket-field">
+              <span className="lj-ticket-field-label">Ghế</span>
+              <span className="lj-ticket-field-value">{seat}</span>
+            </div>
+          </div>
+
+          <div className="lj-card-divider">
+            <span />
+          </div>
+
+          <div className="lj-card-area">
+            <div className="lj-card-area-label">Quãng đường bay tượng trưng</div>
+            <div className="lj-card-area-value">{formatArea(distValue)}</div>
+            <div className="lj-card-area-track">
+              <div
+                className="lj-card-area-fill"
+                style={{ width: active ? `${travelPercent}%` : "0%" }}
+              />
+            </div>
+            {isUnlocked && !isLast && (
+              <p className="lj-card-area-caption">
+                <CheckCircle2 size={13} />
+                Bạn đã hoàn thành trọn vẹn chặng bay này
+              </p>
+            )}
+            {(isUnlocked || (isCurrent && loyaltyProfile?.isMaxTier)) && isLast && (
+              <p className="lj-card-area-caption is-max">
+                <PlaneLanding size={13} />
+                Thành công — bạn đã chinh phục toàn bộ hành trình Earthoria!
+              </p>
+            )}
+            {isCurrent && loyaltyProfile.isMaxTier && !isLast && (
+              <p className="lj-card-area-caption is-max">
+                <CheckCircle2 size={13} />
+                Hạng cao nhất — cảm ơn bạn đã đồng hành cùng Earthoria!
+              </p>
+            )}
+            {isCurrent && !loyaltyProfile.isMaxTier && (
+              <p className="lj-card-area-caption">
+                Chi thêm <strong>{formatPrice(loyaltyProfile.amountToNext)}</strong>{" "}
+                để hoàn tất chặng này, cất cánh sang{" "}
+                <strong>{loyaltyProfile.nextTier?.name}</strong>
+              </p>
+            )}
+          </div>
+
+          <ul className="lj-card-benefits">
+            <li>
+              <Percent size={14} />
+              {tier.discountPercent > 0 ? (
+                <span>
+                  Giảm <strong>{tier.discountPercent}%</strong> mỗi đơn (tối đa{" "}
+                  {formatPrice(tier.maxDiscountPerOrder)})
+                </span>
+              ) : (
+                <span>Chưa có ưu đãi giảm giá trực tiếp</span>
+              )}
+            </li>
+            <li>
+              <Truck size={14} />
+              {tier.freeShipThreshold > 0 ? (
+                <span>
+                  Miễn phí ship cho đơn từ{" "}
+                  <strong>{formatPrice(tier.freeShipThreshold)}</strong>
+                </span>
+              ) : (
+                <span>Miễn phí vận chuyển mọi đơn hàng</span>
+              )}
+            </li>
+          </ul>
+
+          <div className="lj-card-unlock">
+            <KeyRound size={13} />
+            {tier.minSpend > 0 ? (
+              <span>
+                Mở khóa từ tổng chi tiêu <strong>{formatPrice(tier.minSpend)}</strong>
+              </span>
+            ) : (
+              <span>Mặc định ngay khi bạn tạo tài khoản Earthoria</span>
+            )}
+          </div>
+        </div>
+
+        {/* ── Cuống vé (ticket stub) — tách khỏi coupon chính bằng đường
+             răng cưa đục lỗ, đúng kiểu vé máy bay giấy thật. ── */}
+        <div className="lj-ticket-stub">
+          <div className="lj-ticket-stub-top">
+            <span className="lj-ticket-stub-roman">{tier.roman}</span>
+            <span className="lj-ticket-stub-region">{tier.region}</span>
+          </div>
+          <div className="lj-ticket-stub-mid">
+            <span className="lj-ticket-stub-flight">{flightNo}</span>
+            <span className="lj-ticket-stub-seat">Ghế {seat}</span>
+          </div>
+          <div className="lj-ticket-barcode" aria-hidden="true" />
         </div>
       </article>
     </div>

@@ -80,7 +80,7 @@ const POLICIES = [
     desc: "Cách hạng thành viên của bạn được xác định theo tổng chi tiêu tích lũy, quyền lợi giảm giá và miễn phí vận chuyển của từng hạng, cùng cam kết không bao giờ hạ hạng.",
     version: "v1.0",
     updated: "23/08/2026",
-    highlights: ["5 hạng từ Quảng Ngãi đến Lâm Đồng", "Giảm giá tự động đến 12%", "Hạng cộng dồn vĩnh viễn, không hết hạn"],
+    highlights: ["5 chặng vé bay từ Chùa Một Cột đến Landmark 81", "Giảm giá tự động đến 12%", "Hạng cộng dồn vĩnh viễn, không hết hạn"],
     to: "/legal/membership",
     label: "Xem Chính Sách Hạng Thành Viên",
   },

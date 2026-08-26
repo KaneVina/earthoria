@@ -2,8 +2,10 @@ import { useState } from "react";
 import { formatPrice } from "../utils/helpers";
 import "./assets/css/loyaltyBadge.css";
 
-const formatArea = (km2) =>
-  `${new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 1 }).format(km2)} km²`;
+const formatArea = (km) => {
+  if (!Number.isFinite(km)) return "—";
+  return `${new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(km)} km`;
+};
 
 const perkLines = (tier) => {
   const lines = [];
@@ -22,7 +24,7 @@ const perkLines = (tier) => {
   return lines;
 };
 
-// tier: { name, roman, mergedFrom, areaKm2, discountPercent, maxDiscountPerOrder, freeShipThreshold, color, colorSoft, tagline }
+// tier: { name, roman, region, distanceKm, discountPercent, maxDiscountPerOrder, freeShipThreshold, color, colorSoft, tagline }
 // progress (optional, chỉ truyền cho hạng hiện tại của user): { nextTier, amountToNext, progressPercent, isMaxTier }
 export default function LoyaltyBadge({
   tier,
@@ -59,12 +61,12 @@ export default function LoyaltyBadge({
         </div>
 
         <div className="lb-panel-row">
-          <span className="lb-panel-label">Diện tích tượng trưng</span>
-          <span className="lb-panel-value">{formatArea(tier.areaKm2)}</span>
+          <span className="lb-panel-label">Quãng đường bay tượng trưng</span>
+          <span className="lb-panel-value">{formatArea(tier.distanceKm)}</span>
         </div>
         <div className="lb-panel-row">
-          <span className="lb-panel-label">Hợp nhất từ</span>
-          <span className="lb-panel-value">{tier.mergedFrom}</span>
+          <span className="lb-panel-label">Khu vực</span>
+          <span className="lb-panel-value">{tier.region}</span>
         </div>
 
         <div className="lb-panel-divider" />
