@@ -130,12 +130,13 @@
 
 /*  Nút mở lại cài đặt cookie (floating, sau khi đã có lựa chọn)  */
 .cc-reopen-btn {
+  display: none !important; /* tạm ẩn theo yêu cầu */
   position: fixed; bottom: 24px; left: 24px;
   width: 44px; height: 44px;
   background: var(--forest, #0d3330);
   border: 0.5px solid var(--border-gold, rgba(74,158,63,0.3));
   color: var(--gold, #4a9e3f);
-  display: flex; align-items: center; justify-content: center;
+  align-items: center; justify-content: center;
   cursor: pointer; z-index: 700;
   opacity: 0; transform: translateY(12px) scale(0.9);
   pointer-events: none;
