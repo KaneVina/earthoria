@@ -1749,9 +1749,6 @@ export default function Checkout() {
   const [shipErr, setShipErr] = useState({});
   const { provinces, loading: provincesLoading } = useProvinces();
   const { wards, loading: wardsLoading } = useWards(ship.provinceCode);
-  const { wards: newAddrWards, loading: newAddrWardsLoading } = useWards(
-    newAddrForm.provinceCode,
-  );
   /*  payment  */
   const [method, setMethod] = useState("");
   const [card, setCard] = useState({
@@ -1800,12 +1797,26 @@ export default function Checkout() {
     wardName: "",
     isDefault: false,
   });
+  // Ward list cho form địa chỉ mới — phải khai báo SAU newAddrForm vì phụ thuộc
+  // vào newAddrForm.provinceCode (đặt trước sẽ lỗi "Cannot access before initialization").
+  const { wards: newAddrWards, loading: newAddrWardsLoading } = useWards(
+    newAddrForm.provinceCode,
+  );
   const [savingAddr, setSavingAddr] = useState(false);
   const [deliveryCoords, setDeliveryCoords] = useState({
     lat: null,
     lng: null,
   });
   const [loyaltyProfile, setLoyaltyProfile] = useState(null);
+  // shipCalc phải khai báo TRƯỚC applyAddress vì applyAddress (và các hàm bên
+  // dưới) đọc/ghi setShipCalc — khai báo sau sẽ gặp lỗi hoisting y hệt lỗi
+  // newAddrForm phía trên nếu React Compiler tối ưu hoá thứ tự gọi hàm.
+  const [shipCalc, setShipCalc] = useState({
+    km: null,
+    fee: 30_000,
+    free: false,
+    loading: false,
+  });
   /*  scroll helper  */
   const topRef = useRef(null);
   const scrollTop = () =>
@@ -2057,12 +2068,6 @@ export default function Checkout() {
     return Math.min(d, subtotal);
   })();
   const tierDiscount = computeTierDiscount(loyaltyProfile?.tier, subtotal);
-  const [shipCalc, setShipCalc] = useState({
-    km: null,
-    fee: 30_000,
-    free: false,
-    loading: false,
-  });
   const [showPriceModal, setShowPriceModal] = useState(false);
 
   const afterDiscount = subtotal - discount - tierDiscount;
