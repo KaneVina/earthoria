@@ -1089,7 +1089,10 @@ export default function ParentDashboard() {
                     <input
                       type="time"
                       value={settings.allowStart}
-                      onChange={(e) => updateSettings({ allowStart: e.target.value })}
+                      onChange={(e) => {
+                        if (!e.target.value) return;
+                        updateSettings({ allowStart: e.target.value });
+                      }}
                     />
                   </div>
                   <ChevronRight size={14} className="pkd-time-arrow" />
@@ -1098,7 +1101,10 @@ export default function ParentDashboard() {
                     <input
                       type="time"
                       value={settings.allowEnd}
-                      onChange={(e) => updateSettings({ allowEnd: e.target.value })}
+                      onChange={(e) => {
+                        if (!e.target.value) return;
+                        updateSettings({ allowEnd: e.target.value });
+                      }}
                     />
                   </div>
                 </div>
