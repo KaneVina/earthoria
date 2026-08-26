@@ -34,7 +34,6 @@ const TIERS_FALLBACK = [
     roman: "I",
     code: "QUANG_NGAI",
     name: "Quảng Ngãi",
-    mergedFrom: "Quảng Ngãi + Kon Tum",
     areaKm2: 14832.6,
     minSpend: 0,
     discountPercent: 0,
@@ -49,7 +48,6 @@ const TIERS_FALLBACK = [
     roman: "II",
     code: "NGHE_AN",
     name: "Nghệ An",
-    mergedFrom: "Giữ nguyên địa giới",
     areaKm2: 16486.49,
     minSpend: 3000000,
     discountPercent: 3,
@@ -64,7 +62,6 @@ const TIERS_FALLBACK = [
     roman: "III",
     code: "DAK_LAK",
     name: "Đắk Lắk",
-    mergedFrom: "Đắk Lắk + Phú Yên",
     areaKm2: 18096.4,
     minSpend: 7000000,
     discountPercent: 5,
@@ -79,7 +76,6 @@ const TIERS_FALLBACK = [
     roman: "IV",
     code: "GIA_LAI",
     name: "Gia Lai",
-    mergedFrom: "Gia Lai + Bình Định",
     areaKm2: 21576.5,
     minSpend: 15000000,
     discountPercent: 8,
@@ -94,7 +90,6 @@ const TIERS_FALLBACK = [
     roman: "V",
     code: "LAM_DONG",
     name: "Lâm Đồng",
-    mergedFrom: "Đắk Nông + Lâm Đồng + Bình Thuận",
     areaKm2: 24233.1,
     minSpend: 30000000,
     discountPercent: 12,
@@ -248,7 +243,7 @@ export default function LoyaltyJourney() {
           </h1>
 
           <p className="lj-hero-sub">
-            Năm hạng thành viên, năm vùng đất Việt Nam sau sáp nhập — mỗi đơn
+            Năm hạng thành viên, năm vùng đất trên bản đồ Việt Nam — mỗi đơn
             hàng bạn hoàn tất là một chặng đường mới, mở rộng thêm bản đồ
             hành trình cùng Earthoria.
           </p>
@@ -356,8 +351,8 @@ export default function LoyaltyJourney() {
             </h2>
             <p className="lj-section-sub">
               Từ điểm khởi hành đến đỉnh cao — mỗi hạng là một vùng đất thật
-              trên bản đồ Việt Nam sau sáp nhập, được kể lại thành hành trình
-              thành viên của riêng bạn.
+              trên bản đồ Việt Nam, được kể lại thành hành trình thành viên
+              của riêng bạn.
             </p>
           </div>
 
@@ -549,29 +544,23 @@ function SectionSeam({ variant }) {
       absolute co giãn top:0/bottom:0, còn SVG bên trong chỉ cần lấp đầy
       100%/100% của div (kích thước cha lúc này đã là số cụ thể, SVG co giãn
       100% hoàn toàn đáng tin cậy).
-   2) Đổi từ 1 đường nét đứt sang bố cục "đường xe chạy": 2 đường liền nét
-      2 bên (viền đường) + 1 đường nét đứt ở giữa (vạch phân làn) — cả 3 đều
-      chạy song song theo cùng 1 công thức S-curve (chỉ lệch trục x hằng số),
-      viewBox theo % chiều cao (không phải px) nên luôn khớp đúng tâm seal
-      như bản trước, chỉ đổi hình thức hiển thị. */
+   2) Đổi cách vẽ "đường" cho mượt hơn: bản 3-nét-kẻ trước dễ nhìn thành 3
+      đường ngoằn ngoèo rời rạc ở kích thước nhỏ. Giờ đổi thành 1 dải ruy
+      băng được TÔ (fill) rất mờ — thân đường, như bóng đổ nhẹ trên bản đồ
+      — cộng 1 vạch đứt nét sắc nét ở giữa (tâm vạch = tâm dải, cũng là tâm
+      seal). Dải ruy băng là 1 path KÍN (đi xuống theo viền trái, vòng qua
+      viền phải, đi ngược lên) nên khi lặp theo chiều dọc, biên trên/dưới
+      của các tile khớp khít nhau — không có đường viền dư ở chỗ nối. */
 function TrackCurve({ color, opacity = 0.55, fade }) {
   const fadeClass = fade ? ` lj-track-curve-fade-${fade}` : "";
   return (
     <div className={`lj-track-curve${fadeClass}`} aria-hidden="true">
       <svg viewBox="0 0 60 100" preserveAspectRatio="none">
         <path
-          d="M24 0C38 12.5,38 37.5,24 50C10 62.5,10 87.5,24 100"
-          fill="none"
-          stroke={color}
-          strokeWidth="1"
-          opacity={opacity * 0.5}
-        />
-        <path
-          d="M36 0C50 12.5,50 37.5,36 50C22 62.5,22 87.5,36 100"
-          fill="none"
-          stroke={color}
-          strokeWidth="1"
-          opacity={opacity * 0.5}
+          d="M23 0C37 12.5,37 37.5,23 50C9 62.5,9 87.5,23 100L37 100C23 87.5,23 62.5,37 50C51 37.5,51 12.5,37 0Z"
+          fill={color}
+          stroke="none"
+          opacity={opacity * 0.22}
         />
         <path
           d="M30 0C44 12.5,44 37.5,30 50C16 62.5,16 87.5,30 100"
@@ -608,7 +597,7 @@ function RankStop({ tier, index, loyaltyProfile }) {
   const areaValue = useCountUp(tier.areaKm2, active);
   const side = index % 2 === 0 ? "left" : "right";
 
-  const barPercent = Math.max(
+  const relativeSizePercent = Math.max(
     6,
     ((tier.areaKm2 - AREA_MIN) / (AREA_MAX - AREA_MIN || 1)) * 100,
   );
@@ -617,6 +606,23 @@ function RankStop({ tier, index, loyaltyProfile }) {
   const isCurrent = loyaltyProfile && loyaltyProfile.tier.code === tier.code;
   const isUnlocked = loyaltyProfile && currentRank >= tier.rank && !isCurrent;
   const isLocked = loyaltyProfile && currentRank < tier.rank;
+
+  /* % đã "đi qua" vùng này — dựa trên chi tiêu thật, không phải % diện
+     tích so với hạng khác nữa. Đã qua hẳn (isUnlocked) → 100%, tức đi
+     trọn vẹn cả vùng rồi mới sang hạng mới. Chưa tới (isLocked) → 0%,
+     chưa đặt chân tới. Đang ở đây (isCurrent) → đúng % tiến độ chi tiêu
+     trong chính hạng này. Khách chưa đăng nhập (không có loyaltyProfile)
+     → fallback về % diện tích tương đối như bản cũ, vẫn có gì đó để xem. */
+  let travelPercent = relativeSizePercent;
+  if (isUnlocked) {
+    travelPercent = 100;
+  } else if (isLocked) {
+    travelPercent = 0;
+  } else if (isCurrent) {
+    travelPercent = loyaltyProfile.isMaxTier
+      ? 100
+      : Math.min(100, Math.max(0, loyaltyProfile.progressPercent));
+  }
 
   return (
     <div
@@ -673,10 +679,6 @@ function RankStop({ tier, index, loyaltyProfile }) {
 
         <h3 className="lj-card-name">{tier.name}</h3>
         <p className="lj-card-tagline">{tier.tagline}</p>
-        <p className="lj-card-merged">
-          <MapPin size={12} />
-          Hợp nhất từ {tier.mergedFrom}
-        </p>
 
         <div className="lj-card-divider">
           <span />
@@ -688,9 +690,28 @@ function RankStop({ tier, index, loyaltyProfile }) {
           <div className="lj-card-area-track">
             <div
               className="lj-card-area-fill"
-              style={{ width: active ? `${barPercent}%` : "0%" }}
+              style={{ width: active ? `${travelPercent}%` : "0%" }}
             />
           </div>
+          {isUnlocked && (
+            <p className="lj-card-area-caption">
+              <CheckCircle2 size={13} />
+              Bạn đã đi trọn vẹn vùng này
+            </p>
+          )}
+          {isCurrent && loyaltyProfile.isMaxTier && (
+            <p className="lj-card-area-caption is-max">
+              <CheckCircle2 size={13} />
+              Hạng cao nhất — cảm ơn bạn đã đồng hành cùng Earthoria!
+            </p>
+          )}
+          {isCurrent && !loyaltyProfile.isMaxTier && (
+            <p className="lj-card-area-caption">
+              Chi thêm <strong>{formatPrice(loyaltyProfile.amountToNext)}</strong>{" "}
+              để đi hết vùng này, sang{" "}
+              <strong>{loyaltyProfile.nextTier?.name}</strong>
+            </p>
+          )}
         </div>
 
         <ul className="lj-card-benefits">
@@ -728,30 +749,6 @@ function RankStop({ tier, index, loyaltyProfile }) {
             <span>Mặc định ngay khi bạn tạo tài khoản Earthoria</span>
           )}
         </div>
-
-        {isCurrent && loyaltyProfile && (
-          <div className="lj-card-progress">
-            {loyaltyProfile.isMaxTier ? (
-              <p className="lj-card-progress-max">
-                <CheckCircle2 size={13} />
-                Hạng cao nhất — cảm ơn bạn đã đồng hành cùng Earthoria!
-              </p>
-            ) : (
-              <>
-                <div className="lj-card-progress-track">
-                  <div
-                    className="lj-card-progress-fill"
-                    style={{ width: `${loyaltyProfile.progressPercent}%` }}
-                  />
-                </div>
-                <p className="lj-card-progress-caption">
-                  Chi thêm <strong>{formatPrice(loyaltyProfile.amountToNext)}</strong>{" "}
-                  để lên <strong>{loyaltyProfile.nextTier?.name}</strong>
-                </p>
-              </>
-            )}
-          </div>
-        )}
       </article>
     </div>
   );

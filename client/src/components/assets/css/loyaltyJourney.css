@@ -8,7 +8,15 @@
   --lj-shadow-lg: 0 28px 64px rgba(13, 43, 30, 0.14);
   --lj-gold-true: #d4a843;
   --lj-gold-true-soft: rgba(212, 168, 67, 0.16);
+  /* Tông riêng cho HỆ THỐNG ĐƯỜNG ĐI (track-curve + seam-line) — trầm và
+     ít bão hoà hơn hẳn --lj-gold-true. Dùng thẳng màu vàng chói của nút/
+     badge cho 1 đường trang trí kéo dài suốt trang rất dễ bị "phèn" trên
+     nền cream/ivory, nên tách riêng token này để chỉnh độc lập. */
   --lj-route-gold: #b8a172;
+
+  /* Nền theo từng "trạm" của hành trình, tách khỏi token global
+     (--ivory/--cream/--white/--border) để dark-mode chỉ cần đổi lại
+     đúng 1 chỗ thay vì override rải rác trên từng class như bản cũ. */
   --lj-bg-a: var(--ivory); /* Stats + Steps — cùng một vùng sáng */
   --lj-bg-b: var(--cream); /* Journey */
   --lj-surface: var(--white); /* card, step-card, passport, divider */
@@ -510,22 +518,22 @@ body.dark-mode {
   overflow: hidden;
 }
 .lj-seam-line {
-  /* Cùng "họ" đường với .lj-track-curve trong Journey — cũng là "đường xe
-     chạy" (2 viền liền nét + 1 vạch giữa đứt nét chạy song song theo cùng
-     công thức S-curve, chỉ lệch trục x hằng số), cùng tông
-     var(--lj-route-gold) (#b8a172, phải viết cứng vì data-URI không đọc
-     được biến CSS). Thu nhỏ chu kỳ (140px) cho vừa dải nối ngắn. Vẫn dùng
-     kỹ thuật nền lặp lại (thay vì SVG ghim theo phần tử như track-curve)
-     vì ở đây không có seal nào cần đường đi xuyên qua — chỉ cần liền mạch
-     giữa 2 section. Độ mờ đã tính sẵn trong từng path (viền nhạt hơn vạch
-     giữa) nên không cần opacity ở ngoài nữa. */
+  /* Cùng "họ" với .lj-track-curve trong Journey — 1 dải ruy băng tô mờ
+     (thân đường) + 1 vạch đứt nét sắc nét ở giữa, thay vì 3 nét kẻ mảnh
+     (dễ nhìn thành nhiều đường ngoằn ngoèo rời rạc ở kích thước nhỏ).
+     Cùng tông var(--lj-route-gold) (#b8a172, phải viết cứng vì data-URI
+     không đọc được biến CSS). Thu nhỏ chu kỳ (140px) cho vừa dải nối
+     ngắn. Vẫn dùng kỹ thuật nền lặp lại (thay vì SVG ghim theo phần tử
+     như track-curve) vì ở đây không có seal nào cần đường đi xuyên qua —
+     chỉ cần liền mạch giữa 2 section. Độ mờ đã tính sẵn trong từng path
+     nên không cần opacity ở ngoài nữa. */
   position: absolute;
   top: 0;
   bottom: 0;
   left: 50%;
   width: 30px;
   transform: translateX(-50%);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='140' viewBox='0 0 30 140'%3E%3Cpath d='M12 0C19 17.5,19 52.5,12 70C5 87.5,5 122.5,12 140' fill='none' stroke='%23b8a172' stroke-width='1' opacity='0.3'/%3E%3Cpath d='M18 0C25 17.5,25 52.5,18 70C11 87.5,11 122.5,18 140' fill='none' stroke='%23b8a172' stroke-width='1' opacity='0.3'/%3E%3Cpath d='M15 0C22 17.5,22 52.5,15 70C8 87.5,8 122.5,15 140' fill='none' stroke='%23b8a172' stroke-width='1.4' stroke-linecap='round' stroke-dasharray='4 5' opacity='0.45'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='140' viewBox='0 0 30 140'%3E%3Cpath d='M11 0C18 17.5,18 52.5,11 70C4 87.5,4 122.5,11 140L19 140C12 122.5,12 87.5,19 70C26 52.5,26 17.5,19 0Z' fill='%23b8a172' stroke='none' opacity='0.12'/%3E%3Cpath d='M15 0C22 17.5,22 52.5,15 70C8 87.5,8 122.5,15 140' fill='none' stroke='%23b8a172' stroke-width='1.4' stroke-linecap='round' stroke-dasharray='4 5' opacity='0.45'/%3E%3C/svg%3E");
   background-repeat: repeat-y;
   background-position: top center;
 }
@@ -715,6 +723,21 @@ body.dark-mode {
   flex-direction: column;
 }
 .lj-track-curve {
+  /* .lj-track-curve giờ là 1 DIV (không phải trực tiếp <svg>) — đây chính
+     là chỗ sửa lỗi đường bị đứt đoạn: SVG là "replaced element", nên
+     position:absolute + top:0/bottom:0 KHÔNG co giãn hết chiều cao cha
+     như div thường (chỉ hiện 1 đoạn ngắn theo kích thước nội tại rồi
+     dừng). Bọc trong div: chính div này absolute + top:0/bottom:0 để co
+     giãn đúng 100% chiều cao cha (hành vi ổn định, quen thuộc), còn SVG
+     bên trong chỉ cần lấp đầy 100%/100% của div đó — lúc này div đã có
+     kích thước cụ thể nên SVG co giãn theo hoàn toàn đáng tin cậy.
+
+     Rộng 60px (thay vì 44px trước đây) vì giờ path bên trong vẽ 3 đường
+     song song kiểu "đường xe chạy" (2 viền liền nét + 1 vạch giữa đứt
+     nét) nên cần thêm biên độ ngang — viewBox 0 0 60 100 trong JSX khớp
+     đúng số này. Màu do prop `color` của TrackCurve quyết định: mỗi hạng
+     1 màu riêng qua var(--tier-color), 2 đầu track dùng var(--lj-route-gold)
+     (tông trầm, xem :root) thay vì vàng chói của nút/badge. */
   position: absolute;
   top: 0;
   bottom: 0;
@@ -738,6 +761,11 @@ body.dark-mode {
   mask-image: linear-gradient(to bottom, black 0%, transparent);
 }
 .lj-track-cap {
+  /* Dùng CHUNG lưới 1fr/84px/1fr với .lj-row để cột giữa (nơi đặt icon)
+     luôn thẳng hàng với các seal — kể cả khi đổi bố cục ở mobile — thay
+     vì canh giữa bằng margin:auto như trước (dễ lệch khỏi rail khi rail
+     chuyển sang bố cục 1 cột). position:relative để làm điểm neo cho
+     .lj-track-curve bên trong (span đúng chiều cao đã padding của cap). */
   position: relative;
   display: grid;
   grid-template-columns: 1fr 84px 1fr;
@@ -988,20 +1016,8 @@ body.dark-mode {
   font-style: italic;
   font-size: 14.5px;
   color: var(--tier-color);
-  margin-bottom: 12px;
+  margin-bottom: 20px;
   line-height: 1.5;
-}
-.lj-card-merged {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--text-muted);
-  font-weight: 300;
-}
-.lj-card-merged svg {
-  color: var(--tier-color);
-  flex-shrink: 0;
 }
 
 .lj-card-divider {
@@ -1068,6 +1084,28 @@ body.dark-mode {
   background: var(--tier-color);
   transition: width 1.3s var(--lj-ease) 0.1s;
 }
+.lj-card-area-caption {
+  /* Gộp chung với thanh diện tích: vừa cho biết diện tích tượng trưng,
+     vừa cho biết cần chi thêm bao nhiêu — % lấp đầy ở .lj-card-area-fill
+     phía trên giờ chính là % đã "đi qua" vùng này theo chi tiêu thật (xem
+     travelPercent trong RankStop), không còn là 1 thanh riêng bên dưới
+     benefits/unlock như bản cũ nữa. */
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  font-weight: 300;
+}
+.lj-card-area-caption strong {
+  color: var(--forest);
+  font-weight: 600;
+}
+.lj-card-area-caption.is-max {
+  color: var(--tier-color);
+  font-weight: 500;
+}
 
 .lj-card-benefits {
   list-style: none;
@@ -1113,42 +1151,6 @@ body.dark-mode {
 .lj-card-unlock strong {
   color: var(--forest);
   font-weight: 600;
-}
-
-.lj-card-progress {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 0.5px dashed var(--border-gold);
-}
-.lj-card-progress-track {
-  height: 5px;
-  border-radius: 3px;
-  background: var(--pale);
-  overflow: hidden;
-  margin-bottom: 10px;
-}
-.lj-card-progress-fill {
-  height: 100%;
-  border-radius: 3px;
-  background: var(--tier-color);
-  transition: width 1s var(--lj-ease);
-}
-.lj-card-progress-caption {
-  font-size: 12.5px;
-  color: var(--text-muted);
-  font-weight: 300;
-}
-.lj-card-progress-caption strong {
-  color: var(--forest);
-  font-weight: 600;
-}
-.lj-card-progress-max {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 12.5px;
-  color: var(--tier-color);
-  font-weight: 500;
 }
 
 .lj-journey-note {
@@ -1294,12 +1296,9 @@ body.dark-mode {
 /* ═══════════════════ DARK MODE ═══════════════════
    Phần lớn nền/viền giờ tự đổi qua biến --lj-bg-a / --lj-bg-b / --lj-surface /
    --lj-surface-border / --lj-grid-line khai báo ở đầu file, nên khối dark-mode
-   chỉ còn 2 ngoại lệ thật sự khác biệt so với biến chung. */
+   chỉ còn 1 ngoại lệ thật sự khác biệt so với biến chung. */
 body.dark-mode .lj-passport-strip {
   border-color: rgba(255, 255, 255, 0.1);
-}
-body.dark-mode .lj-card-progress {
-  border-top-color: rgba(255, 255, 255, 0.14);
 }
 
 /* ═══════════════════ RESPONSIVE ═══════════════════ */

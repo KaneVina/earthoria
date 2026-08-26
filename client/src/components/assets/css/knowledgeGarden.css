@@ -141,6 +141,12 @@
   border-radius: var(--kid-radius-lg);
   box-shadow: var(--kid-shadow-sm);
   margin-bottom: 16px;
+  transition: transform var(--kid-t-fast), box-shadow var(--kid-t-fast), border-color var(--kid-t-fast);
+}
+.kg-current-card:hover {
+  transform: translatey(-2px);
+  box-shadow: var(--kid-shadow-md);
+  border-color: rgba(74, 158, 63, 0.3);
 }
 .kg-current-visual {
   flex-shrink: 0;
@@ -189,9 +195,22 @@
   overflow: hidden;
 }
 .kg-progress-fill {
+  position: relative;
   height: 100%;
   border-radius: var(--kid-radius-pill);
   background: linear-gradient(90deg, var(--kid-green) 0%, var(--kid-teal) 100%);
+  overflow: hidden;
+}
+.kg-progress-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  animation: kg-progress-shine 2.2s ease-in-out infinite;
+}
+@keyframes kg-progress-shine {
+  0% { transform: translatex(-100%); }
+  100% { transform: translatex(100%); }
 }
 
 .kg-cta-btn {
@@ -298,6 +317,7 @@
   z-index: 1;
 }
 .kg-garden-tree-btn {
+  position: relative;
   border: none;
   background: transparent;
   padding: 4px;
@@ -309,6 +329,9 @@
   transform: translateY(-3px) scale(1.05);
   background: rgba(255, 255, 255, 0.5);
 }
+.kg-garden-tree-btn:active {
+  transform: scale(0.92);
+}
 .kg-garden-tree-btn:focus-visible {
   outline: 2px solid var(--kid-blue);
   outline-offset: 2px;
@@ -316,6 +339,20 @@
 .kg-garden-tree-btn.is-active {
   background: rgba(255, 255, 255, 0.55);
   box-shadow: 0 0 0 2px var(--kid-green) inset;
+}
+.kg-garden-tree-btn.is-active::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1.5px dashed var(--kid-green);
+  opacity: 0.6;
+  animation: kg-tree-ring-spin 7s linear infinite;
+  pointer-events: none;
+}
+@keyframes kg-tree-ring-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .kg-forest-note {
@@ -777,11 +814,14 @@
   .kg-garden-deco--firefly,
   .kg-skeleton-line,
   .kg-skeleton-chip,
-  .kg-skeleton-card {
+  .kg-skeleton-card,
+  .kg-progress-fill::after,
+  .kg-garden-tree-btn.is-active::after {
     animation: none !important;
   }
   .kg-cta-btn,
-  .kg-garden-tree-btn {
+  .kg-garden-tree-btn,
+  .kg-current-card {
     transition: none !important;
   }
 }

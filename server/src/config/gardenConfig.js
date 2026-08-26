@@ -6,15 +6,15 @@ const XP_CONFIG = {
 };
 
 const LEVEL_CONFIG = [
-  { level: 1, name: "Hạt Mầm", minXP: 0, description: "Hạt giống mới gieo, đang chờ điều kỳ diệu bắt đầu." },
-  { level: 2, name: "Mầm Non", minXP: 150, description: "Một mầm xanh bé xíu đã nhú lên khỏi mặt đất." },
-  { level: 3, name: "Cây Con", minXP: 450, description: "Vài chiếc lá đầu tiên xoè ra đón nắng." },
-  { level: 4, name: "Cây Phát Triển", minXP: 1000, description: "Thân cây cao dần, tán lá rậm rạp hơn mỗi ngày." },
-  { level: 5, name: "Cây Trưởng Thành", minXP: 2000, description: "Cây đã vững chãi, rễ bám sâu vào tri thức." },
-  { level: 6, name: "Cây Nở Hoa", minXP: 3600, description: "Những bông hoa đầu tiên bung nở rực rỡ." },
-  { level: 7, name: "Cây Ra Quả", minXP: 5800, description: "Công sức đọc sách đơm thành quả ngọt." },
-  { level: 8, name: "Cây Cổ Thụ", minXP: 8800, description: "Một cây cổ thụ vững chãi, toả bóng mát tri thức." },
-  { level: 9, name: "Rừng Tri Thức", minXP: 13000, description: "Không chỉ một cây nữa — cả một khu rừng đang chờ được gieo trồng." },
+  { level: 1, name: "Hạt Mầm Tri Thức", minXP: 0, description: "Hạt giống mới gieo, đang chờ điều kỳ diệu bắt đầu." },
+  { level: 2, name: "Mầm Non Tri Thức", minXP: 150, description: "Một mầm xanh bé xíu đã nhú lên khỏi mặt đất." },
+  { level: 3, name: "Cây Con Tri Thức", minXP: 450, description: "Vài chiếc lá đầu tiên xoè ra đón nắng." },
+  { level: 4, name: "Cây Tri Thức Phát Triển", minXP: 1000, description: "Thân cây cao dần, tán lá rậm rạp hơn mỗi ngày." },
+  { level: 5, name: "Cây Tri Thức Trưởng Thành", minXP: 2000, description: "Cây đã vững chãi, rễ bám sâu vào tri thức." },
+  { level: 6, name: "Cây Tri Thức Nở Hoa", minXP: 3600, description: "Những bông hoa đầu tiên bung nở rực rỡ." },
+  { level: 7, name: "Cây Tri Thức Ra Quả", minXP: 5800, description: "Công sức đọc sách đơm thành quả ngọt." },
+  { level: 8, name: "Cây Cổ Thụ Tri Thức", minXP: 8800, description: "Một cây cổ thụ vững chãi, toả bóng mát tri thức." },
+  { level: 9, name: "Khu Rừng Tri Thức", minXP: 13000, description: "Không chỉ một cây nữa — cả một khu rừng đang chờ được gieo trồng." },
 ];
 const MAX_LEVEL = LEVEL_CONFIG[LEVEL_CONFIG.length - 1].level;
 
