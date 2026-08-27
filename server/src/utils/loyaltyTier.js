@@ -1,17 +1,13 @@
 const prisma = require("../config/db");
 const SUCCESSFUL_ORDER_STATUSES = ["CONFIRMED", "SHIPPING", "DELIVERED", "COMPLETED"];
 const DEFAULT_FREE_SHIP_THRESHOLD = 300_000;
-/* Hành trình 5 chặng bay Earthoria — mỗi hạng là 1 tấm vé đến 1 công trình
-   biểu tượng của Việt Nam, đi từ Bắc vào Nam. `distanceKm` là quãng đường
-   bay tượng trưng tính từ Hà Nội (điểm khởi hành), dùng để vẽ thanh tiến
-   trình trên mỗi vé — không phải số liệu hàng không chính xác tuyệt đối. */
 const LOYALTY_TIERS = [
   {
     rank: 1,
     roman: "I",
     code: "HANOI",
     name: "Chùa Một Cột",
-    emoji: "🪷",
+    image: "/loyalty/chua-mot-cot.png",
     city: "Hà Nội",
     cityCode: "HAN",
     region: "Miền Bắc",
@@ -30,7 +26,7 @@ const LOYALTY_TIERS = [
     roman: "II",
     code: "HUE",
     name: "Cố Đô Huế",
-    emoji: "🏯",
+    image: "/loyalty/kinh-thanh-hue.png",
     city: "Huế",
     cityCode: "HUI",
     region: "Bắc Trung Bộ",
@@ -49,7 +45,7 @@ const LOYALTY_TIERS = [
     roman: "III",
     code: "DANANG",
     name: "Cầu Rồng",
-    emoji: "🐉",
+    image: "/loyalty/cau-rong.png",
     city: "Đà Nẵng",
     cityCode: "DAD",
     region: "Trung Bộ",
@@ -68,7 +64,7 @@ const LOYALTY_TIERS = [
     roman: "IV",
     code: "NHATRANG",
     name: "Tháp Bà Ponagar",
-    emoji: "🏛️",
+    image: "/loyalty/thap-ba-ponagar.png",
     city: "Nha Trang",
     cityCode: "CXR",
     region: "Nam Trung Bộ",
@@ -87,7 +83,7 @@ const LOYALTY_TIERS = [
     roman: "V",
     code: "HOCHIMINH",
     name: "Landmark 81",
-    emoji: "🏙️",
+    image: "/loyalty/landmark-81.png",
     city: "TP. Hồ Chí Minh",
     cityCode: "SGN",
     region: "Miền Nam",
