@@ -350,7 +350,7 @@ body.dark-mode {
 .lj-passport-wrap {
   position: relative;
   z-index: 5;
-  max-width: 900px;
+  max-width: 980px;
   margin: -56px auto 0;
   padding: 0 40px;
 }
@@ -360,6 +360,105 @@ body.dark-mode {
   border-radius: var(--lj-radius-lg);
   box-shadow: var(--lj-shadow-lg);
   padding: 26px 32px;
+}
+.lj-passport-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+}
+.lj-passport-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+/* ═══════════════ BẢN ĐỒ 34 TỈNH THÀNH (bên phải hộ chiếu) ═══════════════
+   Silhouette Việt Nam cách điệu chia thành 5 dải theo đúng 5 vùng/hạng —
+   mỗi dải mặc định tô màu nhạt (tier.colorSoft), sáng hẳn lên đúng màu
+   tier.color ngay khi vùng đó được mở khoá. 34 chấm tỉnh nằm chồng lên
+   trên, đổi từ chấm xám rỗng sang chấm đặc màu tier khi vùng active. */
+.lj-passport-map {
+  flex: 0 0 132px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-left: 28px;
+  border-left: 0.5px solid var(--border);
+}
+.lj-passport-map-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  white-space: nowrap;
+}
+.lj-vnmap-svg {
+  width: 104px;
+  height: auto;
+  aspect-ratio: 200 / 520;
+  overflow: visible;
+}
+.lj-vnmap-band {
+  transition: fill 0.7s ease;
+}
+.lj-vnmap-dot {
+  transition: r 0.4s ease, fill 0.5s ease;
+}
+.lj-vnmap-dot.is-active {
+  filter: drop-shadow(0 0 2px rgba(13, 43, 30, 0.25));
+}
+.lj-passport-map-legend {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+.lj-vnmap-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9.5px;
+  color: var(--text-muted);
+  opacity: 0.4;
+  transition: opacity 0.4s ease, color 0.4s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lj-vnmap-legend-item.is-active {
+  opacity: 1;
+  color: var(--forest);
+  font-weight: 500;
+}
+.lj-vnmap-legend-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+@media (max-width: 820px) {
+  .lj-passport-body {
+    flex-direction: column;
+    align-items: center;
+  }
+  .lj-passport-info {
+    width: 100%;
+  }
+  .lj-passport-map {
+    border-left: none;
+    border-top: 0.5px solid var(--border);
+    padding-left: 0;
+    padding-top: 20px;
+    margin-top: 4px;
+    width: 100%;
+  }
+  .lj-vnmap-svg {
+    width: 140px;
+  }
 }
 .lj-passport-guest {
   display: flex;
@@ -484,6 +583,99 @@ body.dark-mode {
 .lj-passport-locate:hover {
   color: var(--lj-gold-true);
   border-color: var(--lj-gold-true);
+}
+
+/* Dãy con dấu hộ chiếu — cố tình dùng lại đúng "DNA" thị giác của
+   .lj-seal bên timeline (vòng tròn kép, số La Mã Playfair, animation
+   ljSpin) nhưng thu nhỏ, để 2 khu vực trông như cùng 1 hệ thống. */
+.lj-passport-stamps-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0.85;
+  margin-bottom: 12px;
+}
+.lj-passport-stamps {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.lj-stamp {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Playfair Display", serif;
+  font-size: 15px;
+  font-weight: 600;
+  background: var(--stamp-color-soft, rgba(212, 168, 67, 0.12));
+  transform: rotate(var(--stamp-rotate, 0deg));
+  transition: transform 0.35s var(--lj-ease), opacity 0.35s var(--lj-ease);
+  cursor: default;
+}
+.lj-stamp-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--stamp-color, var(--gold));
+}
+.lj-stamp-dash {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 0.5px dashed var(--stamp-color, var(--gold));
+  opacity: 0.45;
+  animation: ljSpin 24s linear infinite;
+}
+.lj-stamp-roman {
+  position: relative;
+  z-index: 1;
+  color: var(--stamp-color, var(--gold));
+}
+.lj-stamp-check {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--stamp-color, var(--gold));
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+.lj-stamp.is-current {
+  transform: rotate(0deg) scale(1.12);
+}
+.lj-stamp.is-current .lj-stamp-ring {
+  border-width: 2px;
+}
+.lj-stamp.is-locked {
+  background: var(--pale);
+  opacity: 0.45;
+}
+.lj-stamp.is-locked .lj-stamp-ring {
+  border-style: dashed;
+  border-color: var(--text-muted);
+}
+.lj-stamp.is-locked .lj-stamp-dash {
+  display: none;
+}
+.lj-stamp.is-locked .lj-stamp-roman {
+  color: var(--text-muted);
 }
 
 .lj-skel {
@@ -995,6 +1187,18 @@ body.dark-mode {
   border-color: var(--tier-color);
   box-shadow: 0 0 0 3px var(--tier-color-soft), var(--lj-shadow-lg);
 }
+/* Dải màu hãng bay trên đầu vé — chi tiết nhận diện kiểu boarding pass
+   thật, chạy suốt cả phần coupon chính lẫn cuống vé. */
+.lj-ticket::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--tier-color), var(--tier-color) 60%, transparent);
+  z-index: 3;
+}
 .lj-card-sheen {
   position: absolute;
   top: -20%;
@@ -1055,7 +1259,7 @@ body.dark-mode {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 28px;
 }
 .lj-ticket-point {
   display: flex;
@@ -1083,11 +1287,28 @@ body.dark-mode {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.lj-ticket-time {
+  font-family: "Courier New", ui-monospace, monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--tier-color);
+  letter-spacing: 0.03em;
+  margin-top: 2px;
+}
 .lj-ticket-path {
   flex: 1 1 auto;
   position: relative;
   height: 14px;
   min-width: 36px;
+}
+.lj-ticket-path-duration {
+  position: absolute;
+  top: 17px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 8.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
 }
 .lj-ticket-path-line {
   position: absolute;
@@ -1198,9 +1419,11 @@ body.dark-mode {
   letter-spacing: -0.01em;
   margin-bottom: 8px;
 }
-.lj-card-name-emoji {
-  font-size: 0.82em;
-  line-height: 1;
+ .lj-card-name-img {
+  width: 1.05em;
+  height: 1.05em;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 .lj-card-tagline {
   font-family: "Playfair Display", serif;
@@ -1393,24 +1616,18 @@ body.dark-mode {
   gap: 14px;
   padding: 20px 12px;
   background: var(--tier-color-soft, rgba(74, 158, 63, 0.06));
-  border-left: 1.5px dashed var(--tier-color);
-}
-.lj-ticket-stub::before,
-.lj-ticket-stub::after {
-  content: "";
-  position: absolute;
-  left: -9px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--lj-bg-b);
-  z-index: 3;
-}
-.lj-ticket-stub::before {
-  top: -9px;
-}
-.lj-ticket-stub::after {
-  bottom: -9px;
+  border-left: 0.5px solid var(--tier-color);
+  /* Đường đục lỗ liền mạch kiểu vé xé thật — 1 hàng bán nguyệt lặp lại
+     dọc theo mép trái, cắt xuyên vào chính nền của cuống vé để lộ ra
+     nền trắng của .lj-ticket phía sau. Dùng mask thay vì ::before/::after
+     2 vòng tròn to như bản cũ nên không phụ thuộc phải khớp đúng màu nền
+     trang phía sau (an toàn cả ở dark mode). */
+  -webkit-mask-image: radial-gradient(circle at 0 7px, transparent 7px, #000 7.5px);
+  -webkit-mask-size: 100% 16px;
+  -webkit-mask-repeat: repeat-y;
+  mask-image: radial-gradient(circle at 0 7px, transparent 7px, #000 7.5px);
+  mask-size: 100% 16px;
+  mask-repeat: repeat-y;
 }
 .lj-ticket-stub-top {
   display: flex;
@@ -1451,6 +1668,13 @@ body.dark-mode {
   font-size: 9.5px;
   color: var(--text-muted);
   font-weight: 300;
+}
+.lj-ticket-pnr {
+  font-family: "Courier New", ui-monospace, monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.14em;
+  color: var(--text-muted);
+  opacity: 0.85;
 }
 .lj-ticket-barcode {
   width: 72px;

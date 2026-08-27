@@ -1,9 +1,3 @@
-/* ═══════════════════════════════════════════════
-   COOKIE CONSENT — EARTHORIA
-   Tách biệt: essential (luôn bật) vs. các nhóm khác
-   ═══════════════════════════════════════════════ */
-
-/*  Overlay nhẹ khi mở modal tùy chỉnh  */
 .cc-modal-overlay {
   position: fixed; inset: 0;
   background: rgba(10, 14, 12, 0.55);
@@ -15,10 +9,6 @@
 }
 .cc-modal-overlay.show { opacity: 1; pointer-events: all; }
 
-/*  Backdrop mờ phía sau banner cookie đầu tiên
-   Nhẹ hơn overlay của modal (không blur mạnh, không chặn tương tác toàn
-   trang) — chỉ đủ để mắt người dùng dồn về banner, giống cảm giác
-   "ưu tiên nhẹ nhàng" của Stripe/Notion thay vì banner nổi trơ trên nền. */
 .cc-banner-backdrop {
   position: fixed; inset: 0;
   background: rgba(10, 14, 12, 0.28);
@@ -300,9 +290,6 @@ body.dark-mode .cc-toggle-track { background: #2a3530; border-color: rgba(255,25
 
 /* ═══════════════════════════════════════════════
    RESPONSIVE — MOBILE
-   Modal chuyển thành bottom-sheet "kiểu app", banner gọn & dễ bấm,
-   tôn trọng vùng an toàn (notch / thanh home-indicator), animation
-   mượt bằng cubic-bezier giống hệt bản desktop.
    ═══════════════════════════════════════════════ */
 
 /* Tiện ích: JS có thể gắn class này lên <body> khi banner/modal đang mở

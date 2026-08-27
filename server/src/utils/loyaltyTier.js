@@ -29,7 +29,7 @@ const LOYALTY_TIERS = [
     rank: 2,
     roman: "II",
     code: "HUE",
-    name: "Cố Đô Huế – Đại Nội",
+    name: "Cố Đô Huế",
     emoji: "🏯",
     city: "Huế",
     cityCode: "HUI",

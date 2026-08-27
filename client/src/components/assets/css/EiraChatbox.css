@@ -1,10 +1,3 @@
-/* ══════════════════════════════════════════════════
-   BẢNG BIẾN MÀU THƯƠNG HIỆU (xanh lá) — đăng ký @property
-   để mọi biến này có thể chuyển màu mượt (transition) khi
-   trang /e-kid override chúng bằng bảng màu theo giờ thực.
-   Giá trị initial-value dưới đây LUÔN LÀ MÀU XANH LÁ GỐC —
-   đây là màu mặc định cho toàn hệ thống.
-   ══════════════════════════════════════════════════ */
 @property --eg {
   syntax: "<color>";
   inherits: true;
@@ -82,10 +75,6 @@
 }
 
 #eira-root {
-  /* Bảng màu thương hiệu — MẶC ĐỊNH LUÔN LÀ XANH LÁ cho toàn hệ thống.
-     Trang /e-kid override toàn bộ các biến này qua inline style bằng
-     bảng màu tính theo giờ thực (xem useKidTimePalette trong .jsx);
-     mọi trang khác không đụng tới nên giữ nguyên 100% màu xanh lá gốc. */
   --eg: #3d9e32;
   --egl: #52c244;
   --egd: #1a5c3d;
@@ -100,7 +89,6 @@
   --gh2: #0d3330;
   --gh3: #1a5c52;
   --gh4: #1f5948;
-  /* Glow của linh vật/đốm sáng luôn ăn theo egl, không cần biến riêng */
   --time-glow: var(--egl);
 
   /* Cho phép các biến trên chuyển màu mượt khi bảng màu /e-kid đổi mỗi phút */
@@ -239,8 +227,7 @@
 }
 
 /* ══════════════════════════════════════════════════
-   MASCOT — trạng thái "chào mừng": nút tròn phình to
-   thành linh vật, có nút X riêng để ẩn tạm 5 phút
+   MASCOT
    ══════════════════════════════════════════════════ */
 #eira-fab.mascot {
   width: 188px;
@@ -460,7 +447,7 @@
 }
 
 /* ══════════════════════════════════════════════════
-   BADGE — số tin nhắn chưa đọc trên nút FAB
+   BADGE
    ══════════════════════════════════════════════════ */
 .eira-badge {
   position: absolute;
@@ -610,15 +597,7 @@
 }
 
 /* ══════════════════════════════════════════════════
-   CHAT WINDOW — MESSENGER STYLE
-
-   KEY: Dùng height cố định, KHÔNG dùng max-height vượt quá màn hình
-   Giống Messenger: window nằm hoàn toàn trong viewport
-
-   Desktop: bottom = FAB(24) + FAB-height(52) + gap(10) = 86px
-            height = 500px cố định
-   Mobile : bottom = FAB-bottom + FAB-height + gap
-            height = calc(100dvh - FAB-zone - header-zone)
+   CHAT WINDOW
    ══════════════════════════════════════════════════ */
 #eira-win {
   position: fixed;
@@ -754,8 +733,6 @@
     0 4px 16px rgba(0, 0, 0, 0.26),
     0 0 0 4px color-mix(in srgb, var(--eg) 20%, transparent);
 }
-/* Lớp trong cùng chịu trách nhiệm bo tròn + cắt ảnh, tách riêng khỏi lớp ngoài
-   để dấu chấm online (.eira-av-online) không còn bị overflow:hidden cắt mất */
 .eira-avatar-inner {
   width: 100%;
   height: 100%;
@@ -941,7 +918,7 @@
 }
 
 /* ══════════════════════════════════════════════════
-   MESSAGES — scroll bên trong, không bao giờ overflow ra ngoài window
+   MESSAGES
    ══════════════════════════════════════════════════ */
 #eira-msgs {
   flex: 1; /* chiếm hết space còn lại */
