@@ -238,6 +238,7 @@ function defaultImageLayer(overrides = {}) {
     width: 160,
     height: 120,
     opacity: 100,
+    borderRadius: 0,
     locked: false,
     ...overrides,
   };
@@ -675,7 +676,7 @@ function LayerView({
                 ? "2px solid #4a9e3f"
                 : "2px solid transparent",
             outlineOffset: 4,
-            borderRadius: 10,
+            borderRadius: layer.borderRadius ?? 0,
             overflow: "hidden",
             cursor: readOnly ? "default" : empty ? "pointer" : "grab",
             touchAction: "none",
@@ -2005,9 +2006,9 @@ export default function BookBuilder() {
     multiImageInputRef.current?.click();
   };
   const handleMultiImageInputChange = (e) => {
-    const files = e.target.files;
+    const files = Array.from(e.target.files || []);
     e.target.value = "";
-    if (!files || !files.length) return;
+    if (!files.length) return;
     applyMultipleImageFiles(files);
   };
   const addShapeLayer = () => {
@@ -2146,19 +2147,14 @@ export default function BookBuilder() {
     }
   };
 
-  const handleImageFileChange = async (e) => {
-    const files = e.target.files;
+const handleImageFileChange = async (e) => {
+    const files = Array.from(e.target.files || []);
     e.target.value = "";
     const targetId = imageUploadTargetIdRef.current || selectedId;
     imageUploadTargetIdRef.current = null;
-    if (!files || !files.length || !targetId) return;
-    // Panel Định dạng chỉ có 1 layer đang chọn — dù người dùng chọn nhiều file ở đây,
-    // chỉ file đầu tiên áp vào layer hiện tại để tránh hành vi bất ngờ (thay ảnh layer khác).
+    if (!files.length || !targetId) return;
     applyImageFile(files[0], targetId);
   };
-  // Mở dialog chọn file cho MỘT layer cụ thể (click trực tiếp trên canvas / double-click để thay
-  // ảnh) — không phụ thuộc layer đó có đang được `selectedId` hay không, tránh trường hợp bấm
-  // nhanh 2 lần liên tiếp mà React chưa kịp cập nhật selectedId trước khi input mở ra.
   const openFilePickerForLayer = (layerId) => {
     imageUploadTargetIdRef.current = layerId;
     selectLayer(layerId);
@@ -3320,6 +3316,13 @@ export default function BookBuilder() {
             style={{ display: "none" }}
             onChange={handleMultiImageInputChange}
           />
+          <input
+            ref={imageFileInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={handleImageFileChange}
+          />
           <button
             className="bb-rail-btn"
             onClick={addShapeLayer}
@@ -4069,12 +4072,21 @@ export default function BookBuilder() {
                     <Upload size={16} style={{ marginBottom: 4 }} />
                     <div>Kéo ảnh vào đây hoặc bấm để chọn ảnh từ máy</div>
                   </div>
+                </div>
+                <div className="bb-field">
+                  <label>Bo góc ({selected.borderRadius ?? 0}px)</label>
                   <input
-                    ref={imageFileInputRef}
-                    type="file"
-                    accept="image/*"
-                    style={{ display: "none" }}
-                    onChange={handleImageFileChange}
+                    type="range"
+                    min={0}
+                    max={120}
+                    value={selected.borderRadius ?? 0}
+                    onFocus={beginEdit}
+                    onBlur={endEdit}
+                    onChange={(e) =>
+                      updateLayer(selected.id, {
+                        borderRadius: Number(e.target.value),
+                      })
+                    }
                   />
                 </div>
                 <div className="bb-field">
