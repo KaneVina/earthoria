@@ -207,7 +207,7 @@
   background: var(--forest-mid);
 }
 
-/* ═══════════ PASSPORT HERO ═══════════ */
+/*   PASSPORT HERO   */
 .pf-passport-zone {
   background: var(--forest);
   position: relative;
@@ -652,7 +652,7 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* ═══════════ BODY LAYOUT (sidebar + content, below the hero) ═══════════ */
+/*   BODY LAYOUT (sidebar + content, below the hero)   */
 .pf-body {
   display: flex;
   align-items: flex-start;
@@ -663,7 +663,7 @@
   padding: 0 100px;
 }
 
-/* ═══════════ SIDEBAR — "Danh Mục" nav, redesigned ═══════════
+/*   SIDEBAR — "Danh Mục" nav, redesigned
    A quiet ivory-line card floating on the forest background: rounded
    container, breathing room per item, and a soft pill indicator that
    glides beneath the active label (already computed in JS via
@@ -732,9 +732,6 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  /* Reset: đây là thẻ <nav>, có thể vô tình thừa kế padding/background từ
-     một rule global "nav{...}" (header nav của site) nếu selector đó khớp.
-     Khai báo tường minh để sidebar luôn độc lập với style nav header. */
   padding: 0;
   margin: 0;
   background: transparent;
@@ -852,8 +849,6 @@
   text-overflow: ellipsis;
 }
 
-/* Quiet divider + footer note beneath the nav list, gives the sidebar a
-   finished, "card" feel rather than stopping abruptly after 5 links. */
 .pf-sidebar::after {
   content: "EARTHORIA · MEMBER PASSPORT";
   display: block;
@@ -921,9 +916,6 @@
   scroll-margin-top: 104px;
 }
 
-/* Chuyển chương: nội dung mờ dần vào, các mục con trong lưới/danh sách
-   xuất hiện nối tiếp nhau (cascade) để cảm giác chuyển động có chiều sâu
-   thay vì bật ra một cục cứng nhắc. */
 @keyframes pfTabFadeIn {
   from {
     opacity: 0;
@@ -1056,7 +1048,7 @@
   border-color: var(--sage);
 }
 
-/* ═══════════ SECTION HEADER ═══════════ */
+/*   SECTION HEADER   */
 .pf-section-header {
   margin-bottom: 40px;
 }
@@ -1102,7 +1094,7 @@
   font-weight: 300;
 }
 
-/* ═══════════ FOOTER HELP STRIP ═══════════ */
+/*   FOOTER HELP STRIP   */
 .pf-help-strip {
   background: var(--parchment);
   border-top: 0.5px solid var(--border);
@@ -1160,7 +1152,7 @@
   gap: 14px;
 }
 
-/* ═══════════ EDITABLE FIELDS ═══════════ */
+/*   EDITABLE FIELDS   */
 .pf-fields-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1336,7 +1328,7 @@
   display: block;
 }
 
-/* ═══════════ ORNAMENT & SUBHEADER ═══════════ */
+/*   ORNAMENT & SUBHEADER   */
 .pf-ornament-sm {
   display: flex;
   align-items: center;
@@ -1397,13 +1389,99 @@
    gap: 16px;
 }
 
-/* ═══════════ LOYALTY (HẠNG THÀNH VIÊN) ═══════════ */
+/*   LOYALTY (HẠNG THÀNH VIÊN)   */
 .pf-loyalty-card {
   background: var(--white);
   border: 0.5px solid var(--border);
   border-radius: var(--pf-radius-lg);
   padding: 24px 26px;
   margin-bottom: 32px;
+}
+.pf-loyalty-card-split {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+.pf-loyalty-body {
+  flex: 3;
+  min-width: 0;
+}
+.pf-loyalty-preview {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding-left: 24px;
+  border-left: 0.5px solid var(--border);
+}
+.pf-loyalty-preview-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+.pf-loyalty-preview-img {
+  width: 100%;
+  max-width: 120px;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 14px rgba(13, 43, 30, 0.22));
+  transition: filter 0.25s ease;
+}
+.pf-loyalty-preview-img.is-locked {
+  filter: grayscale(1) opacity(0.5) drop-shadow(0 6px 10px rgba(13, 43, 30, 0.1));
+}
+.pf-loyalty-preview-name {
+  font-family: "playfair display", serif;
+  font-size: 13px;
+  color: var(--forest);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-align: center;
+}
+.pf-loyalty-preview-nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 0.5px solid var(--border);
+  background: var(--cream);
+  color: var(--forest);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.pf-loyalty-preview-nav:hover {
+  background: var(--pale);
+}
+.pf-loyalty-preview-prev {
+  transform: rotate(180deg);
+}
+.pf-loyalty-preview-prev:hover {
+  transform: rotate(180deg) translatex(2px);
+}
+.pf-loyalty-preview-next:hover {
+  transform: translatex(2px);
+}
+
+@media (max-width: 640px) {
+  .pf-loyalty-card-split {
+    flex-direction: column;
+  }
+  .pf-loyalty-preview {
+    border-left: none;
+    border-top: 0.5px solid var(--border);
+    padding-left: 0;
+    padding-top: 20px;
+    width: 100%;
+  }
 }
 .pf-loyalty-current {
   display: flex;
@@ -1502,7 +1580,7 @@
   z-index: 1;
 }
 
-/* ═══════════ MINI ORDER CARD ═══════════ */
+/*   MINI ORDER CARD   */
 .pf-mini-order {
   background: var(--white);
   border: 0.5px solid var(--border);
@@ -1573,7 +1651,7 @@
   padding: 9px 22px;
 }
 
-/* ═══════════ FILTER PILLS ═══════════ */
+/*   FILTER PILLS   */
 .pf-btn-cancel-order {
   padding: 12px 20px;
   border-radius: 10px;
@@ -1731,7 +1809,7 @@
   color: var(--ivory);
 }
 
-/* ═══════════ ORDER CARD (list) ═══════════ */
+/*   ORDER CARD (list)   */
 .pf-order-card {
   background: var(--white);
   border: 0.5px solid var(--border);
@@ -1824,7 +1902,7 @@
   color: var(--forest);
 }
 
-/* ═══════════ ORDER DETAIL ═══════════ */
+/*   ORDER DETAIL   */
 .pf-back-btn {
   display: flex;
   align-items: center;
@@ -2130,7 +2208,7 @@
   color: var(--text-muted);
 }
 
-/* ═══════════ SECURITY TAB ═══════════ */
+/*   SECURITY TAB   */
 .pf-security-layout {
   display: grid;
   grid-template-columns: 1fr 300px;
@@ -2435,7 +2513,7 @@
   font-size: 13px;
 }
 
-/* ═══════════ ADDRESSES TAB ═══════════ */
+/*   ADDRESSES TAB   */
 .pf-add-addr-btn {
   display: flex;
   align-items: center;
@@ -2843,7 +2921,7 @@
 .pf-ar-code-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); opacity: 0.4; flex-shrink: 0; }
 .pf-ar-code-chip.is-activated .pf-ar-code-dot { background: var(--forest); opacity: 1; }
 
-/* ═══════════ EMPTY STATE ═══════════ */
+/*   EMPTY STATE   */
 .pf-empty-state {
   background: var(--white);
   border: 0.5px dashed var(--border);
@@ -2874,7 +2952,7 @@
   color: var(--text-muted);
 }
 
-/* ═══════════ CONFIRM MODAL ═══════════ */
+/*   CONFIRM MODAL   */
 .pf-overlay {
   position: fixed;
   inset: 0;
@@ -2968,9 +3046,9 @@
   background: #9a423e;
 }
 
-/* ═══════════════════════════════════════════════════════════════
+/*      ════════
    RESPONSIVE — tablet, mobile, small mobile
-   ═══════════════════════════════════════════════════════════════ */
+        ════════ */
 @media (max-width: 1100px) {
   .pf-passport-zone {
     padding: 48px 56px 0;
@@ -3709,7 +3787,7 @@ body.dark-mode .pf-switch-track {
   }
 }
 
-/* ═══════════ LUXURY UPGRADE: NHẬN DIỆN THƯƠNG HIỆU ═══════════ */
+/*   LUXURY UPGRADE: NHẬN DIỆN THƯƠNG HIỆU   */
 
 /* Quầng sáng lớn bám nhẹ theo con trỏ trên toàn section — tạo chiều sâu
    cho nền forest phẳng, biến --lp-x/--lp-y do JS set khi di chuột */
@@ -3788,8 +3866,7 @@ body.dark-mode .pf-switch-track {
   opacity: 1;
 }
 
-/* Đường "xương sống" dọc bên trái danh sách 01–04, sáng dần theo mục
-   đang được xem tới — cùng cơ chế fill-theo-scroll như phần Đơn Hàng */
+
 .logo-analysis-content {
   position: relative;
   padding-left: 28px;

@@ -858,8 +858,7 @@ function PassportStrip({ isAuthenticated, loading, loyaltyProfile, onLocate }) {
         </div>
         <div className="lj-passport-stamps-row">
           <div className="lj-passport-stamps" role="list" aria-label="Các hạng đã ghé qua">
-            {tiers.map((t, i) => {
-              const rotations = [-7, 5, -4, 6, -6];
+              {tiers.map((t) => {
               const state = t.isCurrent
                 ? "is-current"
                 : t.unlocked
@@ -878,11 +877,9 @@ function PassportStrip({ isAuthenticated, loading, loyaltyProfile, onLocate }) {
                   style={{
                     "--stamp-color": t.color,
                     "--stamp-color-soft": t.colorSoft,
-                    "--stamp-rotate": `${rotations[i % rotations.length]}deg`,
                   }}
                   title={`Hạng ${t.roman} · ${t.name} — ${statusText}`}
                 >
-                  <span className="lj-stamp-dash" aria-hidden="true" />
                   <span className="lj-stamp-ring" aria-hidden="true" />
                   <span className="lj-stamp-imgwrap">
                     <img src={t.image} alt="" className="lj-stamp-img" aria-hidden="true" />

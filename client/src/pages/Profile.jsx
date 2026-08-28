@@ -131,14 +131,13 @@ const ORDER_STEPS = [
 ];
 
 // Đơn toàn sách điện tử không có bước giao hàng — chỉ đi thẳng Chờ thanh toán -> Hoàn tất
-// (khớp với luồng BE: PENDING -> COMPLETED khi thanh toán xong, bỏ qua CONFIRMED/PROCESSING/SHIPPING/DELIVERED).
 const DIGITAL_ORDER_STEPS = ["PENDING", "COMPLETED"];
 const DIGITAL_STEP_LABELS = {
   PENDING: "Chờ thanh toán",
   COMPLETED: "Hoàn tất",
 };
 
-// ════════════════════ ICONS ════════════════════
+//  ICONS
 export const Icon = {
   user: (
     <svg
@@ -622,8 +621,6 @@ function useCountUp(end, duration = 900, enabled = true) {
   return value;
 }
 // ─ Passport 3D interaction: tilt theo chuột + parallax nền + holo sheen ─
-// zoneRef bọc toàn bộ hero (điều khiển parallax nền: watermark, glow blobs)
-// cardRef bọc riêng tấm thẻ (điều khiển tilt 3D + holographic sheen)
 function usePassportInteraction(maxTilt = 5, parallax = 16) {
   const zoneRef = useRef(null);
   const cardRef = useRef(null);
@@ -762,7 +759,6 @@ function CopyButton({ text, label = "Sao Chép", compact = false }) {
 }
 
 // ─ Inline-editable field ─
-// Click pencil → field becomes an input; Enter/blur-check saves, Esc cancels.
 function EditableField({
   label,
   value,
@@ -819,8 +815,6 @@ function EditableField({
     try {
       await onSave(draft);
       setEditing(false);
-      // Nhá viền vàng-xanh nhẹ để xác nhận đã lưu, tự tắt sau ~1s — phản hồi
-      // tức thời hơn là chỉ dựa vào toast ở góc màn hình.
       setJustSaved(true);
       setTimeout(() => setJustSaved(false), 1000);
     } catch (err) {
@@ -1248,7 +1242,7 @@ function GuestState() {
   );
 }
 
-// ════════════════════════ PASSPORT HERO ════════════════════════
+// ════ PASSPORT HERO ════
 function PassportHero({
   profile,
   initials,
@@ -1315,24 +1309,6 @@ function PassportHero({
                   </div>
                 </div>
                 <div className="pf-passport-id">
-                  <div
-                    className="pf-passport-tier pf-stagger"
-                    style={{ "--d": "0.1s" }}
-                  >
-                    {loyaltyProfile ? (
-                      <LoyaltyBadge
-                        tier={loyaltyProfile.tier}
-                        progress={loyaltyProfile}
-                        variant="dark"
-                        align="left"
-                      />
-                    ) : (
-                      <>
-                        <span className="pf-tier-dot" />
-                        <span className="pf-tier-shimmer-text">—</span>
-                      </>
-                    )}
-                  </div>
                   <h1
                     className="pf-passport-name pf-stagger"
                     style={{ "--d": "0.18s" }}
@@ -1431,7 +1407,7 @@ function PassportHero({
   );
 }
 
-// ════════════════════════ SIDEBAR NAV ════════════════════════
+// ════ SIDEBAR NAV ════
 // Chỉ chứa 5 nút chuyển chương (thay cho thanh tab ngang cũ). Đứng dọc bên
 // trái, dưới PassportHero, sticky khi cuộn để menu luôn trong tầm tay.
 // Điểm nhấn: một "viên thuốc" nền trượt mượt theo vị trí mục đang chọn,
@@ -1528,8 +1504,8 @@ function FooterHelp() {
   );
 }
 
-// ════════════════════════ OVERVIEW TAB ════════════════════════
-function OverviewTab({
+// ════ OVERVIEW TAB ════
+ function OverviewTab({
   profile,
   recentOrders,
   ordersLoading,
@@ -1538,6 +1514,22 @@ function OverviewTab({
   onViewOrders,
   onViewOrder,
 }) {
+  const [tierPreviewIndex, setTierPreviewIndex] = useState(null);
+  const loyaltyTiers = loyaltyProfile?.tiers || [];
+  const currentTierIdx = loyaltyTiers.findIndex((t) => t.isCurrent);
+  const activePreviewIdx =
+    tierPreviewIndex !== null ? tierPreviewIndex : currentTierIdx === -1 ? 0 : currentTierIdx;
+  const previewTier = loyaltyTiers[activePreviewIdx] || loyaltyProfile?.tier;
+  const handleNextTierPreview = () => {
+    if (!loyaltyTiers.length) return;
+    setTierPreviewIndex((activePreviewIdx + 1) % loyaltyTiers.length);
+  };
+  const handlePrevTierPreview = () => {
+    if (!loyaltyTiers.length) return;
+    setTierPreviewIndex((activePreviewIdx - 1 + loyaltyTiers.length) % loyaltyTiers.length);
+  };
+  const isPreviewLocked = previewTier && !previewTier.unlocked && !previewTier.isCurrent;
+
   return (
     <div>
       <SectionHeader
@@ -1667,59 +1659,77 @@ function OverviewTab({
           />
         </div>
       ) : (
-        <div className="pf-loyalty-card">
-          <div className="pf-loyalty-current">
-            <div>
-              <div className="pf-loyalty-current-label">Hạng hiện tại</div>
-              <div
-                className="pf-loyalty-current-name"
-                style={{ color: loyaltyProfile.tier.color }}
-              >
-                {loyaltyProfile.tier.name}
+        <div className="pf-loyalty-card pf-loyalty-card-split">
+          <div className="pf-loyalty-body">
+            <div className="pf-loyalty-current">
+              <div>
+                <div className="pf-loyalty-current-label">Hạng hiện tại</div>
+                <div
+                  className="pf-loyalty-current-name"
+                  style={{ color: loyaltyProfile.tier.color }}
+                >
+                  {loyaltyProfile.tier.name}
+                </div>
+              </div>
+              <div className="pf-loyalty-current-perk">
+                Giảm {loyaltyProfile.tier.discountPercent}% mỗi đơn
+                {loyaltyProfile.tier.freeShipThreshold === 0
+                  ? " · Miễn phí ship mọi đơn"
+                  : ` · Miễn phí ship từ ${formatPrice(loyaltyProfile.tier.freeShipThreshold)}`}
               </div>
             </div>
-            <div className="pf-loyalty-current-perk">
-              Giảm {loyaltyProfile.tier.discountPercent}% mỗi đơn
-              {loyaltyProfile.tier.freeShipThreshold === 0
-                ? " · Miễn phí ship mọi đơn"
-                : ` · Miễn phí ship từ ${formatPrice(loyaltyProfile.tier.freeShipThreshold)}`}
-            </div>
+
+            {loyaltyProfile.isMaxTier ? (
+              <p className="pf-loyalty-progress-caption">
+                Bạn đang ở hạng cao nhất — cảm ơn đã đồng hành cùng Earthoria!
+              </p>
+            ) : (
+              <div className="pf-loyalty-progress">
+                <div className="pf-loyalty-progress-track">
+                  <div
+                    className="pf-loyalty-progress-fill"
+                    style={{
+                      width: `${loyaltyProfile.progressPercent}%`,
+                      background: loyaltyProfile.tier.color,
+                    }}
+                  />
+                </div>
+                <p className="pf-loyalty-progress-caption">
+                  Chi thêm{" "}
+                  <strong>{formatPrice(loyaltyProfile.amountToNext)}</strong> để
+                  lên hạng <strong>{loyaltyProfile.nextTier.name}</strong>
+                </p>
+              </div>
+            )}
           </div>
 
-          {loyaltyProfile.isMaxTier ? (
-            <p className="pf-loyalty-progress-caption">
-              Bạn đang ở hạng cao nhất — cảm ơn đã đồng hành cùng Earthoria!
-            </p>
-          ) : (
-            <div className="pf-loyalty-progress">
-              <div className="pf-loyalty-progress-track">
-                <div
-                  className="pf-loyalty-progress-fill"
-                  style={{
-                    width: `${loyaltyProfile.progressPercent}%`,
-                    background: loyaltyProfile.tier.color,
-                  }}
-                />
-              </div>
-              <p className="pf-loyalty-progress-caption">
-                Chi thêm{" "}
-                <strong>{formatPrice(loyaltyProfile.amountToNext)}</strong> để
-                lên hạng <strong>{loyaltyProfile.nextTier.name}</strong>
-              </p>
-            </div>
-          )}
+          <div className="pf-loyalty-preview">
+            <button
+              type="button"
+              className="pf-loyalty-preview-nav pf-loyalty-preview-prev"
+              onClick={handlePrevTierPreview}
+              aria-label="Xem hạng trước"
+            >
+              {Icon.arrowRight}
+            </button>
 
-          <div className="pf-loyalty-roadmap">
-            {loyaltyProfile.tiers.map((t) => (
-              <LoyaltyBadge
-                key={t.code}
-                tier={t}
-                progress={t.isCurrent ? loyaltyProfile : null}
-                variant="light"
-                align="left"
-                className={`pf-loyalty-chip${t.unlocked ? " is-unlocked" : ""}`}
+            <div className="pf-loyalty-preview-main">
+              <img
+                src={previewTier?.image}
+                alt={previewTier?.name}
+                className={`pf-loyalty-preview-img${isPreviewLocked ? " is-locked" : ""}`}
               />
-            ))}
+              <div className="pf-loyalty-preview-name">{previewTier?.name}</div>
+            </div>
+
+            <button
+              type="button"
+              className="pf-loyalty-preview-nav pf-loyalty-preview-next"
+              onClick={handleNextTierPreview}
+              aria-label="Xem hạng tiếp theo"
+            >
+              {Icon.arrowRight}
+            </button>
           </div>
         </div>
       )}
@@ -1823,7 +1833,7 @@ function MiniOrderCard({ order, delay, onClick }) {
   );
 }
 
-// ════════════════════════ ORDERS TAB ════════════════════════
+// ════ ORDERS TAB ════
 function OrdersTab({ orders, loading, onSelect }) {
   const [filter, setFilter] = useState("all");
   const [lookupCode, setLookupCode] = useState("");
@@ -2037,7 +2047,7 @@ function OrderCard({ order, delay, onClick }) {
   );
 }
 
-// ════════════════════════ ORDER DETAIL TAB ════════════════════════
+// ════ ORDER DETAIL TAB ════
 function OrderDetailSkeleton({ onBack }) {
   return (
     <div>
@@ -2681,7 +2691,7 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
   );
 }
 
-// ════════════════════════ HUỶ ĐƠN HÀNG — MODAL XÁC NHẬN ════════════════════════
+// ════ HUỶ ĐƠN HÀNG — MODAL XÁC NHẬN ════
 function CancelOrderModal({ order, onClose, onConfirm, submitting }) {
   const expectedCode = (getOrderCode(order) || "").toLowerCase();
   const [codeInput, setCodeInput] = useState("");
@@ -2831,7 +2841,7 @@ function CancelOrderModal({ order, onClose, onConfirm, submitting }) {
   );
 }
 
-// ════════════════════════ SECURITY TAB ════════════════════════
+// ════ SECURITY TAB ════
 const PASSWORD_CHECKS = [
   {
     key: "len",
@@ -3541,7 +3551,7 @@ function PasswordField({
   );
 }
 
-// ════════════════════════ ADDRESSES TAB ════════════════════════
+// ════ ADDRESSES TAB ════
 const EMPTY_ADDR_FORM = {
   name: "",
   phone: "",
@@ -4070,7 +4080,7 @@ function AddressCard({ addr, onSetDefault, onEdit, onDelete }) {
   );
 }
 
-/* ══════════════════════════════════════════════
+/* ══════════════════════════
    TAB: SÁCH AR CỦA TÔI
 ══════════════════════════════════════════════ */
 function ParentDashboardBanner() {
@@ -4234,7 +4244,7 @@ function FormInput({ label, value, onChange, required, style }) {
   );
 }
 
-// ════════════════════════ SHARED COMPONENTS ════════════════════════
+// ════ SHARED COMPONENTS ════
 export function SectionHeader({ chapter, eyebrow, title, emphasis, sub, logo }) {
   return (
     <div className="pf-section-header">

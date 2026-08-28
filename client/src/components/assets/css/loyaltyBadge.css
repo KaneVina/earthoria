@@ -32,7 +32,17 @@
     transform: scale(0.7);
   }
 }
-
+.lb-tier-img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.lb-badge:hover .lb-tier-img {
+  transform: scale(1.08);
+}
 .lb-name {
   font-size: 10px;
   font-weight: 600;

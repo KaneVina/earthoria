@@ -1,4 +1,5 @@
-import { useState } from "react";
+ import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { formatPrice } from "../utils/helpers";
 import "./assets/css/loyaltyBadge.css";
 
@@ -35,6 +36,7 @@ export default function LoyaltyBadge({
   className = "",
 }) {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   if (!tier) return null;
 
   return (
@@ -46,11 +48,18 @@ export default function LoyaltyBadge({
       onMouseLeave={() => setOpen(false)}
       onFocus={() => setOpen(true)}
       onBlur={() => setOpen(false)}
-      onClick={() => setOpen((v) => !v)}
+      onClick={() => navigate("/loyalty")}
     >
-      <span className={`lb-chip ${className}`}>
-        {showDot && <span className="lb-dot" />}
-        <span className="lb-name">{tier.name}</span>
+       <span className={`lb-chip ${className}`} title={tier.name}>
+        {tier.image ? (
+          <img
+            src={tier.image}
+            alt={tier.name}
+            className="lb-tier-img"
+          />
+        ) : (
+          <span className="lb-name">{tier.name}</span>
+        )}
       </span>
 
       <div className={`lb-panel lb-align-${align}`} role="tooltip">

@@ -454,46 +454,35 @@ export default function Navbar() {
                       {user?.email && (
                         <div className="user-dropdown-email">{user.email}</div>
                       )}
-                      <div
-                        style={{
-                          display: "flex",
-                          flexWrap: "wrap",
-                          alignItems: "center",
-                          gap: "6px",
-                          marginTop: "6px",
-                        }}
-                      >
-                        <div
+
+                      <div className="user-dropdown-badges-col">
+                        <span
+                          className="user-dropdown-role-chip"
                           style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "5px",
-                            padding: "3px 8px",
                             background: roleMeta.bg,
-                            border: `0.5px solid ${roleMeta.border}`,
-                            borderRadius: "2px",
+                            borderColor: roleMeta.border,
                           }}
                         >
-                          <span
-                            style={{
-                              fontSize: "9px",
-                              letterSpacing: "0.16em",
-                              textTransform: "uppercase",
-                              color: roleMeta.color,
-                              fontWeight: 500,
-                              fontFamily: "'Be Vietnam Pro', sans-serif",
-                            }}
-                          >
-                            {roleMeta.label}
-                          </span>
-                        </div>
+                          <span style={{ color: roleMeta.color }}>{roleMeta.label}</span>
+                        </span>
+
                         {loyaltyProfile && (
-                          <LoyaltyBadge
-                            tier={loyaltyProfile.tier}
-                            progress={loyaltyProfile}
-                            variant="light"
-                            align="right"
-                          />
+                          <button
+                            type="button"
+                            className="user-dropdown-tier-chip"
+                            style={{
+                              "--tier-color": loyaltyProfile.tier.color,
+                              "--tier-color-soft": loyaltyProfile.tier.colorSoft,
+                            }}
+                            onClick={() => navigate("/loyalty")}
+                          >
+                            <img
+                              src={loyaltyProfile.tier.image}
+                              alt=""
+                              className="user-dropdown-tier-chip-img"
+                            />
+                            Hạng {loyaltyProfile.tier.name}
+                          </button>
                         )}
                       </div>
                     </div>
