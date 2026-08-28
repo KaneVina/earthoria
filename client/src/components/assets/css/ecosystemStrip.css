@@ -23,8 +23,6 @@
   pointer-events: none;
 }
 
-/* soft gold seam — a graceful stitch between the dark stats section above
-   and this lighter band, instead of a hard, jarring color cut */
 .eco-strip-top-accent {
   position: absolute;
   top: 0;
@@ -36,12 +34,31 @@
   opacity: 0.55;
 }
 
+.eco-strip-top-accent::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.9),
+    transparent
+  );
+  mix-blend-mode: screen;
+  animation: eco-seam-shimmer 6s ease-in-out infinite;
+}
+
+@keyframes eco-seam-shimmer {
+  0%, 100% { transform: translateX(-140px); opacity: 0; }
+  50% { transform: translateX(140px); opacity: 0.7; }
+}
+
 .eco-strip-inner {
   position: relative;
   z-index: 1;
   text-align: center;
   max-width: 640px;
-  margin: 0 auto 40px;
+  margin: 0 auto 44px;
   padding: 0 20px;
 }
 
@@ -50,20 +67,23 @@
   align-items: center;
   justify-content: center;
   gap: 14px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .eco-strip-eyebrow-line {
   width: 32px;
   height: 0.5px;
-  background: var(--gold);
+  background: linear-gradient(90deg, transparent, var(--gold));
+}
+.eco-strip-eyebrow-row .eco-strip-eyebrow-line:last-child {
+  background: linear-gradient(90deg, var(--gold), transparent);
 }
 
 .eco-strip-eyebrow-text {
   font-family: "Be Vietnam Pro", sans-serif;
-  font-size: 15px;
-  font-weight: 400;
-  letter-spacing: 0.24em;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--gold);
 }
@@ -75,50 +95,93 @@
   color: var(--forest);
   margin: 0;
   letter-spacing: -0.01em;
+  line-height: 1.3;
 }
 
 .eco-strip-title em {
   font-style: italic;
   color: var(--gold);
+  position: relative;
+}
+
+.eco-strip-title em::after {
+  content: "";
+  position: absolute;
+  left: 2%;
+  right: 2%;
+  bottom: -4px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold) 70%, transparent);
+  opacity: 0.5;
 }
 
 .eco-strip-marquee {
   position: relative;
   width: 100%;
   overflow: hidden;
+  padding: 8px 0;
+  /* keep the mask fade itself subtle - the solid .eco-strip-fade overlays
+     below do the real work of hiding the cropped edge item, since they're
+     sized in px to match one item's width regardless of viewport size */
   -webkit-mask-image: linear-gradient(
     90deg,
     transparent 0%,
-    #000 8%,
-    #000 92%,
+    #000 2%,
+    #000 98%,
     transparent 100%
   );
   mask-image: linear-gradient(
     90deg,
     transparent 0%,
-    #000 8%,
-    #000 92%,
+    #000 2%,
+    #000 98%,
     transparent 100%
   );
 }
 
+/* Sized to fully cover one logo item's rendered width (item + its side
+   margins), so whichever item gets cropped at the edge by overflow:hidden
+   is completely hidden under solid cream before it fades to transparent -
+   instead of showing a half-visible "chunk" of a logo, which is what
+   looked broken. Keep this >= one item's total width at each breakpoint. */
+/* Blur-based, not color-based: a flat cream fill sits on top of the
+   section's tinted radial-gradient background and reads as a plain white
+   patch. Blurring the underlying content instead lets the real background
+   (with its tint) show through untouched - it always matches, because
+   nothing is painted over it - while still softening/hiding the cropped
+   edge item. */
 .eco-strip-fade {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 90px;
+  width: 220px;
   z-index: 2;
   pointer-events: none;
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
 }
 .eco-strip-fade-left {
   left: 0;
-  background: linear-gradient(90deg, var(--cream) 0%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 55%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0%, #000 55%, transparent 100%);
 }
 .eco-strip-fade-right {
   right: 0;
-  background: linear-gradient(270deg, var(--cream) 0%, transparent 100%);
+  -webkit-mask-image: linear-gradient(270deg, #000 0%, #000 55%, transparent 100%);
+  mask-image: linear-gradient(270deg, #000 0%, #000 55%, transparent 100%);
 }
 
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .eco-strip-fade-left {
+    background: linear-gradient(90deg, var(--cream) 0%, transparent 100%);
+  }
+  .eco-strip-fade-right {
+    background: linear-gradient(270deg, var(--cream) 0%, transparent 100%);
+  }
+}
+
+/* track holds two identical copies of the logo set back-to-back so the
+   -50% translate loops with no visible seam */
 .eco-strip-track {
   display: flex;
   align-items: center;
@@ -134,12 +197,8 @@
 }
 
 @keyframes eco-marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 
 .eco-strip-logo-item {
@@ -148,74 +207,156 @@
   align-items: center;
 }
 
-/* fixed-size stage for every logo so mismatched source-file paddings
-   (some marks sit tight in their canvas, others float with lots of
-   whitespace) no longer read as "some logos big, some tiny" */
+/* fixed-size stage, tall enough to reserve room for the name + description
+   labels that appear beneath the mark on hover without shifting layout.
+   Sized up so the marks read clearly next to the rest of the page. */
 .eco-strip-logo {
+  position: relative;
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 200px;
-  height: 70px;
-  margin: 0 20px;
-  transition:
-    opacity 0.35s ease,
-    transform 0.35s ease,
-    filter 0.35s ease;
+  width: 190px;
+  height: 128px;
+  margin: 0 10px;
 }
 
-.eco-strip-logo:hover {
-  transform: translateY(-2px);
-}
-
-/* brightness(0) flattens every logo — whatever its original hue — into
-   pure black, so the whole row reads as one single uniform color instead
-   of grayscale() which still keeps each logo's own light/dark contrast */
 .eco-strip-logo img {
-  max-height: 100%;
-  max-width: 100%;
+  max-height: 60%;
+  max-width: 86%;
   width: auto;
   height: auto;
   object-fit: contain;
   display: block;
   margin: 0 auto;
   filter: brightness(0);
-  opacity: 0.42;
+  opacity: 0.4;
   transition:
-    opacity 0.35s ease,
-    filter 0.35s ease;
+    opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .eco-strip-logo:hover img {
   filter: none;
   opacity: 1;
+  transform: translateY(-16px) scale(0.9);
 }
 
-/* quiet dot rhythm between marks — echoes the same dot motif used in the
-   ticker strip above, so the two bands feel like one family */
+/* name label — sits close under the mark, invisible and shifted down
+   slightly until hover reveals it in place */
+.eco-strip-logo-name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 34px;
+  display: block;
+  text-align: center;
+  padding: 0 8px;
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--forest);
+  line-height: 1.3;
+  opacity: 0;
+  transform: translateY(4px);
+  pointer-events: none;
+  transition:
+    opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.eco-strip-logo:hover .eco-strip-logo-name {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.04s;
+}
+
+/* description line — smaller, lighter tone than the name, revealed just
+   after it for a subtle staggered feel */
+.eco-strip-logo-desc {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 16px;
+  display: block;
+  text-align: center;
+  padding: 0 10px;
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 9.5px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--forest);
+  opacity: 0;
+  line-height: 1.35;
+  pointer-events: none;
+  transition:
+    opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(4px);
+}
+
+.eco-strip-logo:hover .eco-strip-logo-desc {
+  opacity: 0.55;
+  transform: translateY(0);
+  transition-delay: 0.09s;
+}
+
 .eco-strip-sep {
   flex: 0 0 auto;
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: var(--gold);
-  opacity: 0.35;
+  width: 1px;
+  height: 26px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(184, 134, 46, 0.28),
+    transparent
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .eco-strip-track {
+    animation: none;
+  }
+  .eco-strip-top-accent::after {
+    animation: none;
+    display: none;
+  }
 }
 
 @media (max-width: 640px) {
   .eco-strip {
-    padding: 64px 0 68px;
+    padding: 56px 0 64px;
   }
   .eco-strip-track {
     animation-duration: 22s;
   }
   .eco-strip-logo {
-    width: 145px;
-    height: 50px;
-    margin: 0 14px;
+    width: 132px;
+    height: 100px;
+    margin: 0 6px;
+  }
+  .eco-strip-logo-name {
+    bottom: 26px;
+    font-size: 8.5px;
+    letter-spacing: 0.06em;
+    padding: 0 4px;
+  }
+  .eco-strip-logo-desc {
+    bottom: 12px;
+    font-size: 7.5px;
+    padding: 0 6px;
+  }
+  .eco-strip-logo:hover img {
+    transform: translateY(-11px) scale(0.9);
   }
   .eco-strip-sep {
     display: none;
+  }
+  .eco-strip-fade {
+    width: 150px;
   }
 }
