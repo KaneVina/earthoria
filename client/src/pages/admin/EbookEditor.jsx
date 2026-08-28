@@ -1708,6 +1708,7 @@ export default function BookBuilder() {
   const [scale, setScale] = useState(1);
   const [autoFit, setAutoFit] = useState(true);
   const [ttsOk, setTtsOk] = useState(true);
+const [hoverSpeakMuted, setHoverSpeakMuted] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -2815,6 +2816,7 @@ const handleImageFileChange = async (e) => {
 
 
   const onWordHover = (wordObj) => {
+    if (hoverSpeakMuted) return;
     if (!speechAvailable() || !wordObj.word.trim()) return;
     if (lastHoverWord.current === wordObj.word) return;
     lastHoverWord.current = wordObj.word;
@@ -2951,7 +2953,10 @@ const handleImageFileChange = async (e) => {
         .bb-current-page-label strong { color: #14332a; }
 
         .bb-pages-strip { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-bottom: 14px; background: #fff; border-radius: 16px; box-shadow: 0 2px 10px rgba(20,51,42,0.06); border: 1px solid rgba(20,51,42,0.06); }
-        .bb-pages-strip-scroll { display: flex; align-items: flex-start; gap: 12px; overflow-x: auto; overflow-y: hidden; flex: 1 1 auto; min-width: 0; padding: 2px 2px 4px; }
+        .bb-pages-strip-scroll { display: flex; align-items: flex-start; gap: 12px; overflow-x: auto; overflow-y: hidden; flex: 1 1 auto; min-width: 0; padding: 2px 2px 4px; scrollbar-width: thin; scrollbar-color: #4a9e3f transparent; }
+.bb-pages-strip-scroll::-webkit-scrollbar { height: 6px; }
+.bb-pages-strip-scroll::-webkit-scrollbar-track { background: transparent; }
+.bb-pages-strip-scroll::-webkit-scrollbar-thumb { background: #4a9e3f; border-radius: 3px; }
         .bb-page-item { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 6px; }
         .bb-page-thumb { width: 60px; height: 42px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: Georgia, serif; font-size: 14px; font-weight: 700; color: #45524b; position: relative; box-shadow: 0 2px 6px rgba(20,51,42,0.10); transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease; }
         .bb-page-thumb:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(20,51,42,0.16); }
@@ -3019,8 +3024,8 @@ const handleImageFileChange = async (e) => {
         .bb-color-size input[type="color"] { width: 40px; height: 34px; border: 1px solid rgba(20,51,42,0.14); border-radius: 8px; padding: 2px; cursor: pointer; background: #fff; }
         .bb-color-size input[type="number"] { width: 72px; padding: 7px 9px; border-radius: 9px; border: 1px solid rgba(20,51,42,0.16); font-size: 13px; }
         .bb-color-size input[type="number"]:focus { outline: none; border-color: #4a9e3f; box-shadow: 0 0 0 3px rgba(74,158,63,0.14); }
-        .bb-checkbox-field { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12.5px; font-weight: 600; color: #45524b; }
-        .bb-checkbox-field input { width: 16px; height: 16px; accent-color: #4a9e3f; cursor: pointer; }
+        label.bb-checkbox-field { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; font-size: 12.5px; font-weight: 600; color: #45524b; }
+        label.bb-checkbox-field input { flex-shrink: 0; margin-top: 2px; width: 16px; height: 16px; accent-color: #4a9e3f; cursor: pointer; }
         .bb-hint { font-size: 12px; color: #6b7a72; background: #f4f1ea; border-radius: 10px; padding: 10px 12px; margin-top: 12px; line-height: 1.5; }
         .bb-empty { font-size: 13px; color: #8a978f; padding: 10px 4px; text-align: center; }
 
@@ -3084,6 +3089,32 @@ const handleImageFileChange = async (e) => {
           >
             <Save size={14} />
             Lưu
+          </button>
+          <div className="bb-divider-v" />
+          <button
+            className="bb-btn"
+            title={
+              hoverSpeakMuted
+                ? "Bật đọc từ khi rê chuột"
+                : "Tắt đọc từ khi rê chuột"
+            }
+            onClick={() => {
+              setHoverSpeakMuted((prev) => {
+                const next = !prev;
+                if (next) {
+                  lastHoverWord.current = null;
+                  if (speechAvailable()) window.speechSynthesis.cancel();
+                }
+                return next;
+              });
+            }}
+          >
+            {hoverSpeakMuted ? (
+              <VolumeX size={14} />
+            ) : (
+              <Volume2 size={14} />
+            )}
+            {hoverSpeakMuted ? "Đã tắt rê đọc" : "Rê đọc: Bật"}
           </button>
           <div className="bb-divider-v" />
           {reading ? (
