@@ -696,6 +696,7 @@ nav {
   background: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
+  border-color: rgba(255, 255, 255, 0.3);
 }
 .step-num {
   font-family: "Playfair Display", serif;
@@ -705,6 +706,10 @@ nav {
   color: var(--gold);
   margin-bottom: 32px;
   display: block;
+  transition: color 0.4s;
+}
+.how-step:hover .step-num {
+  color: var(--ivory);
 }
 .step-icon {
   width: 56px;
@@ -717,12 +722,15 @@ nav {
   transition: all 0.4s;
 }
 .how-step:hover .step-icon {
-  border-color: rgba(184, 146, 74, 0.4);
-  background: rgba(184, 146, 74, 0.1);
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.1);
 }
 .step-icon svg {
   color: var(--gold);
   transition: all 0.4s;
+}
+.how-step:hover .step-icon svg {
+  color: var(--ivory);
 }
 .step-title {
   font-family: "Playfair Display", serif;
@@ -1362,18 +1370,6 @@ nav {
 }
 .journey-step:hover .journey-step-desc {
   color: rgba(250, 248, 243, 0.55);
-}
-.journey-step:not(:last-child)::after {
-  content: "";
-  position: absolute;
-  right: -1px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 6px;
-  height: 6px;
-  background: var(--gold);
-  border-radius: 50%;
-  z-index: 2;
 }
 /* ─ TESTIMONIALS ─ */
 .reviews-section {
@@ -8231,4 +8227,71 @@ body.dark-mode .trust-metric-label {
   background: rgba(255, 255, 255, 0.08);
   color: rgba(212, 233, 220, 0.85);
   border-color: rgba(212, 233, 220, 0.3);
+}
+/* ─ BOOK SCROLL ROW - EDGE FADES ─
+   Dùng đúng màu nền thật của section (qua biến --scroll-fade-bg do
+   component set inline) thay vì blur, để không bị lệch tông/mờ ảo. */
+.book-scroll-fade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 90px;
+  z-index: 2;
+  pointer-events: none;
+}
+.book-scroll-fade-left {
+  left: 0;
+  background: linear-gradient(
+    90deg,
+    var(--scroll-fade-bg, var(--cream)) 0%,
+    var(--scroll-fade-bg, var(--cream)) 25%,
+    transparent 100%
+  );
+}
+.book-scroll-fade-right {
+  right: 0;
+  background: linear-gradient(
+    270deg,
+    var(--scroll-fade-bg, var(--cream)) 0%,
+    var(--scroll-fade-bg, var(--cream)) 25%,
+    transparent 100%
+  );
+}
+@media (max-width: 640px) {
+  .book-scroll-fade {
+    width: 36px;
+  }
+}
+
+.book-scroll-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  width: 44px;
+  height: 44px;
+  background: var(--white);
+  border: 0.5px solid var(--border-gold);
+  color: var(--gold);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  box-shadow: 0 8px 24px rgba(13, 43, 30, 0.1);
+}
+.book-scroll-arrow:hover {
+  border-color: var(--gold);
+  transform: translateY(-50%) scale(1.06);
+}
+.book-scroll-arrow-left {
+  left: -20px;
+}
+.book-scroll-arrow-right {
+  right: -20px;
+}
+@media (max-width: 640px) {
+  .book-scroll-arrow {
+    display: none;
+  }
 }

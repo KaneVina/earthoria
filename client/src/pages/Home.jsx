@@ -635,7 +635,7 @@ function BookCard({
 /* ───────────────────────────────────────────────────────────
    HORIZONTAL SCROLL BOOK ROW
 ───────────────────────────────────────────────────────────── */
-function BookScrollRow({ books, onAddCart, badgeLabel, badgeType, addingIds }) {
+function BookScrollRow({ books, onAddCart, badgeLabel, badgeType, addingIds, fadeColor }) {
   const rowRef = useRef(null);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(true);
@@ -699,62 +699,19 @@ function BookScrollRow({ books, onAddCart, badgeLabel, badgeType, addingIds }) {
 
   return (
     <div
-      style={{ position: "relative" }}
+      style={{ position: "relative", "--scroll-fade-bg": fadeColor || "var(--cream)" }}
       onMouseEnter={() => (isPausedRef.current = true)}
       onMouseLeave={() => (isPausedRef.current = false)}
     >
       {/* Fade edges */}
-      {canLeft && (
-        <div
-          style={{
-            position: "absolute",
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: "80px",
-            background: "linear-gradient(to right, var(--cream), transparent)",
-            zIndex: 2,
-            pointerEvents: "none",
-          }}
-        />
-      )}
-      {canRight && (
-        <div
-          style={{
-            position: "absolute",
-            right: 0,
-            top: 0,
-            bottom: 0,
-            width: "80px",
-            background: "linear-gradient(to left, var(--cream), transparent)",
-            zIndex: 2,
-            pointerEvents: "none",
-          }}
-        />
-      )}
+      {canLeft && <div className="book-scroll-fade book-scroll-fade-left" />}
+      {canRight && <div className="book-scroll-fade book-scroll-fade-right" />}
 
       {/* Arrow buttons */}
       {canLeft && (
         <button
           onClick={() => scroll(-1)}
-          style={{
-            position: "absolute",
-            left: "-20px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            zIndex: 3,
-            width: "44px",
-            height: "44px",
-            background: "var(--white)",
-            border: "0.5px solid var(--border-gold)",
-            color: "var(--gold)",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            transition: "all 0.3s",
-            boxShadow: "0 8px 24px rgba(13,43,30,0.1)",
-          }}
+          className="book-scroll-arrow book-scroll-arrow-left"
         >
           <svg
             width="14"
@@ -771,24 +728,7 @@ function BookScrollRow({ books, onAddCart, badgeLabel, badgeType, addingIds }) {
       {canRight && (
         <button
           onClick={() => scroll(1)}
-          style={{
-            position: "absolute",
-            right: "-20px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            zIndex: 3,
-            width: "44px",
-            height: "44px",
-            background: "var(--white)",
-            border: "0.5px solid var(--border-gold)",
-            color: "var(--gold)",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            transition: "all 0.3s",
-            boxShadow: "0 8px 24px rgba(13,43,30,0.1)",
-          }}
+          className="book-scroll-arrow book-scroll-arrow-right"
         >
           <svg
             width="14"
@@ -2763,6 +2703,7 @@ export default function Home() {
               badgeLabel="Mới"
               badgeType="forest"
               addingIds={addingIds}
+              fadeColor="var(--ivory)"
             />
           )}
         </div>
