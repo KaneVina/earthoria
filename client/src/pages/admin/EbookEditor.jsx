@@ -9,7 +9,7 @@ import {
   Undo2,
   Redo2,
   Plus,
-  Image,
+  Image as ImageIcon,
   Play,
   Square,
   Eye,
@@ -737,7 +737,7 @@ function LayerView({
             >
               {!readOnly && !isUploading && (
                 <>
-                  <Image size={18} strokeWidth={1.6} />
+                  <ImageIcon size={18} strokeWidth={1.6} />
                   <span>
                     Bấm hoặc kéo ảnh vào đây
                     <br />
@@ -3309,7 +3309,7 @@ export default function BookBuilder() {
             onClick={addImageLayer}
             title="Thêm ảnh"
           >
-            <Image size={18} />
+            <ImageIcon size={18} />
             <span>Ảnh</span>
           </button>
           <input
@@ -3640,7 +3640,7 @@ export default function BookBuilder() {
                         }}
                       />
                     ) : (
-                      <Image size={12} />
+                      <ImageIcon size={12} />
                     )
                   ) : layer.type === "qr" ? (
                     <QrCode size={12} />
@@ -4506,7 +4506,7 @@ export default function BookBuilder() {
                       boxShadow: "0 10px 24px rgba(0,0,0,0.25)",
                     }}
                   >
-                    <Image size={16} />
+                    <ImageIcon size={16} />
                     Thả ảnh vào đây để thêm vào trang
                   </div>
                 </div>
