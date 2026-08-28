@@ -1,7 +1,7 @@
 import api from "./api";
 
 export const ebookService = {
-  // ── Admin ──
+  // Admin
   list: (params) => api.get("/admin/ebooks", { params }),
   getById: (id) => api.get(`/admin/ebooks/${id}`),
   getForBook: (bookId) => api.get(`/admin/ebooks/book/${bookId}`),
@@ -18,6 +18,6 @@ export const ebookService = {
   },
   deleteImage: (url) => api.post("/admin/ebooks/delete-image", { url }),
 
-  // ── Public (đọc sách, yêu cầu đã mua bản điện tử) ──
+  // Public
   readBySlug: (slug, kidToken) => api.get(`/ebook-reader/${slug}`, kidToken ? { params: { kidToken } } : undefined),
 };

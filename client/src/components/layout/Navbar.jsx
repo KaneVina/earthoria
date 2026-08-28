@@ -36,7 +36,7 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  //  Stores ────────────────────────────────────────
+  //  Stores
   const { user, isAuthenticated, logout } = useAuthStore();
   const itemCount = useCartStore((s) => s.itemCount);
   const cart = useCartStore((s) => s.cart);
@@ -52,7 +52,7 @@ export default function Navbar() {
     staleTime: 60_000,
   });
 
-  //  State ──────────────────────────────────────────
+  //State
   const [scrolled, setScrolled] = useState(false);
   const [progress, setProgress] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -574,10 +574,6 @@ export default function Navbar() {
           )}
 
           <div className="nav-mobile-divider" />
-
-          {/* Tìm kiếm / Yêu thích / Giỏ hàng — trước đây chỉ có trên desktop
-              (icon-group bị ẩn ở mobile) nên trên mobile không có cách nào
-              vào được các mục này. Thêm hẳn vào panel để luôn tìm thấy. */}
           <button
             type="button"
             className="nav-mobile-link"

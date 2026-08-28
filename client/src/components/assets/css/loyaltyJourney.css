@@ -114,7 +114,7 @@ body.dark-mode {
   }
 }
 
-/* ═══════════════════ HERO ═══════════════════ */
+/*   HERO   */
 .lj-hero {
   position: relative;
   overflow: hidden;
@@ -346,7 +346,7 @@ body.dark-mode {
   color: var(--lj-gold-true);
 }
 
-/* ═══════════════════ PASSPORT STRIP ═══════════════════ */
+/*   PASSPORT STRIP   */
 .lj-passport-wrap {
   position: relative;
   z-index: 5;
@@ -370,11 +370,7 @@ body.dark-mode {
   flex: 1 1 auto;
   min-width: 0;
 }
-/* ═══════════════ BẢN ĐỒ 34 TỈNH THÀNH (bên phải hộ chiếu) ═══════════════
-   Silhouette Việt Nam cách điệu chia thành 5 dải theo đúng 5 vùng/hạng —
-   mỗi dải mặc định tô màu nhạt (tier.colorSoft), sáng hẳn lên đúng màu
-   tier.color ngay khi vùng đó được mở khoá. 34 chấm tỉnh nằm chồng lên
-   trên, đổi từ chấm xám rỗng sang chấm đặc màu tier khi vùng active. */
+/*   BẢN ĐỒ 34 TỈNH THÀNH (bên phải hộ chiếu)   */
 .lj-passport-map {
   flex: 0 0 132px;
   display: flex;
@@ -396,9 +392,9 @@ body.dark-mode {
   white-space: nowrap;
 }
 .lj-vnmap-svg {
-  width: 104px;
+  width: 128px;
   height: auto;
-  aspect-ratio: 200 / 520;
+  aspect-ratio: 230 / 388;
   overflow: visible;
 }
 .lj-vnmap-band {
@@ -409,6 +405,12 @@ body.dark-mode {
 }
 .lj-vnmap-dot.is-active {
   filter: drop-shadow(0 0 2px rgba(13, 43, 30, 0.25));
+}
+.lj-vnmap-sea {
+  transition: opacity 0.5s ease;
+}
+.lj-vnmap-sea:not(.is-active) {
+  opacity: 0.55;
 }
 .lj-passport-map-legend {
   margin-top: 12px;
@@ -457,7 +459,7 @@ body.dark-mode {
     width: 100%;
   }
   .lj-vnmap-svg {
-    width: 140px;
+    width: 165px;
   }
 }
 .lj-passport-guest {
@@ -574,7 +576,8 @@ body.dark-mode {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   padding: 0;
-  margin-top: 14px;
+  flex-shrink: 0;
+  white-space: nowrap;
   cursor: pointer;
   border-bottom: 0.5px solid var(--border-gold);
   padding-bottom: 3px;
@@ -585,9 +588,7 @@ body.dark-mode {
   border-color: var(--lj-gold-true);
 }
 
-/* Dãy con dấu hộ chiếu — cố tình dùng lại đúng "DNA" thị giác của
-   .lj-seal bên timeline (vòng tròn kép, số La Mã Playfair, animation
-   ljSpin) nhưng thu nhỏ, để 2 khu vực trông như cùng 1 hệ thống. */
+/* Dãy con dấu hộ chiếu */
 .lj-passport-stamps-label {
   display: inline-flex;
   align-items: center;
@@ -600,11 +601,18 @@ body.dark-mode {
   opacity: 0.85;
   margin-bottom: 12px;
 }
+.lj-passport-stamps-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
 .lj-passport-stamps {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 20px;
   flex-wrap: wrap;
 }
 .lj-stamp {
@@ -616,9 +624,6 @@ body.dark-mode {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Playfair Display", serif;
-  font-size: 15px;
-  font-weight: 600;
   background: var(--stamp-color-soft, rgba(212, 168, 67, 0.12));
   transform: rotate(var(--stamp-rotate, 0deg));
   transition: transform 0.35s var(--lj-ease), opacity 0.35s var(--lj-ease);
@@ -629,6 +634,7 @@ body.dark-mode {
   inset: 0;
   border-radius: 50%;
   border: 1.5px solid var(--stamp-color, var(--gold));
+  z-index: 2;
 }
 .lj-stamp-dash {
   position: absolute;
@@ -638,10 +644,25 @@ body.dark-mode {
   opacity: 0.45;
   animation: ljSpin 24s linear infinite;
 }
-.lj-stamp-roman {
-  position: relative;
+.lj-stamp-imgwrap {
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  overflow: hidden;
   z-index: 1;
-  color: var(--stamp-color, var(--gold));
+}
+.lj-stamp-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1);
+  opacity: 0.4;
+  transition: filter 0.5s var(--lj-ease), opacity 0.5s var(--lj-ease);
+}
+.lj-stamp.is-visited .lj-stamp-img,
+.lj-stamp.is-current .lj-stamp-img {
+  filter: grayscale(0);
+  opacity: 1;
 }
 .lj-stamp-check {
   position: absolute;
@@ -655,7 +676,7 @@ body.dark-mode {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2;
+  z-index: 3;
 }
 .lj-stamp.is-current {
   transform: rotate(0deg) scale(1.12);
@@ -665,7 +686,7 @@ body.dark-mode {
 }
 .lj-stamp.is-locked {
   background: var(--pale);
-  opacity: 0.45;
+  opacity: 0.55;
 }
 .lj-stamp.is-locked .lj-stamp-ring {
   border-style: dashed;
@@ -674,8 +695,58 @@ body.dark-mode {
 .lj-stamp.is-locked .lj-stamp-dash {
   display: none;
 }
-.lj-stamp.is-locked .lj-stamp-roman {
-  color: var(--text-muted);
+
+/* Panel bên dưới dãy con dấu */
+.lj-passport-hero {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 20px;
+  border-radius: var(--lj-radius, 14px);
+  background: linear-gradient(135deg, var(--tier-color-soft), transparent 70%);
+  border: 0.5px solid var(--tier-color-soft);
+}
+.lj-passport-hero-img {
+  width: 76px;
+  height: 76px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 4px 10px rgba(13, 43, 30, 0.15));
+}
+.lj-passport-hero-img-fallback {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  font-family: "Playfair Display", serif;
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--tier-color);
+  background: var(--tier-color-soft);
+  border: 1.5px solid var(--tier-color);
+}
+.lj-passport-hero-info {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.lj-passport-hero-name {
+  font-family: "Playfair Display", serif;
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 10px;
+  background: linear-gradient(
+    90deg,
+    var(--tier-color) 0%,
+    var(--tier-color) 40%,
+    color-mix(in srgb, var(--tier-color) 30%, white) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  width: fit-content;
 }
 
 .lj-skel {
@@ -690,27 +761,12 @@ body.dark-mode {
   animation: ljShimmer 1.6s ease-in-out infinite;
 }
 
-/* ═══════════════════ SEAM — mối nối giữa các section ═══════════════════
-   Mỗi seam làm đúng 2 việc cùng lúc, đúng như lựa chọn "kết hợp cả hai":
-   1) route line: 1 đoạn chỉ vàng đứt nét uốn lượn + 1 chấm tròn — vàng
-      trung tính (không thuộc hạng nào) vì đây là phần khung trang, khác
-      với các đoạn .lj-track-curve bên trong Journey (mỗi đoạn 1 màu hạng).
-   2) chuyển màu mượt: nền là gradient từ màu section trên sang màu
-      section dưới, thay cho việc cắt cứng giữa 2 mảng màu khác nhau. */
+/*   SEAM  */
 .lj-seam {
   position: relative;
   overflow: hidden;
 }
 .lj-seam-line {
-  /* Cùng "họ" với .lj-track-curve trong Journey — 1 dải ruy băng tô mờ
-     (thân đường) + 1 vạch đứt nét sắc nét ở giữa, thay vì 3 nét kẻ mảnh
-     (dễ nhìn thành nhiều đường ngoằn ngoèo rời rạc ở kích thước nhỏ).
-     Cùng tông var(--lj-route-gold) (#b8a172, phải viết cứng vì data-URI
-     không đọc được biến CSS). Thu nhỏ chu kỳ (140px) cho vừa dải nối
-     ngắn. Vẫn dùng kỹ thuật nền lặp lại (thay vì SVG ghim theo phần tử
-     như track-curve) vì ở đây không có seal nào cần đường đi xuyên qua —
-     chỉ cần liền mạch giữa 2 section. Độ mờ đã tính sẵn trong từng path
-     nên không cần opacity ở ngoài nữa. */
   position: absolute;
   top: 0;
   bottom: 0;
@@ -733,8 +789,6 @@ body.dark-mode {
   box-shadow: 0 0 0 5px var(--lj-gold-true-soft);
 }
 .lj-seam-journey-stats {
-  /* Journey giờ đứng trước Stats (thứ tự mới) — đảo hướng gradient so
-     với bản trước (khi đó Stats đứng trước Journey). */
   height: 100px;
   background: linear-gradient(to bottom, var(--lj-bg-b), var(--lj-bg-a));
 }
@@ -743,13 +797,11 @@ body.dark-mode {
   background: var(--lj-bg-a);
 }
 .lj-seam-steps-cta {
-  /* Thay cho .lj-seam-journey-cta cũ — giờ Steps đứng ngay trước CTA
-     (thứ tự mới), không phải Journey nữa. */
   height: 120px;
   background: linear-gradient(to bottom, var(--lj-bg-a), var(--forest));
 }
 
-/* ═══════════════════ STATS STRIP ═══════════════════ */
+/*   STATS STRIP   */
 .lj-stats {
   background: var(--lj-bg-a);
   padding: 56px 100px 36px;
@@ -802,7 +854,7 @@ body.dark-mode {
   font-weight: 300;
 }
 
-/* ═══════════════════ SECTION HEAD (dùng chung) ═══════════════════ */
+/*   SECTION HEAD (dùng chung)   */
 .lj-eyebrow {
   display: inline-block;
   font-family: "Be Vietnam Pro", sans-serif;
@@ -836,7 +888,7 @@ body.dark-mode {
   font-weight: 300;
 }
 
-/* ═══════════════════ 3 BƯỚC ═══════════════════ */
+/*   3 BƯỚC   */
 .lj-steps {
   background: var(--lj-bg-a);
   padding: 40px 100px 44px;
@@ -913,7 +965,7 @@ body.dark-mode {
   background: var(--gold-pale, rgba(74, 158, 63, 0.1));
 }
 
-/* ═══════════════════ CUNG ĐƯỜNG HÀNH TRÌNH ═══════════════════ */
+/*   CUNG ĐƯỜNG HÀNH TRÌNH   */
 .lj-journey {
   background: var(--lj-bg-b);
   padding: 56px 100px 80px;
@@ -933,21 +985,6 @@ body.dark-mode {
   flex-direction: column;
 }
 .lj-track-curve {
-  /* .lj-track-curve giờ là 1 DIV (không phải trực tiếp <svg>) — đây chính
-     là chỗ sửa lỗi đường bị đứt đoạn: SVG là "replaced element", nên
-     position:absolute + top:0/bottom:0 KHÔNG co giãn hết chiều cao cha
-     như div thường (chỉ hiện 1 đoạn ngắn theo kích thước nội tại rồi
-     dừng). Bọc trong div: chính div này absolute + top:0/bottom:0 để co
-     giãn đúng 100% chiều cao cha (hành vi ổn định, quen thuộc), còn SVG
-     bên trong chỉ cần lấp đầy 100%/100% của div đó — lúc này div đã có
-     kích thước cụ thể nên SVG co giãn theo hoàn toàn đáng tin cậy.
-
-     Rộng 60px (thay vì 44px trước đây) vì giờ path bên trong vẽ 3 đường
-     song song kiểu "đường xe chạy" (2 viền liền nét + 1 vạch giữa đứt
-     nét) nên cần thêm biên độ ngang — viewBox 0 0 60 100 trong JSX khớp
-     đúng số này. Màu do prop `color` của TrackCurve quyết định: mỗi hạng
-     1 màu riêng qua var(--tier-color), 2 đầu track dùng var(--lj-route-gold)
-     (tông trầm, xem :root) thay vì vàng chói của nút/badge. */
   position: absolute;
   top: 0;
   bottom: 0;
@@ -971,11 +1008,6 @@ body.dark-mode {
   mask-image: linear-gradient(to bottom, black 0%, transparent);
 }
 .lj-track-cap {
-  /* Dùng CHUNG lưới 1fr/84px/1fr với .lj-row để cột giữa (nơi đặt icon)
-     luôn thẳng hàng với các seal — kể cả khi đổi bố cục ở mobile — thay
-     vì canh giữa bằng margin:auto như trước (dễ lệch khỏi rail khi rail
-     chuyển sang bố cục 1 cột). position:relative để làm điểm neo cho
-     .lj-track-curve bên trong (span đúng chiều cao đã padding của cap). */
   position: relative;
   display: grid;
   grid-template-columns: 1fr 84px 1fr;
@@ -1015,10 +1047,6 @@ body.dark-mode {
 }
 
 .lj-row {
-  /* position:relative để .lj-track-curve (con trực tiếp, không nằm trong
-     .lj-row-rail) neo theo đúng toàn bộ chiều cao ĐÃ PADDING của row —
-     nhờ padding trên/dưới bằng nhau nên tâm dọc của span này trùng khít
-     tâm .lj-row-rail, tức đúng vị trí seal. */
   position: relative;
   display: grid;
   grid-template-columns: 1fr 84px 1fr;
@@ -1070,10 +1098,6 @@ body.dark-mode {
 }
 
 .lj-row-waypoint {
-  /* Nội dung THẬT lấp khoảng trống bên đối diện card — cùng ô lưới với
-     ghost (đè lên trên, ghost chỉ làm nền mờ phía sau). Neo về phía rail
-     giống hệt ghost (flex-start bên trái cho row-left, flex-end bên phải
-     cho row-right) để nằm gần seal, không trôi ra sát mép ngoài. */
   grid-row: 1;
   position: relative;
   z-index: 1;
@@ -1156,10 +1180,7 @@ body.dark-mode {
   animation: ljSpin 24s linear infinite;
 }
 
-/* ── VÉ MÁY BAY (BOARDING PASS) ──
-   Thay cho .lj-card cũ (1 khối bo góc đơn giản), giờ là 1 tấm vé thật:
-   coupon chính (thông tin chuyến bay) + cuống vé (stub) tách nhau bằng
-   1 đường đục lỗ dọc, y hệt bố cục vé máy bay giấy. */
+/*  VÉ MÁY BAY (BOARDING PASS) */
 .lj-ticket {
   grid-row: 1;
   display: flex;
@@ -1187,8 +1208,6 @@ body.dark-mode {
   border-color: var(--tier-color);
   box-shadow: 0 0 0 3px var(--tier-color-soft), var(--lj-shadow-lg);
 }
-/* Dải màu hãng bay trên đầu vé — chi tiết nhận diện kiểu boarding pass
-   thật, chạy suốt cả phần coupon chính lẫn cuống vé. */
 .lj-ticket::before {
   content: "";
   position: absolute;
@@ -1414,14 +1433,28 @@ body.dark-mode {
   gap: 10px;
   font-family: "Playfair Display", serif;
   font-size: clamp(24px, 2.4vw, 29px);
-  font-weight: 400;
-  color: var(--forest);
+  font-weight: 500;
   letter-spacing: -0.01em;
   margin-bottom: 8px;
+  background: linear-gradient(
+    90deg,
+    var(--tier-color) 0%,
+    var(--tier-color) 35%,
+    color-mix(in srgb, var(--tier-color) 30%, white) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  width: fit-content;
 }
- .lj-card-name-img {
-  width: 1.05em;
-  height: 1.05em;
+.lj-card-name-emoji {
+  font-size: 0.82em;
+  line-height: 1;
+}
+.lj-card-name-icon {
+  width: 42px;
+  height: 42px;
   object-fit: contain;
   flex-shrink: 0;
 }
@@ -1533,11 +1566,6 @@ body.dark-mode {
   transition: width 1.3s var(--lj-ease) 0.1s;
 }
 .lj-card-area-caption {
-  /* Gộp chung với thanh diện tích: vừa cho biết diện tích tượng trưng,
-     vừa cho biết cần chi thêm bao nhiêu — % lấp đầy ở .lj-card-area-fill
-     phía trên giờ chính là % đã "đi qua" vùng này theo chi tiêu thật (xem
-     travelPercent trong RankStop), không còn là 1 thanh riêng bên dưới
-     benefits/unlock như bản cũ nữa. */
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1601,11 +1629,7 @@ body.dark-mode {
   font-weight: 600;
 }
 
-/* ── CUỐNG VÉ (TICKET STUB) ──
-   Dải dọc bên phải, tách khỏi coupon chính bằng 1 đường đục lỗ: viền
-   đứt nét + 2 vòng tròn khuyết ở mép trên/dưới, màu trùng nền section
-   (--lj-bg-b) để tạo cảm giác "cắt xuyên" qua tấm vé, đúng kiểu vé giấy
-   xé đôi thật ngoài đời. */
+/* CUỐNG VÉ (TICKET STUB)  */
 .lj-ticket-stub {
   flex: 0 0 108px;
   position: relative;
@@ -1617,11 +1641,6 @@ body.dark-mode {
   padding: 20px 12px;
   background: var(--tier-color-soft, rgba(74, 158, 63, 0.06));
   border-left: 0.5px solid var(--tier-color);
-  /* Đường đục lỗ liền mạch kiểu vé xé thật — 1 hàng bán nguyệt lặp lại
-     dọc theo mép trái, cắt xuyên vào chính nền của cuống vé để lộ ra
-     nền trắng của .lj-ticket phía sau. Dùng mask thay vì ::before/::after
-     2 vòng tròn to như bản cũ nên không phụ thuộc phải khớp đúng màu nền
-     trang phía sau (an toàn cả ở dark mode). */
   -webkit-mask-image: radial-gradient(circle at 0 7px, transparent 7px, #000 7.5px);
   -webkit-mask-size: 100% 16px;
   -webkit-mask-repeat: repeat-y;
@@ -1724,7 +1743,7 @@ body.dark-mode {
   flex-shrink: 0;
 }
 
-/* ═══════════════════ CTA CUỐI TRANG ═══════════════════ */
+/*   CTA CUỐI TRANG   */
 .lj-cta {
   background: var(--forest);
   padding: 120px 100px;
@@ -1837,15 +1856,12 @@ body.dark-mode {
   transform: translateY(0);
 }
 
-/* ═══════════════════ DARK MODE ═══════════════════
-   Phần lớn nền/viền giờ tự đổi qua biến --lj-bg-a / --lj-bg-b / --lj-surface /
-   --lj-surface-border / --lj-grid-line khai báo ở đầu file, nên khối dark-mode
-   chỉ còn 1 ngoại lệ thật sự khác biệt so với biến chung. */
+/*   DARK MODE  */
 body.dark-mode .lj-passport-strip {
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-/* ═══════════════════ RESPONSIVE ═══════════════════ */
+/*   RESPONSIVE   */
 @media (max-width: 1100px) {
   .lj-hero,
   .lj-stats,

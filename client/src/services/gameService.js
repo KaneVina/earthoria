@@ -1,12 +1,12 @@
 import api from "./api";
 
 export const gameService = {
-  // ── Public (khách quét QR / mở link chơi) ──
+  // Public
   getGame: (code) => api.get(`/games/${code}`),
   completeGame: (code, payload) => api.post(`/games/${code}/complete`, payload),
   getLeaderboard: (code) => api.get(`/games/${code}/leaderboard`),
 
-  // ── Admin ──
+  // Admin
   list: (params) => api.get("/admin/games", { params }),
   getById: (id) => api.get(`/admin/games/${id}`),
   getForBook: (bookId) => api.get(`/admin/games/book/${bookId}`),

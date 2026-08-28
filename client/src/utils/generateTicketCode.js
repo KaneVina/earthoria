@@ -10,12 +10,6 @@ function randomAlnum(len) {
   return s
 }
 
-/**
- * Sinh mã ticket dạng: ETK-YYMMDDxxx
- *  - YY MM DD: 2 số cuối năm, 2 số tháng, 2 số ngày (theo giờ VN)
- *  - xxx: 3 ký tự chữ/số ngẫu nhiên
- * Ví dụ: ETK-260809k5L (ngày 09/08/2026)
- */
 async function generateTicketCode(client = defaultPrisma) {
   const now = new Date()
   // Quy đổi theo giờ Việt Nam để ngày sinh mã luôn khớp với ngày thực tế người dùng gửi

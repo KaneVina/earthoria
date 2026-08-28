@@ -23,9 +23,7 @@ body.dark-mode nav.is-scrolled {
   background: rgba(18, 26, 22, 0.5) !important;
 }
 
-/* ────────────────────────────────────────────────────────────
-   LOGO — mặc định: logo nhỏ; khi cuộn: logo ngang
-   ──────────────────────────────────────────────────────────── */
+/*  LOGO */
 .nav-logo {
   display: flex;
   align-items: center;
@@ -106,14 +104,9 @@ nav.is-scrolled .nav-logo-compact {
   filter: brightness(1.06);
 }
 
-/* ────────────────────────────────────────────────────────────
-   LOGO SHINE — soft diagonal glint that sweeps across the logo on
-   a loop. Masked to the logo PNG's own alpha shape (mask-image set
-   inline in Navbar.jsx, since the full logo's URL is bundler-hashed)
-   so the highlight only ever lights up the F / wordmark itself,
-   never a rectangle around it. mix-blend-mode: screen makes it
-   brighten the existing gradient instead of covering it flatly.
-   ──────────────────────────────────────────────────────────── */
+/*
+   LOGO SHINE
+    */
 .nav-logo-shine {
   position: absolute;
   left: 0;
@@ -209,13 +202,9 @@ nav.is-scrolled .nav-logo-shine-compact {
   }
 }
 
-/* ────────────────────────────────────────────────────────────
-   NAV LINKS — gradient lấy từ màu logo
-   Logo: #1a4a35 (F đậm) → #2d7a4f (thân lá) → #6ab84a (đầu lá sáng)
-
-   ACTIVE  : gradient đậm full + gạch chân
-   HOVER   : cùng gradient, opacity 0.52 — nhạt hơn rõ, không gạch chân
-   ──────────────────────────────────────────────────────────── */
+/*
+   NAV LINKS
+    */
 .nav-links a {
   position: relative;
   text-decoration: none !important;
@@ -303,13 +292,7 @@ body.dark-mode .nav-links a:hover:not(.active) {
   opacity: 1 !important;
 }
 
-/* ────────────────────────────────────────────────────────────
-   ICON GROUP
-   - Mặc định (logo nhỏ): gap rộng
-   - Khi cuộn (logo to): gap thu lại
-   - Trên mobile: ẩn cả cụm, dồn hết vào nav-mobile-panel để nhường
-     chỗ tuyệt đối cho hamburger (đây là phần fix chính)
-   ──────────────────────────────────────────────────────────── */
+/*    ICON GROUP  */
 .nav-actions {
   display: flex;
   align-items: center;
@@ -386,9 +369,6 @@ body.dark-mode .nav-icon-group {
   border-right-color: rgba(255, 255, 255, 0.08);
 }
 
-/* ────────────────────────────────────────────────────────────
-   ẨN ICON DARK/LIGHT KHI CUỘN
-   ──────────────────────────────────────────────────────────── */
 nav.is-scrolled .icon-theme {
   opacity: 0;
   pointer-events: none;
@@ -398,9 +378,7 @@ nav.is-scrolled .icon-theme {
   border: none;
 }
 
-/* ────────────────────────────────────────────────────────────
-   BADGE
-   ──────────────────────────────────────────────────────────── */
+/* BADGE*/
 .nav-badge {
   position: absolute;
   top: -3px;
@@ -479,9 +457,7 @@ body.dark-mode .nav-badge {
     0 0 0 2px #121a16;
 }
 
-/* ────────────────────────────────────────────────────────────
-   TOOLTIP
-   ──────────────────────────────────────────────────────────── */
+/* TOOLTIP*/
 .nav-icon[data-tooltip]::before {
   content: attr(data-tooltip);
   position: absolute;
@@ -549,9 +525,7 @@ body.dark-mode .nav-icon[data-tooltip]::after {
   overflow: visible;
 }
 
-/* ────────────────────────────────────────────────────────────
-   CART DROPDOWN — xem nhanh giỏ hàng khi rê chuột vào icon giỏ
-   ──────────────────────────────────────────────────────────── */
+/* CART DROPDOWN — xem nhanh giỏ hàng khi rê chuột vào icon giỏ*/
 .nav-cart-wrapper {
   position: relative;
 }
@@ -904,9 +878,7 @@ body.dark-mode .cart-dropdown-empty-icon {
   line-height: 1;
 }
 
-/* ────────────────────────────────────────────────────────────
-   HAMBURGER
-   ──────────────────────────────────────────────────────────── */
+/*HAMBURGER*/
 .nav-hamburger {
   display: none;
   position: relative;
@@ -929,9 +901,7 @@ body.dark-mode .nav-hamburger {
   color: #c8d4cc;
 }
 
-/* ────────────────────────────────────────────────────────────
-   MOBILE
-   ──────────────────────────────────────────────────────────── */
+/* MOBILE */
 @media (max-width: 900px) {
   nav {
     padding: 0 20px;
@@ -1000,9 +970,7 @@ body.dark-mode .nav-hamburger {
   }
 }
 
-/* ────────────────────────────────────────────────────────────
-   NAV MOBILE LINK
-   ──────────────────────────────────────────────────────────── */
+/*NAV MOBILE LINK*/
 .nav-mobile-link {
   display: flex;
   align-items: center;
@@ -1195,9 +1163,7 @@ body.dark-mode .nav-mobile-link {
   }
 }
 
-/* ────────────────────────────────────────────────────────────
-   TOAST
-   ──────────────────────────────────────────────────────────── */
+/*TOAST*/
 .wl-undo-toast {
   display: flex;
   align-items: center;
@@ -1248,9 +1214,9 @@ body.dark-mode .nav-mobile-link {
   flex-shrink: 0;
 }
 
-/* ────────────────────────────────────────────────────────────
+/*
    FLY-TO-CART
-   ──────────────────────────────────────────────────────────── */
+    */
 .fly-to-cart-ghost {
   position: fixed;
   z-index: 9999;
