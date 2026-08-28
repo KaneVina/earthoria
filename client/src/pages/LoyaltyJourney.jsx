@@ -271,15 +271,18 @@ export default function LoyaltyJourney() {
           </h1>
 
           <p className="lj-hero-sub">
-            Năm hạng thành viên, năm tấm vé đến những công trình biểu tượng
-            của Việt Nam — mỗi đơn hàng bạn hoàn tất đưa bạn cất cánh gần
-            hơn một chặng, đến khi chạm đỉnh Landmark 81.
+            Năm hạng — năm vùng đất — một hành trình đi dọc Việt Nam - mỗi đơn
+            hàngtiến thêm một bước trên hành trình khám phá Việt Nam.
           </p>
 
           <div className="lj-hero-actions">
-            <button type="button" className="lj-btn-primary" onClick={scrollToJourney}>
+            <button
+              type="button"
+              className="lj-btn-primary"
+              onClick={scrollToJourney}
+            >
               <PlaneTakeoff size={15} />
-              Khám Phá 5 Chặng Bay
+              Khám Phá Hành Trình
             </button>
             {!isAuthenticated && (
               <Link to="/login" className="lj-btn-ghost">
@@ -288,7 +291,11 @@ export default function LoyaltyJourney() {
             )}
           </div>
 
-          <button type="button" className="lj-scroll-cue" onClick={scrollToJourney}>
+          <button
+            type="button"
+            className="lj-scroll-cue"
+            onClick={scrollToJourney}
+          >
             <span>Cuộn để khám phá</span>
             <ChevronDown size={14} />
           </button>
@@ -305,15 +312,19 @@ export default function LoyaltyJourney() {
 
       <section className="lj-journey" id="lj-journey">
         <div className="lj-journey-inner">
-          <div className="lj-section-head reveal" style={{ textAlign: "center" }}>
+          <div
+            className="lj-section-head reveal"
+            style={{ textAlign: "center" }}
+          >
             <span className="lj-eyebrow">Sổ Vé Hành Trình</span>
             <h2 className="lj-section-title">
-              Năm Tấm Vé, <em>Một Hành Trình</em>
+              Năm Dấu Ấn, <em>Một Hành Trình</em>
             </h2>
             <p className="lj-section-sub">
-              Từ Earthoria đến đỉnh Landmark 81 — mỗi hạng là một tấm vé máy
-              bay tới một công trình biểu tượng có thật của Việt Nam, được
-              kể lại thành hành trình thành viên của riêng bạn.
+              Từ Bắc vào Nam, mỗi lần nâng hạng là một lần bạn đặt chân đến một
+              vùng đất mới. Mỗi đơn hàng hoàn tất đưa bạn tiến thêm một bước
+              trên hành trình, mở ra một dấu ấn mới và những đặc quyền lớn hơn
+              tại Earthoria.
             </p>
           </div>
 
@@ -362,8 +373,8 @@ export default function LoyaltyJourney() {
           <p className="lj-journey-note reveal">
             <Sparkles size={13} />
             Chi tiêu được tính trên các đơn hàng đã thanh toán và giao thành
-            công. Hạng thành viên không bao giờ bị hạ — chỉ tăng dần theo
-            tổng chi tiêu trọn đời của bạn tại Earthoria.
+            công. Hạng thành viên không bao giờ bị hạ — chỉ tăng dần theo tổng
+            chi tiêu trọn đời của bạn tại Earthoria.
           </p>
         </div>
       </section>
@@ -384,7 +395,7 @@ export default function LoyaltyJourney() {
           <div className="lj-stat-item reveal">
             <Plane size={20} />
             <div className="lj-stat-value">0 → 1.710 km</div>
-            <div className="lj-stat-label">Quãng đường bay tượng trưng</div>
+            <div className="lj-stat-label">Dấu chân hành trình</div>
             <div className="lj-stat-sub">Từ Hà Nội đến TP.HCM</div>
           </div>
           <div className="lj-stat-item reveal">
@@ -392,7 +403,8 @@ export default function LoyaltyJourney() {
             <div className="lj-stat-value">Đến 12%</div>
             <div className="lj-stat-label">Giảm giá mỗi đơn hàng</div>
             <div className="lj-stat-sub">
-              Tối đa {formatPrice(tiers[tiers.length - 1]?.maxDiscountPerOrder)}/đơn
+              Tối đa {formatPrice(tiers[tiers.length - 1]?.maxDiscountPerOrder)}
+              /đơn
             </div>
           </div>
           <div className="lj-stat-item reveal">
@@ -676,9 +688,12 @@ const SEA_INSETS = [
 
 function PassportVietnamMap({ tiers }) {
   const tierByCode = Object.fromEntries(tiers.map((t) => [t.code, t]));
-  const hanoiActive = tierByCode.HANOI && (tierByCode.HANOI.unlocked || tierByCode.HANOI.isCurrent);
+  const hanoiActive =
+    tierByCode.HANOI &&
+    (tierByCode.HANOI.unlocked || tierByCode.HANOI.isCurrent);
   const hcmActive =
-    tierByCode.HOCHIMINH && (tierByCode.HOCHIMINH.unlocked || tierByCode.HOCHIMINH.isCurrent);
+    tierByCode.HOCHIMINH &&
+    (tierByCode.HOCHIMINH.unlocked || tierByCode.HOCHIMINH.isCurrent);
   return (
     <div className="lj-passport-map">
       <div className="lj-passport-map-label">
@@ -764,7 +779,10 @@ function PassportVietnamMap({ tiers }) {
           const active = t && (t.unlocked || t.isCurrent);
           const color = active ? t.color : "#9aa39c";
           return (
-            <g key={inset.name} className={`lj-vnmap-sea ${active ? "is-active" : ""}`}>
+            <g
+              key={inset.name}
+              className={`lj-vnmap-sea ${active ? "is-active" : ""}`}
+            >
               {inset.dots.map((d, i) => (
                 <circle key={i} cx={d.x} cy={d.y} r="1.6" fill={color} />
               ))}
@@ -782,7 +800,10 @@ function PassportVietnamMap({ tiers }) {
             key={t.code}
             className={`lj-vnmap-legend-item ${t.unlocked || t.isCurrent ? "is-active" : ""}`}
           >
-            <span className="lj-vnmap-legend-dot" style={{ background: t.color }} />
+            <span
+              className="lj-vnmap-legend-dot"
+              style={{ background: t.color }}
+            />
             {t.region}
           </span>
         ))}
@@ -801,7 +822,9 @@ function PassportStrip({ isAuthenticated, loading, loyaltyProfile, onLocate }) {
               <MapPin size={17} />
             </span>
             <div>
-              <div className="lj-passport-label">Hộ chiếu hạng của bạn</div>
+              <div className="lj-passport-label">
+                Hộ chiếu hành trình của bạn
+              </div>
               <div className="lj-passport-guest-text">
                 Đăng nhập để xem hạng hiện tại và tiến trình lên hạng tiếp theo
               </div>
@@ -822,129 +845,167 @@ function PassportStrip({ isAuthenticated, loading, loyaltyProfile, onLocate }) {
           <div className="lj-skel" style={{ width: "160px", height: "13px" }} />
           <div
             className="lj-skel"
-            style={{ width: "100%", maxWidth: "220px", height: "6px", marginTop: "12px" }}
+            style={{
+              width: "100%",
+              maxWidth: "220px",
+              height: "6px",
+              marginTop: "12px",
+            }}
           />
         </div>
       </div>
     );
   }
 
-  const { tier, isMaxTier, amountToNext, progressPercent, nextTier, spend, tiers } =
-    loyaltyProfile;
+  const {
+    tier,
+    isMaxTier,
+    amountToNext,
+    progressPercent,
+    nextTier,
+    spend,
+    tiers,
+  } = loyaltyProfile;
 
   return (
     <div className="lj-passport-wrap">
-      <div className="lj-passport-strip reveal" style={{ "--tier-color": tier.color }}>
+      <div
+        className="lj-passport-strip reveal"
+        style={{ "--tier-color": tier.color }}
+      >
         <div className="lj-passport-body">
-        <div className="lj-passport-info">
-        <div className="lj-passport-main">
-          <div className="lj-passport-left">
-            <span className="lj-passport-dot" />
-            <div>
-              <div className="lj-passport-label">Hộ chiếu hạng của bạn</div>
-              <div className="lj-passport-tiername">
-                Hạng {tier.roman} · {tier.name}
+          <div className="lj-passport-info">
+            <div className="lj-passport-main">
+              <div className="lj-passport-left">
+                <span className="lj-passport-dot" />
+                <div>
+                  <div className="lj-passport-label">
+                    Hộ chiếu hành trình của bạn
+                  </div>
+                  <div className="lj-passport-tiername">
+                    Hạng {tier.roman} · {tier.name}
+                  </div>
+                </div>
+              </div>
+              <div className="lj-passport-spend">
+                Đã chi tiêu <strong>{formatPrice(spend)}</strong>
+              </div>
+            </div>
+
+            <div className="lj-passport-stamps-label">
+              <Compass size={10} />
+              Các Chặng Đã Ghé Qua
+            </div>
+            <div className="lj-passport-stamps-row">
+              <div
+                className="lj-passport-stamps"
+                role="list"
+                aria-label="Các hạng đã ghé qua"
+              >
+                {tiers.map((t) => {
+                  const state = t.isCurrent
+                    ? "is-current"
+                    : t.unlocked
+                      ? "is-visited"
+                      : "is-locked";
+                  const statusText = t.isCurrent
+                    ? "hiện tại"
+                    : t.unlocked
+                      ? "đã ghé qua"
+                      : "chưa mở khóa";
+                  return (
+                    <span
+                      key={t.code}
+                      role="listitem"
+                      className={`lj-stamp ${state}`}
+                      style={{
+                        "--stamp-color": t.color,
+                        "--stamp-color-soft": t.colorSoft,
+                      }}
+                      title={`Hạng ${t.roman} · ${t.name} — ${statusText}`}
+                    >
+                      <span className="lj-stamp-ring" aria-hidden="true" />
+                      <span className="lj-stamp-imgwrap">
+                        <img
+                          src={t.image}
+                          alt=""
+                          className="lj-stamp-img"
+                          aria-hidden="true"
+                        />
+                      </span>
+                      {(t.unlocked || t.isCurrent) && (
+                        <span className="lj-stamp-check" aria-hidden="true">
+                          <CheckCircle2 size={9} />
+                        </span>
+                      )}
+                    </span>
+                  );
+                })}
+              </div>
+
+              <button
+                type="button"
+                className="lj-passport-locate"
+                onClick={() => onLocate(tier.code)}
+              >
+                <MapPin size={13} />
+                Xem vị trí của bạn trên hành trình
+              </button>
+            </div>
+
+            <div
+              className="lj-passport-hero"
+              style={{
+                "--tier-color": tier.color,
+                "--tier-color-soft": tier.colorSoft,
+              }}
+            >
+              <img
+                src={tier.image}
+                alt={tier.name}
+                className="lj-passport-hero-img"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                  e.currentTarget.nextSibling.style.display = "flex";
+                }}
+              />
+              <span
+                className="lj-passport-hero-img-fallback"
+                style={{ display: "none" }}
+              >
+                {tier.roman}
+              </span>
+              <div className="lj-passport-hero-info">
+                <div className="lj-passport-hero-name">
+                  Hạng {tier.roman} · {tier.name}
+                </div>
+                {isMaxTier ? (
+                  <p className="lj-passport-caption is-max">
+                    <CheckCircle2 size={13} />
+                    Hạng cao nhất — cảm ơn bạn đã đồng hành cùng Earthoria!
+                  </p>
+                ) : (
+                  <>
+                    <div className="lj-passport-track">
+                      <div
+                        className="lj-passport-fill"
+                        style={{
+                          width: `${progressPercent}%`,
+                          background: tier.color,
+                        }}
+                      />
+                    </div>
+                    <p className="lj-passport-caption">
+                      Còn <strong>{formatPrice(amountToNext)}</strong> để đến{" "}
+                      <strong>{nextTier?.name}</strong>
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           </div>
-          <div className="lj-passport-spend">
-            Đã chi tiêu <strong>{formatPrice(spend)}</strong>
-          </div>
-        </div>
 
-        <div className="lj-passport-stamps-label">
-          <Compass size={10} />
-          Các Chặng Đã Ghé Qua
-        </div>
-        <div className="lj-passport-stamps-row">
-          <div className="lj-passport-stamps" role="list" aria-label="Các hạng đã ghé qua">
-              {tiers.map((t) => {
-              const state = t.isCurrent
-                ? "is-current"
-                : t.unlocked
-                  ? "is-visited"
-                  : "is-locked";
-              const statusText = t.isCurrent
-                ? "hiện tại"
-                : t.unlocked
-                  ? "đã ghé qua"
-                  : "chưa mở khóa";
-              return (
-                <span
-                  key={t.code}
-                  role="listitem"
-                  className={`lj-stamp ${state}`}
-                  style={{
-                    "--stamp-color": t.color,
-                    "--stamp-color-soft": t.colorSoft,
-                  }}
-                  title={`Hạng ${t.roman} · ${t.name} — ${statusText}`}
-                >
-                  <span className="lj-stamp-ring" aria-hidden="true" />
-                  <span className="lj-stamp-imgwrap">
-                    <img src={t.image} alt="" className="lj-stamp-img" aria-hidden="true" />
-                  </span>
-                  {(t.unlocked || t.isCurrent) && (
-                    <span className="lj-stamp-check" aria-hidden="true">
-                      <CheckCircle2 size={9} />
-                    </span>
-                  )}
-                </span>
-              );
-            })}
-          </div>
-
-          <button
-            type="button"
-            className="lj-passport-locate"
-            onClick={() => onLocate(tier.code)}
-          >
-            <MapPin size={13} />
-            Xem vị trí của bạn trên hành trình
-          </button>
-        </div>
-
-        <div className="lj-passport-hero" style={{ "--tier-color": tier.color, "--tier-color-soft": tier.colorSoft }}>
-          <img
-            src={tier.image}
-            alt={tier.name}
-            className="lj-passport-hero-img"
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-              e.currentTarget.nextSibling.style.display = "flex";
-            }}
-          />
-          <span className="lj-passport-hero-img-fallback" style={{ display: "none" }}>
-            {tier.roman}
-          </span>
-          <div className="lj-passport-hero-info">
-            <div className="lj-passport-hero-name">
-              Hạng {tier.roman} · {tier.name}
-            </div>
-            {isMaxTier ? (
-              <p className="lj-passport-caption is-max">
-                <CheckCircle2 size={13} />
-                Hạng cao nhất — cảm ơn bạn đã đồng hành cùng Earthoria!
-              </p>
-            ) : (
-              <>
-                <div className="lj-passport-track">
-                  <div
-                    className="lj-passport-fill"
-                    style={{ width: `${progressPercent}%`, background: tier.color }}
-                  />
-                </div>
-                <p className="lj-passport-caption">
-                  Còn <strong>{formatPrice(amountToNext)}</strong> để đến{" "}
-                  <strong>{nextTier?.name}</strong>
-                </p>
-              </>
-            )}
-          </div>
-        </div>
-        </div>
-
-        <PassportVietnamMap tiers={tiers} />
+          <PassportVietnamMap tiers={tiers} />
         </div>
       </div>
     </div>
@@ -1004,7 +1065,14 @@ function StepCard({ icon: Icon, index, title, desc, tag }) {
 }
 
 /* RANK STOP (1 tấm vé trên hành trình)          */
-function RankStop({ tier, prevTier, isLast, index, loyaltyProfile, passengerName }) {
+function RankStop({
+  tier,
+  prevTier,
+  isLast,
+  index,
+  loyaltyProfile,
+  passengerName,
+}) {
   const [ref, active] = useReveal(0.15);
   const distValue = useCountUp(tier.distanceKm, active);
   const side = index % 2 === 0 ? "left" : "right";
@@ -1037,7 +1105,10 @@ function RankStop({ tier, prevTier, isLast, index, loyaltyProfile, passengerName
   const seat = `${tier.rank}${side === "left" ? "A" : "F"}`;
   const pnr = `EAR${tier.rank}${gate}${flightNo.slice(-2)}X`;
   const depMinutes = 300 + (tier.rank - 1) * 195;
-  const durationMinutes = Math.max(35, Math.round((tier.distanceKm / 780) * 60));
+  const durationMinutes = Math.max(
+    35,
+    Math.round((tier.distanceKm / 780) * 60),
+  );
   const depTime = formatClock(depMinutes);
   const arrTime = formatClock(depMinutes + durationMinutes);
   const durationLabel = formatDuration(durationMinutes);
@@ -1047,7 +1118,10 @@ function RankStop({ tier, prevTier, isLast, index, loyaltyProfile, passengerName
       id={`hang-${tier.code}`}
       ref={ref}
       className={`lj-row lj-row-${side}${active ? " in" : ""}${isCurrent ? " is-current" : ""}`}
-      style={{ "--tier-color": tier.color, "--tier-color-soft": tier.colorSoft }}
+      style={{
+        "--tier-color": tier.color,
+        "--tier-color-soft": tier.colorSoft,
+      }}
     >
       <TrackCurve color="var(--tier-color)" opacity={0.55} />
 
@@ -1092,11 +1166,12 @@ function RankStop({ tier, prevTier, isLast, index, loyaltyProfile, passengerName
               <CheckCircle2 size={11} /> Đã bay qua
             </span>
           )}
-          {(isUnlocked || (isCurrent && loyaltyProfile?.isMaxTier)) && isLast && (
-            <span className="lj-card-badge is-unlocked lj-card-badge-success">
-              <PlaneLanding size={11} /> Thành công — Đã hạ cánh
-            </span>
-          )}
+          {(isUnlocked || (isCurrent && loyaltyProfile?.isMaxTier)) &&
+            isLast && (
+              <span className="lj-card-badge is-unlocked lj-card-badge-success">
+                <PlaneLanding size={11} /> Thành công — Đã hạ cánh
+              </span>
+            )}
           {isLocked && (
             <span className="lj-card-badge is-locked">
               <Lock size={11} /> Chưa mở khóa
@@ -1134,7 +1209,11 @@ function RankStop({ tier, prevTier, isLast, index, loyaltyProfile, passengerName
                 e.currentTarget.nextSibling.style.display = "inline";
               }}
             />
-            <span className="lj-card-name-emoji" aria-hidden="true" style={{ display: "none" }}>
+            <span
+              className="lj-card-name-emoji"
+              aria-hidden="true"
+              style={{ display: "none" }}
+            >
               {tier.emoji}
             </span>
             {tier.name}
@@ -1156,7 +1235,10 @@ function RankStop({ tier, prevTier, isLast, index, loyaltyProfile, passengerName
             </div>
             <div className="lj-ticket-field">
               <span className="lj-ticket-field-label">Cổng</span>
-              <span className="lj-ticket-field-value">{gate}{tier.rank}</span>
+              <span className="lj-ticket-field-value">
+                {gate}
+                {tier.rank}
+              </span>
             </div>
             <div className="lj-ticket-field">
               <span className="lj-ticket-field-label">Ghế</span>
@@ -1169,7 +1251,7 @@ function RankStop({ tier, prevTier, isLast, index, loyaltyProfile, passengerName
           </div>
 
           <div className="lj-card-area">
-            <div className="lj-card-area-label">Quãng đường bay tượng trưng</div>
+            <div className="lj-card-area-label">Dấu chân hành trình</div>
             <div className="lj-card-area-value">{formatArea(distValue)}</div>
             <div className="lj-card-area-track">
               <div
@@ -1183,12 +1265,13 @@ function RankStop({ tier, prevTier, isLast, index, loyaltyProfile, passengerName
                 Bạn đã hoàn thành trọn vẹn chặng bay này
               </p>
             )}
-            {(isUnlocked || (isCurrent && loyaltyProfile?.isMaxTier)) && isLast && (
-              <p className="lj-card-area-caption is-max">
-                <PlaneLanding size={13} />
-                Thành công — bạn đã chinh phục toàn bộ hành trình Earthoria!
-              </p>
-            )}
+            {(isUnlocked || (isCurrent && loyaltyProfile?.isMaxTier)) &&
+              isLast && (
+                <p className="lj-card-area-caption is-max">
+                  <PlaneLanding size={13} />
+                  Thành công — bạn đã chinh phục toàn bộ hành trình Earthoria!
+                </p>
+              )}
             {isCurrent && loyaltyProfile.isMaxTier && !isLast && (
               <p className="lj-card-area-caption is-max">
                 <CheckCircle2 size={13} />
@@ -1197,8 +1280,9 @@ function RankStop({ tier, prevTier, isLast, index, loyaltyProfile, passengerName
             )}
             {isCurrent && !loyaltyProfile.isMaxTier && (
               <p className="lj-card-area-caption">
-                Chi thêm <strong>{formatPrice(loyaltyProfile.amountToNext)}</strong>{" "}
-                để hoàn tất chặng này, cất cánh sang{" "}
+                Chi thêm{" "}
+                <strong>{formatPrice(loyaltyProfile.amountToNext)}</strong> để
+                hoàn tất chặng này, cất cánh sang{" "}
                 <strong>{loyaltyProfile.nextTier?.name}</strong>
               </p>
             )}
@@ -1233,7 +1317,8 @@ function RankStop({ tier, prevTier, isLast, index, loyaltyProfile, passengerName
             <KeyRound size={13} />
             {tier.minSpend > 0 ? (
               <span>
-                Mở khóa từ tổng chi tiêu <strong>{formatPrice(tier.minSpend)}</strong>
+                Mở khóa từ tổng chi tiêu{" "}
+                <strong>{formatPrice(tier.minSpend)}</strong>
               </span>
             ) : (
               <span>Mặc định ngay khi bạn tạo tài khoản Earthoria</span>
