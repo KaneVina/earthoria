@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Loader2, Lock, SearchX } from "lucide-react";
 import { ebookService } from "../services/ebookService";
@@ -15,6 +15,29 @@ export default function EbookReader() {
   const effectiveSlug = isKidMode ? bookSlug : slug;
 
   const [state, setState] = useState({ status: "loading", data: null });
+  const book = state.data?.book;
+  const saveKidReadingProgress = useCallback(
+    (currentPage, totalPages) => {
+      if (!isKidMode || !token || !book?.slug || !totalPages) return;
+      try {
+        const storageKey = `earthoria:kidReading:${token}`;
+        const raw = localStorage.getItem(storageKey);
+        const map = raw ? JSON.parse(raw) : {};
+        map[book.slug] = {
+          slug: book.slug,
+          title: book.title,
+          coverImage: book.coverImage,
+          currentPage,
+          totalPages,
+          updatedAt: Date.now(),
+        };
+        localStorage.setItem(storageKey, JSON.stringify(map));
+      } catch {
+        // localStorage không khả dụng — bỏ qua, không chặn trải nghiệm đọc
+      }
+    },
+    [isKidMode, token, book],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -228,6 +251,7 @@ export default function EbookReader() {
       bookInfo={data.book}
       storageKey={data.id}
       resumeFromStorage
+      onProgress={saveKidReadingProgress}
       onClose={() => navigate(bookUrl)}
     />
   );

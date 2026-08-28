@@ -417,6 +417,7 @@ export default function GardenPage() {
                               className="kg-cta-btn kg-cta-btn--sm"
                               onClick={goToShelf}
                             >
+                              <BookOpen size={14} />
                               Đọc tiếp để chăm cây
                             </button>
                           </div>
@@ -450,6 +451,11 @@ export default function GardenPage() {
                                 onClick={() => setSelectedTreeId(t.id)}
                                 aria-label={`Xem chi tiết ${t.level.name}${t.id === activeTree.id ? " — cây đang trồng" : ""}`}
                               >
+                                {t.id === activeTree.id && (
+                                  <span className="kg-garden-tree-tag">
+                                    Đang trồng
+                                  </span>
+                                )}
                                 <GardenTreeVisual
                                   level={t.level.level}
                                   health={t.health}

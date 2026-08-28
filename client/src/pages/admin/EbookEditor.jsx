@@ -917,6 +917,7 @@ export function PreviewOverlay({
   bookInfo,
   storageKey,
   resumeFromStorage,
+  onProgress,
 }) {
   const THEMES = {
     forest: { label: "Rừng đêm" },
@@ -1064,6 +1065,7 @@ export function PreviewOverlay({
     } catch {
       // localStorage không khả dụng — bỏ qua
     }
+    onProgress?.(idx, pages.length);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [idx, resumeFromStorage]);
 

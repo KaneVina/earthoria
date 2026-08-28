@@ -118,11 +118,15 @@
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 22px;
-  padding: 0;
-  background: transparent;
-  border: none;
-  box-shadow: none;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: var(--kid-radius-lg);
+  box-shadow: var(--kid-shadow-sm);
   box-sizing: border-box;
+  transition: box-shadow var(--kid-t-med);
 }
 .gp-hud-left {
   display: flex;
@@ -144,7 +148,9 @@
   color: var(--kid-white);
   background: linear-gradient(145deg, var(--kid-green) 0%, var(--kid-teal) 100%);
   border: 2px solid var(--kid-white);
-  box-shadow: 0 0 0 2px var(--kid-green-light);
+  box-shadow:
+    0 0 0 2px var(--kid-green-light),
+    0 4px 10px -2px rgba(74, 158, 63, 0.45);
 }
 .gp-hud-left-text {
   display: flex;
@@ -197,11 +203,27 @@
 }
 .gp-hud-stat svg {
   flex-shrink: 0;
+  padding: 3px;
+  border-radius: 50%;
+  box-sizing: content-box;
   color: var(--kid-green-dark);
+  background: var(--kid-green-light);
+}
+.gp-hud-right .gp-hud-stat:nth-child(1) svg {
+  color: var(--kid-orange-dark);
+  background: var(--kid-orange-light);
+}
+.gp-hud-right .gp-hud-stat:nth-child(2) svg {
+  color: var(--kid-blue-dark);
+  background: var(--kid-blue-pale);
+}
+.gp-hud-right .gp-hud-stat:nth-child(3) svg {
+  color: var(--kid-green-dark);
+  background: var(--kid-green-light);
 }
 
 @media (max-width: 380px) {
-  .gp-hud { padding: 10px 12px; }
+  .gp-hud { padding: 8px 10px; }
   .gp-hud-avatar { width: 38px; height: 38px; font-size: 15px; }
   .gp-hud-name { font-size: 13.5px; }
   .gp-hud-stat { font-size: 11.5px; padding: 3px 8px; }
@@ -278,4 +300,14 @@
   border: 2px dashed rgba(74, 158, 63, 0.35);
   background: rgba(255, 255, 255, 0.4);
   color: rgba(74, 158, 63, 0.4);
+  animation: gp-empty-slot-breathe 3.8s ease-in-out infinite;
+}
+@keyframes gp-empty-slot-breathe {
+  0%, 100% { opacity: 0.65; transform: scale(0.97); }
+  50% { opacity: 1; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kg-garden-tree-slot--empty {
+    animation: none !important;
+  }
 }

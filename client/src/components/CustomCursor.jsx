@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 
-/* ─ Vẽ lá cây bằng canvas path (chế độ mặc định) ─ */
+/* Vẽ lá cây bằng canvas path (chế độ mặc định) */
 function drawLeaf(ctx, x, y, size, angle, alpha, colorStr) {
   ctx.save();
   ctx.globalAlpha = alpha;
@@ -111,8 +111,6 @@ export function setCursorEffect(on) {
   _setEnabled?.(on);
 }
 
-/* Phát hiện thiết bị cảm ứng / mobile — dùng pointer:coarse làm chuẩn chính
-   vì đáng tin hơn userAgent, kèm fallback ontouchstart cho một số trình duyệt cũ */
 function detectMobile() {
   if (typeof window === "undefined") return false;
   const coarse =
@@ -125,11 +123,6 @@ export default function CustomCursor() {
   const canvasRef = useRef(null);
   const enabledRef = useRef(true);
   const { pathname } = useLocation();
-
-  /* 3 chế độ theo route:
-     - "dashboard": khu quản trị → tối giản, không đom đóm, màu đậm hơn
-     - "kid": khu /e-kid → hiệu ứng vui nhộn, nhiều màu, phù hợp trẻ nhỏ
-     - "default": phần còn lại của web → giữ nguyên lá rơi + đom đóm xanh */
   const modeRef = useRef("default");
   modeRef.current = pathname.startsWith("/dashboard")
     ? "dashboard"
@@ -158,17 +151,10 @@ export default function CustomCursor() {
     };
     resize();
     window.addEventListener("resize", resize);
-
-    /* Vị trí chuột "thô" (target) và vị trí đã làm mượt (smoothed) dùng để vẽ.
-       Việc tách 2 lớp này + nội suy (lerp) mỗi frame là thứ tạo cảm giác
-       con trỏ "trôi" mượt theo chuột thay vì dính cứng theo từng pixel. */
     let tx = -300,
       ty = -300; // target: cập nhật ngay khi có mousemove
     let mx = -300,
       my = -300; // smoothed: theo sau tx/ty một cách mượt mà
-    /* Hệ số làm mượt theo từng chế độ — 0..1, càng lớn càng bám sát chuột thật,
-       càng nhỏ càng "trễ"/trôi. /dashboard cần bám gần như tức thời để thao tác
-       chính xác (click nút, bảng dữ liệu...), nên đặt rất cao (gần như không trễ). */
     const CURSOR_SMOOTH = { default: 0.35, kid: 0.32, dashboard: 0.98 };
 
     /* Vòng ring giãn nở mượt khi nhấn/nhả thay vì đổi kích thước tức thời */
@@ -179,8 +165,7 @@ export default function CustomCursor() {
     let frame = 0;
 
     /* ══════════════════════════════════════
-       LÁ CÂY RƠI — lớp phủ nền (chế độ mặc định)
-       pointerEvents: none nên không chặn click
+       LÁ CÂY RƠI
     ══════════════════════════════════════ */
     const LEAF_COUNT = isMobile ? 14 : 22; // giảm số lá trên mobile để nhẹ máy hơn
     const leaves = Array.from({ length: LEAF_COUNT }, (_, i) =>
@@ -232,9 +217,7 @@ export default function CustomCursor() {
     }
 
     /* ══════════════════════════════════════
-       BONG BÓNG BAY LÊN — lớp phủ nền (chế độ /e-kid)
-       thay thế lá rơi bằng bong bóng nhiều màu, nhẹ nhàng bay lên trên,
-       tạo cảm giác vui tươi, phù hợp trẻ nhỏ
+       BONG BÓNG BAY LÊN
     ══════════════════════════════════════ */
     const BUBBLE_COUNT = isMobile ? 10 : 16;
     const bubbles = Array.from({ length: BUBBLE_COUNT }, (_, i) =>
@@ -275,9 +258,7 @@ export default function CustomCursor() {
     }
 
     /* ══════════════════════════════════════
-       FIREFLIES (xanh) — chỉ ở chế độ mặc định.
-       Trên mobile chúng chỉ xuất hiện trong lúc hiệu ứng "bấm" (burst),
-       sau đó MỜ DẦN (fade-out) rồi biến mất hẳn.
+       FIREFLIES (xanh)
     ══════════════════════════════════════ */
     const N = 10;
     const FADE_STEP = 0.045; // tốc độ mờ dần khi "biến mất" trên mobile
@@ -305,9 +286,7 @@ export default function CustomCursor() {
     }));
 
     /* ══════════════════════════════════════
-       NGÔI SAO LẤP LÁNH NHIỀU MÀU — chỉ ở chế độ /e-kid.
-       Thay thế đom đóm xanh bằng ngôi sao đổi màu cầu vồng, lung linh,
-       bám theo con trỏ trên desktop; trên mobile xuất hiện khi chạm rồi mờ dần.
+       NGÔI SAO LẤP LÁNH NHIỀU MÀU
     ══════════════════════════════════════ */
     const kidStars = Array.from({ length: N }, (_, i) => ({
       x: -300,

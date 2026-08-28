@@ -29,7 +29,6 @@ import {
   Heart,
 } from "lucide-react";
 import { kidAccessService } from "../../services/kidAccessService";
-import FullScreenLoader from "../../components/FullScreenLoader";
 import KnowledgeGarden from "../../components/knowledgeGarden/KnowledgeGarden";
 import "../../components/assets/css/kidAccess.css";
 import GardenWidget from "../../components/knowledgeGarden/GardenWidget";
@@ -66,7 +65,7 @@ const BACK_TO_TOP_THRESHOLD = 520;
 //   chớp nháy nếu API trả lời quá nhanh) và thời lượng hoạt ảnh mây tản ra —
 //   giá trị này phải khớp với --kid-curtain-leave trong kidAccess.css
 const INTRO_COVER_MIN_MS = 900;
-const INTRO_LEAVE_MS = 1650;
+const INTRO_LEAVE_MS = 1950;
 
 const WEEKDAYS_VI = [
   "Chủ nhật",
@@ -484,6 +483,60 @@ export default function KidAccess() {
     };
   }, [token]);
 
+  //   sách bé đang đọc dở gần đây nhất (đọc từ localStorage do trang đọc
+  //   sách ghi lại), dùng để hiển thị thẻ "Đang đọc dở" kèm thanh tiến độ
+  const [readingProgress, setReadingProgress] = useState(null);
+
+  useEffect(() => {
+    if (!token || books.length === 0) return;
+    const bookSlugs = new Set(books.map((b) => b.slug));
+
+    const loadProgress = () => {
+      try {
+        const raw = localStorage.getItem(`earthoria:kidReading:${token}`);
+        if (!raw) {
+          setReadingProgress(null);
+          return;
+        }
+        const map = JSON.parse(raw);
+        const entries = Object.values(map).filter(
+          (e) =>
+            e &&
+            bookSlugs.has(e.slug) &&
+            e.totalPages > 0 &&
+            e.currentPage + 1 < e.totalPages, // chỉ tính sách chưa đọc hết
+        );
+        if (entries.length === 0) {
+          setReadingProgress(null);
+          return;
+        }
+        entries.sort((a, b) => b.updatedAt - a.updatedAt);
+        setReadingProgress(entries[0]);
+      } catch {
+        setReadingProgress(null);
+      }
+    };
+
+    loadProgress();
+    // đồng bộ lại khi bé quay về từ trang đọc sách (tab khác hoặc quay lại)
+    window.addEventListener("storage", loadProgress);
+    window.addEventListener("focus", loadProgress);
+    return () => {
+      window.removeEventListener("storage", loadProgress);
+      window.removeEventListener("focus", loadProgress);
+    };
+  }, [token, books]);
+
+  const readingPercent = readingProgress
+    ? Math.min(
+        100,
+        Math.round(
+          ((readingProgress.currentPage + 1) / readingProgress.totalPages) *
+            100,
+        ),
+      )
+    : 0;
+
   const inspireLine = useMemo(
     () => INSPIRE_LINES[Math.floor(Math.random() * INSPIRE_LINES.length)],
     [child?.id],
@@ -767,10 +820,6 @@ export default function KidAccess() {
           data-phase={skyState.phase}
         >
           <DynamicSky skyState={skyState} minimal />
-          <FullScreenLoader
-            eyebrow="Đang mở tủ sách"
-            message="Bé một chút xíu nhé..."
-          />
         </div>
       </>
     );
@@ -1260,6 +1309,53 @@ export default function KidAccess() {
           )}
 
           <GardenWidget token={token} slug={slug} />
+
+          {readingProgress && (
+            <section className="kid-continue">
+              <button
+                type="button"
+                className="kid-continue-card"
+                onClick={(e) => {
+                  spawnRipple(e);
+                  spawnSparkles(e, 8);
+                  handleReadNow(readingProgress);
+                }}
+              >
+                <div className="kid-continue-cover">
+                  {readingProgress.coverImage ? (
+                    <img
+                      src={readingProgress.coverImage}
+                      alt={readingProgress.title}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <BookMarked size={28} />
+                  )}
+                </div>
+                <div className="kid-continue-body">
+                  <span className="kid-continue-eyebrow">
+                    <BookOpen size={14} /> Đang đọc dở
+                  </span>
+                  <div className="kid-continue-title">
+                    {readingProgress.title}
+                  </div>
+                  <div className="kid-continue-progress-track">
+                    <div
+                      className="kid-continue-progress-fill"
+                      style={{ width: `${readingPercent}%` }}
+                    />
+                  </div>
+                  <div className="kid-continue-progress-label">
+                    Trang {readingProgress.currentPage + 1}/
+                    {readingProgress.totalPages} · {readingPercent}%
+                  </div>
+                </div>
+                <span className="kid-continue-cta">
+                  Đọc tiếp <ChevronRight size={15} />
+                </span>
+              </button>
+            </section>
+          )}
 
           <section className="kid-shelf">
             <div className="kid-shelf-heading">

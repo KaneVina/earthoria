@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-
 export default function KidCloudCurtain({ stage, skyState }) {
   const [mounted, setMounted] = useState(false);
 
@@ -28,32 +27,39 @@ export default function KidCloudCurtain({ stage, skyState }) {
     >
       <div className="kid-curtain-backdrop" />
 
-      <div className="kid-curtain-puff kid-curtain-puff-a" />
-      <div className="kid-curtain-puff kid-curtain-puff-b" />
-      <div className="kid-curtain-puff kid-curtain-puff-c" />
-      <div className="kid-curtain-puff kid-curtain-puff-d" />
-      <div className="kid-curtain-puff kid-curtain-puff-e" />
-      <div className="kid-curtain-puff kid-curtain-puff-f" />
-      <div className="kid-curtain-puff kid-curtain-puff-core" />
+      <div className="kid-curtain-clouds">
+        <div className="kid-curtain-puff kid-curtain-puff-e" />
+        <div className="kid-curtain-puff kid-curtain-puff-a" />
+        <div className="kid-curtain-puff kid-curtain-puff-b" />
+        <div className="kid-curtain-puff kid-curtain-puff-core" />
+        <div className="kid-curtain-puff kid-curtain-puff-c" />
+        <div className="kid-curtain-puff kid-curtain-puff-d" />
+        <div className="kid-curtain-puff kid-curtain-puff-f" />
+      </div>
 
-      <div className="kid-curtain-mist" />
+      <div className="kid-curtain-flare" />
 
       <div className="kid-curtain-center">
         <span className="kid-curtain-badge">
-          <span className="kid-curtain-ring kid-curtain-ring-1" />
-          <span className="kid-curtain-ring kid-curtain-ring-2" />
-          <img
-            src="/logo/logo-mau/lg-m-kid-studio.png"
-            alt=""
-            className="kid-curtain-logo"
-          />
+          <span className="kid-curtain-glow" />
+          <span className="kid-curtain-ring" />
+          <span className="kid-curtain-badge-inner">
+            <img
+              src="/logo/logo-mau/lg-kf-small.png"
+              alt=""
+              className="kid-curtain-logo"
+            />
+          </span>
         </span>
-        <p className="kid-curtain-text">Bé chờ một chút xíu nhé…</p>
-        <span className="kid-curtain-dots">
-          <i />
-          <i />
-          <i />
-        </span>
+
+        <div className="kid-curtain-pill">
+          <p className="kid-curtain-text">Bé chờ một chút xíu nhé…</p>
+          <span className="kid-curtain-dots">
+            <i />
+            <i />
+            <i />
+          </span>
+        </div>
       </div>
     </div>
   );
