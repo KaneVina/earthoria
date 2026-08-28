@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap");
 /* Team 6-grid */
 .team-members-grid {
   display: grid;
@@ -986,7 +987,6 @@ body.dark-mode .team-avatar { background: #222e28; border-color: rgba(74,158,63,
 
   transition: all 0.4s ease;
 }
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap");
 
 .tech-stats-section {
   position: relative;
