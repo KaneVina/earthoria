@@ -1361,9 +1361,9 @@ function EiraUI() {
           )}
         </div>
 
-        <div id="eira-foot">
-          <div className="eira-foot-dot" />
-          Powered by Earthoria
+         <div id="eira-foot">
+          Powered by
+          <span className="eira-foot-logo" role="img" aria-label="Earthoria" />
         </div>
       </div>
     </div>

@@ -226,9 +226,7 @@
   transform: translate(var(--drag-x), var(--drag-y));
 }
 
-/* ══════════════════════════════════════════════════
-   MASCOT
-   ══════════════════════════════════════════════════ */
+/*MASCOT*/
 #eira-fab.mascot {
   width: 188px;
   height: 188px;
@@ -446,9 +444,7 @@
   }
 }
 
-/* ══════════════════════════════════════════════════
-   BADGE
-   ══════════════════════════════════════════════════ */
+/*  BADGE*/
 .eira-badge {
   position: absolute;
   top: -4px;
@@ -596,19 +592,14 @@
   transform: translateY(-50%) translateX(0);
 }
 
-/* ══════════════════════════════════════════════════
-   CHAT WINDOW
-   ══════════════════════════════════════════════════ */
+/*CHAT WINDOW*/
 #eira-win {
   position: fixed;
   bottom: 88px;
   right: 24px;
   width: 370px;
-
-  /* HEIGHT CỐ ĐỊNH — không overflow màn hình */
   height: 560px;
   max-height: calc(100vh - 100px); /* safety cap cho màn nhỏ */
-
   background: var(--c-surface);
   border-radius: var(--r-lg);
   border: 1px solid var(--c-border);
@@ -640,7 +631,7 @@
   transition: none;
 }
 
-/* MOBILE — key fix: height tính từ đáy lên */
+/* MOBILE */
 @media (max-width: 480px) {
   #eira-win {
     /* FAB bottom = 18 + safe, FAB height = 50, gap = 10 → 78 + safe */
@@ -671,9 +662,7 @@
   }
 }
 
-/* ══════════════════════════════════════════════════
-   HEADER
-   ══════════════════════════════════════════════════ */
+/*  HEADER*/
 #eira-hdr {
   background: linear-gradient(
     138deg,
@@ -917,9 +906,7 @@
   box-shadow: 0 4px 12px color-mix(in srgb, var(--eg) 15%, transparent);
 }
 
-/* ══════════════════════════════════════════════════
-   MESSAGES
-   ══════════════════════════════════════════════════ */
+/*   MESSAGES*/
 #eira-msgs {
   flex: 1; /* chiếm hết space còn lại */
   min-height: 0; /* CRITICAL: cho phép flex child shrink */
@@ -1399,27 +1386,26 @@
   gap: 5px;
   flex-shrink: 0;
 }
-.eira-foot-dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--eg);
-  opacity: 0.42;
-  animation: blink-dot 2.2s ease-in-out infinite;
+.eira-foot-logo {
+  display: inline-block;
+  width: 62px;
+  height: 14px;
+  background-color: var(--c-hint);
+  -webkit-mask-image: url("/logo/logo-mau/lg-m-im.png");
+  mask-image: url("/logo/logo-mau/lg-m-im.png");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+  transition: background-color 0.2s;
 }
-@keyframes blink-dot {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.2;
-  }
+#eira-foot:hover .eira-foot-logo {
+  background-color: var(--g3);
 }
 
-/* ══════════════════════════════════════════════════
-   REDUCED MOTION
-   ══════════════════════════════════════════════════ */
+ /* REDUCED MOTION*/
 @media (prefers-reduced-motion: reduce) {
   #eira-fab,
   .eira-online-dot,
@@ -1428,7 +1414,6 @@
   #eira-hdr::before,
   #eira-hdr::after,
   #eira-root .eira-welcome::before,
-  .eira-foot-dot,
   .eira-fab-mascot-img {
     animation: none !important;
   }
@@ -1453,14 +1438,7 @@
     opacity 0.2s ease,
     transform 0.2s ease;
 }
-/* ═══════════════════════════════════════════════════════════════
-   BỔ SUNG CHO EiraChatbox.jsx (phiên bản nâng cấp)
-   Dán đoạn này vào cuối file assets/css/EiraChatbox.css hiện có.
-   Các biến màu (--eira-*) dùng lại theo hệ thống màu gốc nếu đã khai báo;
-   nếu chưa có, các giá trị fallback bên dưới vẫn hoạt động độc lập.
-   ═══════════════════════════════════════════════════════════════ */
 
-/* Nút cuộn xuống cuối hội thoại */
 #eira-scroll-btn {
   position: absolute;
   right: 14px;
@@ -1552,8 +1530,6 @@
   cursor: not-allowed;
 }
 
-/*  Trạng thái đang gọi tool (thay cho 3 chấm nhảy khi model đang tra
-    tồn kho / đơn hàng / mã giảm giá / chọn sách gợi ý...)  */
 .em-status-label {
   font-size: 13px;
   color: #3d6b3a;
