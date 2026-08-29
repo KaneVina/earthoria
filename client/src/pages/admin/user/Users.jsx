@@ -1,4 +1,3 @@
-// Users.jsx — Admin user management
 import { useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -7,12 +6,13 @@ import {
   ArrowUpCircle, ArrowDownCircle, UserPlus, Eye, Download, Users as UsersIcon,
 } from 'lucide-react'
 import api from "../../../services/api";
-import { formatDate } from "../../../utils/helpers";
+import { formatDateShort } from "../../../utils/helpers";
 import toast from 'react-hot-toast'
 import AdminLayout from '../AdminLayout'
 import Pagination from '../../../components/Pagination'
 import { useAuthStore } from '../../../store/authStore'
 import UserDetailDrawer from './UserDetailDrawer'
+import { TierBadge } from './UserBadges'
 
 /* ─ Avatar color pool (deterministic by first char) ─ */
 const AVATAR_COLORS = [
@@ -92,6 +92,8 @@ function UserCodeBadge({ code }) {
   )
 }
 
+/* ─ TierBadge — hạng thành viên, dùng chung với UserDetailDrawer (xem ./UserBadges.jsx) ─ */
+
 /* ─ FilterSelect ─ */
 function FilterSelect({ value, onChange, options, placeholder }) {
   return (
@@ -151,6 +153,7 @@ function SkeletonRow() {
         </div>
       </td>
       <td>{bar(60, 18)}</td>
+      <td>{bar(50, 18)}</td>
       <td>{bar(24)}</td>
       <td>{bar(80)}</td>
       <td>{bar(70, 18)}</td>
@@ -395,16 +398,17 @@ export default function Users() {
         </div>
       </div>
 
-      {/*  Search & Filters  */}
+      {/*  Search & Filters — full width, canh chung lề trái/phải với bảng phía dưới  */}
       <div style={{
         display: 'flex',
         flexWrap: 'wrap',
+        width: '100%',
         gap: 10,
         marginBottom: 16,
         alignItems: 'center',
       }}>
-        {/* Search box */}
-        <div className="a-search-wrap" style={{ flex: '1 1 220px', minWidth: 200, marginBottom: 0 }}>
+        {/* Search box — kéo dài chiếm hết phần còn lại */}
+        <div className="a-search-wrap" style={{ flex: '1 1 260px', minWidth: 200, marginBottom: 0 }}>
           <Search size={13} className="a-search-icon" />
           <input
             className="a-input"
@@ -433,48 +437,51 @@ export default function Users() {
           )}
         </div>
 
-        {/* Role filter */}
-        <FilterSelect
-          value={roleFilter}
-          onChange={handleRoleChange}
-          placeholder="Tất cả vai trò"
-          options={roleFilterOptions}
-        />
+        {/* Cụm bộ lọc — luôn neo sát lề phải, khớp với mép phải của bảng bên dưới */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, alignItems: 'center', marginLeft: 'auto' }}>
+          {/* Role filter */}
+          <FilterSelect
+            value={roleFilter}
+            onChange={handleRoleChange}
+            placeholder="Tất cả vai trò"
+            options={roleFilterOptions}
+          />
 
-        {/* Status filter */}
-        <FilterSelect
-          value={statusFilter}
-          onChange={handleStatusChange}
-          placeholder="Tất cả trạng thái"
-          options={[
-            { value: 'active', label: 'Đang hoạt động' },
-            { value: 'locked', label: 'Đã khóa'        },
-          ]}
-        />
+          {/* Status filter */}
+          <FilterSelect
+            value={statusFilter}
+            onChange={handleStatusChange}
+            placeholder="Tất cả trạng thái"
+            options={[
+              { value: 'active', label: 'Đang hoạt động' },
+              { value: 'locked', label: 'Đã khóa'        },
+            ]}
+          />
 
-        {/* Clear filters */}
-        {hasFilters && (
-          <button
-            onClick={clearFilters}
-            style={{
-              background: 'none',
-              border: '1px solid rgba(13,51,48,0.12)',
-              borderRadius: 8,
-              padding: '7px 12px',
-              fontSize: 12,
-              color: 'rgba(13,51,48,0.5)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 5,
-              fontFamily: 'inherit',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            <X size={11} />
-            Xóa bộ lọc
-          </button>
-        )}
+          {/* Clear filters */}
+          {hasFilters && (
+            <button
+              onClick={clearFilters}
+              style={{
+                background: 'none',
+                border: '1px solid rgba(13,51,48,0.12)',
+                borderRadius: 8,
+                padding: '7px 12px',
+                fontSize: 12,
+                color: 'rgba(13,51,48,0.5)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+                fontFamily: 'inherit',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <X size={11} />
+              Xóa bộ lọc
+            </button>
+          )}
+        </div>
       </div>
 
       {/*  Bulk action bar  */}
@@ -535,7 +542,7 @@ export default function Users() {
                     aria-label="Chọn tất cả"
                   />
                 </th>
-                {['Mã người dùng', 'Người dùng', 'Vai trò', 'Đơn hàng', 'Ngày đăng ký', 'Trạng thái', ''].map(h => (
+                {['Mã người dùng', 'Người dùng', 'Vai trò', 'Hạng', 'Đơn hàng', 'Ngày đăng ký', 'Trạng thái', ''].map(h => (
                   <th key={h}>{h}</th>
                 ))}
               </tr>
@@ -545,7 +552,7 @@ export default function Users() {
                 Array.from({ length: 6 }).map((_, i) => <SkeletonRow key={`sk-${i}`} />)
               ) : !users.length ? (
                 <tr>
-                  <td colSpan={8} style={{ padding: 56, textAlign: 'center' }}>
+                  <td colSpan={9} style={{ padding: 56, textAlign: 'center' }}>
                     <UsersIcon size={30} style={{ color: 'rgba(13,51,48,0.15)', marginBottom: 10 }} />
                     <div style={{ color: 'rgba(13,51,48,0.35)', fontSize: 13 }}>
                       {hasFilters
@@ -613,11 +620,14 @@ export default function Users() {
                       </span>
                     </td>
 
+                    {/* Tier / Hạng */}
+                    <td><TierBadge tier={user.tier} size="sm" /></td>
+
                     {/* Order count */}
                     <td style={{ fontWeight: 500 }}>{user._count?.orders ?? 0}</td>
 
                     {/* Joined */}
-                    <td className="a-td-muted">{formatDate(user.createdAt)}</td>
+                    <td className="a-td-muted">{formatDateShort(user.createdAt)}</td>
 
                     {/* Status */}
                     <td>
@@ -686,7 +696,15 @@ export default function Users() {
 
       {/*  Detail drawer  */}
       {viewUserId && (
-        <UserDetailDrawer userId={viewUserId} onClose={() => setViewUserId(null)} />
+        <UserDetailDrawer
+          userId={viewUserId}
+          onClose={() => setViewUserId(null)}
+          viewerId={viewer?.id}
+          canPromote={canPromote}
+          canToggle={canToggle}
+          onPromote={(user) => setPromoteUser(user)}
+          onToggleLock={(user, action) => setConfirmUser({ user, action })}
+        />
       )}
 
       {/*  Confirm lock/unlock modal (1 user)  */}

@@ -29,7 +29,7 @@ function getSidebarLogo(currentPath) {
   if (path.startsWith("/dashboard/games")) {
     return "/logo/logo-mau/lg-m-game-studio.png"; // Trang Game
   }
-  return "/logo/logo-mau/lg-m-studio.png"; // Mặc định
+  return "/logo/logo-mau/lg-m-chinh.png"; // Mặc định
 }
 
 export default function Sidebar({

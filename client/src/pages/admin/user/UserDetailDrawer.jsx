@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
- import { X, ShieldAlert, Baby, ShoppingBag } from 'lucide-react'
+import { X, ShieldAlert, Baby, ShoppingBag, ArrowUpCircle, ArrowDownCircle, Lock, Unlock, Award } from 'lucide-react'
 import api from '../../../services/api'
 import { formatDate, formatPrice } from '../../../utils/helpers'
+import { TierBadge } from './UserBadges'
 
 /* ─ Avatar color pool (deterministic by first char) — đồng bộ với Users.jsx ─ */
 const AVATAR_COLORS = [
@@ -65,7 +66,15 @@ function InfoRow({ label, value }) {
   )
 }
 
-export default function UserDetailDrawer({ userId, onClose }) {
+export default function UserDetailDrawer({
+  userId,
+  onClose,
+  viewerId,
+  canPromote,
+  canToggle,
+  onPromote,
+  onToggleLock,
+}) {
   const { data, isLoading } = useQuery({
     queryKey: ['admin-user-detail', userId],
     queryFn: () => api.get(`/admin/users/${userId}/detail`).then(r => r.data.data),
@@ -75,6 +84,10 @@ export default function UserDetailDrawer({ userId, onClose }) {
   if (!userId) return null
 
   const roleCfg = data ? (ROLE_CONFIG[data.role] ?? ROLE_CONFIG.CUSTOMER) : null
+  const isSelf = data && viewerId && data.id === viewerId
+  const showPromote = data && canPromote && canPromote(data.role) && !isSelf
+  const showToggle = data && canToggle && canToggle(data) && !isSelf
+  const loyalty = data?.loyalty
 
   return (
     <div
@@ -110,35 +123,83 @@ export default function UserDetailDrawer({ userId, onClose }) {
         ) : (
           <div style={{ padding: 24, flex: 1 }}>
 
-            {/* Identity */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
-              <div
-                className="a-user-avatar"
-                style={{ width: 48, height: 48, fontSize: 18, background: avatarColor(data.name) }}
-              >
-                {data.name?.[0]?.toUpperCase()}
-              </div>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: 15 }}>{data.name}</div>
-                <div style={{ fontSize: 12, color: 'rgba(13,51,48,0.5)' }}>{data.email}</div>
+            {/* Identity — avatar thật nếu có, badges hạng luôn hiển thị */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, marginBottom: 16 }}>
+              {data.avatar ? (
+                <img
+                  src={data.avatar}
+                  alt={data.name}
+                  style={{
+                    width: 56, height: 56, borderRadius: '50%', objectFit: 'cover',
+                    flexShrink: 0, border: '1px solid rgba(13,51,48,0.08)',
+                  }}
+                />
+              ) : (
+                <div
+                  className="a-user-avatar"
+                  style={{ width: 56, height: 56, fontSize: 20, background: avatarColor(data.name), flexShrink: 0 }}
+                >
+                  {data.name?.[0]?.toUpperCase()}
+                </div>
+              )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 600, fontSize: 15.5 }}>{data.name}</div>
+                <div style={{ fontSize: 12, color: 'rgba(13,51,48,0.5)', marginBottom: 8 }}>{data.email}</div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span className={`a-badge ${roleCfg.cls}`}>{roleCfg.label}</span>
+                  <span className={`a-badge ${data.isActive ? 'success' : 'danger'}`}>
+                    {data.isActive ? 'Hoạt động' : 'Đã khóa'}
+                  </span>
+                  {loyalty?.tier && <TierBadge tier={loyalty.tier} size="sm" />}
+                  {data.userCode && (
+                    <code style={{
+                      fontSize: 10.5, fontFamily: 'monospace', background: 'rgba(13,51,48,0.06)',
+                      padding: '3px 9px', borderRadius: 20, color: 'var(--a-ink)', letterSpacing: '0.03em',
+                    }}>
+                      {data.userCode}
+                    </code>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Status row */}
-            <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-              <span className={`a-badge ${roleCfg.cls}`}>{roleCfg.label}</span>
-              <span className={`a-badge ${data.isActive ? 'success' : 'danger'}`}>
-                {data.isActive ? 'Hoạt động' : 'Đã khóa'}
-              </span>
-              {data.userCode && (
-                <code style={{
-                  fontSize: 10.5, fontFamily: 'monospace', background: 'rgba(13,51,48,0.06)',
-                  padding: '3px 9px', borderRadius: 20, color: 'var(--a-ink)', letterSpacing: '0.03em',
-                }}>
-                  {data.userCode}
-                </code>
-              )}
-            </div>
+            {/* Action buttons — nâng cấp role & khóa/mở khóa tài khoản */}
+            {(showPromote || showToggle || isSelf) && (
+              <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+                {showPromote && (
+                  <button
+                    className="a-btn-ghost"
+                    style={{ flex: '1 1 auto', justifyContent: 'center', fontSize: 12 }}
+                    onClick={() => onPromote?.(data)}
+                  >
+                    {data.role === 'CUSTOMER'
+                      ? <ArrowUpCircle size={14} />
+                      : <ArrowDownCircle size={14} />}
+                    {data.role === 'CUSTOMER' ? 'Nâng lên Dealer' : 'Hạ xuống Customer'}
+                  </button>
+                )}
+                {showToggle && (
+                  <button
+                    className="a-btn-ghost"
+                    style={{
+                      flex: '1 1 auto', justifyContent: 'center', fontSize: 12,
+                      color: data.isActive ? '#c05050' : 'var(--a-green)',
+                      borderColor: data.isActive ? 'rgba(192,80,80,0.3)' : 'rgba(74,158,63,0.3)',
+                      background: data.isActive ? 'rgba(192,80,80,0.06)' : 'rgba(74,158,63,0.08)',
+                    }}
+                    onClick={() => onToggleLock?.(data, data.isActive ? 'lock' : 'unlock')}
+                  >
+                    {data.isActive ? <Lock size={13} /> : <Unlock size={13} />}
+                    {data.isActive ? 'Khóa tài khoản' : 'Mở khóa tài khoản'}
+                  </button>
+                )}
+                {isSelf && !showPromote && !showToggle && (
+                  <div style={{ fontSize: 11, color: 'rgba(13,51,48,0.35)' }}>
+                    Không thể tự thay đổi vai trò/khóa tài khoản của chính mình.
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Lock reason (nếu đang bị khóa) */}
             {!data.isActive && data.lockReason && (
@@ -155,6 +216,61 @@ export default function UserDetailDrawer({ userId, onClose }) {
                   <div style={{ fontSize: 12, color: '#7a4440', lineHeight: 1.6 }}>
                     {data.lockReason}
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Hạng thành viên — luôn hiển thị đầy đủ hạng + hình + tiến độ */}
+            {loyalty?.tier && (
+              <div style={{ marginBottom: 22 }}>
+                <SectionTitle icon={Award}>Hạng thành viên</SectionTitle>
+                <div style={{
+                  background: loyalty.tier.colorSoft || 'var(--a-surface)',
+                  border: `1px solid ${loyalty.tier.color ? loyalty.tier.color + '33' : 'rgba(13,51,48,0.08)'}`,
+                  borderRadius: 10, padding: '14px 16px',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: loyalty.isMaxTier ? 0 : 12 }}>
+                    {loyalty.tier.image ? (
+                      <img src={loyalty.tier.image} alt={loyalty.tier.name} style={{ width: 44, height: 44, objectFit: 'contain', flexShrink: 0 }} />
+                    ) : (
+                      <span style={{ fontSize: 32 }}>{loyalty.tier.emoji}</span>
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: '0.06em', color: loyalty.tier.color, textTransform: 'uppercase' }}>
+                        Hạng {loyalty.tier.roman}
+                      </div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--a-ink)' }}>
+                        {loyalty.tier.name}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: 10, color: 'rgba(13,51,48,0.4)' }}>Đã chi tiêu</div>
+                      <div style={{ fontSize: 13, fontWeight: 600 }}>{formatPrice(loyalty.spend ?? 0)}</div>
+                    </div>
+                  </div>
+
+                  {!loyalty.isMaxTier && loyalty.nextTier && (
+                    <>
+                      <div style={{
+                        height: 6, borderRadius: 4, background: 'rgba(13,51,48,0.08)',
+                        overflow: 'hidden', marginBottom: 6,
+                      }}>
+                        <div style={{
+                          height: '100%', width: `${loyalty.progressPercent}%`,
+                          background: loyalty.tier.color || 'var(--a-green)', borderRadius: 4,
+                        }} />
+                      </div>
+                      <div style={{ fontSize: 11, color: 'rgba(13,51,48,0.55)' }}>
+                        Chi thêm <strong>{formatPrice(loyalty.amountToNext)}</strong> để lên{' '}
+                        <strong>Hạng {loyalty.nextTier.roman} · {loyalty.nextTier.name}</strong>
+                      </div>
+                    </>
+                  )}
+                  {loyalty.isMaxTier && (
+                    <div style={{ fontSize: 11, color: 'rgba(13,51,48,0.5)' }}>
+                      Đã đạt hạng cao nhất trong hệ thống.
+                    </div>
+                  )}
                 </div>
               </div>
             )}

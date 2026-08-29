@@ -11,6 +11,15 @@ export const formatDate = (date) => {
   }).format(new Date(date))
 }
 
+// Định dạng ngắn gọn dd/mm/yyyy — dùng cho các cột dạng bảng (vd. Ngày đăng ký).
+export const formatDateShort = (date) => {
+  const d = new Date(date)
+  const dd = String(d.getDate()).padStart(2, '0')
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const yyyy = d.getFullYear()
+  return `${dd}/${mm}/${yyyy}`
+}
+
 export const formatDateTime = (date) => {
   return new Intl.DateTimeFormat('vi-VN', {
     year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'

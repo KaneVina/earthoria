@@ -10,6 +10,21 @@ const {
   sendOrderDeliveredEmail,
   sendOrderCancelledEmail,
 } = require("../services/emailService");
+const { resolveTierBySpend, buildLoyaltyProfile } = require("../utils/loyaltyTier");
+
+// Trả về thông tin hạng rút gọn (đủ cho hiển thị danh sách) từ 1 mức chi tiêu.
+const buildTierSummary = (spend) => {
+  const tier = resolveTierBySpend(spend);
+  return {
+    rank: tier.rank,
+    roman: tier.roman,
+    name: tier.name,
+    image: tier.image,
+    emoji: tier.emoji,
+    color: tier.color,
+    colorSoft: tier.colorSoft,
+  };
+};
 
 // Gửi email không được phép làm hỏng/làm chậm thao tác admin — luôn tự bắt lỗi, chỉ log lại.
 const sendOrderEmailSafe = (sendFn, payload) => {
@@ -1434,9 +1449,30 @@ exports.getUsers = async (req, res) => {
       prisma.user.count({ where }),
     ]);
 
+    // Tính hạng thành viên (theo tổng chi tiêu đơn PAID + COMPLETED) cho từng user trong trang hiện tại.
+    const userIds = users.map((u) => u.id);
+    const spendAgg = userIds.length
+      ? await prisma.order.groupBy({
+          by: ["userId"],
+          where: {
+            userId: { in: userIds },
+            paymentStatus: "PAID",
+            status: "COMPLETED",
+          },
+          _sum: { total: true },
+        })
+      : [];
+    const spendMap = Object.fromEntries(
+      spendAgg.map((s) => [s.userId, s._sum.total || 0]),
+    );
+    const usersWithTier = users.map((u) => ({
+      ...u,
+      tier: buildTierSummary(spendMap[u.id] || 0),
+    }));
+
     return res.json({
       success: true,
-      data: { users, total, totalPages: Math.ceil(total / limit), page },
+      data: { users: usersWithTier, total, totalPages: Math.ceil(total / limit), page },
     });
   } catch (err) {
     console.error("[getUsers]", err);
@@ -1569,6 +1605,7 @@ exports.getUserDetail = async (req, res) => {
         phone: true,
         gender: true,
         dob: true,
+        avatar: true,
         role: true,
         isActive: true,
         userCode: true,
@@ -1621,6 +1658,12 @@ exports.getUserDetail = async (req, res) => {
       _sum: { total: true },
     });
 
+    // Hạng thành viên tính theo chi tiêu đơn PAID + COMPLETED (đồng bộ /loyalty/me).
+    const loyaltySpend = await prisma.order.aggregate({
+      where: { userId: id, paymentStatus: "PAID", status: "COMPLETED" },
+      _sum: { total: true },
+    });
+
     return res.json({
       success: true,
       data: {
@@ -1629,6 +1672,7 @@ exports.getUserDetail = async (req, res) => {
         // dưới dạng văn bản gốc. Chỉ trả về trạng thái để FE hiển thị.
         passwordProtected: true,
         totalSpent: totalSpent._sum.total ?? 0,
+        loyalty: buildLoyaltyProfile(loyaltySpend._sum.total ?? 0),
       },
     });
   } catch (err) {
