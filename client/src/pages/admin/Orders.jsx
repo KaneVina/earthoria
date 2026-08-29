@@ -595,6 +595,39 @@ function OrderDrawer({ orderId, onClose, onUpdateStatus, isUpdating }) {
 // Mã đơn luôn có dạng ODE-mmddyy + 3 ký tự chữ/số (khớp getOrderCode ở backend)
 const ORDER_CODE_REGEX = /^ODE-\d{6}[A-Za-z0-9]{3}$/;
 
+const filterInputStyle = {
+  height: 36,
+  padding: "0 12px",
+  borderRadius: 8,
+  border: "1px solid rgba(13,51,48,0.14)",
+  fontSize: 12.5,
+  fontFamily: "inherit",
+  color: "var(--a-ink)",
+  outline: "none",
+  background: "#fff",
+  boxSizing: "border-box",
+};
+
+function FilterField({ label, children, style }) {
+  return (
+    <div style={style}>
+      <div
+        style={{
+          fontSize: 10,
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          color: "rgba(13,51,48,0.4)",
+          fontWeight: 600,
+          marginBottom: 6,
+        }}
+      >
+        {label}
+      </div>
+      {children}
+    </div>
+  );
+}
+
 export default function Orders() {
   const qc = useQueryClient();
 
@@ -604,6 +637,12 @@ export default function Orders() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [searchError, setSearchError] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("");
+  const [paymentStatus, setPaymentStatus] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [totalMin, setTotalMin] = useState("");
+  const [totalMax, setTotalMax] = useState("");
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -634,10 +673,34 @@ export default function Orders() {
 
   /*  Data  */
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-orders", page, status, search],
+    queryKey: [
+      "admin-orders",
+      page,
+      status,
+      search,
+      paymentMethod,
+      paymentStatus,
+      dateFrom,
+      dateTo,
+      totalMin,
+      totalMax,
+    ],
     queryFn: () =>
       api
-        .get("/admin/orders", { params: { page, limit: 15, status, search } })
+        .get("/admin/orders", {
+          params: {
+            page,
+            limit: 15,
+            status,
+            search,
+            paymentMethod,
+            paymentStatus,
+            dateFrom,
+            dateTo,
+            totalMin,
+            totalMax,
+          },
+        })
         .then((r) => r.data.data),
     keepPreviousData: true,
   });
@@ -675,61 +738,205 @@ export default function Orders() {
         </div>
       </div>
 
-      {/*  Search box  */}
-      <form onSubmit={handleSearchSubmit} style={{ marginBottom: 14 }}>
-        <div style={{ position: "relative", maxWidth: 400 }}>
-          <Search
-            size={15}
-            style={{
-              position: "absolute",
-              left: 12,
-              top: "50%",
-              transform: "translateY(-50%)",
-              color: "rgba(13,51,48,0.35)",
-            }}
-          />
-          <input
-            value={searchInput}
-            onChange={(e) => {
-              setSearchInput(e.target.value);
-              if (searchError) setSearchError("");
-            }}
-            placeholder="Tìm theo mã đơn (ODE-...), tên hoặc email khách hàng"
-            style={{
-              width: "100%",
-              padding: "9px 34px 9px 34px",
-              borderRadius: 8,
-              border: `1px solid ${searchError ? "#e34948" : "rgba(13,51,48,0.15)"}`,
-              fontSize: 12.5,
-              fontFamily: "inherit",
-              outline: "none",
-            }}
-          />
-          {searchInput && (
-            <button
-              type="button"
-              onClick={handleClearSearch}
-              style={{
-                position: "absolute",
-                right: 8,
-                top: "50%",
-                transform: "translateY(-50%)",
-                border: "none",
-                background: "none",
-                cursor: "pointer",
-                color: "rgba(13,51,48,0.4)",
+           {/*  Bộ lọc  */}
+      <form
+        onSubmit={handleSearchSubmit}
+        style={{
+          marginBottom: 18,
+        }}
+      >
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1.6fr 1fr 1fr",
+            gap: 14,
+            marginBottom: 14,
+          }}
+        >
+          {/* Ô search — mã đơn / tên / email */}
+          <FilterField label="Tìm kiếm">
+            <div style={{ position: "relative" }}>
+              <Search
+                size={14}
+                style={{
+                  position: "absolute",
+                  left: 11,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "rgba(13,51,48,0.35)",
+                }}
+              />
+              <input
+                value={searchInput}
+                onChange={(e) => {
+                  setSearchInput(e.target.value);
+                  if (searchError) setSearchError("");
+                }}
+                placeholder="Mã đơn (ODE-...), tên hoặc email"
+                style={{
+                  ...filterInputStyle,
+                  width: "100%",
+                  padding: "9px 32px 9px 32px",
+                  borderColor: searchError ? "#e34948" : "rgba(13,51,48,0.14)",
+                }}
+              />
+              {searchInput && (
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  style={{
+                    position: "absolute",
+                    right: 8,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    border: "none",
+                    background: "none",
+                    cursor: "pointer",
+                    color: "rgba(13,51,48,0.4)",
+                    display: "flex",
+                  }}
+                  aria-label="Xóa tìm kiếm"
+                >
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+            {searchError && (
+              <div style={{ color: "#e34948", fontSize: 11, marginTop: 5 }}>
+                {searchError}
+              </div>
+            )}
+          </FilterField>
+
+          {/* Phương thức thanh toán */}
+          <FilterField label="Phương thức TT">
+            <select
+              value={paymentMethod}
+              onChange={(e) => {
+                setPaymentMethod(e.target.value);
+                setPage(1);
               }}
-              aria-label="Xóa tìm kiếm"
+              style={{ ...filterInputStyle, width: "100%" }}
             >
-              <X size={14} />
-            </button>
-          )}
+              <option value="">Tất cả</option>
+              {Object.entries(PAYMENT_METHOD_LABEL).map(([key, label]) => (
+                <option key={key} value={key}>{label}</option>
+              ))}
+            </select>
+          </FilterField>
+
+          {/* Trạng thái thanh toán */}
+          <FilterField label="Trạng thái TT">
+            <select
+              value={paymentStatus}
+              onChange={(e) => {
+                setPaymentStatus(e.target.value);
+                setPage(1);
+              }}
+              style={{ ...filterInputStyle, width: "100%" }}
+            >
+              <option value="">Tất cả</option>
+              {Object.entries(PAYMENT_STATUS).map(([key, label]) => (
+                <option key={key} value={key}>{label}</option>
+              ))}
+            </select>
+          </FilterField>
         </div>
-        {searchError && (
-          <div style={{ color: "#e34948", fontSize: 11.5, marginTop: 6 }}>
-            {searchError}
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1.6fr 1fr",
+            gap: 14,
+            alignItems: "end",
+          }}
+        >
+          {/* Khoảng ngày đặt */}
+          <FilterField label="Ngày đặt">
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => {
+                  setDateFrom(e.target.value);
+                  setPage(1);
+                }}
+                style={{ ...filterInputStyle, flex: 1 }}
+              />
+              <span style={{ fontSize: 12, color: "rgba(13,51,48,0.35)" }}>→</span>
+              <input
+                type="date"
+                value={dateTo}
+                onChange={(e) => {
+                  setDateTo(e.target.value);
+                  setPage(1);
+                }}
+                style={{ ...filterInputStyle, flex: 1 }}
+              />
+            </div>
+          </FilterField>
+
+          {/* Khoảng tổng tiền + nút xóa lọc */}
+          <div style={{ display: "flex", gap: 10, alignItems: "end" }}>
+            <FilterField label="Tổng tiền (đ)" style={{ flex: 1 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <input
+                  type="number"
+                  min="0"
+                  value={totalMin}
+                  onChange={(e) => {
+                    setTotalMin(e.target.value);
+                    setPage(1);
+                  }}
+                  placeholder="Từ"
+                  style={{ ...filterInputStyle, flex: 1, width: 0 }}
+                />
+                <span style={{ fontSize: 12, color: "rgba(13,51,48,0.35)" }}>→</span>
+                <input
+                  type="number"
+                  min="0"
+                  value={totalMax}
+                  onChange={(e) => {
+                    setTotalMax(e.target.value);
+                    setPage(1);
+                  }}
+                  placeholder="Đến"
+                  style={{ ...filterInputStyle, flex: 1, width: 0 }}
+                />
+              </div>
+            </FilterField>
+
+            {(paymentMethod || paymentStatus || dateFrom || dateTo || totalMin || totalMax || search) && (
+              <button
+                type="button"
+                onClick={() => {
+                  handleClearSearch();
+                  setPaymentMethod("");
+                  setPaymentStatus("");
+                  setDateFrom("");
+                  setDateTo("");
+                  setTotalMin("");
+                  setTotalMax("");
+                }}
+                style={{
+                  height: 36,
+                  padding: "0 14px",
+                  borderRadius: 8,
+                  border: "1px solid rgba(13,51,48,0.14)",
+                  background: "var(--a-surface)",
+                  color: "rgba(13,51,48,0.6)",
+                  cursor: "pointer",
+                  fontSize: 12,
+                  fontFamily: "inherit",
+                  fontWeight: 500,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Xóa lọc
+              </button>
+            )}
           </div>
-        )}
+        </div>
       </form>
 
       {/*  Status filter pills  */}

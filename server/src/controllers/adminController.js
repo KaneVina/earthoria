@@ -1197,13 +1197,35 @@ exports.deleteCategory = async (req, res) => {
 };
 
 /* ORDERS*/
+// Payment status hiển thị ở FE dùng PENDING, nhưng DB lưu UNPAID (xem mapPaymentStatus) —
+// khi filter theo paymentStatus phải đổi ngược PENDING -> UNPAID trước khi query.
+const reverseMapPaymentStatus = (status) => (status === "PENDING" ? "UNPAID" : status);
+
+const VALID_PAYMENT_METHODS = ["COD", "VNPAY", "MOMO", "BANKQR", "STRIPE"];
+const VALID_PAYMENT_STATUSES = ["PENDING", "PAID", "FAILED", "REFUNDED", "EXPIRED"];
+
 exports.getOrders = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.max(1, parseInt(req.query.limit) || 15);
     const status = req.query.status?.trim();
     const search = req.query.search?.trim() ?? "";
+    const paymentMethod = req.query.paymentMethod?.trim() ?? "";
+    const paymentStatus = req.query.paymentStatus?.trim() ?? "";
+    const dateFrom = req.query.dateFrom?.trim() ?? "";
+    const dateTo = req.query.dateTo?.trim() ?? "";
+    const totalMin = req.query.totalMin !== undefined && req.query.totalMin !== ""
+      ? Number(req.query.totalMin)
+      : null;
+    const totalMax = req.query.totalMax !== undefined && req.query.totalMax !== ""
+      ? Number(req.query.totalMax)
+      : null;
     const skip = (page - 1) * limit;
+
+    // Mã đơn KHÔNG phải cột lưu sẵn — sinh động từ createdAt + hash(id) (xem getOrderCode
+    // trong orderController.js). Nên khi search đúng định dạng ODE-mmddyyXXX, phải:
+    // 1) đọc ra mm/dd/yy để khoanh vùng đúng NGÀY tạo đơn, 2) lấy các đơn trong ngày đó,
+    // 3) tính lại getOrderCode() cho từng đơn rồi so khớp chính xác trong JS.
     const orderCodeMatch = search.match(
       /^ODE-(\d{2})(\d{2})(\d{2})([A-Za-z0-9]{3})$/i,
     );
@@ -1234,6 +1256,10 @@ exports.getOrders = async (req, res) => {
         orderIdsFromCode = [];
       }
     }
+
+    // Điều kiện search + filter (mã đơn/tên/email, phương thức TT, trạng thái TT, khoảng ngày,
+    // khoảng tổng tiền) — tách riêng khỏi filter status vì statusCounts (đếm cho từng pill)
+    // cần áp các điều kiện này nhưng KHÔNG áp status hiện tại.
     const searchConditions = [];
     if (orderIdsFromCode !== null) {
       searchConditions.push({ id: { in: orderIdsFromCode } });
@@ -1246,6 +1272,43 @@ exports.getOrders = async (req, res) => {
           ],
         },
       });
+    }
+
+    if (paymentMethod && VALID_PAYMENT_METHODS.includes(paymentMethod)) {
+      searchConditions.push({ paymentMethod });
+    }
+    if (paymentStatus && VALID_PAYMENT_STATUSES.includes(paymentStatus)) {
+      searchConditions.push({ paymentStatus: reverseMapPaymentStatus(paymentStatus) });
+    }
+
+    if (dateFrom || dateTo) {
+      const createdAtRange = {};
+      if (dateFrom) {
+        const from = new Date(dateFrom);
+        if (!isNaN(from)) {
+          from.setHours(0, 0, 0, 0);
+          createdAtRange.gte = from;
+        }
+      }
+      if (dateTo) {
+        const to = new Date(dateTo);
+        if (!isNaN(to)) {
+          to.setHours(23, 59, 59, 999);
+          createdAtRange.lte = to;
+        }
+      }
+      if (Object.keys(createdAtRange).length) {
+        searchConditions.push({ createdAt: createdAtRange });
+      }
+    }
+
+    if (totalMin !== null || totalMax !== null) {
+      const totalRange = {};
+      if (totalMin !== null && !isNaN(totalMin)) totalRange.gte = totalMin;
+      if (totalMax !== null && !isNaN(totalMax)) totalRange.lte = totalMax;
+      if (Object.keys(totalRange).length) {
+        searchConditions.push({ total: totalRange });
+      }
     }
 
     const listConditions = status
@@ -1283,6 +1346,8 @@ exports.getOrders = async (req, res) => {
         },
       }),
       prisma.order.count({ where }),
+      // Đếm theo từng trạng thái CHỈ áp search/filter, không áp status hiện tại — để pill nào
+      // cũng hiện đúng số lượng khớp với các điều kiện đang lọc.
       prisma.order.groupBy({
         by: ["status"],
         where: searchConditions.length ? { AND: searchConditions } : {},
@@ -1293,67 +1358,6 @@ exports.getOrders = async (req, res) => {
     const statusCounts = Object.fromEntries(
       statusGroups.map((g) => [g.status, g._count._all]),
     );
-
-    const unpaidBankQrIds = orders
-      .filter((o) => o.paymentMethod === "BANKQR" && o.paymentStatus !== "PAID")
-      .map((o) => o.id);
-
-    let mismatchByOrderId = {};
-    if (unpaidBankQrIds.length > 0) {
-      const mismatchTxns = await prisma.paymentTransaction.findMany({
-        where: {
-          orderId: { in: unpaidBankQrIds },
-          gateway: "BANKQR",
-          type: "IPN",
-          message: { startsWith: "Sai số tiền" },
-        },
-        orderBy: { createdAt: "desc" },
-      });
-      for (const txn of mismatchTxns) {
-        if (!mismatchByOrderId[txn.orderId]) {
-          mismatchByOrderId[txn.orderId] = {
-            transferredAmount: txn.amount,
-            at: txn.createdAt,
-          };
-        }
-      }
-    }
-
-    const mapped = orders.map((o) => ({
-      ...o,
-      paymentStatus: mapPaymentStatus(o.paymentStatus),
-      paymentMismatch: mismatchByOrderId[o.id]
-        ? { ...mismatchByOrderId[o.id], expectedAmount: o.total }
-        : null,
-      shippingAddress: o.address
-        ? {
-            name: o.address.fullName,
-            phone: o.address.phone,
-            address: `${o.address.street}, ${o.address.ward}, ${o.address.district}, ${o.address.province}`,
-          }
-        : null,
-      items: o.items.map((item) => ({
-        ...item,
-        product: item.variant?.book,
-        title: item.variant?.book?.title,
-      })),
-    }));
-
-    return res.json({
-      success: true,
-      data: {
-        orders: mapped,
-        total,
-        totalPages: Math.ceil(total / limit),
-        page,
-        statusCounts,
-      },
-    });
-  } catch (err) {
-    console.error("[getOrders]", err);
-    return res.status(500).json({ success: false, message: "Lỗi server" });
-  }
-};
 
 exports.getOrderById = async (req, res) => {
   try {
