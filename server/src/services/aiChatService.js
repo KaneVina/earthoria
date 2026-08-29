@@ -10,9 +10,9 @@ const MAX_MESSAGE_LEN = 500
 const MAX_TOOL_ROUNDS = 3 // chặn vòng lặp tool gọi tool vô hạn
 const MAX_BOOK_CANDIDATES = 5
 
-/* ═══════════════════════════════════════════════════════════════
+/*
    1) RAG — LẤY DỮ LIỆU THẬT TỪ DB
-   ═══════════════════════════════════════════════════════════════ */
+     */
 
 function formatBookCard(book) {
   const variant = book.variants?.find((v) => v.format === 'PHYSICAL') || book.variants?.[0] || null
@@ -77,9 +77,9 @@ async function getActiveCouponsContext() {
   return `MÃ GIẢM GIÁ ĐANG HOẠT ĐỘNG (LẤY TRỰC TIẾP TỪ HỆ THỐNG):\n${lines.join('\n')}`
 }
 
-/* ═══════════════════════════════════════════════════════════════
+/*
    2) SYSTEM PROMPT
-   ═══════════════════════════════════════════════════════════════ */
+     */
 
 const BASE_SYSTEM_PROMPT = `Bạn là Eira — trợ lý AI thân thiện đồng thời là chuyên viên tư vấn khách hàng chuyên nghiệp của thương hiệu sách giáo dục tương tác Earthoria. Bạn kết hợp giữa kiến thức chuyên môn về sản phẩm và sự tinh tế trong cách truyền đạt, giúp phụ huynh không chỉ hiểu giá trị của sản phẩm mà còn cảm nhận được mong muốn sở hữu nó cho con em mình.
 
@@ -92,7 +92,7 @@ NGUYÊN TẮC TUYỆT ĐỐI:
 
 DÙNG TOOL KHI CẦN — RẤT QUAN TRỌNG:
 - Khi bạn muốn giới thiệu cụ thể 1-3 cuốn sách cho khách (không chỉ nhắc tên suông), LUÔN gọi tool suggest_books với đúng "id" lấy từ khối DỮ LIỆU SÁCH LIÊN QUAN — để hệ thống hiển thị card sản phẩm đẹp kèm ảnh/giá/nút mua ngay cho khách, thay vì chỉ mô tả bằng chữ.
-- Khi khách hỏi sâu về nội dung/câu chuyện/bài học của MỘT cuốn cụ thể, hoặc hỏi cuốn đó có hợp với tính cách/hoàn cảnh riêng của bé không (vd: bé nhút nhát, sợ động vật, thích khoa học, đang học về môi trường...): LUÔN gọi tool get_book_details trước khi trả lời, để lấy đúng tóm tắt + chủ đề + gợi ý phù hợp từ hệ thống thay vì suy diễn.
+- Khi khách hỏi sâu về nội dung/câu chuyện/bài học của MỘT cuốn cụ thể, hoặc hỏi cuốn đó có hợp với tính cách/hoàn cảnh riêng của bé không (vd: bé nhút nhát, sợ động vật, thích khoa học, đang học về môi trường...): LUÔN gọi tool get_book_details trước khi trả lời, để lấy đúng tóm tắt + chủ đề + gợi ý phù hợp từ hệ thống thay vì suy diễn. Sau khi trả lời xong phần nội dung, LUÔN chèn 1 liên kết markdown tới đúng "url" trả về từ tool này (ví dụ: [Xem chi tiết sách này](/books/...)) để khách bấm vào xem trang sản phẩm đầy đủ.
 - Khi khách hỏi còn hàng không / số lượng tồn kho của MỘT cuốn cụ thể: gọi tool check_stock, đừng đoán từ dữ liệu cũ.
 - Khi khách hỏi về trạng thái đơn hàng của họ ("đơn của tôi tới đâu rồi", "đơn hàng ABC123 sao rồi"): gọi tool get_order_status. Nếu không cung cấp mã, để trống để lấy đơn gần nhất.
 - Khi khách muốn dùng một mã giảm giá cụ thể: gọi tool apply_coupon để kiểm tra và xem trước số tiền được giảm dựa trên giỏ hàng thật của khách.
@@ -143,9 +143,9 @@ function buildSystemPrompt(dynamicContextBlocks) {
   return `${BASE_SYSTEM_PROMPT}\n\n${context}`
 }
 
-/* ═══════════════════════════════════════════════════════════════
+/*
    3) LỌC ĐẦU RA — lớp phòng thủ thứ hai
-   ═══════════════════════════════════════════════════════════════ */
+     */
 
 const LEAK_PATTERNS = [/\/dashboard(\/\S*)?/gi]
 
@@ -155,9 +155,9 @@ function sanitizeReply(text) {
   return safe
 }
 
-/* ═══════════════════════════════════════════════════════════════
+/*
    4) ĐỊNH NGHĨA TOOLS (function calling — chuẩn OpenAI/Groq)
-   ═══════════════════════════════════════════════════════════════ */
+     */
 
 const TOOLS = [
   {
@@ -267,9 +267,9 @@ const TOOL_STATUS_LABELS = {
   escalate_to_human: 'Đang kết nối nhân viên hỗ trợ...',
 }
 
-/* ═══════════════════════════════════════════════════════════════
+/*
    5) THỰC THI TOOL — TẤT CẢ TRUY VẤN DB THẬT, KHÔNG BỊA
-   ═══════════════════════════════════════════════════════════════ */
+     */
 
 async function toolSuggestBooks(args, ctx) {
   const requestedIds = Array.isArray(args.book_ids) ? args.book_ids : []
@@ -318,6 +318,7 @@ async function toolGetBookDetails(args, ctx) {
   return {
     ok: true,
     title: full.title,
+    url: `/books/${full.slug}/${encodeId(full.id)}`,
     description: full.description || null,
     synopsis: full.synopsis || null,
     themes: full.themes || [],
@@ -480,9 +481,9 @@ async function executeTool(name, args, ctx) {
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════
+/*
    6) GỌI GROQ — STREAMING + PHÁT HIỆN TOOL CALLS TRONG STREAM
-   ═══════════════════════════════════════════════════════════════ */
+     */
 
 async function streamGroqCompletion(messages, { onToken, signal } = {}) {
   if (!GROQ_API_KEY) {
@@ -577,9 +578,9 @@ async function streamGroqCompletion(messages, { onToken, signal } = {}) {
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════
+/*
    7) ORCHESTRATOR — vòng lặp text ⇄ tool call, phát sự kiện qua emit()
-   ═══════════════════════════════════════════════════════════════ */
+     */
 
 /**
  * @param {object} params
