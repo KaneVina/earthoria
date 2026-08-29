@@ -169,10 +169,12 @@ const PUBLIC_LINK_WHITELIST = [
   "/legal/privacy",
   "/legal/shipping",
   "/legal/cookies",
+  "/legal/returns",
+  "/legal/membership",
   "/sitemap",
+  "/loyalty",
 ];
-// Các nhóm đường dẫn động (có tham số), chỉ chấp nhận theo tiền tố
-const PUBLIC_LINK_PREFIXES = ["/ar/", "/books/"];
+const PUBLIC_LINK_PREFIXES = ["/ar/", "/books/", "/game/", "/ebook/"];
 
 function isSafePublicPath(path) {
   if (typeof path !== "string" || !path.startsWith("/")) return false;
