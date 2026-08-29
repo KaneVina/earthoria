@@ -16,6 +16,7 @@ import {
   Moon,
   RefreshCcw,
   ChevronRight,
+  ChevronDown,
   Check,
   X,
   AlertTriangle,
@@ -37,6 +38,7 @@ import {
   BookMarked,
   Smile,
   MoreVertical,
+  UserCog,
 } from "lucide-react";
 
 import "../components/assets/css/profile.css";
@@ -48,7 +50,6 @@ import CreateChildWizard from "../components/parent/CreateChildWizard";
 import FullScreenLoader from "../components/FullScreenLoader";
 import KidLinkCard from "../components/parent/KidLinkCard";
 import DeleteChildModal from "../components/parent/DeleteChildModal";
-import ChildActionsModal from "../components/parent/ChildActionsModal";
 
 const WEEK_LABELS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 // Chủ nhật (0) xuống cuối mảng (index 6).
@@ -130,8 +131,6 @@ const SECTIONS = [
   { id: "reports", label: "Báo cáo" },
   { id: "books", label: "Sách của bé" },
   { id: "eye-care", label: "Bảo vệ mắt" },
-  { id: "security", label: "Bảo mật & khóa" },
-  { id: "kid-link", label: "Link cho bé" },
 ];
 
 const MAX_PIN_ATTEMPTS = 5;
@@ -294,6 +293,10 @@ export default function ParentDashboard() {
 
   const [books, setBooks] = useState([]);
   const [booksLoading, setBooksLoading] = useState(false);
+
+  // Bé nào đang mở rộng panel thao tác nhanh (khóa/mở khóa/link/xóa)
+  // ngay trong danh sách chọn bé. null = không có panel nào mở.
+  const [expandedChildId, setExpandedChildId] = useState(null);
 
   const loadChildren = useCallback(async () => {
     setChildrenLoading(true);
@@ -478,19 +481,17 @@ export default function ParentDashboard() {
   const [lockConfirmOpen, setLockConfirmOpen] = useState(false);
   const [unlockPinOpen, setUnlockPinOpen] = useState(false);
   /*  Bé đang là mục tiêu của khoá/mở khoá có thể khác activeChild khi
-      thao tác trực tiếp từ menu "..." trên thẻ chọn bé */
+      thao tác trực tiếp từ panel mở rộng trong danh sách chọn bé */
   const [lockTarget, setLockTarget] = useState(null); // { id, name }
 
-  /*  Bé đang mở modal thao tác nhanh (menu "...") trên thẻ chọn bé */
-  const [actionsChild, setActionsChild] = useState(null);
-
   /*  Xoá vĩnh viễn hồ sơ con lưu riêng { id, name } của bé cần xoá,
-      để có thể xoá nhanh ngay từ thẻ chọn bé mà không cần đợi
+      để có thể xoá nhanh ngay từ danh sách chọn bé mà không cần đợi
       dashboard của bé đó tải xong (khác activeChild) */
   const [deleteTarget, setDeleteTarget] = useState(null);
   const handleChildDeleted = () => {
     toast.success(`Đã xoá vĩnh viễn hồ sơ của ${deleteTarget?.name}`);
     setDeleteTarget(null);
+    setExpandedChildId(null);
     loadChildren(); // tải lại danh sách activeChildId sẽ tự chuyển sang bé còn lại (xem loadChildren)
   };
 
@@ -816,6 +817,19 @@ export default function ParentDashboard() {
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  // Chọn bé để cài đặt: đổi bé đang active, đóng panel mở rộng, và báo
+  // rõ ràng cho phụ huynh biết họ vừa chuyển sang cài đặt cho ai.
+  const selectChild = (child) => {
+    if (child.id === activeChildId) return;
+    setActiveChildId(child.id);
+    setExpandedChildId(null);
+    toast.success(`Đang cài đặt cho bé ${child.name}`);
+  };
+
+  const toggleExpandedChild = (childId) => {
+    setExpandedChildId((prev) => (prev === childId ? null : childId));
+  };
+
   // Vị trí % của khung giờ được phép trên dải 24h, để vẽ timeline
   const startPct = (timeToMinutes(settings.allowStart) / (24 * 60)) * 100;
   const endPct = (timeToMinutes(settings.allowEnd) / (24 * 60)) * 100;
@@ -889,7 +903,16 @@ export default function ParentDashboard() {
     );
   }
 
-  if (!activeChild || dashboardLoading) {
+  if (!activeChildId || (dashboardLoading && !dashboard)) {
+    return (
+      <FullScreenLoader
+        eyebrow="Vui lòng chờ"
+        message="Đang tải dữ liệu của bé…"
+      />
+    );
+  }
+
+  if (!activeChild) {
     return (
       <FullScreenLoader
         eyebrow="Vui lòng chờ"
@@ -968,106 +991,186 @@ export default function ParentDashboard() {
               </span>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Child switcher */}
-          <div className="pkd-child-row">
+      {/* ═══════════ CHỌN BÉ ĐỂ CÀI ĐẶT ═══════════ */}
+      <div className="pkd-body pkd-body-top">
+        <section className="pkd-section pkd-child-picker-section">
+          <RevealCard as="div" className="pkd-section-head">
+            <span className="pkd-section-eyebrow">Bước 1</span>
+            <h2 className="pkd-section-title">Chọn bé để cài đặt</h2>
+            <p className="pkd-section-sub">
+              Mỗi bé có giới hạn giờ xem, khóa AR và thư viện sách <b>riêng</b>.
+              Chọn một bé bên dưới trước khi chỉnh phần cài đặt.
+            </p>
+          </RevealCard>
+
+          <RevealCard as="div" className="pkd-child-picker-list">
             {children.map((child) => {
               const mins = child.todayMinutes ?? 0;
               const limit = child.dailyLimitMinutes ?? 60;
               const pct = clamp((mins / limit) * 100, 0, 100);
+              const isActive = activeChildId === child.id;
+              const isExpanded = expandedChildId === child.id;
               return (
-                <button
+                <div
                   key={child.id}
-                  className={`pkd-child-card ${activeChildId === child.id ? "is-active" : ""}`}
-                  onClick={() => setActiveChildId(child.id)}
-                  type="button"
+                  className={`pkd-picker-item ${isActive ? "is-active" : ""} ${isExpanded ? "is-expanded" : ""}`}
                 >
-                  <span className="pkd-child-avatar-wrap">
-                    <span
-                      className="pkd-child-avatar"
-                      style={{ background: child.avatarColor }}
-                    >
-                      {child.avatarEmoji}
-                    </span>
-                  </span>
-                  <span className="pkd-child-info">
-                    <span className="pkd-child-name">
-                      {child.name}
-                      {child.isLocked && (
-                        <span className="pkd-child-lock-tag">
-                          <Lock size={9} /> Đã khóa
-                        </span>
-                      )}
-                    </span>
-                    <span className="pkd-child-meta">{child.age} tuổi</span>
-                    <span className="pkd-child-bar">
+                  <button
+                    type="button"
+                    className="pkd-picker-row"
+                    onClick={() => selectChild(child)}
+                  >
+                    <span className="pkd-child-avatar-wrap">
                       <span
-                        className={`pkd-child-bar-fill ${pct >= 100 ? "is-over" : ""}`}
-                        style={{ width: `${pct}%` }}
-                      />
+                        className="pkd-child-avatar"
+                        style={{ background: child.avatarColor }}
+                      >
+                        {child.avatarEmoji}
+                      </span>
                     </span>
-                    <span className="pkd-child-mins">
-                      {formatMinutes(mins)} / {formatMinutes(limit)} hôm nay
+                    <span className="pkd-child-info">
+                      <span className="pkd-child-name">
+                        {child.name}
+                        {child.isLocked && (
+                          <span className="pkd-child-lock-tag">
+                            <Lock size={9} /> Đã khóa
+                          </span>
+                        )}
+                        {isActive && (
+                          <span className="pkd-child-active-tag">
+                            <Check size={9} /> Đang chọn
+                          </span>
+                        )}
+                      </span>
+                      <span className="pkd-child-meta">{child.age} tuổi</span>
+                      <span className="pkd-child-bar">
+                        <span
+                          className={`pkd-child-bar-fill ${pct >= 100 ? "is-over" : ""}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </span>
+                      <span className="pkd-child-mins">
+                        {formatMinutes(mins)} / {formatMinutes(limit)} hôm nay
+                      </span>
                     </span>
-                  </span>
 
-                  <span className="pkd-child-quick-actions">
                     <span
-                      className="pkd-child-quick-btn"
+                      className={`pkd-picker-more-btn ${isExpanded ? "is-open" : ""}`}
                       role="button"
                       tabIndex={0}
                       title={`Thao tác cho ${child.name}`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        setActionsChild(child);
+                        toggleExpandedChild(child.id);
                       }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter" || e.key === " ") {
                           e.preventDefault();
                           e.stopPropagation();
-                          setActionsChild(child);
+                          toggleExpandedChild(child.id);
                         }
                       }}
                     >
-                      <MoreVertical size={14} />
+                      <MoreVertical size={15} />
                     </span>
-                  </span>
-                </button>
+                  </button>
+
+                  {/* Panel mở rộng: khóa/mở khóa AR, link & QR riêng, xóa vĩnh viễn */}
+                  {isExpanded && (
+                    <div className="pkd-picker-expand">
+                      <div className="pkd-picker-expand-block">
+                        <div className="pkd-picker-expand-label">
+                          <ShieldCheck size={13} /> Khóa AR tức thời
+                        </div>
+                        {child.isLocked ? (
+                          <button
+                            className="pkd-lock-btn is-unlock pf-btn-tactile"
+                            onClick={() => requestUnlock(child)}
+                            type="button"
+                          >
+                            <Unlock size={15} /> Mở khóa cho {child.name}
+                          </button>
+                        ) : (
+                          <button
+                            className="pkd-lock-btn is-lock pf-btn-tactile"
+                            onClick={() => requestLock(child)}
+                            type="button"
+                          >
+                            <Lock size={15} /> Khóa ngay cho {child.name}
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="pkd-picker-expand-block">
+                        <div className="pkd-picker-expand-label">
+                          <Sparkles size={13} /> Link & QR riêng cho bé
+                        </div>
+                        <KidLinkCard childId={child.id} childName={child.name} />
+                      </div>
+
+                      <div className="pkd-picker-expand-block pkd-picker-expand-danger">
+                        <div className="pkd-picker-expand-label">
+                          <Trash2 size={13} /> Xoá hồ sơ vĩnh viễn
+                        </div>
+                        <p className="pkd-picker-expand-desc">
+                          Xoá <b>vĩnh viễn</b> toàn bộ dữ liệu của {child.name}{" "}
+                          (cài đặt, nhật ký, link riêng). Không thể khôi phục.
+                        </p>
+                        <button
+                          className="pkd-picker-delete-btn"
+                          onClick={() =>
+                            setDeleteTarget({ id: child.id, name: child.name })
+                          }
+                          type="button"
+                        >
+                          <Trash2 size={14} /> Xoá vĩnh viễn hồ sơ của{" "}
+                          {child.name}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               );
             })}
 
             <button
-              className="pkd-add-child-card"
+              className="pkd-add-child-card pkd-add-child-card-light"
               onClick={() => setWizardOpen(true)}
               type="button"
             >
               <UserPlus size={20} />
               <span>Thêm hồ sơ cho bé</span>
             </button>
-          </div>
-        </div>
+          </RevealCard>
+        </section>
+
+        {/* Băng thông báo: đang cài đặt cho bé nào */}
+        <RevealCard as="div" className="pkd-active-child-banner">
+          <UserCog size={16} />
+          <span>
+            Bạn đang cài đặt cho tài khoản bé: <strong>{activeChild.name}</strong>
+          </span>
+        </RevealCard>
 
         {/* Section quick-nav dính lại khi cuộn, tự nhận diện mục đang xem */}
-        <div className="pkd-header-inner" style={{ paddingBottom: 0 }}>
-          <div className={`pkd-pills-wrap ${pillsStuck ? "is-stuck" : ""}`}>
-            <div className="filter-pills pkd-pills">
-              {SECTIONS.map((s) => (
-                <button
-                  key={s.id}
-                  className={`pill ${activeSection === s.id ? "active" : ""}`}
-                  onClick={() => scrollToSection(s.id)}
-                  type="button"
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
+        <div className={`pkd-pills-wrap ${pillsStuck ? "is-stuck" : ""}`}>
+          <div className="filter-pills pkd-pills">
+            {SECTIONS.map((s) => (
+              <button
+                key={s.id}
+                className={`pill ${activeSection === s.id ? "active" : ""}`}
+                onClick={() => scrollToSection(s.id)}
+                type="button"
+              >
+                {s.label}
+              </button>
+            ))}
           </div>
         </div>
-        <div style={{ height: 32 }} />
-      </div>
 
-      <div className="pkd-body">
         {/* ═══════════ OVERVIEW ═══════════ */}
         <section id="overview" className="pkd-section">
           <RevealCard as="div" className="pkd-section-head">
@@ -1650,52 +1753,6 @@ export default function ParentDashboard() {
               </>
             )}
           </RevealCard>
-        </section>
-
-        {/* ═══════════ SECURITY ═══════════ */}
-        <section id="security" className="pkd-section">
-          <RevealCard as="div" className="pkd-section-head">
-            <span className="pkd-section-eyebrow">Kiểm soát truy cập</span>
-            <h2 className="pkd-section-title">Bảo mật & khóa từ xa</h2>
-          </RevealCard>
-
-          <RevealCard className="pkd-trust-badge">
-            <ShieldCheck size={18} />
-            <span>
-              <strong>Mọi lệnh khóa và mã PIN đều được mã hoá.</strong> PIN được
-              băm (hash) trước khi lưu không ai, kể cả Earthoria, có thể xem
-              lại mã gốc.
-            </span>
-          </RevealCard>
-
-          <RevealCard className="pkd-card">
-            <div className="pkd-card-title-row">
-              <span className="pkd-card-title-left">
-                <ShieldCheck size={16} />
-                Điều khiển tức thời
-              </span>
-            </div>
-            <p className="pkd-section-sub" style={{ marginBottom: 18 }}>
-              Dùng khi cần tạm dừng ngay lập tức (họp phụ huynh, giờ ăn đột
-              xuất...). Lệnh khóa được gửi ngay khi thiết bị có mạng; nếu đang
-              mất mạng, lệnh sẽ được áp dụng ngay khi thiết bị kết nối trở lại.
-            </p>
-            {lockState.isLocked ? (
-              <button
-                className="pkd-lock-btn is-unlock pf-btn-tactile"
-                onClick={() => requestUnlock()}
-              >
-                <Unlock size={16} /> Mở khóa cho {activeChild.name}
-              </button>
-            ) : (
-              <button
-                className="pkd-lock-btn is-lock pf-btn-tactile"
-                onClick={() => requestLock()}
-              >
-                <Lock size={16} /> Khóa ngay cho {activeChild.name}
-              </button>
-            )}
-          </RevealCard>
 
           <RevealCard className="pkd-card">
             <div className="pkd-card-title-row">
@@ -1705,7 +1762,8 @@ export default function ParentDashboard() {
               </span>
             </div>
             <p className="pkd-section-sub" style={{ marginBottom: 18 }}>
-              Mã PIN dùng để mở khóa AR và xác nhận các thao tác quan trọng.
+              Mã PIN dùng chung cho mọi bé để mở khóa AR và xác nhận các thao
+              tác quan trọng.
             </p>
             <div className="pkd-pin-actions">
               <button
@@ -1723,48 +1781,6 @@ export default function ParentDashboard() {
                 Quên mã PIN?
               </button>
             </div>
-          </RevealCard>
-
-          <RevealCard className="pkd-card pkd-card-danger">
-            <div className="pkd-card-title-row">
-              <span className="pkd-card-title-left">
-                <Trash2 size={16} />
-                Xoá hồ sơ vĩnh viễn
-              </span>
-            </div>
-            <p className="pkd-section-sub" style={{ marginBottom: 18 }}>
-              Khác với việc ẩn hồ sơ, thao tác này xoá <b>vĩnh viễn</b> toàn bộ
-              dữ liệu của {activeChild.name} (cài đặt, nhật ký, link riêng) và
-              không thể khôi phục.
-            </p>
-            <button
-              className="pkd-lock-btn is-lock pf-btn-tactile"
-              onClick={() =>
-                setDeleteTarget({ id: activeChildId, name: activeChild.name })
-              }
-              type="button"
-            >
-              <Trash2 size={16} /> Xoá vĩnh viễn hồ sơ của {activeChild.name}
-            </button>
-          </RevealCard>
-        </section>
-
-        {/* ═══════════ LINK CHO BÉ (Kiosk mode) ═══════════ */}
-        <section id="kid-link" className="pkd-section">
-          <RevealCard as="div" className="pkd-section-head">
-            <span className="pkd-section-eyebrow">Chế độ Kiosk</span>
-            <h2 className="pkd-section-title">
-              Link & QR riêng cho {activeChild.name}
-            </h2>
-            <p className="pkd-section-sub">
-              Mở trên thiết bị/tablet riêng của bé vào thẳng thư viện của bé,
-              không cần đăng nhập tài khoản phụ huynh trên thiết bị đó. Vẫn tôn
-              trọng khoá AR và giờ giấc bạn đã đặt ở trên.
-            </p>
-          </RevealCard>
-
-          <RevealCard className="pkd-card">
-            <KidLinkCard childId={activeChildId} childName={activeChild.name} />
           </RevealCard>
         </section>
       </div>
@@ -2121,25 +2137,6 @@ export default function ParentDashboard() {
           childName={deleteTarget.name}
           onClose={() => setDeleteTarget(null)}
           onDeleted={handleChildDeleted}
-        />
-      )}
-
-      {actionsChild && (
-        <ChildActionsModal
-          child={actionsChild}
-          onClose={() => setActionsChild(null)}
-          onLock={() => {
-            requestLock(actionsChild);
-            setActionsChild(null);
-          }}
-          onUnlock={() => {
-            requestUnlock(actionsChild);
-            setActionsChild(null);
-          }}
-          onDelete={() => {
-            setDeleteTarget({ id: actionsChild.id, name: actionsChild.name });
-            setActionsChild(null);
-          }}
         />
       )}
 

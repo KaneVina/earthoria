@@ -40,6 +40,7 @@ export default function ForgotPassword() {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otpStatus, setOtpStatus] = useState("idle"); // idle | success | error
   const [resendTimer, setResendTimer] = useState(0);
   const [showPw, setShowPw] = useState({ new: false, confirm: false });
   const [form, setForm] = useState({ newPassword: "", confirmPassword: "" });
@@ -85,6 +86,7 @@ export default function ForgotPassword() {
 
   const handleResend = () => {
     if (resendTimer > 0) return;
+    setOtpStatus("idle");
     sendOtpMutation.mutate({ email: email.trim() });
   };
 
@@ -92,17 +94,25 @@ export default function ForgotPassword() {
   const verifyOtpMutation = useMutation({
     mutationFn: (data) => authService.verifyOtp(data),
     onSuccess: () => {
-      toast.success("Xác thực thành công!");
-      setStep(3);
+      setOtpStatus("success");
+      setTimeout(() => {
+        toast.success("Xác thực thành công!");
+        setStep(3);
+        setOtpStatus("idle");
+      }, 500);
     },
     onError: (err) => {
       const msg =
         err.response?.data?.message ||
         "Mã xác thực không đúng hoặc đã hết hạn.";
       setErrors({ otp: msg });
+      setOtpStatus("error");
       toast.error(msg);
-      setOtp(["", "", "", "", "", ""]);
-      otpRefs.current[0]?.focus();
+      setTimeout(() => {
+        setOtp(["", "", "", "", "", ""]);
+        setOtpStatus("idle");
+        otpRefs.current[0]?.focus();
+      }, 500);
     },
   });
 
@@ -112,6 +122,7 @@ export default function ForgotPassword() {
     next[idx] = val;
     setOtp(next);
     setErrors((e) => ({ ...e, otp: null }));
+    setOtpStatus("idle");
     if (val && idx < 5) otpRefs.current[idx + 1]?.focus();
     if (next.every((d) => d) && next.join("").length === 6) {
       verifyOtpMutation.mutate({ email: email.trim(), otp: next.join("") });
@@ -484,15 +495,27 @@ export default function ForgotPassword() {
                     inputMode="numeric"
                     maxLength={1}
                     value={digit}
+                    disabled={
+                      verifyOtpMutation.isPending || otpStatus !== "idle"
+                    }
                     onChange={(e) => handleOtpChange(i, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(i, e)}
                     style={{
                       ...S.otpInput,
-                      borderColor: errors.otp
-                        ? "#b25450"
-                        : digit
-                          ? "var(--gold)"
-                          : "var(--border)",
+                      borderColor:
+                        otpStatus === "error"
+                          ? "#b25450"
+                          : otpStatus === "success"
+                            ? "#2e7d32"
+                            : digit
+                              ? "var(--gold)"
+                              : "var(--border)",
+                      boxShadow:
+                        otpStatus === "error"
+                          ? "0 0 0 3px rgba(178,84,80,0.08)"
+                          : otpStatus === "success"
+                            ? "0 0 0 3px rgba(46,125,50,0.1)"
+                            : "none",
                     }}
                   />
                 ))}

@@ -155,7 +155,7 @@
 .pkd-header-inner {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 0 48px 32px;
+  padding: 0 48px 40px;
   position: relative;
   z-index: 1;
 }
@@ -269,218 +269,7 @@
   color: var(--gold);
 }
 
-/* Child switcher */
-.pkd-child-row {
-  display: flex;
-  gap: 14px;
-  margin-top: 36px;
-  flex-wrap: wrap;
-}
-.pkd-child-card {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 0.5px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  padding: 16px 20px;
-  cursor: pointer;
-  text-align: left;
-  min-width: 240px;
-  transition: all 0.3s ease;
-}
-.pkd-child-card:hover {
-  border-color: rgba(74, 158, 63, 0.35);
-  background: rgba(255, 255, 255, 0.06);
-}
-.pkd-child-card.is-active {
-  border-color: var(--gold);
-  background: rgba(74, 158, 63, 0.1);
-}
-.pkd-child-avatar-wrap {
-  position: relative;
-  flex-shrink: 0;
-}
-.pkd-child-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: linear-gradient(135deg, var(--forest-mid), var(--forest-light));
-  border: 0.5px solid rgba(74, 158, 63, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: "Playfair Display", serif;
-  font-size: 18px;
-  color: var(--gold);
-}
-.pkd-child-status-dot {
-  position: absolute;
-  bottom: -1px;
-  right: -1px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--gold);
-  border: 2px solid var(--forest);
-}
-.pkd-child-status-dot.is-offline {
-  background: rgba(255, 255, 255, 0.35);
-}
-.pkd-child-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-  flex: 1;
-}
-.pkd-child-name {
-  font-size: 13.5px;
-  color: var(--ivory);
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.pkd-child-lock-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 9px;
-  color: #e0a0a0;
-  background: rgba(178, 84, 80, 0.12);
-  border-radius: 20px;
-  padding: 2px 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-.pkd-child-meta {
-  font-size: 11px;
-  color: rgba(250, 248, 243, 0.4);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.pkd-child-meta-sep {
-  opacity: 0.4;
-}
-.pkd-child-bar {
-  display: block;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-  overflow: hidden;
-  margin-top: 2px;
-}
-.pkd-child-bar-fill {
-  display: block;
-  height: 100%;
-  background: var(--gold);
-  border-radius: 3px;
-  transition: width 0.5s ease;
-}
-.pkd-child-bar-fill.is-over {
-  background: #e0a0a0;
-}
-.pkd-child-mins {
-  font-size: 10.5px;
-  color: rgba(250, 248, 243, 0.35);
-}
-
-/* Thao tác nhanh trên thẻ bé: lấy link/QR + xoá vĩnh viễn — không cần cuộn xuống */
-.pkd-child-quick-actions {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: flex;
-  gap: 6px;
-  opacity: 0;
-  transform: translateY(-2px);
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-}
-.pkd-child-card:hover .pkd-child-quick-actions,
-.pkd-child-card:focus-within .pkd-child-quick-actions {
-  opacity: 1;
-  transform: translateY(0);
-}
-.pkd-child-quick-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
-  cursor: pointer;
-  background: rgba(255, 255, 255, 0.06);
-  border: 0.5px solid rgba(255, 255, 255, 0.12);
-  color: rgba(250, 248, 243, 0.6);
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease;
-}
-.pkd-child-quick-btn:hover,
-.pkd-child-quick-btn:focus-visible {
-  background: rgba(74, 158, 63, 0.18);
-  border-color: rgba(74, 158, 63, 0.4);
-  color: var(--gold);
-  outline: none;
-}
-.pkd-child-quick-btn.is-danger:hover,
-.pkd-child-quick-btn.is-danger:focus-visible {
-  background: rgba(178, 84, 80, 0.16);
-  border-color: rgba(178, 84, 80, 0.4);
-  color: #e0a0a0;
-}
-@media (max-width: 640px) {
-  /* Trên mobile không có hover — hiện luôn để bấm được */
-  .pkd-child-quick-actions {
-    opacity: 1;
-    transform: none;
-    position: static;
-    margin-left: auto;
-    align-self: flex-start;
-  }
-}
-
-/* Section quick-nav */
-.pkd-pills-wrap {
-  position: sticky;
-  top: 0;
-  z-index: 60;
-  margin: 30px -48px 0;
-  padding: 14px 48px;
-  transition:
-    background 0.3s ease,
-    box-shadow 0.3s ease,
-    border-color 0.3s ease;
-  border-bottom: 0.5px solid transparent;
-}
-.pkd-pills-wrap.is-stuck {
-  background: rgba(10, 33, 26, 0.94);
-  backdrop-filter: blur(14px) saturate(1.2);
-  border-bottom-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 12px 32px rgba(13, 43, 30, 0.25);
-}
-.pkd-pills {
-  flex-wrap: wrap;
-}
-.pkd-pills .pill {
-  border-color: rgba(255, 255, 255, 0.16);
-  color: rgba(250, 248, 243, 0.55);
-}
-.pkd-pills .pill:hover,
-.pkd-pills .pill.active {
-  background: var(--gold);
-  color: var(--ink);
-  border-color: var(--gold);
-}
-
-/*  Body layout  */
+/* ═══════════ BODY LAYOUT ═══════════ */
 .pkd-body {
   max-width: 1100px;
   margin: 0 auto;
@@ -488,6 +277,12 @@
   display: flex;
   flex-direction: column;
   gap: 56px;
+}
+/* Phần "chọn bé" + banner + pills nằm sát ngay dưới header xanh nên
+   khoảng cách phía trên co lại một chút cho liền mạch hơn. */
+.pkd-body-top {
+  padding-top: 40px;
+  gap: 0;
 }
 .pkd-section {
   scroll-margin-top: 88px;
@@ -526,6 +321,303 @@
   line-height: 1.75;
   max-width: 920px;
   font-weight: 300;
+}
+
+/* ═══════════ CHỌN BÉ ĐỂ CÀI ĐẶT (dưới header xanh) ═══════════ */
+.pkd-child-picker-section {
+  margin-bottom: 28px;
+}
+.pkd-child-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.pkd-picker-item {
+  border: 0.5px solid var(--border);
+  border-radius: 10px;
+  background: var(--white);
+  overflow: hidden;
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+}
+.pkd-picker-item:hover {
+  border-color: var(--border-gold);
+}
+.pkd-picker-item.is-active {
+  border-color: var(--gold);
+  box-shadow: 0 10px 26px rgba(13, 43, 30, 0.06);
+}
+.pkd-picker-item.is-expanded {
+  border-color: var(--border-gold);
+}
+
+.pkd-picker-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: none;
+  border: none;
+  padding: 16px 18px;
+  cursor: pointer;
+  text-align: left;
+  font-family: "Be Vietnam Pro", sans-serif;
+}
+
+.pkd-child-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+.pkd-child-avatar {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--forest-mid), var(--forest-light));
+  border: 0.5px solid rgba(74, 158, 63, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Playfair Display", serif;
+  font-size: 19px;
+  color: var(--gold);
+}
+.pkd-child-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+.pkd-child-name {
+  font-size: 14px;
+  color: var(--forest);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pkd-child-lock-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  color: #b25450;
+  background: rgba(178, 84, 80, 0.09);
+  border-radius: 20px;
+  padding: 2px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.pkd-child-active-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 9px;
+  color: var(--forest);
+  background: rgba(74, 158, 63, 0.12);
+  border-radius: 20px;
+  padding: 2px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.pkd-child-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pkd-child-bar {
+  display: block;
+  height: 3px;
+  background: var(--pale);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+.pkd-child-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+.pkd-child-bar-fill.is-over {
+  background: #b25450;
+}
+.pkd-child-mins {
+  font-size: 10.5px;
+  color: var(--text-muted);
+}
+
+.pkd-picker-more-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--pale);
+  border: 0.5px solid var(--border);
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+.pkd-picker-more-btn:hover,
+.pkd-picker-more-btn:focus-visible {
+  background: var(--gold-pale);
+  border-color: var(--border-gold);
+  color: var(--forest);
+  outline: none;
+}
+.pkd-picker-more-btn.is-open {
+  background: var(--forest);
+  border-color: var(--forest);
+  color: var(--ivory);
+  transform: rotate(90deg);
+}
+
+/* Panel mở rộng ngay trong danh sách: khóa/mở khóa, link&QR, xóa */
+.pkd-picker-expand {
+  border-top: 0.5px solid var(--border);
+  background: var(--cream);
+  padding: 20px 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  animation: pkdExpandIn 0.25s ease;
+}
+@keyframes pkdExpandIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.pkd-picker-expand-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pkd-picker-expand-block + .pkd-picker-expand-block {
+  padding-top: 18px;
+  border-top: 0.5px solid var(--border);
+}
+.pkd-picker-expand-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.pkd-picker-expand-label svg {
+  color: var(--gold);
+}
+.pkd-picker-expand-desc {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-muted);
+  font-weight: 300;
+  margin: 0;
+}
+.pkd-picker-expand-danger .pkd-picker-expand-label svg {
+  color: #b25450;
+}
+.pkd-picker-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  align-self: flex-start;
+  background: rgba(178, 84, 80, 0.06);
+  border: 0.5px solid rgba(178, 84, 80, 0.3);
+  color: #b25450;
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 12px;
+  font-family: "Be Vietnam Pro", sans-serif;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.pkd-picker-delete-btn:hover {
+  background: #b25450;
+  color: #fff;
+  border-color: #b25450;
+}
+
+/* Banner: đang cài đặt cho bé nào (giữa danh sách chọn bé và pills) */
+.pkd-active-child-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--gold-pale);
+  border: 0.5px solid var(--border-gold);
+  border-radius: 8px;
+  padding: 13px 18px;
+  font-size: 13px;
+  color: var(--forest);
+  margin: 20px 0 26px;
+}
+.pkd-active-child-banner svg {
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.pkd-active-child-banner strong {
+  color: var(--forest);
+  font-weight: 600;
+}
+
+/* Add child card version dùng trên nền sáng (trong danh sách picker) */
+.pkd-add-child-card-light {
+  min-width: 0;
+  width: 100%;
+  padding: 16px 18px;
+  border-color: var(--border);
+  color: var(--text-muted);
+  flex-direction: row;
+  justify-content: center;
+}
+.pkd-add-child-card-light:hover {
+  border-color: var(--gold);
+  color: var(--forest);
+  background: var(--gold-pale);
+}
+
+/* Section quick-nav */
+.pkd-pills-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  margin: 0 -48px 40px;
+  padding: 14px 48px;
+  background: var(--cream);
+  transition:
+    background 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+  border-bottom: 0.5px solid transparent;
+}
+.pkd-pills-wrap.is-stuck {
+  background: rgba(250, 248, 243, 0.94);
+  backdrop-filter: blur(14px) saturate(1.2);
+  border-bottom-color: var(--border);
+  box-shadow: 0 12px 32px rgba(13, 43, 30, 0.07);
+}
+.pkd-pills {
+  flex-wrap: wrap;
 }
 
 /* Overview stat cards */
@@ -1243,32 +1335,6 @@
   cursor: pointer;
 }
 
-/* Trust badge (security section) */
-.pkd-trust-badge {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 15px 18px;
-  background: var(--gold-pale);
-  border: 0.5px solid var(--border-gold);
-  border-radius: 8px;
-  margin-bottom: 20px;
-}
-.pkd-trust-badge svg {
-  color: var(--gold);
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-.pkd-trust-badge span {
-  font-size: 12px;
-  color: var(--text-muted);
-  line-height: 1.6;
-}
-.pkd-trust-badge strong {
-  color: var(--forest);
-  font-weight: 500;
-}
-
 /* Buttons */
 .pkd-mini-btn {
   display: inline-flex;
@@ -1312,7 +1378,7 @@
   gap: 10px;
   border: none;
   border-radius: 8px;
-  padding: 16px;
+  padding: 14px;
   font-size: 12px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1454,7 +1520,7 @@
   gap: 8px;
 }
 
-/* ═══════════ ADD CHILD CARD (child switcher) ═══════════ */
+/* ═══════════ ADD CHILD CARD (empty-state onboarding, dùng chung) ═══════════ */
 .pkd-add-child-card {
   display: flex;
   flex-direction: column;
@@ -1799,7 +1865,7 @@
     padding-right: 24px;
   }
   .pkd-pills-wrap {
-    margin: 30px -24px 0;
+    margin: 0 -24px 32px;
     padding: 12px 24px;
   }
   .pkd-overview-grid {
@@ -1819,9 +1885,9 @@
   .pkd-sync-wrap {
     align-items: flex-start;
   }
-  .pkd-child-card {
-    min-width: 0;
-    flex: 1 1 100%;
+  .pkd-picker-row {
+    flex-wrap: wrap;
+    gap: 12px;
   }
   .pkd-overview-grid {
     grid-template-columns: 1fr 1fr;
@@ -1849,68 +1915,8 @@
   }
 }
 
-/* Modal thao tác nhanh cho 1 bé (mở từ nút "..." trên thẻ chọn bé) */
-.pkd-actions-modal {
-  text-align: left;
-}
-.pkd-actions-modal-head {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 22px;
-  padding-right: 30px;
-}
-.pkd-actions-modal-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 10.5px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  padding: 3px 9px;
-  border-radius: 20px;
-}
-.pkd-actions-modal-status.is-locked {
-  color: #b25450;
-  background: rgba(178, 84, 80, 0.1);
-}
-.pkd-actions-modal-status.is-active {
-  color: var(--forest);
-  background: rgba(74, 158, 63, 0.12);
-}
-.pkd-actions-modal-section {
-  border-top: 0.5px solid var(--border);
-  border-bottom: 0.5px solid var(--border);
-  padding: 22px 0;
-  margin-bottom: 20px;
-}
-.pkd-actions-modal-footer {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.pkd-actions-modal-delete {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  background: rgba(178, 84, 80, 0.06);
-  border: 0.5px solid rgba(178, 84, 80, 0.3);
-  color: #b25450;
-  font-size: 12px;
-  cursor: pointer;
-  padding: 10px 14px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-}
-.pkd-actions-modal-delete:hover {
-  background: #b25450;
-  color: #fff;
-  border-color: #b25450;
-}
-
-/* Link & QR riêng cho bé (KidLinkCard) — dùng cả trong modal trên và
-   trong section "Link cho bé" ở cuối trang */
+/* Link & QR riêng cho bé (KidLinkCard) — dùng trong panel mở rộng của
+   danh sách chọn bé (pkd-picker-expand) */
 .kid-link-card {
   display: flex;
   flex-direction: column;
@@ -2049,12 +2055,32 @@ body.dark-mode .pkd-page {
 }
 body.dark-mode .pkd-stat-card,
 body.dark-mode .pkd-card,
-body.dark-mode .pkd-book-letter {
+body.dark-mode .pkd-book-letter,
+body.dark-mode .pkd-picker-item {
   background: #1c2822;
   border-color: rgba(255, 255, 255, 0.07);
 }
 body.dark-mode .pkd-book-letter {
   background: #0f1510;
+}
+body.dark-mode .pkd-picker-expand {
+  background: #16201a;
+  border-top-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .pkd-picker-expand-block + .pkd-picker-expand-block {
+  border-top-color: rgba(255, 255, 255, 0.07);
+}
+body.dark-mode .pkd-picker-more-btn {
+  background: #0f1510;
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(180, 200, 188, 0.6);
+}
+body.dark-mode .pkd-pills-wrap {
+  background: #0e1612;
+}
+body.dark-mode .pkd-pills-wrap.is-stuck {
+  background: rgba(14, 22, 18, 0.94);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
 }
 body.dark-mode .pkd-section-title,
 body.dark-mode .pkd-stat-val,
@@ -2063,7 +2089,8 @@ body.dark-mode .pkd-book-title,
 body.dark-mode .pkd-card-title-row,
 body.dark-mode .pkd-stepper-val,
 body.dark-mode .pkd-audit-text,
-body.dark-mode .pkd-book-mins {
+body.dark-mode .pkd-book-mins,
+body.dark-mode .pkd-child-name {
   color: #c8d4cc;
 }
 body.dark-mode .pkd-time-field input,
@@ -2091,8 +2118,9 @@ body.dark-mode .pkd-timeline-track {
 body.dark-mode .pkd-chart-avg-label {
   background: #1c2822;
 }
-body.dark-mode .pkd-trust-badge {
+body.dark-mode .pkd-active-child-banner {
   background: rgba(74, 158, 63, 0.08);
+  border-color: rgba(74, 158, 63, 0.2);
 }
 body.dark-mode .pkd-wizard-avatar-btn {
   background: #0f1510;
@@ -2108,7 +2136,7 @@ body.dark-mode .pkd-wizard-terms-row {
   border-color: rgba(255, 255, 255, 0.07);
   color: #b4c8bc;
 }
-body.dark-mode .pkd-add-child-card {
+body.dark-mode .pkd-add-child-card-light {
   background: rgba(255, 255, 255, 0.02);
 }
 body.dark-mode .kid-link-url-row input {

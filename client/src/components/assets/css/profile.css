@@ -2445,6 +2445,10 @@
   border-color: #b25450;
   box-shadow: 0 0 0 3px rgba(178, 84, 80, 0.06);
 }
+.pf-otp-input.has-success {
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.08);
+}
 .pf-otp-resend-row {
   display: flex;
   align-items: center;

@@ -2904,6 +2904,7 @@ function CreatePasswordFlow({ email }) {
   const queryClient = useQueryClient();
   const [stage, setStage] = useState("intro"); // 'intro' | 'form'
   const [otp, setOtp] = useState(Array(CREATE_PW_OTP_LEN).fill(""));
+  const [otpStatus, setOtpStatus] = useState("idle"); // idle | success | error
   const [resendTimer, setResendTimer] = useState(0);
   const [showPw, setShowPw] = useState({ new: false, confirm: false });
   const [form, setForm] = useState({ newPassword: "", confirmPassword: "" });
@@ -2932,6 +2933,7 @@ function CreatePasswordFlow({ email }) {
 
   const handleResend = () => {
     if (resendTimer > 0) return;
+    setOtpStatus("idle");
     sendOtpMutation.mutate();
   };
 
@@ -2941,6 +2943,7 @@ function CreatePasswordFlow({ email }) {
     next[idx] = val;
     setOtp(next);
     setErrors((e) => ({ ...e, otp: null }));
+    setOtpStatus("idle");
     if (val && idx < CREATE_PW_OTP_LEN - 1) otpRefs.current[idx + 1]?.focus();
   };
 
@@ -2961,6 +2964,8 @@ function CreatePasswordFlow({ email }) {
       .concat(Array(CREATE_PW_OTP_LEN).fill(""))
       .slice(0, CREATE_PW_OTP_LEN);
     setOtp(next);
+    setOtpStatus("idle");
+    setErrors((e) => ({ ...e, otp: null }));
     otpRefs.current[Math.min(pasted.length, CREATE_PW_OTP_LEN - 1)]?.focus();
   };
 
@@ -2986,15 +2991,25 @@ function CreatePasswordFlow({ email }) {
   const createMutation = useMutation({
     mutationFn: (data) => authService.createPassword(data),
     onSuccess: () => {
-      toast.success("Tạo mật khẩu thành công!");
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      // Hiện viền xanh báo đúng, đợi 1 nhịp rồi mới báo thành công / chuyển giao diện
+      setOtpStatus("success");
+      setTimeout(() => {
+        toast.success("Tạo mật khẩu thành công!");
+        queryClient.invalidateQueries({ queryKey: ["profile"] });
+        setOtpStatus("idle");
+      }, 500);
     },
     onError: (err) => {
       const msg = err.response?.data?.message || "Tạo mật khẩu thất bại!";
+      // Hiện viền đỏ báo sai, đợi 1 nhịp rồi mới xoá ô để nhập lại
+      setOtpStatus("error");
       toast.error(msg);
       setErrors({ otp: msg });
-      setOtp(Array(CREATE_PW_OTP_LEN).fill(""));
-      otpRefs.current[0]?.focus();
+      setTimeout(() => {
+        setOtp(Array(CREATE_PW_OTP_LEN).fill(""));
+        setOtpStatus("idle");
+        otpRefs.current[0]?.focus();
+      }, 500);
     },
   });
 
@@ -3085,11 +3100,12 @@ function CreatePasswordFlow({ email }) {
                     <input
                       key={i}
                       ref={(el) => (otpRefs.current[i] = el)}
-                      className={`pf-otp-input ${errors.otp ? "has-error" : ""}`}
+                      className={`pf-otp-input ${otpStatus === "error" ? "has-error" : ""} ${otpStatus === "success" ? "has-success" : ""}`}
                       type="text"
                       inputMode="numeric"
                       autoComplete="one-time-code"
                       maxLength={1}
+                      disabled={createMutation.isPending || otpStatus !== "idle"}
                       value={d}
                       onChange={(e) => handleOtpChange(i, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(i, e)}

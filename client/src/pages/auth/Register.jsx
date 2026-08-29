@@ -38,6 +38,7 @@ export default function Register() {
   const [otpLoading, setOtpLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [otpError, setOtpError] = useState(null);
+  const [otpStatus, setOtpStatus] = useState("idle"); // idle | success | error
   const otpRefs = useRef([]);
 
   //  Resend countdown
@@ -120,6 +121,7 @@ export default function Register() {
     next[idx] = val;
     setOtp(next);
     setOtpError(null);
+    setOtpStatus("idle");
     if (val && idx < 5) otpRefs.current[idx + 1]?.focus();
     // Auto-submit khi điền đủ 6 số
     if (next.every((d) => d) && next.join("").length === 6) {
@@ -142,6 +144,8 @@ export default function Register() {
     if (!pasted) return;
     const next = pasted.split("").concat(Array(6).fill("")).slice(0, 6);
     setOtp(next);
+    setOtpStatus("idle");
+    setOtpError(null);
     if (pasted.length === 6) {
       submitOtp(pasted);
     } else {
@@ -158,6 +162,9 @@ export default function Register() {
         otp: otpStr,
       });
       const { user, accessToken } = res.data.data;
+      // Hiện viền xanh báo đúng, đợi 1 nhịp rồi mới chuyển bước tiếp theo
+      setOtpStatus("success");
+      await new Promise((r) => setTimeout(r, 500));
       setAuth(user, accessToken);
       toast.success(`Chào mừng đến với Earthoria, ${user.name}! 🌿`);
       navigate("/");
@@ -165,8 +172,12 @@ export default function Register() {
       const msg =
         err.response?.data?.message || "OTP không đúng hoặc đã hết hạn";
       setOtpError(msg);
+      // Hiện viền đỏ báo sai, đợi 1 nhịp rồi mới xoá ô để nhập lại
+      setOtpStatus("error");
       toast.error(msg);
+      await new Promise((r) => setTimeout(r, 500));
       setOtp(["", "", "", "", "", ""]);
+      setOtpStatus("idle");
       otpRefs.current[0]?.focus();
     } finally {
       setOtpLoading(false);
@@ -194,6 +205,7 @@ export default function Register() {
       setResendCooldown(60);
       setOtp(["", "", "", "", "", ""]);
       setOtpError(null);
+      setOtpStatus("idle");
       otpRefs.current[0]?.focus();
     } catch (err) {
       toast.error("Không thể gửi lại OTP, thử lại sau.");
@@ -337,11 +349,11 @@ export default function Register() {
                     inputMode="numeric"
                     maxLength={1}
                     value={digit}
-                    className={`otp-input${digit ? " filled" : ""}${otpError ? " error" : ""}`}
+                    className={`otp-input${digit ? " filled" : ""}${otpStatus === "error" ? " error" : ""}${otpStatus === "success" ? " success" : ""}`}
                     onChange={(e) => handleOtpChange(idx, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(idx, e)}
                     onPaste={idx === 0 ? handleOtpPaste : undefined}
-                    disabled={otpLoading}
+                    disabled={otpLoading || otpStatus !== "idle"}
                   />
                 ))}
               </div>
@@ -428,6 +440,7 @@ export default function Register() {
                     setStep("register");
                     setOtp(["", "", "", "", "", ""]);
                     setOtpError(null);
+                    setOtpStatus("idle");
                   }}
                 >
                   ← Quay lại đăng ký

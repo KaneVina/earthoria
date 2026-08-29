@@ -6470,12 +6470,12 @@ body.dark-mode .chapter-title {
 .user-avatar {
   width: 30px;
   height: 30px;
-  border: 0.5px solid var(--border-gold);
+  border: 2px solid var(--border-gold);
   background: linear-gradient(135deg, var(--forest) 0%, var(--forest-mid) 100%);
-  color: var(--gold);
+  color: #fff;
   font-family: "Playfair Display", serif;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -6537,11 +6537,11 @@ body.dark-mode .chapter-title {
   width: 38px;
   height: 38px;
   background: linear-gradient(135deg, var(--forest) 0%, var(--forest-mid) 100%);
-  border: 0.5px solid var(--border-gold);
-  color: var(--gold);
+  border: 2px solid var(--border-gold);
+  color: #fff;
   font-family: "Playfair Display", serif;
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -7913,6 +7913,11 @@ body.dark-mode .skeleton {
 .otp-input.error {
   border-color: #c0392b;
   box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.06);
+}
+
+.otp-input.success {
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.08);
 }
 
 .otp-input:disabled {
