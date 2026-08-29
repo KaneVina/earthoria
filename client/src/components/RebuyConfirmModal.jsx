@@ -16,9 +16,6 @@ const BOOK_ICON = (
   </svg>
 );
 
-// Modal xác nhận khi khách bấm "Thêm vào giỏ hàng" cho sách điện tử mà họ đã
-// sở hữu rồi. Đếm ngược `seconds` (mặc định 10s); hết giờ mà chưa bấm gì thì
-// tự động xác nhận tiếp tục mua (giống hành vi LogoutConfirmModal).
 export default function RebuyConfirmModal({
   open,
   onConfirm,
