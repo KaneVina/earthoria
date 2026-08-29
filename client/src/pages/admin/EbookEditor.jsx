@@ -2448,7 +2448,7 @@ export default function BookBuilder() {
 
   // Dùng luôn ảnh của layer ảnh đang chọn để làm nền cho trang — không cần tải lên lại,
   // chỉ gán URL ảnh (đã có sẵn trên Cloudinary) vào ảnh nền của trang.
-  const useLayerImageAsPageBackground = (src) => {
+  const setLayerImageAsPageBackground = (src) => {
     if (!src) return;
     setPagesCommit((prev) =>
       prev.map((p, i) => (i === pageIndex ? { ...p, backgroundImage: src } : p)),
@@ -4500,7 +4500,7 @@ export default function BookBuilder() {
                     className="bb-btn"
                     style={{ width: "100%", justifyContent: "center" }}
                     disabled={!selected.src}
-                    onClick={() => useLayerImageAsPageBackground(selected.src)}
+                    onClick={() => setLayerImageAsPageBackground(selected.src)}
                   >
                     <ImageIcon size={14} /> Đặt ảnh này làm nền trang
                   </button>
