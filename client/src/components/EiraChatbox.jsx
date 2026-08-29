@@ -1142,9 +1142,8 @@ function EiraUI() {
                   ? "/eira/eira-staff.png"
                   : isKid
                     ? "/eira/eira-kid.png"
-                    // : "/eira/eira-sayhi.png"
-                    : "/eira/eira29.png"
-
+                    : // : "/eira/eira-sayhi.png"
+                      "/eira/eira29.png"
               }
               alt="Eira vẫy chào"
               draggable="false"
@@ -1235,9 +1234,8 @@ function EiraUI() {
               Chào bạn, mình là <strong>Eira</strong> 🌿
             </div>
             <p className="eira-welcome-desc">
-              Người bạn khám phá của Earthoria. Mình có thể giúp bạn tìm cuốn
-              sách phù hợp, khám phá AR hoặc giải đáp những điều bé nhà mình tò
-              mò.
+              Mình là chatbox ảo của Earthoria, mình có thể tư vấn và trả lời
+              các câu hỏi của bạn.
             </p>
             <div className="eira-welcome-actions">
               <button
@@ -1361,7 +1359,7 @@ function EiraUI() {
           )}
         </div>
 
-         <div id="eira-foot">
+        <div id="eira-foot">
           Powered by
           <span className="eira-foot-logo" role="img" aria-label="Earthoria" />
         </div>
