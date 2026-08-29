@@ -36,20 +36,6 @@ function hexToRgb(hex) {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   BẢNG MÀU SÁNG / CHIỀU — CHỈ DÙNG CHO TRANG /e-kid
-   Xanh lá vẫn là màu GỐC/mặc định cho toàn hệ thống (khai báo trong
-   EiraChatbox.css). Ở trang /e-kid, nền phía sau đổi theo 2 khung
-   giờ (nền sáng ban ngày / nền chiều-tối có sao), nên khung chat
-   cũng chỉ cần 2 TÔNG MÀU cố định tương ứng — không cần xoay liên
-   tục theo từng phút. Mỗi tông màu vẫn giữ nguyên độ bão hòa/độ
-   sáng gốc của từng biến thương hiệu (chỉ đổi Hue), nên toàn bộ
-   khung chat (FAB, header, avatar, chip, nút gửi, linh vật...) đổi
-   màu đồng bộ, ăn khớp với nền phía sau.
-   ═══════════════════════════════════════════════════════════════ */
-
-// Các biến thương hiệu (xanh lá gốc) sẽ được đổi tông màu ở trang /e-kid.
-// Giá trị hex dưới đây PHẢI khớp với giá trị mặc định khai báo trong CSS.
 const BRAND_PALETTE_HEX = {
   "--eg": "#3d9e32",
   "--egl": "#52c244",
@@ -70,10 +56,6 @@ const BRAND_PALETTE_HEX = {
 // Khung giờ ban ngày (nền sáng) — ngoài khoảng này coi là chiều/tối (nền có sao)
 const DAY_START_HOUR = 6;
 const DAY_END_HOUR = 18;
-
-// Hue cố định cho từng khung giờ:
-// - Ban ngày: xanh dương da trời tươi sáng, hợp nền sáng.
-// - Chiều/tối: chàm xanh dương đậm, hợp nền có sao như trong ảnh chụp.
 const DAY_HUE = 200;
 const EVENING_HUE = 234;
 
@@ -148,9 +130,6 @@ function buildKidPalette(date) {
   return palette;
 }
 
-// Chỉ tính & trả về bảng màu khi `active` (tức đang ở trang /e-kid).
-// Ở mọi trang khác, trả về null — nghĩa là không override gì cả, và
-// khung chat giữ nguyên đúng màu xanh lá gốc khai báo trong CSS.
 function useKidTimePalette(active) {
   const [palette, setPalette] = useState(null);
 
@@ -204,10 +183,7 @@ function isSafePublicPath(path) {
   return PUBLIC_LINK_PREFIXES.some((prefix) => path.startsWith(prefix));
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   SYSTEM PROMPT — persona Eira + quy tắc nghiệp vụ Earthoria
-   + văn phong tư vấn/mô tả sản phẩm tự nhiên, chuyên sâu
-   ═══════════════════════════════════════════════════════════════ */
+/*  SYSTEM PROMPT */
 const SUGGESTIONS = [
   { Icon: BookOpen, label: "Gợi ý sách cho bé" },
   { Icon: Baby, label: "Bé nhà mình mấy tuổi" },
@@ -270,12 +246,6 @@ function makeMsg(role, text, isError = false, data = null) {
   return { id: ++msgIdCounter, role, text, isError, time: nowTime(), data };
 }
 
-/**
- * Đọc một response SSE (Server-Sent Events) từ fetch() theo từng chunk,
- * gọi onEvent(eventName, data) ngay khi nhận đủ 1 "record" (event+data
- * cách nhau bởi dòng trống, theo chuẩn SSE) — cho phép hiển thị token
- * ngay khi tới, không cần đợi toàn bộ response như JSON thường.
- */
 async function consumeSse(response, onEvent) {
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
@@ -435,13 +405,15 @@ function ActionButtons({ msg, onRegenerate }) {
         </button>
       )}
 
-      {msg.role === "bot" && !msg.isError && onRegenerate && (
+      {msg.role === "bot" && onRegenerate && (
         <button
           type="button"
           className="em-action-btn"
-          title="Thử cách giải thích khác"
+          title={msg.isError ? "Gửi lại" : "Thử cách giải thích khác"}
           onClick={onRegenerate}
-          aria-label="Thử cách giải thích khác"
+          aria-label={
+            msg.isError ? "Gửi lại tin nhắn" : "Thử cách giải thích khác"
+          }
         >
           <RotateCcw size={12} strokeWidth={2} />
         </button>
@@ -687,6 +659,7 @@ function EiraUI() {
   const [suggHidden, setSuggHidden] = useState(false);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [configError, setConfigError] = useState(null);
+  const [confirmClear, setConfirmClear] = useState(false);
 
   /* Mascot: chỉ ẩn TẠM THỜI 5 phút khi người dùng bấm X, không lưu localStorage */
   const [promoVisible, setPromoVisible] = useState(false);
@@ -700,14 +673,11 @@ function EiraUI() {
   const lastUserMsgRef = useRef("");
   const isOpenRef = useRef(false);
   const mascotTimeoutRef = useRef(null);
+  const confirmClearTimeoutRef = useRef(null);
 
   /*  Kéo-thả bong bóng FAB  */
   const [dragPos, setDragPos] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  // Xanh lá vẫn là màu gốc/mặc định cho toàn hệ thống (đặt trong CSS).
-  // Chỉ ở trang /e-kid mới đổi sang 1 trong 2 tông màu (sáng/chiều) khớp
-  // với nền phía sau; các trang khác
-  // trả về null nên không override gì — giữ nguyên 100% màu xanh lá gốc.
   const kidPalette = useKidTimePalette(isKid);
   const fabRef = useRef(null);
   const dragRef = useRef({
@@ -807,8 +777,20 @@ function EiraUI() {
   useEffect(() => {
     return () => {
       if (mascotTimeoutRef.current) clearTimeout(mascotTimeoutRef.current);
+      if (confirmClearTimeoutRef.current)
+        clearTimeout(confirmClearTimeoutRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setConfirmClear(false);
+      if (confirmClearTimeoutRef.current) {
+        clearTimeout(confirmClearTimeoutRef.current);
+        confirmClearTimeoutRef.current = null;
+      }
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     isOpenRef.current = isOpen;
@@ -869,9 +851,7 @@ function EiraUI() {
     return () => document.removeEventListener("keydown", handler);
   }, [isOpen]);
 
-  /* Core send — giờ đọc phản hồi dạng SSE (Server-Sent Events) từ backend:
-     token từng chữ hiện ngay giống ChatGPT, cộng với các sự kiện phụ khi
-     Eira gọi tool thật (books/coupon/escalate/status). */
+  /* Core send */
   const sendMessage = useCallback(
     async (text) => {
       const trimmed = text?.trim().slice(0, MAX_INPUT_LEN);
@@ -896,13 +876,8 @@ function EiraUI() {
 
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-
       let botMsgId = null;
       let streamedText = "";
-
-      // Token text stream vào đúng 1 bong bóng bot, tạo bong bóng đó ngay
-      // khi token đầu tiên tới (không tạo trước, tránh 1 bong bóng rỗng
-      // chớp nháy nếu lượt này hoá ra chỉ toàn tool call).
       const appendToken = (chunk) => {
         streamedText += chunk;
         setIsTyping(false);
@@ -951,8 +926,6 @@ function EiraUI() {
           if (event === "token") {
             appendToken(data.text);
           } else if (event === "status") {
-            // Không đè chữ đang lỡ đang stream — chỉ hiện trạng thái khi
-            // chưa có token text nào (đầu lượt, model vừa quyết định gọi tool).
             if (!streamedText) setStatusLabel(data.label);
           } else if (event === "books") {
             setStatusLabel(null);
@@ -1021,8 +994,6 @@ function EiraUI() {
                   : `Có lỗi xảy ra, bạn thử lại giúp mình nhé! (${err.message})`;
 
         historyRef.current.pop();
-        // Nếu đã lỡ stream được vài chữ trước khi lỗi, giữ nguyên bong bóng
-        // đó và thêm bong bóng lỗi riêng, thay vì xoá mất phần đã trả lời.
         setMessages((prev) => [...prev, makeMsg("bot", errMsg, true)]);
       } finally {
         setIsBusy(false);
@@ -1032,20 +1003,24 @@ function EiraUI() {
     [isBusy, configError],
   );
 
-  const handleRegenerate = useCallback(() => {
-    if (!lastUserMsgRef.current || isBusy) return;
-    if (historyRef.current.length >= 2)
-      historyRef.current = historyRef.current.slice(0, -1);
-    setMessages((prev) => {
-      const lastBot = [...prev].reverse().findIndex((m) => m.role === "bot");
-      if (lastBot === -1) return prev;
-      return prev.filter((_, i) => i !== prev.length - 1 - lastBot);
-    });
-    sendMessage(lastUserMsgRef.current);
-  }, [isBusy, sendMessage]);
+  const handleRegenerate = useCallback(
+    (isErrorRetry = false) => {
+      if (!lastUserMsgRef.current || isBusy) return;
+      if (!isErrorRetry && historyRef.current.length >= 2) {
+        historyRef.current = historyRef.current.slice(0, -1);
+      }
+      setMessages((prev) => {
+        const lastBot = [...prev]
+          .reverse()
+          .findIndex((m) => m.role === "bot");
+        if (lastBot === -1) return prev;
+        return prev.filter((_, i) => i !== prev.length - 1 - lastBot);
+      });
+      sendMessage(lastUserMsgRef.current);
+    },
+    [isBusy, sendMessage],
+  );
 
-  /* Nhận câu hỏi gửi từ nơi khác trong app (vd: bấm vào 1 dòng chữ trong
-     sách điện tử) qua sự kiện window "eira:ask", tự mở khung chat và hỏi luôn */
   useEffect(() => {
     const handleAskEvent = (e) => {
       const text = e?.detail?.text;
@@ -1058,14 +1033,30 @@ function EiraUI() {
     return () => window.removeEventListener("eira:ask", handleAskEvent);
   }, [sendMessage]);
 
-  /* Xóa toàn bộ hội thoại hiện tại, bắt đầu lại từ đầu */
   const handleClearChat = useCallback(() => {
     if (isBusy) return;
+
+    if (!confirmClear) {
+      setConfirmClear(true);
+      if (confirmClearTimeoutRef.current)
+        clearTimeout(confirmClearTimeoutRef.current);
+      confirmClearTimeoutRef.current = setTimeout(() => {
+        setConfirmClear(false);
+        confirmClearTimeoutRef.current = null;
+      }, 2500);
+      return;
+    }
+
+    if (confirmClearTimeoutRef.current) {
+      clearTimeout(confirmClearTimeoutRef.current);
+      confirmClearTimeoutRef.current = null;
+    }
+    setConfirmClear(false);
     setMessages([]);
     historyRef.current = [];
     lastUserMsgRef.current = "";
     setSuggHidden(false);
-  }, [isBusy]);
+  }, [isBusy, confirmClear]);
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -1106,8 +1097,6 @@ function EiraUI() {
       style={{
         "--drag-x": `${dragPos.x}px`,
         "--drag-y": `${dragPos.y}px`,
-        // Chỉ set khi ở /e-kid (kidPalette khác null); các trang khác không
-        // override gì nên khung chat giữ nguyên đúng màu xanh lá gốc trong CSS.
         ...(kidPalette || {}),
       }}
     >
@@ -1205,9 +1194,15 @@ function EiraUI() {
             {messages.length > 0 && (
               <button
                 type="button"
-                className="eira-close-btn"
-                aria-label="Xóa hội thoại"
-                title="Xóa hội thoại"
+                className={`eira-close-btn${confirmClear ? " eira-confirm-danger" : ""}`}
+                aria-label={
+                  confirmClear
+                    ? "Bấm lần nữa để xác nhận xóa hội thoại"
+                    : "Xóa hội thoại"
+                }
+                title={
+                  confirmClear ? "Bấm lần nữa để xác nhận" : "Xóa hội thoại"
+                }
                 onClick={handleClearChat}
                 disabled={isBusy}
               >
@@ -1268,7 +1263,9 @@ function EiraUI() {
                 msg={msg}
                 avatarSrc={avatarSrc}
                 onRegenerate={
-                  idx === messages.length - 1 ? handleRegenerate : null
+                  idx === messages.length - 1
+                    ? () => handleRegenerate(msg.isError)
+                    : null
                 }
                 onNavigateAway={() => setIsOpen(false)}
               />

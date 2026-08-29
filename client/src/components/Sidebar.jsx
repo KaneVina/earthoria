@@ -24,7 +24,7 @@ function getInitials(user) {
 function getSidebarLogo(currentPath) {
   const path = currentPath || "";
   if (path.startsWith("/dashboard/ar-codes")) {
-    return "/logo/logo-mau/lg-m-qr-studio.png"; // Trang QR
+    return "/logo/logo-mau/lg-m-im.png"; // Trang QR
   }
   if (path.startsWith("/dashboard/games")) {
     return "/logo/logo-mau/lg-m-game-studio.png"; // Trang Game

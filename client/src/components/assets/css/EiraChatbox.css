@@ -1680,3 +1680,19 @@
   flex-direction: column;
   gap: 6px;
 }
+/* Trạng thái "bấm lần nữa để xác nhận xóa hội thoại" */
+.eira-confirm-danger {
+  background: rgba(220, 38, 38, 0.14) !important;
+  border-color: rgba(220, 38, 38, 0.35) !important;
+  color: #fca5a5 !important;
+  animation: confirm-danger-pulse 0.9s ease-in-out infinite;
+}
+@keyframes confirm-danger-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(220, 38, 38, 0);
+  }
+}
