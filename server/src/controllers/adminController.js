@@ -10,7 +10,10 @@ const {
   sendOrderDeliveredEmail,
   sendOrderCancelledEmail,
 } = require("../services/emailService");
-const { resolveTierBySpend, buildLoyaltyProfile } = require("../utils/loyaltyTier");
+const {
+  resolveTierBySpend,
+  buildLoyaltyProfile,
+} = require("../utils/loyaltyTier");
 
 // Trả về thông tin hạng rút gọn (đủ cho hiển thị danh sách) từ 1 mức chi tiêu.
 const buildTierSummary = (spend) => {
@@ -38,7 +41,7 @@ const sendOrderEmailSafe = (sendFn, payload) => {
 const { uploadGlbFile } = require("../services/catboxService");
 // const { uploadGlbFile } = require("../services/cloudinaryUploadService");
 
-/* ─ Helpers ─ */
+/* Helpers*/
 const CHART_COLORS = {
   PENDING: "#eda100",
   CONFIRMED: "#2a78d6",
@@ -110,9 +113,7 @@ function mapPaymentStatus(status) {
   return status;
 }
 
-/* ══════════════════════════════════════════════
-   USER CODE GENERATION
-══════════════════════════════════════════════ */
+/* USER CODE GENERATION */
 const RAND_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
 
 function randomStr(len) {
@@ -408,11 +409,7 @@ exports.getDashboard = async (req, res) => {
   }
 };
 
-/* ══════════════════════════════════════════════
-   PRODUCTS (books) — 1 Book có thể có 1-2 BookVariant
-   (PHYSICAL / DIGITAL), mỗi variant có giá/tồn kho/mã riêng.
-══════════════════════════════════════════════ */
-
+/* PRODUCTS (books) — 1 Book có thể có 1-2 BookVariant(PHYSICAL / DIGITAL), mỗi variant có giá/tồn kho/mã riêng. */
 async function resolveAuthorIds(authorsInput) {
   if (!authorsInput) return [];
   const names = Array.isArray(authorsInput)
@@ -434,7 +431,9 @@ async function resolveAuthorIds(authorsInput) {
 }
 function normalizeThemes(themesInput) {
   if (themesInput === undefined) return undefined;
-  const list = Array.isArray(themesInput) ? themesInput : String(themesInput || "").split(",");
+  const list = Array.isArray(themesInput)
+    ? themesInput
+    : String(themesInput || "").split(",");
   return [...new Set(list.map((t) => String(t).trim()).filter(Boolean))];
 }
 
@@ -809,7 +808,9 @@ exports.updateProduct = async (req, res) => {
           }),
           ...(synopsis !== undefined && { synopsis: synopsis || null }),
           ...(themes !== undefined && { themes: normalizeThemes(themes) }),
-          ...(suitableFor !== undefined && { suitableFor: suitableFor || null }),
+          ...(suitableFor !== undefined && {
+            suitableFor: suitableFor || null,
+          }),
           ...(authorsUpdate && { authors: authorsUpdate }),
         },
       });
@@ -853,7 +854,9 @@ exports.draftBookAiContent = async (req, res) => {
       select: { id: true, title: true, description: true },
     });
     if (!book) {
-      return res.status(404).json({ success: false, message: "Không tìm thấy sách" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy sách" });
     }
 
     const ebook = await prisma.ebook.findFirst({
@@ -872,7 +875,13 @@ exports.draftBookAiContent = async (req, res) => {
     const pageTexts = ebook.pages
       .map((page, idx) => {
         const texts = (page.layers || [])
-          .filter((l) => l && l.type === "text" && typeof l.text === "string" && l.text.trim())
+          .filter(
+            (l) =>
+              l &&
+              l.type === "text" &&
+              typeof l.text === "string" &&
+              l.text.trim(),
+          )
           .map((l) => l.text.trim());
         return texts.length ? `Trang ${idx + 1}: ${texts.join(" ")}` : null;
       })
@@ -881,14 +890,15 @@ exports.draftBookAiContent = async (req, res) => {
     if (pageTexts.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "Các trang ebook chưa có nội dung chữ nào để AI đọc — hãy tự nhập tay bên dưới.",
+        message:
+          "Các trang ebook chưa có nội dung chữ nào để AI đọc — hãy tự nhập tay bên dưới.",
       });
     }
 
     const fullText = pageTexts.join("\n").slice(0, 6000);
 
     const system =
-      'Bạn là biên tập viên nội bộ của Earthoria — thương hiệu sách giáo dục tương tác cho trẻ 5–12 tuổi. Nhiệm vụ: đọc nội dung thô trích từ ebook rồi soạn NHÁP dữ liệu nội bộ để đội tư vấn dùng, KHÔNG phải để đăng nguyên văn công khai. Trả lời bằng tiếng Việt, CHỈ trả về đúng 1 JSON object theo schema được yêu cầu, không thêm chữ nào khác.';
+      "Bạn là biên tập viên nội bộ của Earthoria — thương hiệu sách giáo dục tương tác cho trẻ 5–12 tuổi. Nhiệm vụ: đọc nội dung thô trích từ ebook rồi soạn NHÁP dữ liệu nội bộ để đội tư vấn dùng, KHÔNG phải để đăng nguyên văn công khai. Trả lời bằng tiếng Việt, CHỈ trả về đúng 1 JSON object theo schema được yêu cầu, không thêm chữ nào khác.";
 
     const user = `Tên sách: "${book.title}"
 Mô tả ngắn hiện có: ${book.description || "(chưa có)"}
@@ -905,22 +915,39 @@ Trả về JSON đúng schema:
   "suitableFor": "1-2 câu gợi ý kiểu bé hoặc hoàn cảnh phù hợp đọc cuốn này"
 }`;
 
-    const draft = await groqCompleteJSON({ system, user, temperature: 0.5, maxTokens: 500 });
+    const draft = await groqCompleteJSON({
+      system,
+      user,
+      temperature: 0.5,
+      maxTokens: 500,
+    });
 
     return res.json({
       success: true,
       data: {
-        synopsis: typeof draft.synopsis === "string" ? draft.synopsis.trim() : "",
+        synopsis:
+          typeof draft.synopsis === "string" ? draft.synopsis.trim() : "",
         themes: Array.isArray(draft.themes)
-          ? [...new Set(draft.themes.map((t) => String(t).trim()).filter(Boolean))]
+          ? [
+              ...new Set(
+                draft.themes.map((t) => String(t).trim()).filter(Boolean),
+              ),
+            ]
           : [],
-        suitableFor: typeof draft.suitableFor === "string" ? draft.suitableFor.trim() : "",
+        suitableFor:
+          typeof draft.suitableFor === "string" ? draft.suitableFor.trim() : "",
       },
-      message: "Đây là bản nháp do AI soạn từ nội dung ebook — vui lòng đọc lại và chỉnh sửa trước khi lưu.",
+      message:
+        "Đây là bản nháp do AI soạn từ nội dung ebook — vui lòng đọc lại và chỉnh sửa trước khi lưu.",
     });
   } catch (err) {
     if (err.code === "CONFIG_MISSING") {
-      return res.status(503).json({ success: false, message: "Server chưa cấu hình GROQ_API_KEY." });
+      return res
+        .status(503)
+        .json({
+          success: false,
+          message: "Server chưa cấu hình GROQ_API_KEY.",
+        });
     }
     console.error("[draftBookAiContent]", err);
     return res.status(500).json({
@@ -1061,9 +1088,7 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
-/* ══════════════════════════════════════════════
-   CATEGORIES
-══════════════════════════════════════════════ */
+/*  CATEGORIES*/
 exports.getCategories = async (req, res) => {
   try {
     const categories = await prisma.category.findMany({
@@ -1152,7 +1177,8 @@ exports.deleteCategory = async (req, res) => {
     if (category._count.books > 0) {
       return res.status(400).json({
         success: false,
-        message: "Không thể xóa vì danh mục vẫn còn sách. Hãy chuyển sách sang danh mục khác trước.",
+        message:
+          "Không thể xóa vì danh mục vẫn còn sách. Hãy chuyển sách sang danh mục khác trước.",
       });
     }
 
@@ -1170,17 +1196,62 @@ exports.deleteCategory = async (req, res) => {
   }
 };
 
-/* ══════════════════════════════════════════════
-   ORDERS
-══════════════════════════════════════════════ */
+/* ORDERS*/
 exports.getOrders = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
     const limit = Math.max(1, parseInt(req.query.limit) || 15);
     const status = req.query.status?.trim();
+    const search = req.query.search?.trim() ?? "";
     const skip = (page - 1) * limit;
+    const orderCodeMatch = search.match(
+      /^ODE-(\d{2})(\d{2})(\d{2})([A-Za-z0-9]{3})$/i,
+    );
 
-    const where = status ? { status } : {};
+    let orderIdsFromCode = null; // null = người dùng không search theo mã đơn
+
+    if (orderCodeMatch) {
+      const [, mm, dd, yy] = orderCodeMatch;
+      const month = parseInt(mm, 10);
+      const day = parseInt(dd, 10);
+      const year = 2000 + parseInt(yy, 10); // mã chỉ lưu 2 số cuối năm -> giả định 20xx
+
+      const dayStart = new Date(year, month - 1, day, 0, 0, 0, 0);
+      const dayEnd = new Date(year, month - 1, day, 23, 59, 59, 999);
+      // Chặn kiểu mm=13, dd=32 (Date sẽ tự "cuộn" sang tháng/ngày khác thay vì báo lỗi)
+      const isRealDate =
+        dayStart.getMonth() === month - 1 && dayStart.getDate() === day;
+
+      if (isRealDate) {
+        const candidates = await prisma.order.findMany({
+          where: { createdAt: { gte: dayStart, lte: dayEnd } },
+          select: { id: true, createdAt: true },
+        });
+        orderIdsFromCode = candidates
+          .filter((o) => getOrderCode(o).toUpperCase() === search.toUpperCase())
+          .map((o) => o.id);
+      } else {
+        orderIdsFromCode = [];
+      }
+    }
+    const searchConditions = [];
+    if (orderIdsFromCode !== null) {
+      searchConditions.push({ id: { in: orderIdsFromCode } });
+    } else if (search) {
+      searchConditions.push({
+        user: {
+          OR: [
+            { name: { contains: search, mode: "insensitive" } },
+            { email: { contains: search, mode: "insensitive" } },
+          ],
+        },
+      });
+    }
+
+    const listConditions = status
+      ? [{ status }, ...searchConditions]
+      : searchConditions;
+    const where = listConditions.length ? { AND: listConditions } : {};
 
     const [orders, total, statusGroups] = await Promise.all([
       prisma.order.findMany({
@@ -1212,9 +1283,11 @@ exports.getOrders = async (req, res) => {
         },
       }),
       prisma.order.count({ where }),
-      // Đếm số đơn theo TỪNG trạng thái, không phụ thuộc filter status hiện tại,
-      // để pill nào cũng hiện đúng tổng số của trạng thái đó.
-      prisma.order.groupBy({ by: ["status"], _count: { _all: true } }),
+      prisma.order.groupBy({
+        by: ["status"],
+        where: searchConditions.length ? { AND: searchConditions } : {},
+        _count: { _all: true },
+      }),
     ]);
 
     const statusCounts = Object.fromEntries(
@@ -1320,7 +1393,11 @@ exports.getOrderById = async (req, res) => {
 
     // Hạng thành viên tính theo chi tiêu PAID + COMPLETED, đồng bộ với các chỗ khác
     const loyaltySpend = await prisma.order.aggregate({
-      where: { userId: order.userId, paymentStatus: "PAID", status: "COMPLETED" },
+      where: {
+        userId: order.userId,
+        paymentStatus: "PAID",
+        status: "COMPLETED",
+      },
       _sum: { total: true },
     });
 
@@ -1378,7 +1455,7 @@ exports.updateOrderStatus = async (req, res) => {
     const { id } = req.params;
     const { status, cancelReason } = req.body;
 
-   const validStatuses = [
+    const validStatuses = [
       "PENDING",
       "CONFIRMED",
       "SHIPPING",
@@ -1393,8 +1470,6 @@ exports.updateOrderStatus = async (req, res) => {
         .json({ success: false, message: "Trạng thái không hợp lệ" });
     }
 
-    // Lấy trạng thái CŨ trước khi update để chỉ gửi email khi thực sự CHUYỂN sang DELIVERED/CANCELLED
-    // (tránh gửi lặp email nếu admin lỡ bấm lưu lại cùng 1 trạng thái đang có).
     const existing = await prisma.order.findUnique({
       where: { id },
       select: { status: true, isDigital: true },
@@ -1404,8 +1479,6 @@ exports.updateOrderStatus = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Không tìm thấy đơn hàng" });
     }
-    // Đơn sách điện tử không có bước giao hàng — thanh toán xong tự chuyển COMPLETED,
-    // nên admin không can thiệp vào SHIPPING/DELIVERED của đơn này.
     if (existing.isDigital && ["SHIPPING", "DELIVERED"].includes(status)) {
       return res.status(400).json({
         success: false,
@@ -1414,8 +1487,6 @@ exports.updateOrderStatus = async (req, res) => {
     }
     const isNewTransition = existing.status !== status;
 
-    // DELIVERED (sách giấy): đánh dấu đã thu tiền (COD thu khi giao / online đã PAID từ trước).
-    // COMPLETED do admin tự set (hỗ trợ/override) cũng coi như đã thanh toán xong.
     const extraData =
       status === "DELIVERED" || status === "COMPLETED"
         ? { paymentStatus: "PAID" }
@@ -1439,7 +1510,7 @@ exports.updateOrderStatus = async (req, res) => {
       const emailOrder = {
         id: order.id,
         createdAt: order.createdAt,
-         items: order.items.map((item) => ({
+        items: order.items.map((item) => ({
           title: item.variant?.book?.title || "",
           quantity: item.quantity,
           price: item.price,
@@ -1481,9 +1552,7 @@ exports.updateOrderStatus = async (req, res) => {
   }
 };
 
-/* ══════════════════════════════════════════════
-   USERS
-══════════════════════════════════════════════ */
+/*USERS*/
 exports.getUsers = async (req, res) => {
   try {
     const viewerRole = req.user.role;
@@ -1528,9 +1597,6 @@ exports.getUsers = async (req, res) => {
     else if (status === "locked") conditions.push({ isActive: false });
 
     const where = conditions.length ? { AND: conditions } : {};
-
-    // Hạng thành viên không phải cột lưu sẵn — khi có lọc theo hạng, phải tính hạng
-    // cho TOÀN BỘ user khớp điều kiện trước rồi mới phân trang thủ công trong JS.
     const baseSelect = {
       id: true,
       name: true,
@@ -1609,7 +1675,12 @@ exports.getUsers = async (req, res) => {
 
     return res.json({
       success: true,
-      data: { users: usersWithTier, total, totalPages: Math.ceil(total / limit), page },
+      data: {
+        users: usersWithTier,
+        total,
+        totalPages: Math.ceil(total / limit),
+        page,
+      },
     });
   } catch (err) {
     console.error("[getUsers]", err);
@@ -2030,9 +2101,7 @@ exports.backfillUserCodes = async (req, res) => {
 
 exports.generateUserCode = generateUserCode;
 
-/* ══════════════════════════════════════════════
-   COUPONS
-══════════════════════════════════════════════ */
+/* COUPONS*/
 exports.getCoupons = async (req, res) => {
   try {
     const coupons = await prisma.coupon.findMany({
@@ -2124,8 +2193,16 @@ exports.toggleCoupon = async (req, res) => {
 exports.updateCoupon = async (req, res) => {
   try {
     const { id } = req.params;
-    const { code, type, value, minOrder, maxDiscount, usageLimit, expiresAt, isActive } =
-      req.body;
+    const {
+      code,
+      type,
+      value,
+      minOrder,
+      maxDiscount,
+      usageLimit,
+      expiresAt,
+      isActive,
+    } = req.body;
 
     const coupon = await prisma.coupon.findUnique({ where: { id } });
     if (!coupon) {
@@ -2210,9 +2287,7 @@ exports.deleteCoupon = async (req, res) => {
   }
 };
 
-/* ══════════════════════════════════════════════
-   AR CODE MANAGEMENT (staff)
-══════════════════════════════════════════════ */
+/* AR CODE MANAGEMENT (staff)*/
 const cloudinary = require("../config/cloudinary");
 const crypto = require("crypto");
 const {
@@ -2413,9 +2488,7 @@ exports.toggleArCode = async (req, res) => {
   }
 };
 
-/* ══════════════════════════════════════════════
-   AR CODES — GỘP THEO SÁCH
-══════════════════════════════════════════════ */
+/*  AR CODES — GỘP THEO SÁCH */
 exports.getArCodesGroupedAll = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -2523,11 +2596,7 @@ exports.updateArCodeAccess = async (req, res) => {
   }
 };
 
-/* ══════════════════════════════════════════════
-   NHẬP KHO — mỗi phiếu nhập kho là nhập tồn kho VẬT LÝ, nên
-   luôn tăng tồn kho trên variant PHYSICAL của sách (tự tạo nếu
-   sách đó chưa có variant PHYSICAL).
-══════════════════════════════════════════════ */
+/*  NHẬP KHO  */
 async function getOrCreatePhysicalVariant(tx, book, unitPrice, unit) {
   let variant = await tx.bookVariant.findUnique({
     where: { bookId_format: { bookId: book.id, format: "PHYSICAL" } },
@@ -2709,10 +2778,7 @@ exports.createInventoryImport = async (req, res) => {
   }
 };
 
-/* ══════════════════════════════════════════════
-   USER ROLE / MANAGED USERS / AR DETAIL / IMAGES
-   (không liên quan tới schema thay đổi — giữ nguyên)
-══════════════════════════════════════════════ */
+/*  USER ROLE / MANAGED USERS / AR DETAIL / IMAGES*/
 exports.updateUserRole = async (req, res) => {
   try {
     const { id } = req.params;

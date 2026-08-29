@@ -592,19 +592,52 @@ function OrderDrawer({ orderId, onClose, onUpdateStatus, isUpdating }) {
   );
 }
 
+// Mã đơn luôn có dạng ODE-mmddyy + 3 ký tự chữ/số (khớp getOrderCode ở backend)
+const ORDER_CODE_REGEX = /^ODE-\d{6}[A-Za-z0-9]{3}$/;
+
 export default function Orders() {
   const qc = useQueryClient();
 
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState("");
   const [selected, setSelected] = useState(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
+  const [searchError, setSearchError] = useState("");
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const trimmed = searchInput.trim();
+
+    // Chỉ khi có vẻ đang gõ mã đơn (bắt đầu bằng "ODE") mới bắt buộc đúng định dạng.
+    // Còn lại (tên/email khách) không cần validate gì cả.
+    const looksLikeOrderCode = /^ode/i.test(trimmed);
+
+    if (looksLikeOrderCode && !ORDER_CODE_REGEX.test(trimmed.toUpperCase())) {
+      setSearchError(
+        "Mã đơn không hợp lệ — đúng định dạng: ODE-XXXXXXYYY (6 số + 3 ký tự)",
+      );
+      return;
+    }
+
+    setSearchError("");
+    setSearch(trimmed);
+    setPage(1);
+  };
+
+  const handleClearSearch = () => {
+    setSearchInput("");
+    setSearch("");
+    setSearchError("");
+    setPage(1);
+  };
 
   /*  Data  */
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-orders", page, status],
+    queryKey: ["admin-orders", page, status, search],
     queryFn: () =>
       api
-        .get("/admin/orders", { params: { page, limit: 15, status } })
+        .get("/admin/orders", { params: { page, limit: 15, status, search } })
         .then((r) => r.data.data),
     keepPreviousData: true,
   });
@@ -641,6 +674,63 @@ export default function Orders() {
           Tổng <strong style={{ color: "var(--a-ink)" }}>{total}</strong> đơn
         </div>
       </div>
+
+      {/*  Search box  */}
+      <form onSubmit={handleSearchSubmit} style={{ marginBottom: 14 }}>
+        <div style={{ position: "relative", maxWidth: 400 }}>
+          <Search
+            size={15}
+            style={{
+              position: "absolute",
+              left: 12,
+              top: "50%",
+              transform: "translateY(-50%)",
+              color: "rgba(13,51,48,0.35)",
+            }}
+          />
+          <input
+            value={searchInput}
+            onChange={(e) => {
+              setSearchInput(e.target.value);
+              if (searchError) setSearchError("");
+            }}
+            placeholder="Tìm theo mã đơn (ODE-...), tên hoặc email khách hàng"
+            style={{
+              width: "100%",
+              padding: "9px 34px 9px 34px",
+              borderRadius: 8,
+              border: `1px solid ${searchError ? "#e34948" : "rgba(13,51,48,0.15)"}`,
+              fontSize: 12.5,
+              fontFamily: "inherit",
+              outline: "none",
+            }}
+          />
+          {searchInput && (
+            <button
+              type="button"
+              onClick={handleClearSearch}
+              style={{
+                position: "absolute",
+                right: 8,
+                top: "50%",
+                transform: "translateY(-50%)",
+                border: "none",
+                background: "none",
+                cursor: "pointer",
+                color: "rgba(13,51,48,0.4)",
+              }}
+              aria-label="Xóa tìm kiếm"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+        {searchError && (
+          <div style={{ color: "#e34948", fontSize: 11.5, marginTop: 6 }}>
+            {searchError}
+          </div>
+        )}
+      </form>
 
       {/*  Status filter pills  */}
       <div className="a-pills">
