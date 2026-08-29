@@ -298,7 +298,13 @@ export default function Navbar() {
                   className="nav-icon icon-cart"
                   aria-label="Giỏ hàng"
                 >
-                  <ShoppingCart size={16} strokeWidth={1.8} />
+                  <ShoppingCart
+                    size={16}
+                    strokeWidth={1.8}
+                    fill={itemCount > 0 ? "var(--gold)" : "none"}
+                    color={itemCount > 0 ? "var(--gold)" : "currentColor"}
+                    style={{ transition: "fill 0.3s ease, color 0.3s ease" }}
+                  />
                   {itemCount > 0 && (
                     <span key={itemCount} className="nav-badge nav-badge-pop">
                       {itemCount > 99 ? "99+" : itemCount}
