@@ -81,10 +81,10 @@ async function getActiveCouponsContext() {
    2) SYSTEM PROMPT
      */
 
-const BASE_SYSTEM_PROMPT = `Bạn là Eira — trợ lý AI thân thiện đồng thời là chuyên viên tư vấn khách hàng chuyên nghiệp của thương hiệu sách giáo dục tương tác Earthoria. Bạn kết hợp giữa kiến thức chuyên môn về sản phẩm và sự tinh tế trong cách truyền đạt, giúp phụ huynh không chỉ hiểu giá trị của sản phẩm mà còn cảm nhận được mong muốn sở hữu nó cho con em mình.
+const BASE_SYSTEM_PROMPT = `Bạn là Eira — trợ lý AI thân thiện đồng thời là chuyên viên tư vấn khách hàng chuyên nghiệp của Earthoria. Bạn kết hợp giữa kiến thức chuyên môn về sản phẩm và sự tinh tế trong cách truyền đạt, giúp phụ huynh không chỉ hiểu giá trị của sản phẩm mà còn cảm nhận được mong muốn sở hữu nó cho con em mình.
 
 NGUYÊN TẮC TUYỆT ĐỐI:
-- LUÔN LUÔN trả lời bằng tiếng Việt, dù người dùng hỏi bằng ngôn ngữ nào.
+- Ưu tiên trả lời bằng tiếng Việt.
 - Từ chối trả lời những câu hỏi nhạy cảm liên quan đến chính trị, tôn giáo, chiến tranh, giới tính, định kiến.
 - CHỈ được dùng số liệu (giá, tồn kho, mã giảm giá) xuất hiện trong khối DỮ LIỆU được cung cấp hoặc kết quả trả về từ tool. TUYỆT ĐỐI KHÔNG tự đoán, không bịa, không dùng số liệu cũ nhớ từ trước. Nếu không có dữ liệu liên quan, hãy nói rõ là chưa có thông tin chính xác và hướng dẫn khách liên hệ earthoriavn@gmail.com.
 - Khi trả lời về nội dung/cốt truyện/bài học của một cuốn sách, CHỈ dùng đúng "synopsis"/"themes"/"suitableFor" lấy từ tool get_book_details — đây là TÓM TẮT do Earthoria biên soạn, KHÔNG PHẢI toàn văn sách. Tuyệt đối không tự bịa thêm chi tiết truyện, nhân vật hay đoạn kết ngoài dữ liệu này. Nếu "hasContentData" là false, chỉ dùng "description" ngắn gọn hiện có và nói rõ đây là mô tả tổng quan, mời khách xem thêm khi đọc thử.
@@ -94,13 +94,13 @@ DÙNG TOOL KHI CẦN — RẤT QUAN TRỌNG:
 - Khi bạn muốn giới thiệu cụ thể 1-3 cuốn sách cho khách (không chỉ nhắc tên suông), LUÔN gọi tool suggest_books với đúng "id" lấy từ khối DỮ LIỆU SÁCH LIÊN QUAN — để hệ thống hiển thị card sản phẩm đẹp kèm ảnh/giá/nút mua ngay cho khách, thay vì chỉ mô tả bằng chữ.
 - Khi khách hỏi sâu về nội dung/câu chuyện/bài học của MỘT cuốn cụ thể, hoặc hỏi cuốn đó có hợp với tính cách/hoàn cảnh riêng của bé không (vd: bé nhút nhát, sợ động vật, thích khoa học, đang học về môi trường...): LUÔN gọi tool get_book_details trước khi trả lời, để lấy đúng tóm tắt + chủ đề + gợi ý phù hợp từ hệ thống thay vì suy diễn. Sau khi trả lời xong phần nội dung, LUÔN chèn 1 liên kết markdown tới đúng "url" trả về từ tool này (ví dụ: [Xem chi tiết sách này](/books/...)) để khách bấm vào xem trang sản phẩm đầy đủ.
 - Khi khách hỏi còn hàng không / số lượng tồn kho của MỘT cuốn cụ thể: gọi tool check_stock, đừng đoán từ dữ liệu cũ.
-- Khi khách hỏi về trạng thái đơn hàng của họ ("đơn của tôi tới đâu rồi", "đơn hàng ABC123 sao rồi"): gọi tool get_order_status. Nếu không cung cấp mã, để trống để lấy đơn gần nhất.
+- Khi khách hỏi về trạng thái đơn hàng của họ ("đơn của tôi tới đâu rồi", "đơn hàng ABC123 sao rồi"): gọi tool get_order_status. Nếu không cung cấp mã, để trống để lấy đơn gần nhất. Kết quả tool luôn có "lookupLimit" (số đơn gần nhất được phép tra) — LUÔN mở đầu câu trả lời bằng một câu ngắn gọn kiểu "Do chính sách bảo mật, mình chỉ tra được tối đa {lookupLimit} đơn gần nhất của bạn thôi ạ, đây là kết quả mình tìm được:" rồi mới nêu chi tiết đơn hàng hoặc thông báo không tìm thấy — kể cả khi tra ra kết quả bình thường, không chỉ khi không tìm thấy.
 - Khi khách muốn dùng một mã giảm giá cụ thể: gọi tool apply_coupon để kiểm tra và xem trước số tiền được giảm dựa trên giỏ hàng thật của khách.
 - Khi bạn không chắc chắn về câu trả lời sau khi đã cố gắng, khi khách yêu cầu rõ ràng được nói chuyện với nhân viên thật, hoặc khách có dấu hiệu bực bội/lặp lại câu hỏi nhiều lần mà chưa được giải quyết: gọi tool escalate_to_human.
 - Không viết văn bản giải thích "để mình kiểm tra nhé" trước khi gọi tool — gọi tool ngay, rồi trả lời khách dựa trên kết quả.
 
 THÔNG TIN EARTHORIA:
-- Tên: Earthoria — thương hiệu sách giáo dục tương tác AR & AI dành cho trẻ em 5–12 tuổi tại Việt Nam.
+- Tên: Earthoria — thương hiệu sách giáo dục tương tác AR & AI dành cho trẻ em tuổi tại Việt Nam.
 - Startup sinh viên FPT University Campus Cần Thơ (EXE101, Summer 2026), thành lập 25/05/2026.
 - Website: earthoria.id.vn | Fanpage: facebook.com/Earthoriavn | Email: earthoriavn@gmail.com
 - Địa chỉ: 600 Nguyễn Văn Cừ, Ninh Kiều, Cần Thơ.
@@ -273,8 +273,6 @@ const TOOL_STATUS_LABELS = {
 
 async function toolSuggestBooks(args, ctx) {
   const requestedIds = Array.isArray(args.book_ids) ? args.book_ids : []
-  // Whitelist: model chỉ được chọn trong đúng tập candidate đã RAG ra cho lượt
-  // này — không bao giờ tin tưởng ID model tự đưa ra nằm ngoài whitelist.
   const validIds = requestedIds.filter((id) => ctx.candidateBooksById.has(id)).slice(0, 3)
   if (validIds.length === 0) {
     return { ok: false, message: 'Không có id hợp lệ nằm trong danh sách gợi ý hiện tại.' }
@@ -298,7 +296,7 @@ async function toolCheckStock(args) {
   }
 }
 
-async function toolGetBookDetails(args, ctx) {
+ async function toolGetBookDetails(args, ctx) {
   const query = String(args.book_query || '').trim()
   if (!query) return { ok: false, message: 'Thiếu tên sách cần tra cứu.' }
 
@@ -309,6 +307,10 @@ async function toolGetBookDetails(args, ctx) {
   if (!book) book = await fuzzyFindOneBook(query)
   if (!book) return { ok: false, message: 'Không tìm thấy sách phù hợp với tên này trong hệ thống.' }
 
+  if (!ctx.candidateBooksById.has(book.id)) {
+    ctx.candidateBooksById.set(book.id, book)
+  }
+
   const full = await prisma.book.findUnique({
     where: { id: book.id },
     include: { authors: { include: { author: true }, orderBy: { order: 'asc' } } },
@@ -317,6 +319,7 @@ async function toolGetBookDetails(args, ctx) {
 
   return {
     ok: true,
+    id: full.id,
     title: full.title,
     url: `/books/${full.slug}/${encodeId(full.id)}`,
     description: full.description || null,
@@ -329,11 +332,6 @@ async function toolGetBookDetails(args, ctx) {
     hasContentData: Boolean(full.synopsis || (full.themes && full.themes.length) || full.suitableFor),
   }
 }
-
-// Bản sao CHÍNH XÁC của getOrderCode() trong orderController.js — mã đơn
-// hiển thị dạng ODE-xxxxxxx là hash 1 CHIỀU sinh từ order.id + ngày tạo,
-// KHÔNG giải mã ngược được như hashids. Nên thay vì decode, ta tính lại mã
-// này cho từng đơn của CHÍNH khách đang đăng nhập rồi so khớp chuỗi.
 const ORDER_CODE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
 
 function computeOrderCode(order) {
@@ -354,6 +352,12 @@ function computeOrderCode(order) {
   return `ODE-${mm}${dd}${yy}${suffix}`
 }
 
+// Giới hạn số đơn gần nhất mà chatbot được phép tự động tra cứu — bảo vệ
+// hiệu năng (không quét toàn bộ lịch sử đơn của khách lâu năm) đồng thời
+// là ranh giới bảo mật rõ ràng để AI luôn minh bạch với khách về phạm vi
+// tra cứu của mình, thay vì báo "không tìm thấy" gây hiểu lầm đơn bị mất.
+const ORDER_LOOKUP_LIMIT = 50
+
 async function toolGetOrderStatus(args, ctx) {
   if (!ctx.user) {
     return {
@@ -370,7 +374,7 @@ async function toolGetOrderStatus(args, ctx) {
   const myOrders = await prisma.order.findMany({
     where: { userId: ctx.user.id },
     orderBy: { createdAt: 'desc' },
-    take: 50,
+    take: ORDER_LOOKUP_LIMIT,
   })
 
   let order
@@ -380,10 +384,19 @@ async function toolGetOrderStatus(args, ctx) {
     order = myOrders[0]
   }
 
-  if (!order) return { ok: false, message: 'Không tìm thấy đơn hàng này thuộc tài khoản đang đăng nhập.' }
+  if (!order) {
+    return {
+      ok: false,
+      lookupLimit: ORDER_LOOKUP_LIMIT,
+      message: rawCode
+        ? `Không tìm thấy đơn "${rawCode}" trong ${ORDER_LOOKUP_LIMIT} đơn gần nhất của khách. Đây có thể là đơn cũ hơn phạm vi tra cứu tự động — hướng dẫn khách liên hệ earthoriavn@gmail.com để nhân viên tra cứu thủ công.`
+        : 'Khách chưa có đơn hàng nào trong hệ thống.',
+    }
+  }
 
   return {
     ok: true,
+    lookupLimit: ORDER_LOOKUP_LIMIT,
     orderCode: computeOrderCode(order),
     status: order.status,
     paymentStatus: order.paymentStatus,
