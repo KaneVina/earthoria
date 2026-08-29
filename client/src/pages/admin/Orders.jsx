@@ -621,6 +621,11 @@ export default function Orders() {
   const orders = data?.orders ?? [];
   const totalPages = data?.totalPages ?? 1;
   const total = data?.total ?? 0;
+  const statusCounts = data?.statusCounts ?? {};
+  const totalAllStatuses = Object.values(statusCounts).reduce(
+    (s, n) => s + n,
+    0,
+  );
 
   return (
     <AdminLayout>
@@ -646,7 +651,7 @@ export default function Orders() {
             setPage(1);
           }}
         >
-          Tất cả
+          Tất cả ({totalAllStatuses})
         </button>
         {Object.entries(ORDER_STATUS).map(([key, label]) => (
           <button
@@ -657,7 +662,7 @@ export default function Orders() {
               setPage(1);
             }}
           >
-            {label}
+            {label} ({statusCounts[key] ?? 0})
           </button>
         ))}
       </div>

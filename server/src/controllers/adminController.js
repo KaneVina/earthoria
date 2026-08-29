@@ -1182,7 +1182,7 @@ exports.getOrders = async (req, res) => {
 
     const where = status ? { status } : {};
 
-    const [orders, total] = await Promise.all([
+    const [orders, total, statusGroups] = await Promise.all([
       prisma.order.findMany({
         where,
         skip,
@@ -1212,7 +1212,14 @@ exports.getOrders = async (req, res) => {
         },
       }),
       prisma.order.count({ where }),
+      // Đếm số đơn theo TỪNG trạng thái, không phụ thuộc filter status hiện tại,
+      // để pill nào cũng hiện đúng tổng số của trạng thái đó.
+      prisma.order.groupBy({ by: ["status"], _count: { _all: true } }),
     ]);
+
+    const statusCounts = Object.fromEntries(
+      statusGroups.map((g) => [g.status, g._count._all]),
+    );
 
     const unpaidBankQrIds = orders
       .filter((o) => o.paymentMethod === "BANKQR" && o.paymentStatus !== "PAID")
@@ -1266,6 +1273,7 @@ exports.getOrders = async (req, res) => {
         total,
         totalPages: Math.ceil(total / limit),
         page,
+        statusCounts,
       },
     });
   } catch (err) {
