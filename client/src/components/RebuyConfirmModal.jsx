@@ -36,10 +36,6 @@ export default function RebuyConfirmModal({
       setRemaining((r) => {
         if (r <= 1) {
           clearInterval(intervalRef.current);
-          if (!firedRef.current) {
-            firedRef.current = true;
-            onConfirm();
-          }
           return 0;
         }
         return r - 1;
@@ -49,6 +45,15 @@ export default function RebuyConfirmModal({
     return () => clearInterval(intervalRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, seconds]);
+
+  useEffect(() => {
+    if (!open) return;
+    if (remaining === 0 && !firedRef.current) {
+      firedRef.current = true;
+      onConfirm();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, remaining]);
 
   const handleConfirm = () => {
     if (firedRef.current) return;

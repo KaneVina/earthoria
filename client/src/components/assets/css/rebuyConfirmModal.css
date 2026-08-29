@@ -26,7 +26,7 @@
   width: 100%;
   max-width: 420px;
   padding: 36px 32px 28px;
-  border-radius: 20px;
+  border-radius: 0;
   background: var(--ivory, #fdfbf7);
   box-shadow:
     0 30px 70px rgba(11, 46, 43, 0.28),

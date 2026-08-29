@@ -328,7 +328,7 @@ export default function Navbar() {
                             <li key={item.id} className="cart-dropdown-item">
                               <span className="cart-dropdown-thumb-wrap">
                                 <img
-                                  src={item.variant?.book?.coverImage}
+                                  src={item.variant?.book?.coverImage || "https://placehold.co/88x112/0d3330/faf8f3?text=E"}
                                   alt={item.variant?.book?.title}
                                   className="cart-dropdown-thumb"
                                 />
