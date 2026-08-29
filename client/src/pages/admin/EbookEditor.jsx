@@ -5,6 +5,7 @@ import { ebookService } from "../../services/ebookService";
 import api from "../../services/api";
 import { QRCodeCanvas } from "qrcode.react";
 import "../../components/assets/css/ebookPreview.css";
+import "../../components/assets/css/bookBuilder.css";
 import {
   Undo2,
   Redo2,
@@ -27,6 +28,7 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
+  AlignJustify,
   Bold,
   Italic,
   Underline,
@@ -58,7 +60,9 @@ import {
   List,
   Bookmark,
   BookmarkCheck,
+  SwatchBook,
 } from "lucide-react";
+import ColorPaletteStudio from "../../pages/admin/colorPalette/ColorPaletteStudio";
 
 const FONTS = [
   { label: "Be Vietnam Pro", value: "'Be Vietnam Pro', system-ui, sans-serif" },
@@ -121,6 +125,58 @@ function resizeImageFileIfNeeded(file, maxDim = 1600, quality = 0.86) {
     reader.onerror = () => resolve(file);
     reader.readAsDataURL(file);
   });
+}
+
+function escapeHtml(str) {
+  return (str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function sanitizeRichHtml(html) {
+  const container = document.createElement("div");
+  container.innerHTML = html || "";
+  const ALLOWED_TAGS = new Set([
+    "B",
+    "STRONG",
+    "I",
+    "EM",
+    "U",
+    "FONT",
+    "SPAN",
+    "BR",
+    "DIV",
+  ]);
+  const clean = (node) => {
+    Array.from(node.childNodes).forEach((child) => {
+      if (child.nodeType === 3) return;
+      if (child.nodeType !== 1) {
+        node.removeChild(child);
+        return;
+      }
+      if (!ALLOWED_TAGS.has(child.tagName)) {
+        while (child.firstChild) node.insertBefore(child.firstChild, child);
+        node.removeChild(child);
+        return;
+      }
+      Array.from(child.attributes).forEach((attr) => {
+        const name = attr.name.toLowerCase();
+        if (child.tagName === "FONT" && name === "color") return;
+        if (name === "style") {
+          const m = /color\s*:\s*[^;]+/i.exec(attr.value);
+          if (m) {
+            child.setAttribute("style", m[0]);
+            return;
+          }
+        }
+        child.removeAttribute(attr.name);
+      });
+      clean(child);
+    });
+  };
+  clean(container);
+  return container.innerHTML;
 }
 
 function hexToRgb(hex) {
@@ -207,6 +263,7 @@ function defaultTextLayer(overrides = {}) {
     id: uid(),
     type: "text",
     text: "Nhập chữ...",
+    html: null,
     x: BASE_PAGE_W / 2 - 110,
     y: BASE_PAGE_H / 2 - 20,
     width: 220,
@@ -373,9 +430,33 @@ function defaultPage(overrides = {}) {
     id: uid(),
     title: "",
     background: "#fffdf8",
+    backgroundImage: "",
+    bgImageSize: "cover",
+    bgImagePosition: { x: 50, y: 50 },
+    width: BASE_PAGE_W,
+    height: BASE_PAGE_H,
+    borderRadius: 10,
     layers: [],
     ...overrides,
   };
+}
+
+// Style nền trang: màu nền + (tuỳ chọn) ảnh nền có thể canh vị trí / kiểu hiển thị.
+function pageBackgroundStyle(page) {
+  const style = { background: page?.background || "#fffdf8" };
+  if (page?.backgroundImage) {
+    const pos = page.bgImagePosition || { x: 50, y: 50 };
+    style.backgroundImage = `url("${page.backgroundImage}")`;
+    style.backgroundRepeat = "no-repeat";
+    style.backgroundPosition = `${pos.x}% ${pos.y}%`;
+    style.backgroundSize =
+      page.bgImageSize === "stretch"
+        ? "100% 100%"
+        : page.bgImageSize === "contain"
+          ? "contain"
+          : "cover";
+  }
+  return style;
 }
 
 function pageNumberBoxStyle(pos) {
@@ -437,6 +518,11 @@ function LayerView({
   onLineHover,
   onLineLeave,
   onAskAI,
+  isEditingText,
+  editableRef,
+  onStartEditText,
+  onCommitText,
+  onSelectionChange,
 }) {
   const wrapStyle = {
     position: "absolute",
@@ -787,6 +873,30 @@ function LayerView({
   const hasFixedHeight = layer.height != null && layer.height > 0;
   const scaledFontSize = (layer.fontSize || 16) * (fontScale || 1);
   const askable = readOnly && !!layer.text?.trim() && !layer.tocTargetPageId;
+  const isRich = !!layer.html;
+  const editingNow = !readOnly && !!isEditingText;
+
+  const textInnerStyle = {
+    fontFamily: layer.fontFamily,
+    fontSize: scaledFontSize,
+    fontWeight: layer.bold ? 700 : 400,
+    fontStyle: layer.italic ? "italic" : "normal",
+    textDecoration: layer.underline
+      ? "underline"
+      : isTocLink
+        ? "underline dotted"
+        : "none",
+    color: layer.color,
+    textAlign: layer.align || "left",
+    WebkitTextStroke:
+      layer.strokeWidth > 0
+        ? `${layer.strokeWidth}px ${layer.strokeColor}`
+        : undefined,
+    lineHeight: 1.35,
+    wordBreak: "break-word",
+    outline: "none",
+  };
+
   return (
     <div
       style={{
@@ -794,8 +904,23 @@ function LayerView({
         width: layer.width,
         height: hasFixedHeight ? layer.height : undefined,
       }}
-      onPointerDown={(e) => !readOnly && onDragStart(e, layer)}
+      onPointerDown={(e) => {
+        if (readOnly) return;
+        if (editingNow) {
+          e.stopPropagation();
+          return;
+        }
+        onDragStart(e, layer);
+      }}
       onClick={handleClick}
+      onDoubleClick={
+        !readOnly && !layer.locked && onStartEditText
+          ? (e) => {
+              e.stopPropagation();
+              onStartEditText(layer.id);
+            }
+          : undefined
+      }
     >
       <div
         className={askable ? "er-line" : undefined}
@@ -823,7 +948,13 @@ function LayerView({
               ? "2px solid #4a9e3f"
               : "2px solid transparent",
           outlineOffset: 4,
-          cursor: readOnly ? (isTocLink ? "pointer" : "default") : "grab",
+          cursor: readOnly
+            ? isTocLink
+              ? "pointer"
+              : "default"
+            : editingNow
+              ? "text"
+              : "grab",
           touchAction: "none",
           boxShadow:
             !readOnly && selected ? "0 0 0 4px rgba(74,158,63,0.14)" : "none",
@@ -842,57 +973,58 @@ function LayerView({
             <Sparkles size={10} /> Hỏi AI
           </button>
         )}
-        <div
-          style={{
-            fontFamily: layer.fontFamily,
-            fontSize: scaledFontSize,
-            fontWeight: layer.bold ? 700 : 400,
-            fontStyle: layer.italic ? "italic" : "normal",
-            textDecoration: layer.underline
-              ? "underline"
-              : isTocLink
-                ? "underline dotted"
-                : "none",
-            color: layer.color,
-            textAlign: layer.align || "left",
-            WebkitTextStroke:
-              layer.strokeWidth > 0
-                ? `${layer.strokeWidth}px ${layer.strokeColor}`
-                : undefined,
-            lineHeight: 1.35,
-            wordBreak: "break-word",
-          }}
-        >
-          {words.map((w, i) => (
-            <React.Fragment key={i}>
-              <span
-                onMouseEnter={
-                  !readOnly
-                    ? (e) => {
-                        e.stopPropagation();
-                        onWordHover({ word: w });
-                      }
-                    : undefined
-                }
-                onMouseLeave={!readOnly ? onWordLeave : undefined}
-                style={{
-                  padding: "1px 2px",
-                  borderRadius: 4,
-                  cursor: readOnly ? "inherit" : "pointer",
-                  background:
-                    isReadingThis && readingWordIndex === i
-                      ? "rgba(255,196,61,0.55)"
-                      : "transparent",
-                  transition: "background 0.12s ease",
-                }}
-              >
-                {w}
-              </span>
-              {i < words.length - 1 ? " " : ""}
-            </React.Fragment>
-          ))}
-        </div>
-        {!readOnly && selected && (
+        {editingNow ? (
+          <div
+            ref={editableRef}
+            contentEditable
+            suppressContentEditableWarning
+            onPointerDown={(e) => e.stopPropagation()}
+            onMouseUp={onSelectionChange}
+            onKeyUp={onSelectionChange}
+            onBlur={() => onCommitText && onCommitText(layer.id)}
+            style={textInnerStyle}
+            dangerouslySetInnerHTML={{
+              __html: layer.html || escapeHtml(layer.text || ""),
+            }}
+          />
+        ) : isRich ? (
+          <div
+            style={textInnerStyle}
+            dangerouslySetInnerHTML={{ __html: layer.html }}
+          />
+        ) : (
+          <div style={textInnerStyle}>
+            {words.map((w, i) => (
+              <React.Fragment key={i}>
+                <span
+                  onMouseEnter={
+                    !readOnly
+                      ? (e) => {
+                          e.stopPropagation();
+                          onWordHover({ word: w });
+                        }
+                      : undefined
+                  }
+                  onMouseLeave={!readOnly ? onWordLeave : undefined}
+                  style={{
+                    padding: "1px 2px",
+                    borderRadius: 4,
+                    cursor: readOnly ? "inherit" : "pointer",
+                    background:
+                      isReadingThis && readingWordIndex === i
+                        ? "rgba(255,196,61,0.55)"
+                        : "transparent",
+                    transition: "background 0.12s ease",
+                  }}
+                >
+                  {w}
+                </span>
+                {i < words.length - 1 ? " " : ""}
+              </React.Fragment>
+            ))}
+          </div>
+        )}
+        {!readOnly && selected && !editingNow && (
           <div
             onPointerDown={(e) => {
               e.stopPropagation();
@@ -928,8 +1060,14 @@ export function PreviewOverlay({
   };
   const SPREAD_GAP = 26;
 
-  const PAGE_W = orientation === "PORTRAIT" ? BASE_PAGE_H : BASE_PAGE_W;
-  const PAGE_H = orientation === "PORTRAIT" ? BASE_PAGE_W : BASE_PAGE_H;
+  const firstPage = pages && pages[0];
+  const PAGE_W =
+    firstPage?.width ||
+    (orientation === "PORTRAIT" ? BASE_PAGE_H : BASE_PAGE_W);
+  const PAGE_H =
+    firstPage?.height ||
+    (orientation === "PORTRAIT" ? BASE_PAGE_W : BASE_PAGE_H);
+  const PAGE_RADIUS = firstPage?.borderRadius ?? 10;
 
   const STORAGE_PREFIX = `earthoria:reader:${storageKey || "preview"}`;
 
@@ -1436,9 +1574,10 @@ export function PreviewOverlay({
                     key={p.id}
                     className="er-page"
                     style={{
-                      width: PAGE_W,
-                      height: PAGE_H,
-                      background: p.background,
+                      width: p.width || PAGE_W,
+                      height: p.height || PAGE_H,
+                      borderRadius: p.borderRadius ?? PAGE_RADIUS,
+                      ...pageBackgroundStyle(p),
                     }}
                   >
                     {p.layers.map((layer) => (
@@ -1677,9 +1816,6 @@ export default function BookBuilder() {
   const [showTitleWithPageNumber, setShowTitleWithPageNumber] = useState(false);
   const [hidePageNumberOnCover, setHidePageNumberOnCover] = useState(false);
 
-  const PAGE_W = orientation === "PORTRAIT" ? BASE_PAGE_H : BASE_PAGE_W;
-  const PAGE_H = orientation === "PORTRAIT" ? BASE_PAGE_W : BASE_PAGE_H;
-
   const [pages, setPages] = useState([
     defaultPage({
       title: "Bìa sách",
@@ -1708,8 +1844,9 @@ export default function BookBuilder() {
   const [scale, setScale] = useState(1);
   const [autoFit, setAutoFit] = useState(true);
   const [ttsOk, setTtsOk] = useState(true);
-const [hoverSpeakMuted, setHoverSpeakMuted] = useState(false);
+  const [hoverSpeakMuted, setHoverSpeakMuted] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [colorStudioOpen, setColorStudioOpen] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [saveStatus, setSaveStatus] = useState("idle");
@@ -1735,6 +1872,7 @@ const [hoverSpeakMuted, setHoverSpeakMuted] = useState(false);
   const imageFileInputRef = useRef(null);
   const imageUploadTargetIdRef = useRef(null);
   const multiImageInputRef = useRef(null);
+  const pageBgFileInputRef = useRef(null);
   const lastHoverWord = useRef(null);
   const pastRef = useRef([]);
   const futureRef = useRef([]);
@@ -1757,6 +1895,19 @@ const [hoverSpeakMuted, setHoverSpeakMuted] = useState(false);
   hidePageNumberOnCoverRef.current = hidePageNumberOnCover;
 
   const currentPage = pages[pageIndex] || pages[0];
+
+  const PAGE_W =
+    currentPage?.width ||
+    (orientation === "PORTRAIT" ? BASE_PAGE_H : BASE_PAGE_W);
+  const PAGE_H =
+    currentPage?.height ||
+    (orientation === "PORTRAIT" ? BASE_PAGE_W : BASE_PAGE_H);
+  const PAGE_RADIUS = currentPage?.borderRadius ?? 10;
+
+  // ─ Soạn thảo chữ theo từng đoạn (tô đậm/tô màu 1 phần trong câu) ─
+  const [editingTextId, setEditingTextId] = useState(null);
+  const editableRef = useRef(null);
+  const savedRangeRef = useRef(null);
 
   useEffect(() => setTtsOk(speechAvailable()), []);
   useEffect(() => {
@@ -1907,10 +2058,14 @@ const [hoverSpeakMuted, setHoverSpeakMuted] = useState(false);
       if (!wrapRef.current) return;
       setScale(Math.min(1, wrapRef.current.clientWidth / PAGE_W));
     };
-    measure();
+    // Chờ 1 khung hình để layout (panel bên mở/đóng) ổn định trước khi đo lại.
+    const raf = requestAnimationFrame(measure);
     window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, [autoFit]);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", measure);
+    };
+  }, [autoFit, activePanel, PAGE_W, PAGE_H]);
 
   const zoomIn = () => {
     setAutoFit(false);
@@ -1993,6 +2148,117 @@ const [hoverSpeakMuted, setHoverSpeakMuted] = useState(false);
       );
     opts.commit ? setPagesCommit(updater) : setPagesLive(updater);
   };
+
+  // Bắt đầu sửa 1 lớp chữ trực tiếp trên trang (nhấp đúp) để có thể bôi đen 1 phần
+  // và chỉ đổi định dạng (đậm/màu) của phần đó, thay vì áp dụng cho cả dòng.
+  const startEditText = (id) => {
+    if (selectedId !== id) selectLayer(id);
+    savedRangeRef.current = null;
+    setEditingTextId(id);
+  };
+
+  const commitEditText = (id) => {
+    const el = editableRef.current;
+    setEditingTextId(null);
+    savedRangeRef.current = null;
+    if (!el) return;
+    const html = sanitizeRichHtml(el.innerHTML);
+    const text = el.innerText || el.textContent || "";
+    updateLayer(id, { html, text }, { commit: true });
+  };
+
+  // Ghi nhớ vùng bôi đen hiện tại trong lúc soạn thảo — cần thiết vì khi người dùng
+  // bấm nút Đậm/Nghiêng/Màu chữ ở bảng bên, ô soạn thảo có thể tạm mất focus.
+  const handleTextSelectionChange = () => {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
+      savedRangeRef.current = sel.getRangeAt(0).cloneRange();
+    }
+  };
+
+  const restoreSavedSelection = () => {
+    const el = editableRef.current;
+    if (!el || !savedRangeRef.current) return null;
+    el.focus();
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(savedRangeRef.current);
+    return sel;
+  };
+
+  // Áp dụng đậm / nghiêng / gạch chân: nếu đang bôi đen 1 đoạn chữ thì chỉ đổi đoạn đó,
+  // ngược lại (không có vùng chọn) thì giữ hành vi cũ — đổi định dạng mặc định cả lớp chữ.
+  const applyTextFormat = (command) => {
+    if (!selected) return;
+    if (editingTextId === selected.id && editableRef.current) {
+      const sel = restoreSavedSelection();
+      if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
+        document.execCommand(command, false, null);
+        const newSel = window.getSelection();
+        if (newSel && newSel.rangeCount > 0) {
+          savedRangeRef.current = newSel.getRangeAt(0).cloneRange();
+        }
+        const html = sanitizeRichHtml(editableRef.current.innerHTML);
+        const text =
+          editableRef.current.innerText ||
+          editableRef.current.textContent ||
+          "";
+        updateLayer(selected.id, { html, text }, { commit: true });
+        return;
+      }
+    }
+    if (command === "bold")
+      updateLayer(selected.id, { bold: !selected.bold }, { commit: true });
+    if (command === "italic")
+      updateLayer(selected.id, { italic: !selected.italic }, { commit: true });
+    if (command === "underline")
+      updateLayer(
+        selected.id,
+        { underline: !selected.underline },
+        { commit: true },
+      );
+  };
+
+  // Đổi màu chữ: nếu đang bôi đen 1 đoạn thì chỉ tô màu đoạn đó, còn không thì đổi màu
+  // mặc định của cả lớp chữ như trước.
+  const applyTextColor = (color) => {
+    if (!selected) return;
+    if (
+      editingTextId === selected.id &&
+      editableRef.current &&
+      savedRangeRef.current
+    ) {
+      const sel = restoreSavedSelection();
+      if (sel && !sel.isCollapsed) {
+        document.execCommand("foreColor", false, color);
+        const newSel = window.getSelection();
+        if (newSel && newSel.rangeCount > 0) {
+          savedRangeRef.current = newSel.getRangeAt(0).cloneRange();
+        }
+        const html = sanitizeRichHtml(editableRef.current.innerHTML);
+        const text =
+          editableRef.current.innerText ||
+          editableRef.current.textContent ||
+          "";
+        updateLayer(selected.id, { html, text }, { commit: true });
+        return;
+      }
+    }
+    updateLayer(selected.id, { color });
+  };
+
+  useEffect(() => {
+    if (!editingTextId) return;
+    const el = editableRef.current;
+    if (!el) return;
+    el.focus();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }, [editingTextId]);
 
   const addTextLayer = () => {
     const layer = defaultTextLayer();
@@ -2117,6 +2383,81 @@ const [hoverSpeakMuted, setHoverSpeakMuted] = useState(false);
     }
   };
 
+  // Đặt ảnh nền cho trang hiện tại (khác với ảnh dạng layer — ảnh nền luôn nằm dưới cùng và
+  // có thể canh vị trí / kiểu hiển thị riêng).
+  const applyPageBackgroundImage = async (file) => {
+    if (!file || !file.type?.startsWith("image/")) {
+      toast.error("Chỉ chấp nhận file ảnh (JPG, PNG, WebP...).");
+      return;
+    }
+    if (file.size > MAX_IMAGE_MB * 1024 * 1024) {
+      toast.error(
+        `Ảnh quá lớn (tối đa ${MAX_IMAGE_MB}MB), vui lòng chọn ảnh nhỏ hơn.`,
+      );
+      return;
+    }
+    const prevUrl = currentPage.backgroundImage;
+    try {
+      const optimized = await resizeImageFileIfNeeded(file);
+      const res = await ebookService.uploadImage(optimized, ebookIdRef.current);
+      const url = res.data?.data?.url;
+      if (!url) throw new Error("Không nhận được URL ảnh từ máy chủ");
+      setPagesCommit((prev) =>
+        prev.map((p, i) =>
+          i === pageIndex ? { ...p, backgroundImage: url } : p,
+        ),
+      );
+      if (prevUrl && prevUrl.includes("cloudinary")) {
+        ebookService.deleteImage(prevUrl).catch(() => {});
+      }
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Không tải được ảnh nền lên, vui lòng thử lại.",
+      );
+    }
+  };
+  const removePageBackgroundImage = () => {
+    const prevUrl = currentPage.backgroundImage;
+    setPagesCommit((prev) =>
+      prev.map((p, i) => (i === pageIndex ? { ...p, backgroundImage: "" } : p)),
+    );
+    if (prevUrl && prevUrl.includes("cloudinary")) {
+      ebookService.deleteImage(prevUrl).catch(() => {});
+    }
+  };
+  const setPageBgImagePosition = (axis, value) =>
+    setPagesLive((prev) =>
+      prev.map((p, i) =>
+        i === pageIndex
+          ? {
+              ...p,
+              bgImagePosition: {
+                ...(p.bgImagePosition || { x: 50, y: 50 }),
+                [axis]: value,
+              },
+            }
+          : p,
+      ),
+    );
+  const setPageBgImageSize = (size) =>
+    setPagesLive((prev) =>
+      prev.map((p, i) => (i === pageIndex ? { ...p, bgImageSize: size } : p)),
+    );
+
+  // Dùng luôn ảnh của layer ảnh đang chọn để làm nền cho trang — không cần tải lên lại,
+  // chỉ gán URL ảnh (đã có sẵn trên Cloudinary) vào ảnh nền của trang.
+  const useLayerImageAsPageBackground = (src) => {
+    if (!src) return;
+    setPagesCommit((prev) =>
+      prev.map((p, i) => (i === pageIndex ? { ...p, backgroundImage: src } : p)),
+    );
+    toast.success(
+      "Đã đặt làm ảnh nền trang. Vào tab Trang để chỉnh vị trí/kiểu hiển thị nếu cần.",
+    );
+  };
+
   // Nhiều ảnh cùng lúc (chọn nhiều file, kéo-thả nhiều file, hoặc dán nhiều ảnh) — mỗi ảnh
   // tạo 1 layer mới, xếp lệch nhau 1 chút để không đè hoàn toàn lên nhau, và tự chọn ảnh cuối.
   const applyMultipleImageFiles = (files) => {
@@ -2148,7 +2489,7 @@ const [hoverSpeakMuted, setHoverSpeakMuted] = useState(false);
     }
   };
 
-const handleImageFileChange = async (e) => {
+  const handleImageFileChange = async (e) => {
     const files = Array.from(e.target.files || []);
     e.target.value = "";
     const targetId = imageUploadTargetIdRef.current || selectedId;
@@ -2359,17 +2700,19 @@ const handleImageFileChange = async (e) => {
       prev.map((p, i) => (i === pageIndex ? { ...p, title } : p)),
     );
 
-  const changeOrientation = (next) => {
-    if (next === orientation) return;
+  // Đổi khổ giấy (rộng × cao, tính bằng px) cho TOÀN BỘ sách — co giãn lại vị trí & kích
+  // thước mọi lớp nội dung theo đúng tỉ lệ mới, để bố cục không bị vỡ khi đổi khổ.
+  const resizeAllPagesTo = (newW, newH) => {
     const oldW = PAGE_W,
       oldH = PAGE_H;
-    const newW = next === "PORTRAIT" ? BASE_PAGE_H : BASE_PAGE_W;
-    const newH = next === "PORTRAIT" ? BASE_PAGE_W : BASE_PAGE_H;
+    if (newW === oldW && newH === oldH) return;
     const rx = newW / oldW,
       ry = newH / oldH;
     setPagesCommit((prev) =>
       prev.map((p) => ({
         ...p,
+        width: newW,
+        height: newH,
         layers: p.layers.map((l) => ({
           ...l,
           x: l.x * rx,
@@ -2381,8 +2724,25 @@ const handleImageFileChange = async (e) => {
         })),
       })),
     );
+  };
+
+  const changeOrientation = (next) => {
+    if (next === orientation) return;
+    resizeAllPagesTo(PAGE_H, PAGE_W);
     setOrientation(next);
   };
+
+  // Người dùng tự đặt chiều rộng / chiều cao khổ giấy theo pixel (áp dụng cho toàn bộ sách).
+  const setCustomPageWidth = (w) =>
+    resizeAllPagesTo(Math.max(200, Math.round(w) || PAGE_W), PAGE_H);
+  const setCustomPageHeight = (h) =>
+    resizeAllPagesTo(PAGE_W, Math.max(200, Math.round(h) || PAGE_H));
+
+  // Độ bo góc trang (áp dụng cho toàn bộ sách, giống khổ giấy).
+  const setAllPagesBorderRadius = (radius) =>
+    setPagesLive((prev) =>
+      prev.map((p) => ({ ...p, borderRadius: Math.max(0, radius) })),
+    );
 
   const generateToc = () => {
     const entries = [];
@@ -2684,7 +3044,11 @@ const handleImageFileChange = async (e) => {
   useEffect(() => {
     const onKey = (e) => {
       const tag = document.activeElement && document.activeElement.tagName;
-      const typing = tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT";
+      const typing =
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        tag === "SELECT" ||
+        !!document.activeElement?.isContentEditable;
       const meta = e.ctrlKey || e.metaKey;
       const activeIds = multiIds.length
         ? multiIds
@@ -2814,7 +3178,6 @@ const handleImageFileChange = async (e) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedId, pages, pageIndex]);
 
-
   const onWordHover = (wordObj) => {
     if (hoverSpeakMuted) return;
     if (!speechAvailable() || !wordObj.word.trim()) return;
@@ -2870,6 +3233,24 @@ const handleImageFileChange = async (e) => {
   const selected = currentPage.layers.find((l) => l.id === selectedId) || null;
   const layersFrontFirst = [...currentPage.layers].reverse();
 
+  // Áp dụng 1 màu từ Bảng phối màu vào đúng chỗ đang thao tác:
+  // đang chọn hình khối -> tô nền hình; đang chọn chữ -> đổi màu chữ;
+  // không chọn gì -> đổi màu nền trang hiện tại.
+  const handleApplyPaletteColor = (hex) => {
+    if (selected && selected.type === "shape") {
+      updateLayer(selected.id, { fill: hex }, { commit: true });
+      toast.success(`Đã tô ${hex.toUpperCase()} vào hình khối đang chọn`);
+    } else if (selected && selected.type === "text") {
+      updateLayer(selected.id, { color: hex }, { commit: true });
+      toast.success(`Đã đổi màu chữ thành ${hex.toUpperCase()}`);
+    } else {
+      beginEdit();
+      setPageBackground(hex);
+      endEdit();
+      toast.success(`Đã đặt ${hex.toUpperCase()} làm màu nền trang`);
+    }
+  };
+
   if (loadError) {
     return (
       <div
@@ -2909,141 +3290,6 @@ const handleImageFileChange = async (e) => {
 
   return (
     <div className="bb-root">
-      <style>{`
-        * { box-sizing: border-box; }
-        .bb-root { font-family: 'Be Vietnam Pro', system-ui, sans-serif; background: #f7f4ee; color: #1f2a24; min-height: 100vh; padding: 18px; }
-        .bb-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 4px; }
-        .bb-brand { display: flex; align-items: center; gap: 10px; }
-        .bb-brand-mark { height: 40px; width: auto; max-width: 220px; object-fit: contain; flex-shrink: 0; }
-        .bb-brand-mark-fallback { width: 38px; height: 38px; border-radius: 9px; background: linear-gradient(135deg, #1a5c47, #4a9e3f); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(26,92,71,0.28); }
-        .bb-title { font-family: Georgia, serif; font-size: 19px; font-weight: 700; color: #14332a; margin: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px; line-height: 1.25; }
-        .bb-title em { color: #4a9e3f; font-style: normal; }
-        .bb-save-status { font-family: 'Be Vietnam Pro', system-ui, sans-serif; font-size: 11.5px; font-weight: 600; color: #6b7a72; display: inline-flex; align-items: center; gap: 5px; flex: 0 0 auto; white-space: nowrap; }
-        .bb-save-dot { width: 6px; height: 6px; border-radius: 50%; background: #b7bfb9; }
-        .bb-save-dot.ok { background: #4a9e3f; box-shadow: 0 0 0 3px rgba(74,158,63,0.18); }
-        .bb-save-dot.busy { background: #e0a83f; animation: bb-pulse 1s ease-in-out infinite; }
-        .bb-save-dot.error, .bb-save-status.error { background: #d94f4f; }
-        @keyframes bb-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
-        .bb-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; background: #fff; padding: 6px; border-radius: 14px; box-shadow: 0 2px 10px rgba(20,51,42,0.06); border: 1px solid rgba(20,51,42,0.06); flex: 0 0 auto; }
-        .bb-divider-v { width: 1px; align-self: stretch; background: rgba(20,51,42,0.10); margin: 2px 2px; }
-
-        .bb-meta-bar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; background: #fff; border-radius: 14px; padding: 10px 14px; margin: 12px 0; box-shadow: 0 2px 10px rgba(20,51,42,0.06); border: 1px solid rgba(20,51,42,0.06); }
-        .bb-meta-field { display: flex; flex-direction: column; gap: 4px; flex: 1 1 320px; max-width: 640px; }
-        .bb-meta-field label { font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #8a978f; display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
-        .bb-meta-book-tag { font-size: 10.5px; font-weight: 600; letter-spacing: 0; text-transform: none; color: #4a9e3f; }
-        .bb-meta-input-row { display: flex; align-items: center; gap: 10px; }
-        .bb-ebook-title-input { font-family: 'Be Vietnam Pro', system-ui, sans-serif; font-size: 13px; border: 1px solid #dde4de; border-radius: 9px; padding: 8px 10px; width: 100%; flex: 1 1 auto; min-width: 0; color: #14332a; background: #fbfaf7; transition: border-color 0.12s ease, box-shadow 0.12s ease; }
-        .bb-ebook-title-input:focus { outline: none; border-color: #4a9e3f; box-shadow: 0 0 0 3px rgba(74,158,63,0.14); background: #fff; }
-        .bb-meta-price-btn { flex: 0 0 auto; margin-left: auto; }
-
-        .bb-btn { border: 1px solid rgba(20,51,42,0.14); background: #fff; color: #14332a; font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 10px; cursor: pointer; transition: background 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease, border-color 0.15s ease; display: inline-flex; align-items: center; gap: 6px; }
-        .bb-btn:hover { background: #eef6ec; border-color: rgba(74,158,63,0.35); }
-        .bb-btn:active { transform: scale(0.96); }
-        .bb-btn:disabled { opacity: 0.38; cursor: not-allowed; transform: none; }
-        .bb-btn:disabled:hover { background: #fff; border-color: rgba(20,51,42,0.14); }
-        .bb-btn-primary { background: linear-gradient(135deg, #1f6c53, #1a5c47); color: #fff; border-color: #1a5c47; box-shadow: 0 3px 10px rgba(26,92,71,0.28); }
-        .bb-btn-primary:hover { background: linear-gradient(135deg, #226f56, #14483a); box-shadow: 0 4px 14px rgba(26,92,71,0.36); }
-        .bb-btn-danger { background: #fff; color: #b3432f; border-color: rgba(179,67,47,0.3); }
-        .bb-btn-danger:hover { background: #fdf1ee; border-color: rgba(179,67,47,0.5); }
-        .bb-btn-ghost { background: rgba(255,255,255,0.10); color: #fff; border-color: rgba(255,255,255,0.28); backdrop-filter: blur(6px); }
-        .bb-btn-ghost:hover { background: rgba(255,255,255,0.20); }
-        .bb-btn-icon { padding: 8px 10px; }
-        .bb-btn.active { background: linear-gradient(135deg, #55ac48, #4a9e3f); color: #fff; border-color: #4a9e3f; box-shadow: 0 2px 8px rgba(74,158,63,0.32); }
-        .bb-current-page-label { font-size: 12px; color: #6b7a72; margin: 10px 2px 10px; display: flex; align-items: center; gap: 6px; }
-        .bb-current-page-label strong { color: #14332a; }
-
-        .bb-pages-strip { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-bottom: 14px; background: #fff; border-radius: 16px; box-shadow: 0 2px 10px rgba(20,51,42,0.06); border: 1px solid rgba(20,51,42,0.06); }
-        .bb-pages-strip-scroll { display: flex; align-items: flex-start; gap: 12px; overflow-x: auto; overflow-y: hidden; flex: 1 1 auto; min-width: 0; padding: 2px 2px 4px; scrollbar-width: thin; scrollbar-color: #4a9e3f transparent; }
-.bb-pages-strip-scroll::-webkit-scrollbar { height: 6px; }
-.bb-pages-strip-scroll::-webkit-scrollbar-track { background: transparent; }
-.bb-pages-strip-scroll::-webkit-scrollbar-thumb { background: #4a9e3f; border-radius: 3px; }
-        .bb-page-item { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-        .bb-page-thumb { width: 60px; height: 42px; border-radius: 8px; border: 2px solid transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: Georgia, serif; font-size: 14px; font-weight: 700; color: #45524b; position: relative; box-shadow: 0 2px 6px rgba(20,51,42,0.10); transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease; }
-        .bb-page-thumb:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(20,51,42,0.16); }
-        .bb-page-thumb.active { border-color: #4a9e3f; box-shadow: 0 0 0 3px rgba(74,158,63,0.20), 0 4px 10px rgba(20,51,42,0.14); }
-        .bb-page-thumb.drag-over { border-color: #4a9e3f; transform: translateY(-3px); }
-        .bb-page-thumb.dragging-self { opacity: 0.4; }
-        .bb-page-thumb::after { content: ""; position: absolute; top: 3px; right: 3px; width: 8px; height: 8px; border-radius: 2px 0 6px 0; background: rgba(20,51,42,0.08); }
-        .bb-page-title-input { width: 68px; font-size: 10px; text-align: center; border: none; background: transparent; color: #6b7a72; padding: 1px 0; border-bottom: 1px dashed transparent; }
-        .bb-page-title-input:focus { outline: none; border-bottom-color: #4a9e3f; }
-        .bb-page-strip-actions { display: inline-flex; align-items: center; justify-content: center; gap: 2px; flex: 0 0 auto; }
-        .bb-pill-btn { width: 34px; min-width: 34px; height: 34px; padding: 0; border-radius: 9px; border: 1px solid transparent; background: transparent; color: #45524b; cursor: pointer; display: flex; align-items: center; justify-content: center; flex: 0 0 34px; transition: background 0.14s ease, color 0.14s ease, transform 0.08s ease; box-sizing: border-box; }
-        .bb-pill-btn svg { display: block; }
-        .bb-pill-btn:hover { background: #eef6ec; color: #1a5c47; }
-        .bb-pill-btn:active { transform: scale(0.92); }
-        .bb-pill-btn:disabled { opacity: 0.32; cursor: not-allowed; }
-        .bb-pill-btn:disabled:hover { background: transparent; color: #45524b; }
-        .bb-pill-sep { width: 1px; height: 18px; background: rgba(20,51,42,0.12); margin: 0 4px; flex-shrink: 0; }
-        .bb-strip-divider { width: 1px; align-self: stretch; background: rgba(20,51,42,0.08); flex: 0 0 auto; }
-        .bb-qr-pick-btn { width: 100%; flex-direction: column; align-items: flex-start; gap: 3px; padding: 10px 12px; margin-bottom: 6px; text-align: left; }
-        .bb-qr-pick-label { display: flex; align-items: center; gap: 6px; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .bb-qr-pick-code { width: 100%; font-family: 'SFMono-Regular', Consolas, monospace; font-size: 11px; font-weight: 400; color: #6b7a72; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-        .bb-workspace { position: relative; display: flex; border-radius: 18px; overflow: hidden; background: #eae7dd; border: 1px solid rgba(20,51,42,0.10); box-shadow: 0 16px 40px rgba(20,51,42,0.12); min-height: 560px; }
-        .bb-rail { flex: 0 0 64px; background: #fff; border-right: 1px solid rgba(20,51,42,0.08); display: flex; flex-direction: column; align-items: center; padding: 14px 0; gap: 10px; z-index: 6; }
-        .bb-rail-btn { width: 46px; height: 46px; border-radius: 12px; border: none; background: transparent; cursor: pointer; font-size: 17px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #6b7a72; gap: 3px; transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease; }
-        .bb-rail-btn span { font-size: 8px; font-weight: 700; letter-spacing: 0.02em; }
-        .bb-rail-btn:hover { background: #f4f1ea; transform: translateY(-1px); }
-        .bb-rail-btn.active { background: linear-gradient(160deg, #eef6ec, #e2f2de); color: #1a5c47; box-shadow: inset 0 0 0 1px rgba(74,158,63,0.25); }
-        .bb-rail-sep { width: 30px; height: 1px; background: rgba(20,51,42,0.10); margin: 2px 0; }
-
-        .bb-flyout { position: absolute; left: 64px; top: 0; bottom: 0; width: 290px; background: #fff; border-right: 1px solid rgba(20,51,42,0.08); box-shadow: 10px 0 30px rgba(0,0,0,0.10); z-index: 5; padding: 18px; overflow-y: auto; animation: bb-slide-in 0.16s ease; }
-        @keyframes bb-slide-in { from { transform: translateX(-10px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .bb-flyout-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid rgba(20,51,42,0.08); }
-        .bb-flyout-head h3 { margin: 0; font-size: 12.5px; letter-spacing: 0.05em; text-transform: uppercase; color: #14332a; font-weight: 800; }
-        .bb-flyout-close { border: none; background: transparent; cursor: pointer; color: #8a978f; font-size: 15px; width: 26px; height: 26px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: background 0.12s ease; }
-        .bb-flyout-close:hover { background: #f4f1ea; color: #14332a; }
-
-        .bb-canvas-area { flex: 1; display: flex; flex-direction: column; min-width: 0; padding: 16px; }
-        .bb-zoom-bar { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
-        .bb-zoom-bar span { font-size: 12px; color: #6b7a72; min-width: 42px; text-align: center; font-weight: 600; }
-        .bb-canvas-frame { flex: 1; display: flex; align-items: center; justify-content: center; overflow: auto; background-image: radial-gradient(circle, rgba(20,51,42,0.06) 1px, transparent 1px); background-size: 18px 18px; border-radius: 14px; }
-
-        .bb-layer-row { display: flex; align-items: center; gap: 4px; padding: 7px 8px; border-radius: 9px; cursor: grab; font-size: 13px; transition: background 0.12s ease, box-shadow 0.12s ease; border: 1.5px solid transparent; }
-        .bb-layer-row:active { cursor: grabbing; }
-        .bb-layer-row.selected { background: #eef6ec; box-shadow: inset 0 0 0 1px rgba(74,158,63,0.3); }
-        .bb-layer-row:hover { background: #f4f1ea; }
-        .bb-layer-row.drag-over { border-color: #4a9e3f; background: #e2f2de; }
-        .bb-layer-row.dragging-self { opacity: 0.4; }
-        .bb-drag-handle { color: #b7bfb9; flex-shrink: 0; display: flex; align-items: center; }
-        .bb-heading-badge { font-size: 9px; font-weight: 800; color: #1a5c47; background: #e2f2de; border-radius: 4px; padding: 1px 5px; flex-shrink: 0; }
-        .bb-layer-type { font-size: 11px; color: #8a978f; width: 18px; text-align: center; flex-shrink: 0; display: flex; align-items: center; }
-        .bb-layer-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .bb-mini-btn { border: none; background: transparent; color: #6b7a72; cursor: pointer; font-size: 12px; width: 24px; height: 24px; border-radius: 6px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: background 0.12s ease, color 0.12s ease; }
-        .bb-mini-btn:hover { background: rgba(20,51,42,0.08); color: #14332a; }
-        .bb-layer-thumb { width: 18px; height: 18px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(20,51,42,0.12); }
-        .bb-field { margin-bottom: 14px; }
-        .bb-field label { display: block; font-size: 12px; font-weight: 700; color: #45524b; margin-bottom: 6px; }
-        .bb-field input[type="text"], .bb-field textarea, .bb-field select { width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 9px; border: 1px solid rgba(20,51,42,0.16); font-size: 13px; font-family: inherit; background: #fbfaf7; transition: border-color 0.12s ease, box-shadow 0.12s ease; }
-        .bb-field input[type="text"]:focus, .bb-field textarea:focus, .bb-field select:focus { outline: none; border-color: #4a9e3f; box-shadow: 0 0 0 3px rgba(74,158,63,0.14); background: #fff; }
-        .bb-field textarea { resize: vertical; min-height: 58px; }
-        .bb-field input[type="range"] { width: 100%; accent-color: #4a9e3f; }
-        .bb-row3 { display: flex; gap: 6px; }
-        .bb-row3 .bb-btn { flex: 1; padding: 8px 0; justify-content: center; }
-        .bb-color-size { display: flex; gap: 10px; align-items: center; }
-        .bb-color-size input[type="color"] { width: 40px; height: 34px; border: 1px solid rgba(20,51,42,0.14); border-radius: 8px; padding: 2px; cursor: pointer; background: #fff; }
-        .bb-color-size input[type="number"] { width: 72px; padding: 7px 9px; border-radius: 9px; border: 1px solid rgba(20,51,42,0.16); font-size: 13px; }
-        .bb-color-size input[type="number"]:focus { outline: none; border-color: #4a9e3f; box-shadow: 0 0 0 3px rgba(74,158,63,0.14); }
-        label.bb-checkbox-field { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; font-size: 12.5px; font-weight: 600; color: #45524b; }
-        label.bb-checkbox-field input { flex-shrink: 0; margin-top: 2px; width: 16px; height: 16px; accent-color: #4a9e3f; cursor: pointer; }
-        .bb-hint { font-size: 12px; color: #6b7a72; background: #f4f1ea; border-radius: 10px; padding: 10px 12px; margin-top: 12px; line-height: 1.5; }
-        .bb-empty { font-size: 13px; color: #8a978f; padding: 10px 4px; text-align: center; }
-
-        .bb-resize-handle { position: absolute; right: -8px; bottom: -8px; width: 15px; height: 15px; border-radius: 50%; background: #4a9e3f; border: 2.5px solid #fff; touch-action: none; box-shadow: 0 2px 5px rgba(20,51,42,0.3); }
-        .bb-guide { position: absolute; background: #4a9e3f; opacity: 0.85; pointer-events: none; box-shadow: 0 0 6px rgba(74,158,63,0.6); }
-        .bb-float-toolbar { position: absolute; display: flex; gap: 3px; background: #14332a; border-radius: 10px; padding: 5px; box-shadow: 0 10px 24px rgba(0,0,0,0.30); z-index: 30; }
-        .bb-float-toolbar button { border: none; background: transparent; color: #fff; cursor: pointer; font-size: 13px; width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; transition: background 0.12s ease; }
-        .bb-float-toolbar button:hover { background: rgba(255,255,255,0.16); }
-        .bb-image-dropzone:hover { border-color: #4a9e3f !important; background: rgba(74,158,63,0.06) !important; }
-        .bb-image-dropzone:hover > div { color: #3f6b52 !important; }
-        .bb-image-replace-btn { position: absolute; top: 6px; right: 6px; display: flex; align-items: center; gap: 4px; background: rgba(20,51,42,0.82); color: #fff; border: none; border-radius: 7px; padding: 5px 9px; font-size: 10.5px; font-weight: 600; cursor: pointer; backdrop-filter: blur(2px); transition: background 0.12s ease; }
-        .bb-image-replace-btn:hover { background: #14332a; }
-        .bb-spinner { width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid rgba(74,158,63,0.25); border-top-color: #4a9e3f; animation: bb-spin 0.7s linear infinite; }
-        @keyframes bb-spin { to { transform: rotate(360deg); } }
-
-        @media (max-width: 720px) { .bb-flyout { width: calc(100% - 64px); } }
-      `}</style>
-
       <div className="bb-header">
         <div className="bb-brand">
           {logoError ? (
@@ -3109,11 +3355,7 @@ const handleImageFileChange = async (e) => {
               });
             }}
           >
-            {hoverSpeakMuted ? (
-              <VolumeX size={14} />
-            ) : (
-              <Volume2 size={14} />
-            )}
+            {hoverSpeakMuted ? <VolumeX size={14} /> : <Volume2 size={14} />}
             {hoverSpeakMuted ? "Đã tắt rê đọc" : "Rê đọc: Bật"}
           </button>
           <div className="bb-divider-v" />
@@ -3354,6 +3596,17 @@ const handleImageFileChange = async (e) => {
             style={{ display: "none" }}
             onChange={handleImageFileChange}
           />
+          <input
+            ref={pageBgFileInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              const file = e.target.files && e.target.files[0];
+              e.target.value = "";
+              if (file) applyPageBackgroundImage(file);
+            }}
+          />
           <button
             className="bb-rail-btn"
             onClick={addShapeLayer}
@@ -3395,6 +3648,14 @@ const handleImageFileChange = async (e) => {
             <Folder size={18} />
             <span>Trang</span>
           </button>
+          <button
+            className={`bb-rail-btn${colorStudioOpen ? " active" : ""}`}
+            onClick={() => setColorStudioOpen(true)}
+            title="Bảng phối màu"
+          >
+            <SwatchBook size={18} />
+            <span>Màu</span>
+          </button>
         </div>
 
         {activePanel === "page" && (
@@ -3432,6 +3693,95 @@ const handleImageFileChange = async (e) => {
               </div>
             </div>
             <div className="bb-field">
+              <label>Ảnh nền trang</label>
+              {currentPage.backgroundImage ? (
+                <>
+                  <div className="bb-bgimg-preview">
+                    <img src={currentPage.backgroundImage} alt="" />
+                  </div>
+                  <div className="bb-row3" style={{ marginTop: 8 }}>
+                    <button
+                      className="bb-btn"
+                      onClick={() => pageBgFileInputRef.current?.click()}
+                    >
+                      <Upload size={14} /> Đổi ảnh
+                    </button>
+                    <button
+                      className="bb-btn"
+                      onClick={removePageBackgroundImage}
+                    >
+                      <Trash2 size={14} /> Xoá ảnh nền
+                    </button>
+                  </div>
+                  <div className="bb-field" style={{ marginTop: 10 }}>
+                    <label>Kiểu hiển thị</label>
+                    <div className="bb-row3">
+                      <button
+                        className={`bb-btn${(currentPage.bgImageSize || "cover") === "cover" ? " active" : ""}`}
+                        onClick={() => setPageBgImageSize("cover")}
+                      >
+                        Lấp đầy
+                      </button>
+                      <button
+                        className={`bb-btn${currentPage.bgImageSize === "contain" ? " active" : ""}`}
+                        onClick={() => setPageBgImageSize("contain")}
+                      >
+                        Vừa khung
+                      </button>
+                      <button
+                        className={`bb-btn${currentPage.bgImageSize === "stretch" ? " active" : ""}`}
+                        onClick={() => setPageBgImageSize("stretch")}
+                      >
+                        Kéo giãn
+                      </button>
+                    </div>
+                  </div>
+                  <div className="bb-field" style={{ marginTop: 10 }}>
+                    <label>
+                      Vị trí ngang (
+                      {Math.round(currentPage.bgImagePosition?.x ?? 50)}%)
+                    </label>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={currentPage.bgImagePosition?.x ?? 50}
+                      onFocus={beginEdit}
+                      onBlur={endEdit}
+                      onChange={(e) =>
+                        setPageBgImagePosition("x", Number(e.target.value))
+                      }
+                    />
+                  </div>
+                  <div className="bb-field">
+                    <label>
+                      Vị trí dọc (
+                      {Math.round(currentPage.bgImagePosition?.y ?? 50)}%)
+                    </label>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={currentPage.bgImagePosition?.y ?? 50}
+                      onFocus={beginEdit}
+                      onBlur={endEdit}
+                      onChange={(e) =>
+                        setPageBgImagePosition("y", Number(e.target.value))
+                      }
+                    />
+                  </div>
+                </>
+              ) : (
+                <button
+                  className="bb-btn"
+                  style={{ width: "100%", justifyContent: "center" }}
+                  onClick={() => pageBgFileInputRef.current?.click()}
+                >
+                  <ImageIcon size={14} /> Chọn ảnh nền
+                </button>
+              )}
+            </div>
+            <div className="bb-field">
               <label>Khổ sách (áp dụng cho toàn bộ sách)</label>
               <div className="bb-row3">
                 <button
@@ -3447,6 +3797,46 @@ const handleImageFileChange = async (e) => {
                   Dọc
                 </button>
               </div>
+              <div className="bb-color-size" style={{ marginTop: 8 }}>
+                <input
+                  type="number"
+                  min={200}
+                  max={4000}
+                  value={Math.round(PAGE_W)}
+                  onFocus={beginEdit}
+                  onBlur={endEdit}
+                  onChange={(e) => setCustomPageWidth(Number(e.target.value))}
+                />
+                <span style={{ fontSize: 12, color: "#6b7a72" }}>×</span>
+                <input
+                  type="number"
+                  min={200}
+                  max={4000}
+                  value={Math.round(PAGE_H)}
+                  onFocus={beginEdit}
+                  onBlur={endEdit}
+                  onChange={(e) => setCustomPageHeight(Number(e.target.value))}
+                />
+                <span style={{ fontSize: 12, color: "#6b7a72" }}>px</span>
+              </div>
+              <div className="bb-hint">
+                Tự đặt chiều rộng &amp; chiều cao theo pixel nếu không muốn dùng
+                khổ Ngang/Dọc mặc định.
+              </div>
+            </div>
+            <div className="bb-field">
+              <label>Độ bo góc trang ({Math.round(PAGE_RADIUS)}px)</label>
+              <input
+                type="range"
+                min={0}
+                max={80}
+                value={PAGE_RADIUS}
+                onFocus={beginEdit}
+                onBlur={endEdit}
+                onChange={(e) =>
+                  setAllPagesBorderRadius(Number(e.target.value))
+                }
+              />
             </div>
 
             <div className="bb-field">
@@ -4105,6 +4495,17 @@ const handleImageFileChange = async (e) => {
                   </div>
                 </div>
                 <div className="bb-field">
+                  <button
+                    type="button"
+                    className="bb-btn"
+                    style={{ width: "100%", justifyContent: "center" }}
+                    disabled={!selected.src}
+                    onClick={() => useLayerImageAsPageBackground(selected.src)}
+                  >
+                    <ImageIcon size={14} /> Đặt ảnh này làm nền trang
+                  </button>
+                </div>
+                <div className="bb-field">
                   <label>Bo góc ({selected.borderRadius ?? 0}px)</label>
                   <input
                     type="range"
@@ -4208,9 +4609,17 @@ const handleImageFileChange = async (e) => {
                     onFocus={beginEdit}
                     onBlur={endEdit}
                     onChange={(e) =>
-                      updateLayer(selected.id, { text: e.target.value })
+                      updateLayer(selected.id, {
+                        text: e.target.value,
+                        html: null,
+                      })
                     }
                   />
+                  <div className="bb-hint">
+                    Muốn tô đậm hoặc đổi màu riêng 1 vài chữ trong câu? Nhấp đúp
+                    vào dòng chữ đó trên trang, bôi đen phần muốn đổi rồi dùng
+                    các nút Đậm / Nghiêng / Màu chữ bên dưới.
+                  </div>
                 </div>
                 <div className="bb-field">
                   <label className="bb-checkbox-field">
@@ -4317,41 +4726,35 @@ const handleImageFileChange = async (e) => {
                   <div className="bb-row3">
                     <button
                       className={`bb-btn${selected.bold ? " active" : ""}`}
-                      onClick={() =>
-                        updateLayer(
-                          selected.id,
-                          { bold: !selected.bold },
-                          { commit: true },
-                        )
-                      }
+                      title="Đậm (bôi đen 1 đoạn để chỉ đổi đoạn đó)"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => applyTextFormat("bold")}
                     >
                       <Bold size={14} />
                     </button>
                     <button
                       className={`bb-btn${selected.italic ? " active" : ""}`}
-                      onClick={() =>
-                        updateLayer(
-                          selected.id,
-                          { italic: !selected.italic },
-                          { commit: true },
-                        )
-                      }
+                      title="Nghiêng (bôi đen 1 đoạn để chỉ đổi đoạn đó)"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => applyTextFormat("italic")}
                     >
                       <Italic size={14} />
                     </button>
                     <button
                       className={`bb-btn${selected.underline ? " active" : ""}`}
-                      onClick={() =>
-                        updateLayer(
-                          selected.id,
-                          { underline: !selected.underline },
-                          { commit: true },
-                        )
-                      }
+                      title="Gạch chân (bôi đen 1 đoạn để chỉ đổi đoạn đó)"
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => applyTextFormat("underline")}
                     >
                       <Underline size={14} />
                     </button>
                   </div>
+                  {editingTextId === selected.id && (
+                    <div className="bb-hint">
+                      Đang sửa trực tiếp trên trang: bôi đen phần chữ muốn đổi
+                      rồi bấm nút ở trên — chỉ phần được bôi đen sẽ thay đổi.
+                    </div>
+                  )}
                 </div>
                 <div className="bb-field">
                   <label>Căn chữ</label>
@@ -4392,6 +4795,19 @@ const handleImageFileChange = async (e) => {
                     >
                       <AlignRight size={14} />
                     </button>
+                    <button
+                      className={`bb-btn${selected.align === "justify" ? " active" : ""}`}
+                      title="Canh đều 2 bên"
+                      onClick={() =>
+                        updateLayer(
+                          selected.id,
+                          { align: "justify" },
+                          { commit: true },
+                        )
+                      }
+                    >
+                      <AlignJustify size={14} />
+                    </button>
                   </div>
                 </div>
                 <div className="bb-field">
@@ -4419,9 +4835,7 @@ const handleImageFileChange = async (e) => {
                       value={selected.color}
                       onFocus={beginEdit}
                       onBlur={endEdit}
-                      onChange={(e) =>
-                        updateLayer(selected.id, { color: e.target.value })
-                      }
+                      onChange={(e) => applyTextColor(e.target.value)}
                     />
                     <input
                       type="number"
@@ -4496,6 +4910,7 @@ const handleImageFileChange = async (e) => {
             <div
               ref={canvasRef}
               onPointerDown={() => {
+                if (editingTextId) commitEditText(editingTextId);
                 setSelectedId(null);
                 setMultiIds([]);
               }}
@@ -4561,8 +4976,8 @@ const handleImageFileChange = async (e) => {
                   transform: `scale(${scale})`,
                   transformOrigin: "top left",
                   position: "relative",
-                  background: currentPage.background,
-                  borderRadius: 10,
+                  ...pageBackgroundStyle(currentPage),
+                  borderRadius: PAGE_RADIUS,
                   boxShadow:
                     "0 8px 26px rgba(20,51,42,0.16), 0 2px 6px rgba(20,51,42,0.08)",
                 }}
@@ -4584,6 +4999,13 @@ const handleImageFileChange = async (e) => {
                     onWordHover={onWordHover}
                     onWordLeave={onWordLeave}
                     onImageDrop={handleImageDropOnLayer}
+                    isEditingText={editingTextId === layer.id}
+                    editableRef={
+                      editingTextId === layer.id ? editableRef : undefined
+                    }
+                    onStartEditText={startEditText}
+                    onCommitText={commitEditText}
+                    onSelectionChange={handleTextSelectionChange}
                   />
                 ))}
 
@@ -4663,6 +5085,37 @@ const handleImageFileChange = async (e) => {
         </div>
       </div>
 
+      {colorStudioOpen && (
+        <div
+          className="cp-modal-overlay"
+          onClick={() => setColorStudioOpen(false)}
+        >
+          <div className="cp-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="cp-modal-header">
+              <div>
+                <h3>Bảng phối màu</h3>
+                <p className="cp-modal-hint">
+                  {selected &&
+                  (selected.type === "shape" || selected.type === "text")
+                    ? "Bấm 1 màu để áp dụng vào lớp đang chọn"
+                    : "Bấm 1 màu để áp dụng làm nền trang"}
+                </p>
+              </div>
+              <button
+                className="cp-modal-close"
+                onClick={() => setColorStudioOpen(false)}
+                aria-label="Đóng bảng phối màu"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="cp-modal-body">
+              <ColorPaletteStudio onApplyColor={handleApplyPaletteColor} />
+            </div>
+          </div>
+        </div>
+      )}
+
       {previewOpen && (
         <PreviewOverlay
           pages={pages}
@@ -4691,10 +5144,10 @@ const handleImageFileChange = async (e) => {
               key={p.id}
               id={`bb-export-page-${i}`}
               style={{
-                width: PAGE_W,
-                height: PAGE_H,
+                width: p.width || PAGE_W,
+                height: p.height || PAGE_H,
                 position: "relative",
-                background: p.background,
+                ...pageBackgroundStyle(p),
               }}
             >
               {p.layers.map((layer) => (
