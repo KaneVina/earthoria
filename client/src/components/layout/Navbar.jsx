@@ -15,6 +15,7 @@ import {
   Gem,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { getRoleAvatarGradient } from "../../utils/colorUtils";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "../../store/authStore";
 import { useCartStore } from "../../store/cartStore";
@@ -183,6 +184,10 @@ export default function Navbar() {
             bg: "rgba(74,158,63,0.08)",
             border: "rgba(74,158,63,0.22)",
           };
+
+  // Avatar chữ cái đầu: nền đậm theo role (để chữ trắng luôn rõ), viền theo hạng thành viên
+  const avatarBackground = getRoleAvatarGradient(roleMeta.color);
+  const avatarBorderColor = loyaltyProfile?.tier?.color || "var(--border-gold)";
 
   //  Render
   return (
@@ -433,7 +438,15 @@ export default function Navbar() {
             {isAuthenticated ? (
               <div className="user-menu">
                 <button className="user-menu-trigger" type="button">
-                  <span className="user-avatar">{firstLetter}</span>
+                  <span
+                    className="user-avatar"
+                    style={{
+                      background: avatarBackground,
+                      borderColor: avatarBorderColor,
+                    }}
+                  >
+                    {firstLetter}
+                  </span>
                   <span className="user-greet">
                     Xin chào, <strong>{user?.name}</strong>
                   </span>
@@ -448,9 +461,8 @@ export default function Navbar() {
                     <span
                       className="user-dropdown-avatar"
                       style={{
-                        background: isAdmin
-                          ? "linear-gradient(135deg,#b8862e,#d4a843)"
-                          : undefined,
+                        background: avatarBackground,
+                        borderColor: avatarBorderColor,
                       }}
                     >
                       {firstLetter}
