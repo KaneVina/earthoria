@@ -796,12 +796,6 @@
   top: -1px;
 }
 
-.eira-hdr-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  z-index: 1;
-}
 
 .eira-close-btn {
   z-index: 1;
@@ -875,7 +869,7 @@
 .eira-welcome-desc {
   font-size: 13px;
   line-height: 1.6;
-  color: rgba(0, 0, 0, 0.62);
+  color: rgba(0, 0, 0, 0.7);
   max-width: 290px;
   margin: 0 auto;
 }
@@ -995,12 +989,16 @@
 .em-av {
   width: 24px;
   height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--eg) 20%, transparent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   transition: transform 0.2s var(--ease-bounce);
-  /* Không viền tròn / không nền — chỉ avatar ở header mới có khung tròn */
+  overflow: hidden;
 }
 .em-av:hover {
   transform: scale(1.15);
@@ -1016,7 +1014,7 @@
   font-weight: 650;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  line-height: 1;
+  line-height: 1.4;
 }
 .em.bot .em-name {
   color: var(--g3);
@@ -1024,7 +1022,7 @@
 .em.user .em-name {
   color: rgba(0, 0, 0, 0.55);
   font-weight: 700;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .em-content-row {
@@ -1097,12 +1095,6 @@
   text-align: right;
 }
 
-.em-error .em-bubble {
-  background: rgba(200, 55, 55, 0.05) !important;
-  border-color: rgba(200, 55, 55, 0.16) !important;
-  color: #7a1e1e !important;
-  box-shadow: none !important;
-}
 
 /*  Action buttons  */
 .em-actions {
@@ -1179,7 +1171,7 @@
   align-items: center;
   gap: 6px;
   padding: 0 2px;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
 }
 .typing-bubble {
   background: #fff;
@@ -1363,11 +1355,11 @@
   transition-duration: 0.07s;
 }
 #eira-send:disabled {
-  opacity: 0.25;
+  opacity: 1;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
-  background: #b8b8b8;
+  background: color-mix(in srgb, var(--g2) 25%, #d8dbd9);
 }
 
 /*  Footer  */
@@ -1415,7 +1407,11 @@
   #eira-hdr::before,
   #eira-hdr::after,
   #eira-root .eira-welcome::before,
-  .eira-fab-mascot-img {
+  .eira-fab-mascot-img,
+  .eira-firefly,
+  .eira-badge,
+  #eira-fab.has-badge,
+  .eira-fab-mascot-glow {
     animation: none !important;
   }
   #eira-win,
