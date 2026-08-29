@@ -15,6 +15,7 @@ const {
   updateCategory,
   deleteCategory,
   getOrders,
+  getOrderById,
   updateOrderStatus,
   getUsers,
   getUserDetail,
@@ -87,6 +88,7 @@ router.put("/categories/:id", adminOnly, updateCategory);
 router.delete("/categories/:id", adminOnly, deleteCategory);
 
 router.get("/orders", adminOnly, getOrders);
+router.get("/orders/:id", adminOnly, getOrderById);
 router.put("/orders/:id", adminOnly, updateOrderStatus);
 
 router.use("/emails", adminOnly, require("./emailRoutes"));

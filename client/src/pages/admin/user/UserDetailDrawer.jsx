@@ -150,7 +150,6 @@ export default function UserDetailDrawer({
                   <span className={`a-badge ${data.isActive ? 'success' : 'danger'}`}>
                     {data.isActive ? 'Hoạt động' : 'Đã khóa'}
                   </span>
-                  {loyalty?.tier && <TierBadge tier={loyalty.tier} size="sm" />}
                   {data.userCode && (
                     <code style={{
                       fontSize: 10.5, fontFamily: 'monospace', background: 'rgba(13,51,48,0.06)',

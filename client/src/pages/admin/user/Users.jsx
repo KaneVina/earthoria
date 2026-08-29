@@ -176,6 +176,7 @@ export default function Users() {
   const [page, setPage]                 = useState(1)
   const [roleFilter, setRoleFilter]     = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [tierFilter, setTierFilter]     = useState('')
   const [confirmUser, setConfirmUser]   = useState(null) // lock/unlock (1 user)
   const [promoteUser, setPromoteUser]   = useState(null) // upgrade/downgrade
   const [viewUserId, setViewUserId]     = useState(null) // xem chi tiết
@@ -207,18 +208,24 @@ export default function Users() {
     setPage(1)
   }, [])
 
+  const handleTierChange = useCallback((val) => {
+    setTierFilter(val)
+    setPage(1)
+  }, [])
+
   const clearFilters = useCallback(() => {
     setSearchInput('')
     setSearch('')
     setRoleFilter('')
     setStatusFilter('')
+    setTierFilter('')
     setPage(1)
   }, [])
 
-  const hasFilters = searchInput || roleFilter || statusFilter
+  const hasFilters = searchInput || roleFilter || statusFilter || tierFilter
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin-users', page, search, roleFilter, statusFilter],
+    queryKey: ['admin-users', page, search, roleFilter, statusFilter, tierFilter],
     queryFn:  () => api.get('/admin/users', {
       params: {
         page,
@@ -226,6 +233,7 @@ export default function Users() {
         ...(search       && { search }),
         ...(roleFilter   && { role: roleFilter }),
         ...(statusFilter && { status: statusFilter }),
+        ...(tierFilter   && { tier: tierFilter }),
       },
     }).then(r => r.data.data),
     keepPreviousData: true,
@@ -297,6 +305,15 @@ export default function Users() {
     { value: 'CUSTOMER', label: 'Customer' },
     { value: 'DEALER',   label: 'Dealer'    },
     { value: 'STAFF',    label: 'Staff'     },
+  ]
+
+  // Đồng bộ với 5 hạng trong server/src/utils/loyaltyTier.js (rank 1-5, gửi lên qua param ?tier=)
+  const tierFilterOptions = [
+    { value: '1', label: 'Hạng I · Chùa Một Cột'     },
+    { value: '2', label: 'Hạng II · Cố Đô Huế'        },
+    { value: '3', label: 'Hạng III · Cầu Rồng'        },
+    { value: '4', label: 'Hạng IV · Tháp Bà Ponagar'  },
+    { value: '5', label: 'Hạng V · Landmark 81'       },
   ]
 
   // Điều kiện để xác nhận khóa 1 user: email nhập đúng + lý do đủ dài
@@ -423,6 +440,8 @@ export default function Users() {
               style={{
                 position: 'absolute',
                 right: 10,
+                top: '50%',
+                transform: 'translateY(-50%)',
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
@@ -445,6 +464,14 @@ export default function Users() {
             onChange={handleRoleChange}
             placeholder="Tất cả vai trò"
             options={roleFilterOptions}
+          />
+
+          {/* Tier filter */}
+          <FilterSelect
+            value={tierFilter}
+            onChange={handleTierChange}
+            placeholder="Tất cả hạng"
+            options={tierFilterOptions}
           />
 
           {/* Status filter */}
@@ -592,12 +619,23 @@ export default function Users() {
                     {/* User info */}
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div
-                          className="a-user-avatar"
-                          style={{ background: avatarColor(user.name) }}
-                        >
-                          {user.name?.[0]?.toUpperCase()}
-                        </div>
+                        {user.avatar ? (
+                          <img
+                            src={user.avatar}
+                            alt={user.name}
+                            style={{
+                              width: 32, height: 32, borderRadius: '50%', objectFit: 'cover',
+                              flexShrink: 0, border: '1px solid rgba(13,51,48,0.08)',
+                            }}
+                          />
+                        ) : (
+                          <div
+                            className="a-user-avatar"
+                            style={{ background: avatarColor(user.name) }}
+                          >
+                            {user.name?.[0]?.toUpperCase()}
+                          </div>
+                        )}
                         <div>
                           <div style={{ fontWeight: 500, fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
                             {user.name}
@@ -621,7 +659,7 @@ export default function Users() {
                     </td>
 
                     {/* Tier / Hạng */}
-                    <td><TierBadge tier={user.tier} size="sm" /></td>
+                    <td><TierBadge tier={user.tier} size="sm" showImage={false} /></td>
 
                     {/* Order count */}
                     <td style={{ fontWeight: 500 }}>{user._count?.orders ?? 0}</td>

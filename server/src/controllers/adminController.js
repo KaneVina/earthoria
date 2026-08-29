@@ -1274,6 +1274,97 @@ exports.getOrders = async (req, res) => {
   }
 };
 
+exports.getOrderById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: {
+        user: { select: { id: true, name: true, email: true, avatar: true } },
+        items: {
+          include: {
+            variant: {
+              include: {
+                book: { select: { title: true, coverImage: true } },
+              },
+            },
+          },
+        },
+        address: {
+          select: {
+            fullName: true,
+            phone: true,
+            street: true,
+            ward: true,
+            district: true,
+            province: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy đơn hàng" });
+    }
+
+    // Hạng thành viên tính theo chi tiêu PAID + COMPLETED, đồng bộ với các chỗ khác
+    const loyaltySpend = await prisma.order.aggregate({
+      where: { userId: order.userId, paymentStatus: "PAID", status: "COMPLETED" },
+      _sum: { total: true },
+    });
+
+    let paymentMismatch = null;
+    if (order.paymentMethod === "BANKQR" && order.paymentStatus !== "PAID") {
+      const mismatchTxn = await prisma.paymentTransaction.findFirst({
+        where: {
+          orderId: order.id,
+          gateway: "BANKQR",
+          type: "IPN",
+          message: { startsWith: "Sai số tiền" },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+      if (mismatchTxn) {
+        paymentMismatch = {
+          transferredAmount: mismatchTxn.amount,
+          expectedAmount: order.total,
+        };
+      }
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        ...order,
+        paymentStatus: mapPaymentStatus(order.paymentStatus),
+        user: {
+          ...order.user,
+          tier: buildTierSummary(loyaltySpend._sum.total ?? 0),
+        },
+        paymentMismatch,
+        shippingAddress: order.address
+          ? {
+              name: order.address.fullName,
+              phone: order.address.phone,
+              address: `${order.address.street}, ${order.address.ward}, ${order.address.district}, ${order.address.province}`,
+            }
+          : null,
+        items: order.items.map((item) => ({
+          ...item,
+          product: item.variant?.book,
+          title: item.variant?.book?.title,
+        })),
+      },
+    });
+  } catch (err) {
+    console.error("[getOrderById]", err);
+    return res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -1404,6 +1495,7 @@ exports.getUsers = async (req, res) => {
     const search = req.query.search?.trim() ?? "";
     const role = req.query.role?.trim() ?? "";
     const status = req.query.status?.trim() ?? "";
+    const tierRank = parseInt(req.query.tier) || 0; // rank 1-5, 0 = tất cả hạng
     const skip = (page - 1) * limit;
 
     const conditions = [];
@@ -1429,46 +1521,83 @@ exports.getUsers = async (req, res) => {
 
     const where = conditions.length ? { AND: conditions } : {};
 
-    const [users, total] = await Promise.all([
-      prisma.user.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          role: true,
-          isActive: true,
-          userCode: true,
-          createdAt: true,
-          _count: { select: { orders: true } },
-        },
-      }),
-      prisma.user.count({ where }),
-    ]);
+    // Hạng thành viên không phải cột lưu sẵn — khi có lọc theo hạng, phải tính hạng
+    // cho TOÀN BỘ user khớp điều kiện trước rồi mới phân trang thủ công trong JS.
+    const baseSelect = {
+      id: true,
+      name: true,
+      email: true,
+      avatar: true,
+      role: true,
+      isActive: true,
+      userCode: true,
+      createdAt: true,
+      _count: { select: { orders: true } },
+    };
 
-    // Tính hạng thành viên (theo tổng chi tiêu đơn PAID + COMPLETED) cho từng user trong trang hiện tại.
-    const userIds = users.map((u) => u.id);
-    const spendAgg = userIds.length
-      ? await prisma.order.groupBy({
-          by: ["userId"],
-          where: {
-            userId: { in: userIds },
-            paymentStatus: "PAID",
-            status: "COMPLETED",
-          },
-          _sum: { total: true },
-        })
-      : [];
-    const spendMap = Object.fromEntries(
-      spendAgg.map((s) => [s.userId, s._sum.total || 0]),
-    );
-    const usersWithTier = users.map((u) => ({
-      ...u,
-      tier: buildTierSummary(spendMap[u.id] || 0),
-    }));
+    let usersWithTier, total;
+
+    if (tierRank > 0) {
+      const allMatched = await prisma.user.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        select: baseSelect,
+      });
+      const allIds = allMatched.map((u) => u.id);
+      const spendAgg = allIds.length
+        ? await prisma.order.groupBy({
+            by: ["userId"],
+            where: {
+              userId: { in: allIds },
+              paymentStatus: "PAID",
+              status: "COMPLETED",
+            },
+            _sum: { total: true },
+          })
+        : [];
+      const spendMap = Object.fromEntries(
+        spendAgg.map((s) => [s.userId, s._sum.total || 0]),
+      );
+      const filtered = allMatched
+        .map((u) => ({ ...u, tier: buildTierSummary(spendMap[u.id] || 0) }))
+        .filter((u) => u.tier.rank === tierRank);
+
+      total = filtered.length;
+      usersWithTier = filtered.slice(skip, skip + limit);
+    } else {
+      const [users, count] = await Promise.all([
+        prisma.user.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy: { createdAt: "desc" },
+          select: baseSelect,
+        }),
+        prisma.user.count({ where }),
+      ]);
+
+      // Tính hạng thành viên (theo tổng chi tiêu đơn PAID + COMPLETED) cho từng user trong trang hiện tại.
+      const userIds = users.map((u) => u.id);
+      const spendAgg = userIds.length
+        ? await prisma.order.groupBy({
+            by: ["userId"],
+            where: {
+              userId: { in: userIds },
+              paymentStatus: "PAID",
+              status: "COMPLETED",
+            },
+            _sum: { total: true },
+          })
+        : [];
+      const spendMap = Object.fromEntries(
+        spendAgg.map((s) => [s.userId, s._sum.total || 0]),
+      );
+      usersWithTier = users.map((u) => ({
+        ...u,
+        tier: buildTierSummary(spendMap[u.id] || 0),
+      }));
+      total = count;
+    }
 
     return res.json({
       success: true,
