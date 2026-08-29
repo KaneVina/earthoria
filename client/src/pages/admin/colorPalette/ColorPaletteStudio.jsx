@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
-import { Shuffle, Copy, Download, Plus, Trash2, ClipboardCopy } from "lucide-react";
+import { Shuffle, Copy, Download, Plus, Trash2, ClipboardCopy, Check } from "lucide-react";
 import {
   hexToRgb,
   rgbToHex,
@@ -170,14 +170,10 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
       .catch(() => toast.error("Không thể copy, trình duyệt chặn clipboard"));
   };
 
-  const handleSwatchClick = (hex) => {
-    const upper = hex.toUpperCase();
-    if (onApplyColor) {
-      onApplyColor(hex);
-      copyText(upper, `Đã áp dụng ${upper}`);
-    } else {
-      copyText(upper, `Đã copy ${upper}`);
-    }
+  const handleApplyClick = (e, hex) => {
+    e.stopPropagation();
+    onApplyColor(hex);
+    toast.success(`Đã áp dụng ${hex.toUpperCase()}`);
   };
 
   const exportText = useMemo(() => {
@@ -429,25 +425,40 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
           <div className="cp-swatch-grid">
             {row.palette.shades.map((s) => {
               const textColor = idealTextColor(s.hex);
+              const hexUpper = s.hex.toUpperCase();
               return (
-                <button
-                  type="button"
+                <div
                   key={s.step}
                   className="cp-swatch-tile"
                   style={{ background: s.hex, color: textColor }}
-                  onClick={() => handleSwatchClick(s.hex)}
-                  title={
-                    onApplyColor
-                      ? `Bấm để áp dụng ${s.hex.toUpperCase()}`
-                      : `Bấm để copy ${s.hex.toUpperCase()}`
-                  }
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => copyText(hexUpper, `Đã copy ${hexUpper}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      copyText(hexUpper, `Đã copy ${hexUpper}`);
+                    }
+                  }}
+                  title={`Bấm để copy ${hexUpper}`}
                 >
                   <span className="cp-swatch-step">
                     {s.step}
                     {s.isAnchor && <span className="cp-anchor-dot" title="Màu gốc" />}
                   </span>
-                  <span className="cp-swatch-hex">{s.hex.toUpperCase()}</span>
-                </button>
+                  {onApplyColor && (
+                    <button
+                      type="button"
+                      className="cp-swatch-apply"
+                      onClick={(e) => handleApplyClick(e, s.hex)}
+                      title="Dùng màu này"
+                      aria-label={`Dùng ${hexUpper} cho lựa chọn hiện tại`}
+                    >
+                      <Check size={12} />
+                    </button>
+                  )}
+                  <span className="cp-swatch-hex">{hexUpper}</span>
+                </div>
               );
             })}
           </div>

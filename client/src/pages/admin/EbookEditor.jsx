@@ -5095,10 +5095,10 @@ export default function BookBuilder() {
               <div>
                 <h3>Bảng phối màu</h3>
                 <p className="cp-modal-hint">
-                  {selected &&
-                  (selected.type === "shape" || selected.type === "text")
-                    ? "Bấm 1 màu để áp dụng vào lớp đang chọn"
-                    : "Bấm 1 màu để áp dụng làm nền trang"}
+                  Bấm 1 ô màu để copy mã · bấm dấu ✓ ở góc để{" "}
+                  {selected && (selected.type === "shape" || selected.type === "text")
+                    ? "áp dụng vào lớp đang chọn"
+                    : "áp dụng làm nền trang"}
                 </p>
               </div>
               <button

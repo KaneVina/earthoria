@@ -5,7 +5,7 @@ Earthoria is a full-stack **digital platform for children's reading and learning
 | | |
 |---|---|
 | **Repository** | `KaneVina/earthoria` |
-| **Owner / Maintainer** | Nguyen Phuc Khang |
+| **Owner / Maintainer** | Nguyen Phuc Khang (Kane) |
 | **Phone** | 0849324423 |
 | **Email** | wtskane@gmail.com |
 | **Live Frontend** | https://earthoria.vercel.app / https://earthoria.id.vn |
