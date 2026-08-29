@@ -144,6 +144,7 @@ export default function App() {
   if (maintenanceActive && !isAdminUser) {
     return (
       <BrowserRouter>
+        <EarthoriaSecurity />
         <Routes>
           <Route
             path="/login"
