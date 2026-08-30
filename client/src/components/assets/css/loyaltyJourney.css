@@ -815,7 +815,7 @@ body.dark-mode {
   background: var(--lj-grid-line);
   border: 0.5px solid var(--lj-grid-line);
 }
-.lj-stat-item {
+ .lj-stat-item {
   background: var(--lj-bg-a);
   padding: 30px 22px;
   text-align: center;
@@ -824,13 +824,25 @@ body.dark-mode {
   transform: translateY(16px);
   transition:
     opacity 0.7s var(--lj-ease),
-    transform 0.7s var(--lj-ease);
+    transform 0.7s var(--lj-ease),
+    background 0.35s var(--lj-ease);
 }
 .lj-stat-item.in {
   opacity: 1;
   transform: translateY(0);
 }
-.lj-stat-value {
+.lj-stat-item:hover {
+  background: var(--lj-surface);
+  transform: translateY(-4px);
+  z-index: 2;
+  position: relative;
+}
+.lj-stat-item:hover svg {
+  transform: scale(1.08);
+}
+.lj-stat-item svg {
+  transition: transform 0.3s var(--lj-ease-spring);
+}.lj-stat-value {
   font-family: "Playfair Display", serif;
   font-size: clamp(18px, 2vw, 23px);
   font-weight: 400;

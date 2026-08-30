@@ -278,7 +278,7 @@ export default function LoyaltyJourney() {
 
           <p className="lj-hero-sub">
             Năm hạng — năm vùng đất — một hành trình đi dọc Việt Nam - mỗi đơn
-            hàngtiến thêm một bước trên hành trình khám phá Việt Nam.
+            hàng tiến thêm một bước trên hành trình khám phá Việt Nam.
           </p>
 
           <div className="lj-hero-actions">
@@ -978,11 +978,16 @@ function PassportStrip({ isAuthenticated, loading, loyaltyProfile, onLocate }) {
             >
               <img
                 src={tier.image}
-                alt={tier.name}
-                className="lj-passport-hero-img"
+                alt="{tier.name}"
+                aria-hidden="true"
+                loading="lazy"
+                draggable="false"
+                className="lj-card-name-icon"
+                onDragStart={(e) => e.preventDefault()}
+                onContextMenu={(e) => e.preventDefault()}
                 onError={(e) => {
                   e.currentTarget.style.display = "none";
-                  e.currentTarget.nextSibling.style.display = "flex";
+                  e.currentTarget.nextSibling.style.display = "inline";
                 }}
               />
               <span
@@ -1192,7 +1197,9 @@ function RankStop({
               </span>
             )}
           {isLocked && (
-            <span className={`lj-card-badge ${isNextUp ? "is-upcoming" : "is-locked"}`}>
+            <span
+              className={`lj-card-badge ${isNextUp ? "is-upcoming" : "is-locked"}`}
+            >
               {isNextUp ? (
                 <>
                   <Sparkles size={11} /> Sắp mở khóa
@@ -1341,7 +1348,8 @@ function RankStop({
             <li>
               <Users size={14} />
               <span>
-                Mở khóa tối đa <strong>{tier.maxChildAccounts}</strong> tài khoản trẻ em (E-Kid)
+                Mở khóa tối đa <strong>{tier.maxChildAccounts}</strong> tài
+                khoản trẻ em (E-Kid)
               </span>
             </li>
           </ul>
