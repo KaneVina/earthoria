@@ -34,7 +34,17 @@ const ECOSYSTEM_LOGOS = [
 ];
 
 export default function EcosystemStrip() {
-  const track = [...ECOSYSTEM_LOGOS, ...ECOSYSTEM_LOGOS];
+  // 4 copies (not 2) so the track is wide enough to fully cover very wide
+  // viewports (ultrawide / large desktop monitors) before it loops. With
+  // only 2 copies, on wide screens the track could run out of logos before
+  // reaching the end of the visible area, exposing a blank/plain-background
+  // gap that looked like a broken/unloaded image.
+  const track = [
+    ...ECOSYSTEM_LOGOS,
+    ...ECOSYSTEM_LOGOS,
+    ...ECOSYSTEM_LOGOS,
+    ...ECOSYSTEM_LOGOS,
+  ];
 
   return (
     <section className="eco-strip" aria-label="Hệ sinh thái Earthoria">
@@ -58,7 +68,14 @@ export default function EcosystemStrip() {
           {track.map((logo, i) => (
             <div className="eco-strip-logo-item" key={`${logo.alt}-${i}`}>
               <div className="eco-strip-logo">
-                <img src={logo.src} alt={logo.alt} loading="lazy" />
+                <img
+                  src={logo.src}
+                  alt={logo.alt}
+                  loading="lazy"
+                  draggable="false"
+                  onDragStart={(e) => e.preventDefault()}
+                  onContextMenu={(e) => e.preventDefault()}
+                />
                 <span className="eco-strip-logo-name">{logo.name}</span>
                 <span className="eco-strip-logo-desc">{logo.desc}</span>
               </div>
