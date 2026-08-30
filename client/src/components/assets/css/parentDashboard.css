@@ -676,6 +676,29 @@
   font-weight: 600;
 }
 
+/* Card quản lý luôn hiện cho bé đang chọn: Link & QR, khóa AR, xoá hồ sơ */
+.pkd-manage-card-lock {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 0.5px solid var(--border);
+}
+.pkd-manage-card-danger {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 0.5px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+}
+@media (max-width: 560px) {
+  .pkd-manage-card-danger {
+    justify-content: stretch;
+  }
+  .pkd-manage-card-danger .pkd-picker-delete-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 /* Add child card version dùng trên nền sáng (trong danh sách picker) */
 .pkd-add-child-card-light {
   min-width: 0;
@@ -2088,13 +2111,13 @@
 
 .kid-link-qr {
   flex: 0 0 auto;
-  width: 88px;
-  height: 88px;
+  width: 112px;
+  height: 112px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px;
+  padding: 8px;
   background: var(--white);
   border: 0.5px solid var(--border);
   border-radius: 10px;
@@ -2393,5 +2416,5 @@ body.dark-mode .pkd-sidebar-add-btn {
 
 body.dark-mode .pkd-card-title-row svg,
 body.dark-mode .pkd-switch-row-icon svg {
-color: #c8d4cc;
+  color: #c8d4cc;
 }

@@ -37,7 +37,6 @@ import {
   Trash2,
   BookMarked,
   Smile,
-  MoreVertical,
   UserCog,
 } from "lucide-react";
 
@@ -294,10 +293,6 @@ export default function ParentDashboard() {
   const [books, setBooks] = useState([]);
   const [booksLoading, setBooksLoading] = useState(false);
 
-  // Bé nào đang mở rộng panel thao tác nhanh (khóa/mở khóa/link/xóa)
-  // ngay trong danh sách chọn bé. null = không có panel nào mở.
-  const [expandedChildId, setExpandedChildId] = useState(null);
-
   const loadChildren = useCallback(async () => {
     setChildrenLoading(true);
     try {
@@ -387,6 +382,13 @@ export default function ParentDashboard() {
 
   const activeChild = dashboard?.child ?? null;
   const settings = activeChild ?? DEFAULT_SETTINGS;
+  // Nguồn dự phòng cho avatar: danh sách bé ở sidebar luôn có avatarEmoji/
+  // avatarColor, phòng khi payload dashboard không kèm 2 trường này.
+  const activeChildListMeta = children.find((c) => c.id === activeChildId);
+  const activeChildAvatarEmoji =
+    activeChild?.avatarEmoji ?? activeChildListMeta?.avatarEmoji;
+  const activeChildAvatarColor =
+    activeChild?.avatarColor ?? activeChildListMeta?.avatarColor;
   const lockState = {
     isLocked: !!activeChild?.isLocked,
     lockedAt: activeChild?.lockedAt ?? null,
@@ -491,7 +493,6 @@ export default function ParentDashboard() {
   const handleChildDeleted = () => {
     toast.success(`Đã xoá vĩnh viễn hồ sơ của ${deleteTarget?.name}`);
     setDeleteTarget(null);
-    setExpandedChildId(null);
     loadChildren(); // tải lại danh sách activeChildId sẽ tự chuyển sang bé còn lại (xem loadChildren)
   };
 
@@ -817,17 +818,14 @@ export default function ParentDashboard() {
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  // Chọn bé để cài đặt: đổi bé đang active, đóng panel mở rộng, và báo
-  // rõ ràng cho phụ huynh biết họ vừa chuyển sang cài đặt cho ai.
+  // Chọn bé để cài đặt: đổi bé đang active và báo rõ ràng cho phụ huynh
+  // biết họ vừa chuyển sang cài đặt cho ai. Toàn bộ khu quản lý (link/QR,
+  // khóa AR, xóa hồ sơ) hiện ra ngay bên phải cho bé đang chọn, không cần
+  // bấm thêm thao tác nào.
   const selectChild = (child) => {
     if (child.id === activeChildId) return;
     setActiveChildId(child.id);
-    setExpandedChildId(null);
     toast.success(`Đang cài đặt cho bé ${child.name}`);
-  };
-
-  const toggleExpandedChild = (childId) => {
-    setExpandedChildId((prev) => (prev === childId ? null : childId));
   };
 
   // Vị trí % của khung giờ được phép trên dải 24h, để vẽ timeline
@@ -1027,11 +1025,10 @@ export default function ParentDashboard() {
                 const limit = child.dailyLimitMinutes ?? 60;
                 const pct = clamp((mins / limit) * 100, 0, 100);
                 const isActive = activeChildId === child.id;
-                const isExpanded = expandedChildId === child.id;
                 return (
                   <div
                     key={child.id}
-                    className={`pkd-picker-item ${isActive ? "is-active" : ""} ${isExpanded ? "is-expanded" : ""}`}
+                    className={`pkd-picker-item ${isActive ? "is-active" : ""}`}
                   >
                     <button
                       type="button"
@@ -1071,90 +1068,7 @@ export default function ParentDashboard() {
                           {formatMinutes(mins)} / {formatMinutes(limit)} hôm nay
                         </span>
                       </span>
-
-                      <span
-                        className={`pkd-picker-more-btn ${isExpanded ? "is-open" : ""}`}
-                        role="button"
-                        tabIndex={0}
-                        title={`Thao tác cho ${child.name}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleExpandedChild(child.id);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            toggleExpandedChild(child.id);
-                          }
-                        }}
-                      >
-                        <MoreVertical size={15} />
-                        <span className="pkd-picker-more-label">Thao tác</span>
-                      </span>
                     </button>
-
-                    {/* Panel mở rộng: link & QR riêng (kèm tên/tuổi), khóa AR
-                        tách riêng bên ngoài, xoá vĩnh viễn ở cuối cùng */}
-                    {isExpanded && (
-                      <div className="pkd-picker-expand">
-                        <div className="pkd-picker-expand-block">
-                          <div className="pkd-picker-expand-label">
-                            <Sparkles size={13} /> Link & QR riêng cho bé
-                          </div>
-                          <KidLinkCard
-                            childId={child.id}
-                            childName={child.name}
-                            childAge={child.age}
-                            avatarEmoji={child.avatarEmoji}
-                            avatarColor={child.avatarColor}
-                          />
-                        </div>
-
-                        <div className="pkd-picker-expand-block pkd-picker-expand-lock-block">
-                          <div className="pkd-picker-expand-label">
-                            <ShieldCheck size={13} /> Khóa AR tức thời
-                          </div>
-                          {child.isLocked ? (
-                            <button
-                              className="pkd-lock-btn is-unlock pf-btn-tactile"
-                              onClick={() => requestUnlock(child)}
-                              type="button"
-                            >
-                              <Unlock size={15} /> Mở khóa cho {child.name}
-                            </button>
-                          ) : (
-                            <button
-                              className="pkd-lock-btn is-lock pf-btn-tactile"
-                              onClick={() => requestLock(child)}
-                              type="button"
-                            >
-                              <Lock size={15} /> Khóa ngay cho {child.name}
-                            </button>
-                          )}
-                        </div>
-
-                        <div className="pkd-picker-expand-block pkd-picker-expand-danger">
-                          <div className="pkd-picker-expand-label">
-                            <Trash2 size={13} /> Xoá hồ sơ vĩnh viễn
-                          </div>
-                          <p className="pkd-picker-expand-desc">
-                            Xoá <b>vĩnh viễn</b> toàn bộ dữ liệu của {child.name}{" "}
-                            (cài đặt, nhật ký, link riêng). Không thể khôi phục.
-                          </p>
-                          <button
-                            className="pkd-picker-delete-btn"
-                            onClick={() =>
-                              setDeleteTarget({ id: child.id, name: child.name })
-                            }
-                            type="button"
-                          >
-                            <Trash2 size={14} /> Xoá vĩnh viễn hồ sơ của{" "}
-                            {child.name}
-                          </button>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -1169,6 +1083,56 @@ export default function ParentDashboard() {
               <span>
                 Bạn đang cài đặt cho tài khoản bé: <strong>{activeChild.name}</strong>
               </span>
+            </RevealCard>
+
+            {/* Quản lý link & QR riêng, khóa AR, xoá hồ sơ — hiện ngay cho bé
+                đang chọn, không cần bấm thêm thao tác nào */}
+            <RevealCard as="div" className="pkd-card pkd-manage-card">
+              <div className="pkd-card-title-row">
+                <span className="pkd-card-title-left">
+                  <Sparkles size={16} />
+                  Link, QR &amp; bảo mật AR cho {activeChild.name}
+                </span>
+              </div>
+              <KidLinkCard
+                childId={activeChildId}
+                childName={activeChild.name}
+                childAge={activeChild.age}
+                avatarEmoji={activeChildAvatarEmoji}
+                avatarColor={activeChildAvatarColor}
+              />
+
+              <div className="pkd-manage-card-lock">
+                {lockState.isLocked ? (
+                  <button
+                    className="pkd-lock-btn is-unlock pf-btn-tactile"
+                    onClick={() => requestUnlock()}
+                    type="button"
+                  >
+                    <Unlock size={15} /> Mở khóa cho {activeChild.name}
+                  </button>
+                ) : (
+                  <button
+                    className="pkd-lock-btn is-lock pf-btn-tactile"
+                    onClick={() => requestLock()}
+                    type="button"
+                  >
+                    <Lock size={15} /> Khóa ngay cho {activeChild.name}
+                  </button>
+                )}
+              </div>
+
+              <div className="pkd-manage-card-danger">
+                <button
+                  className="pkd-picker-delete-btn"
+                  onClick={() =>
+                    setDeleteTarget({ id: activeChildId, name: activeChild.name })
+                  }
+                  type="button"
+                >
+                  <Trash2 size={14} /> Xoá vĩnh viễn hồ sơ của {activeChild.name}
+                </button>
+              </div>
             </RevealCard>
 
             {/* Section quick-nav dính lại khi cuộn, tự nhận diện mục đang xem */}

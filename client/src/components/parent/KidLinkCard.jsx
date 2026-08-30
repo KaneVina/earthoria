@@ -84,7 +84,7 @@ export default function KidLinkCard({
             {link && (
               <QRCodeCanvas
                 value={link}
-                size={200}
+                size={96}
                 includeMargin
                 className="kid-link-qr-canvas"
               />
