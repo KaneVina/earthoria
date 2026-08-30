@@ -887,7 +887,7 @@ export default function AboutUs() {
                 <span
                   className="tech-editor-number"
                   id="tech-loc-counter"
-                  data-target="140323"
+                  data-target="142309"
                 >
                   0
                 </span>
@@ -901,7 +901,7 @@ export default function AboutUs() {
                 <span
                   className="tech-editor-number tech-editor-number--secondary"
                   id="tech-file-counter"
-                  data-target="345"
+                  data-target="346"
                 >
                   0
                 </span>

@@ -18,6 +18,7 @@ const LOYALTY_TIERS = [
     discountPercent: 0,
     maxDiscountPerOrder: 0,
     freeShipThreshold: DEFAULT_FREE_SHIP_THRESHOLD,
+    maxChildAccounts: 2,
     color: "#4a9e3f",
     colorSoft: "rgba(74,158,63,0.12)",
     tagline: "Khởi hành — mọi hành trình đều bắt đầu từ đây",
@@ -38,6 +39,7 @@ const LOYALTY_TIERS = [
     discountPercent: 3,
     maxDiscountPerOrder: 100_000,
     freeShipThreshold: 200_000,
+    maxChildAccounts: 4,
     color: "#2a78d6",
     colorSoft: "rgba(42,120,214,0.12)",
     tagline: "Bước chân đầu tiên vượt khỏi vùng an toàn",
@@ -58,6 +60,7 @@ const LOYALTY_TIERS = [
     discountPercent: 5,
     maxDiscountPerOrder: 200_000,
     freeShipThreshold: 100_000,
+    maxChildAccounts: 6,
     color: "#b8862e",
     colorSoft: "rgba(184,134,46,0.12)",
     tagline: "Vươn mình bứt phá như rồng bay ra biển lớn",
@@ -78,6 +81,7 @@ const LOYALTY_TIERS = [
     discountPercent: 8,
     maxDiscountPerOrder: 350_000,
     freeShipThreshold: 0,
+    maxChildAccounts: 8,
     color: "#7a4fb5",
     colorSoft: "rgba(122,79,181,0.12)",
     tagline: "Khám phá vùng đất của tháp cổ và biển xanh",
@@ -98,15 +102,14 @@ const LOYALTY_TIERS = [
     discountPercent: 12,
     maxDiscountPerOrder: 600_000,
     freeShipThreshold: 0,
+    maxChildAccounts: 10,
     color: "#c0392b",
     colorSoft: "rgba(192,57,43,0.12)",
     tagline: "Đỉnh cao — chạm tới nóc nhà của Sài Gòn hoa lệ",
   },
 ];
-
+const ABSOLUTE_MAX_CHILD_ACCOUNTS = LOYALTY_TIERS[LOYALTY_TIERS.length - 1].maxChildAccounts;
 const getTierByCode = (code) => LOYALTY_TIERS.find((t) => t.code === code) || null;
-
-// Hạng tương ứng với 1 mức chi tiêu — luôn trả về tối thiểu Hạng I (không có "hạng 0").
 const resolveTierBySpend = (spend) => {
   const safeSpend = Number.isFinite(spend) && spend > 0 ? spend : 0;
   let matched = LOYALTY_TIERS[0];
@@ -155,10 +158,13 @@ const buildLoyaltyProfile = (spend) => {
     amountToNext,
     progressPercent,
     isMaxTier: !nextTier,
+    childAccountLimit: tier.maxChildAccounts,
+    nextChildAccountLimit: nextTier ? nextTier.maxChildAccounts : null,
     tiers: LOYALTY_TIERS.map((t) => ({
       ...t,
       unlocked: safeSpend >= t.minSpend,
       isCurrent: t.code === tier.code,
+      isNextUp: !!nextTier && t.code === nextTier.code,
     })),
   };
 };
@@ -185,6 +191,7 @@ module.exports = {
   LOYALTY_TIERS,
   SUCCESSFUL_ORDER_STATUSES,
   DEFAULT_FREE_SHIP_THRESHOLD,
+  ABSOLUTE_MAX_CHILD_ACCOUNTS,
   getTierByCode,
   resolveTierBySpend,
   getNextTier,

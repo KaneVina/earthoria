@@ -810,7 +810,7 @@ body.dark-mode {
   max-width: 1200px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 1px;
   background: var(--lj-grid-line);
   border: 0.5px solid var(--lj-grid-line);
@@ -1420,6 +1420,11 @@ body.dark-mode {
   background: var(--lj-grid-line);
   color: var(--text-muted);
   border: 0.5px solid var(--lj-grid-line);
+}
+.lj-card-badge.is-upcoming {
+  background: var(--lj-gold-true-soft);
+  color: #96721e;
+  border: 0.5px solid rgba(212, 168, 67, 0.4);
 }
 .lj-card-badge.lj-card-badge-success {
   background: var(--lj-gold-true-soft);

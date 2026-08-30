@@ -146,9 +146,8 @@ export default function KidLinkCard({
       )}
 
       <p className="kid-link-hint">
-        Mở link này (hoặc quét QR) trên thiết bị/tablet riêng của bé — vào thẳng
-        thư viện sách của bé, không cần đăng nhập tài khoản phụ huynh trên
-        thiết bị đó.
+        Mở link này (hoặc quét QR) trên thiết bị/tablet riêng của bé để vào thẳng
+        thư viện sách.
       </p>
     </div>
   );

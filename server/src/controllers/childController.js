@@ -10,13 +10,24 @@ const {
   isDailyLimitReached,
   getTodayMinutes,
 } = require("../utils/childPolicy");
+const { getUserLoyaltyProfile } = require("../utils/loyaltyTier");
 
-const MAX_CHILDREN_PER_PARENT = 10;
-// 1 phiên hoạt động (đọc ebook / xem AR) đơn lẻ không được tính quá mức này —
-// chặn trường hợp tab bị treo/ở nền quá lâu rồi mới gọi ping, khiến 1 lần ping
-// cộng dồn một số phút bất thường.
+function buildChildLimitPayload(loyaltyProfile, currentCount) {
+  const { tier, nextTier, isMaxTier, childAccountLimit, nextChildAccountLimit } = loyaltyProfile;
+  return {
+    current: currentCount,
+    max: childAccountLimit,
+    isMaxTier,
+    tierRank: tier.rank,
+    tierRoman: tier.roman,
+    tierName: tier.name,
+    nextTierRoman: nextTier ? nextTier.roman : null,
+    nextTierName: nextTier ? nextTier.name : null,
+    nextMax: nextChildAccountLimit,
+  };
+}
+
 const MAX_SESSION_MINUTES = 6 * 60;
-
 const SETTINGS_SELECT = {
   dailyLimitMinutes: true,
   ruleEnabled: true,
@@ -52,14 +63,8 @@ const CHILD_SELECT = {
 const TIPS_FREQUENCY_VALUES = ["open", "interval", "rest"];
 const TIME_HHMM_RE = /^([01]\d|2[0-3]):([0-5]\d)$/;
 
-// Validate + coerce từng field trong body settings. Trước đây chỉ validate
-// dailyLimitMinutes; các field còn lại được ghi thẳng vào DB không kiểm tra gì,
-// cho phép gửi giá trị âm/NaN/chuỗi rác làm hỏng logic ở FE (vd allowStart="abc"
-// khiến `split(":").map(Number)` ra NaN).
-// Trả về { data, error } — error là message tiếng Việt đầu tiên gặp phải.
 function validateSettingsPatch(body) {
   const data = {};
-
   const boolFields = [
     "ruleEnabled",
     "allowWindowEnabled",
@@ -134,16 +139,12 @@ async function findOwnChild(parentId, childId) {
 }
 
 function pushAudit({ parentId, childId, type, message, metadata }) {
-  // Không await ở nơi gọi để không làm chậm response — nhưng vẫn bắt lỗi
-  // để một lần ghi log lỗi không làm sập cả request chính.
   return prisma.childAuditLog
     .create({ data: { parentId, childId, type, message, metadata } })
     .catch((err) => console.error("[childAuditLog] Failed to write:", err.message));
 }
 
-// ════════════════════════════════════════════
 // GET /api/v1/children — danh sách hồ sơ con của phụ huynh đang đăng nhập
-// ════════════════════════════════════════════
 const listChildren = async (req, res) => {
   try {
     const children = await prisma.childProfile.findMany({
@@ -152,8 +153,6 @@ const listChildren = async (req, res) => {
       orderBy: { createdAt: "asc" },
     });
 
-    // "Hôm nay" tính theo giờ Việt Nam (không phụ thuộc timezone server) —
-    // tránh lệch ngày nếu server chạy UTC.
     const startOfToday = startOfTodayVn();
 
     const childIds = children.map((c) => c.id);
@@ -168,11 +167,15 @@ const listChildren = async (req, res) => {
       todayLogs.map((row) => [row.childId, row._sum.minutes || 0]),
     );
 
+    const loyaltyProfile = await getUserLoyaltyProfile(req.user.id);
+    const childLimit = buildChildLimitPayload(loyaltyProfile, children.length);
+
     return formatResponse(res, 200, "OK", {
       children: children.map((c) => ({
         ...serializeChild(c),
         todayMinutes: todayByChild[c.id] || 0,
       })),
+      childLimit,
     });
   } catch (error) {
     console.error(error);
@@ -180,13 +183,7 @@ const listChildren = async (req, res) => {
   }
 };
 
-// ════════════════════════════════════════════
 // POST /api/v1/children — bước cuối của wizard tạo hồ sơ trẻ
-// Body: { name, dob, avatarEmoji?, avatarColor?, agreeTerms }
-// Bước 1 (xác nhận email) và bước 2 (nhập tên/ngày sinh) được xử lý hoàn
-// toàn ở client vì không cần gọi API cho tới khi phụ huynh đồng ý điều
-// khoản ở bước cuối — tránh tạo rác hồ sơ dở dang trong DB.
-// ════════════════════════════════════════════
 const createChild = async (req, res) => {
   try {
     const { name, dob, avatarEmoji, avatarColor, agreeTerms } = req.body;
@@ -215,23 +212,23 @@ const createChild = async (req, res) => {
       );
     }
 
-    // Đếm số con hiện có + tạo mới trong CÙNG một transaction Serializable —
-    // trước đây count() và create() là 2 câu lệnh tách rời, nên 2 request tạo
-    // con gần như đồng thời có thể cùng đọc thấy count=9 rồi cùng tạo, vượt
-    // quá MAX_CHILDREN_PER_PARENT. Serializable khiến Postgres tự phát hiện
-    // xung đột và ném lỗi (P2034) cho 1 trong 2 transaction — ta retry lại 1
-    // lần, lúc đó count() sẽ thấy dữ liệu mới nhất.
     let child;
+    let limitErrorPayload = null;
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
         child = await prisma.$transaction(
           async (tx) => {
-            const existingCount = await tx.childProfile.count({
-              where: { parentId: req.user.id, isActive: true },
-            });
-            if (existingCount >= MAX_CHILDREN_PER_PARENT) {
+            const [existingCount, loyaltyProfile] = await Promise.all([
+              tx.childProfile.count({
+                where: { parentId: req.user.id, isActive: true },
+              }),
+              getUserLoyaltyProfile(req.user.id, tx),
+            ]);
+            const maxChildAccounts = loyaltyProfile.childAccountLimit;
+            if (existingCount >= maxChildAccounts) {
               const err = new Error("MAX_CHILDREN_REACHED");
               err.code = "MAX_CHILDREN_REACHED";
+              err.payload = buildChildLimitPayload(loyaltyProfile, existingCount);
               throw err;
             }
             return tx.childProfile.create({
@@ -250,16 +247,22 @@ const createChild = async (req, res) => {
         break;
       } catch (err) {
         if (err.code === "MAX_CHILDREN_REACHED") {
-          return formatResponse(
-            res,
-            400,
-            `Bạn đã đạt giới hạn tối đa ${MAX_CHILDREN_PER_PARENT} hồ sơ trẻ em`,
-          );
+          limitErrorPayload = err.payload;
+          break;
         }
         const isSerializationConflict = err.code === "P2034";
         if (isSerializationConflict && attempt === 0) continue; // thử lại 1 lần
         throw err;
       }
+    }
+
+    if (limitErrorPayload) {
+      const { max, tierRoman, tierName, isMaxTier, nextTierRoman, nextTierName, nextMax } =
+        limitErrorPayload;
+      const message = isMaxTier
+        ? `Bạn đã đạt giới hạn tối đa ${max} hồ sơ trẻ em (Hạng ${tierRoman} · ${tierName} — hạng cao nhất).`
+        : `Bạn đã đạt giới hạn ${max} hồ sơ trẻ em của Hạng ${tierRoman} · ${tierName}. Lên Hạng ${nextTierRoman} · ${nextTierName} để mở khóa thêm, tối đa ${nextMax} hồ sơ.`;
+      return formatResponse(res, 400, message, { code: "MAX_CHILDREN_REACHED", childLimit: limitErrorPayload });
     }
 
     await pushAudit({
@@ -279,9 +282,7 @@ const createChild = async (req, res) => {
   }
 };
 
-// ════════════════════════════════════════════
 // DELETE /api/v1/children/:childId — xoá mềm (ẩn hồ sơ, không xoá dữ liệu)
-// ════════════════════════════════════════════
 const archiveChild = async (req, res) => {
   try {
     const child = await findOwnChild(req.user.id, req.params.childId);
@@ -306,24 +307,14 @@ const archiveChild = async (req, res) => {
   }
 };
 
-// ════════════════════════════════════════════
 // GET /api/v1/children/:childId/dashboard
-// Trả về đầy đủ dữ liệu cho trang dashboard: thông tin bé, cài đặt hiện
-// tại, phút dùng hôm nay, biểu đồ 7 ngày gần nhất, phiên đọc gần đây, và
-// nhật ký hoạt động (audit log) gần đây.
-// ════════════════════════════════════════════
 const getChildDashboard = async (req, res) => {
   try {
     const child = await findOwnChild(req.user.id, req.params.childId);
     if (!child) return formatResponse(res, 404, "Không tìm thấy hồ sơ trẻ");
 
-    // "Hôm nay"/"tuần này" tính theo giờ Việt Nam — nhất quán với listChildren,
-    // getKidPublicProfile, và enforcement ở AR/Ebook.
     const startOfToday = startOfTodayVn();
     const todayVnParts = getVnParts();
-    // Dùng Date.UTC với đúng bộ Y-M-D theo giờ VN để lấy đúng thứ trong tuần
-    // (getUTCDay trên 1 mốc UTC 00:00 của đúng ngày đó luôn cho ra đúng thứ,
-    // bất kể server chạy ở timezone nào).
     const todayWeekdayUtc = new Date(Date.UTC(todayVnParts.year, todayVnParts.month - 1, todayVnParts.day));
     const dayOfWeek = (todayWeekdayUtc.getUTCDay() + 6) % 7; // 0 = Thứ 2 ... 6 = Chủ nhật
     const startOfWeek = new Date(startOfToday);
@@ -380,10 +371,8 @@ const getChildDashboard = async (req, res) => {
   }
 };
 
-// ════════════════════════════════════════════
 // PATCH /api/v1/children/:childId/settings — cập nhật giờ giấc / quy tắc mắt
 // Lưu server-side để chống lách bằng cách đổi giờ máy/gỡ cài app.
-// ════════════════════════════════════════════
 const updateChildSettings = async (req, res) => {
   try {
     const child = await findOwnChild(req.user.id, req.params.childId);
@@ -417,9 +406,7 @@ const updateChildSettings = async (req, res) => {
   }
 };
 
-// ════════════════════════════════════════════
 // POST /api/v1/children/:childId/lock — khoá AR ngay lập tức (không cần PIN)
-// ════════════════════════════════════════════
 const lockChild = async (req, res) => {
   try {
     const child = await findOwnChild(req.user.id, req.params.childId);
@@ -541,8 +528,6 @@ const toggleChildBookVisibility = async (req, res) => {
       return formatResponse(res, 400, "Thiếu trạng thái hiển thị");
     }
 
-    // Chỉ cho phép bật/tắt sách nằm trong đơn hàng đã thanh toán của
-    // chính phụ huynh này — chặn việc bật hiển thị sách chưa mua.
     const owned = await prisma.orderItem.findFirst({
       where: {
         variant: { bookId },
@@ -751,8 +736,6 @@ const getKidPublicBooks = async (req, res) => {
       if (book) bookMap.set(book.id, book);
     }
 
-    // Xác nhận sách có nội dung ebook thật sự đang bật (isActive) — tránh
-    // trường hợp đã mua bản điện tử nhưng chưa có file ebook nào được tải lên.
     const ebooks = await prisma.ebook.findMany({
       where: { isActive: true, bookId: { in: [...bookMap.keys()] } },
       select: { bookId: true },
@@ -779,9 +762,7 @@ const getKidPublicBooks = async (req, res) => {
   }
 };
 
-// ════════════════════════════════════════════
 // [PUBLIC] POST /api/v1/kid-access/:token/activity/start
-// ════════════════════════════════════════════
 const startKidActivity = async (req, res) => {
   try {
     const { token } = req.params;
@@ -825,13 +806,7 @@ const startKidActivity = async (req, res) => {
   }
 };
 
-// ════════════════════════════════════════════
 // [PUBLIC] POST /api/v1/kid-access/:token/activity/:activityId/ping
-// Client gọi định kỳ (vd mỗi 30–60s) trong lúc bé đang đọc/xem, và 1 lần khi
-// rời trang. Server tự tính số phút = (now - createdAt của phiên) theo đồng
-// hồ server, KHÔNG dùng số phút do client tự đếm/gửi lên — bé mở DevTools
-// sửa timer phía client cũng không đổi được số phút ghi nhận.
-// ════════════════════════════════════════════
 const pingKidActivity = async (req, res) => {
   try {
     const { token, activityId } = req.params;

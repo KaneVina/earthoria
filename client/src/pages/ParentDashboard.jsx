@@ -38,6 +38,9 @@ import {
   BookMarked,
   Smile,
   UserCog,
+  Users,
+  ArrowRight,
+  Crown,
 } from "lucide-react";
 
 import "../components/assets/css/profile.css";
@@ -208,6 +211,51 @@ function SwitchRow({ icon, title, desc, checked, onChange }) {
   );
 }
 
+// Băng thông báo giới hạn hồ sơ trẻ em theo hạng thành viên — hiển thị
+// "X/Y tài khoản trẻ" + gợi ý lên hạng tiếp theo ("sắp mở khóa"), kèm nút
+// "Xem thêm" dẫn sang trang /loyalty. Dùng chung dữ liệu trả về từ
+// GET /children (field childLimit) nên không cần gọi thêm API nào.
+function ChildLimitBanner({ childLimit }) {
+  if (!childLimit) return null;
+  const { current, max, isMaxTier, tierRoman, nextMax } = childLimit;
+  const isFull = current >= max;
+
+  return (
+    <div
+      className={`pkd-child-limit-banner ${isFull && !isMaxTier ? "is-full" : ""} ${isMaxTier ? "is-max" : ""}`}
+    >
+      <div className="pkd-child-limit-row">
+        <span className="pkd-child-limit-count">
+          👨‍👩‍👧‍👦 <strong>{current}/{max}</strong> tài khoản trẻ
+        </span>
+        <span className="pkd-child-limit-tier">Hạng {tierRoman}</span>
+      </div>
+      <p className="pkd-child-limit-sub">
+        {isMaxTier ? (
+          <>
+            <Crown size={12} /> Hạng cao nhất — đã mở khóa toàn bộ {max} tài khoản trẻ.
+          </>
+        ) : isFull ? (
+          <>
+            <Lock size={12} /> Đã đạt giới hạn Hạng {tierRoman}. Còn 1 hạng nữa để mở khóa{" "}
+            <strong>{nextMax}</strong> tài khoản trẻ.
+          </>
+        ) : (
+          <>
+            <Sparkles size={12} /> Còn 1 hạng nữa để mở khóa <strong>{nextMax}</strong> tài khoản
+            trẻ.
+          </>
+        )}
+      </p>
+      {!isMaxTier && (
+        <Link to="/loyalty" className="pkd-child-limit-link">
+          Xem thêm <ArrowRight size={12} />
+        </Link>
+      )}
+    </div>
+  );
+}
+
 function ModalShell({ onClose, children, wide }) {
   // Đóng bằng phím Esc hành vi chuẩn cho mọi hộp thoại
   useEffect(() => {
@@ -276,7 +324,7 @@ function RevealCard({
   );
 }
 
-/* ═══════════════════════ MAIN COMPONENT ═══════════════════════ */
+/*   ═ MAIN COMPONENT   ═ */
 
 export default function ParentDashboard() {
   const [children, setChildren] = useState([]);
@@ -286,6 +334,10 @@ export default function ParentDashboard() {
   const [pillsStuck, setPillsStuck] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [hasPin, setHasPin] = useState(true); // mặc định true để tránh nháy UI trước khi biết chắc
+  // Giới hạn số hồ sơ trẻ em theo hạng thành viên hiện tại — { current, max,
+  // isMaxTier, tierRoman, tierName, nextTierRoman, nextTierName, nextMax }.
+  // Trả về cùng payload với GET /children, tránh phải gọi thêm API /loyalty/me.
+  const [childLimit, setChildLimit] = useState(null);
 
   const [dashboard, setDashboard] = useState(null); // { child, todayMinutes, weeklyMinutes, sessions, auditLog }
   const [dashboardLoading, setDashboardLoading] = useState(false);
@@ -299,6 +351,7 @@ export default function ParentDashboard() {
       const res = await childService.list();
       const list = res.data.data.children;
       setChildren(list);
+      setChildLimit(res.data.data.childLimit ?? null);
       setActiveChildId((prev) =>
         prev && list.some((c) => c.id === prev) ? prev : (list[0]?.id ?? null),
       );
@@ -364,6 +417,9 @@ export default function ParentDashboard() {
   const handleChildCreated = (child) => {
     setChildren((prev) => [...prev, { ...child, todayMinutes: 0 }]);
     setActiveChildId(child.id);
+    // Cập nhật lạc quan số hồ sơ hiện có ngay lập tức — tránh banner giới
+    // hạn hiển thị số liệu cũ trong lúc chờ lần load tiếp theo.
+    setChildLimit((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
   };
 
   const toggleBookVisibility = async (bookId, visible) => {
@@ -896,6 +952,7 @@ export default function ParentDashboard() {
           onCreated={handleChildCreated}
           hasPin={hasPin}
           onPinCreated={() => setHasPin(true)}
+          childLimit={childLimit}
         />
       </div>
     );
@@ -991,7 +1048,7 @@ export default function ParentDashboard() {
         </div>
       </div>
 
-      {/* ═══════════ SIDEBAR (danh sách bé) + MAIN (thiết lập) ═══════════ */}
+      {/*   SIDEBAR (danh sách bé) + MAIN (thiết lập)   */}
       <div className="pkd-body pkd-body-top">
         <div className="pkd-layout">
           {/* ── SIDEBAR: danh sách tài khoản E-kid ── */}
@@ -1002,21 +1059,30 @@ export default function ParentDashboard() {
                   <span className="pkd-section-eyebrow">
                     Danh sách tài khoản E-kid
                   </span>
-                  <h2 className="pkd-section-title">Thiết lập tài khoản cho bé</h2>
+                  <h2 className="pkd-section-title">Thiết lập tài khoản</h2>
                 </div>
                 <button
                   type="button"
-                  className="pkd-sidebar-add-btn"
+                  className={`pkd-sidebar-add-btn ${childLimit && childLimit.current >= childLimit.max ? "is-limit" : ""}`}
                   onClick={() => setWizardOpen(true)}
-                  title="Thêm hồ sơ cho bé"
+                  title={
+                    childLimit && childLimit.current >= childLimit.max
+                      ? "Đã đạt giới hạn hồ sơ trẻ em của hạng hiện tại"
+                      : "Thêm hồ sơ cho bé"
+                  }
                   aria-label="Thêm hồ sơ cho bé"
                 >
-                  <Plus size={18} />
+                  {childLimit && childLimit.current >= childLimit.max ? (
+                    <Lock size={16} />
+                  ) : (
+                    <Plus size={18} />
+                  )}
                 </button>
               </div>
               <p className="pkd-section-sub">
-                Mỗi bé có giới hạn giờ xem, khóa AR và thư viện sách <b>riêng</b>.
+                Mỗi tài khoản có thể thiết lập <b>riêng</b>.
               </p>
+              <ChildLimitBanner childLimit={childLimit} />
             </RevealCard>
 
             <RevealCard as="div" className="pkd-child-picker-list">
@@ -1151,7 +1217,7 @@ export default function ParentDashboard() {
               </div>
             </div>
 
-            {/* ═══════════ OVERVIEW ═══════════ */}
+            {/*   OVERVIEW   */}
         <section id="overview" className="pkd-section">
           <RevealCard as="div" className="pkd-section-head">
             <span className="pkd-section-eyebrow">Hôm nay</span>
@@ -1276,7 +1342,7 @@ export default function ParentDashboard() {
           </RevealCard>
         </section>
 
-        {/* ═══════════ TIME RULES ═══════════ */}
+        {/*   TIME RULES   */}
         <section id="time-rules" className="pkd-section">
           <RevealCard as="div" className="pkd-section-head">
             <span className="pkd-section-eyebrow">Tuỳ chỉnh</span>
@@ -1462,7 +1528,7 @@ export default function ParentDashboard() {
           </RevealCard>
         </section>
 
-        {/* ═══════════ REPORTS ═══════════ */}
+        {/*   REPORTS   */}
         <section id="reports" className="pkd-section">
           <RevealCard as="div" className="pkd-section-head">
             <span className="pkd-section-eyebrow">Dữ liệu 7 ngày</span>
@@ -1628,7 +1694,7 @@ export default function ParentDashboard() {
           </RevealCard>
         </section>
 
-        {/* ═══════════ SÁCH CỦA BÉ ═══════════ */}
+        {/*   SÁCH CỦA BÉ   */}
         <section id="books" className="pkd-section">
           <RevealCard as="div" className="pkd-section-head">
             <span className="pkd-section-eyebrow">Thư viện riêng</span>
@@ -1694,7 +1760,7 @@ export default function ParentDashboard() {
           </RevealCard>
         </section>
 
-        {/* ═══════════ EYE CARE ═══════════ */}
+        {/*   EYE CARE   */}
         <section id="eye-care" className="pkd-section">
           <RevealCard as="div" className="pkd-section-head">
             <span className="pkd-section-eyebrow">Sức khoẻ thị lực</span>
@@ -1765,7 +1831,7 @@ export default function ParentDashboard() {
         </div>
       </div>
 
-      {/* ═══════════ MODAL: Xác nhận khóa ═══════════ */}
+      {/*   MODAL: Xác nhận khóa   */}
       {lockConfirmOpen && (
         <ModalShell onClose={() => setLockConfirmOpen(false)}>
           <div className="pf-confirm-icon danger">
@@ -1793,7 +1859,7 @@ export default function ParentDashboard() {
         </ModalShell>
       )}
 
-      {/* ═══════════ MODAL: Nhập PIN để mở khóa ═══════════ */}
+      {/*   MODAL: Nhập PIN để mở khóa   */}
       {unlockPinOpen && (
         <ModalShell
           onClose={() => {
@@ -1869,7 +1935,7 @@ export default function ParentDashboard() {
         </ModalShell>
       )}
 
-      {/* ═══════════ MODAL: Đổi / Quên mã PIN (multi-step) ═══════════ */}
+      {/*   MODAL: Đổi / Quên mã PIN (multi-step)   */}
       {pinModal && (
         <ModalShell onClose={closePinModal} wide>
           {/* Step indicator */}
@@ -2126,6 +2192,7 @@ export default function ParentDashboard() {
         onCreated={handleChildCreated}
         hasPin={hasPin}
         onPinCreated={() => setHasPin(true)}
+        childLimit={childLimit}
       />
     </div>
   );

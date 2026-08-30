@@ -21,6 +21,7 @@ import {
   PlaneTakeoff,
   PlaneLanding,
   User,
+  Users,
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { loyaltyService } from "../services/loyaltyService";
@@ -44,6 +45,7 @@ const TIERS_FALLBACK = [
     discountPercent: 0,
     maxDiscountPerOrder: 0,
     freeShipThreshold: 300000,
+    maxChildAccounts: 2,
     color: "#4a9e3f",
     colorSoft: "rgba(74,158,63,0.12)",
     tagline: "Khởi hành — mọi hành trình đều bắt đầu từ đây",
@@ -64,6 +66,7 @@ const TIERS_FALLBACK = [
     discountPercent: 3,
     maxDiscountPerOrder: 100000,
     freeShipThreshold: 200000,
+    maxChildAccounts: 4,
     color: "#2a78d6",
     colorSoft: "rgba(42,120,214,0.12)",
     tagline: "Bước chân đầu tiên vượt khỏi vùng an toàn",
@@ -84,6 +87,7 @@ const TIERS_FALLBACK = [
     discountPercent: 5,
     maxDiscountPerOrder: 200000,
     freeShipThreshold: 100000,
+    maxChildAccounts: 6,
     color: "#b8862e",
     colorSoft: "rgba(184,134,46,0.12)",
     tagline: "Vươn mình bứt phá như rồng bay ra biển lớn",
@@ -104,6 +108,7 @@ const TIERS_FALLBACK = [
     discountPercent: 8,
     maxDiscountPerOrder: 350000,
     freeShipThreshold: 0,
+    maxChildAccounts: 8,
     color: "#7a4fb5",
     colorSoft: "rgba(122,79,181,0.12)",
     tagline: "Khám phá vùng đất của tháp cổ và biển xanh",
@@ -124,6 +129,7 @@ const TIERS_FALLBACK = [
     discountPercent: 12,
     maxDiscountPerOrder: 600000,
     freeShipThreshold: 0,
+    maxChildAccounts: 10,
     color: "#c0392b",
     colorSoft: "rgba(192,57,43,0.12)",
     tagline: "Đỉnh cao — chạm tới nóc nhà của Sài Gòn hoa lệ",
@@ -412,6 +418,16 @@ export default function LoyaltyJourney() {
             <div className="lj-stat-value">Từ Hạng IV</div>
             <div className="lj-stat-label">Miễn phí vận chuyển toàn phần</div>
             <div className="lj-stat-sub">Không giới hạn giá trị đơn</div>
+          </div>
+          <div className="lj-stat-item reveal">
+            <Users size={20} />
+            <div className="lj-stat-value">2 → 10</div>
+            <div className="lj-stat-label">Tài khoản trẻ em (E-Kid)</div>
+            <div className="lj-stat-sub">
+              Hạng {tiers[0]?.roman} mở {tiers[0]?.maxChildAccounts} · Hạng{" "}
+              {tiers[tiers.length - 1]?.roman} mở đủ{" "}
+              {tiers[tiers.length - 1]?.maxChildAccounts}
+            </div>
           </div>
         </div>
       </section>
@@ -1086,6 +1102,9 @@ function RankStop({
   const isCurrent = loyaltyProfile && loyaltyProfile.tier.code === tier.code;
   const isUnlocked = loyaltyProfile && currentRank >= tier.rank && !isCurrent;
   const isLocked = loyaltyProfile && currentRank < tier.rank;
+  // Hạng liền kề ngay phía trên hạng hiện tại — "sắp mở khóa" (gần trong tầm
+  // tay) thay vì "chưa mở khóa" chung chung như các hạng còn xa phía sau.
+  const isNextUp = isLocked && loyaltyProfile?.nextTier?.code === tier.code;
   let travelPercent = relativeSizePercent;
   if (isUnlocked) {
     travelPercent = 100;
@@ -1173,8 +1192,16 @@ function RankStop({
               </span>
             )}
           {isLocked && (
-            <span className="lj-card-badge is-locked">
-              <Lock size={11} /> Chưa mở khóa
+            <span className={`lj-card-badge ${isNextUp ? "is-upcoming" : "is-locked"}`}>
+              {isNextUp ? (
+                <>
+                  <Sparkles size={11} /> Sắp mở khóa
+                </>
+              ) : (
+                <>
+                  <Lock size={11} /> Chưa mở khóa
+                </>
+              )}
             </span>
           )}
 
@@ -1310,6 +1337,12 @@ function RankStop({
               ) : (
                 <span>Miễn phí vận chuyển mọi đơn hàng</span>
               )}
+            </li>
+            <li>
+              <Users size={14} />
+              <span>
+                Mở khóa tối đa <strong>{tier.maxChildAccounts}</strong> tài khoản trẻ em (E-Kid)
+              </span>
             </li>
           </ul>
 

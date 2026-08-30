@@ -13,6 +13,8 @@ import {
   X,
   Lock,
   FileText,
+  Users,
+  ArrowRight,
 } from "lucide-react";
 
 import { useAuthStore } from "../../store/authStore";
@@ -21,6 +23,8 @@ import { parentPinService } from "../../services/parentPinService";
 
 const BASE_STEPS = ["intro", "email", "info", "terms"];
 
+// 10 biểu tượng — khớp với số hồ sơ trẻ em tối đa toàn hệ thống (Hạng V ·
+// Landmark 81 mở đủ 10). Xem server/src/utils/loyaltyTier.js (maxChildAccounts).
 const AVATAR_CHOICES = [
   { emoji: "🦊", color: "#c9793f" },
   { emoji: "🐼", color: "#4a4a4a" },
@@ -30,6 +34,8 @@ const AVATAR_CHOICES = [
   { emoji: "🐧", color: "#3f7ea6" },
   { emoji: "🦄", color: "#a875c9" },
   { emoji: "🐢", color: "#4a9e3f" },
+  { emoji: "🐨", color: "#7a8fa6" },
+  { emoji: "🦉", color: "#c0525a" },
 ];
 
 // Tính tuổi ngay ở client để hiển thị tức thời khi phụ huynh gõ ngày sinh —
@@ -92,8 +98,19 @@ function IntroIllustration() {
   );
 }
 
-export default function CreateChildWizard({ isOpen, onClose, onCreated, hasPin, onPinCreated }) {
+export default function CreateChildWizard({
+  isOpen,
+  onClose,
+  onCreated,
+  hasPin,
+  onPinCreated,
+  childLimit,
+}) {
   const user = useAuthStore((s) => s.user);
+  // Đã đạt giới hạn hồ sơ trẻ em của hạng thành viên hiện tại — chặn wizard
+  // ngay từ bước đầu và hướng phụ huynh sang trang /loyalty thay vì để họ đi
+  // hết các bước rồi mới nhận lỗi ở bước cuối.
+  const limitReached = !!childLimit && childLimit.current >= childLimit.max;
   // Chưa có PIN thì chèn bước "pin" ngay sau intro — bắt buộc thiết lập
   // trước khi tạo hồ sơ trẻ, vì PIN là thứ duy nhất bảo vệ các hành động
   // nhạy cảm (mở khoá AR, xoá hồ sơ...) sau này.
@@ -142,6 +159,58 @@ export default function CreateChildWizard({ isOpen, onClose, onCreated, hasPin, 
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
+
+  // ── Chặn tạo mới nếu đã đạt giới hạn hồ sơ của hạng hiện tại ──
+  if (limitReached) {
+    return (
+      <div
+        className="pf-overlay"
+        onMouseDown={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+      >
+        <div className="pf-confirm pkd-modal" role="dialog" aria-modal="true">
+          <button className="pkd-wizard-close" onClick={onClose} type="button" aria-label="Đóng">
+            <X size={16} />
+          </button>
+          <div className="auth-otp-step pkd-wizard-limit">
+            <div className="pf-confirm-icon">
+              <Users size={18} />
+            </div>
+            <h3 className="pf-confirm-title">
+              Đã đạt giới hạn {childLimit.max} hồ sơ trẻ em
+            </h3>
+            <p className="pf-confirm-msg">
+              Bạn đang ở <strong>Hạng {childLimit.tierRoman} · {childLimit.tierName}</strong> —
+              hạng này cho phép tối đa <strong>{childLimit.max}</strong> tài khoản trẻ em.
+              {childLimit.isMaxTier ? (
+                " Đây đã là hạng cao nhất, đây cũng là số hồ sơ tối đa của hệ thống."
+              ) : (
+                <>
+                  {" "}
+                  Lên <strong>Hạng {childLimit.nextTierRoman} · {childLimit.nextTierName}</strong>{" "}
+                  để mở khóa thêm, tối đa <strong>{childLimit.nextMax}</strong> hồ sơ.
+                </>
+              )}
+            </p>
+            <p className="pkd-wizard-note">
+              <Sparkles size={13} />
+              Hạng thành viên tăng theo tổng chi tiêu trọn đời tại Earthoria và không bao giờ bị
+              hạ hạng — mỗi đơn hàng đưa bạn tiến gần hơn tới hạng tiếp theo.
+            </p>
+            <div className="pf-confirm-actions">
+              <button className="pf-confirm-cancel pf-btn-tactile" onClick={onClose}>
+                Đóng
+              </button>
+              <Link to="/loyalty" className="pf-confirm-ok pf-btn-tactile" onClick={onClose}>
+                Xem hạng thành viên <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const step = STEPS[stepIdx];
 
@@ -196,7 +265,13 @@ export default function CreateChildWizard({ isOpen, onClose, onCreated, hasPin, 
     } catch (err) {
       const msg = err.response?.data?.message || "Không thể tạo tài khoản cho bé. Thử lại nhé.";
       setError(msg);
-      toast.error(msg);
+      toast.error(msg, { duration: 6000 });
+      // Trường hợp hiếm: giới hạn hạng vừa bị chạm (vd tạo ở tab khác) đúng
+      // lúc đang submit — đóng wizard lại để tránh phụ huynh bấm thử lại vô
+      // ích, danh sách/giới hạn phía ParentDashboard sẽ tự cập nhật.
+      if (err.response?.data?.data?.code === "MAX_CHILDREN_REACHED") {
+        onClose();
+      }
     } finally {
       setSubmitting(false);
     }
@@ -235,6 +310,16 @@ export default function CreateChildWizard({ isOpen, onClose, onCreated, hasPin, 
               Chỉ mất khoảng 1 phút. Cha mẹ sẽ tạo hồ sơ riêng, giới hạn giờ xem AR và bật các quy
               tắc bảo vệ mắt phù hợp với độ tuổi của bé.
             </p>
+            {childLimit && (
+              <p className="pkd-wizard-note pkd-wizard-limit-note">
+                <Users size={13} />
+                Đây sẽ là hồ sơ thứ <strong>{childLimit.current + 1}/{childLimit.max}</strong>{" "}
+                được phép ở Hạng {childLimit.tierRoman} · {childLimit.tierName}.
+                {!childLimit.isMaxTier && childLimit.current + 1 === childLimit.max && (
+                  <> Lên hạng để mở khóa thêm — <Link to="/loyalty" onClick={onClose}>xem chi tiết</Link>.</>
+                )}
+              </p>
+            )}
             <div className="pf-confirm-actions" style={{ justifyContent: "center" }}>
               <button className="pf-confirm-ok pf-btn-tactile" onClick={goNext}>
                 Bắt đầu <ChevronRight size={14} />
