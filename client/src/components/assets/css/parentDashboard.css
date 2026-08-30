@@ -208,13 +208,37 @@
   line-height: 1.7;
 }
 
+/*  Khối bên phải header: logo trắng + trạng thái tự lưu  */
+.pkd-header-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 18px;
+  padding-top: 4px;
+}
+
+.pkd-header-logo {
+  height: 40px;
+  width: auto;
+  max-width: 190px;
+  object-fit: contain;
+  opacity: 0.92;
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.25));
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+.pkd-header-logo:hover {
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
 /*  Sync / autosave status (top right of header)  */
 .pkd-sync-wrap {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 10px;
-  padding-top: 6px;
 }
 .pkd-device-status {
   display: inline-flex;
@@ -440,7 +464,11 @@
   color: var(--forest);
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+}
+.pkd-child-limit-count svg {
+  color: var(--gold);
+  flex-shrink: 0;
 }
 .pkd-child-limit-count strong {
   font-weight: 700;
@@ -738,26 +766,95 @@
   border-color: #b25450;
 }
 
-/* Banner: đang cài đặt cho bé nào (đầu cột nội dung bên phải) */
+/* ═══════════ Nút "Thêm hồ sơ cho bé" cố định dưới cùng danh sách ═══════════ */
+.pkd-add-child-bottom-btn {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 2px;
+  padding: 13px 16px;
+  border-radius: 10px;
+  border: 1px dashed var(--border-gold);
+  background: var(--gold-pale);
+  color: var(--forest);
+  font-size: 12.5px;
+  font-weight: 500;
+  font-family: "Be Vietnam Pro", sans-serif;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+.pkd-add-child-bottom-btn:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--ivory);
+  transform: translateY(-1px);
+}
+.pkd-add-child-bottom-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+.pkd-add-child-bottom-btn.is-limit {
+  border-color: rgba(178, 84, 80, 0.32);
+  background: rgba(178, 84, 80, 0.07);
+  color: #b25450;
+  cursor: default;
+}
+.pkd-add-child-bottom-btn.is-limit:hover {
+  background: rgba(178, 84, 80, 0.07);
+  border-color: rgba(178, 84, 80, 0.32);
+  color: #b25450;
+  transform: none;
+}
+
+/* Banner: đang cài đặt cho bé nào + hoạt động gần nhất (đầu cột nội dung bên phải) */
 .pkd-active-child-banner {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 10px;
   background: var(--gold-pale);
   border: 0.5px solid var(--border-gold);
   border-radius: 8px;
-  padding: 13px 18px;
-  font-size: 13px;
-  color: var(--forest);
+  padding: 14px 18px;
   margin: 0 0 26px;
 }
-.pkd-active-child-banner svg {
+.pkd-active-child-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--forest);
+}
+.pkd-active-child-row svg {
   color: var(--gold);
   flex-shrink: 0;
 }
-.pkd-active-child-banner strong {
+.pkd-active-child-row strong {
   color: var(--forest);
   font-weight: 600;
+}
+.pkd-active-child-row-sub {
+  padding-top: 10px;
+  border-top: 0.5px solid var(--border-gold);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.pkd-active-child-row-sub strong {
+  color: var(--forest);
+  font-weight: 500;
+}
+.pkd-active-child-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.18);
+  flex-shrink: 0;
 }
 
 /* Card quản lý luôn hiện cho bé đang chọn: Link & QR, khóa AR, xoá hồ sơ */
@@ -2119,6 +2216,13 @@
   .pkd-header-row {
     flex-direction: column;
   }
+  .pkd-header-right {
+    align-items: flex-start;
+    width: 100%;
+  }
+  .pkd-header-logo {
+    height: 32px;
+  }
   .pkd-sync-wrap {
     align-items: flex-start;
   }
@@ -2447,6 +2551,23 @@ body.dark-mode .pkd-chart-avg-label {
 body.dark-mode .pkd-active-child-banner {
   background: rgba(74, 158, 63, 0.08);
   border-color: rgba(74, 158, 63, 0.2);
+}
+body.dark-mode .pkd-active-child-row-sub {
+  border-top-color: rgba(74, 158, 63, 0.2);
+}
+body.dark-mode .pkd-add-child-bottom-btn {
+  background: rgba(74, 158, 63, 0.1);
+  border-color: rgba(212, 175, 55, 0.3);
+  color: #c8d4cc;
+}
+body.dark-mode .pkd-add-child-bottom-btn:hover {
+  background: var(--gold);
+  color: #0e1612;
+}
+body.dark-mode .pkd-add-child-bottom-btn.is-limit {
+  background: rgba(178, 84, 80, 0.12);
+  border-color: rgba(178, 84, 80, 0.32);
+  color: #e0a0a0;
 }
 body.dark-mode .pkd-wizard-avatar-btn {
   background: #0f1510;

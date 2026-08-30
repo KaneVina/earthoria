@@ -226,7 +226,7 @@ function ChildLimitBanner({ childLimit }) {
     >
       <div className="pkd-child-limit-row">
         <span className="pkd-child-limit-count">
-          👨‍👩‍👧‍👦 <strong>{current}/{max}</strong> tài khoản trẻ
+          <Users size={13} /> <strong>{current}/{max}</strong> tài khoản trẻ
         </span>
         <span className="pkd-child-limit-tier">Hạng {tierRoman}</span>
       </div>
@@ -1023,26 +1023,28 @@ export default function ParentDashboard() {
               </p>
             </div>
 
-            <div className="pkd-sync-wrap">
-              <span className="pkd-device-status">
-                <span className="pkd-status-dot" />
-                <Wifi size={12} />
-                Hoạt động gần nhất của {activeChild.name}: {lastSessionLabel}
-              </span>
-              <span
-                className={`pkd-autosave ${saveStatus !== "idle" ? "is-visible" : ""} is-${saveStatus}`}
-                aria-live="polite"
-              >
-                {saveStatus === "saving" ? (
-                  <>
-                    <Loader2 size={12} /> Đang lưu…
-                  </>
-                ) : (
-                  <>
-                    <Check size={12} /> Đã lưu tự động
-                  </>
-                )}
-              </span>
+            <div className="pkd-header-right">
+              <img
+                src="/logo/logo-mau/lg-m-family-studio.png"
+                alt="Family Studio"
+                className="pkd-header-logo"
+              />
+              <div className="pkd-sync-wrap">
+                <span
+                  className={`pkd-autosave ${saveStatus !== "idle" ? "is-visible" : ""} is-${saveStatus}`}
+                  aria-live="polite"
+                >
+                  {saveStatus === "saving" ? (
+                    <>
+                      <Loader2 size={12} /> Đang lưu…
+                    </>
+                  ) : (
+                    <>
+                      <Check size={12} /> Đã lưu tự động
+                    </>
+                  )}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -1138,17 +1140,42 @@ export default function ParentDashboard() {
                   </div>
                 );
               })}
+
+              <button
+                type="button"
+                className={`pkd-add-child-bottom-btn ${childLimit && childLimit.current >= childLimit.max ? "is-limit" : ""}`}
+                onClick={() => setWizardOpen(true)}
+              >
+                {childLimit && childLimit.current >= childLimit.max ? (
+                  <>
+                    <Lock size={15} /> Đã đạt giới hạn hồ sơ
+                  </>
+                ) : (
+                  <>
+                    <Plus size={15} /> Thêm hồ sơ cho bé
+                  </>
+                )}
+              </button>
             </RevealCard>
           </aside>
 
           {/* ── MAIN: thiết lập cho bé đang chọn ── */}
           <div className="pkd-main">
-            {/* Băng thông báo: đang cài đặt cho bé nào */}
+            {/* Băng thông báo: đang cài đặt cho bé nào + hoạt động gần nhất */}
             <RevealCard as="div" className="pkd-active-child-banner">
-              <UserCog size={16} />
-              <span>
-                Bạn đang cài đặt cho tài khoản bé: <strong>{activeChild.name}</strong>
-              </span>
+              <div className="pkd-active-child-row">
+                <UserCog size={16} />
+                <span>
+                  Bạn đang cài đặt cho tài khoản bé: <strong>{activeChild.name}</strong>
+                </span>
+              </div>
+              <div className="pkd-active-child-row pkd-active-child-row-sub">
+                <span className="pkd-active-child-dot" />
+                <Wifi size={13} />
+                <span>
+                  Hoạt động gần nhất của {activeChild.name}: <strong>{lastSessionLabel}</strong>
+                </span>
+              </div>
             </RevealCard>
 
             {/* Quản lý link & QR riêng, khóa AR, xoá hồ sơ — hiện ngay cho bé
