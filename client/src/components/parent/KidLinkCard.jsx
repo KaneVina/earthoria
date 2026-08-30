@@ -3,7 +3,13 @@ import { QRCodeCanvas } from "qrcode.react";
 import { ExternalLink, Copy, Check, Download, RefreshCcw } from "lucide-react";
 import { childService } from "../../services/childService";
 
-export default function KidLinkCard({ childId, childName }) {
+export default function KidLinkCard({
+  childId,
+  childName,
+  childAge,
+  avatarEmoji = "🙂",
+  avatarColor = "var(--forest)",
+}) {
   const [link, setLink] = useState(null);
   const [loading, setLoading] = useState(true);
   const [regenerating, setRegenerating] = useState(false);
@@ -69,13 +75,6 @@ export default function KidLinkCard({ childId, childName }) {
 
   return (
     <div className="kid-link-card">
-      <h4>Link riêng cho {childName}</h4>
-      <p className="kid-link-hint">
-        Mở link này (hoặc quét QR) trên thiết bị/tablet riêng của bé — vào thẳng
-        thư viện sách của bé, không cần đăng nhập tài khoản phụ huynh trên
-        thiết bị đó.
-      </p>
-
       {loading ? (
         <div className="kid-link-skeleton" aria-hidden="true" />
       ) : (
@@ -92,8 +91,22 @@ export default function KidLinkCard({ childId, childName }) {
             )}
           </div>
 
-          {/* Link + các nút thao tác xếp gọn bên phải */}
+          {/* Bên phải: (1) thông tin bé + tuổi, (2) link + mở trang mới,
+              (3) 3 nút thao tác trên cùng 1 hàng */}
           <div className="kid-link-side">
+            <div className="kid-link-info-row">
+              <span
+                className="kid-link-info-avatar"
+                style={{ background: avatarColor }}
+              >
+                {avatarEmoji}
+              </span>
+              <span className="kid-link-info-name">{childName}</span>
+              {(childAge ?? null) !== null && (
+                <span className="kid-link-info-age">{childAge} tuổi</span>
+              )}
+            </div>
+
             <div className="kid-link-url-row">
               <input
                 readOnly
@@ -113,7 +126,7 @@ export default function KidLinkCard({ childId, childName }) {
             <div className="kid-link-actions">
               <button onClick={handleCopy} disabled={!link}>
                 {copied ? <Check size={13} /> : <Copy size={13} />}
-                {copied ? "Đã chép link" : "Chép link"}
+                {copied ? "Đã chép" : "Chép link"}
               </button>
               <button onClick={handleDownloadQr} disabled={!link}>
                 <Download size={13} />
@@ -125,12 +138,18 @@ export default function KidLinkCard({ childId, childName }) {
                 className="danger"
               >
                 <RefreshCcw size={13} />
-                {regenerating ? "Đang tạo lại..." : "Tạo lại link"}
+                {regenerating ? "Đang tạo..." : "Tạo lại link"}
               </button>
             </div>
           </div>
         </div>
       )}
+
+      <p className="kid-link-hint">
+        Mở link này (hoặc quét QR) trên thiết bị/tablet riêng của bé — vào thẳng
+        thư viện sách của bé, không cần đăng nhập tài khoản phụ huynh trên
+        thiết bị đó.
+      </p>
     </div>
   );
 }

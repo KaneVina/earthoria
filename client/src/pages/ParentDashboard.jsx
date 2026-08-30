@@ -993,184 +993,201 @@ export default function ParentDashboard() {
         </div>
       </div>
 
-      {/* ═══════════ CHỌN BÉ ĐỂ CÀI ĐẶT ═══════════ */}
+      {/* ═══════════ SIDEBAR (danh sách bé) + MAIN (thiết lập) ═══════════ */}
       <div className="pkd-body pkd-body-top">
-        <section className="pkd-section pkd-child-picker-section">
-          <RevealCard as="div" className="pkd-section-head">
-            <span className="pkd-section-eyebrow">Danh sách tài khoản E-kid</span>
-            <h2 className="pkd-section-title">Thiết lập tài khoản cho bé</h2>
-            <p className="pkd-section-sub">
-              Mỗi bé có giới hạn giờ xem, khóa AR và thư viện sách <b>riêng</b>.
-            </p>
-          </RevealCard>
-
-          <RevealCard as="div" className="pkd-child-picker-list">
-            {children.map((child) => {
-              const mins = child.todayMinutes ?? 0;
-              const limit = child.dailyLimitMinutes ?? 60;
-              const pct = clamp((mins / limit) * 100, 0, 100);
-              const isActive = activeChildId === child.id;
-              const isExpanded = expandedChildId === child.id;
-              return (
-                <div
-                  key={child.id}
-                  className={`pkd-picker-item ${isActive ? "is-active" : ""} ${isExpanded ? "is-expanded" : ""}`}
+        <div className="pkd-layout">
+          {/* ── SIDEBAR: danh sách tài khoản E-kid ── */}
+          <aside className="pkd-sidebar">
+            <RevealCard as="div" className="pkd-sidebar-head">
+              <div className="pkd-sidebar-head-row">
+                <div className="pkd-sidebar-head-text">
+                  <span className="pkd-section-eyebrow">
+                    Danh sách tài khoản E-kid
+                  </span>
+                  <h2 className="pkd-section-title">Thiết lập tài khoản cho bé</h2>
+                </div>
+                <button
+                  type="button"
+                  className="pkd-sidebar-add-btn"
+                  onClick={() => setWizardOpen(true)}
+                  title="Thêm hồ sơ cho bé"
+                  aria-label="Thêm hồ sơ cho bé"
                 >
-                  <button
-                    type="button"
-                    className="pkd-picker-row"
-                    onClick={() => selectChild(child)}
-                  >
-                    <span className="pkd-child-avatar-wrap">
-                      <span
-                        className="pkd-child-avatar"
-                        style={{ background: child.avatarColor }}
-                      >
-                        {child.avatarEmoji}
-                      </span>
-                    </span>
-                    <span className="pkd-child-info">
-                      <span className="pkd-child-name">
-                        {child.name}
-                        {child.isLocked && (
-                          <span className="pkd-child-lock-tag">
-                            <Lock size={9} /> Đã khóa
-                          </span>
-                        )}
-                        {isActive && (
-                          <span className="pkd-child-active-tag">
-                            <Check size={9} /> Đang chọn
-                          </span>
-                        )}
-                      </span>
-                      <span className="pkd-child-meta">{child.age} tuổi</span>
-                      <span className="pkd-child-bar">
-                        <span
-                          className={`pkd-child-bar-fill ${pct >= 100 ? "is-over" : ""}`}
-                          style={{ width: `${pct}%` }}
-                        />
-                      </span>
-                      <span className="pkd-child-mins">
-                        {formatMinutes(mins)} / {formatMinutes(limit)} hôm nay
-                      </span>
-                    </span>
+                  <Plus size={18} />
+                </button>
+              </div>
+              <p className="pkd-section-sub">
+                Mỗi bé có giới hạn giờ xem, khóa AR và thư viện sách <b>riêng</b>.
+              </p>
+            </RevealCard>
 
-                    <span
-                      className={`pkd-picker-more-btn ${isExpanded ? "is-open" : ""}`}
-                      role="button"
-                      tabIndex={0}
-                      title={`Thao tác cho ${child.name}`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleExpandedChild(child.id);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
+            <RevealCard as="div" className="pkd-child-picker-list">
+              {children.map((child) => {
+                const mins = child.todayMinutes ?? 0;
+                const limit = child.dailyLimitMinutes ?? 60;
+                const pct = clamp((mins / limit) * 100, 0, 100);
+                const isActive = activeChildId === child.id;
+                const isExpanded = expandedChildId === child.id;
+                return (
+                  <div
+                    key={child.id}
+                    className={`pkd-picker-item ${isActive ? "is-active" : ""} ${isExpanded ? "is-expanded" : ""}`}
+                  >
+                    <button
+                      type="button"
+                      className="pkd-picker-row"
+                      onClick={() => selectChild(child)}
+                    >
+                      <span className="pkd-child-avatar-wrap">
+                        <span
+                          className="pkd-child-avatar"
+                          style={{ background: child.avatarColor }}
+                        >
+                          {child.avatarEmoji}
+                        </span>
+                      </span>
+                      <span className="pkd-child-info">
+                        <span className="pkd-child-name">
+                          {child.name}
+                          {child.isLocked && (
+                            <span className="pkd-child-lock-tag">
+                              <Lock size={9} /> Đã khóa
+                            </span>
+                          )}
+                          {isActive && (
+                            <span className="pkd-child-active-tag">
+                              <Check size={9} /> Đang chọn
+                            </span>
+                          )}
+                        </span>
+                        <span className="pkd-child-meta">{child.age} tuổi</span>
+                        <span className="pkd-child-bar">
+                          <span
+                            className={`pkd-child-bar-fill ${pct >= 100 ? "is-over" : ""}`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </span>
+                        <span className="pkd-child-mins">
+                          {formatMinutes(mins)} / {formatMinutes(limit)} hôm nay
+                        </span>
+                      </span>
+
+                      <span
+                        className={`pkd-picker-more-btn ${isExpanded ? "is-open" : ""}`}
+                        role="button"
+                        tabIndex={0}
+                        title={`Thao tác cho ${child.name}`}
+                        onClick={(e) => {
                           e.stopPropagation();
                           toggleExpandedChild(child.id);
-                        }
-                      }}
-                                      >
-                      <MoreVertical size={15} />
-                      <span className="pkd-picker-more-label">Thao tác</span>
-                    </span>
-                  </button>
-
-                  {/* Panel mở rộng: khóa/mở khóa AR, link & QR riêng, xóa vĩnh viễn */}
-                  {isExpanded && (
-                    <div className="pkd-picker-expand">
-                      <div className="pkd-picker-expand-block">
-                        <div className="pkd-picker-expand-label">
-                          <ShieldCheck size={13} /> Khóa AR tức thời
-                        </div>
-                        {child.isLocked ? (
-                          <button
-                            className="pkd-lock-btn is-unlock pf-btn-tactile"
-                            onClick={() => requestUnlock(child)}
-                            type="button"
-                          >
-                            <Unlock size={15} /> Mở khóa cho {child.name}
-                          </button>
-                        ) : (
-                          <button
-                            className="pkd-lock-btn is-lock pf-btn-tactile"
-                            onClick={() => requestLock(child)}
-                            type="button"
-                          >
-                            <Lock size={15} /> Khóa ngay cho {child.name}
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="pkd-picker-expand-block">
-                        <div className="pkd-picker-expand-label">
-                          <Sparkles size={13} /> Link & QR riêng cho bé
-                        </div>
-                        <KidLinkCard childId={child.id} childName={child.name} />
-                      </div>
-
-                      <div className="pkd-picker-expand-block pkd-picker-expand-danger">
-                        <div className="pkd-picker-expand-label">
-                          <Trash2 size={13} /> Xoá hồ sơ vĩnh viễn
-                        </div>
-                        <p className="pkd-picker-expand-desc">
-                          Xoá <b>vĩnh viễn</b> toàn bộ dữ liệu của {child.name}{" "}
-                          (cài đặt, nhật ký, link riêng). Không thể khôi phục.
-                        </p>
-                        <button
-                          className="pkd-picker-delete-btn"
-                          onClick={() =>
-                            setDeleteTarget({ id: child.id, name: child.name })
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleExpandedChild(child.id);
                           }
-                          type="button"
-                        >
-                          <Trash2 size={14} /> Xoá vĩnh viễn hồ sơ của{" "}
-                          {child.name}
-                        </button>
+                        }}
+                      >
+                        <MoreVertical size={15} />
+                        <span className="pkd-picker-more-label">Thao tác</span>
+                      </span>
+                    </button>
+
+                    {/* Panel mở rộng: link & QR riêng (kèm tên/tuổi), khóa AR
+                        tách riêng bên ngoài, xoá vĩnh viễn ở cuối cùng */}
+                    {isExpanded && (
+                      <div className="pkd-picker-expand">
+                        <div className="pkd-picker-expand-block">
+                          <div className="pkd-picker-expand-label">
+                            <Sparkles size={13} /> Link & QR riêng cho bé
+                          </div>
+                          <KidLinkCard
+                            childId={child.id}
+                            childName={child.name}
+                            childAge={child.age}
+                            avatarEmoji={child.avatarEmoji}
+                            avatarColor={child.avatarColor}
+                          />
+                        </div>
+
+                        <div className="pkd-picker-expand-block pkd-picker-expand-lock-block">
+                          <div className="pkd-picker-expand-label">
+                            <ShieldCheck size={13} /> Khóa AR tức thời
+                          </div>
+                          {child.isLocked ? (
+                            <button
+                              className="pkd-lock-btn is-unlock pf-btn-tactile"
+                              onClick={() => requestUnlock(child)}
+                              type="button"
+                            >
+                              <Unlock size={15} /> Mở khóa cho {child.name}
+                            </button>
+                          ) : (
+                            <button
+                              className="pkd-lock-btn is-lock pf-btn-tactile"
+                              onClick={() => requestLock(child)}
+                              type="button"
+                            >
+                              <Lock size={15} /> Khóa ngay cho {child.name}
+                            </button>
+                          )}
+                        </div>
+
+                        <div className="pkd-picker-expand-block pkd-picker-expand-danger">
+                          <div className="pkd-picker-expand-label">
+                            <Trash2 size={13} /> Xoá hồ sơ vĩnh viễn
+                          </div>
+                          <p className="pkd-picker-expand-desc">
+                            Xoá <b>vĩnh viễn</b> toàn bộ dữ liệu của {child.name}{" "}
+                            (cài đặt, nhật ký, link riêng). Không thể khôi phục.
+                          </p>
+                          <button
+                            className="pkd-picker-delete-btn"
+                            onClick={() =>
+                              setDeleteTarget({ id: child.id, name: child.name })
+                            }
+                            type="button"
+                          >
+                            <Trash2 size={14} /> Xoá vĩnh viễn hồ sơ của{" "}
+                            {child.name}
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+                    )}
+                  </div>
+                );
+              })}
+            </RevealCard>
+          </aside>
 
-            <button
-              className="pkd-add-child-card pkd-add-child-card-light"
-              onClick={() => setWizardOpen(true)}
-              type="button"
-            >
-              <UserPlus size={20} />
-              <span>Thêm hồ sơ cho bé</span>
-            </button>
-          </RevealCard>
-        </section>
+          {/* ── MAIN: thiết lập cho bé đang chọn ── */}
+          <div className="pkd-main">
+            {/* Băng thông báo: đang cài đặt cho bé nào */}
+            <RevealCard as="div" className="pkd-active-child-banner">
+              <UserCog size={16} />
+              <span>
+                Bạn đang cài đặt cho tài khoản bé: <strong>{activeChild.name}</strong>
+              </span>
+            </RevealCard>
 
-        {/* Băng thông báo: đang cài đặt cho bé nào */}
-        <RevealCard as="div" className="pkd-active-child-banner">
-          <UserCog size={16} />
-          <span>
-            Bạn đang cài đặt cho tài khoản bé: <strong>{activeChild.name}</strong>
-          </span>
-        </RevealCard>
+            {/* Section quick-nav dính lại khi cuộn, tự nhận diện mục đang xem */}
+            <div className={`pkd-pills-wrap ${pillsStuck ? "is-stuck" : ""}`}>
+              <div className="filter-pills pkd-pills">
+                {SECTIONS.map((s) => (
+                  <button
+                    key={s.id}
+                    className={`pill ${activeSection === s.id ? "active" : ""}`}
+                    onClick={() => scrollToSection(s.id)}
+                    type="button"
+                  >
+                    {s.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        {/* Section quick-nav dính lại khi cuộn, tự nhận diện mục đang xem */}
-        <div className={`pkd-pills-wrap ${pillsStuck ? "is-stuck" : ""}`}>
-          <div className="filter-pills pkd-pills">
-            {SECTIONS.map((s) => (
-              <button
-                key={s.id}
-                className={`pill ${activeSection === s.id ? "active" : ""}`}
-                onClick={() => scrollToSection(s.id)}
-                type="button"
-              >
-                {s.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* ═══════════ OVERVIEW ═══════════ */}
+            {/* ═══════════ OVERVIEW ═══════════ */}
         <section id="overview" className="pkd-section">
           <RevealCard as="div" className="pkd-section-head">
             <span className="pkd-section-eyebrow">Hôm nay</span>
@@ -1780,6 +1797,8 @@ export default function ParentDashboard() {
             )}
           </RevealCard>
         </section>
+          </div>
+        </div>
       </div>
 
       {/* ═══════════ MODAL: Xác nhận khóa ═══════════ */}
