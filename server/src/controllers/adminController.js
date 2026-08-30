@@ -1359,6 +1359,67 @@ exports.getOrders = async (req, res) => {
       statusGroups.map((g) => [g.status, g._count._all]),
     );
 
+    const unpaidBankQrIds = orders
+      .filter((o) => o.paymentMethod === "BANKQR" && o.paymentStatus !== "PAID")
+      .map((o) => o.id);
+
+    let mismatchByOrderId = {};
+    if (unpaidBankQrIds.length > 0) {
+      const mismatchTxns = await prisma.paymentTransaction.findMany({
+        where: {
+          orderId: { in: unpaidBankQrIds },
+          gateway: "BANKQR",
+          type: "IPN",
+          message: { startsWith: "Sai số tiền" },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+      for (const txn of mismatchTxns) {
+        if (!mismatchByOrderId[txn.orderId]) {
+          mismatchByOrderId[txn.orderId] = {
+            transferredAmount: txn.amount,
+            at: txn.createdAt,
+          };
+        }
+      }
+    }
+
+    const mapped = orders.map((o) => ({
+      ...o,
+      paymentStatus: mapPaymentStatus(o.paymentStatus),
+      paymentMismatch: mismatchByOrderId[o.id]
+        ? { ...mismatchByOrderId[o.id], expectedAmount: o.total }
+        : null,
+      shippingAddress: o.address
+        ? {
+            name: o.address.fullName,
+            phone: o.address.phone,
+            address: `${o.address.street}, ${o.address.ward}, ${o.address.district}, ${o.address.province}`,
+          }
+        : null,
+      items: o.items.map((item) => ({
+        ...item,
+        product: item.variant?.book,
+        title: item.variant?.book?.title,
+      })),
+    }));
+
+    return res.json({
+      success: true,
+      data: {
+        orders: mapped,
+        total,
+        totalPages: Math.ceil(total / limit),
+        page,
+        statusCounts,
+      },
+    });
+  } catch (err) {
+    console.error("[getOrders]", err);
+    return res.status(500).json({ success: false, message: "Lỗi server" });
+  }
+};
+
 exports.getOrderById = async (req, res) => {
   try {
     const { id } = req.params;

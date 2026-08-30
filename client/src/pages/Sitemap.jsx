@@ -36,7 +36,7 @@ const SECTIONS = [
       { label: 'Đăng Ký',          sub: 'Tạo tài khoản mới — miễn phí',               to: '/register' },
       { label: 'Quên Mật Khẩu',    sub: 'Khôi phục mật khẩu qua email',               to: '/forgot-password' },
       { label: 'Hồ Sơ Của Tôi',    sub: 'Thông tin cá nhân & lịch sử mua hàng',       to: '/profile' },
-      { label: 'Bảng Điều Khiển Phụ Huynh', sub: 'Quản lý & giám sát tài khoản của con', to: '/parent-dashboard' },
+      { label: 'Bảng Điều Khiển Phụ Huynh', sub: 'Quản lý & giám sát tài khoản của con', to: '/family' },
     ],
   },
   {

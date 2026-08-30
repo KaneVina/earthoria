@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { QRCodeCanvas } from "qrcode.react";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Copy, Check, Download, RefreshCcw } from "lucide-react";
 import { childService } from "../../services/childService";
 
 export default function KidLinkCard({ childId, childName }) {
@@ -79,28 +79,57 @@ export default function KidLinkCard({ childId, childName }) {
       {loading ? (
         <div className="kid-link-skeleton" aria-hidden="true" />
       ) : (
-        <>
-          <div className="kid-link-url-row">
-            <input readOnly value={link || ""} onClick={(e) => e.target.select()} />
-            <button onClick={handleOpenLink} disabled={!link} title="Mở liên kết trong tab mới" className="kid-link-icon-btn">
-              <ExternalLink size={13} />
-            </button>
-            <button onClick={handleCopy}>{copied ? "Đã chép ✓" : "Chép link"}</button>
-          </div>
-
+        <div className="kid-link-body">
+          {/* QR nhỏ gọn bên trái */}
           <div ref={qrWrapRef} className="kid-link-qr">
-            {link && <QRCodeCanvas value={link} size={200} includeMargin className="kid-link-qr-canvas" />}
+            {link && (
+              <QRCodeCanvas
+                value={link}
+                size={200}
+                includeMargin
+                className="kid-link-qr-canvas"
+              />
+            )}
           </div>
 
-          <div className="kid-link-actions">
-            <button onClick={handleDownloadQr} disabled={!link}>
-              Tải QR
-            </button>
-            <button onClick={handleRegenerate} disabled={regenerating} className="danger">
-              {regenerating ? "Đang tạo lại..." : "Tạo lại link (huỷ link cũ)"}
-            </button>
+          {/* Link + các nút thao tác xếp gọn bên phải */}
+          <div className="kid-link-side">
+            <div className="kid-link-url-row">
+              <input
+                readOnly
+                value={link || ""}
+                onClick={(e) => e.target.select()}
+              />
+              <button
+                onClick={handleOpenLink}
+                disabled={!link}
+                title="Mở liên kết trong tab mới"
+                className="kid-link-icon-btn"
+              >
+                <ExternalLink size={13} />
+              </button>
+            </div>
+
+            <div className="kid-link-actions">
+              <button onClick={handleCopy} disabled={!link}>
+                {copied ? <Check size={13} /> : <Copy size={13} />}
+                {copied ? "Đã chép link" : "Chép link"}
+              </button>
+              <button onClick={handleDownloadQr} disabled={!link}>
+                <Download size={13} />
+                Tải QR
+              </button>
+              <button
+                onClick={handleRegenerate}
+                disabled={regenerating}
+                className="danger"
+              >
+                <RefreshCcw size={13} />
+                {regenerating ? "Đang tạo lại..." : "Tạo lại link"}
+              </button>
+            </div>
           </div>
-        </>
+        </div>
       )}
     </div>
   );

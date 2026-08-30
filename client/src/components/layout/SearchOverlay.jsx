@@ -59,7 +59,7 @@ const AUTH_PAGES = [
   { id: "orders",   label: "Đơn hàng",             desc: "Lịch sử & trạng thái đơn hàng", icon: Package,      path: "/profile",  keywords: ["don hang", "orders", "lich su mua hang"] },
   { id: "wishlist", label: "Sản phẩm yêu thích",  desc: "Danh sách bạn đã lưu",          icon: Heart,        path: "/wishlist", keywords: ["yeu thich", "wishlist", "da luu"] },
   { id: "cart",     label: "Giỏ hàng",            desc: "Xem giỏ hàng hiện tại",         icon: ShoppingCart, path: "/cart",     keywords: ["gio hang", "cart"] },
-  { id: "parent-dashboard", label: "Bảng điều khiển phụ huynh", desc: "Quản lý & giám sát tài khoản của con", icon: LayoutGrid, path: "/parent-dashboard", keywords: ["phu huynh", "parent dashboard", "quan ly con"] },
+  { id: "family", label: "Bảng điều khiển phụ huynh", desc: "Quản lý & giám sát tài khoản của con", icon: LayoutGrid, path: "/family", keywords: ["phu huynh", "parent dashboard", "quan ly con"] },
   { id: "settings", label: "Cài đặt tài khoản",   desc: "Đổi mật khẩu, thông tin liên hệ", icon: Settings,   path: "/profile",  keywords: ["cai dat", "settings", "doi mat khau"] },
 ];
 

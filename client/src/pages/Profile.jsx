@@ -4101,7 +4101,7 @@ function AddressCard({ addr, onSetDefault, onEdit, onDelete }) {
 ══════════════════════════════════════════════ */
 function ParentDashboardBanner() {
   return (
-    <Link to="/parent-dashboard" className="pkd-cta-banner">
+    <Link to="/family" className="pkd-cta-banner">
       <div className="pkd-cta-icon">{Icon.family}</div>
       <div className="pkd-cta-text">
         <div className="pkd-cta-title">Bảng điều khiển phụ huynh</div>

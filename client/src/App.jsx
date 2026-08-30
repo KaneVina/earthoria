@@ -92,8 +92,8 @@ const GuestRoute = ({ children }) => {
   return !isAuthenticated ? children : <Navigate to="/" replace />;
 };
 // Khởi động trang bảo trì (test tay — luôn ưu tiên cao nhất, ghi đè cả lịch/tự động của admin)
-// const MAINTENANCE_MODE = false;
-const MAINTENANCE_MODE = true;
+const MAINTENANCE_MODE = false;
+// const MAINTENANCE_MODE = true;
 
 export default function App() {
   const { setAuth, setAuthChecked, authChecked, user, isAuthenticated } =
@@ -215,7 +215,7 @@ export default function App() {
             element={<PaymentReturn method="momo" />}
           />
           <Route
-            path="/parent-dashboard"
+            path="/family"
             element={
               <ProtectedRoute>
                 <ParentDashboard />

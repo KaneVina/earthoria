@@ -323,6 +323,16 @@
   font-weight: 300;
 }
 
+/* Đoạn mô tả nhỏ dùng BÊN TRONG thẻ trắng (.pkd-card) — khác với
+   .pkd-section-sub (dùng trên nền xanh của .pkd-section-head) nên cần
+   một tông màu tối để vẫn đọc được trên nền trắng của thẻ. */
+.pkd-card-note {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.75;
+  font-weight: 300;
+}
+
 /* ═══════════ CHỌN BÉ ĐỂ CÀI ĐẶT (dưới header xanh) ═══════════ */
 .pkd-child-picker-section {
   margin-bottom: 28px;
@@ -457,19 +467,22 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
+  gap: 6px;
+  width: auto;
   height: 32px;
-  border-radius: 8px;
+  padding: 0 12px;
+  border-radius: 16px;
   cursor: pointer;
   background: var(--pale);
   border: 0.5px solid var(--border);
   color: var(--text-muted);
   flex-shrink: 0;
+  font-size: 11px;
+  white-space: nowrap;
   transition:
     background 0.2s ease,
     color 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.2s ease;
+    border-color 0.2s ease;
 }
 .pkd-picker-more-btn:hover,
 .pkd-picker-more-btn:focus-visible {
@@ -482,7 +495,10 @@
   background: var(--forest);
   border-color: var(--forest);
   color: var(--ivory);
-  transform: rotate(90deg);
+}
+.pkd-picker-more-label {
+  font-family: "Be Vietnam Pro", sans-serif;
+  letter-spacing: 0.02em;
 }
 
 /* Panel mở rộng ngay trong danh sách: khóa/mở khóa, link&QR, xóa */
@@ -585,15 +601,17 @@
   min-width: 0;
   width: 100%;
   padding: 16px 18px;
-  border-color: var(--border);
-  color: var(--text-muted);
+  border-style: dashed;
+  border-color: var(--border-gold);
+  color: var(--forest);
+  background: var(--gold-pale);
   flex-direction: row;
   justify-content: center;
 }
 .pkd-add-child-card-light:hover {
   border-color: var(--gold);
-  color: var(--forest);
-  background: var(--gold-pale);
+  color: var(--ivory);
+  background: var(--gold);
 }
 
 /* Section quick-nav */
@@ -706,6 +724,10 @@
 .pkd-trend.is-flat {
   color: var(--text-muted);
   background: var(--pale);
+}
+
+.pkd-pin-card-top {
+  margin-top: 20px;
 }
 
 .pkd-locked-banner {
@@ -1937,7 +1959,7 @@
   margin: 0;
 }
 .kid-link-skeleton {
-  height: 300px;
+  height: 130px;
   border-radius: 10px;
   background: linear-gradient(
     90deg,
@@ -1956,6 +1978,40 @@
     background-position: 0 50%;
   }
 }
+
+/* QR bên trái (nhỏ, gọn) + link/nút thao tác bên phải */
+.kid-link-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.kid-link-qr {
+  flex: 0 0 auto;
+  width: 108px;
+  height: 108px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: var(--white);
+  border: 0.5px solid var(--border);
+  border-radius: 10px;
+}
+.kid-link-qr-canvas {
+  width: 100%;
+  height: auto;
+}
+
+.kid-link-side {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .kid-link-url-row {
   display: flex;
   gap: 8px;
@@ -1966,8 +2022,8 @@
   background: var(--cream);
   border: 0.5px solid var(--border);
   border-radius: 6px;
-  padding: 10px 14px;
-  font-size: 12px;
+  padding: 9px 12px;
+  font-size: 11.5px;
   color: var(--forest);
   font-family: "Be Vietnam Pro", sans-serif;
 }
@@ -1992,37 +2048,26 @@
 }
 .kid-link-url-row button.kid-link-icon-btn {
   padding: 0;
-  width: 36px;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.kid-link-qr {
-  display: flex;
-  justify-content: center;
-  padding: 20px;
-  background: var(--white);
-  border: 0.5px solid var(--border);
-  border-radius: 10px;
-}
-.kid-link-qr-canvas {
-  width: 100%;
-  height: auto;
-  max-width: 180px;
-}
+
+/* Nút thao tác: xếp dọc, gọn, icon + chữ căn trái thay vì dàn hàng ngang dài */
 .kid-link-actions {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 6px;
 }
 .kid-link-actions button {
-  flex: 1;
-  min-width: 140px;
+  width: 100%;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 10px 14px;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 8px 12px;
   border-radius: 6px;
   font-size: 11.5px;
   cursor: pointer;
@@ -2030,6 +2075,9 @@
   border: 0.5px solid var(--border-gold);
   background: var(--gold-pale);
   color: var(--forest);
+}
+.kid-link-actions button svg {
+  flex-shrink: 0;
 }
 .kid-link-actions button:hover:not(:disabled) {
   background: var(--gold);
@@ -2047,6 +2095,21 @@
 .kid-link-actions button.danger:hover:not(:disabled) {
   background: #b25450;
   color: #fff;
+}
+
+/* Màn hình rất hẹp: QR xuống trên cùng, cột phải rớt xuống dưới cho khỏi chật */
+@media (max-width: 380px) {
+  .kid-link-body {
+    flex-direction: column;
+    align-items: center;
+  }
+  .kid-link-qr {
+    width: 130px;
+    height: 130px;
+  }
+  .kid-link-side {
+    width: 100%;
+  }
 }
 
 /* Dark mode */
@@ -2137,7 +2200,9 @@ body.dark-mode .pkd-wizard-terms-row {
   color: #b4c8bc;
 }
 body.dark-mode .pkd-add-child-card-light {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(74, 158, 63, 0.1);
+  border-color: rgba(212, 175, 55, 0.3);
+  color: #c8d4cc;
 }
 body.dark-mode .kid-link-url-row input {
   background: #0f1510;

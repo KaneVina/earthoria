@@ -515,7 +515,7 @@ export default function Navbar() {
                   >
                     <Package size={16} /> Đơn hàng
                   </Link>
-                  <Link to="/parent-dashboard" className="user-dropdown-item">
+                  <Link to="/family" className="user-dropdown-item">
                     <ShieldCheck size={16} /> Bảng điều khiển phụ huynh
                   </Link>
                   {canAccessDashboard && (
@@ -622,7 +622,7 @@ export default function Navbar() {
               >
                 <Package size={15} /> Đơn hàng
               </Link>
-              <Link to="/parent-dashboard" className="nav-mobile-link">
+              <Link to="/family" className="nav-mobile-link">
                 <ShieldCheck size={15} /> Bảng điều khiển phụ huynh
               </Link>
               <button

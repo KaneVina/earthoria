@@ -964,8 +964,7 @@ export default function ParentDashboard() {
                 Bảng điều khiển <em>phụ huynh</em>
               </h1>
               <p className="pkd-sub">
-                Quản lý giờ xem AR, quy tắc 20-20-20, và bảo vệ mắt cho con của
-                bạn.
+              Trải nghiệm độc quyền dành cho chủ sở hữu sách điện tử Earthoria.
               </p>
             </div>
 
@@ -998,11 +997,10 @@ export default function ParentDashboard() {
       <div className="pkd-body pkd-body-top">
         <section className="pkd-section pkd-child-picker-section">
           <RevealCard as="div" className="pkd-section-head">
-            <span className="pkd-section-eyebrow">Bước 1</span>
-            <h2 className="pkd-section-title">Chọn bé để cài đặt</h2>
+            <span className="pkd-section-eyebrow">Danh sách tài khoản E-kid</span>
+            <h2 className="pkd-section-title">Thiết lập tài khoản cho bé</h2>
             <p className="pkd-section-sub">
               Mỗi bé có giới hạn giờ xem, khóa AR và thư viện sách <b>riêng</b>.
-              Chọn một bé bên dưới trước khi chỉnh phần cài đặt.
             </p>
           </RevealCard>
 
@@ -1073,8 +1071,9 @@ export default function ParentDashboard() {
                           toggleExpandedChild(child.id);
                         }
                       }}
-                    >
+                                      >
                       <MoreVertical size={15} />
+                      <span className="pkd-picker-more-label">Thao tác</span>
                     </span>
                   </button>
 
@@ -1265,6 +1264,35 @@ export default function ParentDashboard() {
               </button>
             </RevealCard>
           )}
+
+          <RevealCard className="pkd-card pkd-pin-card-top">
+            <div className="pkd-card-title-row">
+              <span className="pkd-card-title-left">
+                <KeyRound size={16} />
+                Mã PIN phụ huynh
+              </span>
+            </div>
+            <p className="pkd-card-note" style={{ marginBottom: 18 }}>
+              Mã PIN dùng chung cho mọi bé để mở khóa AR và xác nhận các thao
+              tác quan trọng.
+            </p>
+            <div className="pkd-pin-actions">
+              <button
+                className="pkd-mini-btn pf-btn-tactile"
+                onClick={openChangePin}
+                type="button"
+              >
+                <KeyRound size={13} /> Đổi mã PIN
+              </button>
+              <button
+                className="pkd-text-link"
+                onClick={openForgotPin}
+                type="button"
+              >
+                Quên mã PIN?
+              </button>
+            </div>
+          </RevealCard>
         </section>
 
         {/* ═══════════ TIME RULES ═══════════ */}
@@ -1273,9 +1301,7 @@ export default function ParentDashboard() {
             <span className="pkd-section-eyebrow">Tuỳ chỉnh</span>
             <h2 className="pkd-section-title">Quản lý giờ giấc</h2>
             <p className="pkd-section-sub">
-              Mọi giới hạn được tính theo giờ máy chủ và đồng bộ theo tài khoản,
-              không phụ thuộc vào giờ trên thiết bị của con nên không thể
-              "lách" bằng cách chỉnh giờ máy, thoát app, hay gỡ cài lại.
+             Thiết lập thời gian sử dụng phù hợp cho bé. Mọi giới hạn được đồng bộ tự động và tính theo thời gian máy chủ Earthoria, giúp thiết lập luôn chính xác trên mọi thiết bị.
             </p>
           </RevealCard>
 
@@ -1752,35 +1778,6 @@ export default function ParentDashboard() {
                 </div>
               </>
             )}
-          </RevealCard>
-
-          <RevealCard className="pkd-card">
-            <div className="pkd-card-title-row">
-              <span className="pkd-card-title-left">
-                <KeyRound size={16} />
-                Mã PIN phụ huynh
-              </span>
-            </div>
-            <p className="pkd-section-sub" style={{ marginBottom: 18 }}>
-              Mã PIN dùng chung cho mọi bé để mở khóa AR và xác nhận các thao
-              tác quan trọng.
-            </p>
-            <div className="pkd-pin-actions">
-              <button
-                className="pkd-mini-btn pf-btn-tactile"
-                onClick={openChangePin}
-                type="button"
-              >
-                <KeyRound size={13} /> Đổi mã PIN
-              </button>
-              <button
-                className="pkd-text-link"
-                onClick={openForgotPin}
-                type="button"
-              >
-                Quên mã PIN?
-              </button>
-            </div>
           </RevealCard>
         </section>
       </div>

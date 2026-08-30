@@ -1615,7 +1615,7 @@ export default function KidAccess() {
                 <ShieldCheck size={14} /> Quản lý nâng cao
               </div>
               <Link
-                to="/parent-dashboard"
+                to="/family"
                 className="kid-btn kid-btn--primary kid-btn--block kid-settings-cta"
               >
                 Mở trang quản lý cho phụ huynh <ChevronRight size={16} />
