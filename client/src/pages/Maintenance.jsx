@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 
 const TARGET_DATE = new Date("2026-09-05T18:00:00+07:00");
 
+// Tiến độ bảo trì hệ thống hiển thị trên thanh progress bar (0-100).
+const MAINTENANCE_PROGRESS = 78;
+
 function useCountdown(target) {
   const [time, setTime] = useState(() => calc());
 
@@ -64,6 +67,14 @@ const REASONS = [
 export default function Maintenance({ until, message }) {
   const target = until ? new Date(until) : TARGET_DATE;
   const { d, h, m, s, done } = useCountdown(target);
+
+  // Chạy hiệu ứng "fill dần" từ 0 -> 78% ngay khi trang mount, nhờ CSS
+  // transition trên width (mượt hơn nhiều so với set thẳng 78% ngay từ đầu).
+  const [progress, setProgress] = useState(0);
+  useEffect(() => {
+    const t = setTimeout(() => setProgress(MAINTENANCE_PROGRESS), 300);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     if (!done) return;
@@ -268,6 +279,27 @@ export default function Maintenance({ until, message }) {
               </div>
             )}
 
+            {/* Thanh tiến độ bảo trì — fill mượt tới 78%, có hiệu ứng
+                shimmer ánh sáng lướt qua liên tục để trông sống động. */}
+            <div className="em-progress" style={styles.progressWrap}>
+              <div style={styles.progressHead}>
+                <span style={styles.progressLabel}>
+                  Tiến độ bảo trì hệ thống
+                </span>
+                <span className="em-progress-percent" style={styles.progressPercent}>
+                  {progress}%
+                </span>
+              </div>
+              <div className="em-progress-track" style={styles.progressTrack}>
+                <div
+                  className="em-progress-fill"
+                  style={{ ...styles.progressFill, width: `${progress}%` }}
+                >
+                  <span className="em-progress-shimmer" />
+                </div>
+              </div>
+            </div>
+
             <div style={styles.countdownFoot}>
               <svg
                 width="12"
@@ -424,6 +456,39 @@ html, body, #root { height: 100%; margin: 0; }
 @keyframes badgePulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Thanh tiến độ bảo trì: fill mượt (width transition) + ánh sáng lướt
+   qua liên tục (shimmer) để trông sinh động, không bị "đứng hình". */
+.em-progress-fill {
+  transition: width 1.6s cubic-bezier(.16,1,.3,1);
+}
+.em-progress-percent {
+  display: inline-block;
+  transition: opacity 0.3s ease;
+}
+@keyframes progressShimmer {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(220%); }
+}
+.em-progress-shimmer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255,255,255,0.55) 50%,
+    transparent 100%
+  );
+  animation: progressShimmer 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .em-progress-fill { transition: none; }
+  .em-progress-shimmer { animation: none; display: none; }
+}
 
 @keyframes logoGlow {
   0%,100% { opacity: 0.35; transform: translate(-50%,-50%) scale(0.94); }
@@ -926,6 +991,49 @@ const styles = {
     position: "relative",
   },
   timePillStrong: { color: GOLD_LIGHT, fontWeight: 500 },
+
+  /* Thanh tiến độ bảo trì hệ thống (78%) */
+  progressWrap: {
+    position: "relative",
+    marginTop: 22,
+  },
+  progressHead: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 9,
+  },
+  progressLabel: {
+    fontSize: 10,
+    letterSpacing: "0.16em",
+    textTransform: "uppercase",
+    color: "rgba(212,237,207,0.65)",
+    fontWeight: 500,
+  },
+  progressPercent: {
+    fontFamily: "'Playfair Display', serif",
+    fontStyle: "italic",
+    fontSize: 15,
+    fontWeight: 500,
+    color: GOLD_LIGHT,
+    fontVariantNumeric: "tabular-nums",
+  },
+  progressTrack: {
+    position: "relative",
+    height: 8,
+    borderRadius: 999,
+    background: "rgba(250,248,243,0.1)",
+    boxShadow: "inset 0 1px 3px rgba(0,0,0,0.35)",
+    overflow: "hidden",
+  },
+  progressFill: {
+    position: "relative",
+    height: "100%",
+    borderRadius: 999,
+    background: `linear-gradient(90deg, ${GOLD} 0%, ${GOLD_LIGHT} 100%)`,
+    boxShadow: "0 0 12px rgba(92,184,79,0.55)",
+    overflow: "hidden",
+  },
 
   doneBox: {
     display: "flex",
