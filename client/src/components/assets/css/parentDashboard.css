@@ -223,7 +223,9 @@
   max-width: 190px;
   object-fit: contain;
   opacity: 0.92;
-  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.25));
+  /* buộc logo (vốn nhiều màu) hiển thị thuần trắng, giữ nguyên vùng trong suốt */
+  filter: brightness(0) invert(1)
+    drop-shadow(0 4px 16px rgba(0, 0, 0, 0.25));
   transition:
     opacity 0.3s ease,
     transform 0.3s ease;
@@ -297,7 +299,7 @@
 .pkd-body {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 48px 48px 100px;
+  padding: 48px 48px 56px;
   display: flex;
   flex-direction: column;
   gap: 56px;
@@ -307,6 +309,92 @@
 .pkd-body-top {
   padding-top: 40px;
   gap: 0;
+}
+
+/* ═══════════ POWERED BY (cuối trang) ═══════════
+   Canh giữa theo chiều rộng trang (khác với .pkd-header-row là
+   space-between trái/phải). Mặc định mờ/đen-trắng như logo trong
+   dải "Hệ Sinh Thái Earthoria" lúc chưa hover; hover cả hàng để
+   lên màu/đầy đủ độ sáng, đồng bộ hiệu ứng với dải đó. */
+.pkd-poweredby {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 48px 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  text-align: center;
+}
+
+.pkd-poweredby-text {
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--forest);
+  opacity: 0.4;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pkd-poweredby-logo {
+  height: 30px;
+  width: auto;
+  max-width: 150px;
+  object-fit: contain;
+  filter: brightness(0);
+  opacity: 0.4;
+  -webkit-user-drag: none;
+  user-drag: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+  transition:
+    opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pkd-poweredby-video {
+  height: 56px;
+  width: 100px;
+  object-fit: cover;
+  border-radius: 6px;
+  filter: grayscale(1) brightness(0.85);
+  opacity: 0.45;
+  -webkit-user-drag: none;
+  user-drag: none;
+  -webkit-touch-callout: none;
+  transition:
+    opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pkd-poweredby:hover .pkd-poweredby-text {
+  opacity: 0.8;
+}
+.pkd-poweredby:hover .pkd-poweredby-logo {
+  filter: none;
+  opacity: 1;
+}
+.pkd-poweredby:hover .pkd-poweredby-video {
+  filter: none;
+  opacity: 1;
+}
+
+@media (max-width: 560px) {
+  .pkd-poweredby {
+    padding: 24px 24px 56px;
+    gap: 12px;
+  }
+  .pkd-poweredby-logo {
+    height: 22px;
+  }
+  .pkd-poweredby-video {
+    height: 44px;
+    width: 78px;
+  }
 }
 .pkd-section {
   scroll-margin-top: 88px;

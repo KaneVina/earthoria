@@ -57,6 +57,10 @@ const WEEK_LABELS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 // Chủ nhật (0) xuống cuối mảng (index 6).
 const TODAY_INDEX = (new Date().getDay() + 6) % 7;
 
+// TODO: thay bằng đường dẫn/URL video thật (vd: "/videos/earthoria-intro.mp4"
+// hoặc link CDN như các trang khác đang dùng trong AboutUs.jsx).
+const POWERED_BY_VIDEO_SRC = "/videos/earthoria-poweredby.mp4";
+
 const AUDIT_TYPE_MAP = {
   LOCK: "lock",
   UNLOCK: "unlock",
@@ -1856,6 +1860,32 @@ export default function ParentDashboard() {
         </section>
           </div>
         </div>
+      </div>
+
+      {/*  Powered by — canh giữa theo trang (không tách trái/phải như header),
+          tông màu mờ giống các logo trong dải "Hệ Sinh Thái Earthoria" khi
+          chưa hover: đen/xám nhạt, opacity thấp, sáng rõ hẳn lên khi hover.  */}
+      <div className="pkd-poweredby">
+        <span className="pkd-poweredby-text">Powered by</span>
+        <img
+          src="/logo/logo-mau/lg-m-family-studio.png"
+          alt="Earthoria Family Studio"
+          className="pkd-poweredby-logo"
+          loading="lazy"
+          draggable="false"
+          onDragStart={(e) => e.preventDefault()}
+          onContextMenu={(e) => e.preventDefault()}
+        />
+        <video
+          className="pkd-poweredby-video"
+          src={POWERED_BY_VIDEO_SRC}
+          autoPlay
+          muted
+          loop
+          playsInline
+          draggable="false"
+          onContextMenu={(e) => e.preventDefault()}
+        />
       </div>
 
       {/*   MODAL: Xác nhận khóa   */}
