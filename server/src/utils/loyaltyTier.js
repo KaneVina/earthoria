@@ -22,6 +22,11 @@ const LOYALTY_TIERS = [
     color: "#4a9e3f",
     colorSoft: "rgba(74,158,63,0.12)",
     tagline: "Khởi hành — mọi hành trình đều bắt đầu từ đây",
+    story: {
+      title: "Diên Hựu Tự — nơi một giấc mơ của vua Lý hóa thành kiến trúc.",
+      desc: "Từ một giấc mơ trên tòa sen, một biểu tượng đã được dựng nên — mở đầu cho hành trình đi qua những dấu ấn của thời gian.",
+      next: "Và từ giấc mơ ấy, ta bước vào một kinh đô nơi con người từng kiến tạo cả một vũ trụ bằng kiến trúc.",
+    },
   },
   {
     rank: 2,
@@ -43,6 +48,12 @@ const LOYALTY_TIERS = [
     color: "#2a78d6",
     colorSoft: "rgba(42,120,214,0.12)",
     tagline: "Bước chân đầu tiên vượt khỏi vùng an toàn",
+    story: {
+      title:
+        "Kinh đô triều Nguyễn — nơi Ngũ phương, Ngũ hành, Ngũ sắc hòa thành một trật tự.",
+      desc: "Không chỉ là cung điện, Huế là cách người xưa đưa thiên nhiên, văn hóa và quyền lực vào cùng một không gian.",
+      next: "Rời khỏi vẻ trầm mặc của kinh thành, hành trình bắt đầu chuyển mình — từ những triều đại xưa đến một Việt Nam đang vươn ra phía trước.",
+    },
   },
   {
     rank: 3,
@@ -64,6 +75,12 @@ const LOYALTY_TIERS = [
     color: "#b8862e",
     colorSoft: "rgba(184,134,46,0.12)",
     tagline: "Vươn mình bứt phá như rồng bay ra biển lớn",
+    story: {
+      title:
+        "666 mét, 6 làn xe — một con rồng thời Lý vươn mình qua sông Hàn, hướng ra biển lớn.",
+      desc: "Hình tượng nghìn năm được tái hiện bằng thép, ánh sáng và chuyển động — nơi quá khứ bắt đầu bước vào hiện tại.",
+      next: "Nhưng dòng chảy văn hóa không chỉ đi từ quá khứ đến hiện đại; nó còn gặp nhau giữa những nền văn hóa và những niềm tin khác nhau.",
+    },
   },
   {
     rank: 4,
@@ -85,6 +102,12 @@ const LOYALTY_TIERS = [
     color: "#7a4fb5",
     colorSoft: "rgba(122,79,181,0.12)",
     tagline: "Khám phá vùng đất của tháp cổ và biển xanh",
+    story: {
+      title:
+        "Pô Nagar — nơi tín ngưỡng Chăm gặp gỡ văn hóa Việt, hòa vào hình tượng Thiên Y A Na Thánh Mẫu.",
+      desc: "Qua hàng thế kỷ, một vị thần bản địa vẫn sống trong đời sống tinh thần của những thế hệ hôm nay.",
+      next: "Và khi những giá trị xưa tiếp tục được truyền lại, hành trình cuối cùng đưa ta đến một biểu tượng của Việt Nam trong hiện tại.",
+    },
   },
   {
     rank: 5,
@@ -106,6 +129,12 @@ const LOYALTY_TIERS = [
     color: "#c0392b",
     colorSoft: "rgba(192,57,43,0.12)",
     tagline: "Đỉnh cao — chạm tới nóc nhà của Sài Gòn hoa lệ",
+    story: {
+      title: "Từ hình ảnh bó tre Việt Nam đến tòa nhà cao nhất Việt Nam.",
+      desc: "Nếu Chùa Một Cột bắt đầu bằng một giấc mơ, thì Landmark 81 là hình ảnh của một giấc mơ đã chạm tới bầu trời.",
+      conclusion:
+        "Kết thúc hành trình từ kiến trúc cổ đến kiến trúc hiện đại, từ tín ngưỡng đến văn hóa, từ ký ức của nghìn năm đến khát vọng của hôm nay — và vẫn còn tiếp tục hướng về tương lai.",
+    },
   },
 ];
 const ABSOLUTE_MAX_CHILD_ACCOUNTS = LOYALTY_TIERS[LOYALTY_TIERS.length - 1].maxChildAccounts;
