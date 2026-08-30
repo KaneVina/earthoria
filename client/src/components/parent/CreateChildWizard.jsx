@@ -454,7 +454,11 @@ export default function CreateChildWizard({ isOpen, onClose, onCreated, hasPin, 
                 onClick={handleCreate}
                 disabled={submitting || !agreeGuardian || !agreePolicy}
               >
-                {submitting ? <Loader2 size={14} className="pkd-spin" /> : <Check size={14} />}
+                {submitting ? (
+                  <Loader2 size={14} className="pkd-spin" />
+                ) : (
+                  <Check size={14} />
+                )}{" "}
                 Tạo tài khoản cho bé
               </button>
             </div>
