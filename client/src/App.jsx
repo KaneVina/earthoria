@@ -284,7 +284,14 @@ export default function App() {
             </StaffOrAdminRoute>
           }
         />
-        <Route path="/dashboard/emails" element={<Emails />} />
+        <Route
+          path="/dashboard/emails"
+          element={
+            <StaffOrAdminRoute>
+              <Emails />
+            </StaffOrAdminRoute>
+          }
+        />
         <Route
           path="/dashboard/tickets"
           element={
@@ -296,17 +303,17 @@ export default function App() {
         <Route
           path="/dashboard/products"
           element={
-            <AdminRoute>
+            <StaffOrAdminRoute>
               <Products />
-            </AdminRoute>
+            </StaffOrAdminRoute>
           }
         />
         <Route
           path="/dashboard/products/inventory-import"
           element={
-            <AdminRoute>
+            <StaffOrAdminRoute>
               <InventoryImport />
-            </AdminRoute>
+            </StaffOrAdminRoute>
           }
         />
         <Route
@@ -328,17 +335,17 @@ export default function App() {
         <Route
           path="/dashboard/products/new"
           element={
-            <AdminRoute>
+            <StaffOrAdminRoute>
               <ProductCreate />
-            </AdminRoute>
+            </StaffOrAdminRoute>
           }
         />
         <Route
           path="/dashboard/products/:id"
           element={
-            <AdminRoute>
+            <StaffOrAdminRoute>
               <ProductDetail />
-            </AdminRoute>
+            </StaffOrAdminRoute>
           }
         />
         <Route
@@ -416,33 +423,33 @@ export default function App() {
         <Route
           path="/dashboard/orders"
           element={
-            <AdminRoute>
+            <StaffOrAdminRoute>
               <Orders />
-            </AdminRoute>
+            </StaffOrAdminRoute>
           }
         />
         <Route
           path="/dashboard/users"
           element={
-            <AdminRoute>
+            <StaffOrAdminRoute>
               <Users />
-            </AdminRoute>
+            </StaffOrAdminRoute>
           }
         />
         <Route
           path="/dashboard/users/new"
           element={
-            <AdminRoute>
+            <StaffOrAdminRoute>
               <UserCreate />
-            </AdminRoute>
+            </StaffOrAdminRoute>
           }
         />
         <Route
           path="/dashboard/coupons"
           element={
-            <AdminRoute>
+            <StaffOrAdminRoute>
               <Coupons />
-            </AdminRoute>
+            </StaffOrAdminRoute>
           }
         />
         <Route

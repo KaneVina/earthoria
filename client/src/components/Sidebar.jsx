@@ -40,6 +40,7 @@ export default function Sidebar({
   onLogout,
 }) {
   const user = useAuthStore((s) => s.user);
+  const viewerRole = user?.role; // 'ADMIN' | 'STAFF'
 
   // Trạng thái thu gọn của từng NHÓM menu (khác với collapsed toàn bộ sidebar)
   // mặc định tất cả các nhóm đều mở
@@ -143,9 +144,14 @@ export default function Sidebar({
         )}
       </div>
 
-      {/* Nav groups */}
+      {/* Nav groups — lọc item theo role trước khi render; nhóm không còn item nào thì ẩn cả nhóm */}
       <nav className="a-nav" aria-label="Admin menu">
         {NAV_GROUPS.map((group) => {
+          const visibleItems = group.items.filter(
+            (item) => !item.roles || item.roles.includes(viewerRole)
+          );
+          if (visibleItems.length === 0) return null;
+
           const isGroupCollapsed = !!collapsedGroups[group.id];
           return (
             <div key={group.id} className="a-nav-group">
@@ -168,7 +174,7 @@ export default function Sidebar({
               {/* Danh sách item trong nhóm — luôn hiện nếu sidebar collapsed (icon-only),
                   ngược lại chỉ hiện khi nhóm đang mở */}
               {(collapsed || !isGroupCollapsed) &&
-                group.items.map((item) => {
+                visibleItems.map((item) => {
                   const Icon = item.icon;
                   const active = currentPath === item.href;
                   return (

@@ -239,7 +239,15 @@ export default function Users() {
     keepPreviousData: true,
   })
 
-  const users      = data?.users      ?? []
+  // ⚠️ Lớp phòng vệ phía client: Staff không được thấy tài khoản ADMIN trong danh sách.
+  // Đây KHÔNG thay thế việc backend phải tự lọc theo role người gọi — nếu API
+  // /admin/users chưa lọc, Staff vẫn có thể gọi thẳng API và thấy dữ liệu Admin.
+  // Cần kiểm tra & vá phía server song song với thay đổi này.
+  const users = useMemo(() => {
+    const raw = data?.users ?? []
+    return viewerRole === 'STAFF' ? raw.filter(u => u.role !== 'ADMIN') : raw
+  }, [data, viewerRole])
+
   const totalPages = data?.totalPages ?? 1
   const total      = data?.total      ?? 0
 
@@ -299,7 +307,8 @@ export default function Users() {
     return false
   }
 
-  const canCreateRoles = viewerRole === 'ADMIN' ? ['DEALER', 'STAFF'] : viewerRole === 'STAFF' ? ['DEALER'] : []
+  // Staff không được tạo tài khoản nào cả (chỉ xem danh sách) — chỉ Admin mới tạo được Dealer/Staff
+  const canCreateRoles = viewerRole === 'ADMIN' ? ['DEALER', 'STAFF'] : []
 
   const roleFilterOptions = [
     { value: 'CUSTOMER', label: 'Customer' },
