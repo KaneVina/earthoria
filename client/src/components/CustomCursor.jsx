@@ -431,6 +431,13 @@ export default function CustomCursor() {
 
     let gatherTimer = null;
     function scheduleGather() {
+      /* Trên mobile không có "gathering" quanh con trỏ (không có vị trí chuột
+         cố định để tụ về) — hạt tự fadeOut ngay sau khi scatter xong.
+         Nếu vẫn hẹn giờ ở đây, trên máy yếu/tụt fps, timer 420ms có thể bắn
+         ra TRƯỚC KHI scatter (tính theo frame) kết thúc, ép hạt sang trạng
+         thái gathering — trạng thái này lại không được xử lý trên mobile,
+         khiến hạt bị kẹt đứng yên mãi mãi. Bỏ qua hẳn trên mobile để tránh. */
+      if (isMobile) return;
       clearTimeout(gatherTimer);
       gatherTimer = setTimeout(() => {
         const arr = modeRef.current === "kid" ? kidStars : flies;
@@ -648,6 +655,12 @@ export default function CustomCursor() {
               f.x = -300;
               f.y = -300;
             }
+          } else if (f.gathering && isMobile) {
+            /* Dự phòng: mobile không có logic "tụ lại" — nếu lỡ rơi vào đây
+               thì chuyển thẳng sang fadeOut để hạt biến mất thay vì đứng yên. */
+            f.gathering = false;
+            f.fadeOut = true;
+            f.fadeAlpha = 1;
           } else if (f.gathering && !isMobile) {
             f.st = Math.min(f.st + 0.022, 1);
             const driftX = Math.sin(f.wx) * f.driftAmp;
@@ -709,6 +722,12 @@ export default function CustomCursor() {
               s.x = -300;
               s.y = -300;
             }
+          } else if (s.gathering && isMobile) {
+            /* Dự phòng: mobile không có logic "tụ lại" — nếu lỡ rơi vào đây
+               thì chuyển thẳng sang fadeOut để hạt biến mất thay vì đứng yên. */
+            s.gathering = false;
+            s.fadeOut = true;
+            s.fadeAlpha = 1;
           } else if (s.gathering && !isMobile) {
             s.st = Math.min(s.st + 0.022, 1);
             const driftX = Math.sin(s.wx) * s.driftAmp;
