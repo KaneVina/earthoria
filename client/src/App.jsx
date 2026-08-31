@@ -91,7 +91,7 @@ const GuestRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
   return !isAuthenticated ? children : <Navigate to="/" replace />;
 };
-// Khởi động trang bảo trì (test tay — luôn ưu tiên cao nhất, ghi đè cả lịch/tự động của admin)
+// Khởi động trang bảo trì
 // const MAINTENANCE_MODE = false;
 const MAINTENANCE_MODE = true;
 

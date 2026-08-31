@@ -420,7 +420,9 @@ export default function LoyaltyJourney() {
       <section className="lj-stats">
         <div className="lj-stats-inner">
           <div className="lj-stat-item reveal">
-            <RouteIcon size={20} />
+            <span className="lj-stat-icon">
+              <RouteIcon size={17} />
+            </span>
             <div className="lj-stat-value">5</div>
             <div className="lj-stat-label">Hạng thành viên</div>
             <div className="lj-stat-sub">
@@ -428,13 +430,17 @@ export default function LoyaltyJourney() {
             </div>
           </div>
           <div className="lj-stat-item reveal">
-            <Plane size={20} />
+            <span className="lj-stat-icon">
+              <Plane size={17} />
+            </span>
             <div className="lj-stat-value">0 → 1.710 km</div>
             <div className="lj-stat-label">Dấu chân hành trình</div>
             <div className="lj-stat-sub">Từ Hà Nội đến TP.HCM</div>
           </div>
           <div className="lj-stat-item reveal">
-            <Percent size={20} />
+            <span className="lj-stat-icon">
+              <Percent size={17} />
+            </span>
             <div className="lj-stat-value">Đến 12%</div>
             <div className="lj-stat-label">Giảm giá mỗi đơn hàng</div>
             <div className="lj-stat-sub">
@@ -443,13 +449,17 @@ export default function LoyaltyJourney() {
             </div>
           </div>
           <div className="lj-stat-item reveal">
-            <Truck size={20} />
+            <span className="lj-stat-icon">
+              <Truck size={17} />
+            </span>
             <div className="lj-stat-value">Từ Hạng IV</div>
             <div className="lj-stat-label">Miễn phí vận chuyển toàn phần</div>
             <div className="lj-stat-sub">Không giới hạn giá trị đơn</div>
           </div>
           <div className="lj-stat-item reveal">
-            <Users size={20} />
+            <span className="lj-stat-icon">
+              <Users size={17} />
+            </span>
             <div className="lj-stat-value">2 → 10</div>
             <div className="lj-stat-label">Tài khoản trẻ em (E-Kid)</div>
             <div className="lj-stat-sub">
@@ -473,6 +483,7 @@ export default function LoyaltyJourney() {
             </h2>
           </div>
           <div className="lj-steps-grid">
+            <span className="lj-steps-connector" aria-hidden="true" />
             <StepCard
               icon={ShoppingBag}
               index="01"

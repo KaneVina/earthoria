@@ -10,6 +10,21 @@ import Sidebar from "../../components/Sidebar";
 import Topbar from "../../components/Topbar";
 import { ALL_NAV_ITEMS } from "./navConfig";
 
+// Key lưu trạng thái thu gọn sidebar vào localStorage.
+// Vì mỗi route /dashboard/* trong App.jsx là 1 <Route> độc lập (không dùng
+// <Outlet/> chung), AdminLayout bị UNMOUNT rồi MOUNT LẠI mỗi lần đổi trang
+// admin — nên useState thường sẽ reset về false. Đọc/ghi localStorage giúp
+// giữ đúng trạng thái người dùng đã chọn qua các lần mount lại đó.
+const SIDEBAR_COLLAPSED_KEY = "a-sidebar-collapsed";
+
+function readCollapsedFromStorage() {
+  try {
+    return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
 export default function AdminLayout({ children, crumbs }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -30,8 +45,16 @@ export default function AdminLayout({ children, crumbs }) {
   navigate("/");
 };
 
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(readCollapsedFromStorage);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Đồng bộ collapsed xuống localStorage mỗi khi người dùng đổi trạng thái,
+  // để lần mount kế tiếp (đổi route) đọc lại đúng giá trị này.
+  useEffect(() => {
+    try {
+      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed ? "1" : "0");
+    } catch {}
+  }, [collapsed]);
 
   // Close mobile sidebar on route change
   useEffect(() => {

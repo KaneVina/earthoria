@@ -210,6 +210,14 @@
   align-items: center;
 }
 
+/* Icon trong từng nhóm menu phải canh giữa theo chiều ngang khi sidebar thu gọn
+   (mặc định .a-nav-group là block nên item bị dạt về mép trái) */
+.a-sidebar.collapsed .a-nav-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .a-nav-item {
   display: flex;
   align-items: center;
@@ -263,6 +271,24 @@
   flex-shrink: 0;
 }
 
+/* Tooltip riêng cho icon khi sidebar đang thu gọn — định vị bằng JS (position: fixed)
+   nên không bị viền/scroll của sidebar cắt mất */
+.a-sidebar-tooltip {
+  position: fixed;
+  transform: translateY(-50%);
+  background: #1f2b22;
+  color: #ede8dc;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  z-index: 500;
+}
+
 .a-nav-item-label {
   overflow: hidden;
   transition:
@@ -279,6 +305,8 @@
   border-top: 1px solid rgba(255, 255, 255, 0.07);
   padding: 12px 10px;
   flex-shrink: 0;
+  display: flex; /* FIX: thiếu display:flex khiến align-items ở block .collapsed bên dưới vô tác dụng, làm icon "Hồ sơ cá nhân" bị dạt trái khi sidebar thu gọn */
+  flex-direction: column; /* FIX: đi kèm ở trên, để footer vẫn xếp dọc như cũ khi sidebar mở rộng */
 }
 
 .a-sidebar.collapsed .a-sidebar-footer {

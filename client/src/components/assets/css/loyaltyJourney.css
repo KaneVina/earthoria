@@ -790,80 +790,131 @@ body.dark-mode {
 }
 .lj-seam-journey-stats {
   height: 100px;
-  background: linear-gradient(to bottom, var(--lj-bg-b), var(--lj-bg-a));
+  background: linear-gradient(to bottom, var(--lj-bg-b), var(--forest));
 }
 .lj-seam-stats-steps {
-  height: 64px;
-  background: var(--lj-bg-a);
+  height: 100px;
+  background: linear-gradient(to bottom, var(--forest), var(--lj-bg-a));
 }
 .lj-seam-steps-cta {
   height: 120px;
   background: linear-gradient(to bottom, var(--lj-bg-a), var(--forest));
 }
 
-/*   STATS STRIP   */
+/*   STATS STRIP — bảng thông số chuyến bay   */
 .lj-stats {
-  background: var(--lj-bg-a);
-  padding: 56px 100px 36px;
+  background: var(--forest);
+  padding: 92px 100px;
+  position: relative;
+  overflow: hidden;
+}
+.lj-stats::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse at 12% 20%,
+      var(--lj-gold-true-soft) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      ellipse at 88% 85%,
+      rgba(74, 158, 63, 0.12) 0%,
+      transparent 55%
+    );
+  pointer-events: none;
 }
 .lj-stats-inner {
-  max-width: 1200px;
+  max-width: 1320px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 1px;
-  background: var(--lj-grid-line);
-  border: 0.5px solid var(--lj-grid-line);
+  position: relative;
+  z-index: 1;
 }
- .lj-stat-item {
-  background: var(--lj-bg-a);
-  padding: 30px 22px;
-  text-align: center;
-  color: var(--lj-gold-true);
+.lj-stat-item {
+  padding: 4px 28px;
+  border-right: 0.5px solid rgba(250, 248, 243, 0.1);
+  position: relative;
   opacity: 0;
-  transform: translateY(16px);
+  transform: translateY(18px);
   transition:
     opacity 0.7s var(--lj-ease),
-    transform 0.7s var(--lj-ease),
-    background 0.35s var(--lj-ease);
+    transform 0.7s var(--lj-ease);
+}
+.lj-stat-item:first-child {
+  padding-left: 2px;
+}
+.lj-stat-item:last-child {
+  border-right: none;
+  padding-right: 2px;
 }
 .lj-stat-item.in {
   opacity: 1;
   transform: translateY(0);
 }
-.lj-stat-item:hover {
-  background: var(--lj-surface);
-  transform: translateY(-4px);
-  z-index: 2;
-  position: relative;
+.lj-stat-item::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 28px;
+  right: 28px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--lj-gold-true),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.4s var(--lj-ease);
 }
-.lj-stat-item:hover svg {
+.lj-stat-item:hover::after {
+  opacity: 1;
+}
+.lj-stat-icon {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0.5px solid var(--lj-gold-true-soft);
+  color: var(--lj-gold-true);
+  margin-bottom: 24px;
+  transition:
+    transform 0.35s var(--lj-ease-spring),
+    border-color 0.35s var(--lj-ease);
+}
+.lj-stat-item:hover .lj-stat-icon {
   transform: scale(1.08);
+  border-color: var(--lj-gold-true);
 }
-.lj-stat-item svg {
-  transition: transform 0.3s var(--lj-ease-spring);
-}.lj-stat-value {
+.lj-stat-value {
   font-family: "Playfair Display", serif;
-  font-size: clamp(18px, 2vw, 23px);
-  font-weight: 400;
-  color: var(--forest);
-  margin: 12px 0 6px;
+  font-size: clamp(23px, 2.4vw, 32px);
+  font-weight: 300;
+  color: var(--ivory);
+  line-height: 1;
+  margin-bottom: 13px;
+  letter-spacing: -0.01em;
 }
 .lj-stat-label {
-  font-size: 11px;
-  letter-spacing: 0.02em;
-  color: var(--text-muted);
-  font-weight: 300;
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(250, 248, 243, 0.55);
+  font-weight: 400;
   line-height: 1.5;
 }
 .lj-stat-sub {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 0.5px dashed var(--lj-surface-border);
-  font-size: 10.5px;
-  color: var(--text-muted);
-  opacity: 0.75;
+  margin-top: 18px;
+  padding-top: 15px;
+  border-top: 0.5px dashed rgba(250, 248, 243, 0.16);
+  font-size: 11.5px;
+  color: rgba(250, 248, 243, 0.45);
   font-weight: 300;
+  line-height: 1.5;
 }
 
 /*   SECTION HEAD (dùng chung)   */
@@ -903,78 +954,106 @@ body.dark-mode {
 /*   3 BƯỚC   */
 .lj-steps {
   background: var(--lj-bg-a);
-  padding: 40px 100px 44px;
+  padding: 96px 100px 116px;
 }
 .lj-steps-inner {
   max-width: 1200px;
   margin: 0 auto;
 }
 .lj-steps-grid {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1px;
-  background: var(--lj-grid-line);
-  border: 0.5px solid var(--lj-grid-line);
+  gap: 28px;
+}
+.lj-steps-connector {
+  position: absolute;
+  top: 115px;
+  left: calc(16.66% + 20px);
+  right: calc(16.66% + 20px);
+  height: 0;
+  border-top: 0.5px dashed var(--border-gold);
+  z-index: 0;
+  pointer-events: none;
 }
 .lj-step-card {
   background: var(--lj-surface);
-  padding: 36px 32px;
+  border: 0.5px solid var(--lj-surface-border);
+  border-radius: var(--lj-radius-md);
+  padding: 44px 34px;
   position: relative;
+  z-index: 1;
   opacity: 0;
   transform: translateY(24px);
   transition:
     opacity 0.7s var(--lj-ease),
-    transform 0.7s var(--lj-ease);
+    transform 0.7s var(--lj-ease),
+    box-shadow 0.4s var(--lj-ease),
+    border-color 0.4s var(--lj-ease);
 }
 .lj-step-card.in {
   opacity: 1;
   transform: translateY(0);
 }
+.lj-step-card:hover {
+  box-shadow: var(--lj-shadow-md);
+  border-color: var(--lj-gold-true-soft);
+}
 .lj-step-index {
-  position: absolute;
-  top: 28px;
-  right: 32px;
+  display: block;
   font-family: "Playfair Display", serif;
   font-size: 13px;
-  color: var(--border-gold);
-  letter-spacing: 0.05em;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: var(--lj-gold-true);
+  margin-bottom: 30px;
 }
 .lj-step-icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--lj-radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--gold-pale, rgba(74, 158, 63, 0.1));
-  color: var(--forest);
-  margin-bottom: 22px;
+  border: 0.5px solid var(--lj-gold-true-soft);
+  background: var(--lj-surface);
+  color: var(--lj-gold-true);
+  margin-bottom: 26px;
+  transition:
+    background 0.35s var(--lj-ease),
+    color 0.35s var(--lj-ease);
+}
+.lj-step-card:hover .lj-step-icon {
+  background: var(--lj-gold-true);
+  color: var(--white);
 }
 .lj-step-title {
   font-family: "Playfair Display", serif;
-  font-size: 19px;
+  font-size: 22px;
   font-weight: 400;
   color: var(--forest);
-  margin-bottom: 10px;
+  line-height: 1.3;
+  margin-bottom: 12px;
 }
 .lj-step-desc {
-  font-size: 13px;
-  line-height: 1.75;
+  font-size: 13.5px;
+  line-height: 1.8;
   color: var(--text-muted);
   font-weight: 300;
 }
 .lj-step-tag {
   display: inline-block;
-  margin-top: 18px;
-  padding: 5px 13px;
+  margin-top: 24px;
+  padding: 6px 14px;
   border-radius: 20px;
   font-family: "Be Vietnam Pro", sans-serif;
   font-size: 10px;
   font-weight: 500;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--forest);
-  background: var(--gold-pale, rgba(74, 158, 63, 0.1));
+  background: var(--gold-pale, rgba(74, 158, 63, 0.08));
+  border: 0.5px solid var(--lj-surface-border);
 }
 
 /*   CUNG ĐƯỜNG HÀNH TRÌNH   */
@@ -1918,9 +1997,21 @@ body.dark-mode .lj-passport-strip {
 @media (max-width: 900px) {
   .lj-stats-inner {
     grid-template-columns: repeat(2, 1fr);
+    row-gap: 32px;
+  }
+  .lj-stat-item {
+    border-right: 0.5px solid rgba(250, 248, 243, 0.1);
+    padding: 4px 20px;
+  }
+  .lj-stat-item:nth-child(2n) {
+    border-right: none;
   }
   .lj-steps-grid {
     grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .lj-steps-connector {
+    display: none;
   }
   .lj-row {
     grid-template-columns: 56px 1fr;
@@ -2017,9 +2108,15 @@ body.dark-mode .lj-passport-strip {
   }
   .lj-stats {
     padding-top: 64px;
+    padding-bottom: 64px;
   }
   .lj-stats-inner {
     grid-template-columns: 1fr;
+    row-gap: 30px;
+  }
+  .lj-stat-item {
+    border-right: none;
+    padding: 0;
   }
   .lj-seam-journey-stats {
     height: 72px;

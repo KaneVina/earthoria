@@ -54,7 +54,39 @@ export default function Sidebar({
   const initials = getInitials(user);
   const sidebarLogo = getSidebarLogo(currentPath);
 
+  // Khi sidebar đang thu gọn: chỉ tự mở rộng khi bấm đúng vào NỀN TRỐNG của aside.
+  // e.target === e.currentTarget nghĩa là sự kiện click xuất phát trực tiếp từ chính
+  // thẻ <aside>, không phải "nổi bọt" lên từ một link/button con bên trong.
+  // Nhờ vậy không còn phụ thuộc việc MỌI phần tử con phải tự gọi stopPropagation
+  // (trước đây chỉ cần 1 item quên gọi là bug tự bật sidebar sẽ xảy ra lại).
+  const handleSidebarClick = (e) => {
+    if (collapsed && e.target === e.currentTarget) {
+      onToggleCollapsed(false);
+    }
+  };
+
+  // Chặn không cho click trên link/nút lan lên tới handleSidebarClick ở trên
+  // (giữ lại như một lớp phòng vệ thêm, không bắt buộc nhưng vô hại)
+  const stopBubble = (e) => e.stopPropagation();
+
+  // Tooltip cho icon khi sidebar thu gọn — định vị bằng toạ độ thật của icon
+  // (position: fixed) nên không bao giờ bị viền/scroll của sidebar cắt mất.
+  const [tooltip, setTooltip] = useState(null); // { label, top, left } | null
+
+  const showTooltip = (label) => (e) => {
+    if (!collapsed) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltip({
+      label,
+      top: rect.top + rect.height / 2,
+      left: rect.right + 12,
+    });
+  };
+
+  const hideTooltip = () => setTooltip(null);
+
   return (
+    <>
     <aside
       className={[
         "a-sidebar",
@@ -62,6 +94,7 @@ export default function Sidebar({
         mobileOpen ? "mobile-open" : "",
       ].join(" ")}
       aria-label="Admin navigation"
+      onClick={handleSidebarClick}
     >
       {/* Logo row */}
       <div className="a-logo">
@@ -77,7 +110,7 @@ export default function Sidebar({
             </div>
             <button
               className="a-collapse-btn"
-              onClick={() => onToggleCollapsed(true)}
+              onClick={(e) => { stopBubble(e); onToggleCollapsed(true); }}
               aria-label="Thu gọn sidebar"
             >
               <ChevronLeft size={14} />
@@ -101,7 +134,7 @@ export default function Sidebar({
             />
             <button
               className="a-collapse-btn"
-              onClick={() => onToggleCollapsed(false)}
+              onClick={(e) => { stopBubble(e); onToggleCollapsed(false); }}
               aria-label="Mở rộng sidebar"
             >
               <ChevronRight size={14} />
@@ -121,7 +154,7 @@ export default function Sidebar({
                 <button
                   type="button"
                   className="a-nav-section a-nav-group-header"
-                  onClick={() => toggleGroup(group.id)}
+                  onClick={(e) => { stopBubble(e); toggleGroup(group.id); }}
                   aria-expanded={!isGroupCollapsed}
                 >
                   <span>{group.label}</span>
@@ -144,7 +177,9 @@ export default function Sidebar({
                       to={item.href}
                       className={`a-nav-item${active ? " active" : ""}`}
                       aria-current={active ? "page" : undefined}
-                      title={collapsed ? item.label : undefined}
+                      onMouseEnter={showTooltip(item.label)}
+                      onMouseLeave={hideTooltip}
+                      onClick={stopBubble}
                     >
                       <Icon
                         className="a-nav-item-icon"
@@ -165,7 +200,9 @@ export default function Sidebar({
         <Link
           to="/dashboard/profile"
           className="a-nav-item"
-          title={collapsed ? "Hồ sơ cá nhân" : undefined}
+          onMouseEnter={showTooltip("Hồ sơ cá nhân")}
+          onMouseLeave={hideTooltip}
+          onClick={stopBubble}
         >
           <User size={15} strokeWidth={1.6} className="a-nav-item-icon" />
           <span className="a-nav-item-label">Hồ sơ cá nhân</span>
@@ -191,7 +228,7 @@ export default function Sidebar({
           {!collapsed && (
             <button
               className="a-collapse-btn"
-              onClick={onLogout}
+              onClick={(e) => { stopBubble(e); onLogout(); }}
               aria-label="Đăng xuất"
             >
               <LogOut size={12} />
@@ -200,5 +237,15 @@ export default function Sidebar({
         </div>
       </div>
     </aside>
+
+    {tooltip && (
+      <div
+        className="a-sidebar-tooltip"
+        style={{ top: tooltip.top, left: tooltip.left }}
+      >
+        {tooltip.label}
+      </div>
+    )}
+    </>
   );
 }
