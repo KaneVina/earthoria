@@ -67,66 +67,67 @@ router.put("/settings", adminOnly, updateAdminSettings);
 
 router.get("/products/search", staffOrAdmin, searchProductsQuick);
 router.get("/products/:id", staffOrAdmin, getProductById);
-router.get("/products", adminOnly, getProducts);
-router.post("/products", adminOnly, createProduct);
-router.put("/products/:id", adminOnly, updateProduct);
-router.delete("/products/:id", adminOnly, deleteProduct);
-router.delete("/products/:id/variants/:variantId", adminOnly, deleteProductVariant);
+router.get("/products", staffOrAdmin, getProducts);
+router.post("/products", staffOrAdmin, createProduct);
+router.put("/products/:id", staffOrAdmin, updateProduct);
+router.delete("/products/:id", staffOrAdmin, deleteProduct);
+router.delete("/products/:id/variants/:variantId", staffOrAdmin, deleteProductVariant);
 router.post(
   "/products/:id/images",
-  adminOnly,
+  staffOrAdmin,
   uploadImages.array("images"),
   uploadProductImages,
 );
-router.delete("/products/:id/images", adminOnly, deleteProductImage);
-router.patch("/products/:id/cover", adminOnly, setProductCover);
-router.post("/products/:id/ai-draft-content", adminOnly, draftBookAiContent);
+router.delete("/products/:id/images", staffOrAdmin, deleteProductImage);
+router.patch("/products/:id/cover", staffOrAdmin, setProductCover);
+router.post("/products/:id/ai-draft-content", staffOrAdmin, draftBookAiContent);
 
-router.get("/categories", adminOnly, getCategories);
-router.post("/categories", adminOnly, createCategory);
-router.put("/categories/:id", adminOnly, updateCategory);
-router.delete("/categories/:id", adminOnly, deleteCategory);
+router.get("/categories", staffOrAdmin, getCategories);
+router.post("/categories", staffOrAdmin, createCategory);
+router.put("/categories/:id", staffOrAdmin, updateCategory);
+router.delete("/categories/:id", staffOrAdmin, deleteCategory);
 
-router.get("/orders", adminOnly, getOrders);
-router.get("/orders/:id", adminOnly, getOrderById);
-router.put("/orders/:id", adminOnly, updateOrderStatus);
+router.get("/orders", staffOrAdmin, getOrders);
+router.get("/orders/:id", staffOrAdmin, getOrderById);
+router.put("/orders/:id", staffOrAdmin, updateOrderStatus);
 
-router.use("/emails", adminOnly, require("./emailRoutes"));
+router.use("/emails", staffOrAdmin, require("./emailRoutes"));
 router.use("/tickets", staffOrAdmin, require("./adminTicketRoutes"));
 router.use("/reviews", staffOrAdmin, require("./adminReviewRoutes"));
 
 router.get("/users", staffOrAdmin, getUsers);
 router.get("/users/export", staffOrAdmin, exportUsersCsv);
 router.get("/users/:id/detail", staffOrAdmin, getUserDetail);
-router.post("/users", staffOrAdmin, createManagedUser);
+router.post("/users", adminOnly, createManagedUser);
 router.put("/users/:id/toggle", staffOrAdmin, toggleUser);
 router.post("/users/bulk-toggle", staffOrAdmin, bulkToggleUsers);
 router.post("/users/backfill-codes", adminOnly, backfillUserCodes);
 router.put("/users/:id/role", staffOrAdmin, updateUserRole);
 
-router.get("/coupons", adminOnly, getCoupons);
-router.post("/coupons", adminOnly, createCoupon);
-router.put("/coupons/:id/toggle", adminOnly, toggleCoupon);
-router.put("/coupons/:id", adminOnly, updateCoupon);
-router.delete("/coupons/:id", adminOnly, deleteCoupon);
+router.get("/coupons", staffOrAdmin, getCoupons);
+router.post("/coupons", staffOrAdmin, createCoupon);
+router.put("/coupons/:id/toggle", staffOrAdmin, toggleCoupon);
+router.put("/coupons/:id", staffOrAdmin, updateCoupon);
+router.delete("/coupons/:id", staffOrAdmin, deleteCoupon);
 
-router.get("/ar-codes", staffOrAdmin, getArCodesGroupedAll);
-router.get("/ar-codes/:id", staffOrAdmin, getArCodeById);
-router.patch("/ar-codes/:id/access", staffOrAdmin, updateArCodeAccess);
-router.get("/products/:bookId/ar-codes", staffOrAdmin, getArCodes);
+// Tạo mã QR: chỉ ADMIN (theo bảng phân quyền) — trước đây là staffOrAdmin, đã siết lại
+router.get("/ar-codes", adminOnly, getArCodesGroupedAll);
+router.get("/ar-codes/:id", adminOnly, getArCodeById);
+router.patch("/ar-codes/:id/access", adminOnly, updateArCodeAccess);
+router.get("/products/:bookId/ar-codes", adminOnly, getArCodes);
 router.post(
   "/products/:bookId/ar-codes",
-  staffOrAdmin,
+  adminOnly,
   uploadGlb.single("model"),
   createArCode,
 );
 router.put(
   "/ar-codes/:id",
-  staffOrAdmin,
+  adminOnly,
   uploadGlb.single("model"),
   updateArCode,
 );
-router.put("/ar-codes/:id/toggle", staffOrAdmin, toggleArCode);
+router.put("/ar-codes/:id/toggle", adminOnly, toggleArCode);
 
 router.use("/games", staffOrAdmin, require("./adminGameRoutes"));
 router.use("/ebooks", staffOrAdmin, require("./adminEbookRoutes"));
@@ -151,5 +152,5 @@ router.get("/server-status", async (req, res) => {
     res.status(500).json({ stat: "fail", message: err.message });
   }
 });
-router.delete("/ar-codes/:id", staffOrAdmin, deleteArCode);
+router.delete("/ar-codes/:id", adminOnly, deleteArCode);
 module.exports = router;

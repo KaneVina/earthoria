@@ -2918,12 +2918,8 @@ exports.createManagedUser = async (req, res) => {
       });
     }
 
-    const allowedCreateRoles =
-      viewerRole === "ADMIN"
-        ? ["DEALER", "STAFF"]
-        : viewerRole === "STAFF"
-          ? ["DEALER"]
-          : [];
+    // Chỉ ADMIN được tạo tài khoản (Staff chỉ xem danh sách, không tạo được ai — route đã chặn bằng adminOnly)
+    const allowedCreateRoles = viewerRole === "ADMIN" ? ["DEALER", "STAFF"] : [];
     if (!allowedCreateRoles.includes(role)) {
       return res.status(403).json({
         success: false,
