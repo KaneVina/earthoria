@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useAuthStore } from "./store/authStore";
 import { authService } from "./services/authService";
@@ -12,6 +18,7 @@ import Cart from "./pages/CartPage";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import AboutUs from "./pages/AboutUs";
+import Ecosystem from "./pages/Ecosystem";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/admin/Dashboard";
 import Products from "./pages/admin/product/Products";
@@ -91,9 +98,18 @@ const GuestRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
   return !isAuthenticated ? children : <Navigate to="/" replace />;
 };
-// Khởi động trang bảo trì
-const MAINTENANCE_MODE = false;
-// const MAINTENANCE_MODE = true;
+// Chỉ hiện PromoBanner (logo quockhanh29.png) ở trang Home,
+// không hiện ở dashboard admin (/dashboard...) hay trang kid (/e-kid...)
+function HomeOnlyPromoBanner() {
+  const location = useLocation();
+  const isHome = location.pathname === "/" || location.pathname === "/home";
+  if (!isHome) return null;
+  return <PromoBanner />;
+}
+
+// ==** KHỞI ĐỘNG TRANG BẢO TRÌ **==
+// const MAINTENANCE_MODE = false;
+const MAINTENANCE_MODE = true;
 
 export default function App() {
   const { setAuth, setAuthChecked, authChecked, user, isAuthenticated } =
@@ -173,7 +189,7 @@ export default function App() {
       <EarthoriaSecurity />
       <ScrollToTop />
       <CustomCursor />
-      <PromoBanner />
+      <HomeOnlyPromoBanner />
       <EiraChatbox />
       <FloatingCompareBar />
       <FlyingWishlistHeart />
@@ -187,6 +203,7 @@ export default function App() {
           <Route path="/technology" element={<ARGuide />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/about" element={<AboutUs />} />
+          <Route path="/ecosystem" element={<Ecosystem />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/legal" element={<LegalHub />} />
           <Route path="/legal/terms" element={<TermsOfService />} />
