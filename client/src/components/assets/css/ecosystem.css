@@ -246,8 +246,8 @@
 }
 .em-tier-branches {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0 28px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0 24px;
   justify-items: stretch;
   align-items: start;
   transform-style: preserve-3d;
@@ -265,6 +265,9 @@
   flex-direction: column;
   align-items: center;
   gap: 64px;
+}
+.em-branch-col > .em-node {
+  min-height: 322px;
 }
 
 .em-sub-branch {
@@ -592,43 +595,37 @@
     display: none;
   }
 }
-/* ── Brand divider — a real photo pinned in place as content
-   scrolls over it, exactly like the site's existing parallax
-   banners (see about-us.css .mission-parallax-banner). It sits as
-   the bottom-most layer between the tree diagram and the wheel. ── */
+/* ── Brand divider — CSS gradient + wordmark only (no photo),
+   pinned in place as the bottom-most layer while the sections
+   above and below it scroll past. ───────────────────────────── */
 .em-divider {
   position: relative;
-  height: clamp(320px, 38vw, 560px);
-  background-image: url('/natura2.png');
-  background-attachment: fixed;
-  background-size: cover;
-  background-position: center 42%;
+  height: clamp(170px, 22vw, 300px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
+  background: radial-gradient(ellipse at 50% 50%, #123430 0%, #071714 72%);
+  background-attachment: fixed;
+  border-top: 0.5px solid rgba(92, 184, 79, 0.14);
+  border-bottom: 0.5px solid rgba(92, 184, 79, 0.14);
   z-index: 1;
 }
-.em-divider-glass {
-  position: absolute;
-  inset: 44px 64px;
-  background: rgba(7, 23, 20, 0.1);
-  border: 0.5px solid rgba(255, 255, 255, 0.2);
-}
-@media (max-width: 900px) {
-  .em-divider {
-    height: clamp(260px, 46vw, 420px);
-  }
-  .em-divider-glass {
-    inset: 30px 36px;
-  }
+.em-divider-word {
+  font-family: "Playfair Display", serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(46px, 9vw, 130px);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  color: rgba(92, 184, 79, 0.55);
+  text-shadow: 0 0 46px rgba(92, 184, 79, 0.3);
 }
 @media (max-width: 700px) {
   /* background-attachment:fixed is unreliable on mobile browsers —
      fall back to a normal scrolling background there */
   .em-divider {
     background-attachment: scroll;
-    height: clamp(220px, 58vw, 340px);
-  }
-  .em-divider-glass {
-    inset: 20px 20px;
   }
 }
 
@@ -846,7 +843,13 @@
 }
 
 /* ── Responsive ─────────────────────────────────────────────── */
-@media (max-width: 900px) {
+@media (max-width: 1150px) {
+  .em-tier-branches {
+    grid-template-columns: repeat(2, 1fr);
+    row-gap: 90px;
+  }
+}
+@media (max-width: 640px) {
   .em-tier-branches {
     grid-template-columns: 1fr;
     gap: 80px;
