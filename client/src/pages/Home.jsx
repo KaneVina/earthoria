@@ -2848,7 +2848,7 @@ export default function Home() {
             style={{
               position: "absolute",
               bottom: 0,
-              right: 0,
+              right: "60px",
               zIndex: 2,
             }}
           >
@@ -2856,6 +2856,8 @@ export default function Home() {
               <img
                 src="/product1.png"
                 alt="Combo 3 cuốn — Tiết kiệm 30%"
+                draggable={false}
+                onContextMenu={(e) => e.preventDefault()}
                 style={{
                   display: "block",
                   height: "clamp(320px,30vw,460px)",
@@ -2863,6 +2865,10 @@ export default function Home() {
                   maxWidth: "none",
                   filter: "drop-shadow(0 40px 45px rgba(0,0,0,0.4))",
                   cursor: "pointer",
+                  userselect: "none",
+                  webkituserselect: "none",
+                  webkittouchcallout: "none",
+                  pointerevents: "auto",
                 }}
               />
             </Link>
