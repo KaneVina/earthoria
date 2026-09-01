@@ -1,3 +1,4 @@
+// Analytics.jsx gộp vô dashboard
 import { useState, useEffect, useCallback } from "react";
 import {
   Users,
@@ -28,12 +29,14 @@ import {
   CartesianGrid,
 } from "recharts";
 
-//  CONFIG
+// ─ CONFIG ────────────────────────────────────────────────────────────────
+const UMAMI_URL = import.meta.env.VITE_UMAMI_URL || "";
 const SITE_ID = import.meta.env.VITE_UMAMI_SITE_ID || "";
 const UMAMI_USER = import.meta.env.VITE_UMAMI_USER || "admin";
 const UMAMI_PASS = import.meta.env.VITE_UMAMI_PASS || "";
 
-// Danh sách bộ lọc thời gian
+// Danh sách bộ lọc thời gian — nhóm giống hệt menu của Umami trong ảnh mẫu.
+// `group` dùng để vẽ đường phân cách giữa các nhóm trong dropdown.
 const PERIOD_OPTIONS = [
   { label: "Hôm nay", value: "today", unit: "hour", group: 1 },
   { label: "24 giờ gần nhất", value: "24h", unit: "hour", group: 1 },
@@ -49,9 +52,11 @@ const PERIOD_OPTIONS = [
   { label: "Phạm vi tùy chỉnh", value: "custom", unit: "day", group: 5 },
 ];
 
+// Umami chưa hỗ trợ trả về ngày tạo website qua API public nên "Toàn thời gian"
+// dùng một mốc đủ xa trong quá khứ để bao trọn toàn bộ dữ liệu đã ghi nhận.
 const ALL_TIME_START = new Date("2024-01-01T00:00:00").getTime();
 
-// ─ HELPERS
+// ─ HELPERS ───────────────────────────────────────────────────────────────
 function startOfDay(d) {
   const x = new Date(d);
   x.setHours(0, 0, 0, 0);
@@ -125,7 +130,9 @@ function fmtDur(ms) {
   return m > 0 ? `${m}p ${s % 60}s` : `${s}s`;
 }
 
-// ─ TOKEN MANAGER
+// ─ TOKEN MANAGER ──────────────────────────────────────────────────────────
+// Token được lấy tự động qua POST /api/auth/login và cache 23 giờ.
+// Tự động login lại nếu gặp 401 (ví dụ do server Umami restart).
 let _token = null;
 let _tokenExpiry = 0;
 
@@ -143,7 +150,7 @@ async function getToken() {
   return _token;
 }
 
-// ─ API FETCH
+// ─ API FETCH ──────────────────────────────────────────────────────────────
 async function umamiGet(path, params = {}) {
   if (!UMAMI_URL || !SITE_ID || !UMAMI_PASS) return null;
 
@@ -179,7 +186,7 @@ async function umamiGet(path, params = {}) {
   return res.json();
 }
 
-// SUB-COMPONENTS
+// ─ SUB-COMPONENTS ─────────────────────────────────────────────────────────
 
 function StatCard({ icon: Icon, label, value, sub, accent }) {
   return (
@@ -718,7 +725,7 @@ function PeriodDropdown({ period, customRange, onChange, onCustomChange }) {
   );
 }
 
-//  NOT CONFIGURED STATE
+// ─ NOT CONFIGURED STATE ───────────────────────────────────────────────────
 function NotConfigured() {
   return (
     <div
