@@ -1,94 +1,102 @@
+/* ============================================================
+   EIRA CHATBOX — Design system
+   Đồng bộ với bảng màu thương hiệu Earthoria (colorPalette.css:
+   nền kem ấm + forest xanh đậm), tinh giản shadow/gradient để
+   đạt cảm giác chuyên nghiệp, gọn gàng, nhất quán.
+   ============================================================ */
+
 @property --eg {
   syntax: "<color>";
   inherits: true;
-  initial-value: #3d9e32;
+  initial-value: #3f8f4f;
 }
 @property --egl {
   syntax: "<color>";
   inherits: true;
-  initial-value: #52c244;
+  initial-value: #57b168;
 }
 @property --egd {
   syntax: "<color>";
   inherits: true;
-  initial-value: #1a5c3d;
+  initial-value: #1a5c47;
 }
 @property --ef {
   syntax: "<color>";
   inherits: true;
-  initial-value: #0a2e2b;
+  initial-value: #0d2620;
 }
 @property --em {
   syntax: "<color>";
   inherits: true;
-  initial-value: #165248;
+  initial-value: #1f5b47;
 }
 @property --el {
   syntax: "<color>";
   inherits: true;
-  initial-value: #256b5e;
+  initial-value: #2d6b54;
 }
 @property --g1 {
   syntax: "<color>";
   inherits: true;
-  initial-value: #0a2a27;
+  initial-value: #14332a;
 }
 @property --g2 {
   syntax: "<color>";
   inherits: true;
-  initial-value: #0d3330;
+  initial-value: #1a5c47;
 }
 @property --g3 {
   syntax: "<color>";
   inherits: true;
-  initial-value: #1a5c52;
+  initial-value: #22694f;
 }
 @property --g4 {
   syntax: "<color>";
   inherits: true;
-  initial-value: #22685a;
+  initial-value: #2c7658;
 }
 @property --gh1 {
   syntax: "<color>";
   inherits: true;
-  initial-value: #071c19;
+  initial-value: #14332a;
 }
 @property --gh2 {
   syntax: "<color>";
   inherits: true;
-  initial-value: #0d3330;
+  initial-value: #1a5c47;
 }
 @property --gh3 {
   syntax: "<color>";
   inherits: true;
-  initial-value: #1a5c52;
+  initial-value: #1f6c53;
 }
 @property --gh4 {
   syntax: "<color>";
   inherits: true;
-  initial-value: #1f5948;
+  initial-value: #24785c;
 }
 @property --time-glow {
   syntax: "<color>";
   inherits: true;
-  initial-value: #52c244;
+  initial-value: #57b168;
 }
 
 #eira-root {
-  --eg: #3d9e32;
-  --egl: #52c244;
-  --egd: #1a5c3d;
-  --ef: #0a2e2b;
-  --em: #165248;
-  --el: #256b5e;
-  --g1: #0a2a27;
-  --g2: #0d3330;
-  --g3: #1a5c52;
-  --g4: #22685a;
-  --gh1: #071c19;
-  --gh2: #0d3330;
-  --gh3: #1a5c52;
-  --gh4: #1f5948;
+  /* Bảng màu thương hiệu — được /e-kid xoay hue theo giờ trong ngày */
+  --eg: #3f8f4f;
+  --egl: #57b168;
+  --egd: #1a5c47;
+  --ef: #0d2620;
+  --em: #1f5b47;
+  --el: #2d6b54;
+  --g1: #14332a;
+  --g2: #1a5c47;
+  --g3: #22694f;
+  --g4: #2c7658;
+  --gh1: #14332a;
+  --gh2: #1a5c47;
+  --gh3: #1f6c53;
+  --gh4: #24785c;
   --time-glow: var(--egl);
 
   /* Cho phép các biến trên chuyển màu mượt khi bảng màu /e-kid đổi mỗi phút */
@@ -109,34 +117,37 @@
     --gh4 3.5s ease,
     --time-glow 3.5s ease;
 
-  --c-bg: #f1f2f0;
-  --c-surface: #ffffff;
-  --c-border: rgba(0, 0, 0, 0.065);
-  --c-border2: rgba(0, 0, 0, 0.1);
-  --c-text: #0f0f0f;
-  --c-hint: #9a9a9a;
+  /* Nền trung tính ấm — đồng bộ với --cp-bg / --cp-surface toàn site */
+  --c-bg: #f7f4ee;
+  --c-surface: #fffdf9;
+  --c-surface-2: #f1eee5;
+  --c-border: rgba(20, 51, 42, 0.09);
+  --c-border-2: rgba(20, 51, 42, 0.16);
+  --c-text: #14332a;
+  --c-text-soft: #55645c;
+  --c-hint: #8a978f;
 
-  --sh0: 0 1px 2px rgba(0, 0, 0, 0.06);
-  --sh1: 0 2px 6px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --sh2: 0 8px 24px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05);
-  --sh3: 0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08);
-  --sh-fab: 0 4px 20px rgba(10, 46, 43, 0.38), 0 2px 6px rgba(0, 0, 0, 0.12);
+  /* Shadow tinh giản — một lớp, độ mờ thấp */
+  --sh-1: 0 1px 2px rgba(20, 51, 42, 0.06);
+  --sh-2: 0 3px 10px rgba(20, 51, 42, 0.08);
+  --sh-3: 0 10px 28px rgba(20, 51, 42, 0.14);
+  --sh-fab: 0 6px 18px rgba(20, 51, 42, 0.22);
 
   --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.4, 0.64, 1);
   --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
   --r-sm: 8px;
   --r-md: 12px;
   --r-lg: 16px;
   --r-xl: 20px;
-  --r-pill: 100px;
+  --r-pill: 999px;
 
   /* Kéo-thả bong bóng: offset tính bằng transform, không đụng bottom/right gốc */
   --drag-x: 0px;
   --drag-y: 0px;
 
-  font-family: "Be Vietnam Pro", sans-serif;
+  font-family: "Be Vietnam Pro", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -148,7 +159,7 @@
 
 #eira-root button:focus-visible,
 #eira-root [role="button"]:focus-visible {
-  outline: 2px solid var(--egl);
+  outline: 2px solid var(--g3);
   outline-offset: 2px;
   border-radius: 6px;
 }
@@ -160,6 +171,7 @@
   outline: none; /* viền đã được xử lý qua #eira-input-row:focus-within */
 }
 
+/* ============  FAB  ============ */
 #eira-fab {
   position: fixed;
   bottom: 86px;
@@ -167,14 +179,8 @@
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: linear-gradient(
-    148deg,
-    var(--g1) 0%,
-    var(--g2) 30%,
-    var(--g3) 70%,
-    var(--g4) 100%
-  );
-  border: 1.5px solid color-mix(in srgb, var(--eg) 40%, transparent);
+  background: linear-gradient(155deg, var(--g3) 0%, var(--g1) 100%);
+  border: 1px solid color-mix(in srgb, #fff 14%, transparent);
   cursor: grab;
   touch-action: none;
   z-index: 99990;
@@ -182,10 +188,10 @@
   align-items: center;
   justify-content: center;
   box-shadow: var(--sh-fab);
-  animation: fab-breathe 3.8s ease-in-out infinite;
+  animation: fab-breathe 4.6s ease-in-out infinite;
   transition:
-    transform 0.36s var(--ease-bounce),
-    box-shadow 0.28s var(--ease-out),
+    transform 0.3s var(--ease-spring),
+    box-shadow 0.24s var(--ease-out),
     width 0.42s var(--ease-spring),
     height 0.42s var(--ease-spring),
     border-radius 0.42s var(--ease-spring);
@@ -204,32 +210,28 @@
 }
 
 #eira-fab:hover {
-  transform: translate(var(--drag-x), var(--drag-y)) scale(1.1) translateY(-3px);
-  box-shadow:
-    0 14px 40px color-mix(in srgb, var(--ef) 50%, transparent),
-    0 0 0 12px color-mix(in srgb, var(--eg) 8%, transparent);
+  transform: translate(var(--drag-x), var(--drag-y)) translateY(-2px) scale(1.05);
+  box-shadow: 0 10px 26px rgba(20, 51, 42, 0.3);
   animation: none;
 }
 #eira-fab:active {
-  transform: translate(var(--drag-x), var(--drag-y)) scale(0.92);
+  transform: translate(var(--drag-x), var(--drag-y)) scale(0.94);
   transition-duration: 0.08s;
 }
 #eira-fab.dragging {
   cursor: grabbing;
   transition: none;
   animation: none;
-  box-shadow:
-    0 16px 44px color-mix(in srgb, var(--ef) 50%, transparent),
-    0 0 0 10px color-mix(in srgb, var(--eg) 10%, transparent);
+  box-shadow: 0 12px 30px rgba(20, 51, 42, 0.3);
 }
 #eira-fab.dragging:hover {
   transform: translate(var(--drag-x), var(--drag-y));
 }
 
-/*MASCOT*/
+/* ============  MASCOT  ============ */
 #eira-fab.mascot {
-  width: 188px;
-  height: 188px;
+  width: 180px;
+  height: 180px;
   border-radius: 18px;
   background: transparent;
   border: none;
@@ -238,14 +240,13 @@
   cursor: pointer;
 }
 #eira-fab.mascot:hover {
-  transform: translate(var(--drag-x), var(--drag-y)) scale(1.05)
-    translateY(-3px);
+  transform: translate(var(--drag-x), var(--drag-y)) scale(1.04) translateY(-2px);
   box-shadow: none;
 }
 @media (max-width: 480px) {
   #eira-fab.mascot {
-    width: 124px;
-    height: 124px;
+    width: 120px;
+    height: 120px;
   }
 }
 .eira-fab-mascot-img {
@@ -255,12 +256,12 @@
   height: 100%;
   object-fit: contain;
   pointer-events: none; /* để click luôn rơi vào nút bên dưới, mở chat như bình thường */
-  filter: drop-shadow(0 10px 20px rgba(10, 46, 43, 0.4));
-  animation: mascot-pop-in 0.46s var(--ease-bounce);
+  filter: drop-shadow(0 8px 16px rgba(20, 51, 42, 0.28));
+  animation: mascot-pop-in 0.4s var(--ease-spring);
 }
 @keyframes mascot-pop-in {
   0% {
-    transform: scale(0.4) translateY(14px);
+    transform: scale(0.5) translateY(10px);
     opacity: 0;
   }
   100% {
@@ -272,47 +273,42 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 150%;
-  height: 150%;
+  width: 140%;
+  height: 140%;
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: radial-gradient(
     circle,
-    color-mix(in srgb, var(--time-glow) 40%, transparent) 0%,
-    color-mix(in srgb, var(--time-glow) 18%, transparent) 40%,
+    color-mix(in srgb, var(--time-glow) 30%, transparent) 0%,
+    color-mix(in srgb, var(--time-glow) 12%, transparent) 42%,
     transparent 72%
   );
   filter: blur(4px);
   z-index: 0;
   pointer-events: none;
   transition: --time-glow 3.5s ease;
-  animation: mascot-glow-pulse 3.6s ease-in-out infinite;
+  animation: mascot-glow-pulse 4.2s ease-in-out infinite;
 }
 @keyframes mascot-glow-pulse {
   0%,
   100% {
-    opacity: 0.7;
+    opacity: 0.65;
     transform: translate(-50%, -50%) scale(1);
   }
   50% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(1.06);
   }
 }
 
 /* Các đốm sáng lập lòe bay quanh linh vật */
 .eira-firefly {
   position: absolute;
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    #fffdf3 0%,
-    var(--time-glow) 60%,
-    transparent 100%
-  );
-  box-shadow: 0 0 9px 2px color-mix(in srgb, var(--time-glow) 65%, transparent);
+  background: radial-gradient(circle, #fffdf3 0%, var(--time-glow) 60%, transparent 100%);
+  box-shadow: 0 0 8px 2px color-mix(in srgb, var(--time-glow) 55%, transparent);
   z-index: 3;
   pointer-events: none;
   opacity: 0;
@@ -324,27 +320,11 @@
   left: 4%;
   animation-delay: 0s;
 }
-.eira-firefly-2 {
-  top: 66%;
-  left: 92%;
-  animation-delay: 0.9s;
-}
 .eira-firefly-3 {
   top: 6%;
   left: 80%;
   animation-delay: 1.8s;
 }
-.eira-firefly-4 {
-  top: 84%;
-  left: 12%;
-  animation-delay: 2.6s;
-}
-.eira-firefly-5 {
-  top: 44%;
-  left: 98%;
-  animation-delay: 3.3s;
-}
-
 @keyframes firefly-float {
   0% {
     opacity: 0;
@@ -354,7 +334,7 @@
     opacity: 1;
   }
   50% {
-    opacity: 0.85;
+    opacity: 0.8;
     transform: translate(6px, -16px) scale(1);
   }
   85% {
@@ -369,66 +349,56 @@
   position: absolute;
   top: -6px;
   right: -6px;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.16);
-  backdrop-filter: blur(7px);
-  -webkit-backdrop-filter: blur(7px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  color: var(--eg);
+  background: rgba(20, 51, 42, 0.82);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 8px rgba(20, 51, 42, 0.3);
   z-index: 5;
   transition:
-    transform 0.2s var(--ease-bounce),
-    background 0.24s,
-    color 0.24s,
-    border-color 0.24s,
-    box-shadow 0.24s;
+    transform 0.18s var(--ease-out),
+    background 0.2s;
 }
 .eira-fab-mascot-close:hover {
-  background: linear-gradient(135deg, var(--egl), var(--egd));
-  border-color: rgba(255, 255, 255, 0.65);
-  color: #fff;
-  box-shadow: 0 4px 18px color-mix(in srgb, var(--egd) 50%, transparent);
-  transform: scale(1.14) rotate(90deg);
+  background: var(--g2);
+  transform: scale(1.08);
 }
 
 @keyframes fab-breathe {
   0%,
   100% {
-    box-shadow:
-      var(--sh-fab),
-      0 0 0 0 color-mix(in srgb, var(--eg) 42%, transparent);
+    box-shadow: var(--sh-fab), 0 0 0 0 color-mix(in srgb, var(--eg) 30%, transparent);
   }
   50% {
-    box-shadow:
-      var(--sh-fab),
-      0 0 0 11px color-mix(in srgb, var(--eg) 0%, transparent);
+    box-shadow: var(--sh-fab), 0 0 0 8px color-mix(in srgb, var(--eg) 0%, transparent);
   }
 }
 #eira-fab.fab-open {
   animation: none;
-  box-shadow: 0 6px 24px color-mix(in srgb, var(--ef) 40%, transparent);
+  box-shadow: 0 6px 20px rgba(20, 51, 42, 0.28);
 }
 
 .eira-online-dot {
   position: absolute;
   top: 2px;
   right: 2px;
-  width: 12px;
-  height: 12px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
   background: var(--eg);
-  border: 2px solid var(--g2);
-  animation: dot-pulse 2.6s ease-in-out infinite;
+  border: 2px solid var(--g1);
+  animation: dot-pulse 2.8s ease-in-out infinite;
   transition:
-    opacity 0.28s,
-    transform 0.28s var(--ease-bounce);
+    opacity 0.24s,
+    transform 0.24s var(--ease-out);
 }
 .eira-online-dot.hidden {
   opacity: 0;
@@ -437,36 +407,36 @@
 @keyframes dot-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--eg) 70%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--eg) 55%, transparent);
   }
   60% {
-    box-shadow: 0 0 0 6px color-mix(in srgb, var(--eg) 0%, transparent);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--eg) 0%, transparent);
   }
 }
 
-/*  BADGE*/
+/* ============  BADGE  ============ */
 .eira-badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 19px;
-  height: 19px;
+  top: -3px;
+  right: -3px;
+  min-width: 18px;
+  height: 18px;
   padding: 0 4px;
   border-radius: 999px;
-  background: linear-gradient(145deg, #ff5252, #e0233d);
-  border: 2px solid #fff;
+  background: #d64545;
+  border: 2px solid var(--c-bg);
   color: #fff;
-  font-size: 10.5px;
-  font-weight: 800;
+  font-size: 10px;
+  font-weight: 700;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 3;
-  box-shadow: 0 2px 8px rgba(224, 35, 61, 0.5);
+  box-shadow: 0 2px 6px rgba(214, 69, 69, 0.45);
   animation:
-    badge-pop 0.36s var(--ease-bounce),
-    badge-pulse 1.8s ease-in-out 0.36s infinite;
+    badge-pop 0.3s var(--ease-bounce),
+    badge-pulse 2.2s ease-in-out 0.3s infinite;
   pointer-events: none;
 }
 @keyframes badge-pop {
@@ -474,7 +444,7 @@
     transform: scale(0);
   }
   55% {
-    transform: scale(1.25);
+    transform: scale(1.2);
   }
   100% {
     transform: scale(1);
@@ -484,50 +454,45 @@
   0%,
   100% {
     box-shadow:
-      0 2px 8px rgba(224, 35, 61, 0.5),
-      0 0 0 0 rgba(224, 35, 61, 0.55);
+      0 2px 6px rgba(214, 69, 69, 0.45),
+      0 0 0 0 rgba(214, 69, 69, 0.45);
   }
   50% {
     box-shadow:
-      0 2px 8px rgba(224, 35, 61, 0.5),
-      0 0 0 5px rgba(224, 35, 61, 0);
+      0 2px 6px rgba(214, 69, 69, 0.45),
+      0 0 0 4px rgba(214, 69, 69, 0);
   }
 }
 
 /* Rung nhẹ nút FAB đúng lúc badge vừa xuất hiện — báo hiệu tin nhắn mới */
 #eira-fab.has-badge {
   animation:
-    fab-breathe 3.8s ease-in-out infinite,
-    fab-shake 0.5s var(--ease-out) 0.05s;
+    fab-breathe 4.6s ease-in-out infinite,
+    fab-shake 0.4s var(--ease-out) 0.05s;
 }
 @keyframes fab-shake {
   0%,
   100% {
     transform: translate(var(--drag-x), var(--drag-y)) rotate(0deg);
   }
-  20% {
-    transform: translate(var(--drag-x), var(--drag-y)) rotate(-8deg);
-  }
-  40% {
-    transform: translate(var(--drag-x), var(--drag-y)) rotate(7deg);
-  }
-  60% {
+  25% {
     transform: translate(var(--drag-x), var(--drag-y)) rotate(-5deg);
   }
-  80% {
-    transform: translate(var(--drag-x), var(--drag-y)) rotate(3deg);
+  50% {
+    transform: translate(var(--drag-x), var(--drag-y)) rotate(4deg);
+  }
+  75% {
+    transform: translate(var(--drag-x), var(--drag-y)) rotate(-2deg);
   }
 }
 
-/* MOBILE — badge to & rõ hơn để dễ chạm/nhìn trên màn nhỏ */
 @media (max-width: 480px) {
   .eira-badge {
-    top: -5px;
-    right: -5px;
-    min-width: 21px;
-    height: 21px;
-    font-size: 11px;
-    border-width: 2.5px;
+    top: -4px;
+    right: -4px;
+    min-width: 20px;
+    height: 20px;
+    font-size: 10.5px;
   }
 }
 
@@ -537,8 +502,8 @@
   align-items: center;
   justify-content: center;
   transition:
-    opacity 0.3s var(--ease-spring),
-    transform 0.34s var(--ease-spring);
+    opacity 0.24s var(--ease-out),
+    transform 0.28s var(--ease-spring);
 }
 .eira-ico-open {
   opacity: 1;
@@ -546,80 +511,51 @@
 }
 .eira-ico-close {
   opacity: 0;
-  transform: scale(0.2) rotate(-100deg);
+  transform: scale(0.3) rotate(-80deg);
 }
 .fab-open .eira-ico-open {
   opacity: 0;
-  transform: scale(0.2) rotate(100deg);
+  transform: scale(0.3) rotate(80deg);
 }
 .fab-open .eira-ico-close {
   opacity: 1;
   transform: scale(1) rotate(0deg);
 }
 
-.eira-tooltip {
-  position: absolute;
-  right: 62px;
-  top: 50%;
-  transform: translateY(-50%) translateX(8px);
-  background: var(--ef);
-  color: rgba(255, 255, 255, 0.95);
-  font-size: 12px;
-  font-weight: 520;
-  padding: 7px 12px;
-  border-radius: var(--r-sm);
-  white-space: nowrap;
+#eira-fab.fab-open {
   opacity: 0;
   pointer-events: none;
+  transform: scale(0);
   transition:
-    opacity 0.2s var(--ease-out),
-    transform 0.2s var(--ease-out);
-  box-shadow: var(--sh2);
-  border: 1px solid color-mix(in srgb, var(--eg) 20%, transparent);
-}
-.eira-tooltip::after {
-  content: "";
-  position: absolute;
-  right: -6px;
-  top: 50%;
-  transform: translateY(-50%);
-  border: 6px solid transparent;
-  border-right: none;
-  border-left-color: var(--ef);
-}
-#eira-fab:hover:not(.fab-open) .eira-tooltip {
-  opacity: 1;
-  transform: translateY(-50%) translateX(0);
+    opacity 0.18s ease,
+    transform 0.18s ease;
 }
 
-/*CHAT WINDOW*/
+/* ============  CHAT WINDOW  ============ */
 #eira-win {
   position: fixed;
   bottom: 88px;
   right: 24px;
-  width: 370px;
-  height: 560px;
+  width: 384px;
+  height: 596px;
   max-height: calc(100vh - 100px); /* safety cap cho màn nhỏ */
   background: var(--c-surface);
-  border-radius: var(--r-lg);
+  border-radius: var(--r-xl);
   border: 1px solid var(--c-border);
-  box-shadow:
-    var(--sh3),
-    0 0 0 0.5px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--sh-3);
   z-index: 99989;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 
   /* Animation */
-  transform: translate(var(--drag-x), var(--drag-y)) translateY(20px)
-    scale(0.94);
+  transform: translate(var(--drag-x), var(--drag-y)) translateY(14px) scale(0.97);
   opacity: 0;
   pointer-events: none;
   transform-origin: bottom right;
   transition:
-    transform 0.4s var(--ease-spring),
-    opacity 0.26s var(--ease-out);
+    transform 0.32s var(--ease-spring),
+    opacity 0.22s var(--ease-out);
   will-change: transform, opacity;
 }
 #eira-win.win-open {
@@ -646,7 +582,7 @@
 
     border-radius: var(--r-xl);
     transform-origin: bottom center;
-    transform: translateY(20px) scale(0.94);
+    transform: translateY(14px) scale(0.97);
   }
   #eira-win.win-open {
     transform: none;
@@ -662,72 +598,53 @@
   }
 }
 
-/*  HEADER*/
+/* ============  HEADER  ============ */
 #eira-hdr {
-  background: linear-gradient(
-    138deg,
-    var(--gh1) 0%,
-    var(--gh2) 28%,
-    var(--gh3) 65%,
-    var(--gh4) 100%
-  );
-  padding: 12px 14px 12px 15px;
+  background: linear-gradient(120deg, var(--gh1) 0%, var(--gh2) 100%);
+  padding: 14px 14px 14px 16px;
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: 12px;
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
-  border-radius: var(--r-lg) var(--r-lg) 0 0;
 }
 #eira-hdr::before {
   content: "";
   position: absolute;
-  top: -50px;
-  right: -50px;
-  width: 140px;
-  height: 140px;
+  top: -60px;
+  right: -40px;
+  width: 130px;
+  height: 130px;
   border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--eg) 13%, transparent) 0%,
-    transparent 68%
-  );
+  background: radial-gradient(circle, color-mix(in srgb, #fff 6%, transparent) 0%, transparent 70%);
   pointer-events: none;
 }
 
 .eira-avatar {
-  width: 48px;
-  height: 48px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   background: transparent;
-  border: 2px solid color-mix(in srgb, var(--eg) 38%, transparent);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   position: relative;
   overflow: visible; /* để dấu chấm online lộ hẳn ra ngoài, không bị cắt */
-  box-shadow:
-    0 2px 10px rgba(0, 0, 0, 0.22),
-    0 0 0 3px color-mix(in srgb, var(--eg) 10%, transparent);
   z-index: 1;
-  transition:
-    transform 0.28s var(--ease-bounce),
-    box-shadow 0.28s;
+  transition: border-color 0.2s;
 }
 .eira-avatar:hover {
-  transform: scale(1.06);
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.26),
-    0 0 0 4px color-mix(in srgb, var(--eg) 20%, transparent);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 .eira-avatar-inner {
   width: 100%;
   height: 100%;
   border-radius: 50%;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.97);
+  background: rgba(255, 255, 255, 0.96);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -736,7 +653,7 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  padding: 7px;
+  padding: 6px;
 }
 .eira-av-online {
   position: absolute;
@@ -746,14 +663,14 @@
   height: 10px;
   border-radius: 50%;
   background: var(--eg);
-  border: 1.5px solid var(--g2);
+  border: 1.5px solid var(--g1);
   z-index: 2;
-  animation: av-pulse 2.4s ease-in-out infinite;
+  animation: av-pulse 2.6s ease-in-out infinite;
 }
 @keyframes av-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--eg) 80%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--eg) 70%, transparent);
   }
   60% {
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--eg) 0%, transparent);
@@ -766,94 +683,101 @@
   min-width: 0;
 }
 .eira-hdr-name {
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 15.5px;
+  font-weight: 650;
   color: #fff;
-  letter-spacing: 0.01em;
-  line-height: 1.2;
+  letter-spacing: 0.005em;
+  line-height: 1.25;
 }
 .eira-hdr-sub {
-  font-size: 10.5px;
-  color: rgba(255, 255, 255, 0.5);
-  letter-spacing: 0.06em;
-  margin-top: 3px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.56);
+  letter-spacing: 0.01em;
+  margin-top: 2px;
   display: flex;
   align-items: center;
 }
-
-.eira-hdr-badge {
-  display: inline-block;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  background: linear-gradient(135deg, var(--eg), var(--egl));
-  color: #fff;
-  padding: 2px 6px;
-  border-radius: 4px;
-  vertical-align: middle;
-  margin-left: 6px;
-  position: relative;
-  top: -1px;
-}
-
 
 .eira-close-btn {
   z-index: 1;
   width: 30px;
   height: 30px;
   border-radius: var(--r-sm);
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.46);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.62);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   transition:
-    background 0.18s,
-    color 0.18s,
-    transform 0.24s var(--ease-bounce);
+    background 0.16s,
+    color 0.16s,
+    transform 0.18s var(--ease-out);
 }
 .eira-close-btn:hover {
   background: rgba(255, 255, 255, 0.16);
   color: #fff;
-  transform: rotate(90deg) scale(1.08);
+}
+.eira-close-btn:active {
+  transform: scale(0.92);
+}
+.eira-close-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.eira-hdr-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-/* Welcome — mini Eira experience, không còn border-flow chạy liên tục */
+/* Trạng thái "bấm lần nữa để xác nhận xóa hội thoại" */
+.eira-confirm-danger {
+  background: rgba(214, 69, 69, 0.22) !important;
+  border-color: rgba(214, 69, 69, 0.4) !important;
+  color: #ffd4d4 !important;
+  animation: confirm-danger-pulse 1s ease-in-out infinite;
+}
+@keyframes confirm-danger-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(214, 69, 69, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(214, 69, 69, 0);
+  }
+}
+
+/* ============  WELCOME  ============ */
 #eira-root .eira-welcome {
-  background: linear-gradient(
-    160deg,
-    #fff,
-    color-mix(in srgb, var(--eg) 14%, white)
-  ) !important;
-  border: 1px solid color-mix(in srgb, var(--eg) 14%, transparent) !important;
-  border-radius: 18px !important;
-  padding: 22px 24px 20px !important;
-  color: #1a1a1a !important;
-  animation: welcome-in 0.5s var(--ease-spring);
-  margin-bottom: 18px !important;
+  background: var(--c-surface) !important;
+  border: 1px solid var(--c-border) !important;
+  border-radius: var(--r-lg) !important;
+  padding: 22px 22px 20px !important;
+  color: var(--c-text) !important;
+  animation: welcome-in 0.4s var(--ease-spring);
+  margin-bottom: 16px !important;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: 6px;
-  box-shadow: var(--sh1) !important;
+  box-shadow: var(--sh-1) !important;
   flex-shrink: 0;
 }
 .eira-welcome-avatar {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: #fff;
-  border: 2px solid color-mix(in srgb, var(--eg) 22%, transparent);
+  background: var(--c-bg);
+  border: 1px solid var(--c-border);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 4px;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
 }
 .eira-welcome-avatar img {
   width: 100%;
@@ -863,20 +787,20 @@
 }
 .eira-welcome-title {
   font-size: 15px;
-  font-weight: 600;
-  color: var(--g2);
+  font-weight: 650;
+  color: var(--c-text);
 }
 .eira-welcome-desc {
   font-size: 13px;
-  line-height: 1.6;
-  color: rgba(0, 0, 0, 0.7);
-  max-width: 290px;
+  line-height: 1.62;
+  color: var(--c-text-soft);
+  max-width: 292px;
   margin: 0 auto;
 }
 .eira-welcome-actions {
   display: flex;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 10px;
   width: 100%;
 }
 .eira-welcome-card {
@@ -885,23 +809,41 @@
   flex-direction: column;
   align-items: center;
   gap: 5px;
-  padding: 10px 8px;
-  border-radius: 12px;
-  border: 1px solid color-mix(in srgb, var(--eg) 20%, transparent);
-  background: color-mix(in srgb, var(--eg) 6%, transparent);
-  color: var(--g3);
+  padding: 11px 8px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--c-border-2);
+  background: var(--c-bg);
+  color: var(--g2);
   font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.18s, transform 0.2s var(--ease-bounce), box-shadow 0.18s;
+  transition:
+    background 0.16s,
+    border-color 0.16s,
+    transform 0.18s var(--ease-out);
 }
 .eira-welcome-card:hover {
-  background: color-mix(in srgb, var(--eg) 13%, transparent);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--eg) 15%, transparent);
+  background: color-mix(in srgb, var(--eg) 9%, var(--c-bg));
+  border-color: color-mix(in srgb, var(--eg) 32%, transparent);
+  transform: translateY(-1px);
 }
 
-/*   MESSAGES*/
+@keyframes welcome-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+#eira-root .eira-welcome strong {
+  color: var(--g2) !important;
+  font-weight: 700 !important;
+}
+
+/* ============  MESSAGES  ============ */
 #eira-msgs {
   flex: 1; /* chiếm hết space còn lại */
   min-height: 0; /* CRITICAL: cho phép flex child shrink */
@@ -910,13 +852,7 @@
   display: flex;
   flex-direction: column;
   scroll-behavior: smooth;
-  background-color: #f1f2f0;
-  background-image: radial-gradient(
-    circle,
-    rgba(0, 0, 0, 0.04) 1px,
-    transparent 1px
-  );
-  background-size: 20px 20px;
+  background-color: var(--c-bg);
   overscroll-behavior: contain;
 }
 #eira-msgs::-webkit-scrollbar {
@@ -926,36 +862,19 @@
   background: transparent;
 }
 #eira-msgs::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.12);
+  background: rgba(20, 51, 42, 0.14);
   border-radius: 2px;
 }
 #eira-msgs::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.22);
-}
-
-
-@keyframes welcome-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.97);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-#eira-root .eira-welcome strong {
-  color: var(--g2) !important;
-  font-weight: 700 !important;
+  background: rgba(20, 51, 42, 0.24);
 }
 
 /* Message rows */
 .em {
   display: flex;
   flex-direction: column;
-  animation: msg-in 0.3s var(--ease-spring);
-  margin-bottom: 12px;
+  animation: msg-in 0.26s var(--ease-spring);
+  margin-bottom: 14px;
   flex-shrink: 0; /* CRITICAL: không bị nén */
 }
 .em.bot {
@@ -967,7 +886,7 @@
 @keyframes msg-in {
   from {
     opacity: 0;
-    transform: translateY(8px) scale(0.98);
+    transform: translateY(6px);
   }
   to {
     opacity: 1;
@@ -980,28 +899,23 @@
   align-items: center;
   gap: 6px;
   padding: 0 2px;
-  margin-bottom: 8px;
+  margin-bottom: 7px;
 }
 .em.user .em-label-row {
   flex-direction: row-reverse;
 }
 
 .em-av {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: #fff;
-  border: 1px solid color-mix(in srgb, var(--eg) 20%, transparent);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border-2);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: transform 0.2s var(--ease-bounce);
   overflow: hidden;
-}
-.em-av:hover {
-  transform: scale(1.15);
 }
 .em-av img {
   width: 100%;
@@ -1012,97 +926,79 @@
 .em-name {
   font-size: 10.5px;
   font-weight: 650;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   line-height: 1.4;
 }
 .em.bot .em-name {
-  color: var(--g3);
+  color: var(--c-text-soft);
 }
 .em.user .em-name {
-  color: rgba(0, 0, 0, 0.55);
-  font-weight: 700;
-  margin-bottom: 8px;
+  color: var(--c-hint);
+  font-weight: 650;
 }
 
 .em-content-row {
   display: flex;
   align-items: flex-end;
   gap: 5px;
-  max-width: 86%;
+  max-width: 88%;
 }
 .em.user .em-content-row {
   flex-direction: row-reverse;
 }
 
-/*  BUBBLES  */
+/* ============  BUBBLES  ============ */
 #eira-root .em-bubble {
-  padding: 10px 14px;
+  padding: 11px 15px;
   font-size: 14px;
-  line-height: 1.72;
+  line-height: 1.68;
   font-weight: 400;
   word-break: break-word;
   display: block;
   position: relative;
-  transition: box-shadow 0.2s;
 }
 
-/* Bot: white card */
+/* Bot: nền surface, viền mảnh, không đổ bóng nặng */
 #eira-root .em.bot .em-bubble {
-  background: #ffffff !important;
-  color: #111 !important;
-  border: 1px solid rgba(0, 0, 0, 0.07) !important;
-  border-radius: 18px 18px 18px 6px !important;
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.07),
-    0 1px 2px rgba(0, 0, 0, 0.04) !important;
-}
-#eira-root .em.bot .em-bubble:hover {
-  box-shadow:
-    0 4px 14px rgba(0, 0, 0, 0.1),
-    0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  background: var(--c-surface) !important;
+  color: var(--c-text) !important;
+  border: 1px solid var(--c-border) !important;
+  border-radius: 4px var(--r-lg) var(--r-lg) var(--r-lg) !important;
+  box-shadow: var(--sh-1) !important;
 }
 
-/* User: deep teal gradient — Messenger style */
+/* User: khối màu forest đặc — đồng bộ với accent thương hiệu */
 #eira-root .em.user .em-bubble {
-  background: linear-gradient(148deg, #1e6358, #124842) !important;
-  color: rgba(255, 255, 255, 0.96) !important;
-  border: 1px solid rgba(255, 255, 255, 0.05) !important;
-  border-radius: 18px 18px 6px 18px !important;
-  box-shadow:
-    0 3px 10px rgba(10, 46, 43, 0.26),
-    0 1px 3px rgba(0, 0, 0, 0.1) !important;
-}
-#eira-root .em.user .em-bubble:hover {
-  box-shadow:
-    0 5px 16px rgba(10, 46, 43, 0.36),
-    0 2px 5px rgba(0, 0, 0, 0.12) !important;
+  background: linear-gradient(155deg, var(--g3), var(--g1)) !important;
+  color: rgba(255, 255, 255, 0.97) !important;
+  border: none !important;
+  border-radius: var(--r-lg) 4px var(--r-lg) var(--r-lg) !important;
+  box-shadow: 0 2px 8px rgba(20, 51, 42, 0.18) !important;
 }
 
 .em-time {
-  font-size: 12px;
-  color: rgba(0, 0, 0, 0.45);
+  font-size: 11px;
+  color: var(--c-hint);
   margin-top: 4px;
   padding: 0 3px;
-  letter-spacing: 0.03em;
-  opacity: 1 !important;
-  transition: opacity 0.18s;
+  opacity: 0;
+  transition: opacity 0.16s;
 }
-.em:not(:hover) .em-time {
-  opacity: 0.5 !important;
+.em:hover .em-time {
+  opacity: 1;
 }
 .em.user .em-time {
   text-align: right;
 }
 
-
-/*  Action buttons  */
+/* ============  Action buttons  ============ */
 .em-actions {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   opacity: 0;
-  transition: opacity 0.18s;
+  transition: opacity 0.16s;
   flex-shrink: 0;
 }
 .em-content-row:hover .em-actions,
@@ -1111,59 +1007,40 @@
 }
 
 .em-action-btn {
-  width: 27px;
-  height: 27px;
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(0, 0, 0, 0.09);
+  width: 26px;
+  height: 26px;
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: var(--r-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: rgba(0, 0, 0, 0.3);
+  color: var(--c-hint);
   flex-shrink: 0;
   transition:
-    background 0.15s,
-    color 0.15s,
-    border-color 0.15s,
-    transform 0.2s var(--ease-bounce),
-    box-shadow 0.15s;
+    background 0.14s,
+    color 0.14s,
+    border-color 0.14s;
 }
 .em-action-btn:hover {
-  background: #fff;
+  background: var(--c-surface);
   color: var(--g2);
-  border-color: color-mix(in srgb, var(--eg) 38%, transparent);
-  box-shadow:
-    var(--sh1),
-    0 0 0 3px color-mix(in srgb, var(--eg) 12%, transparent);
-  transform: scale(1.12);
+  border-color: var(--c-border-2);
 }
 .em-action-btn:active {
-  transform: scale(0.9);
-  transition-duration: 0.07s;
+  transform: scale(0.92);
 }
 .em-action-btn.copied {
   color: var(--eg);
-  border-color: color-mix(in srgb, var(--eg) 48%, transparent);
-  background: color-mix(in srgb, var(--eg) 7%, transparent);
-  animation: copied-pop 0.28s var(--ease-bounce);
-}
-@keyframes copied-pop {
-  0% {
-    transform: scale(0.85);
-  }
-  60% {
-    transform: scale(1.18);
-  }
-  100% {
-    transform: scale(1);
-  }
+  border-color: color-mix(in srgb, var(--eg) 40%, transparent);
+  background: color-mix(in srgb, var(--eg) 8%, transparent);
 }
 
-/*  Typing  */
+/* ============  Typing  ============ */
 .eira-typing {
-  animation: msg-in 0.24s var(--ease-out);
-  margin-bottom: 10px;
+  animation: msg-in 0.2s var(--ease-out);
+  margin-bottom: 12px;
   flex-shrink: 0;
 }
 .typing-label-row {
@@ -1171,53 +1048,54 @@
   align-items: center;
   gap: 6px;
   padding: 0 2px;
-  margin-bottom: 8px;
+  margin-bottom: 7px;
 }
 .typing-bubble {
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.07);
-  border-radius: 18px 18px 18px 6px;
-  padding: 12px 16px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: 4px var(--r-lg) var(--r-lg) var(--r-lg);
+  padding: 13px 16px;
   display: flex;
   gap: 5px;
   align-items: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  box-shadow: var(--sh-1);
   width: fit-content;
 }
 .typing-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
+  background: var(--eg);
   animation: bounce-dot 1.4s ease-in-out infinite;
 }
 .typing-dot:nth-child(1) {
   animation-delay: 0s;
-  background: var(--eg);
+  opacity: 1;
 }
 .typing-dot:nth-child(2) {
   animation-delay: 0.2s;
-  background: color-mix(in srgb, var(--eg) 55%, white);
+  opacity: 0.65;
 }
 .typing-dot:nth-child(3) {
   animation-delay: 0.4s;
-  background: color-mix(in srgb, var(--eg) 30%, white);
+  opacity: 0.4;
 }
 @keyframes bounce-dot {
   0%,
   65%,
   100% {
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
     opacity: 0.4;
   }
   32% {
-    transform: translateY(-7px) scale(1.15);
+    transform: translateY(-5px);
     opacity: 1;
   }
 }
 
-/*  Suggestion chips  */
+/* ============  Suggestion chips  ============ */
 #eira-sugg {
-  padding: 8px 13px 9px;
+  padding: 9px 13px 10px;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -1227,9 +1105,9 @@
   max-height: 140px;
   overflow: hidden;
   transition:
-    max-height 0.34s var(--ease-spring),
-    opacity 0.26s var(--ease-out),
-    padding 0.26s;
+    max-height 0.3s var(--ease-spring),
+    opacity 0.22s var(--ease-out),
+    padding 0.22s;
 }
 #eira-sugg.hidden {
   max-height: 0;
@@ -1242,10 +1120,10 @@
 
 #eira-root .eira-chip {
   font-size: 12px !important;
-  font-weight: 500 !important;
-  color: var(--g3) !important;
-  background: color-mix(in srgb, var(--eg) 7%, transparent) !important;
-  border: 1px solid color-mix(in srgb, var(--eg) 18%, transparent) !important;
+  font-weight: 550 !important;
+  color: var(--g2) !important;
+  background: var(--c-bg) !important;
+  border: 1px solid var(--c-border-2) !important;
   padding: 6px 12px !important;
   border-radius: var(--r-pill) !important;
   cursor: pointer;
@@ -1257,27 +1135,22 @@
   text-decoration: none !important;
   margin: 0 !important;
   transition:
-    background 0.18s,
-    border-color 0.18s,
-    color 0.18s,
-    transform 0.2s var(--ease-bounce),
-    box-shadow 0.18s !important;
+    background 0.16s,
+    border-color 0.16s,
+    transform 0.18s var(--ease-out) !important;
 }
 #eira-root .eira-chip:hover {
-  background: color-mix(in srgb, var(--eg) 14%, transparent) !important;
-  border-color: color-mix(in srgb, var(--eg) 34%, transparent) !important;
-  color: var(--g2) !important;
-  transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 3px 10px color-mix(in srgb, var(--eg) 14%, transparent) !important;
+  background: color-mix(in srgb, var(--eg) 9%, var(--c-bg)) !important;
+  border-color: color-mix(in srgb, var(--eg) 30%, transparent) !important;
+  transform: translateY(-1px);
 }
 #eira-root .eira-chip:active {
-  transform: scale(0.95);
-  transition-duration: 0.07s !important;
+  transform: translateY(0) scale(0.97);
 }
 
-/*  Input  */
+/* ============  Input  ============ */
 #eira-input-wrap {
-  padding: 10px 13px 11px;
+  padding: 10px 13px 12px;
   border-top: 1px solid var(--c-border);
   background: var(--c-surface);
   flex-shrink: 0; /* không bị nén */
@@ -1287,19 +1160,19 @@
   display: flex;
   gap: 8px;
   align-items: flex-end;
-  background: #f5f6f4;
-  border: 1.5px solid var(--c-border2);
-  border-radius: 16px;
+  background: var(--c-surface-2);
+  border: 1.5px solid var(--c-border-2);
+  border-radius: var(--r-lg);
   padding: 7px 7px 7px 15px;
   transition:
-    border-color 0.22s,
-    box-shadow 0.22s,
-    background 0.22s;
+    border-color 0.2s,
+    box-shadow 0.2s,
+    background 0.2s;
 }
 #eira-input-row:focus-within {
-  border-color: color-mix(in srgb, var(--eg) 36%, transparent);
+  border-color: color-mix(in srgb, var(--eg) 42%, transparent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--eg) 10%, transparent);
-  background: #fff;
+  background: var(--c-surface);
 }
 
 #eira-root #eira-inp {
@@ -1315,43 +1188,43 @@
   resize: none !important;
   min-height: 26px !important;
   max-height: 100px !important;
-  line-height: 1.58 !important;
+  line-height: 1.55 !important;
   box-shadow: none !important;
   caret-color: var(--eg);
 }
 #eira-root #eira-inp::placeholder {
   color: var(--c-hint) !important;
-  transition: opacity 0.18s;
+  transition: opacity 0.16s;
 }
 #eira-root #eira-inp:focus::placeholder {
-  opacity: 0.55;
+  opacity: 0.6;
 }
 
 #eira-send {
   width: 36px;
   height: 36px;
   flex-shrink: 0;
-  background: linear-gradient(145deg, var(--g3), var(--g2));
+  background: var(--g2);
   border: none;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   color: #fff;
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--ef) 24%, transparent);
+  box-shadow: 0 2px 6px rgba(20, 51, 42, 0.22);
   transition:
-    background 0.22s,
-    transform 0.24s var(--ease-bounce),
-    box-shadow 0.22s;
+    background 0.18s,
+    transform 0.18s var(--ease-out),
+    box-shadow 0.18s;
 }
 #eira-send:not(:disabled):hover {
-  background: linear-gradient(145deg, var(--g4), var(--g3));
-  transform: scale(1.08) translateY(-1px);
-  box-shadow: 0 6px 18px color-mix(in srgb, var(--ef) 36%, transparent);
+  background: var(--g1);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(20, 51, 42, 0.3);
 }
 #eira-send:not(:disabled):active {
-  transform: scale(0.9);
+  transform: scale(0.92);
   transition-duration: 0.07s;
 }
 #eira-send:disabled {
@@ -1359,15 +1232,25 @@
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
-  background: color-mix(in srgb, var(--g2) 25%, #d8dbd9);
+  background: var(--c-border-2);
+  color: var(--c-hint);
 }
 
-/*  Footer  */
+/* Đếm ký tự khi gần chạm giới hạn nhập */
+#eira-char-count {
+  font-size: 11px;
+  color: var(--c-hint);
+  text-align: right;
+  padding: 2px 6px 0 0;
+  user-select: none;
+}
+
+/* ============  Footer  ============ */
 #eira-foot {
   padding: 5px 14px 8px;
   font-size: 10px;
   font-weight: 550;
-  letter-spacing: 0.11em;
+  letter-spacing: 0.1em;
   color: var(--c-hint);
   text-align: center;
   text-transform: uppercase;
@@ -1395,17 +1278,243 @@
   transition: background-color 0.2s;
 }
 #eira-foot:hover .eira-foot-logo {
-  background-color: var(--g3);
+  background-color: var(--g2);
 }
 
- /* REDUCED MOTION*/
+/* ============  Scroll to bottom  ============ */
+#eira-scroll-btn {
+  position: absolute;
+  right: 14px;
+  bottom: 108px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--c-border-2);
+  background: var(--c-surface);
+  color: var(--g2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--sh-2);
+  cursor: pointer;
+  z-index: 5;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease;
+}
+#eira-scroll-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sh-3);
+}
+#eira-scroll-btn:active {
+  transform: translateY(0);
+}
+
+/* Icon cảnh báo mất kết nối trong tin nhắn lỗi */
+.em-error-icon {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: #b45309;
+}
+.em-error .em-bubble {
+  background: #fdf6ec !important;
+  border: 1px solid rgba(180, 83, 9, 0.22) !important;
+  color: #7c3d0f !important;
+}
+
+/* Nút liên kết điều hướng nội bộ — thay cho link chữ thô, bấm để chuyển trang thật (react-router) */
+.em-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 2px 3px;
+  padding: 5px 10px 5px 12px;
+  border: 1px solid color-mix(in srgb, var(--eg) 32%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--eg) 9%, transparent);
+  color: var(--g2);
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  cursor: pointer;
+  vertical-align: middle;
+  transition:
+    background 0.14s ease,
+    transform 0.14s ease;
+}
+.em-link-btn:hover {
+  background: color-mix(in srgb, var(--eg) 16%, transparent);
+  transform: translateY(-1px);
+}
+.em-link-btn:active {
+  transform: translateY(0);
+}
+.em-link-btn svg {
+  flex-shrink: 0;
+}
+
+.em-status-label {
+  font-size: 13px;
+  color: var(--c-text-soft);
+  font-weight: 500;
+  padding: 10px 16px;
+}
+
+/* ============  Card sách gợi ý (tool suggest_books)  ============ */
+.em-book-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+.em-book-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border-2);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color 0.14s ease,
+    box-shadow 0.14s ease;
+}
+.em-book-card:hover {
+  box-shadow: var(--sh-2);
+  border-color: color-mix(in srgb, var(--eg) 34%, transparent);
+}
+.em-book-cover {
+  width: 44px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: var(--c-bg);
+}
+.em-book-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.em-book-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--c-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.em-book-age {
+  font-size: 11.5px;
+  color: var(--c-text-soft);
+}
+.em-book-price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 13px;
+}
+.em-book-price strong {
+  color: var(--g2);
+}
+.em-book-price s {
+  color: var(--c-hint);
+  font-size: 11.5px;
+}
+.em-book-oos {
+  font-size: 11px;
+  color: #b91c1c;
+  font-weight: 600;
+}
+.em-book-card svg {
+  flex-shrink: 0;
+  color: var(--c-hint);
+}
+
+/* ============  Chip mã giảm giá (tool apply_coupon)  ============ */
+.em-coupon-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #fdf6ec;
+  border: 1px dashed rgba(180, 120, 20, 0.35);
+  border-radius: var(--r-md);
+  color: #7c4a12;
+}
+.em-coupon-chip > svg {
+  flex-shrink: 0;
+  color: #b5790f;
+}
+.em-coupon-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
+}
+.em-coupon-code {
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.em-coupon-detail {
+  font-size: 11.5px;
+  color: #8a5a17;
+}
+.em-coupon-copy {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border: 1px solid rgba(180, 120, 20, 0.3);
+  border-radius: 999px;
+  background: var(--c-surface);
+  color: #7c4a12;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.14s ease;
+}
+.em-coupon-copy:hover {
+  background: #f6ead4;
+}
+
+/* ============  Thông báo chuyển nhân viên (tool escalate_to_human)  ============ */
+.em-escalate {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #eef4fb;
+  border: 1px solid rgba(37, 84, 160, 0.18);
+  border-radius: var(--r-md);
+  color: #1e3a5f;
+  font-size: 13px;
+}
+.em-escalate > svg {
+  flex-shrink: 0;
+  color: #2f6fd6;
+}
+.em-escalate-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ============  REDUCED MOTION  ============ */
 @media (prefers-reduced-motion: reduce) {
   #eira-fab,
   .eira-online-dot,
   .eira-av-online,
   .typing-dot,
   #eira-hdr::before,
-  #eira-hdr::after,
   #eira-root .eira-welcome::before,
   .eira-fab-mascot-img,
   .eira-firefly,
@@ -1424,275 +1533,5 @@
   .em-av,
   .eira-fab-icon {
     transition: none !important;
-  }
-}
-
-#eira-fab.fab-open {
-  opacity: 0;
-  pointer-events: none;
-  transform: scale(0);
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-}
-
-#eira-scroll-btn {
-  position: absolute;
-  right: 14px;
-  bottom: 108px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--g2) 12%, transparent);
-  background: #ffffff;
-  color: var(--g2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--g2) 16%, transparent);
-  cursor: pointer;
-  z-index: 5;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-#eira-scroll-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(13, 51, 48, 0.22);
-}
-#eira-scroll-btn:active {
-  transform: translateY(0);
-}
-
-/* Đếm ký tự khi gần chạm giới hạn nhập */
-#eira-char-count {
-  font-size: 11px;
-  color: #8a8f8e;
-  text-align: right;
-  padding: 2px 6px 0 0;
-  user-select: none;
-}
-#eira-char-count:has(+ *) {
-  color: #8a8f8e;
-}
-
-/* Icon cảnh báo mất kết nối trong tin nhắn lỗi */
-.em-error-icon {
-  flex-shrink: 0;
-  margin-top: 3px;
-  color: #d97706;
-}
-.em-error .em-bubble {
-  background: #fff7ed;
-  border: 1px solid rgba(217, 119, 6, 0.25);
-  color: #7c2d12;
-}
-
-/* Nút liên kết điều hướng nội bộ — thay cho link chữ thô, bấm để chuyển trang thật (react-router) */
-.em-link-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin: 2px 3px;
-  padding: 5px 10px 5px 12px;
-  border: 1px solid rgba(21, 128, 61, 0.28);
-  border-radius: 999px;
-  background: #ecfdf5;
-  color: #15803d;
-  font-size: 12.5px;
-  font-weight: 600;
-  line-height: 1.3;
-  cursor: pointer;
-  vertical-align: middle;
-  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
-}
-.em-link-btn:hover {
-  background: #d1fae5;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(21, 128, 61, 0.18);
-}
-.em-link-btn:active {
-  transform: translateY(0);
-}
-.em-link-btn svg {
-  flex-shrink: 0;
-}
-
-/* Nút xóa hội thoại trong header — dùng chung style với nút đóng */
-.eira-hdr-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.eira-close-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.em-status-label {
-  font-size: 13px;
-  color: #3d6b3a;
-  font-weight: 500;
-  padding: 10px 16px;
-}
-
-/*  Card sách gợi ý (từ tool suggest_books)  */
-.em-book-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 8px;
-}
-.em-book-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 8px;
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 12px;
-  cursor: pointer;
-  text-align: left;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-}
-.em-book-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-  border-color: rgba(21, 128, 61, 0.3);
-}
-.em-book-cover {
-  width: 44px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: 6px;
-  flex-shrink: 0;
-  background: #f3f4f6;
-}
-.em-book-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-  min-width: 0;
-}
-.em-book-title {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--g2);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.em-book-age {
-  font-size: 11.5px;
-  color: #6b7280;
-}
-.em-book-price {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  font-size: 13px;
-}
-.em-book-price strong {
-  color: #15803d;
-}
-.em-book-price s {
-  color: #9ca3af;
-  font-size: 11.5px;
-}
-.em-book-oos {
-  font-size: 11px;
-  color: #b91c1c;
-  font-weight: 600;
-}
-.em-book-card svg {
-  flex-shrink: 0;
-  color: #9ca3af;
-}
-
-/*  Chip mã giảm giá (từ tool apply_coupon)  */
-.em-coupon-chip {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  background: #fff7ed;
-  border: 1px dashed rgba(194, 120, 3, 0.4);
-  border-radius: 12px;
-  color: #9a3412;
-}
-.em-coupon-chip > svg {
-  flex-shrink: 0;
-  color: #c27803;
-}
-.em-coupon-info {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  flex: 1;
-  min-width: 0;
-}
-.em-coupon-code {
-  font-size: 13.5px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-}
-.em-coupon-detail {
-  font-size: 11.5px;
-  color: #92400e;
-}
-.em-coupon-copy {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 10px;
-  border: 1px solid rgba(194, 120, 3, 0.35);
-  border-radius: 999px;
-  background: #fff;
-  color: #9a3412;
-  font-size: 11.5px;
-  font-weight: 600;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 0.15s ease;
-}
-.em-coupon-copy:hover {
-  background: #ffedd5;
-}
-
-/*  Thông báo chuyển nhân viên (từ tool escalate_to_human)  */
-.em-escalate {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  background: #eff6ff;
-  border: 1px solid rgba(37, 99, 235, 0.2);
-  border-radius: 12px;
-  color: #1e3a8a;
-  font-size: 13px;
-}
-.em-escalate > svg {
-  flex-shrink: 0;
-  color: #2563eb;
-}
-.em-escalate-info {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-/* Trạng thái "bấm lần nữa để xác nhận xóa hội thoại" */
-.eira-confirm-danger {
-  background: rgba(220, 38, 38, 0.14) !important;
-  border-color: rgba(220, 38, 38, 0.35) !important;
-  color: #fca5a5 !important;
-  animation: confirm-danger-pulse 0.9s ease-in-out infinite;
-}
-@keyframes confirm-danger-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.35);
-  }
-  50% {
-    box-shadow: 0 0 0 5px rgba(220, 38, 38, 0);
   }
 }

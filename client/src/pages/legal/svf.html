@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Giới thiệu nhân vật</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ==========================================================================
+   COMPONENT: Duo Intro — dải banner sáng/tối full-bleed
+   Namespace bằng tiền tố "dv-" để ghép an toàn vào file lớn hơn.
+   ========================================================================== */
+
+.dv-duo{
+  --cream:#efe9dc;
+  --ink:#1a1917;
+  --brass:#a9885a;
+  --ease:cubic-bezier(.22,.8,.36,1);
+  width:100%;
+  display:flex;
+  min-height:600px;
+  font-family:'Inter',sans-serif;
+  position:relative;
+  isolation:isolate;
+}
+
+.dv-panel{
+  flex:1 1 50%;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  padding:56px clamp(28px,5vw,72px);
+  overflow:hidden;
+  opacity:0;
+  transition:opacity .5s;
+}
+.dv-panel.is-visible{ opacity:1; }
+.dv-panel--a{
+  background:var(--cream);
+  color:var(--ink);
+  transform:translateX(-100%);
+  transition:transform .9s var(--ease), opacity .5s;
+}
+.dv-panel--b{
+  background:var(--ink);
+  color:var(--cream);
+  transform:translateX(100%);
+  transition:transform .9s var(--ease), opacity .5s;
+}
+.dv-panel.is-visible{ transform:translateX(0); }
+
+/* mờ dịu bên không được hover — hiệu ứng "spotlight" duy nhất của cả khối */
+.dv-duo:hover .dv-panel:not(:hover){ opacity:.82; }
+.dv-panel:hover{ transform:translateX(0) scale(1.01); }
+@media (min-width:761px){
+  .dv-panel--a:hover{ transform-origin:right center; }
+  .dv-panel--b:hover{ transform-origin:left center; }
+}
+
+/* bóng hình người tối giản – tông trên tông, không cố giả ảnh thật */
+.dv-figure{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  pointer-events:none;
+}
+.dv-figure svg{
+  width:clamp(220px,42%,340px);
+  height:auto;
+  transform:translateY(10%);
+  transition:transform .6s var(--ease);
+}
+.dv-panel--a .dv-figure svg{ color:rgba(26,25,23,.09); }
+.dv-panel--b .dv-figure svg{ color:rgba(239,233,220,.09); }
+.dv-panel:hover .dv-figure svg{ transform:translateY(4%); }
+
+.dv-text{ position:relative; z-index:2; max-width:38ch; }
+.dv-meta{
+  margin:0 0 10px;
+  font-size:.82rem;
+  letter-spacing:.02em;
+  color:var(--brass);
+}
+.dv-name{
+  margin:0;
+  font-family:'Playfair Display',serif;
+  font-weight:600;
+  font-size:clamp(2.2rem,4.6vw,3.2rem);
+  line-height:1.05;
+}
+.dv-rule{
+  width:34px; height:2px;
+  background:var(--brass);
+  border:0;
+  margin:18px 0;
+}
+.dv-desc{
+  margin:0;
+  font-size:.95rem;
+  line-height:1.75;
+  opacity:.72;
+}
+
+/* ---- responsive: xếp dọc, đảo hướng trượt vào ---- */
+@media (max-width:760px){
+  .dv-duo{ flex-direction:column; min-height:auto; }
+  .dv-panel{ padding:48px 28px; min-height:440px; }
+  .dv-panel--a{ transform:translateY(-40px); }
+  .dv-panel--b{ transform:translateY(40px); }
+  .dv-panel.is-visible{ transform:translateY(0); }
+  .dv-duo:hover .dv-panel:not(:hover){ opacity:1; } /* bỏ hiệu ứng spotlight trên mobile */
+}
+
+@media (prefers-reduced-motion: reduce){
+  .dv-panel, .dv-figure svg{ transition:none; }
+  .dv-panel{ opacity:1; transform:none; }
+}
+</style>
+</head>
+<body style="margin:0;">
+
+<section class="dv-duo" id="dv-duo-intro" aria-label="Giới thiệu hai nhân vật">
+
+  <article class="dv-panel dv-panel--a">
+    <div class="dv-figure" aria-hidden="true">
+      <svg viewBox="0 0 200 220" fill="currentColor">
+        <circle cx="100" cy="78" r="46"/>
+        <path d="M20 220 C20 150 50 118 100 118 C150 118 180 150 180 220 Z"/>
+      </svg>
+    </div>
+    <div class="dv-text">
+      <p class="dv-meta">Nữ — Đồng sáng lập, Giám đốc Sáng tạo</p>
+      <h3 class="dv-name">Minh Anh</h3>
+      <hr class="dv-rule">
+      <p class="dv-desc">Từng theo học nghệ thuật thị giác tại Paris, chị mang tinh thần tối giản mà giàu cảm xúc vào từng thiết kế, tin rằng sự sang trọng nằm ở chi tiết không cần phô trương.</p>
+    </div>
+  </article>
+
+  <article class="dv-panel dv-panel--b">
+    <div class="dv-figure" aria-hidden="true">
+      <svg viewBox="0 0 200 220" fill="currentColor">
+        <circle cx="100" cy="78" r="46"/>
+        <path d="M20 220 C20 150 50 118 100 118 C150 118 180 150 180 220 Z"/>
+      </svg>
+    </div>
+    <div class="dv-text">
+      <p class="dv-meta">Nam — Đồng sáng lập, Giám đốc Điều hành</p>
+      <h3 class="dv-name">Quốc Bảo</h3>
+      <hr class="dv-rule">
+      <p class="dv-desc">Gần một thập kỷ điều hành các thương hiệu xa xỉ tại châu Á giúp anh xây nền vận hành vững chắc, nơi mọi ý tưởng táo bạo được hiện thực hoá đúng chuẩn mực.</p>
+    </div>
+  </article>
+
+</section>
+
+<script>
+(function(){
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var panels = document.querySelectorAll('.dv-panel');
+  if(reduceMotion || !('IntersectionObserver' in window)){
+    panels.forEach(function(p){ p.classList.add('is-visible'); });
+    return;
+  }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){
+        entry.target.classList.add('is-visible');
+        io.unobserve(entry.target);
+      }
+    });
+  }, { threshold:.3 });
+  panels.forEach(function(p){ io.observe(p); });
+})();
+</script>
+
+</body>
+</html>

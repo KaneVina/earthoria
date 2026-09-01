@@ -6,7 +6,11 @@ import { bookService } from "../services/bookService";
 import { useCartStore } from "../store/cartStore";
 import { useAuthStore } from "../store/authStore";
 import { useWishlistStore } from "../store/wishlistStore";
-import { formatPrice, getBookUrl, getPreferredCartFormat } from "../utils/helpers";
+import {
+  formatPrice,
+  getBookUrl,
+  getPreferredCartFormat,
+} from "../utils/helpers";
 import { flyToCart } from "../utils/flyToCart";
 import { useHeartBurst, WishlistParticles } from "../hooks/useWishlistBurst";
 import { flyHeartToWishlist } from "../components/FlyingWishlistHeart";
@@ -418,7 +422,11 @@ function BookCard({
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <WishlistBtn wishlisted={wishlisted} onToggle={handleWishlist} disabled={wishlistBusy} />
+          <WishlistBtn
+            wishlisted={wishlisted}
+            onToggle={handleWishlist}
+            disabled={wishlistBusy}
+          />
         </div>
       </div>
 
@@ -621,7 +629,8 @@ function BookCard({
                   .closest(".product-card")
                   ?.querySelector(".product-img-wrap img");
                 if (cardImg) flyToCart(cardImg);
-                onAddCart && onAddCart(book.hashId, getPreferredCartFormat(book));
+                onAddCart &&
+                  onAddCart(book.hashId, getPreferredCartFormat(book));
               }}
               disabled={isAdding}
             />
@@ -635,7 +644,14 @@ function BookCard({
 /* ───────────────────────────────────────────────────────────
    HORIZONTAL SCROLL BOOK ROW
 ───────────────────────────────────────────────────────────── */
-function BookScrollRow({ books, onAddCart, badgeLabel, badgeType, addingIds, fadeColor }) {
+function BookScrollRow({
+  books,
+  onAddCart,
+  badgeLabel,
+  badgeType,
+  addingIds,
+  fadeColor,
+}) {
   const rowRef = useRef(null);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(true);
@@ -699,7 +715,10 @@ function BookScrollRow({ books, onAddCart, badgeLabel, badgeType, addingIds, fad
 
   return (
     <div
-      style={{ position: "relative", "--scroll-fade-bg": fadeColor || "var(--cream)" }}
+      style={{
+        position: "relative",
+        "--scroll-fade-bg": fadeColor || "var(--cream)",
+      }}
       onMouseEnter={() => (isPausedRef.current = true)}
       onMouseLeave={() => (isPausedRef.current = false)}
     >
@@ -2085,7 +2104,9 @@ function TopRatedSection({ books, onAddCart }) {
 
                   {/* add to cart */}
                   <button
-                    onClick={() => onAddCart(book.hashId, getPreferredCartFormat(book))}
+                    onClick={() =>
+                      onAddCart(book.hashId, getPreferredCartFormat(book))
+                    }
                     style={{
                       width: "36px",
                       height: "36px",
@@ -2714,7 +2735,7 @@ export default function Home() {
         style={{
           background: "var(--forest)",
           position: "relative",
-          overflow: "hidden",
+          overflow: "visible",
         }}
       >
         <div
@@ -2750,6 +2771,7 @@ export default function Home() {
             margin: "0 auto",
             gap: "60px",
             alignItems: "center",
+            position: "relative",
           }}
         >
           <div className="reveal">
@@ -2822,75 +2844,27 @@ export default function Home() {
             </div>
           </div>
           <div
-            className="reveal reveal-delay-1"
+            className="reveal reveal-delay-1 promo-product-showcase"
             style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "12px",
-              alignItems: "flex-end",
+              position: "absolute",
+              bottom: 0,
+              right: 0,
+              zIndex: 2,
             }}
           >
-            <div
-              style={{
-                textAlign: "center",
-                background: "rgba(255,255,255,0.05)",
-                border: "0.5px solid rgba(74,158,63,0.3)",
-                padding: "24px 36px",
-              }}
-            >
-              <div
+            <Link to="/shop" style={{ display: "block", lineHeight: 0 }}>
+              <img
+                src="/product1.png"
+                alt="Combo 3 cuốn — Tiết kiệm 30%"
                 style={{
-                  fontSize: "10px",
-                  letterSpacing: "0.2em",
-                  textTransform: "uppercase",
-                  color: "var(--gold)",
-                  marginBottom: "8px",
-                }}
-              >
-                Tiết kiệm đến
-              </div>
-              <div
-                style={{
-                  fontFamily: "Playfair Display,serif",
-                  fontSize: "64px",
-                  fontWeight: 300,
-                  color: "var(--ivory)",
-                  lineHeight: 1,
-                }}
-              >
-                30
-                <span style={{ color: "var(--gold)", fontSize: "36px" }}>
-                  %
-                </span>
-              </div>
-              <div
-                style={{
-                  fontSize: "11px",
-                  color: "rgba(255,255,255,0.35)",
-                  marginTop: "8px",
-                }}
-              >
-                Khi mua combo 3 cuốn
-              </div>
-            </div>
-            <Link to="/shop">
-              <button
-                style={{
-                  background: "var(--gold)",
-                  color: "var(--ink)",
-                  border: "none",
-                  padding: "16px 36px",
+                  display: "block",
+                  height: "clamp(320px,30vw,460px)",
+                  width: "auto",
+                  maxWidth: "none",
+                  filter: "drop-shadow(0 40px 45px rgba(0,0,0,0.4))",
                   cursor: "pointer",
-                  fontFamily: "Be Vietnam Pro,sans-serif",
-                  fontSize: "11px",
-                  letterSpacing: "0.18em",
-                  textTransform: "uppercase",
-                  transition: "all 0.3s",
-                  width: "100%",
                 }}
-              >
-                Mua Combo Ngay
-              </button>
+              />
             </Link>
           </div>
         </div>
@@ -3094,7 +3068,10 @@ export default function Home() {
                               .closest("div")
                               ?.querySelector("img");
                             flyToCart(cardImg);
-                            handleAddToCart(book.hashId, getPreferredCartFormat(book));
+                            handleAddToCart(
+                              book.hashId,
+                              getPreferredCartFormat(book),
+                            );
                           }}
                           style={{
                             background: isFirst
