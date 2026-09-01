@@ -6,12 +6,163 @@
    ══════════════════════════════════════════════════════════════ */
 
 .em-page {
-  background: radial-gradient(ellipse at 50% 0%, #123430 0%, #071714 62%);
+  position: relative;
+  background: radial-gradient(ellipse at 50% 0%, #0e2b27 0%, #07130f 55%, #050e0b 100%);
   background-attachment: fixed;
   color: var(--ivory, #faf8f3);
   min-height: 100vh;
   padding-bottom: 0;
   overflow-x: clip;
+}
+
+/* ── Aurora mesh backdrop ───────────────────────────────────────
+   Several large, softly-blurred colour fields drawn from the brand
+   palette (forest / gold / sage / mist), each drifting on its own
+   slow independent path. Cheap to run, reads as a bespoke, living
+   gradient rather than a single flat radial. ────────────────────*/
+.em-aurora {
+  position: fixed;
+  inset: -10%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  filter: blur(90px) saturate(115%);
+  opacity: 0.85;
+}
+.em-aurora-blob {
+  position: absolute;
+  width: 52vmax;
+  height: 52vmax;
+  border-radius: 50%;
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+.em-aurora-blob.b1 {
+  top: -18%;
+  left: -12%;
+  background: radial-gradient(circle, rgba(45, 122, 110, 0.55) 0%, rgba(45, 122, 110, 0) 68%);
+  animation: em-aurora-drift-a 34s ease-in-out infinite alternate;
+}
+.em-aurora-blob.b2 {
+  top: -8%;
+  right: -18%;
+  width: 44vmax;
+  height: 44vmax;
+  background: radial-gradient(circle, rgba(74, 158, 63, 0.42) 0%, rgba(74, 158, 63, 0) 70%);
+  animation: em-aurora-drift-b 28s ease-in-out infinite alternate;
+}
+.em-aurora-blob.b3 {
+  bottom: -22%;
+  left: 12%;
+  width: 58vmax;
+  height: 58vmax;
+  background: radial-gradient(circle, rgba(143, 176, 154, 0.22) 0%, rgba(143, 176, 154, 0) 70%);
+  animation: em-aurora-drift-c 40s ease-in-out infinite alternate;
+}
+.em-aurora-blob.b4 {
+  bottom: -14%;
+  right: -6%;
+  width: 40vmax;
+  height: 40vmax;
+  background: radial-gradient(circle, rgba(92, 184, 79, 0.3) 0%, rgba(92, 184, 79, 0) 70%);
+  animation: em-aurora-drift-d 24s ease-in-out infinite alternate;
+}
+@keyframes em-aurora-drift-a {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(6vw, 8vh) scale(1.12); }
+}
+@keyframes em-aurora-drift-b {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-7vw, 6vh) scale(1.08); }
+}
+@keyframes em-aurora-drift-c {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(5vw, -6vh) scale(1.1); }
+}
+@keyframes em-aurora-drift-d {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-4vw, -7vh) scale(1.14); }
+}
+
+/* soft vignette to pull focus back to the centre content */
+.em-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 38%, transparent 0%, transparent 40%, rgba(4, 10, 8, 0.55) 100%);
+}
+
+/* fine film-grain, drawn once as an SVG noise tile — the detail that
+   reads as "designed" instead of a plain CSS gradient */
+.em-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .em-aurora-blob {
+    animation: none;
+  }
+}
+
+/* ── Ambient constellation field ────────────────────────────── */
+.em-particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.em-particle {
+  position: absolute;
+  width: var(--ps, 3px);
+  height: var(--ps, 3px);
+  border-radius: 50%;
+  background: var(--gold-light, #5cb84f);
+  opacity: 0;
+  box-shadow: 0 0 6px 1px rgba(92, 184, 79, 0.6);
+  animation: em-drift var(--pdur, 14s) ease-in-out infinite;
+  animation-delay: var(--pdelay, 0s);
+}
+@keyframes em-drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.6);
+    opacity: 0;
+  }
+  12% {
+    opacity: var(--pmax, 0.55);
+  }
+  50% {
+    transform: translate3d(var(--dx, 30px), calc(var(--dy, -60px) * -1), 0) scale(1);
+  }
+  88% {
+    opacity: var(--pmax, 0.55);
+  }
+  100% {
+    transform: translate3d(calc(var(--dx, 30px) * 1.6), calc(var(--dy, -60px) * -1.9), 0) scale(0.6);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .em-particle {
+    animation: none;
+    opacity: 0.2;
+  }
+}
+
+.em-header,
+.em-chart,
+.em-cycle,
+.em-cta {
+  position: relative;
+  z-index: 1;
 }
 
 /* ── Header ─────────────────────────────────────────────────── */
@@ -96,16 +247,36 @@
 .em-tier-branches {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-auto-rows: 1fr;
-  gap: 56px 28px;
+  gap: 0 28px;
   justify-items: stretch;
-  align-items: stretch;
+  align-items: start;
   transform-style: preserve-3d;
 }
 .em-tier-branches .em-node {
-  max-width: 280px;
+  max-width: 320px;
   margin: 0 auto;
   width: 100%;
+}
+
+/* column wrapping a level-1 studio + its own children, so each branch
+   is fully self-contained regardless of how many sub-nodes it has */
+.em-branch-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 64px;
+}
+
+.em-sub-branch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+}
+.em-sub-branch .em-node {
+  max-width: 190px;
 }
 
 .em-node {
@@ -118,14 +289,14 @@
   --glare-y: 0%;
 
   width: 100%;
-  max-width: 300px;
+  max-width: 320px;
   height: 100%;
   display: flex;
   flex-direction: column;
   background: linear-gradient(160deg, rgba(20, 42, 38, 0.94), rgba(9, 22, 19, 0.97));
   border: 0.5px solid rgba(74, 158, 63, 0.26);
   border-radius: 14px;
-  padding: 30px 24px 24px;
+  padding: 26px 22px 24px;
   text-align: center;
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
   cursor: pointer;
@@ -174,16 +345,96 @@
   box-shadow: 0 55px 120px rgba(0, 0, 0, 0.65), 0 0 55px rgba(74, 158, 63, 0.3);
 }
 .em-node.root {
-  max-width: 320px;
+  max-width: 360px;
   background: linear-gradient(160deg, rgba(74, 158, 63, 0.16), rgba(13, 51, 48, 0.95));
   border-color: rgba(92, 184, 79, 0.45);
-  padding: 36px 30px 28px;
+  padding: 34px 30px 28px;
+}
+.em-node.root::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 68px;
+  width: 190px;
+  height: 190px;
+  transform: translate(-50%, 0);
+  border-radius: 50%;
+  border: 0.5px solid rgba(92, 184, 79, 0.35);
+  animation: em-halo 3.2s ease-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes em-halo {
+  0% {
+    opacity: 0.55;
+    transform: translate(-50%, 0) scale(0.72);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(1.28);
+  }
+}
+
+.em-node.leaf {
+  padding: 22px 16px 18px;
+  border-radius: 12px;
+}
+.em-node.leaf .em-node-name {
+  font-size: 14.5px;
+}
+.em-node.leaf .em-node-desc {
+  font-size: 10.5px;
+  line-height: 1.6;
+}
+
+.em-node-icon-wrap {
+  width: 68px;
+  height: 68px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold-light, #5cb84f);
+  background: radial-gradient(circle, rgba(92, 184, 79, 0.18), transparent 72%);
+  border: 0.5px solid rgba(92, 184, 79, 0.4);
+  transform: translateZ(24px);
+  transition: transform 0.7s cubic-bezier(0.19, 1, 0.22, 1), box-shadow 0.5s ease;
+}
+.em-node:hover .em-node-icon-wrap {
+  transform: translateZ(56px) scale(1.08);
+  box-shadow: 0 12px 26px rgba(74, 158, 63, 0.25);
+}
+
+/* live "pulse" indicator — quiet, modern touch signalling an active node */
+.em-node-status {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #6bd35e;
+  box-shadow: 0 0 0 0 rgba(107, 211, 94, 0.6);
+  animation: em-status-pulse 2.4s ease-out infinite;
+  z-index: 3;
+}
+@keyframes em-status-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(107, 211, 94, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 9px rgba(107, 211, 94, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(107, 211, 94, 0);
+  }
 }
 
 .em-node-logo-wrap {
-  width: 100px;
-  height: 76px;
-  margin: 0 auto 14px;
+  width: 156px;
+  height: 116px;
+  margin: 0 auto 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -191,8 +442,8 @@
   transition: transform 0.7s cubic-bezier(0.19, 1, 0.22, 1);
 }
 .em-node.root .em-node-logo-wrap {
-  width: 128px;
-  height: 92px;
+  width: 208px;
+  height: 148px;
   transform: translateZ(36px);
 }
 .em-node:hover .em-node-logo-wrap {
@@ -322,11 +573,68 @@
   opacity: 0.9;
 }
 
-/* ── Lifecycle loop ─────────────────────────────────────────── */
+.em-connector-svg circle.em-node-dot {
+  fill: #6bd35e;
+}
+.em-flow-dot {
+  fill: var(--gold-light, #5cb84f);
+  filter: drop-shadow(0 0 4px rgba(107, 211, 94, 0.9));
+  opacity: 0;
+  animation: em-flow-fade 0.6s ease-out 1s forwards;
+}
+@keyframes em-flow-fade {
+  to {
+    opacity: 0.95;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .em-flow-dot {
+    display: none;
+  }
+}
+/* ── Brand divider — a real photo pinned in place as content
+   scrolls over it, exactly like the site's existing parallax
+   banners (see about-us.css .mission-parallax-banner). It sits as
+   the bottom-most layer between the tree diagram and the wheel. ── */
+.em-divider {
+  position: relative;
+  height: clamp(320px, 38vw, 560px);
+  background-image: url('/natura2.png');
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center 42%;
+  overflow: hidden;
+  z-index: 1;
+}
+.em-divider-glass {
+  position: absolute;
+  inset: 44px 64px;
+  background: rgba(7, 23, 20, 0.1);
+  border: 0.5px solid rgba(255, 255, 255, 0.2);
+}
+@media (max-width: 900px) {
+  .em-divider {
+    height: clamp(260px, 46vw, 420px);
+  }
+  .em-divider-glass {
+    inset: 30px 36px;
+  }
+}
+@media (max-width: 700px) {
+  /* background-attachment:fixed is unreliable on mobile browsers —
+     fall back to a normal scrolling background there */
+  .em-divider {
+    background-attachment: scroll;
+    height: clamp(220px, 58vw, 340px);
+  }
+  .em-divider-glass {
+    inset: 20px 20px;
+  }
+}
+
 .em-cycle {
   position: relative;
   padding: 20px 24px 110px;
-  border-top: 0.5px solid rgba(92, 184, 79, 0.16);
 }
 .em-cycle-inner {
   max-width: 1180px;
@@ -346,7 +654,7 @@
 }
 .em-cycle-subtitle {
   max-width: 620px;
-  margin: 16px auto 56px;
+  margin: 16px auto 64px;
   font-family: "Be Vietnam Pro", sans-serif;
   font-size: 13.5px;
   line-height: 1.75;
@@ -354,38 +662,89 @@
   color: rgba(250, 248, 243, 0.55);
 }
 
-.em-cycle-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-  justify-content: center;
-  gap: 6px 4px;
+/* ── Lifecycle wheel — the seven journeys arranged in a closed loop ── */
+.em-cycle-wheel {
+  position: relative;
+  width: min(92vw, 620px);
+  aspect-ratio: 1;
+  margin: 0 auto;
 }
-.em-cycle-step-wrap {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.em-wheel-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
-.em-cycle-step {
-  width: 138px;
+.em-wheel-ring circle {
+  fill: none;
+  stroke: rgba(92, 184, 79, 0.32);
+  stroke-width: 0.5;
+  stroke-dasharray: 1.4 2.2;
+}
+.em-wheel-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 18px 10px;
-  border-radius: 12px;
-  background: rgba(250, 248, 243, 0.03);
-  border: 0.5px solid rgba(92, 184, 79, 0.18);
-  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+  gap: 3px;
+  color: var(--gold-light, #5cb84f);
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  text-align: center;
+  line-height: 1.4;
 }
-.em-cycle-step:hover {
-  background: rgba(92, 184, 79, 0.08);
-  border-color: rgba(92, 184, 79, 0.4);
-  transform: translateY(-3px);
+.em-wheel-center::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 100px;
+  height: 100px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 0.5px solid rgba(92, 184, 79, 0.3);
+  animation: em-halo 3.2s ease-out infinite;
+  z-index: -1;
+}
+.em-wheel-arrow {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(107, 211, 94, 0.65);
+}
+.em-wheel-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 112px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  padding: 14px 8px;
+  border-radius: 12px;
+  background: rgba(9, 22, 19, 0.55);
+  border: 0.5px solid rgba(92, 184, 79, 0.2);
+  backdrop-filter: blur(6px);
+  transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+.em-wheel-node:hover {
+  transform: translate(-50%, -50%) scale(1.08);
+  background: rgba(9, 22, 19, 0.8);
+  border-color: rgba(92, 184, 79, 0.55);
+}
+.em-wheel-node .em-cycle-icon {
+  width: 38px;
+  height: 38px;
 }
 .em-cycle-icon {
-  width: 40px;
-  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -396,25 +755,40 @@
 }
 .em-cycle-label {
   font-family: "Be Vietnam Pro", sans-serif;
-  font-size: 10.5px;
-  line-height: 1.5;
-  color: rgba(250, 248, 243, 0.7);
+  font-size: 9.5px;
+  line-height: 1.45;
+  color: rgba(250, 248, 243, 0.72);
   font-weight: 400;
-}
-.em-cycle-arrow {
-  flex-shrink: 0;
-  color: rgba(92, 184, 79, 0.55);
-}
-.em-cycle-loop {
-  color: var(--gold-light, #5cb84f);
 }
 
 /* ── Closing CTA ────────────────────────────────────────────── */
 .em-cta {
-  text-align: center;
+  position: relative;
   padding: 30px 24px 130px;
-  max-width: 620px;
+  max-width: 780px;
   margin: 0 auto;
+  overflow: hidden;
+}
+.em-cta-circuit {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  opacity: 0.9;
+}
+.em-cta-circuit path {
+  fill: none;
+  stroke: rgba(92, 184, 79, 0.3);
+  stroke-width: 1.3;
+}
+.em-circuit-pad {
+  fill: rgba(107, 211, 94, 0.5);
+}
+.em-cta-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
 }
 .em-cta-icon {
   color: var(--gold-light, #5cb84f);
@@ -472,10 +846,14 @@
 }
 
 /* ── Responsive ─────────────────────────────────────────────── */
-@media (max-width: 1000px) {
+@media (max-width: 900px) {
   .em-tier-branches {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 48px 24px;
+    grid-template-columns: 1fr;
+    gap: 80px;
+    justify-items: center;
+  }
+  .em-branch-col {
+    max-width: 340px;
   }
 }
 @media (max-width: 700px) {
@@ -483,21 +861,59 @@
     padding: 90px 20px 60px;
   }
   .em-tier-root {
-    margin-bottom: 100px;
+    margin-bottom: 90px;
   }
-  .em-tier-branches {
-    grid-template-columns: 1fr;
-    gap: 60px;
+  .em-branch-col {
+    gap: 48px;
   }
   .em-node {
     max-width: 320px;
   }
-  .em-cycle-step {
-    width: 118px;
-    padding: 14px 8px;
+  .em-sub-branch {
+    gap: 16px;
+  }
+  .em-sub-branch .em-node {
+    max-width: 150px;
+  }
+  .em-wheel-node {
+    width: 92px;
+    padding: 10px 6px;
+    gap: 6px;
+  }
+  .em-wheel-node .em-cycle-icon {
+    width: 32px;
+    height: 32px;
   }
   .em-cycle-label {
-    font-size: 9.5px;
+    font-size: 8.5px;
+  }
+}
+
+/* below this width a radial layout gets too cramped — fall back to a
+   simple, fully accessible stacked list */
+@media (max-width: 480px) {
+  .em-cycle-wheel {
+    width: 100%;
+    aspect-ratio: unset;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .em-wheel-ring,
+  .em-wheel-arrow,
+  .em-wheel-center {
+    display: none;
+  }
+  .em-wheel-node {
+    position: static;
+    transform: none;
+    width: 100%;
+    flex-direction: row;
+    text-align: left;
+    gap: 12px;
+  }
+  .em-wheel-node:hover {
+    transform: none;
   }
 }
 

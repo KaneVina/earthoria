@@ -186,7 +186,7 @@ export default function Footer() {
                 <Link to="/about">Về Chúng Tôi</Link>
               </li>
               <li>
-                <Link to="/blog">Blog</Link>
+                <Link to="/ecosystem">Hệ sinh thái</Link>
               </li>
               <li>
                 <Link to="/sitemap">Sơ Đồ Trang</Link>
