@@ -65,7 +65,7 @@ const BACK_TO_TOP_THRESHOLD = 520;
 //   chớp nháy nếu API trả lời quá nhanh) và thời lượng hoạt ảnh mây tản ra —
 //   giá trị này phải khớp với --kid-curtain-leave trong kidAccess.css
 const INTRO_COVER_MIN_MS = 900;
-const INTRO_LEAVE_MS = 1950;
+const INTRO_LEAVE_MS = 2750;
 
 const WEEKDAYS_VI = [
   "Chủ nhật",
