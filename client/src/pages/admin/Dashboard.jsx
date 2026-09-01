@@ -52,7 +52,7 @@ const ORDER_META = {
   DELIVERED: { label: "Đã giao", cls: "success" },
   COMPLETED: { label: "Hoàn thành", cls: "success" },
   CANCELLED: { label: "Hủy đơn", cls: "danger" },
-  REFUNDED: { label: "Hoàn tiền", cls: "danger" },
+  REFUNDED: { label: "Hoàn tiền", cls: "purple" }, // khác màu với CANCELLED để phân biệt rõ
 };
 
 /*  Custom Tooltip for BarChart  */
@@ -765,6 +765,7 @@ export default function Dashboard() {
               <tr>
                 {[
                   "Mã đơn",
+                  "Loại",
                   "Khách hàng",
                   "Sản phẩm",
                   "Tổng tiền",
@@ -779,7 +780,7 @@ export default function Dashboard() {
               {isLoading ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     style={{
                       padding: 40,
                       textAlign: "center",
@@ -792,7 +793,7 @@ export default function Dashboard() {
               ) : !data?.recentOrders?.length ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     style={{
                       padding: 40,
                       textAlign: "center",
@@ -808,6 +809,18 @@ export default function Dashboard() {
                   return (
                     <tr key={order.id}>
                       <td className="a-td-mono">{getOrderCode(order)}</td>
+                      <td>
+                        <span
+                          className={`a-badge ${order.isDigital ? "blue" : "dark"}`}
+                          title={
+                            order.isDigital
+                              ? "Sách điện tử — không giao hàng"
+                              : "Sách giấy — có giao hàng"
+                          }
+                        >
+                          {order.isDigital ? "Ebook" : "Sách giấy"}
+                        </span>
+                      </td>
                       <td>
                         <div style={{ fontWeight: 500, fontSize: 12 }}>
                           {order.user?.name}
