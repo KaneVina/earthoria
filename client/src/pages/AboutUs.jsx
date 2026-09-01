@@ -1,12 +1,122 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import { Link } from "react-router-dom";
 import Logo3D from "../components/Logo3D.jsx";
 import "../components/assets/css/about-us.css";
 import OrgChart from "../components/OrgChart.jsx";
 
+function calculateAge(birthdayStr) {
+  const [day, month, year] = birthdayStr.split("/").map(Number);
+  const birthDate = new Date(year, month - 1, day);
+  const today = new Date();
+
+  let years = today.getFullYear() - birthDate.getFullYear();
+  let months = today.getMonth() - birthDate.getMonth();
+  let days = today.getDate() - birthDate.getDate();
+
+  if (days < 0) {
+    months -= 1;
+    const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+    days += prevMonth.getDate();
+  }
+  if (months < 0) {
+    years -= 1;
+    months += 12;
+  }
+
+  if (years < 1) {
+    const parts = [];
+    if (months > 0) parts.push(`${months} tháng`);
+    parts.push(`${days} ngày`);
+    return parts.join(" và ");
+  }
+
+  return `${years} tuổi`;
+}
 export default function AboutUs() {
   const logoSectionRef = useRef(null);
   const logoTiltRef = useRef(null);
+  const [activeGuide, setActiveGuide] = useState(null);
+  const guideCardRefs = useRef({});
+
+  const switchGuide = useCallback((id) => {
+    setActiveGuide(id);
+  }, []);
+
+  useEffect(() => {
+    guides.forEach((g) => {
+      guideCardRefs.current[g.id]?.classList.toggle(
+        "is-hidden",
+        Boolean(activeGuide),
+      );
+    });
+  }, [activeGuide]);
+
+const guides = [
+  {
+    id: "eira",
+    side: "a",
+    img: "/eira/eira-f.png",
+    name: "Eira Nguyen",
+    gender: "Nữ",
+    role: "Trợ Lý AI · Người Bạn Tri Thức",
+    birthday: "03/06/2026",
+    hobbies: [
+      "Đặt những câu hỏi ngược thật thú vị",
+      "Khám phá những hiện tượng thiên nhiên kỳ lạ",
+      "Thử sức với các câu đố khoa học",
+      "Ngắm những vì sao trên bầu trời đêm",
+    ],
+
+    traits: [
+      "Ấm áp",
+      "Kiên nhẫn",
+      "Tinh nghịch",
+      "Ham hiểu biết",
+    ],
+
+    shortDesc:
+      "Một người bạn nhỏ luôn lắng nghe những điều trẻ thắc mắc, khơi mở tư duy để mỗi câu hỏi là một cánh cửa mở ra điều kỳ diệu. ",
+
+    fullDesc:
+      "Eira là người bạn tri thức của Earthoria — một trợ lý AI luôn ở bên trẻ trên hành trình đọc, học và khám phá thế giới. Eira không chỉ trả lời câu hỏi, mà thích cùng trẻ đi tìm câu trả lời theo cách riêng của mình. Với sự ấm áp, kiên nhẫn và một chút tinh nghịch, cô thường đặt lại những câu hỏi thật bất ngờ để khơi mở suy nghĩ và giúp trẻ tự mình phát hiện ra điều thú vị phía sau mỗi trang sách. Eira đặc biệt say mê những hiện tượng thiên nhiên kỳ lạ, những bí ẩn của vũ trụ và tất nhiên, luôn thủ sẵn vài câu đố vui dành cho những nhà thám hiểm nhí.",
+
+    quote:
+      "Câu hỏi này thú vị lắm! Mình cùng khám phá xem điều gì đang ẩn sau nó nhé?",
+  },
+
+  {
+    id: "rori",
+    side: "b",
+    img: "/eira/rori-f.png",
+    name: "Rori Le",
+    gender: "Nam",
+    role: "Người Dẫn Chuyện · Bạn Đồng Hành",
+    birthday: "21/06/2026",
+    hobbies: [
+      "Khám phá những cung đường mới",
+      "Kể chuyện bên ánh lửa trại",
+      "Tự vẽ bản đồ cho những chuyến phiêu lưu",
+      "Chinh phục những ngọn núi trong AR",
+    ],
+
+    traits: [
+      "Táo bạo",
+      "Vui vẻ",
+      "Quyết đoán",
+      "Truyền cảm hứng",
+    ],
+
+    shortDesc:
+      "Người bạn đồng hành luôn dẫn lối, khơi mở hành trình để mỗi bước chân là một câu chuyện đang chờ được khám phá.",
+
+    fullDesc:
+      "Rori là người dẫn đường của Earthoria — người bạn đồng hành xuất hiện xuyên suốt những hành trình khám phá, đưa trẻ đi qua từng trang sách như bước vào một chuyến phiêu lưu thực sự. Cậu không thích đứng yên chờ đợi; Rori luôn là người khởi hành trước, mở ra những con đường mới, đặt ra thử thách và rủ trẻ cùng tiến về phía trước. Với tinh thần táo bạo, vui vẻ và đầy quyết đoán, Rori luôn biết cách biến một khoảnh khắc khó khăn thành động lực để tiếp tục. Bởi với Rori, mỗi hành trình không chỉ là nơi để đi đến — mà còn là nơi để trở nên can đảm hơn, tò mò hơn và khám phá thêm một điều mới mẻ.",
+
+    quote:
+      "Ba lô sẵn sàng chưa? Đi thôi — phía trước còn cả một thế giới đang chờ chúng ta!",
+  },
+];
+
 
   const handleLogoSectionMouseMove = useCallback((e) => {
     const el = logoSectionRef.current;
@@ -144,6 +254,14 @@ export default function AboutUs() {
       storyEvents.forEach((ev) => storyObserver.observe(ev));
     }
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") switchGuide(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, []);
 
   const handleFormSubmit = (e) => {
@@ -534,6 +652,108 @@ export default function AboutUs() {
       {/* ORG CHART */}
       <OrgChart />
 
+      {/* GUIDES DUO */}
+      <section className="guide-section">
+        <div className="guide-inner">
+          <div className="section-header reveal">
+            <div className="section-eyebrow">
+              <div className="section-eyebrow-line"></div>
+              <span className="section-eyebrow-text">Người Bạn Đồng Hành</span>
+              <div className="section-eyebrow-line"></div>
+            </div>
+            <h2 className="section-title">
+              Hai Người <em>Dẫn Đường</em>
+            </h2>
+            <p className="section-subtitle">
+              Hai nhân vật, hai cách kể chuyện, chung một mục tiêu.
+            </p>
+          </div>
+
+          <div className="guide-frame">
+            {guides.map((g) => (
+              <article
+                ref={(el) => (guideCardRefs.current[g.id] = el)}
+                className={`guide-card guide-card--${g.side} reveal ${g.side === "b" ? "reveal-delay-1" : ""}`}
+                key={g.id}
+              >
+                <div className="guide-photo">
+                  <img src={g.img} alt={`Nhân vật ${g.name}`} />
+                </div>
+                <div className="guide-text">
+                  <p className="guide-type">{g.role}</p>
+                  <h3 className="guide-name">{g.name}</h3>
+                  <div className="guide-id-row">
+                    <span className="guide-id-chip">{g.gender}</span>
+                    <span className="guide-id-chip">{g.birthday}</span>
+                  </div>
+                  <p className="guide-desc">{g.shortDesc}</p>
+                  <div className="guide-hobby-row">
+                    {g.hobbies.slice(0, 2).map((h, i) => (
+                      <span className="guide-hobby-chip" key={i}>{h}</span>
+                    ))}
+                  </div>
+                  <button className="guide-more" onClick={() => switchGuide(g.id)}>
+                    {g.side === "b" ? "← Xem hồ sơ đầy đủ" : "Xem hồ sơ đầy đủ →"}
+                  </button>
+                </div>
+              </article>
+            ))}
+
+            {guides.map((g) => (
+              <div
+                className={`guide-full guide-full--${g.side} ${activeGuide === g.id ? "is-open" : ""}`}
+                key={`full-${g.id}`}
+              >
+                <button className="guide-full-close" aria-label="Đóng" onClick={() => switchGuide(null)}>
+                  ✕
+                </button>
+                <div className="guide-full-media">
+                  <img src={g.img} alt={`Nhân vật ${g.name}`} />
+                </div>
+                <div className="guide-full-body">
+                  <p className="guide-type">{g.role}</p>
+                  <h3 className="guide-name">{g.name}</h3>
+
+                  <div className="guide-full-stats">
+                    <div className="guide-full-stat">
+                      <span className="guide-full-stat-label">Giới tính</span>
+                      <span className="guide-full-stat-value">{g.gender}</span>
+                    </div>
+                    <div className="guide-full-stat">
+                      <span className="guide-full-stat-label">Ngày sinh</span>
+                      <span className="guide-full-stat-value">{g.birthday}</span>
+                    </div>
+                    <div className="guide-full-stat">
+                      <span className="guide-full-stat-label">Tuổi</span>
+                      <span className="guide-full-stat-value">{calculateAge(g.birthday)}</span>
+                    </div>
+                  </div>
+
+                  <p className="guide-full-desc">{g.fullDesc}</p>
+
+                  <div className="guide-full-traits">
+                    {g.traits.map((t, i) => (
+                      <span className="guide-trait-chip" key={i}>{t}</span>
+                    ))}
+                  </div>
+
+                  <div className="guide-full-hobbies">
+                    <span className="guide-full-hobbies-label">Sở thích</span>
+                    <div className="guide-full-hobbies-list">
+                      {g.hobbies.map((h, i) => (
+                        <span className="guide-hobby-chip" key={i}>{h}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <p className="guide-full-quote">"{g.quote}"</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* VALUES EXTENDED */}
       <section className="about-values-section">
         <div className="about-values-inner">
@@ -887,7 +1107,7 @@ export default function AboutUs() {
                 <span
                   className="tech-editor-number"
                   id="tech-loc-counter"
-                  data-target="142601"
+                  data-target="145596"
                 >
                   0
                 </span>
@@ -901,7 +1121,7 @@ export default function AboutUs() {
                 <span
                   className="tech-editor-number tech-editor-number--secondary"
                   id="tech-file-counter"
-                  data-target="346"
+                  data-target="348"
                 >
                   0
                 </span>

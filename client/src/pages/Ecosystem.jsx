@@ -49,6 +49,16 @@ const LEVEL1 = [
     ],
   },
   {
+    id: "cce-studio",
+    name: "Commerce & Customer Experience",
+    tagline: "Thương mại & trải nghiệm khách hàng",
+    logo: "/logo/logo-mau/lg-m-cce.png",
+    desc: "Vận hành toàn bộ hành trình mua sắm — từ đặt sách, thanh toán đến hậu mãi — đảm bảo mỗi gia đình đều nhận được trải nghiệm mượt mà và tận tâm nhất.",
+    to: "/shop",
+    cta: "Trải nghiệm mua sắm",
+    children: [],
+  },
+  {
     id: "game-studio",
     name: "Game Studio",
     tagline: "Xưởng sản xuất trò chơi",
@@ -412,10 +422,11 @@ export default function Ecosystem() {
         </div>
       </div>
 
-      {/* ── Brand divider — real photo, fixed as the bottom-most
-           layer; content scrolls over it and reveals it in place ── */}
+      {/* ── Brand divider — plain dark backdrop + wordmark, pinned
+           in place as the bottom-most layer while sections scroll
+           over it. No photo — CSS gradient + text only. ─────── */}
       <div className="em-divider" aria-hidden="true">
-        <div className="em-divider-glass" />
+        <span className="em-divider-word">Earthoria</span>
       </div>
 
       {/* ── Lifecycle loop ─────────────────────────────────── */}

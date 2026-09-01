@@ -1968,3 +1968,375 @@ body.dark-mode .advisor-card::after {
   transform: translateY(-4px) scaleX(1.3);
   transition-delay: .14s;
 }
+.oc-card.has-cutout:hover .oc-divider {
+  transform: translateY(-4px) scaleX(1.3);
+  transition-delay: .14s;
+}
+/* ─ GUIDE DUO SECTION — Eira & Rori ─ */
+.guide-section {
+  padding: 100px 100px 120px;
+  background: var(--parchment);
+  position: relative;
+  overflow: hidden;
+}
+.guide-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.guide-frame {
+  position: relative;
+  min-height: 560px;
+  border: 0.5px solid var(--border-gold);
+  box-shadow: 0 40px 90px -34px rgba(13, 43, 30, 0.28);
+  overflow: visible;
+}
+.guide-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(74, 158, 63, 0.2), transparent 34%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.guide-card {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  padding: 36px 32px;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.guide-card.is-hidden {
+  opacity: 0;
+  transform: scale(0.97);
+  pointer-events: none;
+}
+.guide-card--a { background: var(--cream); color: var(--text-body); }
+.guide-card--b { background: var(--forest); color: var(--ivory); flex-direction: row-reverse; text-align: right; }
+
+.guide-photo {
+  position: relative;
+  width: 112px;
+  height: 148px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 0.5px solid var(--border-gold);
+  background: var(--white);
+  padding: 10px;
+  box-shadow: 0 20px 40px rgba(13, 43, 30, 0.18);
+  transform: rotate(var(--guide-tilt, 0deg));
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
+}
+.guide-card--a .guide-photo { --guide-tilt: -4deg; }
+.guide-card--b .guide-photo { --guide-tilt: 3deg; }
+.guide-card:hover .guide-photo { transform: rotate(0deg); box-shadow: 0 26px 48px rgba(13, 43, 30, 0.24); }
+.guide-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+  transition: transform 0.6s ease;
+}
+.guide-card:hover .guide-photo img { transform: scale(1.05); }
+.guide-photo::after {
+  content: "";
+  position: absolute; top: 0; right: 0;
+  width: 0; height: 0;
+  border-style: solid;
+  border-width: 0 16px 16px 0;
+  border-color: transparent var(--gold-pale) transparent transparent;
+  transition: border-color 0.4s ease;
+}
+.guide-card:hover .guide-photo::after { border-color: transparent var(--gold) transparent transparent; }
+
+.guide-type {
+  font-size: 8.5px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.guide-type::after { content: ""; flex: 1; max-width: 30px; height: 0.5px; background: var(--border-gold); }
+.guide-card--b .guide-type { flex-direction: row-reverse; }
+
+.guide-name {
+  margin: 0; display: inline-block;
+  font-family: "Playfair Display", serif; font-weight: 400;
+  font-size: clamp(1.5rem, 2.6vw, 1.95rem); line-height: 1.08;
+}
+.guide-name::after {
+  content: ""; display: block;
+  width: 24px; height: 1.5px; background: var(--gold);
+  margin-top: 9px;
+  transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.guide-card--b .guide-name::after { margin-left: auto; }
+.guide-card:hover .guide-name::after { width: 48px; }
+
+.guide-id-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.guide-card--b .guide-id-row { justify-content: flex-end; }
+.guide-id-chip {
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 9.5px;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 0.5px solid var(--border-gold);
+  color: var(--gold);
+  white-space: nowrap;
+}
+.guide-card--b .guide-id-chip {
+  border-color: rgba(212, 232, 220, 0.35);
+  color: var(--gold-light, var(--gold));
+}
+
+.guide-desc {
+  margin: 14px 0 0; max-width: 30ch;
+  font-size: 12px; line-height: 1.72; font-weight: 300;
+}
+.guide-card--a .guide-desc { color: var(--text-muted); }
+.guide-card--b .guide-desc { color: rgba(250, 248, 243, 0.55); margin-left: auto; }
+
+.guide-hobby-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.guide-card--b .guide-hobby-row { justify-content: flex-end; }
+.guide-hobby-chip {
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
+  padding: 5px 11px;
+  border: 0.5px solid rgba(74, 158, 63, 0.35);
+  background: rgba(74, 158, 63, 0.06);
+  color: var(--forest-mid, #1a5c52);
+}
+.guide-card--b .guide-hobby-chip {
+  border-color: rgba(74, 158, 63, 0.4);
+  background: rgba(74, 158, 63, 0.12);
+  color: var(--gold-light, var(--gold));
+}
+
+.guide-more {
+  display: inline-flex; align-items: center; gap: 12px;
+  margin-top: 18px; padding: 0 0 6px;
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--gold); background: none; border: none;
+  border-bottom: 0.5px solid var(--gold-light, var(--gold));
+  cursor: pointer; transition: gap 0.3s ease;
+}
+.guide-more:hover { gap: 18px; }
+.guide-card--b .guide-more { color: var(--gold-light, var(--gold)); }
+
+@media (min-width: 900px) {
+  .guide-frame {
+    background: linear-gradient(115deg, var(--cream) 0% 46.5%, var(--gold) 46.5% 47.2%, var(--forest) 47.2% 100%);
+  }
+  .guide-card {
+    position: absolute;
+    width: 38%;
+    background: none !important;
+    padding: 0;
+  }
+  .guide-card--a { top: 7%; left: 6%; }
+  .guide-card--b { bottom: 7%; right: 6%; }
+}
+
+@media (max-width: 899px) {
+  .guide-frame { border: none; box-shadow: none; min-height: auto; }
+  .guide-frame::before { display: none; }
+  .guide-card { flex-direction: column !important; align-items: center; text-align: center !important; }
+  .guide-type::after { display: none; }
+  .guide-photo { margin-bottom: 16px; }
+  .guide-desc { max-width: 32ch; }
+  .guide-id-row, .guide-hobby-row { justify-content: center !important; }
+}
+
+.guide-full {
+  position: absolute; inset: 0; z-index: 10;
+  display: flex;
+ overflow: visible;
+  opacity: 0;
+  transform: scale(1.015);
+  pointer-events: none;
+  transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.guide-full.is-open {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.guide-full--a { background: var(--cream); color: var(--text-body); }
+
+.guide-full--b {
+  background: var(--forest); color: var(--ivory);
+  flex-direction: row-reverse;
+}
+.guide-full--b .guide-full-body { text-align: right; }
+.guide-full--b .guide-type { flex-direction: row-reverse; }
+.guide-full--b .guide-name::after { margin-left: auto; }
+.guide-full--b .guide-full-stats,
+.guide-full--b .guide-full-traits,
+.guide-full--b .guide-full-hobbies-list { justify-content: flex-end; }
+.guide-full--b .guide-full-quote {
+  border-left: none;
+  border-right: 2px solid var(--gold-light, var(--gold));
+  padding-left: 0;
+  padding-right: 18px;
+}
+.guide-full--b .guide-full-desc {
+  text-align: left;
+}
+.guide-full--b .guide-hobby-chip {
+  border-color: rgba(212, 232, 220, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--gold-light, var(--gold));
+}
+
+.guide-full-media {
+ flex: 0 0 26%;
+  position: relative;
+ overflow: visible;
+  background: radial-gradient(ellipse at 50% 60%, rgba(74,158,63,0.1), transparent 70%), var(--white);
+}
+.guide-full-media img { width: 100%; height: 100%; object-fit: contain; object-position: center center; padding: 24px; }
+
+.guide-full-body {
+  flex: 1;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 36px clamp(28px, 5vw, 64px);
+  max-width: none;
+  overflow-y: auto;
+  max-height: 100%;
+}
+
+.guide-full-stats {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  padding-top: 18px;
+  padding-bottom: 18px;
+  border-top: 0.5px solid var(--border, rgba(13,51,48,0.12));
+  border-bottom: 0.5px solid var(--border, rgba(13,51,48,0.12));
+}
+.guide-full--b .guide-full-stats { border-color: rgba(255,255,255,0.12); }
+.guide-full-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.guide-full-stat-label {
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.guide-full--b .guide-full-stat-label { color: var(--gold-light, var(--gold)); }
+.guide-full-stat-value {
+  font-family: "Playfair Display", serif;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.guide-full-quote {
+  font-family: "Playfair Display", serif; font-style: italic;
+  font-size: 16px; line-height: 1.6;
+  padding-left: 18px;
+  border-left: 2px solid var(--gold);
+  margin: 24px 0 0;
+}
+.guide-full--b .guide-full-quote { border-left-color: var(--gold-light, var(--gold)); }
+.guide-full-desc { margin-top: 18px; font-size: 13px; line-height: 1.8; font-weight: 300; max-width: 100%; }
+.guide-full--a .guide-full-desc { color: var(--text-muted); }
+.guide-full--b .guide-full-desc { color: rgba(250, 248, 243, 0.6); }
+.guide-full .guide-name { font-size: clamp(1.9rem, 3vw, 2.5rem); }
+
+.guide-full-traits {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.guide-trait-chip {
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border: 0.5px solid var(--border-gold);
+  color: var(--gold);
+}
+.guide-full--b .guide-trait-chip {
+  border-color: rgba(212, 232, 220, 0.3);
+  color: rgba(212, 232, 220, 0.85);
+}
+
+.guide-full-hobbies {
+  margin-top: 22px;
+}
+.guide-full-hobbies-label {
+  display: block;
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+.guide-full--b .guide-full-hobbies-label { color: var(--gold-light, var(--gold)); }
+.guide-full-hobbies-list {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.guide-full-close {
+  position: absolute; top: 20px; right: 24px; z-index: 5;
+  width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  border: 0.5px solid var(--border-gold);
+  background: transparent; color: inherit;
+  font-size: 16px; line-height: 1; cursor: pointer;
+  transition: all 0.3s ease;
+}
+.guide-full-close:hover { background: var(--gold-pale); border-color: var(--gold); color: var(--forest); }
+.guide-full--b .guide-full-close:hover { background: rgba(255, 255, 255, 0.1); color: var(--ivory); }
+
+@media (max-width: 760px) {
+  .guide-full { flex-direction: column; }
+  .guide-full-media { flex: 0 0 220px; }
+  .guide-full-body { padding: 32px 24px 44px; text-align: center; }
+  .guide-full-stats,
+  .guide-full-traits,
+  .guide-full-hobbies-list,
+  .guide-full--b .guide-full-stats,
+  .guide-full--b .guide-full-traits,
+  .guide-full--b .guide-full-hobbies-list { justify-content: center; }
+}
+
+body.dark-mode .guide-section { background: #161e1a; }
+body.dark-mode .guide-card--a,
+body.dark-mode .guide-full--a { background: #1c2822; color: #c8d4cc; }
+body.dark-mode .guide-card--a .guide-desc,
+body.dark-mode .guide-full--a .guide-full-desc { color: rgba(180, 200, 188, 0.5); }
+body.dark-mode .guide-photo,
+body.dark-mode .guide-full-media { background: #222e28; }
+
+@media (prefers-reduced-motion: reduce) {
+  .guide-photo, .guide-name::after, .guide-full, .guide-card { transition: none; }
+}
