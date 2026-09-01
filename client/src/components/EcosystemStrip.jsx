@@ -7,6 +7,12 @@ const ECOSYSTEM_LOGOS = [
     name: "Earthoria",
     desc: "Hệ sinh thái gốc",
   },
+    {
+    src: "/logo/logo-mau/lg-m-cce.png",
+    alt: "Earthoria Commerce & Customer Experience",
+    name: "Commerce & Customer Experience",
+    desc: "Thương mại & Trải nghiệm Khách hàng",
+  },
   {
     src: "/logo/logo-mau/lg-m-family-studio.png",
     alt: "Earthoria Family Studio",
