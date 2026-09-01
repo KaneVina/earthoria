@@ -1,24 +1,29 @@
-const { Resend } = require('resend')
-const resend = new Resend(process.env.RESEND_API_KEY)
+const { Resend } = require("resend");
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function sendMail(payload) {
-  const { data, error } = await resend.emails.send(payload)
+  const { data, error } = await resend.emails.send(payload);
   if (error) {
-    const err = new Error(error.message || 'Gửi email thất bại')
-    err.name = 'ResendError'
-    err.cause = error
-    throw err
+    const err = new Error(error.message || "Gửi email thất bại");
+    err.name = "ResendError";
+    err.cause = error;
+    throw err;
   }
-  return data
+  return data;
 }
 
 async function verifyEmailTransport() {
-  console.log('✓ Resend email service ready')
+  console.log("✓ Resend email service ready");
 }
 
-function wrapEmailTemplate({ preheader, bodyHtml, ctaUrl, footerDepartment = 'IT' }) {
-  const logoUrl = process.env.EMAIL_LOGO_URL || ''
-  const clientUrl = ctaUrl || process.env.CLIENT_URL || '#'
+function wrapEmailTemplate({
+  preheader,
+  bodyHtml,
+  ctaUrl,
+  footerDepartment = "IT",
+}) {
+  const logoUrl = process.env.EMAIL_LOGO_URL || "";
+  const clientUrl = ctaUrl || process.env.CLIENT_URL || "#";
 
   return `<!DOCTYPE html>
 <html lang="vi">
@@ -109,7 +114,7 @@ function wrapEmailTemplate({ preheader, bodyHtml, ctaUrl, footerDepartment = 'IT
 </td></tr>
 </table>
 </body>
-</html>`
+</html>`;
 }
 
 // ─ OTP Email ─
@@ -123,7 +128,7 @@ async function sendOtpEmail({ to, name, otp }) {
     </h1>
 
     <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
-      Xin chào, ${name || 'bạn'}.
+      Xin chào, ${name || "bạn"}.
     </p>
     <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 32px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
       Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn. Sử dụng mã bên dưới để tiếp tục:
@@ -152,22 +157,24 @@ async function sendOtpEmail({ to, name, otp }) {
         Không chia sẻ mã này với bất kỳ ai và không chuyển tiếp email này, kể cả nhân viên Earthoria.
       </p>
     </div>
-  `
+  `;
 
   return sendMail({
-    from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
+    from: `${process.env.EMAIL_FROM_NAME || "Earthoria"} <noreply@earthoria.id.vn>`,
     to,
     subject: `${otp} — Mã xác thực Earthoria của bạn`,
     html: wrapEmailTemplate({
       preheader: `Mã xác thực của bạn: ${otp}. Hiệu lực trong 10 phút.`,
       bodyHtml,
     }),
-  })
+  });
 }
 
 // ─ Password Changed Email ─
 async function sendPasswordChangedEmail({ to, name }) {
-  const time = new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
+  const time = new Date().toLocaleString("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+  });
 
   const bodyHtml = `
     <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
@@ -184,7 +191,7 @@ async function sendPasswordChangedEmail({ to, name }) {
     </div>
 
     <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
-      Xin chào, ${name || 'bạn'}.
+      Xin chào, ${name || "bạn"}.
     </p>
     <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 24px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
       Mật khẩu tài khoản Earthoria của bạn vừa được cập nhật thành công vào lúc
@@ -199,20 +206,20 @@ async function sendPasswordChangedEmail({ to, name }) {
         để được hỗ trợ khẩn cấp.
       </p>
     </div>
-  `
+  `;
 
   return sendMail({
-    from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
+    from: `${process.env.EMAIL_FROM_NAME || "Earthoria"} <noreply@earthoria.id.vn>`,
     to,
-    subject: 'Mật khẩu Earthoria của bạn đã được thay đổi',
+    subject: "Mật khẩu Earthoria của bạn đã được thay đổi",
     html: wrapEmailTemplate({
-      preheader: 'Mật khẩu của bạn vừa được cập nhật thành công.',
+      preheader: "Mật khẩu của bạn vừa được cập nhật thành công.",
       bodyHtml,
     }),
-  })
+  });
 }
 
-const SIGNATURE_LOGO_URL = 'https://earthoria.id.vn/logo-chinh.png'
+const SIGNATURE_LOGO_URL = "https://earthoria.id.vn/logo-chinh.png";
 
 /**
  * Suy ra tên hiển thị từ phần trước @ của email.
@@ -220,15 +227,19 @@ const SIGNATURE_LOGO_URL = 'https://earthoria.id.vn/logo-chinh.png'
  *     "khangnpce181578@fpt.edu.vn"   -> "Khangnpce181578" (không tách được thì giữ nguyên, viết hoa chữ đầu)
  */
 function nameFromEmail(email) {
-  if (!email) return 'bạn'
-  const local = email.split('@')[0]
-  const parts = local.replace(/[._-]+/g, ' ').trim().split(/\s+/).filter(Boolean)
-  if (!parts.length) return 'bạn'
-  return parts.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+  if (!email) return "bạn";
+  const local = email.split("@")[0];
+  const parts = local
+    .replace(/[._-]+/g, " ")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!parts.length) return "bạn";
+  return parts.map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 }
 
 function buildSignatureBlock({ name, department, phone, email } = {}) {
-  if (!name && !email) return ''
+  if (!name && !email) return "";
 
   return `
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:30px 0 6px;">
@@ -238,31 +249,47 @@ function buildSignatureBlock({ name, department, phone, email } = {}) {
                style="display:block;height:42px;width:auto;">
         </td>
         <td style="border-left:1.5px solid rgba(11,46,43,0.15);padding-left:18px;vertical-align:middle;">
-          ${name ? `
+          ${
+            name
+              ? `
           <div style="font-size:14px;font-weight:600;color:#0b2e2b;margin-bottom:3px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
             ${name}
-          </div>` : ''}
-          ${department ? `
+          </div>`
+              : ""
+          }
+          ${
+            department
+              ? `
           <div style="font-size:12px;font-weight:500;color:#4a9e3f;margin-bottom:8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
             Phòng ${department} — Earthoria
-          </div>` : ''}
-          ${phone ? `
+          </div>`
+              : ""
+          }
+          ${
+            phone
+              ? `
           <div style="font-size:12px;color:#5a6b60;line-height:1.8;font-family:'Be Vietnam Pro',Arial,sans-serif;">
             <strong style="color:#0b2e2b;font-weight:500;">Mobile:</strong> ${phone}
-          </div>` : ''}
-          ${email ? `
+          </div>`
+              : ""
+          }
+          ${
+            email
+              ? `
           <div style="font-size:12px;color:#5a6b60;line-height:1.8;font-family:'Be Vietnam Pro',Arial,sans-serif;">
             <strong style="color:#0b2e2b;font-weight:500;">Email:</strong>
             <a href="mailto:${email}" style="color:#1a5a9e;text-decoration:none;">${email}</a>
-          </div>` : ''}
+          </div>`
+              : ""
+          }
         </td>
       </tr>
     </table>
-  `
+  `;
 }
 
 // Regex bắt link http/https trong nội dung admin gõ (chặn ký tự ) ] " ' cuối để tránh dính dấu câu)
-const URL_REGEX = /(https?:\/\/[^\s<>"'\)\]]+)/g
+const URL_REGEX = /(https?:\/\/[^\s<>"'\)\]]+)/g;
 
 /**
  * Render 1 link thành nút bấm "Xem ngay"
@@ -274,7 +301,7 @@ function renderLinkButton(url) {
          style="display:inline-block;background:#0b2e2b;color:#faf8f2;font-size:12px;font-weight:500;letter-spacing:2px;text-transform:uppercase;padding:13px 34px;border-radius:6px;text-decoration:none;font-family:'Be Vietnam Pro',Arial,sans-serif;">
         Xem ngay
       </a>
-    </div>`
+    </div>`;
 }
 
 /**
@@ -287,30 +314,30 @@ function renderLinkButton(url) {
  * @param {object} sender       - { name, department, phone, email }
  */
 function buildCustomEmailBody({ heading, greetingName, bodyText, sender }) {
-  const paragraphs = (bodyText || '')
+  const paragraphs = (bodyText || "")
     .split(/\n{2,}/)
-    .map(p => p.trim())
+    .map((p) => p.trim())
     .filter(Boolean)
-    .map(p => {
+    .map((p) => {
       // Tách các link ra khỏi đoạn văn
-      const links = p.match(URL_REGEX) || []
+      const links = p.match(URL_REGEX) || [];
       const textOnly = p
-        .replace(URL_REGEX, '')
-        .replace(/[ \t]{2,}/g, ' ')
-        .trim()
+        .replace(URL_REGEX, "")
+        .replace(/[ \t]{2,}/g, " ")
+        .trim();
 
       const textHtml = textOnly
         ? `<p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 16px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
-             ${textOnly.replace(/\n/g, '<br>')}
+             ${textOnly.replace(/\n/g, "<br>")}
            </p>`
-        : ''
+        : "";
 
       // Mỗi link tìm được sẽ thành 1 nút "Xem ngay"
-      const buttonsHtml = links.map(renderLinkButton).join('')
+      const buttonsHtml = links.map(renderLinkButton).join("");
 
-      return textHtml + buttonsHtml
+      return textHtml + buttonsHtml;
     })
-    .join('')
+    .join("");
 
   return `
     <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
@@ -330,7 +357,7 @@ function buildCustomEmailBody({ heading, greetingName, bodyText, sender }) {
       Trân trọng,
     </p>
     ${buildSignatureBlock(sender)}
-  `
+  `;
 }
 
 /**
@@ -338,47 +365,66 @@ function buildCustomEmailBody({ heading, greetingName, bodyText, sender }) {
  * và xem trước (preview), để đảm bảo preview luôn khớp 100% với email thật sự được gửi.
  * @param {string|string[]} to - người nhận đầu tiên dùng để suy ra tên chào (nếu không truyền greetingName)
  */
-function renderCustomEmailHtml({ to, subject, heading, content, sender, greetingName: greetingNameOverride }) {
-  const firstTo = Array.isArray(to) ? to[0] : String(to || '').split(',')[0].trim()
-  const greetingName = greetingNameOverride || nameFromEmail(firstTo)
+function renderCustomEmailHtml({
+  to,
+  subject,
+  heading,
+  content,
+  sender,
+  greetingName: greetingNameOverride,
+}) {
+  const firstTo = Array.isArray(to)
+    ? to[0]
+    : String(to || "")
+        .split(",")[0]
+        .trim();
+  const greetingName = greetingNameOverride || nameFromEmail(firstTo);
 
   return wrapEmailTemplate({
     preheader: subject,
-    footerDepartment: (sender && sender.department) || 'IT',
+    footerDepartment: (sender && sender.department) || "IT",
     bodyHtml: buildCustomEmailBody({
       heading: heading || subject,
       greetingName,
       bodyText: content,
       sender,
     }),
-  })
+  });
 }
 
 /**
  * Gửi email tuỳ chỉnh do admin soạn (dùng chung layout wrapEmailTemplate có sẵn).
  * Footer sẽ tự lấy tên phòng ban theo sender.department (nếu admin không nhập thì mặc định "IT").
  */
-async function sendCustomEmail({ to, cc, bcc, subject, heading, content, sender }) {
-  const html = renderCustomEmailHtml({ to, subject, heading, content, sender })
+async function sendCustomEmail({
+  to,
+  cc,
+  bcc,
+  subject,
+  heading,
+  content,
+  sender,
+}) {
+  const html = renderCustomEmailHtml({ to, subject, heading, content, sender });
 
   const payload = {
-    from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
+    from: `${process.env.EMAIL_FROM_NAME || "Earthoria"} <noreply@earthoria.id.vn>`,
     to,
     subject,
     html,
-  }
-  if (cc)  payload.cc  = cc
-  if (bcc) payload.bcc = bcc
+  };
+  if (cc) payload.cc = cc;
+  if (bcc) payload.bcc = bcc;
 
-  return sendMail(payload)
+  return sendMail(payload);
 }
 
 const ROLE_LABEL_VI = {
-  CUSTOMER: 'Khách hàng',
-  DEALER: 'Đại lý (Dealer)',
-  STAFF: 'Nhân viên (Staff)',
-  ADMIN: 'Quản trị viên',
-}
+  CUSTOMER: "Khách hàng",
+  DEALER: "Đại lý (Dealer)",
+  STAFF: "Nhân viên (Staff)",
+  ADMIN: "Quản trị viên",
+};
 
 // Icon triangle-alert (Lucide), nhúng trực tiếp SVG vì email client không load icon font/JS được
 const ALERT_TRIANGLE_ICON = `
@@ -388,7 +434,7 @@ const ALERT_TRIANGLE_ICON = `
     <path d="M12 9v4"></path>
     <path d="M12 17h.01"></path>
   </svg>
-`
+`;
 
 function buildSystemSignatureBlock() {
   return `
@@ -412,14 +458,26 @@ function buildSystemSignatureBlock() {
         </td>
       </tr>
     </table>
-  `
+  `;
 }
 
-async function sendAccountProvisionedEmail({ to, role, name, userCode, password, dateIssued, isUpgrade }) {
-  const dateStr = dateIssued.toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
-  const heading = isUpgrade ? 'Tài Khoản Đã Được Nâng Cấp' : 'Chào Mừng Đến Với Earthoria'
-  const roleLabel = ROLE_LABEL_VI[role] || role
-  const changePasswordUrl = 'https://www.earthoria.id.vn/forgot-password'
+async function sendAccountProvisionedEmail({
+  to,
+  role,
+  name,
+  userCode,
+  password,
+  dateIssued,
+  isUpgrade,
+}) {
+  const dateStr = dateIssued.toLocaleString("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+  });
+  const heading = isUpgrade
+    ? "Tài Khoản Đã Được Nâng Cấp"
+    : "Chào Mừng Đến Với Earthoria";
+  const roleLabel = ROLE_LABEL_VI[role] || role;
+  const changePasswordUrl = "https://www.earthoria.id.vn/forgot-password";
 
   const bodyHtml = `
     <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
@@ -433,9 +491,10 @@ async function sendAccountProvisionedEmail({ to, role, name, userCode, password,
       Xin chào, ${name}.
     </p>
     <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 28px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
-      ${isUpgrade
-        ? `Tài khoản của bạn vừa được nâng cấp lên vai trò <strong style="color:#0b2e2b;font-weight:500;">${roleLabel}</strong> trên hệ thống Earthoria. Dưới đây là thông tin đăng nhập mới của bạn.`
-        : `Một tài khoản với vai trò <strong style="color:#0b2e2b;font-weight:500;">${roleLabel}</strong> vừa được khởi tạo cho bạn trên hệ thống Earthoria. Vui lòng lưu lại thông tin đăng nhập bên dưới.`
+      ${
+        isUpgrade
+          ? `Tài khoản của bạn vừa được nâng cấp lên vai trò <strong style="color:#0b2e2b;font-weight:500;">${roleLabel}</strong> trên hệ thống Earthoria. Dưới đây là thông tin đăng nhập mới của bạn.`
+          : `Một tài khoản với vai trò <strong style="color:#0b2e2b;font-weight:500;">${roleLabel}</strong> vừa được khởi tạo cho bạn trên hệ thống Earthoria. Vui lòng lưu lại thông tin đăng nhập bên dưới.`
       }
     </p>
 
@@ -505,7 +564,7 @@ async function sendAccountProvisionedEmail({ to, role, name, userCode, password,
     </div>
 
     ${buildSystemSignatureBlock()}
-  `
+  `;
 
   return sendMail({
     from: `Earthoria System <noreply@earthoria.id.vn>`,
@@ -515,17 +574,19 @@ async function sendAccountProvisionedEmail({ to, role, name, userCode, password,
       : `Tài khoản ${roleLabel} của bạn đã sẵn sàng`,
     html: wrapEmailTemplate({
       preheader: isUpgrade
-        ? 'Tài khoản của bạn vừa được nâng cấp — xem thông tin đăng nhập mới.'
-        : 'Tài khoản mới của bạn đã được khởi tạo — xem thông tin đăng nhập.',
+        ? "Tài khoản của bạn vừa được nâng cấp — xem thông tin đăng nhập mới."
+        : "Tài khoản mới của bạn đã được khởi tạo — xem thông tin đăng nhập.",
       bodyHtml,
-      ctaUrl: 'https://www.earthoria.id.vn',
-      footerDepartment: 'ITD',
+      ctaUrl: "https://www.earthoria.id.vn",
+      footerDepartment: "ITD",
     }),
-  })
+  });
 }
 
 async function sendAccountLockedEmail({ to, name, reason, dateLocked }) {
-  const dateStr = (dateLocked || new Date()).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
+  const dateStr = (dateLocked || new Date()).toLocaleString("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+  });
 
   const bodyHtml = `
     <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
@@ -542,7 +603,7 @@ async function sendAccountLockedEmail({ to, name, reason, dateLocked }) {
     </div>
 
     <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
-      Xin chào, ${name || 'bạn'}.
+      Xin chào, ${name || "bạn"}.
     </p>
     <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 24px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
       Tài khoản Earthoria của bạn vừa bị <strong style="color:#0b2e2b;font-weight:500;">khóa</strong> vào lúc
@@ -566,30 +627,33 @@ async function sendAccountLockedEmail({ to, name, reason, dateLocked }) {
 
     <div style="background:rgba(192,80,80,0.05);border:1px solid rgba(192,80,80,0.18);border-radius:8px;padding:16px 20px;margin-bottom:8px;">
       <p style="font-size:12px;color:#7a4440;line-height:1.85;font-weight:300;margin:0;font-family:'Be Vietnam Pro',Arial,sans-serif;">
-        <strong style="color:#5a2820;font-weight:500;">Bạn nghĩ đây là nhầm lẫn?</strong>
+        <strong style="color:#5a2820;font-weight:500;">Bạn nghĩ đây là nhầm lẫn?</strong><br>
         Liên hệ ngay
         <a href="mailto:helpdesk.earthoria@gmail.com" style="color:#b25450;text-decoration:none;font-weight:500;">helpdesk.earthoria@gmail.com</a>
-        để được hỗ trợ.
+        để được hỗ trợ hoặc có thể gửi yêu cầu
+        <a href="https://www.earthoria.id.vn/contact" style="color:#b25450;text-decoration:none;font-weight:500;">tại đây</a>.
       </p>
     </div>
 
     ${buildSystemSignatureBlock()}
-  `
+  `;
 
   return sendMail({
     from: `Earthoria System <noreply@earthoria.id.vn>`,
     to,
-    subject: 'Tài khoản Earthoria của bạn đã bị khóa',
+    subject: "Tài khoản Earthoria của bạn đã bị khóa",
     html: wrapEmailTemplate({
-      preheader: 'Tài khoản của bạn vừa bị khóa — xem lý do chi tiết.',
+      preheader: "Tài khoản của bạn vừa bị khóa — xem lý do chi tiết.",
       bodyHtml,
-      footerDepartment: 'ITD',
+      footerDepartment: "ITD",
     }),
-  })
+  });
 }
 
 async function sendAccountUnlockedEmail({ to, name, dateUnlocked }) {
-  const dateStr = (dateUnlocked || new Date()).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })
+  const dateStr = (dateUnlocked || new Date()).toLocaleString("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+  });
 
   const bodyHtml = `
     <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
@@ -606,7 +670,7 @@ async function sendAccountUnlockedEmail({ to, name, dateUnlocked }) {
     </div>
 
     <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
-      Xin chào, ${name || 'bạn'}.
+      Xin chào, ${name || "bạn"}.
     </p>
     <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 24px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
       Tài khoản Earthoria của bạn đã được <strong style="color:#0b2e2b;font-weight:500;">mở khóa</strong> vào lúc
@@ -614,30 +678,30 @@ async function sendAccountUnlockedEmail({ to, name, dateUnlocked }) {
     </p>
 
     ${buildSystemSignatureBlock()}
-  `
+  `;
 
   return sendMail({
     from: `Earthoria System <noreply@earthoria.id.vn>`,
     to,
-    subject: 'Tài khoản Earthoria của bạn đã được mở khóa',
+    subject: "Tài khoản Earthoria của bạn đã được mở khóa",
     html: wrapEmailTemplate({
-      preheader: 'Tài khoản của bạn vừa được mở khóa.',
+      preheader: "Tài khoản của bạn vừa được mở khóa.",
       bodyHtml,
-      footerDepartment: 'ITD',
+      footerDepartment: "ITD",
     }),
-  })
+  });
 }
 // ─ Ticket: Xác nhận đã tiếp nhận yêu cầu liên hệ ─
 const TICKET_SUBJECT_LABEL_VI = {
-  PRODUCT_ADVICE: 'Tư vấn sản phẩm',
-  BUSINESS: 'Hợp tác kinh doanh',
-  TECHNICAL_SUPPORT: 'Hỗ trợ kỹ thuật',
-  FEEDBACK: 'Phản hồi / Góp ý',
-  OTHER: 'Khác',
-}
+  PRODUCT_ADVICE: "Tư vấn sản phẩm",
+  BUSINESS: "Hợp tác kinh doanh",
+  TECHNICAL_SUPPORT: "Hỗ trợ kỹ thuật",
+  FEEDBACK: "Phản hồi / Góp ý",
+  OTHER: "Khác",
+};
 
 async function sendTicketCreatedEmail({ to, name, code, subject }) {
-  const subjectLabel = TICKET_SUBJECT_LABEL_VI[subject] || subject
+  const subjectLabel = TICKET_SUBJECT_LABEL_VI[subject] || subject;
 
   const bodyHtml = `
     <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
@@ -648,7 +712,7 @@ async function sendTicketCreatedEmail({ to, name, code, subject }) {
     </h1>
 
     <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
-      Xin chào, ${name || 'bạn'}.
+      Xin chào, ${name || "bạn"}.
     </p>
     <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 28px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
       Chúng tôi đã nhận được yêu cầu liên hệ của bạn về chủ đề
@@ -675,28 +739,38 @@ async function sendTicketCreatedEmail({ to, name, code, subject }) {
         Vui lòng lưu lại mã trên để tiện tra cứu khi cần trao đổi thêm với chúng tôi.
       </p>
     </div>
-  `
+  `;
 
   return sendMail({
-    from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
+    from: `${process.env.EMAIL_FROM_NAME || "Earthoria"} <noreply@earthoria.id.vn>`,
     to,
     subject: `[${code}] Đã tiếp nhận yêu cầu liên hệ của bạn`,
     html: wrapEmailTemplate({
       preheader: `Mã yêu cầu của bạn: ${code}. Chúng tôi sẽ phản hồi trong 24 giờ.`,
       bodyHtml,
     }),
-  })
+  });
 }
 
 // ─ Ticket: Thông báo staff/admin vừa phản hồi ─
-async function sendTicketReplyEmail({ to, name, code, subject, message, staff }) {
-  const subjectLabel = TICKET_SUBJECT_LABEL_VI[subject] || subject
-  const messageHtml = String(message || '')
+async function sendTicketReplyEmail({
+  to,
+  name,
+  code,
+  subject,
+  message,
+  staff,
+}) {
+  const subjectLabel = TICKET_SUBJECT_LABEL_VI[subject] || subject;
+  const messageHtml = String(message || "")
     .split(/\n{2,}/)
-    .map(p => p.trim())
+    .map((p) => p.trim())
     .filter(Boolean)
-    .map(p => `<p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 14px;font-family:'Be Vietnam Pro',Arial,sans-serif;">${p.replace(/\n/g, '<br>')}</p>`)
-    .join('')
+    .map(
+      (p) =>
+        `<p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 14px;font-family:'Be Vietnam Pro',Arial,sans-serif;">${p.replace(/\n/g, "<br>")}</p>`,
+    )
+    .join("");
 
   const bodyHtml = `
     <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
@@ -707,7 +781,7 @@ async function sendTicketReplyEmail({ to, name, code, subject, message, staff })
     </h1>
 
     <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
-      Xin chào, ${name || 'bạn'}.
+      Xin chào, ${name || "bạn"}.
     </p>
     <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 24px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
       Yêu cầu <strong style="color:#0b2e2b;font-weight:500;">${code}</strong>
@@ -728,70 +802,70 @@ async function sendTicketReplyEmail({ to, name, code, subject, message, staff })
       và nhắc mã yêu cầu <strong style="color:#0b2e2b;">${code}</strong>.
     </p>
 
-    ${staff && (staff.name || staff.email) ? buildSignatureBlock(staff) : ''}
-  `
+    ${staff && (staff.name || staff.email) ? buildSignatureBlock(staff) : ""}
+  `;
 
   return sendMail({
-    from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
+    from: `${process.env.EMAIL_FROM_NAME || "Earthoria"} <noreply@earthoria.id.vn>`,
     to,
     subject: `[${code}] Earthoria vừa phản hồi yêu cầu của bạn`,
     html: wrapEmailTemplate({
       preheader: `Yêu cầu ${code} của bạn vừa có phản hồi mới.`,
       bodyHtml,
     }),
-  })
+  });
 }
 
 // ═══════════════════════════ ORDER EMAILS ═══════════════════════════
 
 const PAYMENT_METHOD_LABEL_VI = {
-  COD: 'Thanh toán khi nhận hàng (COD)',
-  VNPAY: 'VNPay',
-  MOMO: 'MoMo',
-  BANKQR: 'Chuyển khoản QR',
-  STRIPE: 'Stripe',
-}
+  COD: "Thanh toán khi nhận hàng (COD)",
+  VNPAY: "VNPay",
+  MOMO: "MoMo",
+  BANKQR: "Chuyển khoản QR",
+  STRIPE: "Stripe",
+};
 
 function formatVnd(amount) {
-  return `${Math.round(Number(amount) || 0).toLocaleString('vi-VN')}₫`
+  return `${Math.round(Number(amount) || 0).toLocaleString("vi-VN")}₫`;
 }
 
 // Mã đơn hàng hiển thị cho khách trong email — dạng ODE-aabbccdef, PHẢI khớp 100% với
 // getOrderCode() ở orderController.js/helpers.js (FE) để khách đối chiếu đúng 1 mã duy nhất
 // xuyên suốt web + email.
 const ORDER_CODE_CHARS =
-  'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 function shortOrderCode(order) {
-  const orderId = typeof order === 'string' ? order : order?.id
-  const createdAt = typeof order === 'string' ? null : order?.createdAt
-  if (!orderId) return ''
-  const d = new Date(createdAt || Date.now())
-  const mm = String(d.getMonth() + 1).padStart(2, '0')
-  const dd = String(d.getDate()).padStart(2, '0')
-  const yy = String(d.getFullYear()).slice(-2)
-  const seed = String(orderId)
-  let hash = 0
+  const orderId = typeof order === "string" ? order : order?.id;
+  const createdAt = typeof order === "string" ? null : order?.createdAt;
+  if (!orderId) return "";
+  const d = new Date(createdAt || Date.now());
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  const yy = String(d.getFullYear()).slice(-2);
+  const seed = String(orderId);
+  let hash = 0;
   for (let i = 0; i < seed.length; i++) {
-    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0
+    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
   }
-  let suffix = ''
+  let suffix = "";
   for (let i = 0; i < 3; i++) {
-    suffix += ORDER_CODE_CHARS[hash % ORDER_CODE_CHARS.length]
-    hash = Math.floor(hash / ORDER_CODE_CHARS.length) + i + 1
+    suffix += ORDER_CODE_CHARS[hash % ORDER_CODE_CHARS.length];
+    hash = Math.floor(hash / ORDER_CODE_CHARS.length) + i + 1;
   }
-  return `ODE-${mm}${dd}${yy}${suffix}`
+  return `ODE-${mm}${dd}${yy}${suffix}`;
 }
 
 function buildOrderItemsTable(items) {
   const rows = (items || [])
     .map((item) => {
       const formatBadge =
-        item.format === 'DIGITAL'
+        item.format === "DIGITAL"
           ? `<span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:20px;background:rgba(74,158,63,0.1);color:#3f7d35;font-size:9.5px;font-weight:600;letter-spacing:0.3px;vertical-align:middle;font-family:'Be Vietnam Pro',Arial,sans-serif;">SÁCH ĐIỆN TỬ</span>`
-          : item.format === 'PHYSICAL'
+          : item.format === "PHYSICAL"
             ? `<span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:20px;background:rgba(11,46,43,0.06);color:#5a6b60;font-size:9.5px;font-weight:600;letter-spacing:0.3px;vertical-align:middle;font-family:'Be Vietnam Pro',Arial,sans-serif;">SÁCH GIẤY</span>`
-            : ''
+            : "";
       return `
     <tr>
       <td style="padding:10px 0;border-bottom:1px solid rgba(11,46,43,0.06);font-size:13px;color:#0b2e2b;font-family:'Be Vietnam Pro',Arial,sans-serif;">
@@ -802,26 +876,24 @@ function buildOrderItemsTable(items) {
       <td style="padding:10px 0;border-bottom:1px solid rgba(11,46,43,0.06);font-size:13px;color:#0b2e2b;text-align:right;white-space:nowrap;font-family:'Be Vietnam Pro',Arial,sans-serif;">
         ${formatVnd(item.price * item.quantity)}
       </td>
-    </tr>`
+    </tr>`;
     })
-    .join('')
+    .join("");
 
   return `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
       ${rows}
     </table>
-  `
+  `;
 }
 
 function buildOrderTotalsTable(order) {
-  const rows = [
-    ['Tạm tính', formatVnd(order.subtotal)],
-  ]
-  if (order.discount) rows.push(['Giảm giá', `-${formatVnd(order.discount)}`])
+  const rows = [["Tạm tính", formatVnd(order.subtotal)]];
+  if (order.discount) rows.push(["Giảm giá", `-${formatVnd(order.discount)}`]);
   rows.push([
-    'Phí vận chuyển',
-    order.shippingFee ? formatVnd(order.shippingFee) : 'Miễn phí',
-  ])
+    "Phí vận chuyển",
+    order.shippingFee ? formatVnd(order.shippingFee) : "Miễn phí",
+  ]);
 
   const rowsHtml = rows
     .map(
@@ -831,7 +903,7 @@ function buildOrderTotalsTable(order) {
       <td style="padding:5px 0;font-size:12.5px;color:#0b2e2b;text-align:right;font-family:'Be Vietnam Pro',Arial,sans-serif;">${value}</td>
     </tr>`,
     )
-    .join('')
+    .join("");
 
   return `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">
@@ -846,7 +918,7 @@ function buildOrderTotalsTable(order) {
         <td style="padding-top:12px;font-size:16px;font-weight:600;color:#0b2e2b;text-align:right;font-family:'Be Vietnam Pro',Arial,sans-serif;">${formatVnd(order.total)}</td>
       </tr>
     </table>
-  `
+  `;
 }
 
 function buildOrderSummaryCard(order) {
@@ -869,13 +941,15 @@ function buildOrderSummaryCard(order) {
         </td>
       </tr>
     </table>
-  `
+  `;
 }
 
 function buildOrderAddressBlock(order) {
-  if (!order.address) return ''
-  const a = order.address
-  const parts = [a.street, a.ward, a.district, a.province].filter(Boolean).join(', ')
+  if (!order.address) return "";
+  const a = order.address;
+  const parts = [a.street, a.ward, a.district, a.province]
+    .filter(Boolean)
+    .join(", ");
 
   return `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
@@ -885,7 +959,7 @@ function buildOrderAddressBlock(order) {
             Giao đến
           </div>
           <div style="font-size:13px;color:#0b2e2b;font-weight:500;margin-bottom:3px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
-            ${a.fullName || ''}${a.phone ? ` · ${a.phone}` : ''}
+            ${a.fullName || ""}${a.phone ? ` · ${a.phone}` : ""}
           </div>
           <div style="font-size:12.5px;color:#5a6b60;font-weight:300;line-height:1.7;font-family:'Be Vietnam Pro',Arial,sans-serif;">
             ${parts}
@@ -893,14 +967,17 @@ function buildOrderAddressBlock(order) {
         </td>
       </tr>
     </table>
-  `
+  `;
 }
 
 // ─ Order: Xác nhận đặt hàng thành công (gửi ngay sau khi tạo đơn) ─
 async function sendOrderConfirmedEmail({ to, name, order }) {
-  const paymentLabel = PAYMENT_METHOD_LABEL_VI[order.paymentMethod] || order.paymentMethod
-  const hasDigitalItem = (order.items || []).some((item) => item.format === 'DIGITAL')
-  const isOnlinePayment = order.paymentMethod !== 'COD'
+  const paymentLabel =
+    PAYMENT_METHOD_LABEL_VI[order.paymentMethod] || order.paymentMethod;
+  const hasDigitalItem = (order.items || []).some(
+    (item) => item.format === "DIGITAL",
+  );
+  const isOnlinePayment = order.paymentMethod !== "COD";
 
   const bodyHtml = `
     <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
@@ -911,7 +988,7 @@ async function sendOrderConfirmedEmail({ to, name, order }) {
     </h1>
 
     <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
-      Xin chào, ${name || 'bạn'}.
+      Xin chào, ${name || "bạn"}.
     </p>
     <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 24px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
       Cảm ơn bạn đã đặt hàng tại Earthoria! Chúng tôi đã nhận được đơn hàng của bạn và sẽ xử lý trong thời gian sớm nhất.
@@ -934,7 +1011,7 @@ async function sendOrderConfirmedEmail({ to, name, order }) {
         }
       </p>
     </div>`
-        : ''
+        : ""
     }
 
     <div style="background:rgba(74,158,63,0.04);border:1px solid rgba(74,158,63,0.14);border-radius:8px;padding:16px 20px;margin-bottom:8px;">
@@ -943,17 +1020,17 @@ async function sendOrderConfirmedEmail({ to, name, order }) {
         Bạn có thể theo dõi trạng thái đơn hàng trong mục "Đơn hàng của tôi" trên tài khoản Earthoria.
       </p>
     </div>
-  `
+  `;
 
   return sendMail({
-    from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
+    from: `${process.env.EMAIL_FROM_NAME || "Earthoria"} <noreply@earthoria.id.vn>`,
     to,
     subject: `[#${shortOrderCode(order)}] Đặt hàng thành công tại Earthoria`,
     html: wrapEmailTemplate({
       preheader: `Đơn hàng #${shortOrderCode(order)} của bạn đã được ghi nhận.`,
       bodyHtml,
     }),
-  })
+  });
 }
 
 // ─ Order: Đơn hàng đã được giao thành công ─
@@ -973,7 +1050,7 @@ async function sendOrderDeliveredEmail({ to, name, order }) {
     </div>
 
     <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
-      Xin chào, ${name || 'bạn'}.
+      Xin chào, ${name || "bạn"}.
     </p>
     <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 24px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
       Đơn hàng <strong style="color:#0b2e2b;font-weight:500;">#${shortOrderCode(order)}</strong> đã được giao thành công đến bạn.
@@ -990,17 +1067,17 @@ async function sendOrderDeliveredEmail({ to, name, order }) {
         để được hỗ trợ.
       </p>
     </div>
-  `
+  `;
 
   return sendMail({
-    from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
+    from: `${process.env.EMAIL_FROM_NAME || "Earthoria"} <noreply@earthoria.id.vn>`,
     to,
     subject: `[#${shortOrderCode(order)}] Giao hàng thành công`,
     html: wrapEmailTemplate({
       preheader: `Đơn hàng #${shortOrderCode(order)} đã được giao thành công.`,
       bodyHtml,
     }),
-  })
+  });
 }
 
 // ─ Order: Đơn hàng đã bị huỷ ─
@@ -1020,11 +1097,11 @@ async function sendOrderCancelledEmail({ to, name, order, reason }) {
     </div>
 
     <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
-      Xin chào, ${name || 'bạn'}.
+      Xin chào, ${name || "bạn"}.
     </p>
     <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 24px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
       Đơn hàng <strong style="color:#0b2e2b;font-weight:500;">#${shortOrderCode(order)}</strong> của bạn đã bị huỷ.
-      ${order.paymentStatus === 'PAID' ? 'Số tiền đã thanh toán sẽ được hoàn lại theo chính sách hoàn tiền của Earthoria.' : ''}
+      ${order.paymentStatus === "PAID" ? "Số tiền đã thanh toán sẽ được hoàn lại theo chính sách hoàn tiền của Earthoria." : ""}
     </p>
 
     ${
@@ -1044,7 +1121,7 @@ async function sendOrderCancelledEmail({ to, name, order, reason }) {
         </td>
       </tr>
     </table>`
-        : ''
+        : ""
     }
 
     ${buildOrderSummaryCard(order)}
@@ -1057,17 +1134,17 @@ async function sendOrderCancelledEmail({ to, name, order, reason }) {
         và nhắc mã đơn hàng #${shortOrderCode(order)}.
       </p>
     </div>
-  `
+  `;
 
   return sendMail({
-    from: `${process.env.EMAIL_FROM_NAME || 'Earthoria'} <noreply@earthoria.id.vn>`,
+    from: `${process.env.EMAIL_FROM_NAME || "Earthoria"} <noreply@earthoria.id.vn>`,
     to,
     subject: `[#${shortOrderCode(order)}] Đơn hàng của bạn đã bị huỷ`,
     html: wrapEmailTemplate({
       preheader: `Đơn hàng #${shortOrderCode(order)} đã bị huỷ.`,
       bodyHtml,
     }),
-  })
+  });
 }
 
 module.exports = {
@@ -1085,4 +1162,4 @@ module.exports = {
   sendOrderConfirmedEmail,
   sendOrderDeliveredEmail,
   sendOrderCancelledEmail,
-}
+};
