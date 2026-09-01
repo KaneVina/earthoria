@@ -49,7 +49,7 @@ const CHART_COLORS = {
   DELIVERED: "#4a9e3f",
   COMPLETED: "#0d3330",
   CANCELLED: "#e34948",
-  REFUNDED: "#e34948",
+  REFUNDED: "#c9184a", // khác màu với CANCELLED (đỏ) để phân biệt trên biểu đồ Phân bổ đơn hàng
 };
 
 const CATEGORY_COLORS = [
@@ -2918,8 +2918,12 @@ exports.createManagedUser = async (req, res) => {
       });
     }
 
-    // Chỉ ADMIN được tạo tài khoản (Staff chỉ xem danh sách, không tạo được ai — route đã chặn bằng adminOnly)
-    const allowedCreateRoles = viewerRole === "ADMIN" ? ["DEALER", "STAFF"] : [];
+    const allowedCreateRoles =
+      viewerRole === "ADMIN"
+        ? ["DEALER", "STAFF"]
+        : viewerRole === "STAFF"
+          ? ["DEALER"]
+          : [];
     if (!allowedCreateRoles.includes(role)) {
       return res.status(403).json({
         success: false,
