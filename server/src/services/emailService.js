@@ -97,7 +97,7 @@ function wrapEmailTemplate({ preheader, bodyHtml, ctaUrl, footerDepartment = 'IT
         <tr>
           <td style="padding:10px 40px 20px;text-align:center;">
             <p style="font-size:10.5px;color:rgba(255,255,255,0.2);font-weight:300;margin:0;font-family:'Be Vietnam Pro',Arial,sans-serif;">
-              © 2026 Earthoria. All rights reserved.
+              © 2026 Earthoria Ecosystem. All rights reserved.
             </p>
           </td>
         </tr>
