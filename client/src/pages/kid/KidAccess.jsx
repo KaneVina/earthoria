@@ -1325,10 +1325,15 @@ export default function KidAccess() {
             {recentReadings.length > 0 && (
               <section className="kid-continue">
                 <div className="kid-continue-heading">
-                  <span className="kid-continue-heading-title">
-                    <BookOpen size={15} /> Đang đọc dở
-                  </span>
-                  <span className="kid-continue-heading-count">
+                  <div className="kid-shelf-title-wrap">
+                    <span className="kid-shelf-leaf" aria-hidden="true">
+                      <BookMarked size={17} />
+                    </span>
+                    <h2 className="kid-shelf-title kid-continue-title">
+                      Đang đọc dở
+                    </h2>
+                  </div>
+                  <span className="kid-shelf-count">
                     {recentReadings.length} cuốn
                   </span>
                 </div>
@@ -1342,8 +1347,11 @@ export default function KidAccess() {
                       <button
                         key={entry.slug}
                         type="button"
-                        className={`kid-continue-card kid-continue-card--${accent}`}
+                        className={`kid-continue-card kid-continue-card--${accent}${limitReached ? " is-locked" : ""}`}
                         onClick={(e) => {
+                          // hết giờ đọc hôm nay thì không cho mở sách tiếp,
+                          // giống hệt cách kệ sách bên dưới đang khoá
+                          if (limitReached) return;
                           spawnRipple(e);
                           spawnSparkles(e, 8);
                           handleReadNow(entry);
@@ -1361,7 +1369,7 @@ export default function KidAccess() {
                           )}
                         </div>
                         <div className="kid-continue-body">
-                          <div className="kid-continue-title">
+                          <div className="kid-continue-title-text">
                             {entry.title}
                           </div>
                           <div className="kid-continue-progress-track">
@@ -1375,8 +1383,18 @@ export default function KidAccess() {
                             {percent}%
                           </div>
                         </div>
-                        <span className="kid-continue-cta">
-                          Đọc tiếp <ChevronRight size={14} />
+                        <span
+                          className={`kid-continue-cta${limitReached ? " is-locked" : ""}`}
+                        >
+                          {limitReached ? (
+                            <>
+                              <Lock size={13} /> Hết giờ hôm nay
+                            </>
+                          ) : (
+                            <>
+                              Đọc tiếp <ChevronRight size={14} />
+                            </>
+                          )}
                         </span>
                       </button>
                     );
