@@ -1465,7 +1465,7 @@ body.dark-mode .fp-visual {
 
 /* Form panel phải — override background qua JS không được,
    dùng trick: target container chứa form */
-body.dark-mode [class* "fp-form"],
+body.dark-mode [class*="fp-form"],
 body.dark-mode .fp-form-panel {
   background: #121a16 !important;
 }
@@ -1483,7 +1483,7 @@ body.dark-mode input[style* "var(--ivory)"] {
 /* Mobile responsive */
 @media (max-width: 768px) {
   .fp-page,
-  [style* "gridTemplateColumns: '1fr 1fr'"] {
+  [style*="gridTemplateColumns: '1fr 1fr'"] {
     grid-template-columns: 1fr !important;
   }
   .fp-visual {
@@ -1610,18 +1610,18 @@ body.dark-mode {
 
 /* Cart responsive */
 @media (max-width: 900px) {
-  div[style* 'gridTemplateColumns: "1fr 400px"'] {
+  div[style*='gridTemplateColumns: "1fr 400px"'] {
     grid-template-columns: 1fr !important;
   }
 }
 @media (max-width: 600px) {
-  div[style* 'gridTemplateColumns: "1fr 100px 140px 44px"'] {
+  div[style*='gridTemplateColumns: "1fr 100px 140px 44px"'] {
     grid-template-columns: 1fr 80px !important;
     gap: 12px !important;
   }
-  div[style* 'padding: "48px 100px"'],
-  div[style* 'padding: "40px 100px"'],
-  div[style* 'padding: "80px 100px"'] {
+  div[style*='padding: "48px 100px"'],
+  div[style*='padding: "40px 100px"'],
+  div[style*='padding: "80px 100px"'] {
     padding-left: 16px !important;
     padding-right: 16px !important;
   }
@@ -1671,21 +1671,21 @@ body.dark-mode .co-step select {
 /* Checkout responsive */
 @media (max-width: 900px) {
   div[style* "gridTemplateColumns: 1fr 400px"],
-  div[style* 'gridTemplateColumns: "1fr 400px"'] {
+  div[style*='gridTemplateColumns: "1fr 400px"'] {
     grid-template-columns: 1fr !important;
   }
-  div[style* 'padding: "8px 100px"'],
-  div[style* 'padding: "32px 100px"'] {
+  div[style*='padding: "8px 100px"'],
+  div[style*='padding: "32px 100px"'] {
     padding-left: 20px !important;
     padding-right: 20px !important;
   }
 }
 @media (max-width: 600px) {
   div[style* "gridTemplateColumns: '1fr 1fr'"],
-  div[style* 'gridTemplateColumns: "1fr 1fr"'] {
+  div[style*='gridTemplateColumns: "1fr 1fr"'] {
     grid-template-columns: 1fr !important;
   }
-  div[style* 'padding: "8px 100px"'] {
+  div[style*='padding: "8px 100px"'] {
     padding: 8px 16px 80px !important;
   }
 }

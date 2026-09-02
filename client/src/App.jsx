@@ -98,8 +98,7 @@ const GuestRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
   return !isAuthenticated ? children : <Navigate to="/" replace />;
 };
-// Chỉ hiện PromoBanner (logo quockhanh29.png) ở trang Home,
-// không hiện ở dashboard admin (/dashboard...) hay trang kid (/e-kid...)
+
 function HomeOnlyPromoBanner() {
   const location = useLocation();
   const isHome = location.pathname === "/" || location.pathname === "/home";
@@ -186,7 +185,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      {/* <EarthoriaSecurity /> */}
+      <EarthoriaSecurity />
       <ScrollToTop />
       <CustomCursor />
       <HomeOnlyPromoBanner />
