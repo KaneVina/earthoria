@@ -1,13 +1,4 @@
-/* ================================================================
-   STATUS PAGE — status.css
-   Đồng bộ hoàn toàn với hệ thống thiết kế trong main.css:
-   - Font: "Playfair Display" (tiêu đề/serif), "Be Vietnam Pro" (chữ thường),
-     "Montserrat" (số liệu).
-   - Bảng màu & biến số lấy trực tiếp từ :root / body.dark-mode của main.css
-     (không định nghĩa lại biến ở đây để tránh lệch tông khi đổi theme).
-   - Cấu trúc lớp giữ nguyên như StatusPage.jsx đã viết
-     (không cần sửa JSX).
-================================================================ */
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap");
 
 /* ─ WRAPPER ─ */
 .status-page {
@@ -20,7 +11,7 @@
   justify-content: center;
 }
 
-/* watermark chữ lớn mờ phía sau, đồng bộ với .mission-section::before / .cta-bg-text */
+/* watermark chữ lớn mờ phía sau, đồng bộ với .mission-section::before */
 .status-page::before {
   content: "EARTHORIA";
   position: absolute;
@@ -62,52 +53,79 @@
   z-index: 0;
 }
 
-/* quầng sáng trôi nổi phía sau — chiều sâu cao cấp */
+/* quầng sáng trôi nổi phía sau, màu bám theo trạng thái hệ thống hiện tại */
 .status-page-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(70px);
+  filter: blur(80px);
   pointer-events: none;
   z-index: 0;
+  opacity: 0.16;
   animation: statusOrbFloat 9s ease-in-out infinite;
+  transition: background 0.6s ease;
+}
+.status-page-orb--a {
+  width: 380px;
+  height: 380px;
+  top: 8%;
+  left: -120px;
+}
+.status-page-orb--b {
+  width: 320px;
+  height: 320px;
+  bottom: 6%;
+  right: -100px;
+  animation-delay: -4.5s;
 }
 
 .status-page__inner {
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 620px;
+  max-width: 660px;
 }
 
 /* ─ HERO ─ */
 .status-page__hero {
   text-align: center;
-  margin-bottom: 48px;
+  margin-bottom: 44px;
   animation: statusFadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .status-page__eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  font-family: "Be Vietnam Pro", sans-serif;
+  gap: 10px;
+  font-family: "JetBrains Mono", monospace;
   font-size: 10px;
-  font-weight: 400;
-  letter-spacing: 0.26em;
+  font-weight: 500;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--gold);
-  margin-bottom: 28px;
+  margin-bottom: 26px;
 }
 .status-page__eyebrow::before,
 .status-page__eyebrow::after {
   content: "";
-  width: 28px;
+  width: 24px;
   height: 0.5px;
   background: var(--gold);
   opacity: 0.7;
 }
-.status-page__eyebrow svg {
+.status-page__eyebrow-dot {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
   flex-shrink: 0;
+}
+.status-page__eyebrow-dot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: inherit;
+  animation: statusPulseRing 2.2s ease-out infinite;
 }
 
 .status-page__title {
@@ -119,6 +137,10 @@
   color: var(--forest);
   margin: 0 0 18px;
 }
+.status-page__title-accent {
+  font-style: italic;
+  color: var(--gold);
+}
 
 .status-page__subtitle {
   font-family: "Be Vietnam Pro", sans-serif;
@@ -126,32 +148,192 @@
   line-height: 1.85;
   font-weight: 300;
   color: var(--text-muted);
-  max-width: 460px;
+  max-width: 480px;
   margin: 0 auto;
 }
 
-/* ─ STATUS CARD ─ */
-.status-card {
+/* ─ STATUS BANNER ─ */
+.status-banner {
+  position: relative;
+  background: color-mix(in srgb, var(--accent, var(--gold)) 6%, var(--white));
+  border: 0.5px solid var(--border);
+  border-left: 2px solid var(--accent, var(--gold));
+  padding: 30px 34px;
+  overflow: hidden;
+  animation: statusFadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
+  transition:
+    border-color 0.4s ease,
+    background 0.4s ease;
+}
+
+/* dải sáng quét chéo, cảm giác "radar" — lặp lại nhẹ nhàng, không chói */
+.status-banner__scan {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 40%,
+    color-mix(in srgb, var(--accent, var(--gold)) 16%, transparent) 50%,
+    transparent 60%
+  );
+  background-size: 220% 100%;
+  animation: statusScanSweep 5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.status-banner__row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.status-banner__icon-wrap {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0.5px solid var(--accent, var(--border-gold));
+  color: var(--accent, var(--forest));
+  background: color-mix(in srgb, var(--accent, var(--gold)) 10%, var(--white));
+}
+.status-banner__icon-ring {
+  position: absolute;
+  inset: -7px;
+  border: 0.5px dashed
+    color-mix(in srgb, var(--accent, var(--gold)) 55%, transparent);
+  animation: statusRingRotate 7s linear infinite;
+}
+
+.status-banner__text {
+  flex: 1;
+  min-width: 0;
+}
+.status-banner__tag {
+  display: inline-block;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--accent, var(--forest));
+  border: 0.5px solid
+    color-mix(in srgb, var(--accent, var(--gold)) 45%, transparent);
+  padding: 3px 8px;
+  margin-bottom: 9px;
+}
+.status-banner__label {
+  font-family: "Playfair Display", serif;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--forest);
+  margin: 0 0 6px;
+}
+.status-banner__desc {
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 13px;
+  line-height: 1.7;
+  font-weight: 300;
+  color: var(--text-muted);
+  margin: 0;
+  max-width: 46ch;
+}
+
+.status-banner__live {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  align-self: flex-start;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--text-muted);
+}
+.status-banner__live-dot {
+  position: relative;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent, var(--gold));
+}
+.status-banner__live-dot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: inherit;
+  animation: statusPulseRing 1.8s ease-out infinite;
+}
+
+/* sóng nhịp tim cuộn vô hạn ở đáy banner — thuần trang trí, không đại diện dữ liệu */
+.status-banner__pulse-wrap {
+  position: relative;
+  z-index: 1;
+  margin-top: 22px;
+  height: 34px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 8%,
+    #000 92%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 8%,
+    #000 92%,
+    transparent
+  );
+}
+.status-banner__pulse-track {
+  display: flex;
+  width: max-content;
+  animation: statusPulseScroll 7s linear infinite;
+}
+.status-banner__pulse-track svg {
+  display: block;
+  height: 34px;
+  width: 400px;
+  flex-shrink: 0;
+}
+.status-banner__pulse-track polyline {
+  fill: none;
+  stroke: var(--accent, var(--gold));
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  opacity: 0.55;
+}
+
+/* ─ METRICS GRID — 3 ô, viền hairline dùng chung tạo cảm giác "bảng dữ liệu" ─ */
+.status-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 0.5px solid var(--border);
+  margin-top: 1px;
+  animation: statusFadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.16s both;
+}
+
+.metric-card {
   position: relative;
   background: var(--white);
-  border: 0.5px solid var(--border);
-  padding: 40px 40px 32px;
+  padding: 24px 22px 22px;
   overflow: hidden;
   transition:
-    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 0.5s ease,
-    border-color 0.4s ease;
-  animation: statusFadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s ease;
 }
-
-.status-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 40px 80px rgba(13, 43, 30, 0.12);
-  border-color: var(--border-gold);
-}
-
-/* dải sáng chạy ngang phía trên, xuất hiện khi hover */
-.status-card::before {
+.metric-card::before {
   content: "";
   position: absolute;
   top: 0;
@@ -160,259 +342,231 @@
   height: 2px;
   background: linear-gradient(90deg, transparent, var(--gold), transparent);
   opacity: 0;
-  transform: scaleX(0.4);
+  transform: scaleX(0.5);
   transition:
-    opacity 0.5s ease,
-    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity 0.4s ease,
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.status-card:hover::before {
+.metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 26px 50px rgba(13, 43, 30, 0.1);
+  z-index: 2;
+}
+.metric-card:hover::before {
   opacity: 1;
   transform: scaleX(1);
 }
 
-/* góc gấp trang trí — đồng bộ .advisor-card::after */
-.status-card::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 0 40px 40px 0;
-  border-color: transparent var(--gold-pale) transparent transparent;
-  transition: border-color 0.4s ease;
-}
-.status-card:hover::after {
-  border-color: transparent var(--gold) transparent transparent;
-}
-
-/* ─ TOP ROW: icon + label/value + pulse ─ */
-.status-card__top {
+.metric-card__head {
   display: flex;
   align-items: center;
-  gap: 18px;
-  margin-bottom: 4px;
-  position: relative;
-  z-index: 1;
-}
-
-.status-card__icon {
-  position: relative;
-  width: 58px;
-  height: 58px;
-  flex-shrink: 0;
-  border-radius: 2px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 0.5px solid var(--border-gold);
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.status-card:hover .status-card__icon {
-  transform: scale(1.06);
-}
-/* vành xoay trang trí quanh icon khi hover */
-.status-card__icon::before {
-  content: "";
-  position: absolute;
-  inset: -6px;
-  border: 0.5px dashed var(--border-gold);
-  border-radius: 4px;
-  opacity: 0;
-  transform: rotate(0deg);
-  transition: opacity 0.4s ease;
-}
-.status-card:hover .status-card__icon::before {
-  opacity: 1;
-  animation: statusRingRotate 6s linear infinite;
-}
-
-.status-card__label {
-  font-family: "Be Vietnam Pro", sans-serif;
+  gap: 7px;
+  font-family: "JetBrains Mono", monospace;
   font-size: 9px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  font-weight: 400;
-  color: var(--text-muted);
-  margin: 0 0 6px;
-}
-
-.status-card__value {
-  font-family: "Playfair Display", serif;
-  font-size: 22px;
   font-weight: 500;
-  letter-spacing: -0.01em;
-  margin: 0;
-  transition: color 0.4s ease;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+.metric-card__head svg {
+  flex-shrink: 0;
+  opacity: 0.75;
 }
 
-/* chấm pulse trạng thái — nhiều lớp vòng lan toả */
-.status-card__pulse {
+.metric-card__value {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 27px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--forest);
+  margin: 0 0 16px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.metric-card__value--sm {
+  font-size: 20px;
+}
+
+/* thanh gauge uptime */
+.metric-card__bar {
+  height: 4px;
+  background: var(--border);
   position: relative;
-  width: 10px;
-  height: 10px;
+  overflow: hidden;
+}
+.metric-card__bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--gold);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--gold) 60%, transparent);
+  transition: width 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* thanh ngưỡng tốc độ phản hồi, chấm đánh dấu vị trí giá trị thật */
+.metric-card__speed-track {
+  position: relative;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #4a9e3f 0%, #eda100 55%, #e34948 100%);
+  opacity: 0.3;
+}
+.metric-card__speed-marker {
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid var(--white);
+  box-shadow: 0 0 0 1px currentColor;
+  transform: translate(-50%, -50%);
+  transition: left 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.metric-card__speed-label {
+  display: block;
+  margin-top: 9px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.metric-card__hint {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─ TERMINAL FOOTER — thay cho footnote cũ ─ */
+.status-terminal {
+  margin-top: 28px;
+  border: 0.5px solid var(--border);
+  background: #0e1612;
+  animation: statusFadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.24s both;
+}
+
+.status-terminal__bar {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 16px;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+}
+.status-terminal__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  opacity: 0.85;
+}
+.status-terminal__path {
+  margin-left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: rgba(184, 204, 192, 0.55);
+}
+
+.status-terminal__body {
+  padding: 18px 20px 20px;
+}
+.status-terminal__body p {
+  margin: 0;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  line-height: 1.9;
+}
+.status-terminal__cmd {
+  color: rgba(184, 204, 192, 0.55);
+}
+.status-terminal__prompt {
+  color: var(--gold-light);
+  margin-right: 8px;
+}
+.status-terminal__out {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #cfe4d5;
+}
+.status-terminal__out svg {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+/* margin-top ghi đè .status-terminal__body p { margin:0 } (selector đó
+   có độ đặc hiệu cao hơn nên cần !important ở riêng thuộc tính này) */
+.status-terminal__footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 16px !important;
+  padding-top: 16px;
+  border-top: 0.5px solid rgba(255, 255, 255, 0.08);
+}
+.status-terminal__footer-row > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(184, 204, 192, 0.65);
+}
+.status-terminal__blink {
+  position: relative;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
-  margin-left: auto;
 }
-.status-card__pulse::before,
-.status-card__pulse::after {
+.status-terminal__blink::before {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: 50%;
   background: inherit;
-  animation: statusPulseRing 2.2s ease-out infinite;
-}
-.status-card__pulse::after {
-  animation-delay: 1.1s;
-}
-
-/* mô tả trạng thái */
-.status-card__desc {
-  font-family: "Be Vietnam Pro", sans-serif;
-  font-size: 13px;
-  line-height: 1.7;
-  font-weight: 300;
-  color: var(--text-muted);
-  margin: 20px 0 28px;
-  padding-left: 18px;
-  border-left: 2px solid var(--gold-pale);
-  position: relative;
-  z-index: 1;
-}
-
-/* ─ GRID: 3 stat cells ─ */
-.status-card__grid {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  border-top: 0.5px solid var(--border);
-  padding-top: 28px;
-}
-
-.status-card__stat {
-  text-align: center;
-  padding: 4px 10px;
-  border-right: 0.5px solid var(--border);
-  transition: background 0.35s ease;
-}
-.status-card__stat:last-child {
-  border-right: none;
-}
-.status-card__stat:hover {
-  background: var(--gold-pale);
-}
-
-.status-card__stat-label {
-  font-family: "Be Vietnam Pro", sans-serif;
-  font-size: 9px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  font-weight: 400;
-  color: var(--text-muted);
-  margin: 0 0 10px;
-}
-
-.status-card__stat-value {
-  font-family: "Montserrat", sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--forest);
-  margin: 0;
-  font-variant-numeric: tabular-nums;
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.status-card__stat:hover .status-card__stat-value {
-  transform: translateY(-2px);
-}
-
-/* ─ FOOTNOTE / REFRESH ─ */
-.status-page__footnote {
-  position: relative;
-  z-index: 1;
-  margin-top: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px 24px;
-  border: 0.5px solid var(--border);
-  background: var(--parchment);
-  animation: statusFadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.24s both;
-}
-
-.status-page__footnote > span {
-  font-family: "Be Vietnam Pro", sans-serif;
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  font-weight: 400;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.status-page__footnote > span::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--gold);
   animation: statusDotBreathe 2.4s ease-in-out infinite;
 }
 
-.status-page__refresh-btn {
+.status-terminal__refresh-btn {
   position: relative;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-family: "Be Vietnam Pro", sans-serif;
+  font-family: "JetBrains Mono", monospace;
   font-size: 10px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  font-weight: 400;
-  color: var(--forest);
-  background: var(--white);
-  border: 0.5px solid var(--border-gold);
-  padding: 10px 20px;
+  font-weight: 500;
+  color: #cfe4d5;
+  background: rgba(255, 255, 255, 0.04);
+  border: 0.5px solid rgba(74, 158, 63, 0.4);
+  padding: 9px 16px;
   cursor: pointer;
   overflow: hidden;
   transition:
-    background 0.35s ease,
-    color 0.35s ease,
-    border-color 0.35s ease,
+    background 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
     transform 0.2s ease;
 }
-.status-page__refresh-btn::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(74, 158, 63, 0.15),
-    transparent
-  );
-  transform: translateX(-100%);
-  transition: transform 0.6s ease;
+.status-terminal__refresh-btn:hover:not(:disabled) {
+  background: var(--gold);
+  color: #0e1612;
+  border-color: var(--gold);
 }
-.status-page__refresh-btn:hover:not(:disabled) {
-  background: var(--forest);
-  color: var(--ivory);
-  border-color: var(--forest);
-}
-.status-page__refresh-btn:hover:not(:disabled)::before {
-  transform: translateX(100%);
-}
-.status-page__refresh-btn:active:not(:disabled) {
+.status-terminal__refresh-btn:active:not(:disabled) {
   transform: scale(0.96);
 }
-.status-page__refresh-btn:disabled {
-  opacity: 0.55;
+.status-terminal__refresh-btn:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -471,10 +625,23 @@
   }
 }
 
-/* ─ DARK MODE ─
-   Phần lớn màu tự đổi theo biến (--white, --border, --text-muted, --forest...
-   đã được định nghĩa lại trong body.dark-mode ở main.css). Chỉ cần tinh
-   chỉnh những chỗ cần độ tương phản cao hơn, giống pattern các block khác. */
+@keyframes statusScanSweep {
+  0%,
+  100% {
+    background-position: 130% 0;
+  }
+  50% {
+    background-position: -30% 0;
+  }
+}
+
+@keyframes statusPulseScroll {
+  to {
+    transform: translateX(-400px);
+  }
+}
+
+/* ─ DARK MODE ─ */
 body.dark-mode .status-page::before {
   color: rgba(180, 220, 200, 0.02);
 }
@@ -482,44 +649,40 @@ body.dark-mode .status-page::after {
   opacity: 0.4;
 }
 body.dark-mode .status-page-orb {
-  opacity: 0.5;
+  opacity: 0.22;
 }
 body.dark-mode .status-page__title {
   color: #c8d4cc;
 }
-body.dark-mode .status-card {
-  background: #1c2822;
+body.dark-mode .status-banner {
+  background: color-mix(in srgb, var(--accent, var(--gold)) 10%, #1c2822);
   border-color: rgba(255, 255, 255, 0.07);
 }
-body.dark-mode .status-card:hover {
-  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.4);
-}
-body.dark-mode .status-card__icon {
-  background: rgba(255, 255, 255, 0.04);
-}
-body.dark-mode .status-card__grid {
-  border-color: rgba(255, 255, 255, 0.07);
-}
-body.dark-mode .status-card__stat {
-  border-color: rgba(255, 255, 255, 0.07);
-}
-body.dark-mode .status-card__stat:hover {
-  background: rgba(74, 158, 63, 0.08);
-}
-body.dark-mode .status-card__stat-value {
+body.dark-mode .status-banner__label {
   color: #c8d4cc;
 }
-body.dark-mode .status-page__footnote {
-  background: #161e1a;
+body.dark-mode .status-banner__icon-wrap {
+  background: color-mix(in srgb, var(--accent, var(--gold)) 16%, #1c2822);
+}
+body.dark-mode .status-metrics {
+  background: rgba(255, 255, 255, 0.07);
   border-color: rgba(255, 255, 255, 0.07);
 }
-body.dark-mode .status-page__refresh-btn {
+body.dark-mode .metric-card {
   background: #1c2822;
-  color: #c8d4cc;
-  border-color: rgba(74, 158, 63, 0.3);
 }
-body.dark-mode .status-page__refresh-btn:hover:not(:disabled) {
-  background: var(--forest-mid);
+body.dark-mode .metric-card:hover {
+  box-shadow: 0 26px 50px rgba(0, 0, 0, 0.4);
+}
+body.dark-mode .metric-card__value {
+  color: #c8d4cc;
+}
+body.dark-mode .metric-card__bar {
+  background: rgba(255, 255, 255, 0.08);
+}
+body.dark-mode .status-terminal {
+  background: #0a100d;
+  border-color: rgba(255, 255, 255, 0.07);
 }
 
 /* ─ RESPONSIVE ─ */
@@ -532,11 +695,24 @@ body.dark-mode .status-page__refresh-btn:hover:not(:disabled) {
   .status-page {
     padding: 120px 24px 80px;
   }
-  .status-card {
-    padding: 32px 28px 26px;
+  .status-banner {
+    padding: 26px 24px;
   }
-  .status-card__value {
+  .status-banner__label {
     font-size: 19px;
+  }
+}
+@media (max-width: 620px) {
+  .status-metrics {
+    grid-template-columns: 1fr;
+  }
+  .status-banner__row {
+    flex-wrap: wrap;
+  }
+  .status-banner__live {
+    order: 3;
+    align-self: flex-start;
+    margin-left: 80px;
   }
 }
 @media (max-width: 480px) {
@@ -544,31 +720,39 @@ body.dark-mode .status-page__refresh-btn:hover:not(:disabled) {
     padding: 110px 18px 64px;
   }
   .status-page__eyebrow {
-    gap: 8px;
+    gap: 7px;
   }
-  .status-card {
-    padding: 26px 22px 22px;
+  .status-banner {
+    padding: 22px 18px;
   }
-  .status-card__top {
-    gap: 12px;
+  .status-banner__row {
+    gap: 14px;
   }
-  .status-card__icon {
+  .status-banner__icon-wrap {
     width: 48px;
     height: 48px;
   }
-  .status-card__grid {
-    padding-top: 20px;
+  .status-banner__live {
+    margin-left: 62px;
   }
-  .status-card__stat-value {
-    font-size: 16px;
+  .status-banner__pulse-wrap {
+    display: none;
   }
-  .status-page__footnote {
+  .metric-card {
+    padding: 20px 18px 18px;
+  }
+  .metric-card__value {
+    font-size: 22px;
+  }
+  .status-terminal__body {
+    padding: 16px;
+  }
+  .status-terminal__footer-row {
     flex-direction: column;
     align-items: stretch;
     text-align: center;
-    gap: 12px;
   }
-  .status-page__refresh-btn {
+  .status-terminal__refresh-btn {
     justify-content: center;
   }
 }
@@ -576,12 +760,16 @@ body.dark-mode .status-page__refresh-btn:hover:not(:disabled) {
 /* ─ REDUCED MOTION ─ */
 @media (prefers-reduced-motion: reduce) {
   .status-page__hero,
-  .status-card,
-  .status-page__footnote,
-  .status-card__icon::before,
-  .status-card__pulse::before,
-  .status-card__pulse::after,
-  .status-page__footnote > span::before {
+  .status-banner,
+  .status-metrics,
+  .status-terminal,
+  .status-banner__scan,
+  .status-banner__pulse-track,
+  .status-banner__icon-ring,
+  .status-page-orb,
+  .status-page__eyebrow-dot::before,
+  .status-banner__live-dot::before,
+  .status-terminal__blink::before {
     animation: none !important;
   }
 }
