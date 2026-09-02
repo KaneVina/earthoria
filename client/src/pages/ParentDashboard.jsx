@@ -513,24 +513,17 @@ export default function ParentDashboard() {
   const trendDirection =
     trendDeltaPct <= -5 ? "down" : trendDeltaPct >= 5 ? "up" : "flat";
 
-  /*  Autosave feedback  */
-  // Không có nút "Lưu" nào cả — mọi thay đổi tự lưu ngầm. Để phụ huynh biết
-  // rõ khi nào nó thực sự lưu (thay vì lưu ngay từng cú bấm, dễ spam API),
-  // ta gộp các thay đổi liên tiếp lại và chỉ thực sự gửi lên server sau khi
-  // ngừng chỉnh được SETTINGS_AUTOSAVE_DEBOUNCE_MS, có đếm ngược hiển thị.
+  /*  Autosave  */
+  // Không có nút "Lưu" nào cả — mọi thay đổi tự lưu ngầm. Gộp các thay đổi
+  // liên tiếp lại (bấm +/- vài lần, kéo giờ "Từ" rồi "Đến"...) và chỉ thực sự
+  // gửi lên server sau khi ngừng chỉnh được SETTINGS_AUTOSAVE_DEBOUNCE_MS,
+  // tránh spam API — báo kết quả bằng toast cho gọn, không cần badge riêng.
   const SETTINGS_AUTOSAVE_DEBOUNCE_MS = 2000;
 
-  const [saveStatus, setSaveStatus] = useState("idle"); // idle | pending | saving | saved
-  const [saveCountdown, setSaveCountdown] = useState(0); // giây còn lại, chỉ có ý nghĩa khi saveStatus === "pending"
-  const saveTimers = useRef({
-    debounce: null,
-    tick: null,
-    toSaved: null,
-    toIdle: null,
-  });
+  const saveTimers = useRef({ debounce: null });
   const pendingSettingsRef = useRef(null); // { childId, patch } — gộp các thay đổi chưa gửi lên server
   // Bản sao "luôn mới" của activeChildId để đọc trong setTimeout/closure cũ,
-  // tránh trường hợp phụ huynh đổi sang xem bé khác trong lúc đang đếm ngược.
+  // tránh trường hợp phụ huynh đổi sang xem bé khác trong lúc đang chờ lưu.
   const activeChildIdRef = useRef(activeChildId);
   useEffect(() => {
     activeChildIdRef.current = activeChildId;
@@ -538,20 +531,16 @@ export default function ParentDashboard() {
 
   const clearSaveTimers = () => {
     clearTimeout(saveTimers.current.debounce);
-    clearInterval(saveTimers.current.tick);
-    clearTimeout(saveTimers.current.toSaved);
-    clearTimeout(saveTimers.current.toIdle);
   };
 
   // Gửi patch đang chờ (nếu có) lên server thật. Tách riêng khỏi updateSettings
-  // để có thể gọi ngay lập tức (không chờ hết giờ đếm ngược) trong trường hợp
+  // để có thể gọi ngay lập tức (không chờ hết giờ debounce) trong trường hợp
   // phụ huynh chuyển sang chỉnh cho bé khác trước khi patch cũ kịp lưu.
   const flushPendingSettings = async () => {
     const pending = pendingSettingsRef.current;
     pendingSettingsRef.current = null;
     if (!pending) return;
     const { childId, patch } = pending;
-    setSaveStatus("saving");
     try {
       await childService.updateSettings(childId, patch);
       // Chặn loadChildren() cũ resolve trễ hơn đè mất field vừa lưu
@@ -559,13 +548,8 @@ export default function ParentDashboard() {
       setChildren((prev) =>
         prev.map((c) => (c.id === childId ? { ...c, ...patch } : c)),
       );
-      saveTimers.current.toSaved = setTimeout(
-        () => setSaveStatus("saved"),
-        350,
-      );
-      saveTimers.current.toIdle = setTimeout(() => setSaveStatus("idle"), 2950);
+      toast.success("Đã lưu thay đổi");
     } catch (err) {
-      setSaveStatus("idle");
       toast.error(
         err.response?.data?.message ||
           "Không thể lưu thay đổi, đang tải lại...",
@@ -608,14 +592,7 @@ export default function ParentDashboard() {
     };
 
     clearSaveTimers();
-    const totalSeconds = Math.ceil(SETTINGS_AUTOSAVE_DEBOUNCE_MS / 1000);
-    setSaveCountdown(totalSeconds);
-    setSaveStatus("pending");
-    saveTimers.current.tick = setInterval(() => {
-      setSaveCountdown((s) => Math.max(0, s - 1));
-    }, 1000);
     saveTimers.current.debounce = setTimeout(() => {
-      clearInterval(saveTimers.current.tick);
       flushPendingSettings();
     }, SETTINGS_AUTOSAVE_DEBOUNCE_MS);
   };
@@ -1147,26 +1124,6 @@ export default function ParentDashboard() {
                 alt="Family Studio"
                 className="pkd-header-logo"
               />
-              <div className="pkd-sync-wrap">
-                <span
-                  className={`pkd-autosave ${saveStatus !== "idle" ? "is-visible" : ""} is-${saveStatus}`}
-                  aria-live="polite"
-                >
-                  {saveStatus === "pending" ? (
-                    <>
-                      <Clock size={12} /> Tự động lưu sau {saveCountdown}s…
-                    </>
-                  ) : saveStatus === "saving" ? (
-                    <>
-                      <Loader2 size={12} /> Đang lưu…
-                    </>
-                  ) : (
-                    <>
-                      <Check size={12} /> Đã lưu tự động
-                    </>
-                  )}
-                </span>
-              </div>
             </div>
           </div>
         </div>

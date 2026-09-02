@@ -235,12 +235,6 @@
 }
 
 /*  Sync / autosave status (top right of header)  */
-.pkd-sync-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 10px;
-}
 .pkd-device-status {
   display: inline-flex;
   align-items: center;
@@ -260,50 +254,6 @@
 .pkd-status-dot.is-offline {
   background: rgba(255, 255, 255, 0.3);
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
-}
-
-.pkd-autosave {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 10.5px;
-  letter-spacing: 0.04em;
-  color: rgba(250, 248, 243, 0.55);
-  padding: 6px 14px;
-  border: 0.5px solid rgba(255, 255, 255, 0.14);
-  border-radius: 20px;
-  opacity: 0;
-  transform: translateY(-4px);
-  transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
-  background: rgba(255, 255, 255, 0.03);
-}
-.pkd-autosave.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-.pkd-autosave svg {
-  flex-shrink: 0;
-}
-.pkd-autosave.is-saving svg {
-  animation: pkdSpin 0.8s linear infinite;
-  color: var(--gold);
-}
-.pkd-autosave.is-saved svg {
-  color: var(--gold);
-}
-.pkd-autosave.is-pending {
-  animation: pkdAutosavePulse 1.1s ease-in-out infinite;
-}
-@keyframes pkdAutosavePulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.55;
-  }
 }
 
 /* ═══════════ BODY LAYOUT ═══════════ */
@@ -2321,9 +2271,6 @@
   }
   .pkd-header-logo {
     height: 32px;
-  }
-  .pkd-sync-wrap {
-    align-items: flex-start;
   }
   .pkd-picker-row {
     flex-wrap: wrap;
