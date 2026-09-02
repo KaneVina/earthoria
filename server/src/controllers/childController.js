@@ -509,17 +509,21 @@ const unlockChild = async (req, res) => {
 };
 
 // GET /api/v1/children/:childId/books
+// Chỉ tính là "sách của bé" khi: variant DIGITAL, đơn đã PAID + DELIVERED/COMPLETED,
+// và sách có bản Ebook đang active — đúng bằng điều kiện mà getKidPublicBooks
+// dùng để hiển thị cho bé ở /e-kid, để /family luôn đồng bộ với kidaccess.
 const getChildBooks = async (req, res) => {
   try {
     const child = await findOwnChild(req.user.id, req.params.childId);
     if (!child) return formatResponse(res, 404, "Không tìm thấy hồ sơ trẻ");
 
-    const purchasedItems = await prisma.orderItem.findMany({
+    const digitalOrderItems = await prisma.orderItem.findMany({
       where: {
+        variant: { format: "DIGITAL" },
         order: {
           userId: req.user.id,
           paymentStatus: "PAID",
-          status: { in: ["CONFIRMED", "SHIPPING", "DELIVERED", "COMPLETED"] },
+          status: { in: ["DELIVERED", "COMPLETED"] },
         },
       },
       select: {
@@ -541,22 +545,30 @@ const getChildBooks = async (req, res) => {
     });
 
     const bookMap = new Map();
-    for (const item of purchasedItems) {
+    for (const item of digitalOrderItems) {
       const book = item.variant?.book;
       if (book) bookMap.set(book.id, book);
     }
 
+    const ebooks = await prisma.ebook.findMany({
+      where: { isActive: true, bookId: { in: [...bookMap.keys()] } },
+      select: { bookId: true },
+    });
+    const ebookBookIds = new Set(ebooks.map((e) => e.bookId));
+
     const access = await prisma.childBookAccess.findMany({
-      where: { childId: child.id, bookId: { in: [...bookMap.keys()] } },
+      where: { childId: child.id, bookId: { in: [...ebookBookIds] } },
     });
     const visibilityMap = Object.fromEntries(
       access.map((a) => [a.bookId, a.visible]),
     );
 
-    const books = [...bookMap.values()].map((book) => ({
-      ...book,
-      visible: visibilityMap[book.id] ?? true,
-    }));
+    const books = [...bookMap.values()]
+      .filter((book) => ebookBookIds.has(book.id))
+      .map((book) => ({
+        ...book,
+        visible: visibilityMap[book.id] ?? true,
+      }));
 
     return formatResponse(res, 200, "OK", { books });
   } catch (error) {
