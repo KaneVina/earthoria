@@ -871,39 +871,105 @@ async function executeTool(name, args, ctx) {
    6) GỌI GROQ — STREAMING + PHÁT HIỆN TOOL CALLS TRONG STREAM
      */
 
-async function streamGroqCompletion(messages, { onToken, signal } = {}) {
+// Groq giới hạn TPM (token/phút) theo model + tier. Khi hết quota trong phút
+// hiện tại, Groq trả 429 kèm thời gian gợi ý chờ (vd "Please try again in 9.6s").
+// Ta tự chờ đúng khoảng đó (cộng thêm chút đệm an toàn) rồi gọi lại 1-2 lần
+// thay vì trả lỗi ngay cho khách — vì cửa sổ TPM reset rất nhanh nên retry
+// ngắn thường giải quyết được, không cần khách tự bấm gửi lại.
+const RATE_LIMIT_MAX_RETRIES = 2;
+const RATE_LIMIT_FALLBACK_WAIT_MS = 4000;
+const RATE_LIMIT_MAX_WAIT_MS = 15000;
+
+function parseRetryDelayMs(errorMessage) {
+  const match = /try again in ([\d.]+)\s*s/i.exec(errorMessage || "");
+  if (!match) return null;
+  const seconds = parseFloat(match[1]);
+  if (Number.isNaN(seconds)) return null;
+  return Math.min(Math.ceil(seconds * 1000) + 300, RATE_LIMIT_MAX_WAIT_MS); // +300ms đệm an toàn
+}
+
+function sleep(ms, signal) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(resolve, ms);
+    if (!signal) return;
+    if (signal.aborted) {
+      clearTimeout(timer);
+      reject(Object.assign(new Error("Aborted"), { name: "AbortError" }));
+      return;
+    }
+    signal.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(timer);
+        reject(Object.assign(new Error("Aborted"), { name: "AbortError" }));
+      },
+      { once: true },
+    );
+  });
+}
+
+async function streamGroqCompletion(
+  messages,
+  { onToken, onRetry, signal } = {},
+) {
   if (!GROQ_API_KEY) {
     const err = new Error("Thiếu GROQ_API_KEY trên server");
     err.code = "CONFIG_MISSING";
     throw err;
   }
 
-  const res = await fetch(GROQ_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${GROQ_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: GROQ_MODEL,
-      messages,
-      tools: TOOLS,
-      tool_choice: "auto",
-      temperature: 0.72,
-      max_tokens: 500,
-      top_p: 0.88,
-      stream: true,
-    }),
-    signal,
-  });
+  let lastErr = null;
 
-  if (!res.ok || !res.body) {
-    const body = await res.json().catch(() => ({}));
-    const err = new Error(body?.error?.message || `Groq HTTP ${res.status}`);
-    err.status = res.status;
-    throw err;
+  for (let attempt = 0; attempt <= RATE_LIMIT_MAX_RETRIES; attempt++) {
+    const res = await fetch(GROQ_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${GROQ_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages,
+        tools: TOOLS,
+        tool_choice: "auto",
+        temperature: 0.72,
+        max_tokens: 500,
+        top_p: 0.88,
+        stream: true,
+      }),
+      signal,
+    });
+
+    if (!res.ok || !res.body) {
+      const body = await res.json().catch(() => ({}));
+      const errMessage = body?.error?.message || `Groq HTTP ${res.status}`;
+      const err = new Error(errMessage);
+      err.status = res.status;
+
+      // Chỉ retry cho lỗi rate limit (429) — các lỗi khác (auth sai, model
+      // không tồn tại, request lỗi...) retry cũng vô ích nên throw ngay.
+      if (res.status === 429 && attempt < RATE_LIMIT_MAX_RETRIES) {
+        const waitMs =
+          parseRetryDelayMs(errMessage) ?? RATE_LIMIT_FALLBACK_WAIT_MS;
+        console.warn(
+          `[aiChat] Groq 429, chờ ${waitMs}ms rồi thử lại (lần ${attempt + 1}/${RATE_LIMIT_MAX_RETRIES})`,
+        );
+        onRetry?.(waitMs, attempt + 1);
+        await sleep(waitMs, signal);
+        lastErr = err;
+        continue;
+      }
+
+      throw err;
+    }
+
+    return await consumeGroqStream(res, { onToken });
   }
 
+  throw lastErr;
+}
+
+async function consumeGroqStream(res, { onToken }) {
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
@@ -1027,6 +1093,10 @@ async function runChatTurn({
     const result = await streamGroqCompletion(messages, {
       signal,
       onToken: (text) => emit("token", { text }),
+      onRetry: (waitMs) =>
+        emit("status", {
+          label: `Hệ thống AI đang bận, đang thử lại sau ${Math.ceil(waitMs / 1000)}s...`,
+        }),
     });
 
     if (result.toolCalls.length === 0) {
