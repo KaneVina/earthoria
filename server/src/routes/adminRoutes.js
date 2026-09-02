@@ -71,7 +71,11 @@ router.get("/products", staffOrAdmin, getProducts);
 router.post("/products", staffOrAdmin, createProduct);
 router.put("/products/:id", staffOrAdmin, updateProduct);
 router.delete("/products/:id", staffOrAdmin, deleteProduct);
-router.delete("/products/:id/variants/:variantId", staffOrAdmin, deleteProductVariant);
+router.delete(
+  "/products/:id/variants/:variantId",
+  staffOrAdmin,
+  deleteProductVariant,
+);
 router.post(
   "/products/:id/images",
   staffOrAdmin,
@@ -121,12 +125,7 @@ router.post(
   uploadGlb.single("model"),
   createArCode,
 );
-router.put(
-  "/ar-codes/:id",
-  adminOnly,
-  uploadGlb.single("model"),
-  updateArCode,
-);
+router.put("/ar-codes/:id", adminOnly, uploadGlb.single("model"), updateArCode);
 router.put("/ar-codes/:id/toggle", adminOnly, toggleArCode);
 
 router.use("/games", staffOrAdmin, require("./adminGameRoutes"));

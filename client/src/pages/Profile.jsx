@@ -1505,7 +1505,7 @@ function FooterHelp() {
 }
 
 // ════ OVERVIEW TAB ════
- function OverviewTab({
+function OverviewTab({
   profile,
   recentOrders,
   ordersLoading,
@@ -1518,7 +1518,11 @@ function FooterHelp() {
   const loyaltyTiers = loyaltyProfile?.tiers || [];
   const currentTierIdx = loyaltyTiers.findIndex((t) => t.isCurrent);
   const activePreviewIdx =
-    tierPreviewIndex !== null ? tierPreviewIndex : currentTierIdx === -1 ? 0 : currentTierIdx;
+    tierPreviewIndex !== null
+      ? tierPreviewIndex
+      : currentTierIdx === -1
+        ? 0
+        : currentTierIdx;
   const previewTier = loyaltyTiers[activePreviewIdx] || loyaltyProfile?.tier;
   const handleNextTierPreview = () => {
     if (!loyaltyTiers.length) return;
@@ -1526,9 +1530,12 @@ function FooterHelp() {
   };
   const handlePrevTierPreview = () => {
     if (!loyaltyTiers.length) return;
-    setTierPreviewIndex((activePreviewIdx - 1 + loyaltyTiers.length) % loyaltyTiers.length);
+    setTierPreviewIndex(
+      (activePreviewIdx - 1 + loyaltyTiers.length) % loyaltyTiers.length,
+    );
   };
-  const isPreviewLocked = previewTier && !previewTier.unlocked && !previewTier.isCurrent;
+  const isPreviewLocked =
+    previewTier && !previewTier.unlocked && !previewTier.isCurrent;
 
   return (
     <div>
@@ -2432,16 +2439,20 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
                 order.shippingFee ? formatPrice(order.shippingFee) : "Miễn phí",
               ],
               ...(order.discount - (order.loyaltyDiscount || 0) > 0
-                ? [[
-                    "Giảm giá",
-                    `−${formatPrice(order.discount - (order.loyaltyDiscount || 0))}`,
-                  ]]
+                ? [
+                    [
+                      "Giảm giá",
+                      `−${formatPrice(order.discount - (order.loyaltyDiscount || 0))}`,
+                    ],
+                  ]
                 : []),
               ...(order.loyaltyDiscount > 0
-                ? [[
-                    "Ưu đãi hạng thành viên",
-                    `−${formatPrice(order.loyaltyDiscount)}`,
-                  ]]
+                ? [
+                    [
+                      "Ưu đãi hạng thành viên",
+                      `−${formatPrice(order.loyaltyDiscount)}`,
+                    ],
+                  ]
                 : []),
             ].map(([k, v]) => (
               <div key={k} className="pf-summary-line">
@@ -2665,7 +2676,9 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
               }}
             >
               <FileText size={14} strokeWidth={1.5} />
-              {order.requestInvoice ? "Xem / In hoá đơn" : "Xem / In phiếu mua hàng"}
+              {order.requestInvoice
+                ? "Xem / In hoá đơn"
+                : "Xem / In phiếu mua hàng"}
             </button>
           </div>
         </div>
@@ -3105,7 +3118,9 @@ function CreatePasswordFlow({ email }) {
                       inputMode="numeric"
                       autoComplete="one-time-code"
                       maxLength={1}
-                      disabled={createMutation.isPending || otpStatus !== "idle"}
+                      disabled={
+                        createMutation.isPending || otpStatus !== "idle"
+                      }
                       value={d}
                       onChange={(e) => handleOtpChange(i, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(i, e)}
@@ -3322,7 +3337,8 @@ function ChangePasswordFlow() {
     if (!isStrongEnough)
       newErrors.newPassword = "Mật khẩu mới chưa đạt đủ các tiêu chí bên dưới";
     else if (isTooSimilar)
-      newErrors.newPassword = "Mật khẩu mới không được quá giống mật khẩu hiện tại";
+      newErrors.newPassword =
+        "Mật khẩu mới không được quá giống mật khẩu hiện tại";
     if (form.newPassword !== form.confirmPassword)
       newErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
     if (Object.keys(newErrors).length) {
@@ -3479,7 +3495,7 @@ function ChangePasswordFlow() {
               >
                 đặt lại
               </button>
-                          <button
+              <button
                 type="submit"
                 disabled={!canSubmit}
                 className="pf-btn-tactile pf-btn-shine pf-pw-submit"
@@ -3773,9 +3789,7 @@ function AddressesTab({ confirm }) {
     addressService
       .getAll()
       .then(({ data }) => setAddresses(data.data || []))
-      .catch(() =>
-        toast.error("Không tải được sổ địa chỉ, vui lòng thử lại"),
-      )
+      .catch(() => toast.error("Không tải được sổ địa chỉ, vui lòng thử lại"))
       .finally(() => setLoading(false));
   }, []);
 
@@ -3894,7 +3908,8 @@ function AddressesTab({ confirm }) {
       loadAddresses();
     } catch (err) {
       toast.error(
-        err?.response?.data?.message || "Xóa địa chỉ thất bại, vui lòng thử lại",
+        err?.response?.data?.message ||
+          "Xóa địa chỉ thất bại, vui lòng thử lại",
       );
     }
   };
@@ -4029,7 +4044,10 @@ function AddressesTab({ confirm }) {
                 className="pf-skel"
                 style={{ width: "90px", height: "11px", marginBottom: 12 }}
               />
-              <div className="pf-skel" style={{ width: "100%", height: "13px" }} />
+              <div
+                className="pf-skel"
+                style={{ width: "100%", height: "13px" }}
+              />
             </div>
           ))}
         </div>
@@ -4261,7 +4279,14 @@ function FormInput({ label, value, onChange, required, style }) {
 }
 
 // ════ SHARED COMPONENTS ════
-export function SectionHeader({ chapter, eyebrow, title, emphasis, sub, logo }) {
+export function SectionHeader({
+  chapter,
+  eyebrow,
+  title,
+  emphasis,
+  sub,
+  logo,
+}) {
   return (
     <div className="pf-section-header">
       {logo && (

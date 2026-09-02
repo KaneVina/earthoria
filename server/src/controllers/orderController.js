@@ -81,7 +81,9 @@ const ORDER_ITEMS_INCLUDE = {
     include: {
       variant: {
         include: {
-          book: { select: { id: true, slug: true, title: true, coverImage: true } },
+          book: {
+            select: { id: true, slug: true, title: true, coverImage: true },
+          },
         },
       },
     },
@@ -114,7 +116,8 @@ const flattenOrderItems = (order) => {
 const createOrder = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { shipping, paymentMethod, couponCode, note, requestInvoice } = req.body;
+    const { shipping, paymentMethod, couponCode, note, requestInvoice } =
+      req.body;
     // shipping: { fullName, phone, email, province, district, ward, street }
     // district là tên (ví dụ "Ninh Kiều") từ form frontend
 
@@ -211,7 +214,7 @@ const createOrder = async (req, res) => {
 
     const total = afterDiscount + shippingFee;
 
-  const methodMap = {
+    const methodMap = {
       cod: "COD",
       vnpay: "VNPAY",
       momo: "MOMO",
@@ -229,7 +232,7 @@ const createOrder = async (req, res) => {
       return formatResponse(
         res,
         400,
-         "Sách điện tử chỉ hỗ trợ thanh toán online qua VNPay, MoMo hoặc chuyển khoản QR",
+        "Sách điện tử chỉ hỗ trợ thanh toán online qua VNPay, MoMo hoặc chuyển khoản QR",
       );
     }
     const isOnlinePayment = ONLINE_PAYMENT_METHODS.includes(prismaMethod);
@@ -373,7 +376,7 @@ const createOrder = async (req, res) => {
       order: {
         id: order.id,
         createdAt: order.createdAt,
-         items: cart.items.map((item) => ({
+        items: cart.items.map((item) => ({
           title: item.variant.book?.title || "",
           quantity: item.quantity,
           price: item.variant.salePrice ?? item.variant.price,
@@ -572,7 +575,7 @@ const cancelOrder = async (req, res) => {
       order: {
         id: order.id,
         createdAt: order.createdAt,
-       items: order.items.map((item) => ({
+        items: order.items.map((item) => ({
           title: item.variant.book?.title || "",
           quantity: item.quantity,
           price: item.price,
@@ -596,7 +599,9 @@ const cancelOrder = async (req, res) => {
 
 const confirmOrderReceived = async (req, res) => {
   try {
-    const order = await prisma.order.findUnique({ where: { id: req.params.id } });
+    const order = await prisma.order.findUnique({
+      where: { id: req.params.id },
+    });
 
     if (!order) return formatResponse(res, 404, "Không tìm thấy đơn hàng");
     if (order.userId !== req.user.id)
@@ -619,7 +624,12 @@ const confirmOrderReceived = async (req, res) => {
       data: { status: "COMPLETED", paymentStatus: "PAID" },
     });
 
-    return formatResponse(res, 200, "Đã xác nhận nhận hàng, cảm ơn bạn!", updated);
+    return formatResponse(
+      res,
+      200,
+      "Đã xác nhận nhận hàng, cảm ơn bạn!",
+      updated,
+    );
   } catch (error) {
     console.error(error);
     return formatResponse(res, 500, "Lỗi server");

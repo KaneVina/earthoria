@@ -814,14 +814,19 @@ const getBankQrStatus = async (req, res) => {
         orderBy: { createdAt: "desc" },
       });
       if (mismatchTxn) {
-        return formatResponse(res, 200, "Số tiền chuyển khoản không khớp đơn hàng", {
-          orderId: order.id,
-          success: false,
-          pending: false,
-          mismatch: true,
-          transferredAmount: mismatchTxn.amount,
-          expectedAmount: order.total,
-        });
+        return formatResponse(
+          res,
+          200,
+          "Số tiền chuyển khoản không khớp đơn hàng",
+          {
+            orderId: order.id,
+            success: false,
+            pending: false,
+            mismatch: true,
+            transferredAmount: mismatchTxn.amount,
+            expectedAmount: order.total,
+          },
+        );
       }
     }
 
@@ -922,12 +927,10 @@ const bankqrWebhook = async (req, res) => {
         message:
           "Phiên chuyển khoản đã hết hạn khi tiền về — cần admin đối soát thủ công",
       });
-      return res
-        .status(200)
-        .json({
-          success: true,
-          message: "Session expired, needs manual review",
-        });
+      return res.status(200).json({
+        success: true,
+        message: "Session expired, needs manual review",
+      });
     }
 
     if (!bankqrAmountMatches(order, parsed.amount)) {
@@ -935,12 +938,10 @@ const bankqrWebhook = async (req, res) => {
         ...baseLog,
         message: `Sai số tiền: chuyển khoản=${parsed.amount}, cần=${order.total} — cần admin đối soát thủ công`,
       });
-      return res
-        .status(200)
-        .json({
-          success: true,
-          message: "Amount mismatch, needs manual review",
-        });
+      return res.status(200).json({
+        success: true,
+        message: "Amount mismatch, needs manual review",
+      });
     }
 
     const { alreadyPaid } = await markOrderPaidAtomic(

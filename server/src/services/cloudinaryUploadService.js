@@ -1,5 +1,5 @@
-const cloudinary = require('../config/cloudinary')
-const fs = require('fs')
+const cloudinary = require("../config/cloudinary");
+const fs = require("fs");
 
 function uploadGlbFile(filePath, code) {
   return new Promise((resolve, reject) => {
@@ -17,66 +17,66 @@ function uploadGlbFile(filePath, code) {
         if (err) return reject(err);
 
         resolve(result);
-      }
+      },
     );
   });
 }
 
 function uploadImageBuffer(buffer, bookId) {
   return new Promise((resolve, reject) => {
-    const publicId = `books/${bookId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    const publicId = `books/${bookId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const stream = cloudinary.uploader.upload_stream(
       {
-        resource_type: 'image',
+        resource_type: "image",
         public_id: publicId,
         overwrite: false,
-        transformation: [{ width: 1600, crop: 'limit' }],
+        transformation: [{ width: 1600, crop: "limit" }],
       },
-      (err, result) => (err ? reject(err) : resolve(result))
-    )
-    stream.end(buffer)
-  })
+      (err, result) => (err ? reject(err) : resolve(result)),
+    );
+    stream.end(buffer);
+  });
 }
 
 function uploadGameImageBuffer(buffer, gameId) {
   return new Promise((resolve, reject) => {
-    const publicId = `games/${gameId || 'draft'}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    const publicId = `games/${gameId || "draft"}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const stream = cloudinary.uploader.upload_stream(
       {
-        resource_type: 'image',
+        resource_type: "image",
         public_id: publicId,
         overwrite: false,
-        transformation: [{ width: 1000, crop: 'limit' }],
+        transformation: [{ width: 1000, crop: "limit" }],
       },
-      (err, result) => (err ? reject(err) : resolve(result))
-    )
-    stream.end(buffer)
-  })
+      (err, result) => (err ? reject(err) : resolve(result)),
+    );
+    stream.end(buffer);
+  });
 }
 
 function uploadEbookImageBuffer(buffer, ebookId) {
   return new Promise((resolve, reject) => {
-    const publicId = `ebooks/${ebookId || 'draft'}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+    const publicId = `ebooks/${ebookId || "draft"}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const stream = cloudinary.uploader.upload_stream(
       {
-        resource_type: 'image',
+        resource_type: "image",
         public_id: publicId,
         overwrite: false,
-        transformation: [{ width: 1400, crop: 'limit' }],
+        transformation: [{ width: 1400, crop: "limit" }],
       },
-      (err, result) => (err ? reject(err) : resolve(result))
-    )
-    stream.end(buffer)
-  })
+      (err, result) => (err ? reject(err) : resolve(result)),
+    );
+    stream.end(buffer);
+  });
 }
 
 function deleteImageByPublicId(publicId) {
-  return cloudinary.uploader.destroy(publicId, { resource_type: 'image' })
+  return cloudinary.uploader.destroy(publicId, { resource_type: "image" });
 }
 
 function extractPublicId(url) {
-  const m = url.match(/\/upload\/(?:v\d+\/)?(.+)\.\w+$/)
-  return m ? m[1] : null
+  const m = url.match(/\/upload\/(?:v\d+\/)?(.+)\.\w+$/);
+  return m ? m[1] : null;
 }
 
 module.exports = {
@@ -86,4 +86,4 @@ module.exports = {
   uploadEbookImageBuffer,
   deleteImageByPublicId,
   extractPublicId,
-}
+};

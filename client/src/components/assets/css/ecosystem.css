@@ -26,8 +26,8 @@
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  filter: blur(90px) saturate(115%);
-  opacity: 0.85;
+  filter: blur(100px) saturate(105%);
+  opacity: 0.6;
 }
 .em-aurora-blob {
   position: absolute;
@@ -112,49 +112,21 @@
   }
 }
 
-/* ── Ambient constellation field ────────────────────────────── */
-.em-particles {
+/* ── Blueprint grid ─────────────────────────────────────────────
+   A fine, mostly-static technical grid — nods to "sơ đồ" (the map/
+   diagram this page literally is) rather than a generic glowing
+   particle field. Restrained: no motion, very low opacity. ─────── */
+.em-blueprint {
   position: fixed;
   inset: 0;
-  pointer-events: none;
-  overflow: hidden;
   z-index: 0;
-}
-.em-particle {
-  position: absolute;
-  width: var(--ps, 3px);
-  height: var(--ps, 3px);
-  border-radius: 50%;
-  background: var(--gold-light, #5cb84f);
-  opacity: 0;
-  box-shadow: 0 0 6px 1px rgba(92, 184, 79, 0.6);
-  animation: em-drift var(--pdur, 14s) ease-in-out infinite;
-  animation-delay: var(--pdelay, 0s);
-}
-@keyframes em-drift {
-  0% {
-    transform: translate3d(0, 0, 0) scale(0.6);
-    opacity: 0;
-  }
-  12% {
-    opacity: var(--pmax, 0.55);
-  }
-  50% {
-    transform: translate3d(var(--dx, 30px), calc(var(--dy, -60px) * -1), 0) scale(1);
-  }
-  88% {
-    opacity: var(--pmax, 0.55);
-  }
-  100% {
-    transform: translate3d(calc(var(--dx, 30px) * 1.6), calc(var(--dy, -60px) * -1.9), 0) scale(0.6);
-    opacity: 0;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .em-particle {
-    animation: none;
-    opacity: 0.2;
-  }
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: linear-gradient(rgba(146, 191, 140, 0.08) 0.5px, transparent 0.5px),
+    linear-gradient(90deg, rgba(146, 191, 140, 0.08) 0.5px, transparent 0.5px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, #000 0%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, #000 0%, transparent 75%);
 }
 
 .em-header,
@@ -194,6 +166,11 @@
   text-transform: uppercase;
   color: var(--gold-light, #5cb84f);
   font-weight: 400;
+}
+.em-eyebrow-mark {
+  color: var(--gold-light, #5cb84f);
+  opacity: 0.85;
+  flex-shrink: 0;
 }
 
 .em-title {
@@ -409,6 +386,19 @@
   box-shadow: 0 12px 26px rgba(74, 158, 63, 0.25);
 }
 
+/* editorial index numeral — a small, quiet catalogue-style marker
+   distinguishing the four top-level studios (I–IV) */
+.em-node-index {
+  position: absolute;
+  top: 14px;
+  left: 18px;
+  font-family: "Playfair Display", serif;
+  font-style: italic;
+  font-size: 12px;
+  color: rgba(250, 248, 243, 0.35);
+  z-index: 3;
+}
+
 /* live "pulse" indicator — quiet, modern touch signalling an active node */
 .em-node-status {
   position: absolute;
@@ -510,26 +500,27 @@
   display: none;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 7px;
   font-family: "Be Vietnam Pro", sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   color: var(--gold-light, #5cb84f);
   text-decoration: none;
   border: 0.5px solid rgba(92, 184, 79, 0.4);
-  border-radius: 999px;
-  padding: 7px 16px;
+  border-bottom: 1px solid rgba(92, 184, 79, 0.7);
+  padding: 9px 4px 7px;
   margin-bottom: 4px;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  transition: color 0.2s ease, border-color 0.2s ease, letter-spacing 0.2s ease;
 }
 .em-node.expanded .em-node-link {
   display: inline-flex;
 }
 .em-node-link:hover {
-  background: rgba(92, 184, 79, 0.14);
-  border-color: rgba(92, 184, 79, 0.7);
-  transform: translateY(-1px);
+  color: var(--ivory, #faf8f3);
+  border-color: rgba(92, 184, 79, 0.8);
+  letter-spacing: 0.18em;
 }
 
 .em-node-expand-hint {
@@ -814,32 +805,29 @@
 }
 .em-cta-btn {
   font-family: "Be Vietnam Pro", sans-serif;
-  font-size: 12.5px;
-  font-weight: 600;
-  letter-spacing: 0.03em;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   text-decoration: none;
-  padding: 13px 26px;
-  border-radius: 999px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  padding: 18px 40px;
+  transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
 }
 .em-cta-btn-primary {
-  background: linear-gradient(135deg, var(--gold-light, #5cb84f), #3f8a35);
+  background: var(--gold-light, #5cb84f);
   color: #071714;
-  box-shadow: 0 14px 30px rgba(74, 158, 63, 0.3);
+  border: none;
 }
 .em-cta-btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 38px rgba(74, 158, 63, 0.4);
+  background: #74d066;
 }
 .em-cta-btn-ghost {
   background: transparent;
-  border: 0.5px solid rgba(250, 248, 243, 0.28);
+  border: 0.5px solid rgba(250, 248, 243, 0.3);
   color: var(--ivory, #faf8f3);
 }
 .em-cta-btn-ghost:hover {
-  border-color: rgba(92, 184, 79, 0.6);
-  background: rgba(92, 184, 79, 0.08);
-  transform: translateY(-2px);
+  border-color: var(--ivory, #faf8f3);
 }
 
 /* ── Responsive ─────────────────────────────────────────────── */

@@ -1,6 +1,10 @@
 const prisma = require("../config/db");
 const { formatResponse } = require("../utils/helpers");
-const { vnDateStr, shiftVnDateStr, vnDateStrToUtcStart } = require("../utils/childPolicy");
+const {
+  vnDateStr,
+  shiftVnDateStr,
+  vnDateStrToUtcStart,
+} = require("../utils/childPolicy");
 const {
   LEVEL_CONFIG,
   STREAK_MILESTONES,
@@ -19,7 +23,13 @@ const {
   previewToday,
 } = require("../utils/gardenEngine");
 
-const EMPTY_TREE_FIELDS = { readingXp: 0, gameXp: 0, readingMinutes: 0, health: 100, status: "ALIVE" };
+const EMPTY_TREE_FIELDS = {
+  readingXp: 0,
+  gameXp: 0,
+  readingMinutes: 0,
+  health: 100,
+  status: "ALIVE",
+};
 
 async function loadDailyActivityMap(childId, fromDateStr, toDateStrInclusive) {
   const rangeStart = vnDateStrToUtcStart(fromDateStr);
@@ -38,11 +48,14 @@ async function loadDailyActivityMap(childId, fromDateStr, toDateStrInclusive) {
 
   const map = new Map();
   const bucket = (dateStr) => {
-    if (!map.has(dateStr)) map.set(dateStr, { readingMinutes: 0, gameScores: [] });
+    if (!map.has(dateStr))
+      map.set(dateStr, { readingMinutes: 0, gameScores: [] });
     return map.get(dateStr);
   };
-  for (const log of logs) bucket(vnDateStr(log.occurredOn)).readingMinutes += log.minutes;
-  for (const gr of gameResults) bucket(vnDateStr(gr.completedAt)).gameScores.push(gr.score);
+  for (const log of logs)
+    bucket(vnDateStr(log.occurredOn)).readingMinutes += log.minutes;
+  for (const gr of gameResults)
+    bucket(vnDateStr(gr.completedAt)).gameScores.push(gr.score);
   return map;
 }
 
@@ -82,14 +95,34 @@ function buildTreeView(tree) {
 
 async function commitMissingPastDays(child, garden, activeTree, todayVn) {
   const yesterdayVn = shiftVnDateStr(todayVn, -1);
-  const rangeStart = garden.lastTickDate ? shiftVnDateStr(garden.lastTickDate, 1) : vnDateStr(activeTree.plantedAt);
+  const rangeStart = garden.lastTickDate
+    ? shiftVnDateStr(garden.lastTickDate, 1)
+    : vnDateStr(activeTree.plantedAt);
 
-  let { currentStreak, longestStreak, missedStreak, lastActiveDate, forestLevel } = garden;
+  let {
+    currentStreak,
+    longestStreak,
+    missedStreak,
+    lastActiveDate,
+    forestLevel,
+  } = garden;
   if (rangeStart > yesterdayVn) {
-    return { currentStreak, longestStreak, missedStreak, lastActiveDate, forestLevel, lastTickDate: garden.lastTickDate, changed: false };
+    return {
+      currentStreak,
+      longestStreak,
+      missedStreak,
+      lastActiveDate,
+      forestLevel,
+      lastTickDate: garden.lastTickDate,
+      changed: false,
+    };
   }
 
-  const dailyMap = await loadDailyActivityMap(child.id, rangeStart, yesterdayVn);
+  const dailyMap = await loadDailyActivityMap(
+    child.id,
+    rangeStart,
+    yesterdayVn,
+  );
 
   const timeline = [
     {
@@ -113,14 +146,25 @@ async function commitMissingPastDays(child, garden, activeTree, todayVn) {
   while (cursor <= yesterdayVn) {
     const growing = timeline[timeline.length - 1];
     const raw = dayActivityOf(dailyMap, cursor);
-    const active = isActiveDay({ readingMinutes: raw.readingMinutes, gamesCompleted: raw.gameScores.length });
+    const active = isActiveDay({
+      readingMinutes: raw.readingMinutes,
+      gamesCompleted: raw.gameScores.length,
+    });
     const dayXp = computeDayXp(raw);
-    const streakResult = nextStreak({ currentStreak, longestStreak, isActive: active });
+    const streakResult = nextStreak({
+      currentStreak,
+      longestStreak,
+      isActive: active,
+    });
 
     const stepResult = commitPastDay({
       tree: growing.tree,
       isActive: active,
-      dayActivity: { readingMinutes: raw.readingMinutes, readingXp: dayXp.readingXp, gameXp: dayXp.gameXp },
+      dayActivity: {
+        readingMinutes: raw.readingMinutes,
+        readingXp: dayXp.readingXp,
+        gameXp: dayXp.gameXp,
+      },
       missedStreak,
       isMilestone: streakResult.isMilestone,
     });
@@ -130,7 +174,8 @@ async function commitMissingPastDays(child, garden, activeTree, todayVn) {
     currentStreak = streakResult.currentStreak;
     longestStreak = streakResult.longestStreak;
     if (active) lastActiveDate = cursor;
-    if (stepResult.justDied && !growing.diedAt) growing.diedAt = vnDateStrToUtcStart(cursor);
+    if (stepResult.justDied && !growing.diedAt)
+      growing.diedAt = vnDateStrToUtcStart(cursor);
 
     if (stepResult.justMatured) {
       growing.maturedAt = vnDateStrToUtcStart(cursor);
@@ -179,12 +224,27 @@ async function commitMissingPastDays(child, garden, activeTree, todayVn) {
   ops.push(
     prisma.childGarden.update({
       where: { id: garden.id },
-      data: { forestLevel, currentStreak, longestStreak, missedStreak, lastActiveDate, lastTickDate: yesterdayVn },
+      data: {
+        forestLevel,
+        currentStreak,
+        longestStreak,
+        missedStreak,
+        lastActiveDate,
+        lastTickDate: yesterdayVn,
+      },
     }),
   );
   await prisma.$transaction(ops);
 
-  return { currentStreak, longestStreak, missedStreak, lastActiveDate, forestLevel, lastTickDate: yesterdayVn, changed: true };
+  return {
+    currentStreak,
+    longestStreak,
+    missedStreak,
+    lastActiveDate,
+    forestLevel,
+    lastTickDate: yesterdayVn,
+    changed: true,
+  };
 }
 
 const getKidGarden = async (req, res) => {
@@ -194,7 +254,8 @@ const getKidGarden = async (req, res) => {
       where: { kidLinkToken: token, isActive: true },
       select: { id: true, name: true },
     });
-    if (!child) return formatResponse(res, 404, "Link không hợp lệ hoặc đã bị thu hồi");
+    if (!child)
+      return formatResponse(res, 404, "Link không hợp lệ hoặc đã bị thu hồi");
 
     let garden = await prisma.childGarden.findUnique({
       where: { childId: child.id },
@@ -203,7 +264,10 @@ const getKidGarden = async (req, res) => {
 
     if (!garden) {
       garden = await prisma.childGarden.create({
-        data: { childId: child.id, trees: { create: [{ slot: 0, ...EMPTY_TREE_FIELDS }] } },
+        data: {
+          childId: child.id,
+          trees: { create: [{ slot: 0, ...EMPTY_TREE_FIELDS }] },
+        },
         include: { trees: { orderBy: { slot: "asc" } } },
       });
     }
@@ -211,12 +275,21 @@ const getKidGarden = async (req, res) => {
     let activeTree = findActiveTree(garden.trees);
     if (!activeTree) {
       activeTree = await prisma.childTree.create({
-        data: { gardenId: garden.id, slot: garden.trees.length, ...EMPTY_TREE_FIELDS },
+        data: {
+          gardenId: garden.id,
+          slot: garden.trees.length,
+          ...EMPTY_TREE_FIELDS,
+        },
       });
     }
 
     const todayVn = vnDateStr();
-    const committed = await commitMissingPastDays(child, garden, activeTree, todayVn);
+    const committed = await commitMissingPastDays(
+      child,
+      garden,
+      activeTree,
+      todayVn,
+    );
 
     if (committed.changed) {
       garden = await prisma.childGarden.findUnique({
@@ -259,8 +332,12 @@ const getKidGarden = async (req, res) => {
     });
 
     const activeTreeView = buildTreeView({ ...activeTree, ...previewTree });
-    const otherTrees = garden.trees.filter((t) => t.id !== activeTree.id).map(buildTreeView);
-    const trees = [...otherTrees, activeTreeView].sort((a, b) => a.slot - b.slot);
+    const otherTrees = garden.trees
+      .filter((t) => t.id !== activeTree.id)
+      .map(buildTreeView);
+    const trees = [...otherTrees, activeTreeView].sort(
+      (a, b) => a.slot - b.slot,
+    );
 
     return formatResponse(res, 200, "OK", {
       childName: child.name,

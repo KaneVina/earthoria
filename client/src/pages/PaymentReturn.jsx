@@ -23,17 +23,32 @@ export default function PaymentReturn({ method }) {
   const runVerify = (showLoading) => {
     const qs = location.search.replace(/^\?/, "");
     if (!qs) {
-      setState({ loading: false, success: false, pending: false, orderId: null, message: "Thiếu thông tin giao dịch" });
+      setState({
+        loading: false,
+        success: false,
+        pending: false,
+        orderId: null,
+        message: "Thiếu thông tin giao dịch",
+      });
       return;
     }
 
     if (showLoading) setState((s) => ({ ...s, loading: true }));
 
-    const verify = method === "vnpay" ? paymentService.verifyVnpayReturn : paymentService.verifyMomoReturn;
+    const verify =
+      method === "vnpay"
+        ? paymentService.verifyVnpayReturn
+        : paymentService.verifyMomoReturn;
     return verify(qs)
       .then(({ data }) => {
         const { orderId, success, pending, message } = data.data;
-        setState({ loading: false, success: !!success, pending: !!pending, orderId, message: message || data.message });
+        setState({
+          loading: false,
+          success: !!success,
+          pending: !!pending,
+          orderId,
+          message: message || data.message,
+        });
       })
       .catch((err) => {
         setState({
@@ -41,7 +56,8 @@ export default function PaymentReturn({ method }) {
           success: false,
           pending: false,
           orderId: null,
-          message: err?.response?.data?.message || "Không xác thực được giao dịch",
+          message:
+            err?.response?.data?.message || "Không xác thực được giao dịch",
         });
       });
   };
@@ -49,7 +65,9 @@ export default function PaymentReturn({ method }) {
   useEffect(() => {
     // Chưa đăng nhập (vd token hết hạn trong lúc thanh toán) → cho đăng nhập lại rồi quay về đúng URL này
     if (!isAuthenticated) {
-      navigate(`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`);
+      navigate(
+        `/login?redirect=${encodeURIComponent(location.pathname + location.search)}`,
+      );
       return;
     }
     runVerify(true);
@@ -69,7 +87,10 @@ export default function PaymentReturn({ method }) {
     if (!state.orderId) return;
     setRetrying(true);
     try {
-      const create = method === "vnpay" ? paymentService.createVnpayUrl : paymentService.createMomoUrl;
+      const create =
+        method === "vnpay"
+          ? paymentService.createVnpayUrl
+          : paymentService.createMomoUrl;
       const { data } = await create(state.orderId);
       window.location.href = data.data.paymentUrl;
     } catch {
@@ -96,7 +117,11 @@ export default function PaymentReturn({ method }) {
           <>
             <Loader2
               size={40}
-              style={{ color: "var(--gold)", animation: "spin 0.8s linear infinite", marginBottom: 24 }}
+              style={{
+                color: "var(--gold)",
+                animation: "spin 0.8s linear infinite",
+                marginBottom: 24,
+              }}
             />
             <h2
               style={{
@@ -109,7 +134,13 @@ export default function PaymentReturn({ method }) {
             >
               Đang xác nhận thanh toán {methodLabel}…
             </h2>
-            <p style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 300 }}>
+            <p
+              style={{
+                fontSize: 13,
+                color: "var(--text-muted)",
+                fontWeight: 300,
+              }}
+            >
               Vui lòng không tắt trang này.
             </p>
           </>
@@ -120,7 +151,11 @@ export default function PaymentReturn({ method }) {
                 width: 72,
                 height: 72,
                 borderRadius: "50%",
-                background: state.success ? "var(--forest)" : showPending ? "var(--gold)" : "#b25450",
+                background: state.success
+                  ? "var(--forest)"
+                  : showPending
+                    ? "var(--gold)"
+                    : "#b25450",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -148,18 +183,33 @@ export default function PaymentReturn({ method }) {
               {state.success
                 ? "Thanh toán thành công!"
                 : showPending
-                ? "Đang chờ xác nhận…"
-                : "Thanh toán chưa hoàn tất"}
+                  ? "Đang chờ xác nhận…"
+                  : "Thanh toán chưa hoàn tất"}
             </h2>
-            <p style={{ fontSize: 13, color: "var(--text-muted)", marginBottom: 32, fontWeight: 300 }}>
+            <p
+              style={{
+                fontSize: 13,
+                color: "var(--text-muted)",
+                marginBottom: 32,
+                fontWeight: 300,
+              }}
+            >
               {state.success
                 ? `Đơn hàng của bạn đã được xác nhận qua ${methodLabel}.`
                 : showPending
-                ? "Giao dịch đã được gateway ghi nhận, hệ thống đang xác nhận lại — thường chỉ mất vài giây."
-                : state.message || `Giao dịch ${methodLabel} không thành công hoặc đã bị huỷ.`}
+                  ? "Giao dịch đã được gateway ghi nhận, hệ thống đang xác nhận lại — thường chỉ mất vài giây."
+                  : state.message ||
+                    `Giao dịch ${methodLabel} không thành công hoặc đã bị huỷ.`}
             </p>
 
-            <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: 14,
+                justifyContent: "center",
+                flexWrap: "wrap",
+              }}
+            >
               {showPending && (
                 <button
                   onClick={recheck}
@@ -181,7 +231,10 @@ export default function PaymentReturn({ method }) {
                   }}
                 >
                   {rechecking ? (
-                    <Loader2 size={14} style={{ animation: "spin 0.8s linear infinite" }} />
+                    <Loader2
+                      size={14}
+                      style={{ animation: "spin 0.8s linear infinite" }}
+                    />
                   ) : (
                     <RefreshCcw size={14} />
                   )}
@@ -210,7 +263,10 @@ export default function PaymentReturn({ method }) {
                   }}
                 >
                   {retrying ? (
-                    <Loader2 size={14} style={{ animation: "spin 0.8s linear infinite" }} />
+                    <Loader2
+                      size={14}
+                      style={{ animation: "spin 0.8s linear infinite" }}
+                    />
                   ) : (
                     <ShieldCheck size={14} />
                   )}
@@ -229,7 +285,9 @@ export default function PaymentReturn({ method }) {
                     alignItems: "center",
                     gap: 10,
                     background: state.success ? "var(--forest)" : "transparent",
-                    border: state.success ? "none" : "0.5px solid var(--border)",
+                    border: state.success
+                      ? "none"
+                      : "0.5px solid var(--border)",
                     padding: "15px 32px",
                     cursor: "pointer",
                     fontFamily: "Be Vietnam Pro, sans-serif",

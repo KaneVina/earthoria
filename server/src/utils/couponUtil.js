@@ -1,15 +1,7 @@
-// couponUtil.js — Logic kiểm tra & tính giảm giá coupon, dùng chung giữa
-// couponController (preview ở trang giỏ hàng/checkout) và orderController (áp dụng thật khi đặt hàng).
-// Trước đây orderController tự tính lại logic này nhưng THIẾU kiểm tra hết hạn (expiresAt)
-// và vượt lượt dùng (usageLimit/usedCount) — coupon hết hạn hoặc hết lượt vẫn được áp dụng. Đã sửa ở đây.
-
-/**
- * Kiểm tra 1 coupon còn hợp lệ để dùng hay không (không tính minOrder).
- * @returns {{ ok: boolean, reason?: string }}
- */
 function isCouponUsable(coupon) {
   if (!coupon) return { ok: false, reason: "Mã giảm giá không tồn tại" };
-  if (!coupon.isActive) return { ok: false, reason: "Mã giảm giá đã bị vô hiệu hóa" };
+  if (!coupon.isActive)
+    return { ok: false, reason: "Mã giảm giá đã bị vô hiệu hóa" };
   if (coupon.expiresAt && new Date(coupon.expiresAt).getTime() < Date.now()) {
     return { ok: false, reason: "Mã giảm giá đã hết hạn" };
   }

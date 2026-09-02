@@ -13,12 +13,14 @@ async function hashPin(pin) {
   return bcrypt.hash(pin, 12);
 }
 
-// Xác minh PIN kèm chống brute-force: sai quá MAX_PIN_ATTEMPTS lần liên tiếp
-// thì khoá tạm LOCKOUT_MINUTES phút. Đếm số lần sai và mốc khoá được lưu ở
-// DB (User.parentPinAttempts / parentPinLockedUntil), không so ở client.
+// Xác minh PIN kèm chống brute-force
 async function verifyParentPin(user, pin) {
   if (!user.parentPinHash) {
-    return { ok: false, code: "NO_PIN", message: "Bạn chưa thiết lập mã PIN phụ huynh." };
+    return {
+      ok: false,
+      code: "NO_PIN",
+      message: "Bạn chưa thiết lập mã PIN phụ huynh.",
+    };
   }
 
   if (user.parentPinLockedUntil && user.parentPinLockedUntil > new Date()) {
@@ -31,7 +33,11 @@ async function verifyParentPin(user, pin) {
   }
 
   if (!isValidPinFormat(pin)) {
-    return { ok: false, code: "INVALID_FORMAT", message: "Mã PIN gồm đúng 4 chữ số." };
+    return {
+      ok: false,
+      code: "INVALID_FORMAT",
+      message: "Mã PIN gồm đúng 4 chữ số.",
+    };
   }
 
   const matches = await bcrypt.compare(pin, user.parentPinHash);

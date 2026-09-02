@@ -38,7 +38,7 @@ const REASONS = [
     title: "Tích hợp sách điện tử lên hệ thống",
     body: "Bổ sung kho sách điện tử (ebook) để người dùng đọc trực tiếp trên nền tảng, không cần chờ giao sách giấy.",
   },
-   {
+  {
     title: "Tích hợp thanh toán nâng cao",
     body: "Bổ sung phương thức thanh toán bằng VNPay và Momo giúp trải nghiệm tốt hơn.",
   },
@@ -46,7 +46,7 @@ const REASONS = [
     title: "Thêm các trò chơi tương tác",
     body: "Tích hợp mini-game tương tác gắn liền với nội dung sách, giúp trải nghiệm đọc trở nên sinh động và hấp dẫn hơn.",
   },
-   {
+  {
     title: "Không gian quản lý trẻ dành cho phụ huynh",
     body: "Quản lý thời gian tự động, can thiệp thông minh để bảo vệ quá trình trải nghiệm của trẻ nhỏ.",
   },
@@ -220,9 +220,9 @@ export default function Maintenance({ until, message }) {
               "Đội ngũ vận hành và phát triển Earthoria xin phép được thông báo tạm ngưng phục vụ trong khoản thời gian này để thực hiện các nâng cấp và bảo trì hệ thống nhằm mang đến trải nghiệm ổn định và tốt hơn cho người dùng."}
           </p>
           <p style={styles.desc}>
-            Trong thời gian bảo trì, bạn tạm thời không truy cập được các tính năng của hệ thống.
-            Toàn bộ dữ liệu, đơn hàng và tủ sách của
-            bạn vẫn được lưu trữ an toàn và không bị ảnh hưởng.
+            Trong thời gian bảo trì, bạn tạm thời không truy cập được các tính
+            năng của hệ thống. Toàn bộ dữ liệu, đơn hàng và tủ sách của bạn vẫn
+            được lưu trữ an toàn và không bị ảnh hưởng.
           </p>
           <p style={{ ...styles.desc, marginBottom: 0 }}>
             Chúng tôi chân thành xin lỗi vì sự gián đoạn này và cảm ơn bạn đã
@@ -286,7 +286,10 @@ export default function Maintenance({ until, message }) {
                 <span style={styles.progressLabel}>
                   Tiến độ bảo trì hệ thống
                 </span>
-                <span className="em-progress-percent" style={styles.progressPercent}>
+                <span
+                  className="em-progress-percent"
+                  style={styles.progressPercent}
+                >
                   {progress}%
                 </span>
               </div>

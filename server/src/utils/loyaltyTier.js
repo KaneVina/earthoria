@@ -1,5 +1,10 @@
 const prisma = require("../config/db");
-const SUCCESSFUL_ORDER_STATUSES = ["CONFIRMED", "SHIPPING", "DELIVERED", "COMPLETED"];
+const SUCCESSFUL_ORDER_STATUSES = [
+  "CONFIRMED",
+  "SHIPPING",
+  "DELIVERED",
+  "COMPLETED",
+];
 const DEFAULT_FREE_SHIP_THRESHOLD = 300_000;
 const LOYALTY_TIERS = [
   {
@@ -137,8 +142,10 @@ const LOYALTY_TIERS = [
     },
   },
 ];
-const ABSOLUTE_MAX_CHILD_ACCOUNTS = LOYALTY_TIERS[LOYALTY_TIERS.length - 1].maxChildAccounts;
-const getTierByCode = (code) => LOYALTY_TIERS.find((t) => t.code === code) || null;
+const ABSOLUTE_MAX_CHILD_ACCOUNTS =
+  LOYALTY_TIERS[LOYALTY_TIERS.length - 1].maxChildAccounts;
+const getTierByCode = (code) =>
+  LOYALTY_TIERS.find((t) => t.code === code) || null;
 const resolveTierBySpend = (spend) => {
   const safeSpend = Number.isFinite(spend) && spend > 0 ? spend : 0;
   let matched = LOYALTY_TIERS[0];
@@ -171,14 +178,22 @@ const buildLoyaltyProfile = (spend) => {
   const safeSpend = Number.isFinite(spend) && spend > 0 ? spend : 0;
   const tier = resolveTierBySpend(safeSpend);
   const nextTier = getNextTier(tier);
-  const amountToNext = nextTier ? Math.max(nextTier.minSpend - safeSpend, 0) : 0;
+  const amountToNext = nextTier
+    ? Math.max(nextTier.minSpend - safeSpend, 0)
+    : 0;
   const spendIntoCurrentTier = safeSpend - tier.minSpend;
   const currentTierRange = nextTier ? nextTier.minSpend - tier.minSpend : 0;
   const progressPercent = !nextTier
     ? 100
     : currentTierRange <= 0
       ? 100
-      : Math.max(0, Math.min(100, Math.round((spendIntoCurrentTier / currentTierRange) * 100)));
+      : Math.max(
+          0,
+          Math.min(
+            100,
+            Math.round((spendIntoCurrentTier / currentTierRange) * 100),
+          ),
+        );
 
   return {
     spend: safeSpend,
@@ -206,9 +221,11 @@ const getUserLoyaltyProfile = async (userId, txClient = prisma) => {
 
 // Số tiền được giảm nhờ hạng thành viên trên 1 đơn — theo % của subtotal, chặn trần maxDiscountPerOrder và không bao giờ vượt quá subtotal.
 const computeTierDiscount = (tier, subtotal) => {
-  if (!tier || !subtotal || subtotal <= 0 || tier.discountPercent <= 0) return 0;
+  if (!tier || !subtotal || subtotal <= 0 || tier.discountPercent <= 0)
+    return 0;
   let discount = Math.round((subtotal * tier.discountPercent) / 100);
-  if (tier.maxDiscountPerOrder > 0) discount = Math.min(discount, tier.maxDiscountPerOrder);
+  if (tier.maxDiscountPerOrder > 0)
+    discount = Math.min(discount, tier.maxDiscountPerOrder);
   return Math.min(discount, subtotal);
 };
 

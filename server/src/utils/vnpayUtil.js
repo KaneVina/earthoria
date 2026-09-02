@@ -67,7 +67,10 @@ function verifyReturn(query) {
   const signatureValid =
     !!vnp_SecureHash &&
     secureHash.length === vnp_SecureHash.length &&
-    crypto.timingSafeEqual(Buffer.from(secureHash), Buffer.from(vnp_SecureHash));
+    crypto.timingSafeEqual(
+      Buffer.from(secureHash),
+      Buffer.from(vnp_SecureHash),
+    );
 
   const tmnCodeValid = !!VNP_TMN_CODE && query.vnp_TmnCode === VNP_TMN_CODE;
 
@@ -77,9 +80,18 @@ function verifyReturn(query) {
     isValid,
     signatureValid,
     tmnCodeValid,
-    isSuccess: isValid && query.vnp_ResponseCode === "00" && query.vnp_TransactionStatus === "00",
+    isSuccess:
+      isValid &&
+      query.vnp_ResponseCode === "00" &&
+      query.vnp_TransactionStatus === "00",
     currency: VNP_CURRENCY,
   };
 }
 
-module.exports = { createPaymentUrl, verifyReturn, VNP_TMN_CODE, VNP_HASH_SECRET, VNP_CURRENCY };
+module.exports = {
+  createPaymentUrl,
+  verifyReturn,
+  VNP_TMN_CODE,
+  VNP_HASH_SECRET,
+  VNP_CURRENCY,
+};

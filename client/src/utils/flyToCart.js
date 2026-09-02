@@ -8,7 +8,10 @@ export function flyToCart(sourceEl, imageSrc) {
   if (!cartIcon || cartIcon.offsetParent === null) return;
 
   const src =
-    imageSrc || sourceEl.currentSrc || sourceEl.src || sourceEl.querySelector?.("img")?.src;
+    imageSrc ||
+    sourceEl.currentSrc ||
+    sourceEl.src ||
+    sourceEl.querySelector?.("img")?.src;
   if (!src) return;
 
   const startRect = sourceEl.getBoundingClientRect();
@@ -23,8 +26,14 @@ export function flyToCart(sourceEl, imageSrc) {
   const PADDING = 8;
   const maxX = window.innerWidth - startW - PADDING;
   const maxY = window.innerHeight - startH - PADDING;
-  const startX = Math.min(Math.max(rawStartX, PADDING), Math.max(maxX, PADDING));
-  const startY = Math.min(Math.max(rawStartY, PADDING), Math.max(maxY, PADDING));
+  const startX = Math.min(
+    Math.max(rawStartX, PADDING),
+    Math.max(maxX, PADDING),
+  );
+  const startY = Math.min(
+    Math.max(rawStartY, PADDING),
+    Math.max(maxY, PADDING),
+  );
   const endW = 14;
   const endH = 14;
 

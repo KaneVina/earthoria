@@ -20,7 +20,11 @@ function computeGameXp(gameScores) {
   return gameScores.reduce((sum, score) => {
     const safeScore = Number.isFinite(score) && score > 0 ? score : 0;
     const cappedScore = Math.min(safeScore, XP_CONFIG.gameScoreXpCap);
-    return sum + XP_CONFIG.gameCompletionXp + Math.round(cappedScore * XP_CONFIG.gameScoreXpRate);
+    return (
+      sum +
+      XP_CONFIG.gameCompletionXp +
+      Math.round(cappedScore * XP_CONFIG.gameScoreXpRate)
+    );
   }, 0);
 }
 
@@ -31,11 +35,16 @@ function computeDayXp(dayActivity) {
 }
 
 function isActiveDay({ readingMinutes = 0, gamesCompleted = 0 }) {
-  return readingMinutes >= DAILY_MINIMUM_READING_MINUTES || gamesCompleted >= DAILY_MINIMUM_GAMES_COMPLETED;
+  return (
+    readingMinutes >= DAILY_MINIMUM_READING_MINUTES ||
+    gamesCompleted >= DAILY_MINIMUM_GAMES_COMPLETED
+  );
 }
 
 function decayForMissedStreak(missedStreak) {
-  const idx = Math.min(Math.max(missedStreak, 1), HEALTH_DECAY_BY_MISSED_STREAK.length) - 1;
+  const idx =
+    Math.min(Math.max(missedStreak, 1), HEALTH_DECAY_BY_MISSED_STREAK.length) -
+    1;
   return HEALTH_DECAY_BY_MISSED_STREAK[idx];
 }
 
@@ -52,7 +61,13 @@ function nextStreak({ currentStreak, longestStreak, isActive }) {
   };
 }
 
-function applyDayStep({ tree, isActive, dayActivity, missedStreak, isMilestone }) {
+function applyDayStep({
+  tree,
+  isActive,
+  dayActivity,
+  missedStreak,
+  isMilestone,
+}) {
   let { readingXp, gameXp, readingMinutes, health, status } = tree;
   let nextMissedStreak = missedStreak;
 
@@ -72,7 +87,8 @@ function applyDayStep({ tree, isActive, dayActivity, missedStreak, isMilestone }
   }
 
   const totalXp = readingXp + gameXp;
-  const justMatured = status !== "MATURE" && resolveLevelByXp(totalXp).level >= MAX_LEVEL;
+  const justMatured =
+    status !== "MATURE" && resolveLevelByXp(totalXp).level >= MAX_LEVEL;
   if (justMatured) {
     status = "MATURE";
     health = 100;

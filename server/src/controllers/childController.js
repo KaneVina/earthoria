@@ -13,7 +13,13 @@ const {
 const { getUserLoyaltyProfile } = require("../utils/loyaltyTier");
 
 function buildChildLimitPayload(loyaltyProfile, currentCount) {
-  const { tier, nextTier, isMaxTier, childAccountLimit, nextChildAccountLimit } = loyaltyProfile;
+  const {
+    tier,
+    nextTier,
+    isMaxTier,
+    childAccountLimit,
+    nextChildAccountLimit,
+  } = loyaltyProfile;
   return {
     current: currentCount,
     max: childAccountLimit,
@@ -96,7 +102,8 @@ function validateSettingsPatch(body) {
     ruleIntervalMinutes: "Chu kỳ nhắc nghỉ mắt phải trong khoảng 1–180 phút",
     ruleRestSeconds: "Thời gian nghỉ mắt phải trong khoảng 5–600 giây",
     breakAfterMinutes: "Thời điểm nhắc nghỉ phải trong khoảng 5–240 phút",
-    breakDurationMinutes: "Thời lượng nghỉ giải lao phải trong khoảng 1–60 phút",
+    breakDurationMinutes:
+      "Thời lượng nghỉ giải lao phải trong khoảng 1–60 phút",
   };
   for (const [field, [min, max]] of Object.entries(intRanges)) {
     if (body[field] !== undefined) {
@@ -111,7 +118,9 @@ function validateSettingsPatch(body) {
   for (const field of ["allowStart", "allowEnd"]) {
     if (body[field] !== undefined) {
       if (typeof body[field] !== "string" || !TIME_HHMM_RE.test(body[field])) {
-        return { error: `Trường "${field}" phải có định dạng giờ hợp lệ (HH:mm)` };
+        return {
+          error: `Trường "${field}" phải có định dạng giờ hợp lệ (HH:mm)`,
+        };
       }
       data[field] = body[field];
     }
@@ -141,7 +150,9 @@ async function findOwnChild(parentId, childId) {
 function pushAudit({ parentId, childId, type, message, metadata }) {
   return prisma.childAuditLog
     .create({ data: { parentId, childId, type, message, metadata } })
-    .catch((err) => console.error("[childAuditLog] Failed to write:", err.message));
+    .catch((err) =>
+      console.error("[childAuditLog] Failed to write:", err.message),
+    );
 }
 
 // GET /api/v1/children — danh sách hồ sơ con của phụ huynh đang đăng nhập
@@ -159,7 +170,10 @@ const listChildren = async (req, res) => {
     const todayLogs = childIds.length
       ? await prisma.childActivityLog.groupBy({
           by: ["childId"],
-          where: { childId: { in: childIds }, occurredOn: { gte: startOfToday } },
+          where: {
+            childId: { in: childIds },
+            occurredOn: { gte: startOfToday },
+          },
           _sum: { minutes: true },
         })
       : [];
@@ -228,7 +242,10 @@ const createChild = async (req, res) => {
             if (existingCount >= maxChildAccounts) {
               const err = new Error("MAX_CHILDREN_REACHED");
               err.code = "MAX_CHILDREN_REACHED";
-              err.payload = buildChildLimitPayload(loyaltyProfile, existingCount);
+              err.payload = buildChildLimitPayload(
+                loyaltyProfile,
+                existingCount,
+              );
               throw err;
             }
             return tx.childProfile.create({
@@ -257,12 +274,22 @@ const createChild = async (req, res) => {
     }
 
     if (limitErrorPayload) {
-      const { max, tierRoman, tierName, isMaxTier, nextTierRoman, nextTierName, nextMax } =
-        limitErrorPayload;
+      const {
+        max,
+        tierRoman,
+        tierName,
+        isMaxTier,
+        nextTierRoman,
+        nextTierName,
+        nextMax,
+      } = limitErrorPayload;
       const message = isMaxTier
         ? `Bạn đã đạt giới hạn tối đa ${max} hồ sơ trẻ em (Hạng ${tierRoman} · ${tierName} — hạng cao nhất).`
         : `Bạn đã đạt giới hạn ${max} hồ sơ trẻ em của Hạng ${tierRoman} · ${tierName}. Lên Hạng ${nextTierRoman} · ${nextTierName} để mở khóa thêm, tối đa ${nextMax} hồ sơ.`;
-      return formatResponse(res, 400, message, { code: "MAX_CHILDREN_REACHED", childLimit: limitErrorPayload });
+      return formatResponse(res, 400, message, {
+        code: "MAX_CHILDREN_REACHED",
+        childLimit: limitErrorPayload,
+      });
     }
 
     await pushAudit({
@@ -315,7 +342,9 @@ const getChildDashboard = async (req, res) => {
 
     const startOfToday = startOfTodayVn();
     const todayVnParts = getVnParts();
-    const todayWeekdayUtc = new Date(Date.UTC(todayVnParts.year, todayVnParts.month - 1, todayVnParts.day));
+    const todayWeekdayUtc = new Date(
+      Date.UTC(todayVnParts.year, todayVnParts.month - 1, todayVnParts.day),
+    );
     const dayOfWeek = (todayWeekdayUtc.getUTCDay() + 6) % 7; // 0 = Thứ 2 ... 6 = Chủ nhật
     const startOfWeek = new Date(startOfToday);
     startOfWeek.setUTCDate(startOfWeek.getUTCDate() - dayOfWeek);
@@ -342,7 +371,9 @@ const getChildDashboard = async (req, res) => {
     let todayMinutes = 0;
     for (const log of weekLogs) {
       const logVnParts = getVnParts(log.occurredOn);
-      const logWeekdayUtc = new Date(Date.UTC(logVnParts.year, logVnParts.month - 1, logVnParts.day));
+      const logWeekdayUtc = new Date(
+        Date.UTC(logVnParts.year, logVnParts.month - 1, logVnParts.day),
+      );
       const idx = (logWeekdayUtc.getUTCDay() + 6) % 7;
       weeklyMinutes[idx] += log.minutes;
       if (new Date(log.occurredOn) >= startOfToday) todayMinutes += log.minutes;
@@ -399,7 +430,9 @@ const updateChildSettings = async (req, res) => {
       metadata: data,
     });
 
-    return formatResponse(res, 200, "Đã lưu cài đặt", { child: serializeChild(updated) });
+    return formatResponse(res, 200, "Đã lưu cài đặt", {
+      child: serializeChild(updated),
+    });
   } catch (error) {
     console.error(error);
     return formatResponse(res, 500, "Lỗi server");
@@ -443,9 +476,14 @@ const unlockChild = async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     const verify = await verifyParentPin(user, req.body.pin);
     if (!verify.ok) {
-      return formatResponse(res, verify.code === "LOCKED_OUT" ? 429 : 400, verify.message, {
-        code: verify.code,
-      });
+      return formatResponse(
+        res,
+        verify.code === "LOCKED_OUT" ? 429 : 400,
+        verify.message,
+        {
+          code: verify.code,
+        },
+      );
     }
 
     const updated = await prisma.childProfile.update({
@@ -461,7 +499,9 @@ const unlockChild = async (req, res) => {
       message: `Bạn đã mở khoá cho ${child.name}`,
     });
 
-    return formatResponse(res, 200, "Đã mở khoá", { child: serializeChild(updated) });
+    return formatResponse(res, 200, "Đã mở khoá", {
+      child: serializeChild(updated),
+    });
   } catch (error) {
     console.error(error);
     return formatResponse(res, 500, "Lỗi server");
@@ -486,7 +526,14 @@ const getChildBooks = async (req, res) => {
         variant: {
           select: {
             book: {
-              select: { id: true, title: true, slug: true, coverImage: true, ageMin: true, ageMax: true },
+              select: {
+                id: true,
+                title: true,
+                slug: true,
+                coverImage: true,
+                ageMin: true,
+                ageMax: true,
+              },
             },
           },
         },
@@ -502,7 +549,9 @@ const getChildBooks = async (req, res) => {
     const access = await prisma.childBookAccess.findMany({
       where: { childId: child.id, bookId: { in: [...bookMap.keys()] } },
     });
-    const visibilityMap = Object.fromEntries(access.map((a) => [a.bookId, a.visible]));
+    const visibilityMap = Object.fromEntries(
+      access.map((a) => [a.bookId, a.visible]),
+    );
 
     const books = [...bookMap.values()].map((book) => ({
       ...book,
@@ -539,10 +588,17 @@ const toggleChildBookVisibility = async (req, res) => {
       },
     });
     if (!owned) {
-      return formatResponse(res, 403, "Sách này không nằm trong đơn hàng đã mua của bạn");
+      return formatResponse(
+        res,
+        403,
+        "Sách này không nằm trong đơn hàng đã mua của bạn",
+      );
     }
 
-    const book = await prisma.book.findUnique({ where: { id: bookId }, select: { title: true } });
+    const book = await prisma.book.findUnique({
+      where: { id: bookId },
+      select: { title: true },
+    });
 
     await prisma.childBookAccess.upsert({
       where: { childId_bookId: { childId: child.id, bookId } },
@@ -583,7 +639,11 @@ const getKidLink = async (req, res) => {
       });
     }
 
-    const url = buildKidLinkUrl(process.env.CLIENT_URL || "", child.name, token);
+    const url = buildKidLinkUrl(
+      process.env.CLIENT_URL || "",
+      child.name,
+      token,
+    );
     return formatResponse(res, 200, "OK", { url, token });
   } catch (error) {
     console.error(error);
@@ -610,7 +670,11 @@ const regenerateKidLink = async (req, res) => {
       message: `Đã tạo lại link riêng cho ${child.name}, link cũ đã bị huỷ`,
     });
 
-    const url = buildKidLinkUrl(process.env.CLIENT_URL || "", child.name, token);
+    const url = buildKidLinkUrl(
+      process.env.CLIENT_URL || "",
+      child.name,
+      token,
+    );
     return formatResponse(res, 200, "Đã tạo lại link mới", { url, token });
   } catch (error) {
     console.error(error);
@@ -630,9 +694,14 @@ const deleteChildPermanently = async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     const verify = await verifyParentPin(user, req.body.pin);
     if (!verify.ok) {
-      return formatResponse(res, verify.code === "LOCKED_OUT" ? 429 : 400, verify.message, {
-        code: verify.code,
-      });
+      return formatResponse(
+        res,
+        verify.code === "LOCKED_OUT" ? 429 : 400,
+        verify.message,
+        {
+          code: verify.code,
+        },
+      );
     }
 
     const { confirmName } = req.body;
@@ -688,7 +757,8 @@ const getKidPublicProfile = async (req, res) => {
         tipsFrequency: true,
       },
     });
-    if (!child) return formatResponse(res, 404, "Link không hợp lệ hoặc đã bị thu hồi");
+    if (!child)
+      return formatResponse(res, 404, "Link không hợp lệ hoặc đã bị thu hồi");
 
     const todayMinutes = await getTodayMinutes(prisma, child.id);
 
@@ -709,7 +779,8 @@ const getKidPublicBooks = async (req, res) => {
       where: { kidLinkToken: token, isActive: true },
       select: { id: true, parentId: true },
     });
-    if (!child) return formatResponse(res, 404, "Link không hợp lệ hoặc đã bị thu hồi");
+    if (!child)
+      return formatResponse(res, 404, "Link không hợp lệ hoặc đã bị thu hồi");
     const digitalOrderItems = await prisma.orderItem.findMany({
       where: {
         variant: { format: "DIGITAL" },
@@ -723,7 +794,14 @@ const getKidPublicBooks = async (req, res) => {
         variant: {
           select: {
             book: {
-              select: { id: true, title: true, slug: true, coverImage: true, ageMin: true, ageMax: true },
+              select: {
+                id: true,
+                title: true,
+                slug: true,
+                coverImage: true,
+                ageMin: true,
+                ageMax: true,
+              },
             },
           },
         },
@@ -745,7 +823,9 @@ const getKidPublicBooks = async (req, res) => {
     const access = await prisma.childBookAccess.findMany({
       where: { childId: child.id, bookId: { in: [...ebookBookIds] } },
     });
-    const visibilityMap = Object.fromEntries(access.map((a) => [a.bookId, a.visible]));
+    const visibilityMap = Object.fromEntries(
+      access.map((a) => [a.bookId, a.visible]),
+    );
 
     const books = [...bookMap.values()]
       .filter((book) => ebookBookIds.has(book.id))
@@ -771,27 +851,46 @@ const startKidActivity = async (req, res) => {
     const child = await prisma.childProfile.findFirst({
       where: { kidLinkToken: token, isActive: true },
     });
-    if (!child) return formatResponse(res, 404, "Link không hợp lệ hoặc đã bị thu hồi");
+    if (!child)
+      return formatResponse(res, 404, "Link không hợp lệ hoặc đã bị thu hồi");
 
     if (child.isLocked) {
-      return formatResponse(res, 403, "Thiết bị của bé đang bị phụ huynh khoá.", {
-        code: "CHILD_LOCKED",
-      });
+      return formatResponse(
+        res,
+        403,
+        "Thiết bị của bé đang bị phụ huynh khoá.",
+        {
+          code: "CHILD_LOCKED",
+        },
+      );
     }
     if (!isWithinAllowedWindow(child)) {
-      return formatResponse(res, 403, "Ngoài khung giờ ba mẹ cho phép sử dụng.", {
-        code: "OUTSIDE_ALLOWED_WINDOW",
-      });
+      return formatResponse(
+        res,
+        403,
+        "Ngoài khung giờ ba mẹ cho phép sử dụng.",
+        {
+          code: "OUTSIDE_ALLOWED_WINDOW",
+        },
+      );
     }
     if (await isDailyLimitReached(prisma, child)) {
-      return formatResponse(res, 403, "Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!", {
-        code: "DAILY_LIMIT_REACHED",
-      });
+      return formatResponse(
+        res,
+        403,
+        "Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!",
+        {
+          code: "DAILY_LIMIT_REACHED",
+        },
+      );
     }
 
     let validBookId = null;
     if (bookId) {
-      const book = await prisma.book.findUnique({ where: { id: bookId }, select: { id: true } });
+      const book = await prisma.book.findUnique({
+        where: { id: bookId },
+        select: { id: true },
+      });
       if (book) validBookId = book.id;
     }
 
@@ -814,7 +913,8 @@ const pingKidActivity = async (req, res) => {
     const child = await prisma.childProfile.findFirst({
       where: { kidLinkToken: token, isActive: true },
     });
-    if (!child) return formatResponse(res, 404, "Link không hợp lệ hoặc đã bị thu hồi");
+    if (!child)
+      return formatResponse(res, 404, "Link không hợp lệ hoặc đã bị thu hồi");
 
     const log = await prisma.childActivityLog.findFirst({
       where: { id: activityId, childId: child.id },
@@ -822,14 +922,21 @@ const pingKidActivity = async (req, res) => {
     if (!log) return formatResponse(res, 404, "Không tìm thấy phiên hoạt động");
 
     const elapsedMs = Date.now() - log.createdAt.getTime();
-    const minutes = Math.max(0, Math.min(MAX_SESSION_MINUTES, Math.round(elapsedMs / 60000)));
+    const minutes = Math.max(
+      0,
+      Math.min(MAX_SESSION_MINUTES, Math.round(elapsedMs / 60000)),
+    );
 
     if (minutes !== log.minutes) {
-      await prisma.childActivityLog.update({ where: { id: log.id }, data: { minutes } });
+      await prisma.childActivityLog.update({
+        where: { id: log.id },
+        data: { minutes },
+      });
     }
 
     const todayMinutes = await getTodayMinutes(prisma, child.id);
-    const limitReached = child.dailyLimitMinutes > 0 && todayMinutes >= child.dailyLimitMinutes;
+    const limitReached =
+      child.dailyLimitMinutes > 0 && todayMinutes >= child.dailyLimitMinutes;
 
     return formatResponse(res, 200, "OK", {
       minutes,

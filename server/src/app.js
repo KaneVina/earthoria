@@ -1,30 +1,30 @@
-const express = require('express')
-const cors = require('cors')
-const helmet = require('helmet')
-const morgan = require('morgan')
-const cookieParser = require('cookie-parser')
-const rateLimit = require('express-rate-limit')
-const passport = require('./config/passport')
-const maintenanceGuard = require('./middlewares/maintenanceGuard')
+const express = require("express");
+const cors = require("cors");
+const helmet = require("helmet");
+const morgan = require("morgan");
+const cookieParser = require("cookie-parser");
+const rateLimit = require("express-rate-limit");
+const passport = require("./config/passport");
+const maintenanceGuard = require("./middlewares/maintenanceGuard");
 
-const app = express()
+const app = express();
 
 // Render / Cloudflare proxy
-app.set('trust proxy', 1)
+app.set("trust proxy", 1);
 
-app.use(helmet())
+app.use(helmet());
 
 app.use(
   cors({
     origin: [
-      'http://localhost:5173',
-      'https://earthoria.vercel.app',
-      'https://earthoria.id.vn',
-      'https://www.earthoria.id.vn',
+      "http://localhost:5173",
+      "https://earthoria.vercel.app",
+      "https://earthoria.id.vn",
+      "https://www.earthoria.id.vn",
     ],
     credentials: true,
-  })
-)
+  }),
+);
 
 app.use(
   rateLimit({
@@ -34,77 +34,77 @@ app.use(
     legacyHeaders: false,
     message: {
       success: false,
-      message: 'Quá nhiều request, thử lại sau',
+      message: "Quá nhiều request, thử lại sau",
     },
-  })
-)
+  }),
+);
 
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
-app.use(cookieParser())
-app.use(passport.initialize())
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(passport.initialize());
 
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'))
+if (process.env.NODE_ENV === "development") {
+  app.use(morgan("dev"));
 }
 
 // Chặn request khi web đang bảo trì (trừ các đường dẫn luôn được phép — xem trong file middleware)
-app.use(maintenanceGuard)
+app.use(maintenanceGuard);
 
 // ================= API v1 =================
-const v1 = express.Router()
-v1.use('/auth', require('./routes/authRoutes'))
-v1.use('/settings', require('./routes/settingsRoutes'))
-v1.use('/books', require('./routes/bookRoutes'))
-v1.use('/categories', require('./routes/categoryRoutes'))
-v1.use('/cart', require('./routes/cartRoutes'))
-v1.use('/orders', require('./routes/orderRoutes'))
-v1.use('/admin', require('./routes/adminRoutes'))
-v1.use('/addresses', require('./routes/addressRoutes'))
-v1.use('/children', require('./routes/childRoutes'))
-v1.use('/parent-pin', require('./routes/parentPinRoutes'))
-v1.use('/tickets', require('./routes/ticketRoutes'))
-v1.use('/payments', require('./routes/paymentRoutes'))
-v1.use('/coupons', require('./routes/couponRoutes'))
-v1.use('/loyalty', require('./routes/loyaltyRoutes'))
-v1.use('/ai', require('./routes/aiChatRoutes'))
+const v1 = express.Router();
+v1.use("/auth", require("./routes/authRoutes"));
+v1.use("/settings", require("./routes/settingsRoutes"));
+v1.use("/books", require("./routes/bookRoutes"));
+v1.use("/categories", require("./routes/categoryRoutes"));
+v1.use("/cart", require("./routes/cartRoutes"));
+v1.use("/orders", require("./routes/orderRoutes"));
+v1.use("/admin", require("./routes/adminRoutes"));
+v1.use("/addresses", require("./routes/addressRoutes"));
+v1.use("/children", require("./routes/childRoutes"));
+v1.use("/parent-pin", require("./routes/parentPinRoutes"));
+v1.use("/tickets", require("./routes/ticketRoutes"));
+v1.use("/payments", require("./routes/paymentRoutes"));
+v1.use("/coupons", require("./routes/couponRoutes"));
+v1.use("/loyalty", require("./routes/loyaltyRoutes"));
+v1.use("/ai", require("./routes/aiChatRoutes"));
 
 // Public route
-v1.use('/ar', require('./routes/arRoutes'))
-v1.use('/games', require('./routes/gameRoutes'))
-v1.use('/ebook-reader', require('./routes/ebookReaderRoutes'))
-v1.use('/kid-access', require('./routes/kidAccessRoutes'))
+v1.use("/ar", require("./routes/arRoutes"));
+v1.use("/games", require("./routes/gameRoutes"));
+v1.use("/ebook-reader", require("./routes/ebookReaderRoutes"));
+v1.use("/kid-access", require("./routes/kidAccessRoutes"));
 
-app.use('/api/v1', v1)
+app.use("/api/v1", v1);
 
 // ================= Health =================
 
-app.get('/api/health', (req, res) => {
+app.get("/api/health", (req, res) => {
   res.json({
-    status: 'OK',
-    version: 'v1',
-    message: 'Earthoria API running',
-  })
-})
+    status: "OK",
+    version: "v1",
+    message: "Earthoria API running",
+  });
+});
 
 // ================= 404 =================
 
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: 'Route not found',
-  })
-})
+    message: "Route not found",
+  });
+});
 
 // ================= Error =================
 
 app.use((err, req, res, next) => {
-  console.error(err.stack)
+  console.error(err.stack);
 
   res.status(err.status || 500).json({
     success: false,
-    message: err.message || 'Internal Server Error',
-  })
-})
+    message: err.message || "Internal Server Error",
+  });
+});
 
-module.exports = app
+module.exports = app;

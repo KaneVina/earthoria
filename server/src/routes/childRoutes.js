@@ -28,7 +28,11 @@ router.delete("/:childId", archiveChild); // xoá mềm (ẩn hồ sơ)
 router.delete("/:childId/permanent", parentPinLimiter, deleteChildPermanently); // xoá vĩnh viễn, cần PIN + gõ đúng tên
 
 router.get("/:childId/kid-link", getKidLink);
-router.post("/:childId/kid-link/regenerate", parentPinLimiter, regenerateKidLink);
+router.post(
+  "/:childId/kid-link/regenerate",
+  parentPinLimiter,
+  regenerateKidLink,
+);
 
 router.post("/:childId/lock", lockChild);
 router.post("/:childId/unlock", parentPinLimiter, unlockChild);

@@ -1,12 +1,15 @@
-const prisma = require('../config/db')
-const { userOwnsDigitalBook } = require('../utils/bookOwnership')
-const { encodeId } = require('../utils/hashids')
-const { isWithinAllowedWindow, isDailyLimitReached } = require('../utils/childPolicy')
+const prisma = require("../config/db");
+const { userOwnsDigitalBook } = require("../utils/bookOwnership");
+const { encodeId } = require("../utils/hashids");
+const {
+  isWithinAllowedWindow,
+  isDailyLimitReached,
+} = require("../utils/childPolicy");
 
 exports.getEbookForReading = async (req, res) => {
   try {
-    const { slug } = req.params
-    const { kidToken } = req.query
+    const { slug } = req.params;
+    const { kidToken } = req.query;
 
     const book = await prisma.book.findUnique({
       where: { slug },
@@ -23,82 +26,93 @@ exports.getEbookForReading = async (req, res) => {
         publisher: true,
         publishYear: true,
         category: { select: { name: true } },
-        authors: { include: { author: true }, orderBy: { order: 'asc' } },
+        authors: { include: { author: true }, orderBy: { order: "asc" } },
       },
-    })
+    });
     if (!book) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy sách này' })
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy sách này" });
     }
 
     const ebook = await prisma.ebook.findFirst({
       where: { bookId: book.id, isActive: true },
-    })
+    });
     if (!ebook) {
-      return res.status(404).json({ success: false, message: 'Sách này chưa có bản điện tử' })
+      return res
+        .status(404)
+        .json({ success: false, message: "Sách này chưa có bản điện tử" });
     }
 
-    // Phiên của bé (link/QR riêng, không đăng nhập tài khoản chính) — xác
-    // thực bằng kidToken thay vì req.user, vẫn tôn trọng sách bị ẩn mà phụ
-    // huynh đã đặt cho bé.
-    let child = null
+    // Phiên của bé (link/QR riêng, không đăng nhập tài khoản chính)
+    let child = null;
     if (!req.user && kidToken) {
       child = await prisma.childProfile.findFirst({
         where: { kidLinkToken: kidToken, isActive: true },
-      })
+      });
     }
 
     if (child) {
-      // Trước đây chỉ AR kiểm tra isLocked/khung giờ/giới hạn phút — Ebook hoàn
-      // toàn bỏ qua các rule này, nên khoá "AR" của phụ huynh thực chất không
-      // khoá được việc đọc ebook. Áp cùng bộ rule như AR để nhất quán.
+      // Trước đây chỉ AR kiểm tra isLocked/khung giờ/giới hạn phút
       if (child.isLocked) {
         return res.status(403).json({
           success: false,
-          code: 'CHILD_LOCKED',
-          message: 'Thiết bị của bé đang bị phụ huynh khoá.',
-        })
+          code: "CHILD_LOCKED",
+          message: "Thiết bị của bé đang bị phụ huynh khoá.",
+        });
       }
 
       if (!isWithinAllowedWindow(child)) {
         return res.status(403).json({
           success: false,
-          code: 'OUTSIDE_ALLOWED_WINDOW',
-          message: 'Ngoài khung giờ ba mẹ cho phép sử dụng.',
-        })
+          code: "OUTSIDE_ALLOWED_WINDOW",
+          message: "Ngoài khung giờ ba mẹ cho phép sử dụng.",
+        });
       }
 
       if (await isDailyLimitReached(prisma, child)) {
         return res.status(403).json({
           success: false,
-          code: 'DAILY_LIMIT_REACHED',
-          message: 'Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!',
-        })
+          code: "DAILY_LIMIT_REACHED",
+          message: "Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!",
+        });
       }
 
       const access = await prisma.childBookAccess.findFirst({
         where: { childId: child.id, bookId: book.id },
         select: { visible: true },
-      })
+      });
       if (access && access.visible === false) {
-        return res.status(403).json({ success: false, message: 'Sách này đã bị ẩn khỏi tủ sách của bé' })
+        return res
+          .status(403)
+          .json({
+            success: false,
+            message: "Sách này đã bị ẩn khỏi tủ sách của bé",
+          });
       }
 
-      const owns = await userOwnsDigitalBook(prisma, child.parentId, book.id)
+      const owns = await userOwnsDigitalBook(prisma, child.parentId, book.id);
       if (!owns) {
         return res.status(403).json({
           success: false,
-          message: 'Gia đình bạn cần mua bản sách điện tử này để đọc',
-        })
+          message: "Gia đình bạn cần mua bản sách điện tử này để đọc",
+        });
       }
     } else if (!req.user) {
-      return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập để đọc sách điện tử' })
-    } else if (req.user.role !== 'ADMIN' && req.user.role !== 'STAFF') {
-      const owns = await userOwnsDigitalBook(prisma, req.user.id, book.id)
+      return res
+        .status(401)
+        .json({
+          success: false,
+          message: "Vui lòng đăng nhập để đọc sách điện tử",
+        });
+    } else if (req.user.role !== "ADMIN" && req.user.role !== "STAFF") {
+      const owns = await userOwnsDigitalBook(prisma, req.user.id, book.id);
       if (!owns) {
         return res.status(403).json({
           success: false,
-          message: 'Bạn cần mua bản sách điện tử này (đơn hàng đã hoàn tất) để đọc',
-        })
+          message:
+            "Bạn cần mua bản sách điện tử này (đơn hàng đã hoàn tất) để đọc",
+        });
       }
     }
 
@@ -127,9 +141,9 @@ exports.getEbookForReading = async (req, res) => {
           hashId: encodeId(book.id),
         },
       },
-    })
+    });
   } catch (err) {
-    console.error('[getEbookForReading]', err)
-    return res.status(500).json({ success: false, message: 'Lỗi server' })
+    console.error("[getEbookForReading]", err);
+    return res.status(500).json({ success: false, message: "Lỗi server" });
   }
-}
+};

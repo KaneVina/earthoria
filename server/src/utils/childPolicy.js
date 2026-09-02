@@ -11,7 +11,9 @@ function getVnParts(date = new Date()) {
     minute: "2-digit",
     hour12: false,
   });
-  const parts = Object.fromEntries(fmt.formatToParts(date).map((p) => [p.type, p.value]));
+  const parts = Object.fromEntries(
+    fmt.formatToParts(date).map((p) => [p.type, p.value]),
+  );
   return {
     year: Number(parts.year),
     month: Number(parts.month),
@@ -25,7 +27,9 @@ function getVnParts(date = new Date()) {
 // 00:00 "hôm nay" theo giờ VN, quy đổi sang UTC Date để query DB (Postgres lưu UTC).
 function startOfTodayVn(date = new Date()) {
   const { year, month, day } = getVnParts(date);
-  return new Date(Date.UTC(year, month - 1, day, -TIMEZONE_OFFSET_HOURS, 0, 0, 0));
+  return new Date(
+    Date.UTC(year, month - 1, day, -TIMEZONE_OFFSET_HOURS, 0, 0, 0),
+  );
 }
 
 function currentMinuteOfDayVn(date = new Date()) {
@@ -43,7 +47,7 @@ function isWithinAllowedWindow(child, date = new Date()) {
   const [eh, em] = String(child.allowEnd).split(":").map(Number);
   if ([sh, sm, eh, em].some((n) => Number.isNaN(n))) return true; // dữ liệu hỏng -> không chặn nhầm
 
-const s = sh * 60 + sm;
+  const s = sh * 60 + sm;
   const e = eh * 60 + em;
   const cur = currentMinuteOfDayVn(date);
   return s <= e ? cur >= s && cur <= e : cur >= s || cur <= e;

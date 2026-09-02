@@ -3,11 +3,11 @@ async function userOwnsBook(prisma, userId, bookId) {
     where: {
       variant: { bookId },
       // DELIVERED = đang chờ khách xác nhận, COMPLETED = đã xác nhận nhận hàng — cả 2 đều coi là đã sở hữu.
-      order: { userId, status: { in: ['DELIVERED', 'COMPLETED'] } },
+      order: { userId, status: { in: ["DELIVERED", "COMPLETED"] } },
     },
     select: { id: true },
-  })
-  return !!owns
+  });
+  return !!owns;
 }
 
 // Sách điện tử (ebook) là 1 variant riêng (format DIGITAL) — chỉ ai đã mua đúng
@@ -15,12 +15,12 @@ async function userOwnsBook(prisma, userId, bookId) {
 async function userOwnsDigitalBook(prisma, userId, bookId) {
   const owns = await prisma.orderItem.findFirst({
     where: {
-      variant: { bookId, format: 'DIGITAL' },
-      order: { userId, status: { in: ['DELIVERED', 'COMPLETED'] } },
+      variant: { bookId, format: "DIGITAL" },
+      order: { userId, status: { in: ["DELIVERED", "COMPLETED"] } },
     },
     select: { id: true },
-  })
-  return !!owns
+  });
+  return !!owns;
 }
 
-module.exports = { userOwnsBook, userOwnsDigitalBook }
+module.exports = { userOwnsBook, userOwnsDigitalBook };

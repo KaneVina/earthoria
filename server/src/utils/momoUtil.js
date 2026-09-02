@@ -1,16 +1,27 @@
 const crypto = require("crypto");
 
 const MOMO_ENDPOINT =
-  process.env.MOMO_ENDPOINT || "https://test-payment.momo.vn/v2/gateway/api/create";
+  process.env.MOMO_ENDPOINT ||
+  "https://test-payment.momo.vn/v2/gateway/api/create";
 const PARTNER_CODE = process.env.MOMO_PARTNER_CODE || "MOMO";
 const ACCESS_KEY = process.env.MOMO_ACCESS_KEY || "F8BBA842ECF85";
-const SECRET_KEY = process.env.MOMO_SECRET_KEY || "K951B6PE1waDMi640xX08PD3vg6EkVlz";
+const SECRET_KEY =
+  process.env.MOMO_SECRET_KEY || "K951B6PE1waDMi640xX08PD3vg6EkVlz";
 
 function sign(rawSignature) {
-  return crypto.createHmac("sha256", SECRET_KEY).update(rawSignature).digest("hex");
+  return crypto
+    .createHmac("sha256", SECRET_KEY)
+    .update(rawSignature)
+    .digest("hex");
 }
 
-async function createPaymentRequest({ orderId, amount, orderInfo, redirectUrl, ipnUrl }) {
+async function createPaymentRequest({
+  orderId,
+  amount,
+  orderInfo,
+  redirectUrl,
+  ipnUrl,
+}) {
   const requestId = `${orderId}-${Date.now()}`;
   const requestType = "captureWallet";
   const extraData = "";
@@ -92,4 +103,9 @@ function verifyReturn(query) {
   };
 }
 
-module.exports = { createPaymentRequest, verifyReturn, PARTNER_CODE, MOMO_CURRENCY };
+module.exports = {
+  createPaymentRequest,
+  verifyReturn,
+  PARTNER_CODE,
+  MOMO_CURRENCY,
+};

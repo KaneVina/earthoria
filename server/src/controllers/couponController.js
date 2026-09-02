@@ -8,13 +8,20 @@ const validateCoupon = async (req, res) => {
     const cleanCode = (code || "").trim().toUpperCase();
     const sub = Number(subtotal) || 0;
 
-    if (!cleanCode) return formatResponse(res, 400, "Vui lòng nhập mã giảm giá");
+    if (!cleanCode)
+      return formatResponse(res, 400, "Vui lòng nhập mã giảm giá");
 
-    const coupon = await prisma.coupon.findUnique({ where: { code: cleanCode } });
+    const coupon = await prisma.coupon.findUnique({
+      where: { code: cleanCode },
+    });
     const result = validateAndComputeDiscount(coupon, sub);
 
     if (!result.ok) {
-      return formatResponse(res, 400, result.reason || "Mã giảm giá không hợp lệ");
+      return formatResponse(
+        res,
+        400,
+        result.reason || "Mã giảm giá không hợp lệ",
+      );
     }
 
     return formatResponse(res, 200, "Mã giảm giá hợp lệ", {
@@ -44,10 +51,15 @@ const getAvailableCoupons = async (req, res) => {
     });
 
     const available = coupons.filter(
-      (c) => c.usageLimit == null || c.usedCount < c.usageLimit
+      (c) => c.usageLimit == null || c.usedCount < c.usageLimit,
     );
 
-    return formatResponse(res, 200, "Lấy danh sách ưu đãi thành công", available);
+    return formatResponse(
+      res,
+      200,
+      "Lấy danh sách ưu đãi thành công",
+      available,
+    );
   } catch (error) {
     console.error("[getAvailableCoupons]", error);
     return formatResponse(res, 500, "Lỗi server");

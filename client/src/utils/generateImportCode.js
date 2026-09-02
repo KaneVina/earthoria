@@ -7,7 +7,7 @@ export function generateImportCode() {
   const d = String(now.getDate()).padStart(2, "0");
   const rand = Array.from(
     { length: 4 },
-    () => CHARS[Math.floor(Math.random() * CHARS.length)]
+    () => CHARS[Math.floor(Math.random() * CHARS.length)],
   ).join("");
   return `PN-${y}${m}${d}-${rand}`;
 }

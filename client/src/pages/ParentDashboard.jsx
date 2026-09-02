@@ -230,24 +230,29 @@ function ChildLimitBanner({ childLimit }) {
     >
       <div className="pkd-child-limit-row">
         <span className="pkd-child-limit-count">
-          <Users size={13} /> <strong>{current}/{max}</strong> tài khoản trẻ
+          <Users size={13} />{" "}
+          <strong>
+            {current}/{max}
+          </strong>{" "}
+          tài khoản trẻ
         </span>
         <span className="pkd-child-limit-tier">Hạng {tierRoman}</span>
       </div>
       <p className="pkd-child-limit-sub">
         {isMaxTier ? (
           <>
-            <Crown size={12} /> Hạng cao nhất — đã mở khóa toàn bộ {max} tài khoản trẻ.
+            <Crown size={12} /> Hạng cao nhất — đã mở khóa toàn bộ {max} tài
+            khoản trẻ.
           </>
         ) : isFull ? (
           <>
-            <Lock size={12} /> Đã đạt giới hạn Hạng {tierRoman}. Còn 1 hạng nữa để mở khóa{" "}
-            <strong>{nextMax}</strong> tài khoản trẻ.
+            <Lock size={12} /> Đã đạt giới hạn Hạng {tierRoman}. Còn 1 hạng nữa
+            để mở khóa <strong>{nextMax}</strong> tài khoản trẻ.
           </>
         ) : (
           <>
-            <Sparkles size={12} /> Còn 1 hạng nữa để mở khóa <strong>{nextMax}</strong> tài khoản
-            trẻ.
+            <Sparkles size={12} /> Còn 1 hạng nữa để mở khóa{" "}
+            <strong>{nextMax}</strong> tài khoản trẻ.
           </>
         )}
       </p>
@@ -423,7 +428,9 @@ export default function ParentDashboard() {
     setActiveChildId(child.id);
     // Cập nhật lạc quan số hồ sơ hiện có ngay lập tức — tránh banner giới
     // hạn hiển thị số liệu cũ trong lúc chờ lần load tiếp theo.
-    setChildLimit((prev) => (prev ? { ...prev, current: prev.current + 1 } : prev));
+    setChildLimit((prev) =>
+      prev ? { ...prev, current: prev.current + 1 } : prev,
+    );
   };
 
   const toggleBookVisibility = async (bookId, visible) => {
@@ -940,8 +947,8 @@ export default function ParentDashboard() {
           <Smile size={40} strokeWidth={1.2} />
           <h3>Chưa có hồ sơ trẻ em nào</h3>
           <p>
-            Tạo hồ sơ riêng cho từng bé như YouTube Kids để quản lý sách,
-            giờ xem AR và bảo vệ mắt cho con bạn.
+            Tạo hồ sơ riêng cho từng bé như YouTube Kids để quản lý sách, giờ
+            xem AR và bảo vệ mắt cho con bạn.
           </p>
           <button
             className="pf-confirm-ok pf-btn-tactile"
@@ -1023,7 +1030,8 @@ export default function ParentDashboard() {
                 Bảng điều khiển <em>phụ huynh</em>
               </h1>
               <p className="pkd-sub">
-              Trải nghiệm độc quyền dành cho chủ sở hữu sách điện tử Earthoria.
+                Trải nghiệm độc quyền dành cho chủ sở hữu sách điện tử
+                Earthoria.
               </p>
             </div>
 
@@ -1170,14 +1178,16 @@ export default function ParentDashboard() {
               <div className="pkd-active-child-row">
                 <UserCog size={16} />
                 <span>
-                  Bạn đang cài đặt cho tài khoản bé: <strong>{activeChild.name}</strong>
+                  Bạn đang cài đặt cho tài khoản bé:{" "}
+                  <strong>{activeChild.name}</strong>
                 </span>
               </div>
               <div className="pkd-active-child-row pkd-active-child-row-sub">
                 <span className="pkd-active-child-dot" />
                 <Wifi size={13} />
                 <span>
-                  Hoạt động gần nhất của {activeChild.name}: <strong>{lastSessionLabel}</strong>
+                  Hoạt động gần nhất của {activeChild.name}:{" "}
+                  <strong>{lastSessionLabel}</strong>
                 </span>
               </div>
             </RevealCard>
@@ -1223,11 +1233,15 @@ export default function ParentDashboard() {
                 <button
                   className="pkd-picker-delete-btn"
                   onClick={() =>
-                    setDeleteTarget({ id: activeChildId, name: activeChild.name })
+                    setDeleteTarget({
+                      id: activeChildId,
+                      name: activeChild.name,
+                    })
                   }
                   type="button"
                 >
-                  <Trash2 size={14} /> Xoá vĩnh viễn hồ sơ của {activeChild.name}
+                  <Trash2 size={14} /> Xoá vĩnh viễn hồ sơ của{" "}
+                  {activeChild.name}
                 </button>
               </div>
             </RevealCard>
@@ -1249,615 +1263,640 @@ export default function ParentDashboard() {
             </div>
 
             {/*   OVERVIEW   */}
-        <section id="overview" className="pkd-section">
-          <RevealCard as="div" className="pkd-section-head">
-            <span className="pkd-section-eyebrow">Hôm nay</span>
-            <h2 className="pkd-section-title">Tổng quan</h2>
-          </RevealCard>
-          <div className="pkd-overview-grid">
-            <RevealCard
-              className={`pkd-stat-card ${todayMinutes > settings.dailyLimitMinutes ? "is-danger" : ""}`}
-            >
-              <div className="pkd-stat-icon-row">
-                <span className="pkd-stat-icon-box">
-                  <Clock size={16} />
-                </span>
-                {trendDirection !== "flat" && (
-                  <span className={`pkd-trend is-${trendDirection}`}>
-                    {trendDirection === "down" ? (
-                      <TrendingDown size={11} />
-                    ) : (
-                      <TrendingUp size={11} />
-                    )}
-                    {Math.abs(trendDeltaPct)}%
-                  </span>
-                )}
-                {trendDirection === "flat" && (
-                  <span className="pkd-trend is-flat">
-                    <MinusIcon size={11} /> Ổn định
-                  </span>
-                )}
-              </div>
-              <div className="pkd-stat-val">{formatMinutes(todayMinutes)}</div>
-              <div className="pkd-stat-label">
-                Đã xem hôm nay · so với TB tuần
-              </div>
-            </RevealCard>
-
-            <RevealCard className="pkd-stat-card" delay={60}>
-              <div className="pkd-stat-icon-row">
-                <span className="pkd-stat-icon-box">
-                  <CalendarClock size={16} />
-                </span>
-              </div>
-              <div className="pkd-stat-val">
-                {formatMinutes(settings.dailyLimitMinutes)}
-              </div>
-              <div className="pkd-stat-label">Giới hạn mỗi ngày</div>
-            </RevealCard>
-
-            <RevealCard className="pkd-stat-card" delay={120}>
-              <div className="pkd-stat-icon-row">
-                <span className="pkd-stat-icon-box">
-                  <BookOpen size={16} />
-                </span>
-              </div>
-              <div className="pkd-stat-val">{sessions.length}</div>
-              <div className="pkd-stat-label">Lượt xem gần đây</div>
-            </RevealCard>
-
-            <RevealCard
-              className={`pkd-stat-card ${lockState.isLocked ? "is-danger" : ""}`}
-              delay={180}
-            >
-              <div className="pkd-stat-icon-row">
-                <span className="pkd-stat-icon-box">
-                  {lockState.isLocked ? (
-                    <Lock size={16} className="pkd-icon-danger" />
-                  ) : (
-                    <ShieldCheck size={16} className="pkd-icon-ok" />
-                  )}
-                </span>
-              </div>
-              <div className="pkd-stat-val">
-                {lockState.isLocked ? "Đã khóa" : "Đang mở"}
-              </div>
-              <div className="pkd-stat-label">Trạng thái AR</div>
-            </RevealCard>
-          </div>
-
-          {lockState.isLocked && (
-            <RevealCard className="pkd-locked-banner">
-              <Lock size={16} />
-              <div>
-                <strong>AR đang bị tạm khóa cho {activeChild.name}.</strong>
-                <div>Chỉ phụ huynh mới có thể mở khóa bằng mã PIN.</div>
-              </div>
-              <button
-                className="pkd-mini-btn pf-btn-tactile"
-                onClick={() => requestUnlock()}
-                type="button"
-              >
-                <Unlock size={13} /> Mở khóa
-              </button>
-            </RevealCard>
-          )}
-
-          <RevealCard className="pkd-card pkd-pin-card-top">
-            <div className="pkd-card-title-row">
-              <span className="pkd-card-title-left">
-                <KeyRound size={16} />
-                Mã PIN phụ huynh
-              </span>
-            </div>
-            <p className="pkd-card-note" style={{ marginBottom: 18 }}>
-              Mã PIN dùng chung cho mọi bé để mở khóa AR và xác nhận các thao
-              tác quan trọng.
-            </p>
-            <div className="pkd-pin-actions">
-              <button
-                className="pkd-mini-btn pf-btn-tactile"
-                onClick={openChangePin}
-                type="button"
-              >
-                <KeyRound size={13} /> Đổi mã PIN
-              </button>
-              <button
-                className="pkd-text-link"
-                onClick={openForgotPin}
-                type="button"
-              >
-                Quên mã PIN?
-              </button>
-            </div>
-          </RevealCard>
-        </section>
-
-        {/*   TIME RULES   */}
-        <section id="time-rules" className="pkd-section">
-          <RevealCard as="div" className="pkd-section-head">
-            <span className="pkd-section-eyebrow">Tuỳ chỉnh</span>
-            <h2 className="pkd-section-title">Quản lý giờ giấc</h2>
-            <p className="pkd-section-sub">
-             Thiết lập thời gian sử dụng phù hợp cho bé. Mọi giới hạn được đồng bộ tự động và tính theo thời gian máy chủ Earthoria, giúp thiết lập luôn chính xác trên mọi thiết bị.
-            </p>
-          </RevealCard>
-
-          <RevealCard className="pkd-card">
-            <div className="pkd-card-title-row">
-              <span className="pkd-card-title-left">
-                <Clock size={16} />
-                Giới hạn thời gian mỗi ngày
-              </span>
-            </div>
-            <div className="pkd-preset-row">
-              {[30, 60, 90, 120].map((v) => (
-                <button
-                  key={v}
-                  type="button"
-                  className={`pkd-preset-chip ${settings.dailyLimitMinutes === v ? "is-active" : ""}`}
-                  onClick={() => updateSettings({ dailyLimitMinutes: v })}
+            <section id="overview" className="pkd-section">
+              <RevealCard as="div" className="pkd-section-head">
+                <span className="pkd-section-eyebrow">Hôm nay</span>
+                <h2 className="pkd-section-title">Tổng quan</h2>
+              </RevealCard>
+              <div className="pkd-overview-grid">
+                <RevealCard
+                  className={`pkd-stat-card ${todayMinutes > settings.dailyLimitMinutes ? "is-danger" : ""}`}
                 >
-                  {v} phút
-                </button>
-              ))}
-            </div>
-            <Stepper
-              value={settings.dailyLimitMinutes}
-              onChange={(v) => updateSettings({ dailyLimitMinutes: v })}
-              min={10}
-              max={240}
-              step={5}
-            />
-          </RevealCard>
-
-          <RevealCard className="pkd-card">
-            <SwitchRow
-              icon={<Timer size={15} />}
-              title="Nghỉ mắt định kỳ"
-              desc="Cứ mỗi khoảng thời gian xem, hiện popup nhắc nhìn xa kèm đếm ngược."
-              checked={settings.ruleEnabled}
-              onChange={(v) => updateSettings({ ruleEnabled: v })}
-            />
-            {settings.ruleEnabled && (
-              <div className="pkd-subfields">
-                <div className="pkd-subfield">
-                  <label>Nhắc nghỉ mỗi</label>
-                  <Stepper
-                    value={settings.ruleIntervalMinutes}
-                    onChange={(v) => updateSettings({ ruleIntervalMinutes: v })}
-                    min={5}
-                    max={60}
-                    step={5}
-                  />
-                </div>
-                <div className="pkd-subfield">
-                  <label>Thời gian nhìn xa</label>
-                  <Stepper
-                    value={settings.ruleRestSeconds}
-                    onChange={(v) => updateSettings({ ruleRestSeconds: v })}
-                    min={10}
-                    max={60}
-                    step={5}
-                    suffix="giây"
-                  />
-                </div>
-              </div>
-            )}
-          </RevealCard>
-
-          <RevealCard className="pkd-card">
-            <SwitchRow
-              icon={<CalendarClock size={15} />}
-              title="Khung giờ được phép xem"
-              desc="Ngoài khung giờ này, AR sẽ không mở được dù còn hạn mức trong ngày."
-              checked={settings.allowWindowEnabled}
-              onChange={(v) => updateSettings({ allowWindowEnabled: v })}
-            />
-            {settings.allowWindowEnabled && (
-              <>
-                <div className="pkd-time-range">
-                  <div className="pkd-time-field">
-                    <label>Từ</label>
-                    <input
-                      type="time"
-                      value={allowStartDraft}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setAllowStartDraft(val);
-                        if (!val) return;
-                        updateSettings({ allowStart: val });
-                      }}
-                    />
-                  </div>
-                  <ChevronRight size={14} className="pkd-time-arrow" />
-                  <div className="pkd-time-field">
-                    <label>Đến</label>
-                    <input
-                      type="time"
-                      value={allowEndDraft}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setAllowEndDraft(val);
-                        if (!val) return;
-                        updateSettings({ allowEnd: val });
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className="pkd-timeline">
-                  <div className="pkd-timeline-head">
-                    <span>Trực quan thời gian</span>
-                    <span>
-                      Hiện tại:{" "}
-                      {new Date().toLocaleTimeString("vi-VN", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                  <div className="pkd-stat-icon-row">
+                    <span className="pkd-stat-icon-box">
+                      <Clock size={16} />
                     </span>
-                  </div>
-                  <div className="pkd-timeline-track">
-                    <div
-                      className="pkd-timeline-allowed"
-                      style={{
-                        left: `${startPct}%`,
-                        width: `${Math.max(endPct - startPct, 1)}%`,
-                      }}
-                    />
-                    <div
-                      className="pkd-timeline-now"
-                      style={{ left: `${nowPct}%` }}
-                    />
-                  </div>
-                  <div className="pkd-timeline-labels">
-                    <span>00:00</span>
-                    <span>06:00</span>
-                    <span>12:00</span>
-                    <span>18:00</span>
-                    <span>24:00</span>
-                  </div>
-                </div>
-              </>
-            )}
-          </RevealCard>
-
-          <RevealCard className="pkd-card">
-            <SwitchRow
-              icon={<Lock size={15} />}
-              title="Giờ nghỉ bắt buộc"
-              desc="Sau một khoảng thời gian xem liên tục, khóa màn hình AR vài phút mới cho xem tiếp."
-              checked={settings.mandatoryBreakEnabled}
-              onChange={(v) => updateSettings({ mandatoryBreakEnabled: v })}
-            />
-            {settings.mandatoryBreakEnabled && (
-              <div className="pkd-subfields">
-                <div className="pkd-subfield">
-                  <label>Xem liên tục quá</label>
-                  <Stepper
-                    value={settings.breakAfterMinutes}
-                    onChange={(v) => updateSettings({ breakAfterMinutes: v })}
-                    min={15}
-                    max={120}
-                    step={5}
-                  />
-                </div>
-                <div className="pkd-subfield">
-                  <label>Thì khóa trong</label>
-                  <Stepper
-                    value={settings.breakDurationMinutes}
-                    onChange={(v) =>
-                      updateSettings({ breakDurationMinutes: v })
-                    }
-                    min={5}
-                    max={30}
-                    step={5}
-                  />
-                </div>
-              </div>
-            )}
-          </RevealCard>
-        </section>
-
-        {/*   REPORTS   */}
-        <section id="reports" className="pkd-section">
-          <RevealCard as="div" className="pkd-section-head">
-            <span className="pkd-section-eyebrow">Dữ liệu 7 ngày</span>
-            <h2 className="pkd-section-title">Báo cáo & theo dõi</h2>
-          </RevealCard>
-
-          <RevealCard className="pkd-card">
-            <div className="pkd-card-title-row">
-              <span className="pkd-card-title-left">
-                <TrendingUp size={16} />
-                Thời gian xem trong tuần
-              </span>
-              <span className="pkd-week-total">
-                {formatMinutes(weekTotal)} tổng cộng
-              </span>
-            </div>
-            <div className="pkd-chart-plot">
-              <div className="pkd-chart">
-                <div
-                  className="pkd-chart-avg-line"
-                  style={{
-                    bottom: `${clamp((weekAvg / weekMax) * 100, 0, 100)}%`,
-                  }}
-                >
-                  <span className="pkd-chart-avg-label">
-                    TB {formatMinutes(Math.round(weekAvg))}
-                  </span>
-                </div>
-                {weeklyMinutes.map((mins, i) => {
-                  const h = clamp((mins / weekMax) * 100, 4, 100);
-                  const overLimit = mins > settings.dailyLimitMinutes;
-                  const isToday = i === TODAY_INDEX;
-                  return (
-                    <div
-                      className={`pkd-chart-col ${isToday ? "is-today" : ""}`}
-                      key={i}
-                    >
-                      <div className="pkd-chart-bar-wrap">
-                        <div className="pkd-chart-tooltip">
-                          <strong>{WEEK_LABELS[i]}</strong> ·{" "}
-                          {formatMinutes(mins)}
-                        </div>
-                        <div
-                          className={`pkd-chart-bar ${overLimit ? "is-over" : ""}`}
-                          style={{ height: `${h}%` }}
-                        />
-                      </div>
-                      <span className="pkd-chart-label">
-                        {isToday ? "Hôm nay" : WEEK_LABELS[i]}
+                    {trendDirection !== "flat" && (
+                      <span className={`pkd-trend is-${trendDirection}`}>
+                        {trendDirection === "down" ? (
+                          <TrendingDown size={11} />
+                        ) : (
+                          <TrendingUp size={11} />
+                        )}
+                        {Math.abs(trendDeltaPct)}%
                       </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-            <div className="pkd-chart-legend">
-              <span className="pkd-legend-dot" /> Trong hạn mức
-              <span className="pkd-legend-dot is-over" /> Vượt hạn mức ngày
-              <span className="pkd-legend-line" /> Trung bình tuần
-            </div>
-          </RevealCard>
-
-          <RevealCard className="pkd-card">
-            <div className="pkd-card-title-row">
-              <span className="pkd-card-title-left">
-                <BookOpen size={16} />
-                Sách AR đã xem gần đây
-              </span>
-            </div>
-            {sessions.length === 0 ? (
-              <div className="pkd-empty-mini">
-                <BookOpen size={22} />
-                Chưa có lượt xem nào trong tuần này.
-              </div>
-            ) : (
-              <div className="pkd-book-list">
-                {sessions.map((s) => (
-                  <div className="pkd-book-row" key={s.id}>
-                    <span className="pkd-book-letter">{s.letter}</span>
-                    <span className="pkd-book-info">
-                      <span className="pkd-book-title">{s.title}</span>
-                      <span className="pkd-book-date">{s.date}</span>
-                    </span>
-                    <span className="pkd-book-mins">
-                      {formatMinutes(s.minutes)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </RevealCard>
-
-          <RevealCard className="pkd-card">
-            <div className="pkd-card-title-row">
-              <span className="pkd-card-title-left">
-                <History size={16} />
-                Nhật ký hoạt động
-              </span>
-            </div>
-            {auditLog.length === 0 ? (
-              <div className="pkd-empty-mini">
-                <History size={22} />
-                Chưa có hoạt động nào được ghi nhận.
-              </div>
-            ) : (
-              <div className="pkd-audit-list">
-                {auditLog.map((a) => (
-                  <div className="pkd-audit-row" key={a.id}>
-                    <span
-                      className={`pkd-audit-icon ${a.type === "lock" ? "is-danger" : ""}`}
-                    >
-                      {auditIcon(a.type)}
-                    </span>
-                    <span className="pkd-audit-body">
-                      <span className="pkd-audit-text">{a.text}</span>
-                      <div className="pkd-audit-time">{a.time}</div>
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </RevealCard>
-
-          <RevealCard className="pkd-card">
-            <div className="pkd-card-title-row">
-              <span className="pkd-card-title-left">
-                <Bell size={16} />
-                Thông báo cho phụ huynh
-              </span>
-            </div>
-            <SwitchRow
-              title="Thông báo đẩy (push)"
-              checked={settings.notifyPush}
-              onChange={(v) => updateSettings({ notifyPush: v })}
-            />
-            <SwitchRow
-              title="Thông báo qua email"
-              checked={settings.notifyEmail}
-              onChange={(v) => updateSettings({ notifyEmail: v })}
-            />
-            <div className="pkd-checklist">
-              <label className="pkd-checkbox-row">
-                <input
-                  type="checkbox"
-                  checked={settings.notifyOnLimitExceeded}
-                  onChange={(e) =>
-                    updateSettings({ notifyOnLimitExceeded: e.target.checked })
-                  }
-                />
-                Khi con vượt giới hạn thời gian trong ngày
-              </label>
-              <label className="pkd-checkbox-row">
-                <input
-                  type="checkbox"
-                  checked={settings.notifyOnSkippedRest}
-                  onChange={(e) =>
-                    updateSettings({ notifyOnSkippedRest: e.target.checked })
-                  }
-                />
-                Khi con bỏ qua nhắc nghỉ mắt nhiều lần
-              </label>
-            </div>
-          </RevealCard>
-        </section>
-
-        {/*   SÁCH CỦA BÉ   */}
-        <section id="books" className="pkd-section">
-          <RevealCard as="div" className="pkd-section-head">
-            <span className="pkd-section-eyebrow">Thư viện riêng</span>
-            <h2 className="pkd-section-title">Sách của {activeChild.name}</h2>
-            <p className="pkd-section-sub">
-              {activeChild.name} chỉ có thể xem những sách bạn đã mua VÀ bật
-              hiển thị ở đây. Ẩn bớt để lọc theo độ tuổi hoặc chủ đề bạn muốn
-              con tập trung.
-            </p>
-          </RevealCard>
-
-          <RevealCard as="div" className="pkd-card">
-            {booksLoading ? (
-              <div className="pkd-empty-state" style={{ padding: "32px 0" }}>
-                <Loader2 size={20} className="pkd-spin" />
-              </div>
-            ) : books.length === 0 ? (
-              <div className="pkd-empty-state" style={{ padding: "32px 0" }}>
-                <BookMarked size={28} strokeWidth={1.2} />
-                <p>
-                  Bạn chưa mua sách nào. Sách sau khi mua sẽ tự động xuất hiện ở
-                  đây.
-                </p>
-                <Link to="/products" className="pf-confirm-ok pf-btn-tactile">
-                  Khám phá sách
-                </Link>
-              </div>
-            ) : (
-              books.map((book) => (
-                <div key={book.id} className="pkd-book-visible-row">
-                  <div className="pkd-book-visible-info">
-                    {book.coverImage && (
-                      <img
-                        src={book.coverImage}
-                        alt={book.title}
-                        className="pkd-book-visible-cover"
-                      />
                     )}
-                    <div>
-                      <div className="pkd-book-visible-title">{book.title}</div>
-                      {(book.ageMin || book.ageMax) && (
-                        <div className="pkd-child-meta">
-                          {book.ageMin ?? 0}–{book.ageMax ?? "∞"} tuổi
-                        </div>
-                      )}
-                    </div>
+                    {trendDirection === "flat" && (
+                      <span className="pkd-trend is-flat">
+                        <MinusIcon size={11} /> Ổn định
+                      </span>
+                    )}
                   </div>
-                  <label className="pf-switch">
-                    <input
-                      type="checkbox"
-                      checked={book.visible}
-                      onChange={(e) =>
-                        toggleBookVisibility(book.id, e.target.checked)
-                      }
-                    />
-                    <span className="pf-switch-track">
-                      <span className="pf-switch-thumb" />
+                  <div className="pkd-stat-val">
+                    {formatMinutes(todayMinutes)}
+                  </div>
+                  <div className="pkd-stat-label">
+                    Đã xem hôm nay · so với TB tuần
+                  </div>
+                </RevealCard>
+
+                <RevealCard className="pkd-stat-card" delay={60}>
+                  <div className="pkd-stat-icon-row">
+                    <span className="pkd-stat-icon-box">
+                      <CalendarClock size={16} />
                     </span>
-                  </label>
-                </div>
-              ))
-            )}
-          </RevealCard>
-        </section>
+                  </div>
+                  <div className="pkd-stat-val">
+                    {formatMinutes(settings.dailyLimitMinutes)}
+                  </div>
+                  <div className="pkd-stat-label">Giới hạn mỗi ngày</div>
+                </RevealCard>
 
-        {/*   EYE CARE   */}
-        <section id="eye-care" className="pkd-section">
-          <RevealCard as="div" className="pkd-section-head">
-            <span className="pkd-section-eyebrow">Sức khoẻ thị lực</span>
-            <h2 className="pkd-section-title">Nhắc bảo vệ mắt</h2>
-            <p className="pkd-section-sub">
-              Gợi ý hiển thị dạng thẻ nhỏ, không chặn màn hình.
-            </p>
-          </RevealCard>
+                <RevealCard className="pkd-stat-card" delay={120}>
+                  <div className="pkd-stat-icon-row">
+                    <span className="pkd-stat-icon-box">
+                      <BookOpen size={16} />
+                    </span>
+                  </div>
+                  <div className="pkd-stat-val">{sessions.length}</div>
+                  <div className="pkd-stat-label">Lượt xem gần đây</div>
+                </RevealCard>
 
-          <RevealCard className="pkd-card">
-            <SwitchRow
-              icon={<Sparkles size={15} />}
-              title="Hiện thẻ mẹo bảo vệ mắt"
-              desc="Xoay vòng các mẹo ngắn về khoảng cách, tư thế và ánh sáng màn hình."
-              checked={settings.tipsEnabled}
-              onChange={(v) => updateSettings({ tipsEnabled: v })}
-            />
-            {settings.tipsEnabled && (
-              <>
-                <div className="pkd-tip-freq-row">
-                  <div className="pkd-subfield pkd-subfield-block">
-                    <label>Tần suất hiện</label>
-                    <select
-                      className="pkd-select"
-                      value={settings.tipsFrequency}
-                      onChange={(e) =>
-                        updateSettings({ tipsFrequency: e.target.value })
-                      }
-                    >
-                      <option value="open">Mỗi lần mở app</option>
-                      <option value="interval">Mỗi 15 phút</option>
-                      <option value="rest">Mỗi lần đến giờ nghỉ mắt</option>
-                    </select>
+                <RevealCard
+                  className={`pkd-stat-card ${lockState.isLocked ? "is-danger" : ""}`}
+                  delay={180}
+                >
+                  <div className="pkd-stat-icon-row">
+                    <span className="pkd-stat-icon-box">
+                      {lockState.isLocked ? (
+                        <Lock size={16} className="pkd-icon-danger" />
+                      ) : (
+                        <ShieldCheck size={16} className="pkd-icon-ok" />
+                      )}
+                    </span>
+                  </div>
+                  <div className="pkd-stat-val">
+                    {lockState.isLocked ? "Đã khóa" : "Đang mở"}
+                  </div>
+                  <div className="pkd-stat-label">Trạng thái AR</div>
+                </RevealCard>
+              </div>
+
+              {lockState.isLocked && (
+                <RevealCard className="pkd-locked-banner">
+                  <Lock size={16} />
+                  <div>
+                    <strong>AR đang bị tạm khóa cho {activeChild.name}.</strong>
+                    <div>Chỉ phụ huynh mới có thể mở khóa bằng mã PIN.</div>
                   </div>
                   <button
+                    className="pkd-mini-btn pf-btn-tactile"
+                    onClick={() => requestUnlock()}
                     type="button"
-                    className="pkd-mini-btn pf-btn-tactile pkd-tip-refresh-btn"
-                    onClick={cycleTip}
                   >
-                    <RefreshCcw size={12} /> Xem mẫu khác
+                    <Unlock size={13} /> Mở khóa
+                  </button>
+                </RevealCard>
+              )}
+
+              <RevealCard className="pkd-card pkd-pin-card-top">
+                <div className="pkd-card-title-row">
+                  <span className="pkd-card-title-left">
+                    <KeyRound size={16} />
+                    Mã PIN phụ huynh
+                  </span>
+                </div>
+                <p className="pkd-card-note" style={{ marginBottom: 18 }}>
+                  Mã PIN dùng chung cho mọi bé để mở khóa AR và xác nhận các
+                  thao tác quan trọng.
+                </p>
+                <div className="pkd-pin-actions">
+                  <button
+                    className="pkd-mini-btn pf-btn-tactile"
+                    onClick={openChangePin}
+                    type="button"
+                  >
+                    <KeyRound size={13} /> Đổi mã PIN
+                  </button>
+                  <button
+                    className="pkd-text-link"
+                    onClick={openForgotPin}
+                    type="button"
+                  >
+                    Quên mã PIN?
                   </button>
                 </div>
+              </RevealCard>
+            </section>
 
-                <div className="pkd-tip-preview">
-                  <div className="pkd-tip-preview-head">
-                    <Info size={13} /> Xem trước thẻ mẹo
+            {/*   TIME RULES   */}
+            <section id="time-rules" className="pkd-section">
+              <RevealCard as="div" className="pkd-section-head">
+                <span className="pkd-section-eyebrow">Tuỳ chỉnh</span>
+                <h2 className="pkd-section-title">Quản lý giờ giấc</h2>
+                <p className="pkd-section-sub">
+                  Thiết lập thời gian sử dụng phù hợp cho bé. Mọi giới hạn được
+                  đồng bộ tự động và tính theo thời gian máy chủ Earthoria, giúp
+                  thiết lập luôn chính xác trên mọi thiết bị.
+                </p>
+              </RevealCard>
+
+              <RevealCard className="pkd-card">
+                <div className="pkd-card-title-row">
+                  <span className="pkd-card-title-left">
+                    <Clock size={16} />
+                    Giới hạn thời gian mỗi ngày
+                  </span>
+                </div>
+                <div className="pkd-preset-row">
+                  {[30, 60, 90, 120].map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      className={`pkd-preset-chip ${settings.dailyLimitMinutes === v ? "is-active" : ""}`}
+                      onClick={() => updateSettings({ dailyLimitMinutes: v })}
+                    >
+                      {v} phút
+                    </button>
+                  ))}
+                </div>
+                <Stepper
+                  value={settings.dailyLimitMinutes}
+                  onChange={(v) => updateSettings({ dailyLimitMinutes: v })}
+                  min={10}
+                  max={240}
+                  step={5}
+                />
+              </RevealCard>
+
+              <RevealCard className="pkd-card">
+                <SwitchRow
+                  icon={<Timer size={15} />}
+                  title="Nghỉ mắt định kỳ"
+                  desc="Cứ mỗi khoảng thời gian xem, hiện popup nhắc nhìn xa kèm đếm ngược."
+                  checked={settings.ruleEnabled}
+                  onChange={(v) => updateSettings({ ruleEnabled: v })}
+                />
+                {settings.ruleEnabled && (
+                  <div className="pkd-subfields">
+                    <div className="pkd-subfield">
+                      <label>Nhắc nghỉ mỗi</label>
+                      <Stepper
+                        value={settings.ruleIntervalMinutes}
+                        onChange={(v) =>
+                          updateSettings({ ruleIntervalMinutes: v })
+                        }
+                        min={5}
+                        max={60}
+                        step={5}
+                      />
+                    </div>
+                    <div className="pkd-subfield">
+                      <label>Thời gian nhìn xa</label>
+                      <Stepper
+                        value={settings.ruleRestSeconds}
+                        onChange={(v) => updateSettings({ ruleRestSeconds: v })}
+                        min={10}
+                        max={60}
+                        step={5}
+                        suffix="giây"
+                      />
+                    </div>
                   </div>
-                  <div
-                    className={`pkd-tip-card ${tipCycling ? "is-cycling" : ""}`}
-                  >
-                    {(() => {
-                      const Tip = EYE_TIPS[tipIndex];
-                      const Icon = Tip.Icon;
+                )}
+              </RevealCard>
+
+              <RevealCard className="pkd-card">
+                <SwitchRow
+                  icon={<CalendarClock size={15} />}
+                  title="Khung giờ được phép xem"
+                  desc="Ngoài khung giờ này, AR sẽ không mở được dù còn hạn mức trong ngày."
+                  checked={settings.allowWindowEnabled}
+                  onChange={(v) => updateSettings({ allowWindowEnabled: v })}
+                />
+                {settings.allowWindowEnabled && (
+                  <>
+                    <div className="pkd-time-range">
+                      <div className="pkd-time-field">
+                        <label>Từ</label>
+                        <input
+                          type="time"
+                          value={allowStartDraft}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setAllowStartDraft(val);
+                            if (!val) return;
+                            updateSettings({ allowStart: val });
+                          }}
+                        />
+                      </div>
+                      <ChevronRight size={14} className="pkd-time-arrow" />
+                      <div className="pkd-time-field">
+                        <label>Đến</label>
+                        <input
+                          type="time"
+                          value={allowEndDraft}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setAllowEndDraft(val);
+                            if (!val) return;
+                            updateSettings({ allowEnd: val });
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="pkd-timeline">
+                      <div className="pkd-timeline-head">
+                        <span>Trực quan thời gian</span>
+                        <span>
+                          Hiện tại:{" "}
+                          {new Date().toLocaleTimeString("vi-VN", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                      <div className="pkd-timeline-track">
+                        <div
+                          className="pkd-timeline-allowed"
+                          style={{
+                            left: `${startPct}%`,
+                            width: `${Math.max(endPct - startPct, 1)}%`,
+                          }}
+                        />
+                        <div
+                          className="pkd-timeline-now"
+                          style={{ left: `${nowPct}%` }}
+                        />
+                      </div>
+                      <div className="pkd-timeline-labels">
+                        <span>00:00</span>
+                        <span>06:00</span>
+                        <span>12:00</span>
+                        <span>18:00</span>
+                        <span>24:00</span>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </RevealCard>
+
+              <RevealCard className="pkd-card">
+                <SwitchRow
+                  icon={<Lock size={15} />}
+                  title="Giờ nghỉ bắt buộc"
+                  desc="Sau một khoảng thời gian xem liên tục, khóa màn hình AR vài phút mới cho xem tiếp."
+                  checked={settings.mandatoryBreakEnabled}
+                  onChange={(v) => updateSettings({ mandatoryBreakEnabled: v })}
+                />
+                {settings.mandatoryBreakEnabled && (
+                  <div className="pkd-subfields">
+                    <div className="pkd-subfield">
+                      <label>Xem liên tục quá</label>
+                      <Stepper
+                        value={settings.breakAfterMinutes}
+                        onChange={(v) =>
+                          updateSettings({ breakAfterMinutes: v })
+                        }
+                        min={15}
+                        max={120}
+                        step={5}
+                      />
+                    </div>
+                    <div className="pkd-subfield">
+                      <label>Thì khóa trong</label>
+                      <Stepper
+                        value={settings.breakDurationMinutes}
+                        onChange={(v) =>
+                          updateSettings({ breakDurationMinutes: v })
+                        }
+                        min={5}
+                        max={30}
+                        step={5}
+                      />
+                    </div>
+                  </div>
+                )}
+              </RevealCard>
+            </section>
+
+            {/*   REPORTS   */}
+            <section id="reports" className="pkd-section">
+              <RevealCard as="div" className="pkd-section-head">
+                <span className="pkd-section-eyebrow">Dữ liệu 7 ngày</span>
+                <h2 className="pkd-section-title">Báo cáo & theo dõi</h2>
+              </RevealCard>
+
+              <RevealCard className="pkd-card">
+                <div className="pkd-card-title-row">
+                  <span className="pkd-card-title-left">
+                    <TrendingUp size={16} />
+                    Thời gian xem trong tuần
+                  </span>
+                  <span className="pkd-week-total">
+                    {formatMinutes(weekTotal)} tổng cộng
+                  </span>
+                </div>
+                <div className="pkd-chart-plot">
+                  <div className="pkd-chart">
+                    <div
+                      className="pkd-chart-avg-line"
+                      style={{
+                        bottom: `${clamp((weekAvg / weekMax) * 100, 0, 100)}%`,
+                      }}
+                    >
+                      <span className="pkd-chart-avg-label">
+                        TB {formatMinutes(Math.round(weekAvg))}
+                      </span>
+                    </div>
+                    {weeklyMinutes.map((mins, i) => {
+                      const h = clamp((mins / weekMax) * 100, 4, 100);
+                      const overLimit = mins > settings.dailyLimitMinutes;
+                      const isToday = i === TODAY_INDEX;
                       return (
-                        <>
-                          <Icon size={16} />
-                          <span>{Tip.text}</span>
-                        </>
+                        <div
+                          className={`pkd-chart-col ${isToday ? "is-today" : ""}`}
+                          key={i}
+                        >
+                          <div className="pkd-chart-bar-wrap">
+                            <div className="pkd-chart-tooltip">
+                              <strong>{WEEK_LABELS[i]}</strong> ·{" "}
+                              {formatMinutes(mins)}
+                            </div>
+                            <div
+                              className={`pkd-chart-bar ${overLimit ? "is-over" : ""}`}
+                              style={{ height: `${h}%` }}
+                            />
+                          </div>
+                          <span className="pkd-chart-label">
+                            {isToday ? "Hôm nay" : WEEK_LABELS[i]}
+                          </span>
+                        </div>
                       );
-                    })()}
+                    })}
                   </div>
                 </div>
-              </>
-            )}
-          </RevealCard>
-        </section>
+                <div className="pkd-chart-legend">
+                  <span className="pkd-legend-dot" /> Trong hạn mức
+                  <span className="pkd-legend-dot is-over" /> Vượt hạn mức ngày
+                  <span className="pkd-legend-line" /> Trung bình tuần
+                </div>
+              </RevealCard>
+
+              <RevealCard className="pkd-card">
+                <div className="pkd-card-title-row">
+                  <span className="pkd-card-title-left">
+                    <BookOpen size={16} />
+                    Sách AR đã xem gần đây
+                  </span>
+                </div>
+                {sessions.length === 0 ? (
+                  <div className="pkd-empty-mini">
+                    <BookOpen size={22} />
+                    Chưa có lượt xem nào trong tuần này.
+                  </div>
+                ) : (
+                  <div className="pkd-book-list">
+                    {sessions.map((s) => (
+                      <div className="pkd-book-row" key={s.id}>
+                        <span className="pkd-book-letter">{s.letter}</span>
+                        <span className="pkd-book-info">
+                          <span className="pkd-book-title">{s.title}</span>
+                          <span className="pkd-book-date">{s.date}</span>
+                        </span>
+                        <span className="pkd-book-mins">
+                          {formatMinutes(s.minutes)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </RevealCard>
+
+              <RevealCard className="pkd-card">
+                <div className="pkd-card-title-row">
+                  <span className="pkd-card-title-left">
+                    <History size={16} />
+                    Nhật ký hoạt động
+                  </span>
+                </div>
+                {auditLog.length === 0 ? (
+                  <div className="pkd-empty-mini">
+                    <History size={22} />
+                    Chưa có hoạt động nào được ghi nhận.
+                  </div>
+                ) : (
+                  <div className="pkd-audit-list">
+                    {auditLog.map((a) => (
+                      <div className="pkd-audit-row" key={a.id}>
+                        <span
+                          className={`pkd-audit-icon ${a.type === "lock" ? "is-danger" : ""}`}
+                        >
+                          {auditIcon(a.type)}
+                        </span>
+                        <span className="pkd-audit-body">
+                          <span className="pkd-audit-text">{a.text}</span>
+                          <div className="pkd-audit-time">{a.time}</div>
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </RevealCard>
+
+              <RevealCard className="pkd-card">
+                <div className="pkd-card-title-row">
+                  <span className="pkd-card-title-left">
+                    <Bell size={16} />
+                    Thông báo cho phụ huynh
+                  </span>
+                </div>
+                <SwitchRow
+                  title="Thông báo đẩy (push)"
+                  checked={settings.notifyPush}
+                  onChange={(v) => updateSettings({ notifyPush: v })}
+                />
+                <SwitchRow
+                  title="Thông báo qua email"
+                  checked={settings.notifyEmail}
+                  onChange={(v) => updateSettings({ notifyEmail: v })}
+                />
+                <div className="pkd-checklist">
+                  <label className="pkd-checkbox-row">
+                    <input
+                      type="checkbox"
+                      checked={settings.notifyOnLimitExceeded}
+                      onChange={(e) =>
+                        updateSettings({
+                          notifyOnLimitExceeded: e.target.checked,
+                        })
+                      }
+                    />
+                    Khi con vượt giới hạn thời gian trong ngày
+                  </label>
+                  <label className="pkd-checkbox-row">
+                    <input
+                      type="checkbox"
+                      checked={settings.notifyOnSkippedRest}
+                      onChange={(e) =>
+                        updateSettings({
+                          notifyOnSkippedRest: e.target.checked,
+                        })
+                      }
+                    />
+                    Khi con bỏ qua nhắc nghỉ mắt nhiều lần
+                  </label>
+                </div>
+              </RevealCard>
+            </section>
+
+            {/*   SÁCH CỦA BÉ   */}
+            <section id="books" className="pkd-section">
+              <RevealCard as="div" className="pkd-section-head">
+                <span className="pkd-section-eyebrow">Thư viện riêng</span>
+                <h2 className="pkd-section-title">
+                  Sách của {activeChild.name}
+                </h2>
+                <p className="pkd-section-sub">
+                  {activeChild.name} chỉ có thể xem những sách bạn đã mua VÀ bật
+                  hiển thị ở đây. Ẩn bớt để lọc theo độ tuổi hoặc chủ đề bạn
+                  muốn con tập trung.
+                </p>
+              </RevealCard>
+
+              <RevealCard as="div" className="pkd-card">
+                {booksLoading ? (
+                  <div
+                    className="pkd-empty-state"
+                    style={{ padding: "32px 0" }}
+                  >
+                    <Loader2 size={20} className="pkd-spin" />
+                  </div>
+                ) : books.length === 0 ? (
+                  <div
+                    className="pkd-empty-state"
+                    style={{ padding: "32px 0" }}
+                  >
+                    <BookMarked size={28} strokeWidth={1.2} />
+                    <p>
+                      Bạn chưa mua sách nào. Sách sau khi mua sẽ tự động xuất
+                      hiện ở đây.
+                    </p>
+                    <Link
+                      to="/products"
+                      className="pf-confirm-ok pf-btn-tactile"
+                    >
+                      Khám phá sách
+                    </Link>
+                  </div>
+                ) : (
+                  books.map((book) => (
+                    <div key={book.id} className="pkd-book-visible-row">
+                      <div className="pkd-book-visible-info">
+                        {book.coverImage && (
+                          <img
+                            src={book.coverImage}
+                            alt={book.title}
+                            className="pkd-book-visible-cover"
+                          />
+                        )}
+                        <div>
+                          <div className="pkd-book-visible-title">
+                            {book.title}
+                          </div>
+                          {(book.ageMin || book.ageMax) && (
+                            <div className="pkd-child-meta">
+                              {book.ageMin ?? 0}–{book.ageMax ?? "∞"} tuổi
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <label className="pf-switch">
+                        <input
+                          type="checkbox"
+                          checked={book.visible}
+                          onChange={(e) =>
+                            toggleBookVisibility(book.id, e.target.checked)
+                          }
+                        />
+                        <span className="pf-switch-track">
+                          <span className="pf-switch-thumb" />
+                        </span>
+                      </label>
+                    </div>
+                  ))
+                )}
+              </RevealCard>
+            </section>
+
+            {/*   EYE CARE   */}
+            <section id="eye-care" className="pkd-section">
+              <RevealCard as="div" className="pkd-section-head">
+                <span className="pkd-section-eyebrow">Sức khoẻ thị lực</span>
+                <h2 className="pkd-section-title">Nhắc bảo vệ mắt</h2>
+                <p className="pkd-section-sub">
+                  Gợi ý hiển thị dạng thẻ nhỏ, không chặn màn hình.
+                </p>
+              </RevealCard>
+
+              <RevealCard className="pkd-card">
+                <SwitchRow
+                  icon={<Sparkles size={15} />}
+                  title="Hiện thẻ mẹo bảo vệ mắt"
+                  desc="Xoay vòng các mẹo ngắn về khoảng cách, tư thế và ánh sáng màn hình."
+                  checked={settings.tipsEnabled}
+                  onChange={(v) => updateSettings({ tipsEnabled: v })}
+                />
+                {settings.tipsEnabled && (
+                  <>
+                    <div className="pkd-tip-freq-row">
+                      <div className="pkd-subfield pkd-subfield-block">
+                        <label>Tần suất hiện</label>
+                        <select
+                          className="pkd-select"
+                          value={settings.tipsFrequency}
+                          onChange={(e) =>
+                            updateSettings({ tipsFrequency: e.target.value })
+                          }
+                        >
+                          <option value="open">Mỗi lần mở app</option>
+                          <option value="interval">Mỗi 15 phút</option>
+                          <option value="rest">Mỗi lần đến giờ nghỉ mắt</option>
+                        </select>
+                      </div>
+                      <button
+                        type="button"
+                        className="pkd-mini-btn pf-btn-tactile pkd-tip-refresh-btn"
+                        onClick={cycleTip}
+                      >
+                        <RefreshCcw size={12} /> Xem mẫu khác
+                      </button>
+                    </div>
+
+                    <div className="pkd-tip-preview">
+                      <div className="pkd-tip-preview-head">
+                        <Info size={13} /> Xem trước thẻ mẹo
+                      </div>
+                      <div
+                        className={`pkd-tip-card ${tipCycling ? "is-cycling" : ""}`}
+                      >
+                        {(() => {
+                          const Tip = EYE_TIPS[tipIndex];
+                          const Icon = Tip.Icon;
+                          return (
+                            <>
+                              <Icon size={16} />
+                              <span>{Tip.text}</span>
+                            </>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </RevealCard>
+            </section>
           </div>
         </div>
       </div>

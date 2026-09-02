@@ -1,56 +1,58 @@
-const crypto = require('crypto')
-const bcrypt = require('bcryptjs')
-const prisma = require('../config/db')
-const { sendOtpEmail } = require('../services/emailService')
-const { generateAccessToken, formatResponse } = require('../utils/helpers')
-const { validatePasswordPolicy } = require('../utils/passwordPolicy')
-const tokenService = require('../services/tokenService')
-const { setRefreshCookie } = require('../utils/cookies')
+const crypto = require("crypto");
+const bcrypt = require("bcryptjs");
+const prisma = require("../config/db");
+const { sendOtpEmail } = require("../services/emailService");
+const { generateAccessToken, formatResponse } = require("../utils/helpers");
+const { validatePasswordPolicy } = require("../utils/passwordPolicy");
+const tokenService = require("../services/tokenService");
+const { setRefreshCookie } = require("../utils/cookies");
 
-const OTP_LENGTH = 6
-const OTP_EXPIRY_MINUTES = 10
-const MAX_OTP_ATTEMPTS = 5
+const OTP_LENGTH = 6;
+const OTP_EXPIRY_MINUTES = 10;
+const MAX_OTP_ATTEMPTS = 5;
 
 function generateOtp() {
-  return crypto.randomInt(0, 1_000_000).toString().padStart(OTP_LENGTH, '0')
+  return crypto.randomInt(0, 1_000_000).toString().padStart(OTP_LENGTH, "0");
 }
 
 function hashOtp(otp) {
-  return crypto.createHash('sha256').update(otp).digest('hex')
+  return crypto.createHash("sha256").update(otp).digest("hex");
 }
 
 // POST /api/v1/auth/send-register-otp
 async function sendRegisterOtp(req, res) {
   try {
-    const { name, email, password } = req.body
+    const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-      return formatResponse(res, 400, 'Vui lòng điền đầy đủ thông tin.')
+      return formatResponse(res, 400, "Vui lòng điền đầy đủ thông tin.");
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return formatResponse(res, 400, 'Email không hợp lệ.')
+      return formatResponse(res, 400, "Email không hợp lệ.");
     }
 
-    const passwordPolicyError = validatePasswordPolicy(password)
+    const passwordPolicyError = validatePasswordPolicy(password);
     if (passwordPolicyError) {
-      return formatResponse(res, 400, passwordPolicyError)
+      return formatResponse(res, 400, passwordPolicyError);
     }
 
-    const normalizedEmail = email.trim().toLowerCase()
+    const normalizedEmail = email.trim().toLowerCase();
 
     // Kiểm tra email đã tồn tại trong User thật chưa
-    const existingUser = await prisma.user.findUnique({ where: { email: normalizedEmail } })
+    const existingUser = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
     if (existingUser) {
-      return formatResponse(res, 400, 'Email đã được sử dụng.')
+      return formatResponse(res, 400, "Email đã được sử dụng.");
     }
 
     // Hash password ngay từ đây để không lưu plain text
-    const hashedPassword = await bcrypt.hash(password, 12)
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-    const otp = generateOtp()
-    const otpHash = hashOtp(otp)
-    const otpExpires = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000)
+    const otp = generateOtp();
+    const otpHash = hashOtp(otp);
+    const otpExpires = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
     // Upsert PendingUser — nếu user gửi lại OTP thì cập nhật, không tạo trùng
     await prisma.pendingUser.upsert({
@@ -70,19 +72,22 @@ async function sendRegisterOtp(req, res) {
         otpExpires,
         otpAttempts: 0,
       },
-    })
+    });
 
     // Gửi email OTP (lỗi mail không làm hỏng flow)
     try {
-      await sendOtpEmail({ to: normalizedEmail, name, otp })
+      await sendOtpEmail({ to: normalizedEmail, name, otp });
     } catch (mailErr) {
-      console.error('[sendRegisterOtp] Failed to send OTP email:', mailErr.message)
+      console.error(
+        "[sendRegisterOtp] Failed to send OTP email:",
+        mailErr.message,
+      );
     }
 
-    return formatResponse(res, 200, 'Mã OTP đã được gửi đến email của bạn.')
+    return formatResponse(res, 200, "Mã OTP đã được gửi đến email của bạn.");
   } catch (err) {
-    console.error('[sendRegisterOtp] Error:', err)
-    return formatResponse(res, 500, 'Đã xảy ra lỗi. Vui lòng thử lại sau.')
+    console.error("[sendRegisterOtp] Error:", err);
+    return formatResponse(res, 500, "Đã xảy ra lỗi. Vui lòng thử lại sau.");
   }
 }
 
@@ -92,52 +97,72 @@ async function sendRegisterOtp(req, res) {
 // ════════════════════════════════════════════
 async function verifyRegisterOtp(req, res) {
   try {
-    const { email, otp } = req.body
+    const { email, otp } = req.body;
 
     if (!email || !otp || !/^\d{6}$/.test(otp)) {
-      return formatResponse(res, 400, 'Thông tin xác thực không hợp lệ.')
+      return formatResponse(res, 400, "Thông tin xác thực không hợp lệ.");
     }
 
-    const normalizedEmail = email.trim().toLowerCase()
+    const normalizedEmail = email.trim().toLowerCase();
 
-    const pending = await prisma.pendingUser.findUnique({ where: { email: normalizedEmail } })
+    const pending = await prisma.pendingUser.findUnique({
+      where: { email: normalizedEmail },
+    });
 
     if (!pending) {
-      return formatResponse(res, 400, 'Phiên đăng ký không tồn tại. Vui lòng thử lại từ đầu.')
+      return formatResponse(
+        res,
+        400,
+        "Phiên đăng ký không tồn tại. Vui lòng thử lại từ đầu.",
+      );
     }
 
     // Kiểm tra hết hạn
     if (new Date() > pending.otpExpires) {
-      await prisma.pendingUser.delete({ where: { email: normalizedEmail } })
-      return formatResponse(res, 400, 'Mã OTP đã hết hạn. Vui lòng đăng ký lại.')
+      await prisma.pendingUser.delete({ where: { email: normalizedEmail } });
+      return formatResponse(
+        res,
+        400,
+        "Mã OTP đã hết hạn. Vui lòng đăng ký lại.",
+      );
     }
 
     // Kiểm tra số lần thử
     if (pending.otpAttempts >= MAX_OTP_ATTEMPTS) {
-      await prisma.pendingUser.delete({ where: { email: normalizedEmail } })
-      return formatResponse(res, 429, 'Bạn đã nhập sai quá nhiều lần. Vui lòng đăng ký lại.')
+      await prisma.pendingUser.delete({ where: { email: normalizedEmail } });
+      return formatResponse(
+        res,
+        429,
+        "Bạn đã nhập sai quá nhiều lần. Vui lòng đăng ký lại.",
+      );
     }
 
-    const inputHash = hashOtp(otp)
+    const inputHash = hashOtp(otp);
     const isMatch = crypto.timingSafeEqual(
-      Buffer.from(inputHash, 'hex'),
-      Buffer.from(pending.otpHash, 'hex')
-    )
+      Buffer.from(inputHash, "hex"),
+      Buffer.from(pending.otpHash, "hex"),
+    );
 
     if (!isMatch) {
       await prisma.pendingUser.update({
         where: { email: normalizedEmail },
         data: { otpAttempts: { increment: 1 } },
-      })
-      const remaining = MAX_OTP_ATTEMPTS - (pending.otpAttempts + 1)
-      return formatResponse(res, 400, `Mã OTP không đúng. Còn ${Math.max(0, remaining)} lần thử.`)
+      });
+      const remaining = MAX_OTP_ATTEMPTS - (pending.otpAttempts + 1);
+      return formatResponse(
+        res,
+        400,
+        `Mã OTP không đúng. Còn ${Math.max(0, remaining)} lần thử.`,
+      );
     }
 
     // OTP đúng → kiểm tra lần cuối email chưa bị đăng ký trong lúc chờ
-    const existingUser = await prisma.user.findUnique({ where: { email: normalizedEmail } })
+    const existingUser = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
     if (existingUser) {
-      await prisma.pendingUser.delete({ where: { email: normalizedEmail } })
-      return formatResponse(res, 400, 'Email đã được sử dụng.')
+      await prisma.pendingUser.delete({ where: { email: normalizedEmail } });
+      return formatResponse(res, 400, "Email đã được sử dụng.");
     }
 
     // Tạo User thật trong một transaction
@@ -149,27 +174,36 @@ async function verifyRegisterOtp(req, res) {
           password: pending.password,
           phone: pending.phone ?? undefined,
         },
-        select: { id: true, name: true, email: true, role: true, createdAt: true },
-      })
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+        },
+      });
 
-      await tx.pendingUser.delete({ where: { email: normalizedEmail } })
+      await tx.pendingUser.delete({ where: { email: normalizedEmail } });
 
-      return created
-    })
+      return created;
+    });
 
-    const accessToken = generateAccessToken(user.id)
+    const accessToken = generateAccessToken(user.id);
     const { rawToken, expiresAt } = await tokenService.createRefreshToken(
       user.id,
       false,
-      { userAgent: req.headers['user-agent'], ip: req.ip }
-    )
-    setRefreshCookie(res, rawToken, expiresAt)
+      { userAgent: req.headers["user-agent"], ip: req.ip },
+    );
+    setRefreshCookie(res, rawToken, expiresAt);
 
-    return formatResponse(res, 201, 'Đăng ký thành công.', { user, accessToken })
+    return formatResponse(res, 201, "Đăng ký thành công.", {
+      user,
+      accessToken,
+    });
   } catch (err) {
-    console.error('[verifyRegisterOtp] Error:', err)
-    return formatResponse(res, 500, 'Đã xảy ra lỗi. Vui lòng thử lại sau.')
+    console.error("[verifyRegisterOtp] Error:", err);
+    return formatResponse(res, 500, "Đã xảy ra lỗi. Vui lòng thử lại sau.");
   }
 }
 
-module.exports = { sendRegisterOtp, verifyRegisterOtp }
+module.exports = { sendRegisterOtp, verifyRegisterOtp };

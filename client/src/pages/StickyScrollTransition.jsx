@@ -2,8 +2,8 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 
 export default function StickyScrollTransition() {
-  const wrapRef = useRef(null);       // outer wrapper — tạo scroll height
-  const sceneRef = useRef(null);      // panel ghim sticky
+  const wrapRef = useRef(null); // outer wrapper — tạo scroll height
+  const sceneRef = useRef(null); // panel ghim sticky
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
   const particlesRef = useRef([]);
@@ -12,10 +12,14 @@ export default function StickyScrollTransition() {
 
   /*  particles  */
   const stopParticles = useCallback(() => {
-    if (rafRef.current) { cancelAnimationFrame(rafRef.current); rafRef.current = null; }
+    if (rafRef.current) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
     particlesRef.current = [];
     const canvas = canvasRef.current;
-    if (canvas) canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
+    if (canvas)
+      canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
   }, []);
 
   const initParticles = useCallback(() => {
@@ -26,10 +30,13 @@ export default function StickyScrollTransition() {
     canvas.height = scene.offsetHeight;
     const count = Math.min(60, Math.floor(canvas.width / 14));
     particlesRef.current = Array.from({ length: count }, () => ({
-      x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
       r: Math.random() * 1.8 + 0.4,
-      vx: (Math.random() - 0.5) * 0.35, vy: (Math.random() - 0.5) * 0.25,
-      a: Math.random() * 0.6 + 0.15, pulse: Math.random() * Math.PI * 2,
+      vx: (Math.random() - 0.5) * 0.35,
+      vy: (Math.random() - 0.5) * 0.25,
+      a: Math.random() * 0.6 + 0.15,
+      pulse: Math.random() * Math.PI * 2,
     }));
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     const loop = () => {
@@ -37,21 +44,32 @@ export default function StickyScrollTransition() {
       const ctx = canvas.getContext("2d");
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       particlesRef.current.forEach((p) => {
-        p.x += p.vx; p.y += p.vy; p.pulse += 0.02;
-        if (p.x < 0) p.x = canvas.width; if (p.x > canvas.width) p.x = 0;
-        if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.pulse += 0.02;
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
         const alpha = p.a * (0.6 + 0.4 * Math.sin(p.pulse));
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(74,158,63,${alpha})`; ctx.fill();
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(74,158,63,${alpha})`;
+        ctx.fill();
       });
       const pts = particlesRef.current;
       for (let i = 0; i < pts.length; i++) {
         for (let j = i + 1; j < pts.length; j++) {
-          const dx = pts[i].x - pts[j].x, dy = pts[i].y - pts[j].y;
-          const dist = Math.sqrt(dx*dx + dy*dy);
+          const dx = pts[i].x - pts[j].x,
+            dy = pts[i].y - pts[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 90) {
-            ctx.beginPath(); ctx.moveTo(pts[i].x, pts[i].y); ctx.lineTo(pts[j].x, pts[j].y);
-            ctx.strokeStyle = `rgba(74,158,63,${0.12*(1-dist/90)})`; ctx.lineWidth = 0.5; ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(pts[i].x, pts[i].y);
+            ctx.lineTo(pts[j].x, pts[j].y);
+            ctx.strokeStyle = `rgba(74,158,63,${0.12 * (1 - dist / 90)})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
           }
         }
       }
@@ -62,11 +80,16 @@ export default function StickyScrollTransition() {
 
   const openPanel = useCallback(() => {
     setIsOpen(true);
-    setTimeout(() => { setCardsVisible(true); initParticles(); }, 200);
+    setTimeout(() => {
+      setCardsVisible(true);
+      initParticles();
+    }, 200);
   }, [initParticles]);
 
   const closePanel = useCallback(() => {
-    setIsOpen(false); setCardsVisible(false); stopParticles();
+    setIsOpen(false);
+    setCardsVisible(false);
+    stopParticles();
   }, [stopParticles]);
 
   /*  Sticky scroll logic
@@ -90,44 +113,101 @@ export default function StickyScrollTransition() {
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll(); // check ngay khi mount
-    return () => { window.removeEventListener("scroll", onScroll); stopParticles(); };
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      stopParticles();
+    };
   }, [openPanel, closePanel, stopParticles]);
 
   useEffect(() => {
     if (isOpen) initParticles();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    const handleResize = () => { if (isOpen) initParticles(); };
+    const handleResize = () => {
+      if (isOpen) initParticles();
+    };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, [isOpen, initParticles]);
 
   const CARDS = [
     {
-      n: "01", tag: "AR Technology", name: "Thực Tế Tăng Cường",
+      n: "01",
+      tag: "AR Technology",
+      name: "Thực Tế Tăng Cường",
       desc: "Quét trang sách — sinh vật 3D hiện ra sống động trong không gian thực ngay trước mắt bạn.",
       w: "88%",
-      icon: (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 12h20M12 2l8 10-8 10-8-10z"/></svg>),
+      icon: (
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <path d="M2 12h20M12 2l8 10-8 10-8-10z" />
+        </svg>
+      ),
     },
     {
-      n: "02", tag: "AI Dialogue", name: "Trò Chuyện Với AI",
+      n: "02",
+      tag: "AI Dialogue",
+      name: "Trò Chuyện Với AI",
       desc: "Hỏi bất kỳ sinh vật nào, nhận câu trả lời bằng giọng nói tự nhiên — như người bạn đồng hành.",
       w: "75%",
-      icon: (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>),
+      icon: (
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      ),
     },
     {
-      n: "03", tag: "3D Visualization", name: "Mô Hình 3D Sống Động",
+      n: "03",
+      tag: "3D Visualization",
+      name: "Mô Hình 3D Sống Động",
       desc: "80+ loài sinh vật dựng hình 3D chân thực — xoay, phóng to, khám phá từng chi tiết.",
       w: "92%",
-      icon: (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>),
+      icon: (
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+      ),
     },
     {
-      n: "04", tag: "Adaptive Learning", name: "Học Cùng Bạn Lớn",
+      n: "04",
+      tag: "Adaptive Learning",
+      name: "Học Cùng Bạn Lớn",
       desc: "AI theo dõi tiến trình, điều chỉnh nội dung phù hợp với từng người — học đúng tốc độ của bạn.",
       w: "68%",
-      icon: (<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>),
+      icon: (
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+        >
+          <path d="M18 20V10M12 20V4M6 20v-6" />
+        </svg>
+      ),
     },
   ];
 
@@ -461,19 +541,25 @@ export default function StickyScrollTransition() {
               <div className="eb-stat eb-stat-l">
                 <div className="eb-tag">Người Dùng</div>
                 <div className="eb-num">You</div>
-                <div className="eb-title">Kết Nối <em>Công Nghệ</em></div>
+                <div className="eb-title">
+                  Kết Nối <em>Công Nghệ</em>
+                </div>
                 <div className="eb-sub">Earthoria là cầu nối của bạn</div>
               </div>
               <div className="eb-orb-wrap">
-                <div className="eb-orb-ring"/><div className="eb-orb-ring"/><div className="eb-orb-ring"/>
-                <div className="eb-orb-diamond"/>
-                <div className="eb-orb-dot"/>
+                <div className="eb-orb-ring" />
+                <div className="eb-orb-ring" />
+                <div className="eb-orb-ring" />
+                <div className="eb-orb-diamond" />
+                <div className="eb-orb-dot" />
                 <span className="eb-orb-label">Earthoria</span>
               </div>
               <div className="eb-stat eb-stat-r">
                 <div className="eb-tag">Công Nghệ</div>
                 <div className="eb-num">AR·AI</div>
-                <div className="eb-title"><em>Tương Tác</em> 3D</div>
+                <div className="eb-title">
+                  <em>Tương Tác</em> 3D
+                </div>
                 <div className="eb-sub">Quét sách · Nhận diện tức thì</div>
               </div>
             </div>
@@ -482,8 +568,8 @@ export default function StickyScrollTransition() {
           {/* scroll hint */}
           <div className="eb-scroll-hint">
             <span>Cuộn xuống khám phá</span>
-            <div className="eb-scroll-line"/>
-            <div className="eb-scroll-arrow"/>
+            <div className="eb-scroll-line" />
+            <div className="eb-scroll-arrow" />
           </div>
 
           {/*  Expanded (khi mở)  */}
@@ -492,29 +578,67 @@ export default function StickyScrollTransition() {
             <div className="eb-bridge-head">
               <div className="eb-bridge-node">
                 <div className="eb-bridge-icon active">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
                 </div>
                 <span className="eb-bridge-label">Người Dùng</span>
               </div>
               <div className="eb-bridge-connector">
-                <div className="eb-connector-dot"/>
-                <div className="eb-connector-line"><div className="eb-connector-pulse"/></div>
-                <div className="eb-connector-dot"/>
+                <div className="eb-connector-dot" />
+                <div className="eb-connector-line">
+                  <div className="eb-connector-pulse" />
+                </div>
+                <div className="eb-connector-dot" />
               </div>
               <div className="eb-bridge-node">
                 <div className="eb-bridge-icon active">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                    <path d="M2 12h20" />
+                  </svg>
                 </div>
                 <span className="eb-bridge-label">Earthoria</span>
               </div>
               <div className="eb-bridge-connector">
-                <div className="eb-connector-dot"/>
-                <div className="eb-connector-line"><div className="eb-connector-pulse" style={{animationDelay:"0.6s"}}/></div>
-                <div className="eb-connector-dot"/>
+                <div className="eb-connector-dot" />
+                <div className="eb-connector-line">
+                  <div
+                    className="eb-connector-pulse"
+                    style={{ animationDelay: "0.6s" }}
+                  />
+                </div>
+                <div className="eb-connector-dot" />
               </div>
               <div className="eb-bridge-node">
                 <div className="eb-bridge-icon active">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12" />
+                  </svg>
                 </div>
                 <span className="eb-bridge-label">AR · AI</span>
               </div>
@@ -523,7 +647,11 @@ export default function StickyScrollTransition() {
             {/* Cards */}
             <div className="eb-cards">
               {CARDS.map((card, i) => (
-                <div key={i} className={`eb-card${cardsVisible ? " show" : ""}`} style={{"--bar-w": card.w}}>
+                <div
+                  key={i}
+                  className={`eb-card${cardsVisible ? " show" : ""}`}
+                  style={{ "--bar-w": card.w }}
+                >
                   <div className="eb-card-top">
                     <div className="eb-card-icon">{card.icon}</div>
                     <div className="eb-card-num">{card.n}</div>
@@ -531,7 +659,9 @@ export default function StickyScrollTransition() {
                   <div className="eb-card-tag">{card.tag}</div>
                   <div className="eb-card-name">{card.name}</div>
                   <div className="eb-card-desc">{card.desc}</div>
-                  <div className="eb-card-bar"><div className="eb-card-bar-fill"/></div>
+                  <div className="eb-card-bar">
+                    <div className="eb-card-bar-fill" />
+                  </div>
                 </div>
               ))}
             </div>
@@ -540,10 +670,28 @@ export default function StickyScrollTransition() {
             <div className="eb-cta">
               <Link to="/technology" className="eb-btn-primary">
                 Hướng Dẫn AR
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <path d="M5 12h14M12 5l7 7-7 7" />
+                </svg>
               </Link>
               <button className="eb-btn-secondary">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
                 Xem Demo 3D
               </button>
             </div>

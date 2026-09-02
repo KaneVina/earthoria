@@ -1,4 +1,4 @@
- const bcrypt = require("bcryptjs");
+const bcrypt = require("bcryptjs");
 const prisma = require("../config/db");
 const { generateAccessToken, formatResponse } = require("../utils/helpers");
 const tokenService = require("../services/tokenService");
@@ -144,7 +144,10 @@ const getMe = async (req, res) => {
     const { password, ...safeUser } = user;
     // hasPassword: tài khoản đăng nhập Google chưa từng tạo mật khẩu sẽ là false
     // → client dùng cờ này để hiển thị "Tạo mật khẩu" (kèm OTP) thay vì "Đổi mật khẩu"
-    return formatResponse(res, 200, "OK", { ...safeUser, hasPassword: !!password });
+    return formatResponse(res, 200, "OK", {
+      ...safeUser,
+      hasPassword: !!password,
+    });
   } catch (error) {
     return formatResponse(res, 500, "Lỗi server");
   }
@@ -273,7 +276,10 @@ const refresh = async (req, res) => {
 
     let rotated;
     try {
-      rotated = await tokenService.verifyAndRotate(rawToken, getRequestMeta(req));
+      rotated = await tokenService.verifyAndRotate(
+        rawToken,
+        getRequestMeta(req),
+      );
     } catch (err) {
       clearRefreshCookie(res);
       return formatResponse(
@@ -283,7 +289,9 @@ const refresh = async (req, res) => {
       );
     }
 
-    const user = await prisma.user.findUnique({ where: { id: rotated.userId } });
+    const user = await prisma.user.findUnique({
+      where: { id: rotated.userId },
+    });
     if (!user || !user.isActive) {
       clearRefreshCookie(res);
       return formatResponse(res, 401, "Tài khoản không hợp lệ");

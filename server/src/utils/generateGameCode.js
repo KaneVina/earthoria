@@ -1,6 +1,6 @@
-const crypto = require('crypto')
+const crypto = require("crypto");
 function generateGameCode() {
-  return crypto.randomBytes(24).toString('base64url')
+  return crypto.randomBytes(24).toString("base64url");
 }
 
-module.exports = { generateGameCode }
+module.exports = { generateGameCode };

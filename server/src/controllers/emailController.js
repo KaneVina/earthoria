@@ -1,123 +1,120 @@
-// src/controllers/emailController.js
-const { Resend } = require('resend')
-const { sendCustomEmail, renderCustomEmailHtml } = require('../services/emailService')
-const prisma = require('../config/db')
-const resend = new Resend(process.env.RESEND_API_KEY)
+const { Resend } = require("resend");
+const {
+  sendCustomEmail,
+  renderCustomEmailHtml,
+} = require("../services/emailService");
+const prisma = require("../config/db");
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-const isDev = process.env.NODE_ENV !== 'production'
+const isDev = process.env.NODE_ENV !== "production";
 function serverError(res, err, tag) {
-  console.error(`[${tag}]`, err)
+  console.error(`[${tag}]`, err);
   return res.status(500).json({
     success: false,
-    message: 'Lỗi server',
+    message: "Lỗi server",
     ...(isDev ? { debug: err.message } : {}),
-  })
+  });
 }
 
-/* ══════════════════════════════════════════════
-   STATUS MAPPING (Resend "last_event" -> hiển thị VI)
-══════════════════════════════════════════════ */
+/*    STATUS MAPPING */
 const STATUS_LABEL = {
-  sent:             'Đã gửi',
-  delivered:        'Đã nhận',
-  delivery_delayed: 'Bị trễ',
-  bounced:          'Trả về (bounce)',
-  complained:       'Bị báo cáo spam',
-  opened:           'Đã mở',
-  clicked:          'Đã click',
-  failed:           'Thất bại',
-  canceled:         'Đã hủy',
-  scheduled:        'Đã lên lịch',
-}
+  sent: "Đã gửi",
+  delivered: "Đã nhận",
+  delivery_delayed: "Bị trễ",
+  bounced: "Trả về (bounce)",
+  complained: "Bị báo cáo spam",
+  opened: "Đã mở",
+  clicked: "Đã click",
+  failed: "Thất bại",
+  canceled: "Đã hủy",
+  scheduled: "Đã lên lịch",
+};
 
 function mapEmailItem(item) {
   return {
-    id:        item.id,
-    from:      item.from,
-    to:        Array.isArray(item.to) ? item.to : [item.to].filter(Boolean),
-    subject:   item.subject,
-    status:    item.last_event || 'sent',
-    statusLabel: STATUS_LABEL[item.last_event] || item.last_event || 'Đã gửi',
+    id: item.id,
+    from: item.from,
+    to: Array.isArray(item.to) ? item.to : [item.to].filter(Boolean),
+    subject: item.subject,
+    status: item.last_event || "sent",
+    statusLabel: STATUS_LABEL[item.last_event] || item.last_event || "Đã gửi",
     createdAt: item.created_at,
-  }
+  };
 }
 
-/* ══════════════════════════════════════════════
-   GET /admin/emails — lịch sử email đã gửi
-══════════════════════════════════════════════ */
+/*   GET /admin/emails — lịch sử email đã gửi*/
 exports.getEmailHistory = async (req, res) => {
   try {
-    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20))
-    const { data, error } = await resend.emails.list({ limit })
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const { data, error } = await resend.emails.list({ limit });
 
     if (error) {
-      return res.status(400).json({ success: false, message: error.message || 'Không lấy được lịch sử email' })
+      return res.status(400).json({
+        success: false,
+        message: error.message || "Không lấy được lịch sử email",
+      });
     }
 
-    const rawList = data?.data ?? []
+    const rawList = data?.data ?? [];
     return res.json({
       success: true,
       data: {
-        emails:  rawList.map(mapEmailItem),
+        emails: rawList.map(mapEmailItem),
         hasMore: data?.has_more ?? false,
       },
-    })
+    });
   } catch (err) {
-    return serverError(res, err, 'getEmailHistory')
+    return serverError(res, err, "getEmailHistory");
   }
-}
+};
 
-/* ══════════════════════════════════════════════
-   GET /admin/emails/:id — chi tiết 1 email
-══════════════════════════════════════════════ */
+/*    GET /admin/emails/:id — chi tiết 1 email */
 exports.getEmailDetail = async (req, res) => {
   try {
-    const { id } = req.params
-    const { data, error } = await resend.emails.get(id)
+    const { id } = req.params;
+    const { data, error } = await resend.emails.get(id);
 
     if (error) {
-      return res.status(404).json({ success: false, message: error.message || 'Không tìm thấy email' })
+      return res.status(404).json({
+        success: false,
+        message: error.message || "Không tìm thấy email",
+      });
     }
 
     return res.json({
       success: true,
       data: {
         ...mapEmailItem(data),
-        html:    data.html ?? null,
-        text:    data.text ?? null,
-        cc:      data.cc ?? [],
-        bcc:     data.bcc ?? [],
+        html: data.html ?? null,
+        text: data.text ?? null,
+        cc: data.cc ?? [],
+        bcc: data.bcc ?? [],
         replyTo: data.reply_to ?? null,
       },
-    })
+    });
   } catch (err) {
-    return serverError(res, err, 'getEmailDetail')
+    return serverError(res, err, "getEmailDetail");
   }
-}
+};
 
-/* ══════════════════════════════════════════════
-   GET /admin/emails/me
-   Lấy thông tin tài khoản admin/staff đang đăng nhập để tự điền
-   chữ ký — vì đã qua middleware protect + adminOnly nên chắc chắn
-   là tài khoản đã xác thực.
-   Field nào null thì frontend mới cho phép sửa, còn lại khoá cứng
-   (nhưng frontend vẫn cho bấm mở khoá thủ công nếu cần sửa).
-══════════════════════════════════════════════ */
+/*   GET /admin/emails/me   */
 exports.getSenderProfile = async (req, res) => {
   try {
     // req.user do middleware `protect` gán vào (giải mã từ JWT)
-    const userId = req.user?.id
+    const userId = req.user?.id;
     if (!userId) {
-      return res.status(401).json({ success: false, message: 'Chưa xác thực' })
+      return res.status(401).json({ success: false, message: "Chưa xác thực" });
     }
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { name: true, email: true, phone: true, role: true },
-    })
+    });
 
     if (!user) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy tài khoản' })
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy tài khoản" });
     }
 
     // department chưa có field tương ứng trong schema User -> luôn null,
@@ -125,126 +122,121 @@ exports.getSenderProfile = async (req, res) => {
     return res.json({
       success: true,
       data: {
-        name:       user.name  ?? null,
-        email:      user.email ?? null,
-        phone:      user.phone ?? null,
+        name: user.name ?? null,
+        email: user.email ?? null,
+        phone: user.phone ?? null,
         department: null,
-        role:       user.role,
+        role: user.role,
       },
-    })
+    });
   } catch (err) {
-    return serverError(res, err, 'getSenderProfile')
+    return serverError(res, err, "getSenderProfile");
   }
-}
+};
 
-/* ══════════════════════════════════════════════
-   GET /admin/emails/customers?search=
-   Gợi ý email khách hàng (role CUSTOMER) khi admin gõ vào ô "to"
-   Cho phép gõ từ 1 ký tự đã trả gợi ý (khớp theo tên hoặc email, không phân biệt hoa/thường).
-══════════════════════════════════════════════ */
+/*   GET /admin/emails/customers?search=  */
 exports.searchCustomers = async (req, res) => {
   try {
-    const search = req.query.search?.trim() ?? ''
+    const search = req.query.search?.trim() ?? "";
     if (!search) {
-      return res.json({ success: true, data: [] })
+      return res.json({ success: true, data: [] });
     }
 
     const customers = await prisma.user.findMany({
       where: {
-        role: 'CUSTOMER',
+        role: "CUSTOMER",
         OR: [
-          { email: { contains: search, mode: 'insensitive' } },
-          { name:  { contains: search, mode: 'insensitive' } },
+          { email: { contains: search, mode: "insensitive" } },
+          { name: { contains: search, mode: "insensitive" } },
         ],
       },
       select: { name: true, email: true },
       take: 8,
-      orderBy: { createdAt: 'desc' },
-    })
+      orderBy: { createdAt: "desc" },
+    });
 
-    return res.json({ success: true, data: customers })
+    return res.json({ success: true, data: customers });
   } catch (err) {
-    return serverError(res, err, 'searchCustomers')
+    return serverError(res, err, "searchCustomers");
   }
-}
+};
 
-/* ══════════════════════════════════════════════
-   POST /admin/emails/preview
-   Dựng thử HTML email theo đúng template thật (KHÔNG gửi mail).
-   Dùng cho khung xem trước bên phải form soạn email.
-   Body: { to?, subject?, content?, sender? }
-══════════════════════════════════════════════ */
+/*   POST /admin/emails/preview   */
 exports.previewManualEmail = async (req, res) => {
   try {
-    const { to, subject, content, sender } = req.body
+    const { to, subject, content, sender } = req.body;
 
     const html = renderCustomEmailHtml({
-      to:      to || 'khachhang@example.com',
-      subject: subject || '(Chưa có tiêu đề)',
-      heading: subject || '(Chưa có tiêu đề)',
-      content: content || '',
-      sender:  sender && (sender.name || sender.email) ? sender : null,
-    })
+      to: to || "khachhang@example.com",
+      subject: subject || "(Chưa có tiêu đề)",
+      heading: subject || "(Chưa có tiêu đề)",
+      content: content || "",
+      sender: sender && (sender.name || sender.email) ? sender : null,
+    });
 
-    return res.json({ success: true, data: { html } })
+    return res.json({ success: true, data: { html } });
   } catch (err) {
-    return serverError(res, err, 'previewManualEmail')
+    return serverError(res, err, "previewManualEmail");
   }
-}
+};
 
-/* ══════════════════════════════════════════════
-   POST /admin/emails/send
-   Gửi email thủ công — dùng chung template chuẩn (không nhận HTML thô)
-   Body: {
-     to, cc?, bcc?, subject, content,
-     sender?: { name, department, phone, email }
-   }
-══════════════════════════════════════════════ */
+/*    POST /admin/emails/send   */
 function splitRecipients(input) {
-  if (!input) return undefined
-  if (Array.isArray(input)) return input
-  return String(input).split(',').map(s => s.trim()).filter(Boolean)
+  if (!input) return undefined;
+  if (Array.isArray(input)) return input;
+  return String(input)
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 exports.sendManualEmail = async (req, res) => {
   try {
-    const { to, cc, bcc, subject, content, sender } = req.body
+    const { to, cc, bcc, subject, content, sender } = req.body;
 
     if (!to || !subject || !content) {
-      return res.status(400).json({ success: false, message: 'Thiếu thông tin bắt buộc (to, subject, content)' })
+      return res.status(400).json({
+        success: false,
+        message: "Thiếu thông tin bắt buộc (to, subject, content)",
+      });
     }
 
-    const toList = splitRecipients(to)
+    const toList = splitRecipients(to);
     if (!toList?.length) {
-      return res.status(400).json({ success: false, message: 'Người nhận không hợp lệ' })
+      return res
+        .status(400)
+        .json({ success: false, message: "Người nhận không hợp lệ" });
     }
 
-    const ccList  = splitRecipients(cc)
-    const bccList = splitRecipients(bcc)
+    const ccList = splitRecipients(cc);
+    const bccList = splitRecipients(bcc);
 
     // Bỏ qua sender nếu admin không điền gì
-    const senderInfo = sender && (sender.name || sender.email) ? sender : null
+    const senderInfo = sender && (sender.name || sender.email) ? sender : null;
 
     const { data, error } = await sendCustomEmail({
-      to:      toList,
-      cc:      ccList,
-      bcc:     bccList,
+      to: toList,
+      cc: ccList,
+      bcc: bccList,
       subject,
       heading: subject, // Tiêu đề nhập vào cũng là heading hiển thị trong email
       content,
-      sender:  senderInfo,
-    })
+      sender: senderInfo,
+    });
 
     if (error) {
-      return res.status(400).json({ success: false, message: error.message || 'Gửi email thất bại' })
+      return res.status(400).json({
+        success: false,
+        message: error.message || "Gửi email thất bại",
+      });
     }
 
     return res.status(201).json({
       success: true,
-      message: 'Đã gửi email thành công',
+      message: "Đã gửi email thành công",
       data,
-    })
+    });
   } catch (err) {
-    return serverError(res, err, 'sendManualEmail')
+    return serverError(res, err, "sendManualEmail");
   }
-}
+};

@@ -21,7 +21,7 @@ async function main() {
       modelUrl: c.modelUrl,
       isActive: c.isActive,
       scanCount: c.scanCount,
-    }))
+    })),
   );
 }
 

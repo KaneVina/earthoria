@@ -1,5 +1,4 @@
-// Tính tuổi chính xác từ ngày sinh (tính theo đã qua sinh nhật năm nay hay
-// chưa), không lưu tuổi tĩnh trong DB để tránh sai lệch theo thời gian.
+// Tính tuổi chính xác từ ngày sinh (tính theo đã qua sinh nhật năm nay hay chưa), không lưu tuổi tĩnh trong DB để tránh sai lệch theo thời gian.
 function calculateAge(dob) {
   const birth = new Date(dob);
   const now = new Date();
@@ -14,8 +13,7 @@ function calculateAge(dob) {
   return Math.max(0, age);
 }
 
-// Trẻ hợp lệ: sinh trong khoảng 0–17 tuổi (không cho tạo hồ sơ "trẻ em"
-// cho người đã trên 18, và không cho ngày sinh trong tương lai).
+// Trẻ hợp lệ: sinh trong khoảng 0–17 tuổi (không cho tạo hồ sơ "trẻ em" cho người đã trên 18, và không cho ngày sinh trong tương lai).
 function isValidChildDob(dob) {
   const birth = new Date(dob);
   if (Number.isNaN(birth.getTime())) return false;

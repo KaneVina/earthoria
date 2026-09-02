@@ -31,6 +31,6 @@ export const useCompareStore = create(
 
       maxCompare: MAX_COMPARE,
     }),
-    { name: "earthoria-compare" }
-  )
+    { name: "earthoria-compare" },
+  ),
 );

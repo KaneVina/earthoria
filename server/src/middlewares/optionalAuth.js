@@ -1,22 +1,22 @@
-const jwt = require('jsonwebtoken')
-const prisma = require('../config/db')
+const jwt = require("jsonwebtoken");
+const prisma = require("../config/db");
 
 exports.optionalAuth = async (req, res, next) => {
   try {
-    const header = req.headers.authorization
-    if (!header?.startsWith('Bearer ')) {
-      req.user = null
-      return next()
+    const header = req.headers.authorization;
+    if (!header?.startsWith("Bearer ")) {
+      req.user = null;
+      return next();
     }
 
-    const token = header.split(' ')[1]
-    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET)
-    const user = await prisma.user.findUnique({ where: { id: decoded.id } })
+    const token = header.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    const user = await prisma.user.findUnique({ where: { id: decoded.id } });
 
-    req.user = user && user.isActive ? user : null
-    return next()
+    req.user = user && user.isActive ? user : null;
+    return next();
   } catch {
-    req.user = null
-    return next()
+    req.user = null;
+    return next();
   }
-}
+};

@@ -1,34 +1,44 @@
-const prisma = require('../config/db')
-const { userOwnsBook } = require('../utils/bookOwnership')
-const { encodeId } = require('../utils/hashids')
+const prisma = require("../config/db");
+const { userOwnsBook } = require("../utils/bookOwnership");
+const { encodeId } = require("../utils/hashids");
 
 exports.getGame = async (req, res) => {
   try {
-    const { code } = req.params
+    const { code } = req.params;
 
     const game = await prisma.game.findUnique({
       where: { code },
       include: {
-        book: { select: { id: true, title: true, slug: true, coverImage: true } },
+        book: {
+          select: { id: true, title: true, slug: true, coverImage: true },
+        },
       },
-    })
+    });
 
     if (!game || !game.isActive) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy trò chơi này' })
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy trò chơi này" });
     }
 
-    if (game.accessType !== 'PUBLIC') {
+    if (game.accessType !== "PUBLIC") {
       if (!req.user) {
-        return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập để chơi trò chơi này' })
+        return res
+          .status(401)
+          .json({
+            success: false,
+            message: "Vui lòng đăng nhập để chơi trò chơi này",
+          });
       }
 
-      if (req.user.role !== 'ADMIN' && req.user.role !== 'STAFF') {
-        const owns = await userOwnsBook(prisma, req.user.id, game.bookId)
+      if (req.user.role !== "ADMIN" && req.user.role !== "STAFF") {
+        const owns = await userOwnsBook(prisma, req.user.id, game.bookId);
         if (!owns) {
           return res.status(403).json({
             success: false,
-            message: 'Bạn cần sở hữu cuốn sách này (đơn hàng đã giao) để chơi trò chơi',
-          })
+            message:
+              "Bạn cần sở hữu cuốn sách này (đơn hàng đã giao) để chơi trò chơi",
+          });
         }
       }
     }
@@ -45,51 +55,70 @@ exports.getGame = async (req, res) => {
         thumbnailUrl: game.thumbnailUrl,
         accessType: game.accessType,
         playCount: game.playCount,
-        book: game.book ? { ...game.book, hashId: encodeId(game.book.id) } : null,
+        book: game.book
+          ? { ...game.book, hashId: encodeId(game.book.id) }
+          : null,
       },
-    })
+    });
   } catch (err) {
-    console.error('[getGame]', err)
-    return res.status(500).json({ success: false, message: 'Lỗi server' })
+    console.error("[getGame]", err);
+    return res.status(500).json({ success: false, message: "Lỗi server" });
   }
-}
+};
 
 exports.completeGame = async (req, res) => {
   try {
-    const { code } = req.params
-    const { score, durationSeconds, playerName, childId } = req.body
+    const { code } = req.params;
+    const { score, durationSeconds, playerName, childId } = req.body;
 
-    const game = await prisma.game.findUnique({ where: { code } })
+    const game = await prisma.game.findUnique({ where: { code } });
     if (!game || !game.isActive) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy trò chơi này' })
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy trò chơi này" });
     }
 
-    let validChildId = null
+    let validChildId = null;
     if (childId) {
       // Trước đây chỉ kiểm tra child có tồn tại hay không, KHÔNG kiểm tra child đó
       // có thuộc về user đang đăng nhập không — bất kỳ ai biết UUID của 1 child
       // (của gia đình khác) đều có thể ghi GameResult vào hồ sơ đó (IDOR). Giờ bắt
       // buộc childId phải thuộc về chính req.user (nếu có đăng nhập) mới được nhận.
       if (!req.user) {
-        return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập để lưu kết quả cho hồ sơ trẻ em' })
+        return res
+          .status(401)
+          .json({
+            success: false,
+            message: "Vui lòng đăng nhập để lưu kết quả cho hồ sơ trẻ em",
+          });
       }
       const child = await prisma.childProfile.findFirst({
         where: { id: childId, parentId: req.user.id, isActive: true },
         select: { id: true },
-      })
+      });
       if (!child) {
-        return res.status(403).json({ success: false, message: 'Hồ sơ trẻ em không hợp lệ hoặc không thuộc về bạn' })
+        return res
+          .status(403)
+          .json({
+            success: false,
+            message: "Hồ sơ trẻ em không hợp lệ hoặc không thuộc về bạn",
+          });
       }
-      validChildId = child.id
+      validChildId = child.id;
     }
 
-    const safeScore = Number.isFinite(Number(score)) ? Math.max(0, Math.round(Number(score))) : 0
+    const safeScore = Number.isFinite(Number(score))
+      ? Math.max(0, Math.round(Number(score)))
+      : 0;
     const safeDuration = Number.isFinite(Number(durationSeconds))
       ? Math.max(0, Math.round(Number(durationSeconds)))
-      : null
+      : null;
 
     const [, result] = await prisma.$transaction([
-      prisma.game.update({ where: { id: game.id }, data: { playCount: { increment: 1 } } }),
+      prisma.game.update({
+        where: { id: game.id },
+        data: { playCount: { increment: 1 } },
+      }),
       prisma.gameResult.create({
         data: {
           gameId: game.id,
@@ -100,26 +129,31 @@ exports.completeGame = async (req, res) => {
           durationSeconds: safeDuration,
         },
       }),
-    ])
+    ]);
 
-    return res.status(201).json({ success: true, data: result })
+    return res.status(201).json({ success: true, data: result });
   } catch (err) {
-    console.error('[completeGame]', err)
-    return res.status(500).json({ success: false, message: 'Lỗi server' })
+    console.error("[completeGame]", err);
+    return res.status(500).json({ success: false, message: "Lỗi server" });
   }
-}
+};
 
 exports.getLeaderboard = async (req, res) => {
   try {
-    const { code } = req.params
-    const game = await prisma.game.findUnique({ where: { code }, select: { id: true } })
+    const { code } = req.params;
+    const game = await prisma.game.findUnique({
+      where: { code },
+      select: { id: true },
+    });
     if (!game) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy trò chơi này' })
+      return res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy trò chơi này" });
     }
 
     const top = await prisma.gameResult.findMany({
       where: { gameId: game.id },
-      orderBy: [{ score: 'desc' }, { durationSeconds: 'asc' }],
+      orderBy: [{ score: "desc" }, { durationSeconds: "asc" }],
       take: 10,
       select: {
         id: true,
@@ -130,20 +164,21 @@ exports.getLeaderboard = async (req, res) => {
         user: { select: { name: true } },
         child: { select: { name: true, avatarEmoji: true } },
       },
-    })
+    });
 
     const data = top.map((r) => ({
       id: r.id,
       score: r.score,
       durationSeconds: r.durationSeconds,
       completedAt: r.completedAt,
-      displayName: r.child?.name || r.user?.name || r.playerName || 'Người chơi ẩn danh',
+      displayName:
+        r.child?.name || r.user?.name || r.playerName || "Người chơi ẩn danh",
       avatarEmoji: r.child?.avatarEmoji || null,
-    }))
+    }));
 
-    return res.json({ success: true, data })
+    return res.json({ success: true, data });
   } catch (err) {
-    console.error('[getLeaderboard]', err)
-    return res.status(500).json({ success: false, message: 'Lỗi server' })
+    console.error("[getLeaderboard]", err);
+    return res.status(500).json({ success: false, message: "Lỗi server" });
   }
-}
+};

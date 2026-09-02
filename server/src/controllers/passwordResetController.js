@@ -1,39 +1,44 @@
-const crypto = require('crypto')
-const bcrypt = require('bcryptjs')
-const prisma = require('../config/db')
-const { sendOtpEmail, sendPasswordChangedEmail } = require('../services/emailService')
-const { formatResponse } = require('../utils/helpers')
-const { validatePasswordPolicy } = require('../utils/passwordPolicy')
-const tokenService = require('../services/tokenService')
+const crypto = require("crypto");
+const bcrypt = require("bcryptjs");
+const prisma = require("../config/db");
+const {
+  sendOtpEmail,
+  sendPasswordChangedEmail,
+} = require("../services/emailService");
+const { formatResponse } = require("../utils/helpers");
+const { validatePasswordPolicy } = require("../utils/passwordPolicy");
+const tokenService = require("../services/tokenService");
 
-const OTP_LENGTH = 6
-const OTP_EXPIRY_MINUTES = 10
-const MAX_OTP_ATTEMPTS = 5
+const OTP_LENGTH = 6;
+const OTP_EXPIRY_MINUTES = 10;
+const MAX_OTP_ATTEMPTS = 5;
 
 function generateOtp() {
-  return crypto.randomInt(0, 1_000_000).toString().padStart(OTP_LENGTH, '0')
+  return crypto.randomInt(0, 1_000_000).toString().padStart(OTP_LENGTH, "0");
 }
 
 function hashOtp(otp) {
-  return crypto.createHash('sha256').update(otp).digest('hex')
+  return crypto.createHash("sha256").update(otp).digest("hex");
 }
 
 // POST /api/v1/auth/forgot-password
 async function forgotPassword(req, res) {
   try {
-    const { email } = req.body
+    const { email } = req.body;
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return formatResponse(res, 400, 'Email không hợp lệ.')
+      return formatResponse(res, 400, "Email không hợp lệ.");
     }
 
-    const normalizedEmail = email.trim().toLowerCase()
-    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } })
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
 
     if (user && user.isActive) {
-      const otp = generateOtp()
-      const otpHash = hashOtp(otp)
-      const expires = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000)
+      const otp = generateOtp();
+      const otpHash = hashOtp(otp);
+      const expires = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
       await prisma.user.update({
         where: { id: user.id },
@@ -42,133 +47,187 @@ async function forgotPassword(req, res) {
           resetOtpExpires: expires,
           resetOtpAttempts: 0,
         },
-      })
+      });
 
       try {
-        await sendOtpEmail({ to: user.email, name: user.name, otp })
+        await sendOtpEmail({ to: user.email, name: user.name, otp });
       } catch (mailErr) {
-        console.error('[forgotPassword] Failed to send OTP email:', mailErr.message)
+        console.error(
+          "[forgotPassword] Failed to send OTP email:",
+          mailErr.message,
+        );
       }
     }
 
-    return formatResponse(res, 200, 'Nếu email tồn tại trong hệ thống, mã xác thực đã được gửi đến hộp thư của bạn.')
+    return formatResponse(
+      res,
+      200,
+      "Nếu email tồn tại trong hệ thống, mã xác thực đã được gửi đến hộp thư của bạn.",
+    );
   } catch (err) {
-    console.error('[forgotPassword] Error:', err)
-    return formatResponse(res, 500, 'Đã xảy ra lỗi. Vui lòng thử lại sau.')
+    console.error("[forgotPassword] Error:", err);
+    return formatResponse(res, 500, "Đã xảy ra lỗi. Vui lòng thử lại sau.");
   }
 }
-
 
 // POST /api/v1/auth/verify-otp
 async function verifyOtp(req, res) {
   try {
-    const { email, otp } = req.body
+    const { email, otp } = req.body;
 
     if (!email || !otp || !/^\d{6}$/.test(otp)) {
-      return formatResponse(res, 400, 'Thông tin xác thực không hợp lệ.')
+      return formatResponse(res, 400, "Thông tin xác thực không hợp lệ.");
     }
 
-    const normalizedEmail = email.trim().toLowerCase()
-    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } })
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
 
     if (!user || !user.resetOtpHash || !user.resetOtpExpires) {
-      return formatResponse(res, 400, 'Mã xác thực không đúng hoặc đã hết hạn.')
+      return formatResponse(
+        res,
+        400,
+        "Mã xác thực không đúng hoặc đã hết hạn.",
+      );
     }
 
     if (new Date() > user.resetOtpExpires) {
       await prisma.user.update({
         where: { id: user.id },
-        data: { resetOtpHash: null, resetOtpExpires: null, resetOtpAttempts: 0 },
-      })
-      return formatResponse(res, 400, 'Mã xác thực đã hết hạn. Vui lòng yêu cầu mã mới.')
+        data: {
+          resetOtpHash: null,
+          resetOtpExpires: null,
+          resetOtpAttempts: 0,
+        },
+      });
+      return formatResponse(
+        res,
+        400,
+        "Mã xác thực đã hết hạn. Vui lòng yêu cầu mã mới.",
+      );
     }
 
     if (user.resetOtpAttempts >= MAX_OTP_ATTEMPTS) {
       await prisma.user.update({
         where: { id: user.id },
-        data: { resetOtpHash: null, resetOtpExpires: null, resetOtpAttempts: 0 },
-      })
-      return formatResponse(res, 429, 'Bạn đã nhập sai quá nhiều lần. Vui lòng yêu cầu mã xác thực mới.')
+        data: {
+          resetOtpHash: null,
+          resetOtpExpires: null,
+          resetOtpAttempts: 0,
+        },
+      });
+      return formatResponse(
+        res,
+        429,
+        "Bạn đã nhập sai quá nhiều lần. Vui lòng yêu cầu mã xác thực mới.",
+      );
     }
 
-    const inputHash = hashOtp(otp)
+    const inputHash = hashOtp(otp);
     const isMatch = crypto.timingSafeEqual(
-      Buffer.from(inputHash, 'hex'),
-      Buffer.from(user.resetOtpHash, 'hex')
-    )
+      Buffer.from(inputHash, "hex"),
+      Buffer.from(user.resetOtpHash, "hex"),
+    );
 
     if (!isMatch) {
       await prisma.user.update({
         where: { id: user.id },
         data: { resetOtpAttempts: { increment: 1 } },
-      })
-      const remaining = MAX_OTP_ATTEMPTS - (user.resetOtpAttempts + 1)
-      return formatResponse(res, 400, `Mã xác thực không đúng. Còn ${Math.max(0, remaining)} lần thử.`)
+      });
+      const remaining = MAX_OTP_ATTEMPTS - (user.resetOtpAttempts + 1);
+      return formatResponse(
+        res,
+        400,
+        `Mã xác thực không đúng. Còn ${Math.max(0, remaining)} lần thử.`,
+      );
     }
 
     await prisma.user.update({
       where: { id: user.id },
       data: { resetOtpAttempts: 0 },
-    })
+    });
 
-    return formatResponse(res, 200, 'Xác thực thành công.')
+    return formatResponse(res, 200, "Xác thực thành công.");
   } catch (err) {
-    console.error('[verifyOtp] Error:', err)
-    return formatResponse(res, 500, 'Đã xảy ra lỗi. Vui lòng thử lại sau.')
+    console.error("[verifyOtp] Error:", err);
+    return formatResponse(res, 500, "Đã xảy ra lỗi. Vui lòng thử lại sau.");
   }
 }
 
 // POST /api/v1/auth/reset-password
 async function resetPassword(req, res) {
   try {
-    const { email, otp, newPassword } = req.body
+    const { email, otp, newPassword } = req.body;
 
     if (!email || !otp || !/^\d{6}$/.test(otp)) {
-      return formatResponse(res, 400, 'Thông tin xác thực không hợp lệ.')
+      return formatResponse(res, 400, "Thông tin xác thực không hợp lệ.");
     }
-    const policyError = validatePasswordPolicy(newPassword)
+    const policyError = validatePasswordPolicy(newPassword);
     if (policyError) {
-      return formatResponse(res, 400, policyError)
+      return formatResponse(res, 400, policyError);
     }
 
-    const normalizedEmail = email.trim().toLowerCase()
-    const user = await prisma.user.findUnique({ where: { email: normalizedEmail } })
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await prisma.user.findUnique({
+      where: { email: normalizedEmail },
+    });
 
     if (!user || !user.resetOtpHash || !user.resetOtpExpires) {
-      return formatResponse(res, 400, 'Phiên xác thực không hợp lệ. Vui lòng thử lại từ đầu.')
+      return formatResponse(
+        res,
+        400,
+        "Phiên xác thực không hợp lệ. Vui lòng thử lại từ đầu.",
+      );
     }
 
     if (new Date() > user.resetOtpExpires) {
       await prisma.user.update({
         where: { id: user.id },
-        data: { resetOtpHash: null, resetOtpExpires: null, resetOtpAttempts: 0 },
-      })
-      return formatResponse(res, 400, 'Mã xác thực đã hết hạn. Vui lòng yêu cầu mã mới.')
+        data: {
+          resetOtpHash: null,
+          resetOtpExpires: null,
+          resetOtpAttempts: 0,
+        },
+      });
+      return formatResponse(
+        res,
+        400,
+        "Mã xác thực đã hết hạn. Vui lòng yêu cầu mã mới.",
+      );
     }
 
     if (user.resetOtpAttempts >= MAX_OTP_ATTEMPTS) {
       await prisma.user.update({
         where: { id: user.id },
-        data: { resetOtpHash: null, resetOtpExpires: null, resetOtpAttempts: 0 },
-      })
-      return formatResponse(res, 429, 'Phiên xác thực đã bị khóa. Vui lòng yêu cầu mã mới.')
+        data: {
+          resetOtpHash: null,
+          resetOtpExpires: null,
+          resetOtpAttempts: 0,
+        },
+      });
+      return formatResponse(
+        res,
+        429,
+        "Phiên xác thực đã bị khóa. Vui lòng yêu cầu mã mới.",
+      );
     }
 
-    const inputHash = hashOtp(otp)
+    const inputHash = hashOtp(otp);
     const isMatch = crypto.timingSafeEqual(
-      Buffer.from(inputHash, 'hex'),
-      Buffer.from(user.resetOtpHash, 'hex')
-    )
+      Buffer.from(inputHash, "hex"),
+      Buffer.from(user.resetOtpHash, "hex"),
+    );
 
     if (!isMatch) {
       await prisma.user.update({
         where: { id: user.id },
         data: { resetOtpAttempts: { increment: 1 } },
-      })
-      return formatResponse(res, 400, 'Mã xác thực không đúng.')
+      });
+      return formatResponse(res, 400, "Mã xác thực không đúng.");
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 12)
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
 
     const updateResult = await prisma.user.updateMany({
       where: { id: user.id, resetOtpHash: user.resetOtpHash },
@@ -178,22 +237,33 @@ async function resetPassword(req, res) {
         resetOtpExpires: null,
         resetOtpAttempts: 0,
       },
-    })
+    });
 
     if (updateResult.count === 0) {
-      return formatResponse(res, 400, 'Mã xác thực đã được sử dụng hoặc không còn hiệu lực. Vui lòng thử lại từ đầu.')
+      return formatResponse(
+        res,
+        400,
+        "Mã xác thực đã được sử dụng hoặc không còn hiệu lực. Vui lòng thử lại từ đầu.",
+      );
     }
 
-    await tokenService.revokeAllForUser(user.id)
+    await tokenService.revokeAllForUser(user.id);
 
-    sendPasswordChangedEmail({ to: user.email, name: user.name }).catch(err =>
-      console.error('[resetPassword] Failed to send confirmation email:', err.message)
-    )
+    sendPasswordChangedEmail({ to: user.email, name: user.name }).catch((err) =>
+      console.error(
+        "[resetPassword] Failed to send confirmation email:",
+        err.message,
+      ),
+    );
 
-    return formatResponse(res, 200, 'Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập lại.')
+    return formatResponse(
+      res,
+      200,
+      "Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập lại.",
+    );
   } catch (err) {
-    console.error('[resetPassword] Error:', err)
-    return formatResponse(res, 500, 'Đã xảy ra lỗi. Vui lòng thử lại sau.')
+    console.error("[resetPassword] Error:", err);
+    return formatResponse(res, 500, "Đã xảy ra lỗi. Vui lòng thử lại sau.");
   }
 }
 
@@ -201,4 +271,4 @@ module.exports = {
   forgotPassword,
   verifyOtp,
   resetPassword,
-}
+};

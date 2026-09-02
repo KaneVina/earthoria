@@ -10,6 +10,7 @@ import {
   Tablet,
   RotateCw,
   ArrowRight,
+  Leaf,
 } from "lucide-react";
 import "../components/assets/css/ecosystem.css";
 
@@ -18,7 +19,7 @@ const ROOT = {
   id: "earthoria",
   name: "Earthoria",
   tagline: "Hệ sinh thái giáo dục gốc",
-  logo: "/logo/logo-mau/lg-m-chinh.png",
+  logo: "/logo/logo-mau/logo-chinh.png",
   desc: "Earthoria là hệ sinh thái giáo dục gốc, kết hợp sách giấy, trí tuệ nhân tạo và công nghệ thực tế tăng cường để mở ra một cách học hoàn toàn mới cho trẻ em Việt Nam.",
   to: "/home",
   cta: "Về trang chủ",
@@ -148,24 +149,6 @@ const CYCLE_ARROWS = CYCLE.map((_, i) => {
     x: 50 + CYCLE_RADIUS * Math.cos(rad),
     y: 50 + CYCLE_RADIUS * Math.sin(rad),
     rotate,
-  };
-});
-
-/* stable ambient "constellation" particles — generated once, not on
-   every render, so the drifting background feels alive but never jitters */
-const PARTICLES = Array.from({ length: 16 }, (_, i) => {
-  const seed = i * 137.5;
-  const rand = (n) => Math.abs(Math.sin(seed * (n + 1))) % 1;
-  return {
-    id: i,
-    left: `${(rand(1) * 100).toFixed(1)}%`,
-    top: `${(rand(2) * 100).toFixed(1)}%`,
-    size: 2 + rand(3) * 3,
-    dur: 10 + rand(4) * 14,
-    delay: -rand(5) * 16,
-    dx: (rand(6) - 0.5) * 90,
-    dy: 40 + rand(7) * 90,
-    max: 0.25 + rand(8) * 0.4,
   };
 });
 
@@ -338,31 +321,15 @@ export default function Ecosystem() {
         <span className="em-aurora-blob b3" />
         <span className="em-aurora-blob b4" />
       </div>
+      <div className="em-blueprint" aria-hidden="true" />
       <div className="em-vignette" aria-hidden="true" />
       <div className="em-grain" aria-hidden="true" />
-      <div className="em-particles" aria-hidden="true">
-        {PARTICLES.map((p) => (
-          <span
-            key={p.id}
-            className="em-particle"
-            style={{
-              left: p.left,
-              top: p.top,
-              "--ps": `${p.size}px`,
-              "--pdur": `${p.dur}s`,
-              "--pdelay": `${p.delay}s`,
-              "--dx": `${p.dx}px`,
-              "--dy": `${p.dy}px`,
-              "--pmax": p.max,
-            }}
-          />
-        ))}
-      </div>
 
       {/* ── Header ─────────────────────────────────────────── */}
       <header className="em-header">
         <div className="em-eyebrow">
           <span className="em-eyebrow-line" />
+          <Leaf size={11} strokeWidth={1.6} className="em-eyebrow-mark" />
           <span className="em-eyebrow-text">Earthoria · Hệ Sinh Thái</span>
           <span className="em-eyebrow-line" />
         </div>
@@ -393,10 +360,11 @@ export default function Ecosystem() {
         </div>
 
         <div className="em-tier em-tier-branches">
-          {LEVEL1.map((branch) => (
+          {LEVEL1.map((branch, i) => (
             <div className="em-branch-col" key={branch.id}>
               <EcoNode
                 data={branch}
+                index={i + 1}
                 registerRef={registerRef}
                 expanded={expandedId === branch.id}
                 onToggle={toggle}
@@ -434,6 +402,7 @@ export default function Ecosystem() {
         <div className="em-cycle-inner">
           <div className="em-eyebrow">
             <span className="em-eyebrow-line" />
+            <Leaf size={11} strokeWidth={1.6} className="em-eyebrow-mark" />
             <span className="em-eyebrow-text">Vòng Tuần Hoàn Trải Nghiệm</span>
             <span className="em-eyebrow-line" />
           </div>
@@ -554,34 +523,19 @@ export default function Ecosystem() {
   );
 }
 
-function EcoNode({ data, isRoot, leaf, registerRef, expanded, onToggle, revealed }) {
-  const Icon = data.icon;
+const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII"];
 
-  const handleMouseMove = (e) => {
-    const el = e.currentTarget;
-    const rect = el.getBoundingClientRect();
-    const px = (e.clientX - rect.left) / rect.width;
-    const py = (e.clientY - rect.top) / rect.height;
-    el.style.setProperty("--tilt-y", `${(px - 0.5) * 14}deg`);
-    el.style.setProperty("--tilt-x-mouse", `${(0.5 - py) * 10}deg`);
-    el.style.setProperty("--glare-x", `${px * 100}%`);
-    el.style.setProperty("--glare-y", `${py * 100}%`);
-  };
-  const handleMouseLeave = (e) => {
-    const el = e.currentTarget;
-    el.style.setProperty("--tilt-y", "0deg");
-    el.style.setProperty("--tilt-x-mouse", "0deg");
-  };
+function EcoNode({ data, isRoot, leaf, index, registerRef, expanded, onToggle, revealed }) {
+  const Icon = data.icon;
 
   return (
     <div
       ref={(el) => registerRef(data.id, el)}
       className={`em-node${isRoot ? " root" : ""}${leaf ? " leaf" : ""}${expanded ? " expanded" : ""}${revealed ? " in" : ""}`}
       onClick={() => onToggle(data.id)}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
     >
       <span className="em-node-status" aria-hidden="true" />
+      {index && <span className="em-node-index">{ROMAN[index - 1]}</span>}
       {data.logo ? (
         <div className="em-node-logo-wrap">
           <img src={data.logo} alt={data.name} draggable="false" />

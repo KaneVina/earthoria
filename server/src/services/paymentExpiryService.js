@@ -1,6 +1,7 @@
 const prisma = require("../config/db");
 const ORPHAN_SESSION_TTL_MS = 30 * 60 * 1000; // 30 phút
-const COD_PENDING_TTL_MS = (Number(process.env.COD_PENDING_TTL_HOURS) || 24) * 60 * 60 * 1000;
+const COD_PENDING_TTL_MS =
+  (Number(process.env.COD_PENDING_TTL_HOURS) || 24) * 60 * 60 * 1000;
 const BATCH_SIZE = 200;
 
 async function expireOneOrder(order, reason) {
@@ -25,7 +26,10 @@ async function expireOneOrder(order, reason) {
       if (item.variant.isUnlimitedStock) continue;
       await tx.bookVariant.update({
         where: { id: item.variantId },
-        data: { stock: { increment: item.quantity }, sold: { decrement: item.quantity } },
+        data: {
+          stock: { increment: item.quantity },
+          sold: { decrement: item.quantity },
+        },
       });
     }
 
@@ -74,7 +78,8 @@ async function expireStalePaymentSessions() {
       OR: [
         {
           paymentMethod: { in: ["VNPAY", "MOMO", "BANKQR"] },
-          paymentStatus: "UNPAID",          OR: [
+          paymentStatus: "UNPAID",
+          OR: [
             { paymentSessionExpiresAt: { lt: now } },
             { paymentSessionExpiresAt: null, createdAt: { lt: orphanCutoff } },
           ],
@@ -98,8 +103,8 @@ async function expireStalePaymentSessions() {
         order.paymentMethod === "COD"
           ? "cod_stale"
           : order.paymentSessionExpiresAt
-          ? "session_expired"
-          : "orphan";
+            ? "session_expired"
+            : "orphan";
       const { expired: didExpire } = await expireOneOrder(order, reason);
       if (didExpire) expired += 1;
     } catch (err) {
@@ -114,7 +119,6 @@ async function expireStalePaymentSessions() {
 let intervalHandle = null;
 let isRunning = false;
 
-
 function startPaymentExpiryJob({ intervalMs = 60 * 1000 } = {}) {
   if (intervalHandle) return intervalHandle;
 
@@ -125,7 +129,7 @@ function startPaymentExpiryJob({ intervalMs = 60 * 1000 } = {}) {
       const { scanned, expired, failed } = await expireStalePaymentSessions();
       if (scanned > 0) {
         console.log(
-          `[paymentExpiryService] Quét ${scanned} đơn — huỷ ${expired}, lỗi ${failed}`
+          `[paymentExpiryService] Quét ${scanned} đơn — huỷ ${expired}, lỗi ${failed}`,
         );
       }
     } catch (err) {

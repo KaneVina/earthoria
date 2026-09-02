@@ -127,7 +127,11 @@ export const useCartStore = create((set, get) => ({
   clearCart: async () => {
     const prev = get().cart;
     const mySeq = get()._seq + 1;
-    set({ _seq: mySeq, cart: prev ? { ...prev, items: [], total: 0 } : prev, itemCount: 0 });
+    set({
+      _seq: mySeq,
+      cart: prev ? { ...prev, items: [], total: 0 } : prev,
+      itemCount: 0,
+    });
 
     try {
       const res = await cartService.clearCart();

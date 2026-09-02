@@ -9,7 +9,10 @@ const {
   resetPinWithOtp,
 } = require("../controllers/parentPinController");
 const { protect } = require("../middlewares/authMiddleware");
-const { parentPinLimiter, verifyOtpLimiter } = require("../middlewares/rateLimiters");
+const {
+  parentPinLimiter,
+  verifyOtpLimiter,
+} = require("../middlewares/rateLimiters");
 
 router.use(protect);
 

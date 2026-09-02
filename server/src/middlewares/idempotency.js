@@ -4,7 +4,10 @@ const prisma = require("../config/db");
 const IDEMPOTENCY_TTL_MS = 24 * 60 * 60 * 1000; // 24h
 
 function hashBody(body) {
-  return crypto.createHash("sha256").update(JSON.stringify(body || {})).digest("hex");
+  return crypto
+    .createHash("sha256")
+    .update(JSON.stringify(body || {}))
+    .digest("hex");
 }
 
 /**
@@ -15,11 +18,15 @@ const idempotency = (endpointName) => async (req, res, next) => {
   try {
     const key = req.headers["idempotency-key"];
     if (!key || typeof key !== "string") {
-      return res.status(400).json({ success: false, message: "Thiếu header Idempotency-Key" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Thiếu header Idempotency-Key" });
     }
     if (!req.user?.id) {
       // Middleware này luôn phải đứng sau `protect` — nếu chưa có user thì có gắn nhầm thứ tự route.
-      return res.status(401).json({ success: false, message: "Không có quyền truy cập" });
+      return res
+        .status(401)
+        .json({ success: false, message: "Không có quyền truy cập" });
     }
 
     const requestHash = hashBody(req.body);
@@ -27,14 +34,20 @@ const idempotency = (endpointName) => async (req, res, next) => {
 
     const existing = await prisma.paymentIdempotency.findUnique({
       where: {
-        userId_idempotencyKey_endpoint: { userId, idempotencyKey: key, endpoint: endpointName },
+        userId_idempotencyKey_endpoint: {
+          userId,
+          idempotencyKey: key,
+          endpoint: endpointName,
+        },
       },
     });
 
     if (existing) {
       if (existing.expiresAt < new Date()) {
         // Hết hạn — dọn rồi coi như key mới, không chặn request hiện tại
-        await prisma.paymentIdempotency.delete({ where: { id: existing.id } }).catch(() => {});
+        await prisma.paymentIdempotency
+          .delete({ where: { id: existing.id } })
+          .catch(() => {});
       } else if (existing.requestHash !== requestHash) {
         // Cùng key nhưng khác nội dung request — rất có thể là bug client hoặc key bị tái dùng nhầm
         return res.status(409).json({

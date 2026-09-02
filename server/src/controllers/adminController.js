@@ -942,12 +942,10 @@ Trả về JSON đúng schema:
     });
   } catch (err) {
     if (err.code === "CONFIG_MISSING") {
-      return res
-        .status(503)
-        .json({
-          success: false,
-          message: "Server chưa cấu hình GROQ_API_KEY.",
-        });
+      return res.status(503).json({
+        success: false,
+        message: "Server chưa cấu hình GROQ_API_KEY.",
+      });
     }
     console.error("[draftBookAiContent]", err);
     return res.status(500).json({
@@ -1199,10 +1197,17 @@ exports.deleteCategory = async (req, res) => {
 /* ORDERS*/
 // Payment status hiển thị ở FE dùng PENDING, nhưng DB lưu UNPAID (xem mapPaymentStatus) —
 // khi filter theo paymentStatus phải đổi ngược PENDING -> UNPAID trước khi query.
-const reverseMapPaymentStatus = (status) => (status === "PENDING" ? "UNPAID" : status);
+const reverseMapPaymentStatus = (status) =>
+  status === "PENDING" ? "UNPAID" : status;
 
 const VALID_PAYMENT_METHODS = ["COD", "VNPAY", "MOMO", "BANKQR", "STRIPE"];
-const VALID_PAYMENT_STATUSES = ["PENDING", "PAID", "FAILED", "REFUNDED", "EXPIRED"];
+const VALID_PAYMENT_STATUSES = [
+  "PENDING",
+  "PAID",
+  "FAILED",
+  "REFUNDED",
+  "EXPIRED",
+];
 
 exports.getOrders = async (req, res) => {
   try {
@@ -1214,12 +1219,14 @@ exports.getOrders = async (req, res) => {
     const paymentStatus = req.query.paymentStatus?.trim() ?? "";
     const dateFrom = req.query.dateFrom?.trim() ?? "";
     const dateTo = req.query.dateTo?.trim() ?? "";
-    const totalMin = req.query.totalMin !== undefined && req.query.totalMin !== ""
-      ? Number(req.query.totalMin)
-      : null;
-    const totalMax = req.query.totalMax !== undefined && req.query.totalMax !== ""
-      ? Number(req.query.totalMax)
-      : null;
+    const totalMin =
+      req.query.totalMin !== undefined && req.query.totalMin !== ""
+        ? Number(req.query.totalMin)
+        : null;
+    const totalMax =
+      req.query.totalMax !== undefined && req.query.totalMax !== ""
+        ? Number(req.query.totalMax)
+        : null;
     const skip = (page - 1) * limit;
 
     // Mã đơn KHÔNG phải cột lưu sẵn — sinh động từ createdAt + hash(id) (xem getOrderCode
@@ -1278,7 +1285,9 @@ exports.getOrders = async (req, res) => {
       searchConditions.push({ paymentMethod });
     }
     if (paymentStatus && VALID_PAYMENT_STATUSES.includes(paymentStatus)) {
-      searchConditions.push({ paymentStatus: reverseMapPaymentStatus(paymentStatus) });
+      searchConditions.push({
+        paymentStatus: reverseMapPaymentStatus(paymentStatus),
+      });
     }
 
     if (dateFrom || dateTo) {

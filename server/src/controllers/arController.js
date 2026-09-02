@@ -1,5 +1,8 @@
 const prisma = require("../config/db");
-const { isWithinAllowedWindow, isDailyLimitReached } = require("../utils/childPolicy");
+const {
+  isWithinAllowedWindow,
+  isDailyLimitReached,
+} = require("../utils/childPolicy");
 
 exports.getArCode = async (req, res) => {
   try {
@@ -54,7 +57,8 @@ exports.getArCode = async (req, res) => {
           return res.status(403).json({
             success: false,
             code: "DAILY_LIMIT_REACHED",
-            message: "Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!",
+            message:
+              "Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!",
           });
         }
 

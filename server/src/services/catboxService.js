@@ -9,15 +9,11 @@ async function uploadGlbFile(filePath) {
   form.append("fileToUpload", fs.createReadStream(filePath));
 
   try {
-    const { data } = await axios.post(
-      "https://catbox.moe/user/api.php",
-      form,
-      {
-        headers: form.getHeaders(),
-        maxBodyLength: Infinity,
-        maxContentLength: Infinity,
-      }
-    );
+    const { data } = await axios.post("https://catbox.moe/user/api.php", form, {
+      headers: form.getHeaders(),
+      maxBodyLength: Infinity,
+      maxContentLength: Infinity,
+    });
 
     if (typeof data !== "string" || !data.startsWith("https://")) {
       throw new Error(data);

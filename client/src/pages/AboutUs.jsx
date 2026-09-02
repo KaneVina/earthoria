@@ -1107,7 +1107,7 @@ const guides = [
                 <span
                   className="tech-editor-number"
                   id="tech-loc-counter"
-                  data-target="145596"
+                  data-target="147922 "
                 >
                   0
                 </span>
@@ -1121,7 +1121,7 @@ const guides = [
                 <span
                   className="tech-editor-number tech-editor-number--secondary"
                   id="tech-file-counter"
-                  data-target="348"
+                  data-target="346"
                 >
                   0
                 </span>

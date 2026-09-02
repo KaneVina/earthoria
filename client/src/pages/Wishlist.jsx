@@ -1,69 +1,127 @@
-import { useEffect, useState, useMemo, useRef } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState, useMemo, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
-  Heart, ShoppingCart, Trash2, ArrowRight,
-  PackageOpen, Loader2, ArrowUpDown, Share2, Check,
-  Search, X, CheckSquare, Square, AlertTriangle, ListChecks, Undo2,
-} from 'lucide-react'
-import { useWishlistStore } from '../store/wishlistStore'
-import { useCartStore } from '../store/cartStore'
-import { useAuthStore } from '../store/authStore'
-import { formatPrice, getPreferredCartFormat } from '../utils/helpers'
-import { flyToCart } from '../utils/flyToCart'
-import toast from 'react-hot-toast'
+  Heart,
+  ShoppingCart,
+  Trash2,
+  ArrowRight,
+  PackageOpen,
+  Loader2,
+  ArrowUpDown,
+  Share2,
+  Check,
+  Search,
+  X,
+  CheckSquare,
+  Square,
+  AlertTriangle,
+  ListChecks,
+  Undo2,
+} from "lucide-react";
+import { useWishlistStore } from "../store/wishlistStore";
+import { useCartStore } from "../store/cartStore";
+import { useAuthStore } from "../store/authStore";
+import { formatPrice, getPreferredCartFormat } from "../utils/helpers";
+import { flyToCart } from "../utils/flyToCart";
+import toast from "react-hot-toast";
 
-const PAGE_SIZE = 12
+const PAGE_SIZE = 12;
 
 // ─ Skeleton card
 function SkeletonCard() {
   return (
     <div className="wl-card">
-      <div className="skeleton wl-card-img-wrap" style={{ background: 'none' }} />
+      <div
+        className="skeleton wl-card-img-wrap"
+        style={{ background: "none" }}
+      />
       <div className="wl-card-body">
-        <div className="skeleton" style={{ width: '60px', height: '10px', marginBottom: '10px' }} />
-        <div className="skeleton" style={{ width: '80%', height: '20px', marginBottom: '6px' }} />
-        <div className="skeleton" style={{ width: '55%', height: '20px', marginBottom: '16px' }} />
-        <div className="skeleton" style={{ width: '100%', height: '13px', marginBottom: '6px' }} />
-        <div className="skeleton" style={{ width: '70%', height: '13px', marginBottom: '24px' }} />
-        <div style={{ display: 'flex', gap: '10px', marginTop: 'auto' }}>
-          <div className="skeleton" style={{ flex: 1, height: '44px' }} />
-          <div className="skeleton" style={{ width: '44px', height: '44px' }} />
+        <div
+          className="skeleton"
+          style={{ width: "60px", height: "10px", marginBottom: "10px" }}
+        />
+        <div
+          className="skeleton"
+          style={{ width: "80%", height: "20px", marginBottom: "6px" }}
+        />
+        <div
+          className="skeleton"
+          style={{ width: "55%", height: "20px", marginBottom: "16px" }}
+        />
+        <div
+          className="skeleton"
+          style={{ width: "100%", height: "13px", marginBottom: "6px" }}
+        />
+        <div
+          className="skeleton"
+          style={{ width: "70%", height: "13px", marginBottom: "24px" }}
+        />
+        <div style={{ display: "flex", gap: "10px", marginTop: "auto" }}>
+          <div className="skeleton" style={{ flex: 1, height: "44px" }} />
+          <div className="skeleton" style={{ width: "44px", height: "44px" }} />
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // ─ Wishlist item card ─────────────────────────────────────────────────────
-function WishlistCard({ book, onRemove, onMoveToCart, isRemoving, isMoving, justAdded, selectMode, selected, onToggleSelect }) {
-  const navigate = useNavigate()
+function WishlistCard({
+  book,
+  onRemove,
+  onMoveToCart,
+  isRemoving,
+  isMoving,
+  justAdded,
+  selectMode,
+  selected,
+  onToggleSelect,
+}) {
+  const navigate = useNavigate();
 
-  const displayPrice = book.salePrice ? formatPrice(book.salePrice) : formatPrice(book.price)
-  const originalPrice = book.salePrice && book.price > book.salePrice ? formatPrice(book.price) : null
-  const discount = originalPrice ? `-${Math.round((1 - book.salePrice / book.price) * 100)}%` : null
+  const displayPrice = book.salePrice
+    ? formatPrice(book.salePrice)
+    : formatPrice(book.price);
+  const originalPrice =
+    book.salePrice && book.price > book.salePrice
+      ? formatPrice(book.price)
+      : null;
+  const discount = originalPrice
+    ? `-${Math.round((1 - book.salePrice / book.price) * 100)}%`
+    : null;
 
   const handleCardClick = () => {
-    if (selectMode) { onToggleSelect(book.hashId); return }
-    if (book.slug && book.hashId) navigate(`/books/${book.slug}/${book.hashId}`)
-  }
+    if (selectMode) {
+      onToggleSelect(book.hashId);
+      return;
+    }
+    if (book.slug && book.hashId)
+      navigate(`/books/${book.slug}/${book.hashId}`);
+  };
 
   const handleCheckboxClick = (e) => {
-    e.stopPropagation()
-    onToggleSelect(book.hashId)
-  }
+    e.stopPropagation();
+    onToggleSelect(book.hashId);
+  };
 
   return (
-    <div className={`wl-card${isRemoving ? ' wl-card--removing' : ''}${selected ? ' wl-card--selected' : ''}`}>
+    <div
+      className={`wl-card${isRemoving ? " wl-card--removing" : ""}${selected ? " wl-card--selected" : ""}`}
+    >
       {/* Image */}
       <div className="wl-card-img-wrap" onClick={handleCardClick}>
         {selectMode && (
           <button
-            className={`wl-select-check${selected ? ' checked' : ''}`}
+            className={`wl-select-check${selected ? " checked" : ""}`}
             onClick={handleCheckboxClick}
-            aria-label={selected ? 'Bỏ chọn' : 'Chọn sản phẩm'}
+            aria-label={selected ? "Bỏ chọn" : "Chọn sản phẩm"}
             aria-pressed={selected}
           >
-            {selected ? <CheckSquare size={17} strokeWidth={1.8} /> : <Square size={17} strokeWidth={1.8} />}
+            {selected ? (
+              <CheckSquare size={17} strokeWidth={1.8} />
+            ) : (
+              <Square size={17} strokeWidth={1.8} />
+            )}
           </button>
         )}
         {book.coverImage ? (
@@ -73,8 +131,12 @@ function WishlistCard({ book, onRemove, onMoveToCart, isRemoving, isMoving, just
             <PackageOpen size={32} strokeWidth={1} color="var(--mist)" />
           </div>
         )}
-        {discount && <span className="wl-badge wl-badge--discount">{discount}</span>}
-        {book.stock === 0 && <span className="wl-badge wl-badge--out">Hết hàng</span>}
+        {discount && (
+          <span className="wl-badge wl-badge--discount">{discount}</span>
+        )}
+        {book.stock === 0 && (
+          <span className="wl-badge wl-badge--out">Hết hàng</span>
+        )}
         {book.stock > 0 && book.stock <= 5 && (
           <span className="wl-badge wl-badge--low">Còn {book.stock}</span>
         )}
@@ -82,11 +144,17 @@ function WishlistCard({ book, onRemove, onMoveToCart, isRemoving, isMoving, just
 
       {/* Body */}
       <div className="wl-card-body">
-        {book.category?.name && <span className="wl-card-cat">{book.category.name}</span>}
-        <h3 className="wl-card-title" onClick={handleCardClick}>{book.title}</h3>
+        {book.category?.name && (
+          <span className="wl-card-cat">{book.category.name}</span>
+        )}
+        <h3 className="wl-card-title" onClick={handleCardClick}>
+          {book.title}
+        </h3>
         {book.description && (
           <p className="wl-card-desc">
-            {book.description.length > 90 ? book.description.slice(0, 90) + '…' : book.description}
+            {book.description.length > 90
+              ? book.description.slice(0, 90) + "…"
+              : book.description}
           </p>
         )}
         <div className="wl-card-tags">
@@ -96,11 +164,13 @@ function WishlistCard({ book, onRemove, onMoveToCart, isRemoving, isMoving, just
         </div>
         <div className="wl-card-price-row">
           <span className="wl-card-price">{displayPrice}</span>
-          {originalPrice && <span className="wl-card-price-old">{originalPrice}</span>}
+          {originalPrice && (
+            <span className="wl-card-price-old">{originalPrice}</span>
+          )}
         </div>
         <div className="wl-card-actions">
           <button
-            className={`wl-btn-cart${justAdded ? ' wl-btn-cart--added' : ''}`}
+            className={`wl-btn-cart${justAdded ? " wl-btn-cart--added" : ""}`}
             onClick={(e) => {
               const cardImg = e.currentTarget
                 .closest(".wl-card")
@@ -109,12 +179,20 @@ function WishlistCard({ book, onRemove, onMoveToCart, isRemoving, isMoving, just
               onMoveToCart(book);
             }}
             disabled={book.stock === 0 || isMoving || justAdded}
-            title={book.stock === 0 ? 'Hết hàng' : 'Thêm vào giỏ hàng'}
+            title={book.stock === 0 ? "Hết hàng" : "Thêm vào giỏ hàng"}
           >
+            {justAdded ? (
+              <Check size={14} strokeWidth={2} />
+            ) : isMoving ? (
+              <Loader2 size={14} className="wl-spin" />
+            ) : (
+              <ShoppingCart size={14} strokeWidth={1.6} />
+            )}
             {justAdded
-              ? <Check size={14} strokeWidth={2} />
-              : isMoving ? <Loader2 size={14} className="wl-spin" /> : <ShoppingCart size={14} strokeWidth={1.6} />}
-            {justAdded ? 'Đã thêm' : book.stock === 0 ? 'Hết hàng' : 'Thêm vào giỏ'}
+              ? "Đã thêm"
+              : book.stock === 0
+                ? "Hết hàng"
+                : "Thêm vào giỏ"}
           </button>
           <button
             className="wl-btn-remove"
@@ -123,12 +201,16 @@ function WishlistCard({ book, onRemove, onMoveToCart, isRemoving, isMoving, just
             title="Xoá khỏi yêu thích"
             aria-label="Xoá khỏi yêu thích"
           >
-            {isRemoving ? <Loader2 size={14} className="wl-spin" /> : <Trash2 size={14} strokeWidth={1.6} />}
+            {isRemoving ? (
+              <Loader2 size={14} className="wl-spin" />
+            ) : (
+              <Trash2 size={14} strokeWidth={1.6} />
+            )}
           </button>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // ─ Empty state  ──
@@ -140,12 +222,14 @@ function EmptyWishlist({ filtered, onReset }) {
           <ArrowUpDown size={32} strokeWidth={1} color="var(--gold)" />
         </div>
         <h3 className="wl-empty-title">Không có sản phẩm nào</h3>
-        <p className="wl-empty-sub">Thử thay đổi bộ lọc hoặc từ khoá tìm kiếm để xem thêm sản phẩm.</p>
+        <p className="wl-empty-sub">
+          Thử thay đổi bộ lọc hoặc từ khoá tìm kiếm để xem thêm sản phẩm.
+        </p>
         <button className="wl-empty-btn wl-empty-btn--ghost" onClick={onReset}>
           Xoá bộ lọc
         </button>
       </div>
-    )
+    );
   }
   return (
     <div className="wl-empty">
@@ -161,12 +245,20 @@ function EmptyWishlist({ filtered, onReset }) {
         <ArrowRight size={14} strokeWidth={1.6} />
       </Link>
     </div>
-  )
+  );
 }
 
 // ─ Confirm dialog ─────────────────────────────────────────────────────────
-function ConfirmDialog({ open, title, message, confirmLabel, onConfirm, onCancel, loading }) {
-  if (!open) return null
+function ConfirmDialog({
+  open,
+  title,
+  message,
+  confirmLabel,
+  onConfirm,
+  onCancel,
+  loading,
+}) {
+  if (!open) return null;
   return (
     <div className="wl-modal-overlay" onClick={onCancel}>
       <div className="wl-modal" onClick={(e) => e.stopPropagation()}>
@@ -176,300 +268,381 @@ function ConfirmDialog({ open, title, message, confirmLabel, onConfirm, onCancel
         <h3 className="wl-modal-title">{title}</h3>
         <p className="wl-modal-msg">{message}</p>
         <div className="wl-modal-actions">
-          <button className="wl-modal-btn-cancel" onClick={onCancel} disabled={loading}>Huỷ</button>
-          <button className="wl-modal-btn-confirm" onClick={onConfirm} disabled={loading}>
+          <button
+            className="wl-modal-btn-cancel"
+            onClick={onCancel}
+            disabled={loading}
+          >
+            Huỷ
+          </button>
+          <button
+            className="wl-modal-btn-confirm"
+            onClick={onConfirm}
+            disabled={loading}
+          >
             {loading ? <Loader2 size={14} className="wl-spin" /> : confirmLabel}
           </button>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // ─ Page  ─────────
 const SORT_OPTIONS = [
-  { value: 'default',       label: 'Mặc định' },
-  { value: 'price-asc',     label: 'Giá: Thấp → Cao' },
-  { value: 'price-desc',    label: 'Giá: Cao → Thấp' },
-  { value: 'name-asc',      label: 'Tên: A → Z' },
-  { value: 'name-desc',     label: 'Tên: Z → A' },
-  { value: 'discount-desc', label: 'Giảm giá nhiều nhất' },
-  { value: 'stock-first',   label: 'Còn hàng trước' },
-]
+  { value: "default", label: "Mặc định" },
+  { value: "price-asc", label: "Giá: Thấp → Cao" },
+  { value: "price-desc", label: "Giá: Cao → Thấp" },
+  { value: "name-asc", label: "Tên: A → Z" },
+  { value: "name-desc", label: "Tên: Z → A" },
+  { value: "discount-desc", label: "Giảm giá nhiều nhất" },
+  { value: "stock-first", label: "Còn hàng trước" },
+];
 
 const FILTER_OPTIONS = [
-  { value: 'all',      label: 'Tất cả' },
-  { value: 'in-stock', label: 'Còn hàng' },
-  { value: 'on-sale',  label: 'Đang giảm giá' },
-  { value: 'out',      label: 'Hết hàng' },
-]
+  { value: "all", label: "Tất cả" },
+  { value: "in-stock", label: "Còn hàng" },
+  { value: "on-sale", label: "Đang giảm giá" },
+  { value: "out", label: "Hết hàng" },
+];
 
 export default function Wishlist() {
-  const navigate = useNavigate()
-  const { isAuthenticated } = useAuthStore()
-  const { items, wishlistCount, loading, fetchWishlist, toggleWishlist } = useWishlistStore()
-  const { addToCart } = useCartStore()
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuthStore();
+  const { items, wishlistCount, loading, fetchWishlist, toggleWishlist } =
+    useWishlistStore();
+  const { addToCart } = useCartStore();
 
-  const [removingIds, setRemovingIds] = useState(new Set())
-  const [movingIds,   setMovingIds]   = useState(new Set())
-  const [justAddedIds, setJustAddedIds] = useState(new Set())
-  const [sort,        setSort]        = useState('default')
-  const [filter,      setFilter]      = useState('all')
-  const [copied,      setCopied]      = useState(false)
-  const [search,      setSearch]      = useState('')
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const [removingIds, setRemovingIds] = useState(new Set());
+  const [movingIds, setMovingIds] = useState(new Set());
+  const [justAddedIds, setJustAddedIds] = useState(new Set());
+  const [sort, setSort] = useState("default");
+  const [filter, setFilter] = useState("all");
+  const [copied, setCopied] = useState(false);
+  const [search, setSearch] = useState("");
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
-  const [selectMode,  setSelectMode]  = useState(false)
-  const [selectedIds, setSelectedIds] = useState(new Set())
-  const [bulkRemoving, setBulkRemoving] = useState(false)
-  const [bulkMoving,   setBulkMoving]   = useState(false)
-  const [confirmClearAll, setConfirmClearAll] = useState(false)
-  const [clearingAll, setClearingAll] = useState(false)
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [bulkRemoving, setBulkRemoving] = useState(false);
+  const [bulkMoving, setBulkMoving] = useState(false);
+  const [confirmClearAll, setConfirmClearAll] = useState(false);
+  const [clearingAll, setClearingAll] = useState(false);
 
-  const searchInputRef = useRef(null)
+  const searchInputRef = useRef(null);
 
   useEffect(() => {
-    if (!isAuthenticated) { navigate('/login', { replace: true }); return }
-    fetchWishlist()
-  }, [isAuthenticated])
+    if (!isAuthenticated) {
+      navigate("/login", { replace: true });
+      return;
+    }
+    fetchWishlist();
+  }, [isAuthenticated]);
 
   // Scroll reveal
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('in') }),
-      { threshold: 0.08 }
-    )
-    document.querySelectorAll('.reveal').forEach((el) => observer.observe(el))
-    return () => observer.disconnect()
-  }, [items])
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) e.target.classList.add("in");
+        }),
+      { threshold: 0.08 },
+    );
+    document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [items]);
 
   // Reset pagination whenever the visible set changes shape
   useEffect(() => {
-    setVisibleCount(PAGE_SIZE)
-  }, [filter, sort, search])
+    setVisibleCount(PAGE_SIZE);
+  }, [filter, sort, search]);
 
   //  Derived list ────────────────────────────────────────────────────────
   const displayedItems = useMemo(() => {
-    let list = [...items]
+    let list = [...items];
 
     // Search
-    const q = search.trim().toLocaleLowerCase('vi')
-    if (q) list = list.filter((b) => (b.title || '').toLocaleLowerCase('vi').includes(q))
+    const q = search.trim().toLocaleLowerCase("vi");
+    if (q)
+      list = list.filter((b) =>
+        (b.title || "").toLocaleLowerCase("vi").includes(q),
+      );
 
     // Filter
-    if (filter === 'in-stock') list = list.filter((b) => b.stock > 0)
-    if (filter === 'out')      list = list.filter((b) => b.stock === 0)
-    if (filter === 'on-sale')  list = list.filter((b) => b.salePrice && b.salePrice < b.price)
+    if (filter === "in-stock") list = list.filter((b) => b.stock > 0);
+    if (filter === "out") list = list.filter((b) => b.stock === 0);
+    if (filter === "on-sale")
+      list = list.filter((b) => b.salePrice && b.salePrice < b.price);
 
     // Sort
-    if (sort === 'price-asc')
-      list.sort((a, b) => (a.salePrice || a.price) - (b.salePrice || b.price))
-    else if (sort === 'price-desc')
-      list.sort((a, b) => (b.salePrice || b.price) - (a.salePrice || a.price))
-    else if (sort === 'name-asc')
-      list.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'vi'))
-    else if (sort === 'name-desc')
-      list.sort((a, b) => (b.title || '').localeCompare(a.title || '', 'vi'))
-    else if (sort === 'discount-desc')
+    if (sort === "price-asc")
+      list.sort((a, b) => (a.salePrice || a.price) - (b.salePrice || b.price));
+    else if (sort === "price-desc")
+      list.sort((a, b) => (b.salePrice || b.price) - (a.salePrice || a.price));
+    else if (sort === "name-asc")
+      list.sort((a, b) => (a.title || "").localeCompare(b.title || "", "vi"));
+    else if (sort === "name-desc")
+      list.sort((a, b) => (b.title || "").localeCompare(a.title || "", "vi"));
+    else if (sort === "discount-desc")
       list.sort((a, b) => {
-        const da = a.salePrice && a.price ? 1 - a.salePrice / a.price : 0
-        const db = b.salePrice && b.price ? 1 - b.salePrice / b.price : 0
-        return db - da
-      })
-    else if (sort === 'stock-first')
-      list.sort((a, b) => (b.stock > 0 ? 1 : 0) - (a.stock > 0 ? 1 : 0))
+        const da = a.salePrice && a.price ? 1 - a.salePrice / a.price : 0;
+        const db = b.salePrice && b.price ? 1 - b.salePrice / b.price : 0;
+        return db - da;
+      });
+    else if (sort === "stock-first")
+      list.sort((a, b) => (b.stock > 0 ? 1 : 0) - (a.stock > 0 ? 1 : 0));
 
-    return list
-  }, [items, sort, filter, search])
+    return list;
+  }, [items, sort, filter, search]);
 
   const pagedItems = useMemo(
     () => displayedItems.slice(0, visibleCount),
-    [displayedItems, visibleCount]
-  )
+    [displayedItems, visibleCount],
+  );
 
   //  Handlers  ──
 
   // Xoá 1 item — optimistic từ store, kèm tuỳ chọn hoàn tác
   const handleRemove = async (book) => {
-    setRemovingIds((prev) => new Set(prev).add(book.hashId))
+    setRemovingIds((prev) => new Set(prev).add(book.hashId));
     try {
-      await toggleWishlist(book.slug, book.hashId)
-      setSelectedIds((prev) => { const s = new Set(prev); s.delete(book.hashId); return s })
-      const shortTitle = book.title?.length > 34 ? book.title.slice(0, 34) + '…' : book.title
-      toast((t) => (
-        <span className="wl-undo-toast">
-          <span>Đã xoá "{shortTitle}"</span>
-          <button
-            className="wl-undo-btn"
-            onClick={() => { toast.dismiss(t.id); handleUndoRemove(book) }}
-          >
-            <Undo2 size={12} strokeWidth={2} /> Hoàn tác
-          </button>
-        </span>
-      ), { duration: 4500 })
+      await toggleWishlist(book.slug, book.hashId);
+      setSelectedIds((prev) => {
+        const s = new Set(prev);
+        s.delete(book.hashId);
+        return s;
+      });
+      const shortTitle =
+        book.title?.length > 34 ? book.title.slice(0, 34) + "…" : book.title;
+      toast(
+        (t) => (
+          <span className="wl-undo-toast">
+            <span>Đã xoá "{shortTitle}"</span>
+            <button
+              className="wl-undo-btn"
+              onClick={() => {
+                toast.dismiss(t.id);
+                handleUndoRemove(book);
+              }}
+            >
+              <Undo2 size={12} strokeWidth={2} /> Hoàn tác
+            </button>
+          </span>
+        ),
+        { duration: 4500 },
+      );
     } catch {
-      toast.error('Có lỗi, vui lòng thử lại')
+      toast.error("Có lỗi, vui lòng thử lại");
     } finally {
-      setRemovingIds((prev) => { const s = new Set(prev); s.delete(book.hashId); return s })
+      setRemovingIds((prev) => {
+        const s = new Set(prev);
+        s.delete(book.hashId);
+        return s;
+      });
     }
-  }
+  };
 
   const handleUndoRemove = async (book) => {
     try {
-      await toggleWishlist(book.slug, book.hashId)
-      toast.success('Đã khôi phục sản phẩm')
+      await toggleWishlist(book.slug, book.hashId);
+      toast.success("Đã khôi phục sản phẩm");
     } catch {
-      toast.error('Không thể khôi phục, vui lòng thử lại')
+      toast.error("Không thể khôi phục, vui lòng thử lại");
     }
-  }
+  };
 
   // Thêm 1 item vào cart → hiện trạng thái "Đã thêm" trên nút → xoá khỏi wishlist → toast
   const handleMoveToCart = async (book) => {
-    if (movingIds.has(book.hashId)) return
-    setMovingIds((prev) => new Set(prev).add(book.hashId))
+    if (movingIds.has(book.hashId)) return;
+    setMovingIds((prev) => new Set(prev).add(book.hashId));
     try {
-      await addToCart(book.hashId, 1, getPreferredCartFormat(book))
-      setMovingIds((prev) => { const s = new Set(prev); s.delete(book.hashId); return s })
-      setJustAddedIds((prev) => new Set(prev).add(book.hashId))
-      setRemovingIds((prev) => new Set(prev).add(book.hashId))
-      toast.success(`Đã thêm "${book.title}" vào giỏ hàng`)
+      await addToCart(book.hashId, 1, getPreferredCartFormat(book));
+      setMovingIds((prev) => {
+        const s = new Set(prev);
+        s.delete(book.hashId);
+        return s;
+      });
+      setJustAddedIds((prev) => new Set(prev).add(book.hashId));
+      setRemovingIds((prev) => new Set(prev).add(book.hashId));
+      toast.success(`Đã thêm "${book.title}" vào giỏ hàng`);
       setTimeout(async () => {
         try {
-          await toggleWishlist(book.slug, book.hashId)
-          setSelectedIds((prev) => { const s = new Set(prev); s.delete(book.hashId); return s })
+          await toggleWishlist(book.slug, book.hashId);
+          setSelectedIds((prev) => {
+            const s = new Set(prev);
+            s.delete(book.hashId);
+            return s;
+          });
         } finally {
-          setJustAddedIds((prev) => { const s = new Set(prev); s.delete(book.hashId); return s })
-          setRemovingIds((prev) => { const s = new Set(prev); s.delete(book.hashId); return s })
+          setJustAddedIds((prev) => {
+            const s = new Set(prev);
+            s.delete(book.hashId);
+            return s;
+          });
+          setRemovingIds((prev) => {
+            const s = new Set(prev);
+            s.delete(book.hashId);
+            return s;
+          });
         }
-      }, 380)
+      }, 380);
     } catch {
-      setMovingIds((prev) => { const s = new Set(prev); s.delete(book.hashId); return s })
-      toast.error('Không thể thêm vào giỏ, vui lòng thử lại')
+      setMovingIds((prev) => {
+        const s = new Set(prev);
+        s.delete(book.hashId);
+        return s;
+      });
+      toast.error("Không thể thêm vào giỏ, vui lòng thử lại");
     }
-  }
+  };
 
   // Thêm tất cả còn hàng vào cart → xoá từng cái → toast
   const handleMoveAll = async () => {
-    const inStockItems = items.filter((b) => b.stock > 0)
-    if (inStockItems.length === 0) { toast.error('Không có sản phẩm nào còn hàng'); return }
-
-    const ids = new Set(inStockItems.map((b) => b.hashId))
-    setMovingIds(ids)
-    try {
-      await Promise.all(inStockItems.map((b) => addToCart(b.hashId, 1, getPreferredCartFormat(b))))
-      await Promise.all(inStockItems.map((b) => toggleWishlist(b.slug, b.hashId)))
-      toast.success(`Đã chuyển ${inStockItems.length} sản phẩm vào giỏ hàng`)
-      setSelectedIds(new Set())
-    } catch {
-      toast.error('Có lỗi xảy ra, vui lòng thử lại')
-    } finally {
-      setMovingIds(new Set())
+    const inStockItems = items.filter((b) => b.stock > 0);
+    if (inStockItems.length === 0) {
+      toast.error("Không có sản phẩm nào còn hàng");
+      return;
     }
-  }
+
+    const ids = new Set(inStockItems.map((b) => b.hashId));
+    setMovingIds(ids);
+    try {
+      await Promise.all(
+        inStockItems.map((b) =>
+          addToCart(b.hashId, 1, getPreferredCartFormat(b)),
+        ),
+      );
+      await Promise.all(
+        inStockItems.map((b) => toggleWishlist(b.slug, b.hashId)),
+      );
+      toast.success(`Đã chuyển ${inStockItems.length} sản phẩm vào giỏ hàng`);
+      setSelectedIds(new Set());
+    } catch {
+      toast.error("Có lỗi xảy ra, vui lòng thử lại");
+    } finally {
+      setMovingIds(new Set());
+    }
+  };
 
   // Copy link wishlist
   const handleShare = async () => {
-    const url = `${window.location.origin}/wishlist`
+    const url = `${window.location.origin}/wishlist`;
     try {
-      await navigator.clipboard.writeText(url)
-      setCopied(true)
-      toast.success('Đã sao chép link yêu thích!')
-      setTimeout(() => setCopied(false), 2000)
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      toast.success("Đã sao chép link yêu thích!");
+      setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error('Không thể sao chép, vui lòng thử lại')
+      toast.error("Không thể sao chép, vui lòng thử lại");
     }
-  }
+  };
 
   //  Selection handlers ────────────────────────────────────────────────
   const handleToggleSelectMode = () => {
-    setSelectMode((prev) => !prev)
-    setSelectedIds(new Set())
-  }
+    setSelectMode((prev) => !prev);
+    setSelectedIds(new Set());
+  };
 
   const handleToggleSelectItem = (hashId) => {
     setSelectedIds((prev) => {
-      const s = new Set(prev)
-      s.has(hashId) ? s.delete(hashId) : s.add(hashId)
-      return s
-    })
-  }
+      const s = new Set(prev);
+      s.has(hashId) ? s.delete(hashId) : s.add(hashId);
+      return s;
+    });
+  };
 
-  const isAllPagedSelected = pagedItems.length > 0 && pagedItems.every((b) => selectedIds.has(b.hashId))
+  const isAllPagedSelected =
+    pagedItems.length > 0 && pagedItems.every((b) => selectedIds.has(b.hashId));
 
   const handleToggleSelectAllVisible = () => {
     setSelectedIds((prev) => {
-      const s = new Set(prev)
+      const s = new Set(prev);
       if (isAllPagedSelected) {
-        pagedItems.forEach((b) => s.delete(b.hashId))
+        pagedItems.forEach((b) => s.delete(b.hashId));
       } else {
-        pagedItems.forEach((b) => s.add(b.hashId))
+        pagedItems.forEach((b) => s.add(b.hashId));
       }
-      return s
-    })
-  }
+      return s;
+    });
+  };
 
   const handleBulkRemove = async () => {
-    const targets = items.filter((b) => selectedIds.has(b.hashId))
-    if (targets.length === 0) return
-    setBulkRemoving(true)
+    const targets = items.filter((b) => selectedIds.has(b.hashId));
+    if (targets.length === 0) return;
+    setBulkRemoving(true);
     try {
-      await Promise.all(targets.map((b) => toggleWishlist(b.slug, b.hashId)))
-      toast.success(`Đã xoá ${targets.length} sản phẩm khỏi yêu thích`)
-      setSelectedIds(new Set())
+      await Promise.all(targets.map((b) => toggleWishlist(b.slug, b.hashId)));
+      toast.success(`Đã xoá ${targets.length} sản phẩm khỏi yêu thích`);
+      setSelectedIds(new Set());
     } catch {
-      toast.error('Có lỗi xảy ra, vui lòng thử lại')
+      toast.error("Có lỗi xảy ra, vui lòng thử lại");
     } finally {
-      setBulkRemoving(false)
+      setBulkRemoving(false);
     }
-  }
+  };
 
   const handleBulkMoveToCart = async () => {
-    const targets = items.filter((b) => selectedIds.has(b.hashId) && b.stock > 0)
-    if (targets.length === 0) { toast.error('Không có sản phẩm còn hàng trong lựa chọn'); return }
-    setBulkMoving(true)
-    try {
-      await Promise.all(targets.map((b) => addToCart(b.hashId, 1, getPreferredCartFormat(b))))
-      await Promise.all(targets.map((b) => toggleWishlist(b.slug, b.hashId)))
-      toast.success(`Đã thêm ${targets.length} sản phẩm vào giỏ hàng`)
-      setSelectedIds(new Set())
-    } catch {
-      toast.error('Có lỗi xảy ra, vui lòng thử lại')
-    } finally {
-      setBulkMoving(false)
+    const targets = items.filter(
+      (b) => selectedIds.has(b.hashId) && b.stock > 0,
+    );
+    if (targets.length === 0) {
+      toast.error("Không có sản phẩm còn hàng trong lựa chọn");
+      return;
     }
-  }
+    setBulkMoving(true);
+    try {
+      await Promise.all(
+        targets.map((b) => addToCart(b.hashId, 1, getPreferredCartFormat(b))),
+      );
+      await Promise.all(targets.map((b) => toggleWishlist(b.slug, b.hashId)));
+      toast.success(`Đã thêm ${targets.length} sản phẩm vào giỏ hàng`);
+      setSelectedIds(new Set());
+    } catch {
+      toast.error("Có lỗi xảy ra, vui lòng thử lại");
+    } finally {
+      setBulkMoving(false);
+    }
+  };
 
   const handleClearAll = async () => {
-    setClearingAll(true)
-    const ids = new Set(items.map((b) => b.hashId))
-    setRemovingIds(ids)
+    setClearingAll(true);
+    const ids = new Set(items.map((b) => b.hashId));
+    setRemovingIds(ids);
     try {
-      await Promise.all(items.map((b) => toggleWishlist(b.slug, b.hashId)))
-      toast.success('Đã xoá toàn bộ danh sách yêu thích')
-      setSelectedIds(new Set())
-      setSelectMode(false)
+      await Promise.all(items.map((b) => toggleWishlist(b.slug, b.hashId)));
+      toast.success("Đã xoá toàn bộ danh sách yêu thích");
+      setSelectedIds(new Set());
+      setSelectMode(false);
     } catch {
-      toast.error('Có lỗi xảy ra, vui lòng thử lại')
+      toast.error("Có lỗi xảy ra, vui lòng thử lại");
     } finally {
-      setRemovingIds(new Set())
-      setClearingAll(false)
-      setConfirmClearAll(false)
+      setRemovingIds(new Set());
+      setClearingAll(false);
+      setConfirmClearAll(false);
     }
-  }
+  };
 
   const handleResetFilters = () => {
-    setSearch('')
-    setFilter('all')
-    setSort('default')
-  }
+    setSearch("");
+    setFilter("all");
+    setSort("default");
+  };
 
-  const inStockCount = items.filter((b) => b.stock > 0).length
-  const totalValue   = items.reduce((sum, b) => sum + (b.salePrice || b.price || 0), 0)
-  const totalSavings = items.reduce((sum, b) => (
-    b.salePrice && b.price > b.salePrice ? sum + (b.price - b.salePrice) : sum
-  ), 0)
-  const isFiltered   = filter !== 'all' || sort !== 'default' || search.trim() !== ''
-  const selectedCount = selectedIds.size
+  const inStockCount = items.filter((b) => b.stock > 0).length;
+  const totalValue = items.reduce(
+    (sum, b) => sum + (b.salePrice || b.price || 0),
+    0,
+  );
+  const totalSavings = items.reduce(
+    (sum, b) =>
+      b.salePrice && b.price > b.salePrice
+        ? sum + (b.price - b.salePrice)
+        : sum,
+    0,
+  );
+  const isFiltered =
+    filter !== "all" || sort !== "default" || search.trim() !== "";
+  const selectedCount = selectedIds.size;
 
   return (
     <>
@@ -1077,14 +1250,19 @@ export default function Wishlist() {
           {!loading && items.length > 0 && (
             <div className="wl-header-right">
               <button
-                className={`wl-btn-share${copied ? ' copied' : ''}`}
+                className={`wl-btn-share${copied ? " copied" : ""}`}
                 onClick={handleShare}
                 title="Sao chép link wishlist"
               >
-                {copied
-                  ? <><Check size={14} strokeWidth={1.6} /> Đã sao chép</>
-                  : <><Share2 size={14} strokeWidth={1.6} /> Chia sẻ</>
-                }
+                {copied ? (
+                  <>
+                    <Check size={14} strokeWidth={1.6} /> Đã sao chép
+                  </>
+                ) : (
+                  <>
+                    <Share2 size={14} strokeWidth={1.6} /> Chia sẻ
+                  </>
+                )}
               </button>
               <button
                 className="wl-btn-clear"
@@ -1103,7 +1281,9 @@ export default function Wishlist() {
                 Thêm tất cả vào giỏ
                 <ArrowRight size={12} strokeWidth={1.6} />
               </button>
-              <Link to="/shop" className="wl-btn-shop">Tiếp tục mua sắm</Link>
+              <Link to="/shop" className="wl-btn-shop">
+                Tiếp tục mua sắm
+              </Link>
             </div>
           )}
         </header>
@@ -1115,8 +1295,14 @@ export default function Wishlist() {
           <div className="wl-summary-bar reveal">
             {[1, 2, 3].map((i) => (
               <div className="wl-summary-stat" key={i}>
-                <div className="skeleton" style={{ width: '70px', height: '9px', marginBottom: '8px' }} />
-                <div className="skeleton" style={{ width: '50px', height: '22px' }} />
+                <div
+                  className="skeleton"
+                  style={{ width: "70px", height: "9px", marginBottom: "8px" }}
+                />
+                <div
+                  className="skeleton"
+                  style={{ width: "50px", height: "22px" }}
+                />
               </div>
             ))}
           </div>
@@ -1142,7 +1328,9 @@ export default function Wishlist() {
                 <div className="wl-summary-sep" />
                 <div className="wl-summary-stat">
                   <span className="wl-summary-label">Tiết kiệm được</span>
-                  <span className="wl-summary-val wl-summary-val--gold">{formatPrice(totalSavings)}</span>
+                  <span className="wl-summary-val wl-summary-val--gold">
+                    {formatPrice(totalSavings)}
+                  </span>
                 </div>
               </>
             )}
@@ -1165,7 +1353,11 @@ export default function Wishlist() {
                 aria-label="Tìm kiếm trong danh sách yêu thích"
               />
               {search && (
-                <button className="wl-search-clear" onClick={() => setSearch('')} aria-label="Xoá tìm kiếm">
+                <button
+                  className="wl-search-clear"
+                  onClick={() => setSearch("")}
+                  aria-label="Xoá tìm kiếm"
+                >
                   <X size={13} strokeWidth={1.8} />
                 </button>
               )}
@@ -1176,7 +1368,7 @@ export default function Wishlist() {
               {FILTER_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
-                  className={`wl-filter-btn${filter === opt.value ? ' active' : ''}`}
+                  className={`wl-filter-btn${filter === opt.value ? " active" : ""}`}
                   onClick={() => setFilter(opt.value)}
                 >
                   {opt.label}
@@ -1192,17 +1384,19 @@ export default function Wishlist() {
               aria-label="Sắp xếp"
             >
               {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
               ))}
             </select>
 
             {/* Select mode toggle */}
             <button
-              className={`wl-select-toggle${selectMode ? ' active' : ''}`}
+              className={`wl-select-toggle${selectMode ? " active" : ""}`}
               onClick={handleToggleSelectMode}
             >
               <ListChecks size={14} strokeWidth={1.6} />
-              {selectMode ? 'Xong' : 'Chọn nhiều'}
+              {selectMode ? "Xong" : "Chọn nhiều"}
             </button>
 
             <div className="wl-toolbar-spacer" />
@@ -1218,22 +1412,51 @@ export default function Wishlist() {
         {/*  BULK ACTION BAR  */}
         {selectMode && selectedCount > 0 && (
           <div className="wl-bulk-bar">
-            <button className="wl-bulk-select-all" onClick={handleToggleSelectAllVisible}>
-              {isAllPagedSelected ? <CheckSquare size={16} strokeWidth={1.8} /> : <Square size={16} strokeWidth={1.8} />}
+            <button
+              className="wl-bulk-select-all"
+              onClick={handleToggleSelectAllVisible}
+            >
+              {isAllPagedSelected ? (
+                <CheckSquare size={16} strokeWidth={1.8} />
+              ) : (
+                <Square size={16} strokeWidth={1.8} />
+              )}
               Chọn tất cả trên trang
             </button>
-            <span className="wl-bulk-count">Đã chọn {selectedCount} sản phẩm</span>
+            <span className="wl-bulk-count">
+              Đã chọn {selectedCount} sản phẩm
+            </span>
             <div className="wl-bulk-spacer" />
             <div className="wl-bulk-actions">
-              <button className="wl-bulk-btn" onClick={handleBulkMoveToCart} disabled={bulkMoving || bulkRemoving}>
-                {bulkMoving ? <Loader2 size={13} className="wl-spin" /> : <ShoppingCart size={13} strokeWidth={1.8} />}
+              <button
+                className="wl-bulk-btn"
+                onClick={handleBulkMoveToCart}
+                disabled={bulkMoving || bulkRemoving}
+              >
+                {bulkMoving ? (
+                  <Loader2 size={13} className="wl-spin" />
+                ) : (
+                  <ShoppingCart size={13} strokeWidth={1.8} />
+                )}
                 Thêm vào giỏ
               </button>
-              <button className="wl-bulk-btn wl-bulk-btn--danger" onClick={handleBulkRemove} disabled={bulkMoving || bulkRemoving}>
-                {bulkRemoving ? <Loader2 size={13} className="wl-spin" /> : <Trash2 size={13} strokeWidth={1.8} />}
+              <button
+                className="wl-bulk-btn wl-bulk-btn--danger"
+                onClick={handleBulkRemove}
+                disabled={bulkMoving || bulkRemoving}
+              >
+                {bulkRemoving ? (
+                  <Loader2 size={13} className="wl-spin" />
+                ) : (
+                  <Trash2 size={13} strokeWidth={1.8} />
+                )}
                 Xoá
               </button>
-              <button className="wl-bulk-cancel" onClick={() => setSelectedIds(new Set())} aria-label="Bỏ chọn tất cả">
+              <button
+                className="wl-bulk-cancel"
+                onClick={() => setSelectedIds(new Set())}
+                aria-label="Bỏ chọn tất cả"
+              >
                 <X size={16} strokeWidth={1.8} />
               </button>
             </div>
@@ -1276,7 +1499,12 @@ export default function Wishlist() {
                   className="wl-load-more-btn"
                   onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}
                 >
-                  Xem thêm {Math.min(PAGE_SIZE, displayedItems.length - pagedItems.length)} sản phẩm
+                  Xem thêm{" "}
+                  {Math.min(
+                    PAGE_SIZE,
+                    displayedItems.length - pagedItems.length,
+                  )}{" "}
+                  sản phẩm
                 </button>
               </div>
             )}
@@ -1294,5 +1522,5 @@ export default function Wishlist() {
         loading={clearingAll}
       />
     </>
-  )
+  );
 }

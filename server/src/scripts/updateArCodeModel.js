@@ -1,35 +1,39 @@
-const prisma = require('../config/db')
+const prisma = require("../config/db");
 
 async function main() {
-  const [code, modelUrl] = process.argv.slice(2)
+  const [code, modelUrl] = process.argv.slice(2);
 
   if (!code || !modelUrl) {
-    console.error('Thiếu tham số.')
-    console.error('Dùng: node src/scripts/updateArCodeModel.js <code> <modelUrlMoi>')
-    process.exit(1)
+    console.error("Thiếu tham số.");
+    console.error(
+      "Dùng: node src/scripts/updateArCodeModel.js <code> <modelUrlMoi>",
+    );
+    process.exit(1);
   }
 
-  const existing = await prisma.arCode.findUnique({ where: { code } })
+  const existing = await prisma.arCode.findUnique({ where: { code } });
   if (!existing) {
-    console.error(`Không tìm thấy mã AR "${code}"`)
-    process.exit(1)
+    console.error(`Không tìm thấy mã AR "${code}"`);
+    process.exit(1);
   }
 
   const updated = await prisma.arCode.update({
     where: { code },
     data: { modelUrl },
-  })
+  });
 
-  console.log('Cập nhật model thành công. QR cũ vẫn dùng được, không cần in lại.')
-  console.log('  Mã (code):    ', updated.code)
-  console.log('  Model cũ:     ', existing.modelUrl)
-  console.log('  Model mới:    ', updated.modelUrl)
+  console.log(
+    "Cập nhật model thành công. QR cũ vẫn dùng được, không cần in lại.",
+  );
+  console.log("  Mã (code):    ", updated.code);
+  console.log("  Model cũ:     ", existing.modelUrl);
+  console.log("  Model mới:    ", updated.modelUrl);
 
-  await prisma.$disconnect()
+  await prisma.$disconnect();
 }
 
 main().catch(async (err) => {
-  console.error(err)
-  await prisma.$disconnect()
-  process.exit(1)
-})
+  console.error(err);
+  await prisma.$disconnect();
+  process.exit(1);
+});

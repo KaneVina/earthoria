@@ -1,4 +1,4 @@
-import { create } from 'zustand'
+import { create } from "zustand";
 
 export const useAuthStore = create((set) => ({
   user: null,
@@ -7,14 +7,19 @@ export const useAuthStore = create((set) => ({
   authChecked: false,
 
   setAuth: (user, accessToken) => {
-    set({ user, accessToken, isAuthenticated: true, authChecked: true })
+    set({ user, accessToken, isAuthenticated: true, authChecked: true });
   },
 
   setAuthChecked: () => set({ authChecked: true }),
 
   logout: () => {
-    set({ user: null, accessToken: null, isAuthenticated: false, authChecked: true })
+    set({
+      user: null,
+      accessToken: null,
+      isAuthenticated: false,
+      authChecked: true,
+    });
   },
 
   updateUser: (user) => set({ user }),
-}))
+}));

@@ -2,7 +2,11 @@ const crypto = require("crypto");
 const prisma = require("../config/db");
 const { formatResponse } = require("../utils/helpers");
 const { sendOtpEmail } = require("../services/emailService");
-const { isValidPinFormat, hashPin, verifyParentPin } = require("../utils/parentPin");
+const {
+  isValidPinFormat,
+  hashPin,
+  verifyParentPin,
+} = require("../utils/parentPin");
 
 const OTP_LENGTH = 6;
 const OTP_EXPIRY_MINUTES = 10;
@@ -73,9 +77,14 @@ const verifyPin = async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     const result = await verifyParentPin(user, req.body.pin);
     if (!result.ok) {
-      return formatResponse(res, result.code === "LOCKED_OUT" ? 429 : 400, result.message, {
-        code: result.code,
-      });
+      return formatResponse(
+        res,
+        result.code === "LOCKED_OUT" ? 429 : 400,
+        result.message,
+        {
+          code: result.code,
+        },
+      );
     }
     return formatResponse(res, 200, "Mã PIN chính xác");
   } catch (error) {
@@ -95,9 +104,14 @@ const changePin = async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     const verify = await verifyParentPin(user, oldPin);
     if (!verify.ok) {
-      return formatResponse(res, verify.code === "LOCKED_OUT" ? 429 : 400, verify.message, {
-        code: verify.code,
-      });
+      return formatResponse(
+        res,
+        verify.code === "LOCKED_OUT" ? 429 : 400,
+        verify.message,
+        {
+          code: verify.code,
+        },
+      );
     }
 
     const parentPinHash = await hashPin(newPin);
@@ -144,13 +158,18 @@ const sendForgotPinOtp = async (req, res) => {
     try {
       await sendOtpEmail({ to: user.email, name: user.name, otp });
     } catch (mailErr) {
-      console.error("[sendForgotPinOtp] Failed to send OTP email:", mailErr.message);
+      console.error(
+        "[sendForgotPinOtp] Failed to send OTP email:",
+        mailErr.message,
+      );
     }
 
     const [local, domain] = user.email.split("@");
     const masked = `${local.slice(0, 1)}•••••@${domain}`;
 
-    return formatResponse(res, 200, "Đã gửi mã OTP tới email của bạn", { maskedEmail: masked });
+    return formatResponse(res, 200, "Đã gửi mã OTP tới email của bạn", {
+      maskedEmail: masked,
+    });
   } catch (error) {
     console.error(error);
     return formatResponse(res, 500, "Lỗi server");
@@ -177,7 +196,11 @@ const resetPinWithOtp = async (req, res) => {
       return formatResponse(res, 400, "Mã OTP đã hết hạn. Vui lòng gửi lại.");
     }
     if (user.parentPinResetOtpAttempts >= MAX_OTP_ATTEMPTS) {
-      return formatResponse(res, 429, "Bạn đã nhập sai quá nhiều lần. Vui lòng gửi lại mã OTP.");
+      return formatResponse(
+        res,
+        429,
+        "Bạn đã nhập sai quá nhiều lần. Vui lòng gửi lại mã OTP.",
+      );
     }
 
     const inputHash = hashOtp(otp);
@@ -192,7 +215,11 @@ const resetPinWithOtp = async (req, res) => {
         data: { parentPinResetOtpAttempts: { increment: 1 } },
       });
       const remaining = MAX_OTP_ATTEMPTS - (user.parentPinResetOtpAttempts + 1);
-      return formatResponse(res, 400, `Mã OTP không đúng. Còn ${Math.max(0, remaining)} lần thử.`);
+      return formatResponse(
+        res,
+        400,
+        `Mã OTP không đúng. Còn ${Math.max(0, remaining)} lần thử.`,
+      );
     }
 
     const parentPinHash = await hashPin(newPin);
