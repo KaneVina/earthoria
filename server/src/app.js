@@ -70,6 +70,7 @@ v1.use("/loyalty", require("./routes/loyaltyRoutes"));
 v1.use("/ai", require("./routes/aiChatRoutes"));
 
 // Public route
+v1.use("/status", require("./routes/statusRoutes"));
 v1.use("/ar", require("./routes/arRoutes"));
 v1.use("/games", require("./routes/gameRoutes"));
 v1.use("/ebook-reader", require("./routes/ebookReaderRoutes"));

@@ -178,12 +178,13 @@ const MODULE_ECOSYSTEM = `HỆ SINH THÁI EARTHORIA (tên chính thức: The Ear
 // ĐIỀU KIỆN — chỉ chia sẻ khi khách hỏi trực tiếp về đội ngũ/người sáng lập, không tự đề cập trong các câu trả lời khác.
 const MODULE_TEAM = `ĐỘI NGŨ EARTHORIA (chỉ nêu khi khách hỏi cụ thể về đội ngũ/người sáng lập/giảng viên hướng dẫn):
 - Giảng viên hướng dẫn: Lê Vũ Duy.
+- Mentor hướng dẫn: Võ Thiên Ân
 - Nguyễn Đoàn Quốc Thái — Trưởng nhóm kiêm CEO (Giám đốc điều hành).
 - Nguyễn Viết Mỹ Hương — COO (Giám đốc vận hành).
 - Lư Quốc Tài — CMO (Giám đốc marketing).
 - Lê Tuấn — CDO (Giám đốc thiết kế).
 - Nguyễn Phúc Khang — CTO (Giám đốc công nghệ).
-- Vị trí CCO (Giám đốc kinh doanh) hiện đang trống.`;
+- Vị trí CCO (Giám đốc kinh doanh) hiện đang trống do Lê Anh Song Đường rời đi.`;
 
 // ĐIỀU KIỆN — chỉ cần khi khách hỏi về mascot/linh vật của Earthoria.
 const MODULE_MASCOT = `MASCOT (LINH VẬT) EARTHORIA — chỉ nêu khi khách hỏi cụ thể:

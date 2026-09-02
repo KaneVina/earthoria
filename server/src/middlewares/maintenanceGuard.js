@@ -11,6 +11,7 @@ const ALWAYS_ALLOWED_PREFIXES = [
   "/api/health",
   "/api/v1/payments/vnpay/ipn",
   "/api/v1/payments/momo/ipn",
+  "/api/v1/status",
 ];
 
 const maintenanceGuard = async (req, res, next) => {
