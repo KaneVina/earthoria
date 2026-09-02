@@ -52,6 +52,8 @@ const EYE_TIPS = [
 
 const BREATH_PHASES = ["Hít vào thật sâu…", "Thở ra thật chậm…"];
 const SHELF_ACCENTS = ["leaf", "sky", "berry", "sun", "grape", "coral"];
+// số cuốn tối đa hiện trong dải "Đang đọc dở"
+const MAX_RECENT_READING = 5;
 const FONT_SCALES = [
   { key: "sm", label: "Nhỏ", value: 0.88 },
   { key: "md", label: "Vừa", value: 1 },
@@ -483,37 +485,41 @@ export default function KidAccess() {
     };
   }, [token]);
 
-  //   sách bé đang đọc dở gần đây nhất (đọc từ localStorage do trang đọc
-  //   sách ghi lại), dùng để hiển thị thẻ "Đang đọc dở" kèm thanh tiến độ
-  const [readingProgress, setReadingProgress] = useState(null);
+  //   tối đa 5 cuốn sách bé đọc gần đây nhất mà vẫn còn dang dở (đọc từ
+  //   localStorage do trang đọc sách ghi lại), dùng để hiển thị dải thẻ
+  //   "Đang đọc dở" kèm thanh tiến độ cho từng cuốn
+  const [recentReadings, setRecentReadings] = useState([]);
 
   useEffect(() => {
     if (!token || books.length === 0) return;
-    const bookSlugs = new Set(books.map((b) => b.slug));
+    // map theo slug -> cuốn sách đầy đủ, để lấy được id thật (dùng tính màu
+    // tem cho khớp với màu ở kệ sách/modal) vì localStorage chỉ lưu slug
+    const bookBySlug = new Map(books.map((b) => [b.slug, b]));
 
     const loadProgress = () => {
       try {
         const raw = localStorage.getItem(`earthoria:kidReading:${token}`);
         if (!raw) {
-          setReadingProgress(null);
+          setRecentReadings([]);
           return;
         }
         const map = JSON.parse(raw);
-        const entries = Object.values(map).filter(
-          (e) =>
-            e &&
-            bookSlugs.has(e.slug) &&
-            e.totalPages > 0 &&
-            e.currentPage + 1 < e.totalPages, // chỉ tính sách chưa đọc hết
-        );
-        if (entries.length === 0) {
-          setReadingProgress(null);
-          return;
-        }
+        const entries = Object.values(map)
+          .filter(
+            (e) =>
+              e &&
+              bookBySlug.has(e.slug) &&
+              e.totalPages > 0 &&
+              e.currentPage + 1 < e.totalPages, // chỉ tính sách chưa đọc hết
+          )
+          .map((e) => ({
+            ...e,
+            bookId: bookBySlug.get(e.slug)?.id ?? e.slug,
+          }));
         entries.sort((a, b) => b.updatedAt - a.updatedAt);
-        setReadingProgress(entries[0]);
+        setRecentReadings(entries.slice(0, MAX_RECENT_READING));
       } catch {
-        setReadingProgress(null);
+        setRecentReadings([]);
       }
     };
 
@@ -527,15 +533,11 @@ export default function KidAccess() {
     };
   }, [token, books]);
 
-  const readingPercent = readingProgress
-    ? Math.min(
-        100,
-        Math.round(
-          ((readingProgress.currentPage + 1) / readingProgress.totalPages) *
-            100,
-        ),
-      )
-    : 0;
+  const readingPercentOf = (entry) =>
+    Math.min(
+      100,
+      Math.round(((entry.currentPage + 1) / entry.totalPages) * 100),
+    );
 
   const inspireLine = useMemo(
     () => INSPIRE_LINES[Math.floor(Math.random() * INSPIRE_LINES.length)],
@@ -874,8 +876,8 @@ export default function KidAccess() {
               muốn đọc tiếp nhé!
             </p>
             <span className="kid-state-stat">
-              <BookOpen size={14} /> Hôm nay bé đã đọc{" "}
-              {child.todayMinutes || 0} phút
+              <BookOpen size={14} /> Hôm nay bé đã đọc {child.todayMinutes || 0}{" "}
+              phút
             </span>
             <br />
             <Link
@@ -944,762 +946,798 @@ export default function KidAccess() {
           "--kid-font-scale": fontScale,
         }}
       >
-      <DynamicSky skyState={skyState} />
+        <DynamicSky skyState={skyState} />
 
-      <div className="kid-shell">
-        <header className={`kid-topbar${isScrolled ? " is-scrolled" : ""}`}>
-          <div className="kid-brand">
-            <div className="kid-crest-wrap">
-              {dailyLimit > 0 ? (
-                <svg
-                  className="kid-crest-countdown"
-                  viewBox="0 0 100 100"
-                  aria-hidden="true"
-                >
-                  <title>{`Còn ${crestRemainMinutes} phút đọc hôm nay`}</title>
-                  <defs>
-                    <linearGradient
-                      id="kidCountdownGrad"
-                      x1="0%"
-                      y1="0%"
-                      x2="100%"
-                      y2="100%"
-                    >
-                      <stop offset="0%" stopColor="#12A8E0" />
-                      <stop offset="55%" stopColor="#1FC2C2" />
-                      <stop offset="100%" stopColor="#FF6E93" />
-                    </linearGradient>
-                  </defs>
-                  <circle
-                    className="kid-crest-countdown-track"
-                    cx="50"
-                    cy="50"
-                    r={crestRingRadius}
-                  />
-                  <circle
-                    className={`kid-crest-countdown-fill${crestRingState ? ` ${crestRingState}` : ""}`}
-                    cx="50"
-                    cy="50"
-                    r={crestRingRadius}
-                    strokeDasharray={crestRingCirc}
-                    strokeDashoffset={crestRingOffset}
-                  />
-                </svg>
-              ) : (
-                <span className="kid-crest-ring" aria-hidden="true" />
-              )}
-              <span className="kid-crest">
-                <img
-                  src="/logo/logo-mau/lg-m-kid-studio.png"
-                  alt="Earthoria"
-                  className="kid-crest-img"
-                />
-              </span>
-            </div>
-            <div className="kid-brandtext">
-              <span className="kid-brand-word">TRANG TRẠI TRI THỨC</span>
-              <span className="kid-brand-tagline">
-                Chủ trang trại: {child.name}
-              </span>
-            </div>
-          </div>
-          <div className="kid-topbar-actions">
-            <span className="kid-live-chip">
-              <Clock size={12} />
-              <span className="kid-live-dot" />
-              <span className="kid-live-label">
-                Đang đọc · {fmtClock(sessionSeconds)}
-              </span>
-            </span>
-            <button
-              type="button"
-              className={`kid-gear-btn${isHolding ? " is-holding" : ""}`}
-              style={{ "--hold-pct": holdPct }}
-              aria-label="Giữ để mở cài đặt dành cho phụ huynh"
-              onPointerDown={startGearHold}
-              onPointerUp={cancelGearHold}
-              onPointerLeave={cancelGearHold}
-              onPointerCancel={cancelGearHold}
-              onContextMenu={(e) => e.preventDefault()}
-            >
-              <span className="kid-gear-ring" aria-hidden="true" />
-              <Settings size={17} />
-              <span className="kid-gear-hint">Giữ để mở · dành cho ba mẹ</span>
-            </button>
-          </div>
-        </header>
-
-        <section className={`kid-hero${isSearchActive ? " kid-blurred" : ""}`}>
-          <div className="kid-avatar-wrap">
-            <span className="kid-avatar-orbit" aria-hidden="true" />
-            <span className="kid-avatar-glow" />
-            <span className="kid-avatar">{child.avatarEmoji || "🦊"}</span>
-            <span className="kid-avatar-sparkles" aria-hidden="true">
-              <i>✦</i>
-              <i>✦</i>
-              <i>✦</i>
-              <i>✦</i>
-            </span>
-          </div>
-          <h1 className="kid-hero-title">
-            {timeGreeting()},{" "}
-            <span className="kid-name-highlight">{child.name}</span>!
-          </h1>
-          {/* <div className="kid-hero-bubble"> */}
-          {/* <Sparkles size={15} className="kid-hero-bubble-icon" /> */}
-          {/* <p className="kid-hero-sub">{inspireLine}</p> */}
-          {/* <span className="kid-hero-bubble-tail" aria-hidden="true" /> */}
-          {/* </div> */}
-          {Number.isFinite(child.age) && (
-            <div className="kid-hero-age">
-              <Smile size={13} /> {child.age} tuổi
-            </div>
-          )}
-        </section>
-
-        <section className="kid-search-section">
-          <div
-            className={`kid-search-wrap${isSearchActive ? " is-active" : ""}`}
-          >
-            <label
-              className={`kid-search-bar${isSearchActive ? " is-active" : ""}`}
-              htmlFor="kid-book-search"
-            >
-              <Search
-                size={19}
-                className="kid-search-icon"
-                aria-hidden="true"
-              />
-              <input
-                id="kid-book-search"
-                ref={searchInputRef}
-                type="text"
-                inputMode="search"
-                autoComplete="off"
-                className="kid-search-input"
-                placeholder="Bé muốn tìm sách gì nào?"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
-              />
-              {isSearching && (
-                <button
-                  type="button"
-                  className="kid-search-clear"
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={clearSearch}
-                  aria-label="Xoá tìm kiếm"
-                >
-                  <X size={14} />
-                </button>
-              )}
-            </label>
-
-            {isSearchActive && (
-              <div
-                className="kid-search-dropdown"
-                role="listbox"
-                onMouseDown={(e) => e.preventDefault()}
-              >
-                {!isSearching ? (
-                  <div className="kid-search-dropdown-empty">
-                    <span className="kid-search-dropdown-empty-icon">
-                      <Search size={26} />
-                    </span>
-                    <span>Gõ tên sách để bé tìm nhé</span>
-                  </div>
-                ) : isSensitiveSearch ? (
-                  <div className="kid-search-help">
-                    <img
-                      src="/ekid-help.png"
-                      alt=""
-                      className="kid-search-help-img"
-                    />
-                    <p className="kid-search-help-text">
-                      Bé không đơn độc đâu nhé. Nếu bé hoặc bạn bè đang cảm thấy
-                      buồn hay khó khăn, hãy nói chuyện với ba mẹ hoặc thầy cô
-                      để được giúp đỡ nhé.
-                    </p>
-                  </div>
-                ) : filteredBooks.length > 0 ? (
-                  <>
-                    <div className="kid-search-dropdown-head">
-                      <Sparkles size={14} />
-                      <span>
-                        {filteredBooks.length}/{books.length} cuốn tìm thấy
-                      </span>
-                    </div>
-                    <div className="kid-search-dropdown-list">
-                      {filteredBooks.map((b) => {
-                        const accent = accentForId(b.id);
-                        return (
-                          <button
-                            type="button"
-                            key={b.id}
-                            className={`kid-search-result-row kid-search-result-row--${accent}`}
-                            onClick={(e) => {
-                              spawnRipple(e);
-                              handleOpenBook(b);
-                            }}
-                          >
-                            <span className="kid-search-result-thumb">
-                              {b.coverImage ? (
-                                <img src={b.coverImage} alt="" loading="lazy" />
-                              ) : (
-                                <BookMarked size={20} />
-                              )}
-                              <span
-                                className="kid-search-result-star"
-                                aria-hidden="true"
-                              >
-                                <Star size={9} fill="currentColor" />
-                              </span>
-                            </span>
-                            <span className="kid-search-result-info">
-                              <span className="kid-search-result-title">
-                                <SearchHighlight
-                                  text={b.title}
-                                  query={searchQuery}
-                                />
-                              </span>
-                              {(b.ageMin || b.ageMax) && (
-                                <span className="kid-search-result-age">
-                                  {b.ageMin ?? "0"}–{b.ageMax ?? "17"} tuổi
-                                </span>
-                              )}
-                            </span>
-                            <ChevronRight
-                              size={18}
-                              className="kid-search-result-arrow"
-                            />
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </>
-                ) : (
-                  <div className="kid-search-dropdown-empty">
-                    <span className="kid-search-dropdown-empty-icon">
-                      <Search size={26} />
-                    </span>
-                    <span>Không tìm thấy sách nào</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </section>
-
-        <div className={`kid-blur-wrap${isSearchActive ? " kid-blurred" : ""}`}>
-          <section className="kid-stats-row">
-            <div className="kid-stat-card kid-stat-card--time">
-              <div className="kid-clock-icon">
-                <PhaseIcon phase={skyState.phase} size={18} />
-              </div>
-              <div>
-                <div className="kid-stat-label">Bây giờ là</div>
-                <div className="kid-clock-value">
-                  {fmtTimeParts(now).h}
-                  <span className="kid-clock-colon">:</span>
-                  {fmtTimeParts(now).m}
-                </div>
-                <div className="kid-clock-date">{fmtDateVi(now)}</div>
-              </div>
-            </div>
-
-            <div className="kid-stat-card kid-ring-card">
-              {dailyLimit > 0 ? (
-                <div className="kid-ring">
-                  <svg viewBox="0 0 52 52" width="52" height="52">
+        <div className="kid-shell">
+          <header className={`kid-topbar${isScrolled ? " is-scrolled" : ""}`}>
+            <div className="kid-brand">
+              <div className="kid-crest-wrap">
+                {dailyLimit > 0 ? (
+                  <svg
+                    className="kid-crest-countdown"
+                    viewBox="0 0 100 100"
+                    aria-hidden="true"
+                  >
+                    <title>{`Còn ${crestRemainMinutes} phút đọc hôm nay`}</title>
                     <defs>
                       <linearGradient
-                        id="kidRingGrad"
+                        id="kidCountdownGrad"
                         x1="0%"
                         y1="0%"
                         x2="100%"
                         y2="100%"
                       >
                         <stop offset="0%" stopColor="#12A8E0" />
+                        <stop offset="55%" stopColor="#1FC2C2" />
                         <stop offset="100%" stopColor="#FF6E93" />
                       </linearGradient>
                     </defs>
                     <circle
-                      className="kid-ring-track"
-                      cx="26"
-                      cy="26"
-                      r={ringRadius}
+                      className="kid-crest-countdown-track"
+                      cx="50"
+                      cy="50"
+                      r={crestRingRadius}
                     />
                     <circle
-                      className={`kid-ring-fill${limitReached ? " is-full" : ""}`}
-                      cx="26"
-                      cy="26"
-                      r={ringRadius}
-                      strokeDasharray={ringCirc}
-                      strokeDashoffset={ringOffset}
+                      className={`kid-crest-countdown-fill${crestRingState ? ` ${crestRingState}` : ""}`}
+                      cx="50"
+                      cy="50"
+                      r={crestRingRadius}
+                      strokeDasharray={crestRingCirc}
+                      strokeDashoffset={crestRingOffset}
                     />
                   </svg>
-                </div>
-              ) : (
-                <div className="kid-stat-icon">
-                  <Clock size={18} />
-                </div>
-              )}
-              <div>
-                <div className="kid-stat-label">Hôm nay đã đọc</div>
-                <div className="kid-stat-value">
-                  {todayMinutes} phút
-                  {dailyLimit > 0 && <small>/ {dailyLimit} phút</small>}
-                </div>
-              </div>
-            </div>
-
-            {child.allowWindowEnabled && (
-              <div className="kid-stat-card kid-stat-card--sky">
-                <div className="kid-stat-icon">
-                  {inWindow ? <Sun size={18} /> : <Moon size={18} />}
-                </div>
-                <div>
-                  <div className="kid-stat-label">Giờ được đọc</div>
-                  <div className="kid-stat-value" style={{ fontSize: 15 }}>
-                    {child.allowStart}- {child.allowEnd}
-                  </div>
-                </div>
-                <span
-                  className={`kid-stat-status ${inWindow ? "is-open" : "is-closed"}`}
-                >
-                  {inWindow ? "Đang mở" : "Ngoài giờ"}
+                ) : (
+                  <span className="kid-crest-ring" aria-hidden="true" />
+                )}
+                <span className="kid-crest">
+                  <img
+                    src="/logo/logo-mau/lg-m-kid-studio.png"
+                    alt="Earthoria"
+                    className="kid-crest-img"
+                  />
                 </span>
               </div>
-            )}
+              <div className="kid-brandtext">
+                <span className="kid-brand-word">TRANG TRẠI TRI THỨC</span>
+                <span className="kid-brand-tagline">
+                  Chủ trang trại: {child.name}
+                </span>
+              </div>
+            </div>
+            <div className="kid-topbar-actions">
+              <span className="kid-live-chip">
+                <Clock size={12} />
+                <span className="kid-live-dot" />
+                <span className="kid-live-label">
+                  Đang đọc · {fmtClock(sessionSeconds)}
+                </span>
+              </span>
+              <button
+                type="button"
+                className={`kid-gear-btn${isHolding ? " is-holding" : ""}`}
+                style={{ "--hold-pct": holdPct }}
+                aria-label="Giữ để mở cài đặt dành cho phụ huynh"
+                onPointerDown={startGearHold}
+                onPointerUp={cancelGearHold}
+                onPointerLeave={cancelGearHold}
+                onPointerCancel={cancelGearHold}
+                onContextMenu={(e) => e.preventDefault()}
+              >
+                <span className="kid-gear-ring" aria-hidden="true" />
+                <Settings size={17} />
+                <span className="kid-gear-hint">
+                  Giữ để mở · dành cho ba mẹ
+                </span>
+              </button>
+            </div>
+          </header>
 
-            {child.ruleEnabled && (
-              <div className="kid-stat-card kid-stat-card--berry">
-                <div className="kid-stat-icon">
-                  <Eye size={18} />
-                </div>
-                <div>
-                  <div className="kid-stat-label">Bảo vệ mắt</div>
-                  <div className="kid-stat-value" style={{ fontSize: 15 }}>
-                    Nghỉ mỗi {child.ruleIntervalMinutes} phút
-                  </div>
-                </div>
+          <section
+            className={`kid-hero${isSearchActive ? " kid-blurred" : ""}`}
+          >
+            <div className="kid-avatar-wrap">
+              <span className="kid-avatar-orbit" aria-hidden="true" />
+              <span className="kid-avatar-glow" />
+              <span className="kid-avatar">{child.avatarEmoji || "🦊"}</span>
+              <span className="kid-avatar-sparkles" aria-hidden="true">
+                <i>✦</i>
+                <i>✦</i>
+                <i>✦</i>
+                <i>✦</i>
+              </span>
+            </div>
+            <h1 className="kid-hero-title">
+              {timeGreeting()},{" "}
+              <span className="kid-name-highlight">{child.name}</span>!
+            </h1>
+            {/* <div className="kid-hero-bubble"> */}
+            {/* <Sparkles size={15} className="kid-hero-bubble-icon" /> */}
+            {/* <p className="kid-hero-sub">{inspireLine}</p> */}
+            {/* <span className="kid-hero-bubble-tail" aria-hidden="true" /> */}
+            {/* </div> */}
+            {Number.isFinite(child.age) && (
+              <div className="kid-hero-age">
+                <Smile size={13} /> {child.age} tuổi
               </div>
             )}
           </section>
 
-          {child.tipsEnabled && child.tipsFrequency === "open" && (
-            <div className="kid-tip-banner">
-              <span className="kid-tip-banner-icon">
-                <Lightbulb size={16} />
-              </span>
-              <span>{eyeTip}</span>
-            </div>
-          )}
-
-          {limitReached && (
-            <div className="kid-limit-banner">
-              <span className="kid-limit-banner-icon">
-                <PartyPopper size={16} />
-              </span>
-              <span>
-                Hôm nay bé đã đọc đủ giờ rồi, giỏi lắm! Mai mình đọc tiếp nhé.
-              </span>
-            </div>
-          )}
-
-          <GardenWidget token={token} slug={slug} />
-
-          {readingProgress && (
-            <section className="kid-continue">
-              <button
-                type="button"
-                className="kid-continue-card"
-                onClick={(e) => {
-                  spawnRipple(e);
-                  spawnSparkles(e, 8);
-                  handleReadNow(readingProgress);
-                }}
+          <section className="kid-search-section">
+            <div
+              className={`kid-search-wrap${isSearchActive ? " is-active" : ""}`}
+            >
+              <label
+                className={`kid-search-bar${isSearchActive ? " is-active" : ""}`}
+                htmlFor="kid-book-search"
               >
-                <div className="kid-continue-cover">
-                  {readingProgress.coverImage ? (
-                    <img
-                      src={readingProgress.coverImage}
-                      alt={readingProgress.title}
-                      loading="lazy"
-                    />
+                <Search
+                  size={19}
+                  className="kid-search-icon"
+                  aria-hidden="true"
+                />
+                <input
+                  id="kid-book-search"
+                  ref={searchInputRef}
+                  type="text"
+                  inputMode="search"
+                  autoComplete="off"
+                  className="kid-search-input"
+                  placeholder="Bé muốn tìm sách gì nào?"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setSearchFocused(true)}
+                  onBlur={() => setSearchFocused(false)}
+                />
+                {isSearching && (
+                  <button
+                    type="button"
+                    className="kid-search-clear"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={clearSearch}
+                    aria-label="Xoá tìm kiếm"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </label>
+
+              {isSearchActive && (
+                <div
+                  className="kid-search-dropdown"
+                  role="listbox"
+                  onMouseDown={(e) => e.preventDefault()}
+                >
+                  {!isSearching ? (
+                    <div className="kid-search-dropdown-empty">
+                      <span className="kid-search-dropdown-empty-icon">
+                        <Search size={26} />
+                      </span>
+                      <span>Gõ tên sách để bé tìm nhé</span>
+                    </div>
+                  ) : isSensitiveSearch ? (
+                    <div className="kid-search-help">
+                      <img
+                        src="/ekid-help.png"
+                        alt=""
+                        className="kid-search-help-img"
+                      />
+                      <p className="kid-search-help-text">
+                        Bé không đơn độc đâu nhé. Nếu bé hoặc bạn bè đang cảm
+                        thấy buồn hay khó khăn, hãy nói chuyện với ba mẹ hoặc
+                        thầy cô để được giúp đỡ nhé.
+                      </p>
+                    </div>
+                  ) : filteredBooks.length > 0 ? (
+                    <>
+                      <div className="kid-search-dropdown-head">
+                        <Sparkles size={14} />
+                        <span>
+                          {filteredBooks.length}/{books.length} cuốn tìm thấy
+                        </span>
+                      </div>
+                      <div className="kid-search-dropdown-list">
+                        {filteredBooks.map((b) => {
+                          const accent = accentForId(b.id);
+                          return (
+                            <button
+                              type="button"
+                              key={b.id}
+                              className={`kid-search-result-row kid-search-result-row--${accent}`}
+                              onClick={(e) => {
+                                spawnRipple(e);
+                                handleOpenBook(b);
+                              }}
+                            >
+                              <span className="kid-search-result-thumb">
+                                {b.coverImage ? (
+                                  <img
+                                    src={b.coverImage}
+                                    alt=""
+                                    loading="lazy"
+                                  />
+                                ) : (
+                                  <BookMarked size={20} />
+                                )}
+                                <span
+                                  className="kid-search-result-star"
+                                  aria-hidden="true"
+                                >
+                                  <Star size={9} fill="currentColor" />
+                                </span>
+                              </span>
+                              <span className="kid-search-result-info">
+                                <span className="kid-search-result-title">
+                                  <SearchHighlight
+                                    text={b.title}
+                                    query={searchQuery}
+                                  />
+                                </span>
+                                {(b.ageMin || b.ageMax) && (
+                                  <span className="kid-search-result-age">
+                                    {b.ageMin ?? "0"}–{b.ageMax ?? "17"} tuổi
+                                  </span>
+                                )}
+                              </span>
+                              <ChevronRight
+                                size={18}
+                                className="kid-search-result-arrow"
+                              />
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
                   ) : (
-                    <BookMarked size={28} />
+                    <div className="kid-search-dropdown-empty">
+                      <span className="kid-search-dropdown-empty-icon">
+                        <Search size={26} />
+                      </span>
+                      <span>Không tìm thấy sách nào</span>
+                    </div>
                   )}
                 </div>
-                <div className="kid-continue-body">
-                  <span className="kid-continue-eyebrow">
-                    <BookOpen size={14} /> Đang đọc dở
-                  </span>
-                  <div className="kid-continue-title">
-                    {readingProgress.title}
-                  </div>
-                  <div className="kid-continue-progress-track">
-                    <div
-                      className="kid-continue-progress-fill"
-                      style={{ width: `${readingPercent}%` }}
-                    />
-                  </div>
-                  <div className="kid-continue-progress-label">
-                    Trang {readingProgress.currentPage + 1}/
-                    {readingProgress.totalPages} · {readingPercent}%
-                  </div>
-                </div>
-                <span className="kid-continue-cta">
-                  Đọc tiếp <ChevronRight size={15} />
-                </span>
-              </button>
-            </section>
-          )}
-
-          <section className="kid-shelf">
-            <div className="kid-shelf-heading">
-              <div className="kid-shelf-title-wrap">
-                <span className="kid-shelf-leaf" aria-hidden="true">
-                  <BookOpen size={17} />
-                </span>
-                <h2 className="kid-shelf-title">
-                  {"Tủ sách của bé".normalize("NFC")}
-                </h2>
-              </div>
-              <span className="kid-shelf-count">{books.length} cuốn</span>
-            </div>
-
-            <div className="kid-book-grid">
-              {books.map((b, i) => {
-                const accent = SHELF_ACCENTS[i % SHELF_ACCENTS.length];
-                return (
-                  <button
-                    key={b.id}
-                    type="button"
-                    className={`kid-book-card kid-book-card--${accent}`}
-                    style={{ animationDelay: `${Math.min(i, 10) * 0.05}s` }}
-                    onMouseEnter={handleCardEnter}
-                    onMouseMove={handleCardMove}
-                    onMouseLeave={handleCardLeave}
-                    onClick={(e) => {
-                      spawnRipple(e);
-                      spawnSparkles(e, 8);
-                      handleOpenBook(b);
-                    }}
-                  >
-                    <div className="kid-book-cover">
-                      {b.coverImage ? (
-                        <img src={b.coverImage} alt={b.title} loading="lazy" />
-                      ) : (
-                        <div
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: "var(--kid-blue)",
-                            opacity: 0.45,
-                          }}
-                        >
-                          <BookMarked size={32} />
-                        </div>
-                      )}
-                      <span className="kid-book-shine" aria-hidden="true" />
-                      <span className="kid-book-stamp" aria-hidden="true">
-                        <Star size={14} fill="currentColor" />
-                      </span>
-                      {(b.ageMin || b.ageMax) && (
-                        <span className="kid-book-age">
-                          {b.ageMin ?? "0"}–{b.ageMax ?? "17"} tuổi
-                        </span>
-                      )}
-                      <span
-                        className={`kid-book-cta${limitReached ? " is-locked" : ""}`}
-                      >
-                        {limitReached ? (
-                          <>
-                            <Lock size={13} /> Hết giờ hôm nay
-                          </>
-                        ) : (
-                          <>
-                            Đọc ngay <ChevronRight size={13} />
-                          </>
-                        )}
-                      </span>
-                    </div>
-                    <div className="kid-book-info">
-                      <div className="kid-book-title">{b.title}</div>
-                    </div>
-                  </button>
-                );
-              })}
-
-              {books.length === 0 && !isSearching && (
-                <div className="kid-empty">
-                  <div className="kid-empty-icon">
-                    <BookMarked size={26} />
-                  </div>
-                  <div className="kid-empty-title">Chưa có sách nào cả</div>
-                  <p className="kid-empty-sub">
-                    Nhờ ba mẹ mua thêm sách để tủ sách của bé đầy ắp truyện hay
-                    nhé!
-                  </p>
-                </div>
               )}
             </div>
           </section>
-        </div>
 
-        <div className="kid-footer-divider" aria-hidden="true">
-          <Star size={14} fill="currentColor" />
-        </div>
-        <footer className="kid-footer">
-          <span>🌈 Earthoria — Mở sách, mở ra thế giới</span>
-          <Link to="/" className="kid-parent-link">
-            Dành cho ba mẹ
-          </Link>
-        </footer>
-      </div>
-
-      <button
-        type="button"
-        className={`kid-back-to-top${showBackToTop ? " is-visible" : ""}`}
-        onClick={handleBackToTop}
-        aria-label="Lên đầu trang"
-        aria-hidden={!showBackToTop}
-        tabIndex={showBackToTop ? 0 : -1}
-      >
-        <span className="kid-back-to-top-ring" aria-hidden="true" />
-        <ArrowUp size={22} strokeWidth={2.6} aria-hidden="true" />
-      </button>
-
-      {activeBook && (
-        <div className="kid-modal-overlay" onClick={closeModal}>
           <div
-            className={`kid-modal kid-modal--${modalAccent}`}
-            onClick={(e) => e.stopPropagation()}
+            className={`kid-blur-wrap${isSearchActive ? " kid-blurred" : ""}`}
           >
-            <div className="kid-modal-cover">
-              {activeBook.coverImage ? (
-                <img src={activeBook.coverImage} alt={activeBook.title} />
-              ) : (
-                <div className="kid-modal-cover-placeholder">
-                  <span className="kid-modal-cover-deco kid-modal-cover-deco--1">
-                    <Star size={14} fill="currentColor" />
-                  </span>
-                  <span className="kid-modal-cover-deco kid-modal-cover-deco--2">
-                    <Sparkles size={16} />
-                  </span>
-                  <span className="kid-modal-cover-deco kid-modal-cover-deco--3">
-                    <Star size={10} fill="currentColor" />
-                  </span>
-                  <span className="kid-modal-cover-icon">
-                    <BookMarked size={38} />
-                  </span>
+            <section className="kid-stats-row">
+              <div className="kid-stat-card kid-stat-card--time">
+                <div className="kid-clock-icon">
+                  <PhaseIcon phase={skyState.phase} size={18} />
                 </div>
-              )}
-              <span className="kid-modal-cover-tag">
-                <Sparkles size={12} /> Sách điện tử
-              </span>
-            </div>
-            <div className="kid-modal-body">
-              <button
-                type="button"
-                className="kid-modal-close"
-                onClick={closeModal}
-                aria-label="Đóng"
-              >
-                <X size={16} />
-              </button>
-              {(activeBook.ageMin || activeBook.ageMax) && (
-                <span className="kid-modal-age">
-                  <Smile size={12} /> Dành cho {activeBook.ageMin ?? "0"}–
-                  {activeBook.ageMax ?? "17"} tuổi
-                </span>
-              )}
-              <h3 className="kid-modal-title">{activeBook.title}</h3>
-              <p className="kid-modal-desc">
-                {`Sẵn sàng cùng ${child.name} bước vào câu chuyện điện tử này chưa nào? Chạm nút bên dưới để bắt đầu đọc nhé!`}
-              </p>
-              <div className="kid-modal-stars" aria-hidden="true">
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <Star key={i} size={15} fill="currentColor" />
-                ))}
+                <div>
+                  <div className="kid-stat-label">Bây giờ là</div>
+                  <div className="kid-clock-value">
+                    {fmtTimeParts(now).h}
+                    <span className="kid-clock-colon">:</span>
+                    {fmtTimeParts(now).m}
+                  </div>
+                  <div className="kid-clock-date">{fmtDateVi(now)}</div>
+                </div>
               </div>
-              <button
-                type="button"
-                className={`kid-btn kid-modal-cta${limitReached ? " is-disabled" : ""}`}
-                disabled={limitReached}
-                onClick={(e) => {
-                  if (limitReached) return;
-                  spawnRipple(e);
-                  spawnSparkles(e, 12);
-                  handleReadNow(activeBook);
-                }}
-              >
-                {limitReached ? (
-                  <>
-                    <Lock size={15} /> Hôm nay đã đọc đủ giờ
-                  </>
+
+              <div className="kid-stat-card kid-ring-card">
+                {dailyLimit > 0 ? (
+                  <div className="kid-ring">
+                    <svg viewBox="0 0 52 52" width="52" height="52">
+                      <defs>
+                        <linearGradient
+                          id="kidRingGrad"
+                          x1="0%"
+                          y1="0%"
+                          x2="100%"
+                          y2="100%"
+                        >
+                          <stop offset="0%" stopColor="#12A8E0" />
+                          <stop offset="100%" stopColor="#FF6E93" />
+                        </linearGradient>
+                      </defs>
+                      <circle
+                        className="kid-ring-track"
+                        cx="26"
+                        cy="26"
+                        r={ringRadius}
+                      />
+                      <circle
+                        className={`kid-ring-fill${limitReached ? " is-full" : ""}`}
+                        cx="26"
+                        cy="26"
+                        r={ringRadius}
+                        strokeDasharray={ringCirc}
+                        strokeDashoffset={ringOffset}
+                      />
+                    </svg>
+                  </div>
                 ) : (
-                  <>
-                    <BookOpen size={15} /> Đọc ngay
-                  </>
+                  <div className="kid-stat-icon">
+                    <Clock size={18} />
+                  </div>
                 )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showSettings && (
-        <div className="kid-modal-overlay" onClick={closeSettings}>
-          <div
-            className="kid-settings-panel"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="kid-settings-header">
-              <div className="kid-settings-icon">
-                <Settings size={20} />
-              </div>
-              <div>
-                <div className="kid-settings-title">Cài đặt cho ba mẹ</div>
-                <div className="kid-settings-sub">
-                  Tuỳ chỉnh nhanh cho {child.name}
+                <div>
+                  <div className="kid-stat-label">Hôm nay đã đọc</div>
+                  <div className="kid-stat-value">
+                    {todayMinutes} phút
+                    {dailyLimit > 0 && <small>/ {dailyLimit} phút</small>}
+                  </div>
                 </div>
               </div>
-              <button
-                type="button"
-                className="kid-settings-close"
-                onClick={closeSettings}
-                aria-label="Đóng"
-              >
-                <X size={16} />
-              </button>
-            </div>
 
-            <div className="kid-settings-section">
-              <div className="kid-settings-label">
-                <Type size={14} /> Cỡ chữ trên trang đọc
-              </div>
-              <div className="kid-font-options">
-                {FONT_SCALES.map((opt) => (
-                  <button
-                    key={opt.key}
-                    type="button"
-                    className={`kid-font-option${fontKey === opt.key ? " is-active" : ""}`}
-                    onClick={(e) => {
-                      setFontKey(opt.key);
-                      spawnSparkles(e, 6);
-                    }}
+              {child.allowWindowEnabled && (
+                <div className="kid-stat-card kid-stat-card--sky">
+                  <div className="kid-stat-icon">
+                    {inWindow ? <Sun size={18} /> : <Moon size={18} />}
+                  </div>
+                  <div>
+                    <div className="kid-stat-label">Giờ được đọc</div>
+                    <div className="kid-stat-value" style={{ fontSize: 15 }}>
+                      {child.allowStart}- {child.allowEnd}
+                    </div>
+                  </div>
+                  <span
+                    className={`kid-stat-status ${inWindow ? "is-open" : "is-closed"}`}
                   >
-                    <span className="kid-font-glyph">Aa</span>
-                    <span className="kid-font-option-label">{opt.label}</span>
-                  </button>
-                ))}
-              </div>
-              <div
-                className="kid-font-preview"
-                style={{ "--kid-font-scale": fontScale }}
-              >
-                Bé thích đọc sách cùng Earthoria Kid Studio!
-              </div>
-            </div>
+                    {inWindow ? "Đang mở" : "Ngoài giờ"}
+                  </span>
+                </div>
+              )}
 
-            <div className="kid-settings-divider" />
+              {child.ruleEnabled && (
+                <div className="kid-stat-card kid-stat-card--berry">
+                  <div className="kid-stat-icon">
+                    <Eye size={18} />
+                  </div>
+                  <div>
+                    <div className="kid-stat-label">Bảo vệ mắt</div>
+                    <div className="kid-stat-value" style={{ fontSize: 15 }}>
+                      Nghỉ mỗi {child.ruleIntervalMinutes} phút
+                    </div>
+                  </div>
+                </div>
+              )}
+            </section>
 
-            <div className="kid-settings-section" style={{ marginBottom: 0 }}>
-              <div className="kid-settings-label">
-                <ShieldCheck size={14} /> Quản lý nâng cao
-              </div>
-              <Link
-                to="/family"
-                className="kid-btn kid-btn--primary kid-btn--block kid-settings-cta"
-              >
-                Mở trang quản lý cho phụ huynh <ChevronRight size={16} />
-              </Link>
-            </div>
-
-            <div className="kid-settings-footnote">
-              <Heart size={13} fill="currentColor" /> Giờ đọc, giới hạn thời
-              gian và nhắc nghỉ mắt được quản lý ở đó.
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showRest && !showBreak && (
-        <div className="kid-overlay">
-          <div className="kid-overlay-card">
-            <div className="kid-breathe">
-              <span className="kid-breathe-ring" />
-              <span className="kid-breathe-ring d2" />
-              <span className="kid-breathe-ring d3" />
-              <span className="kid-breathe-core">
-                <Eye
-                  size={16}
-                  className="kid-breathe-icon"
-                  aria-hidden="true"
-                />
-                <span className="kid-breathe-count">{restLeft}</span>
-                <span className="kid-breathe-unit">giây</span>
-              </span>
-            </div>
-            <span className="kid-breathe-phase">
-              {BREATH_PHASES[breathPhase]}
-            </span>
-            <h2 className="kid-overlay-title">Cho mắt nghỉ ngơi nào!</h2>
-            <p className="kid-overlay-text">
-              Bé hãy nhìn ra xa và hít thở thật sâu trong giây lát nhé.
-            </p>
-            {showRestTip && (
-              <div className="kid-overlay-tip">
-                <Sparkles size={14} /> {eyeTip}
+            {child.tipsEnabled && child.tipsFrequency === "open" && (
+              <div className="kid-tip-banner">
+                <span className="kid-tip-banner-icon">
+                  <Lightbulb size={16} />
+                </span>
+                <span>{eyeTip}</span>
               </div>
             )}
-            <div>
-              <button
-                type="button"
-                className="kid-overlay-skip"
-                onClick={() => setShowRest(false)}
-              >
-                Đã nghỉ xong, đọc tiếp nào →
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {showBreak && (
-        <div className="kid-overlay is-break">
-          <div className="kid-overlay-card">
-            <div className="kid-breathe">
-              <span className="kid-breathe-ring" />
-              <span className="kid-breathe-ring d2" />
-              <span className="kid-breathe-ring d3" />
-              <span className="kid-breathe-core">
-                <Wind
-                  size={16}
-                  className="kid-breathe-icon"
-                  aria-hidden="true"
-                />
-                <span className="kid-breathe-count">{fmtClock(breakLeft)}</span>
-                <span className="kid-breathe-unit">còn lại</span>
-              </span>
-            </div>
-            <span className="kid-breathe-phase">
-              {BREATH_PHASES[breathPhase]}
-            </span>
-            <h2 className="kid-overlay-title">Giờ giải lao rồi!</h2>
-            <p className="kid-overlay-text">
-              Bé đã đọc miệt mài rồi đó — đứng dậy vươn vai, uống nước, rồi quay
-              lại đọc tiếp nhé!
-            </p>
+            {limitReached && (
+              <div className="kid-limit-banner">
+                <span className="kid-limit-banner-icon">
+                  <PartyPopper size={16} />
+                </span>
+                <span>
+                  Hôm nay bé đã đọc đủ giờ rồi, giỏi lắm! Mai mình đọc tiếp nhé.
+                </span>
+              </div>
+            )}
+
+            <GardenWidget token={token} slug={slug} />
+
+            {recentReadings.length > 0 && (
+              <section className="kid-continue">
+                <div className="kid-continue-heading">
+                  <span className="kid-continue-heading-title">
+                    <BookOpen size={15} /> Đang đọc dở
+                  </span>
+                  <span className="kid-continue-heading-count">
+                    {recentReadings.length} cuốn
+                  </span>
+                </div>
+                <div className="kid-continue-list">
+                  {recentReadings.map((entry) => {
+                    // màu tem theo đúng cuốn sách (giống màu ở kệ sách bên
+                    // dưới và ở modal chi tiết) để bé nhận ra ngay là sách nào
+                    const accent = accentForId(entry.bookId);
+                    const percent = readingPercentOf(entry);
+                    return (
+                      <button
+                        key={entry.slug}
+                        type="button"
+                        className={`kid-continue-card kid-continue-card--${accent}`}
+                        onClick={(e) => {
+                          spawnRipple(e);
+                          spawnSparkles(e, 8);
+                          handleReadNow(entry);
+                        }}
+                      >
+                        <div className="kid-continue-cover">
+                          {entry.coverImage ? (
+                            <img
+                              src={entry.coverImage}
+                              alt={entry.title}
+                              loading="lazy"
+                            />
+                          ) : (
+                            <BookMarked size={28} />
+                          )}
+                        </div>
+                        <div className="kid-continue-body">
+                          <div className="kid-continue-title">
+                            {entry.title}
+                          </div>
+                          <div className="kid-continue-progress-track">
+                            <div
+                              className="kid-continue-progress-fill"
+                              style={{ width: `${percent}%` }}
+                            />
+                          </div>
+                          <div className="kid-continue-progress-label">
+                            Trang {entry.currentPage + 1}/{entry.totalPages} ·{" "}
+                            {percent}%
+                          </div>
+                        </div>
+                        <span className="kid-continue-cta">
+                          Đọc tiếp <ChevronRight size={14} />
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            <section className="kid-shelf">
+              <div className="kid-shelf-heading">
+                <div className="kid-shelf-title-wrap">
+                  <span className="kid-shelf-leaf" aria-hidden="true">
+                    <BookOpen size={17} />
+                  </span>
+                  <h2 className="kid-shelf-title">
+                    {"Tủ sách của bé".normalize("NFC")}
+                  </h2>
+                </div>
+                <span className="kid-shelf-count">{books.length} cuốn</span>
+              </div>
+
+              <div className="kid-book-grid">
+                {books.map((b, i) => {
+                  // Dùng accentForId(b.id) để màu tem luôn gắn với chính cuốn
+                  // sách đó (khớp với màu ở modal chi tiết và ô tìm kiếm),
+                  // thay vì tính theo vị trí trong danh sách (dễ đổi màu khi
+                  // danh sách được lọc/sắp xếp lại).
+                  const accent = accentForId(b.id);
+                  return (
+                    <button
+                      key={b.id}
+                      type="button"
+                      className={`kid-book-card kid-book-card--${accent}`}
+                      style={{ animationDelay: `${Math.min(i, 10) * 0.05}s` }}
+                      onMouseEnter={handleCardEnter}
+                      onMouseMove={handleCardMove}
+                      onMouseLeave={handleCardLeave}
+                      onClick={(e) => {
+                        spawnRipple(e);
+                        spawnSparkles(e, 8);
+                        handleOpenBook(b);
+                      }}
+                    >
+                      <div className="kid-book-cover">
+                        {b.coverImage ? (
+                          <img
+                            src={b.coverImage}
+                            alt={b.title}
+                            loading="lazy"
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "var(--kid-blue)",
+                              opacity: 0.45,
+                            }}
+                          >
+                            <BookMarked size={32} />
+                          </div>
+                        )}
+                        <span className="kid-book-shine" aria-hidden="true" />
+                        <span className="kid-book-stamp" aria-hidden="true">
+                          <Star size={14} fill="currentColor" />
+                        </span>
+                        {(b.ageMin || b.ageMax) && (
+                          <span className="kid-book-age">
+                            {b.ageMin ?? "0"}–{b.ageMax ?? "17"} tuổi
+                          </span>
+                        )}
+                        <span
+                          className={`kid-book-cta${limitReached ? " is-locked" : ""}`}
+                        >
+                          {limitReached ? (
+                            <>
+                              <Lock size={13} /> Hết giờ hôm nay
+                            </>
+                          ) : (
+                            <>
+                              Đọc ngay <ChevronRight size={13} />
+                            </>
+                          )}
+                        </span>
+                      </div>
+                      <div className="kid-book-info">
+                        <div className="kid-book-title">{b.title}</div>
+                      </div>
+                    </button>
+                  );
+                })}
+
+                {books.length === 0 && !isSearching && (
+                  <div className="kid-empty">
+                    <div className="kid-empty-icon">
+                      <BookMarked size={26} />
+                    </div>
+                    <div className="kid-empty-title">Chưa có sách nào cả</div>
+                    <p className="kid-empty-sub">
+                      Nhờ ba mẹ mua thêm sách để tủ sách của bé đầy ắp truyện
+                      hay nhé!
+                    </p>
+                  </div>
+                )}
+              </div>
+            </section>
           </div>
+
+          <div className="kid-footer-divider" aria-hidden="true">
+            <Star size={14} fill="currentColor" />
+          </div>
+          <footer className="kid-footer">
+            <span>🌈 Earthoria — Mở sách, mở ra thế giới</span>
+            <Link to="/" className="kid-parent-link">
+              Dành cho ba mẹ
+            </Link>
+          </footer>
         </div>
-      )}
+
+        <button
+          type="button"
+          className={`kid-back-to-top${showBackToTop ? " is-visible" : ""}`}
+          onClick={handleBackToTop}
+          aria-label="Lên đầu trang"
+          aria-hidden={!showBackToTop}
+          tabIndex={showBackToTop ? 0 : -1}
+        >
+          <span className="kid-back-to-top-ring" aria-hidden="true" />
+          <ArrowUp size={22} strokeWidth={2.6} aria-hidden="true" />
+        </button>
+
+        {activeBook && (
+          <div className="kid-modal-overlay" onClick={closeModal}>
+            <div
+              className={`kid-modal kid-modal--${modalAccent}`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="kid-modal-cover">
+                {activeBook.coverImage ? (
+                  <img src={activeBook.coverImage} alt={activeBook.title} />
+                ) : (
+                  <div className="kid-modal-cover-placeholder">
+                    <span className="kid-modal-cover-deco kid-modal-cover-deco--1">
+                      <Star size={14} fill="currentColor" />
+                    </span>
+                    <span className="kid-modal-cover-deco kid-modal-cover-deco--2">
+                      <Sparkles size={16} />
+                    </span>
+                    <span className="kid-modal-cover-deco kid-modal-cover-deco--3">
+                      <Star size={10} fill="currentColor" />
+                    </span>
+                    <span className="kid-modal-cover-icon">
+                      <BookMarked size={38} />
+                    </span>
+                  </div>
+                )}
+                <span className="kid-modal-cover-tag">
+                  <Sparkles size={12} /> Sách điện tử
+                </span>
+              </div>
+              <div className="kid-modal-body">
+                <button
+                  type="button"
+                  className="kid-modal-close"
+                  onClick={closeModal}
+                  aria-label="Đóng"
+                >
+                  <X size={16} />
+                </button>
+                {(activeBook.ageMin || activeBook.ageMax) && (
+                  <span className="kid-modal-age">
+                    <Smile size={12} /> Dành cho {activeBook.ageMin ?? "0"}–
+                    {activeBook.ageMax ?? "17"} tuổi
+                  </span>
+                )}
+                <h3 className="kid-modal-title">{activeBook.title}</h3>
+                <p className="kid-modal-desc">
+                  {`Sẵn sàng cùng ${child.name} bước vào câu chuyện điện tử này chưa nào? Chạm nút bên dưới để bắt đầu đọc nhé!`}
+                </p>
+                <div className="kid-modal-stars" aria-hidden="true">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <Star key={i} size={15} fill="currentColor" />
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className={`kid-btn kid-modal-cta${limitReached ? " is-disabled" : ""}`}
+                  disabled={limitReached}
+                  onClick={(e) => {
+                    if (limitReached) return;
+                    spawnRipple(e);
+                    spawnSparkles(e, 12);
+                    handleReadNow(activeBook);
+                  }}
+                >
+                  {limitReached ? (
+                    <>
+                      <Lock size={15} /> Hôm nay đã đọc đủ giờ
+                    </>
+                  ) : (
+                    <>
+                      <BookOpen size={15} /> Đọc ngay
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showSettings && (
+          <div className="kid-modal-overlay" onClick={closeSettings}>
+            <div
+              className="kid-settings-panel"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="kid-settings-header">
+                <div className="kid-settings-icon">
+                  <Settings size={20} />
+                </div>
+                <div>
+                  <div className="kid-settings-title">Cài đặt cho ba mẹ</div>
+                  <div className="kid-settings-sub">
+                    Tuỳ chỉnh nhanh cho {child.name}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="kid-settings-close"
+                  onClick={closeSettings}
+                  aria-label="Đóng"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="kid-settings-section">
+                <div className="kid-settings-label">
+                  <Type size={14} /> Cỡ chữ trên trang đọc
+                </div>
+                <div className="kid-font-options">
+                  {FONT_SCALES.map((opt) => (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      className={`kid-font-option${fontKey === opt.key ? " is-active" : ""}`}
+                      onClick={(e) => {
+                        setFontKey(opt.key);
+                        spawnSparkles(e, 6);
+                      }}
+                    >
+                      <span className="kid-font-glyph">Aa</span>
+                      <span className="kid-font-option-label">{opt.label}</span>
+                    </button>
+                  ))}
+                </div>
+                <div
+                  className="kid-font-preview"
+                  style={{ "--kid-font-scale": fontScale }}
+                >
+                  Bé thích đọc sách cùng Earthoria Kid Studio!
+                </div>
+              </div>
+
+              <div className="kid-settings-divider" />
+
+              <div className="kid-settings-section" style={{ marginBottom: 0 }}>
+                <div className="kid-settings-label">
+                  <ShieldCheck size={14} /> Quản lý nâng cao
+                </div>
+                <Link
+                  to="/family"
+                  className="kid-btn kid-btn--primary kid-btn--block kid-settings-cta"
+                >
+                  Mở trang quản lý cho phụ huynh <ChevronRight size={16} />
+                </Link>
+              </div>
+
+              <div className="kid-settings-footnote">
+                <Heart size={13} fill="currentColor" /> Giờ đọc, giới hạn thời
+                gian và nhắc nghỉ mắt được quản lý ở đó.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showRest && !showBreak && (
+          <div className="kid-overlay">
+            <div className="kid-overlay-card">
+              <div className="kid-breathe">
+                <span className="kid-breathe-ring" />
+                <span className="kid-breathe-ring d2" />
+                <span className="kid-breathe-ring d3" />
+                <span className="kid-breathe-core">
+                  <Eye
+                    size={16}
+                    className="kid-breathe-icon"
+                    aria-hidden="true"
+                  />
+                  <span className="kid-breathe-count">{restLeft}</span>
+                  <span className="kid-breathe-unit">giây</span>
+                </span>
+              </div>
+              <span className="kid-breathe-phase">
+                {BREATH_PHASES[breathPhase]}
+              </span>
+              <h2 className="kid-overlay-title">Cho mắt nghỉ ngơi nào!</h2>
+              <p className="kid-overlay-text">
+                Bé hãy nhìn ra xa và hít thở thật sâu trong giây lát nhé.
+              </p>
+              {showRestTip && (
+                <div className="kid-overlay-tip">
+                  <Sparkles size={14} /> {eyeTip}
+                </div>
+              )}
+              <div>
+                <button
+                  type="button"
+                  className="kid-overlay-skip"
+                  onClick={() => setShowRest(false)}
+                >
+                  Đã nghỉ xong, đọc tiếp nào →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showBreak && (
+          <div className="kid-overlay is-break">
+            <div className="kid-overlay-card">
+              <div className="kid-breathe">
+                <span className="kid-breathe-ring" />
+                <span className="kid-breathe-ring d2" />
+                <span className="kid-breathe-ring d3" />
+                <span className="kid-breathe-core">
+                  <Wind
+                    size={16}
+                    className="kid-breathe-icon"
+                    aria-hidden="true"
+                  />
+                  <span className="kid-breathe-count">
+                    {fmtClock(breakLeft)}
+                  </span>
+                  <span className="kid-breathe-unit">còn lại</span>
+                </span>
+              </div>
+              <span className="kid-breathe-phase">
+                {BREATH_PHASES[breathPhase]}
+              </span>
+              <h2 className="kid-overlay-title">Giờ giải lao rồi!</h2>
+              <p className="kid-overlay-text">
+                Bé đã đọc miệt mài rồi đó — đứng dậy vươn vai, uống nước, rồi
+                quay lại đọc tiếp nhé!
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

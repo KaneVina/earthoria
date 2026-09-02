@@ -1986,9 +1986,49 @@
   background: var(--kid-white);
 }
 
-/*   ĐANG ĐỌC DỞ                      */
+/*   ĐANG ĐỌC DỞ (tối đa 5 cuốn gần đây nhất)   */
 .kid-continue {
   animation: kidFadeUp 0.8s 0.15s var(--kid-ease) both;
+}
+.kid-continue-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.kid-continue-heading-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--kid-font-body);
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--kid-blue-dark);
+}
+.kid-continue-heading-count {
+  font-family: var(--kid-font-body);
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--kid-blue-dark);
+  background: var(--kid-blue-pale);
+  border-radius: var(--kid-radius-pill);
+  padding: 6px 16px;
+}
+.kid-continue-list {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 4px;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--kid-blue-light) transparent;
 }
 .kid-continue-card {
   all: unset;
@@ -1996,13 +2036,15 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 16px;
-  width: 100%;
+  gap: 14px;
+  flex: 0 0 auto;
+  width: min(340px, 82vw);
+  scroll-snap-align: start;
   padding: 14px 18px;
   border-radius: var(--kid-radius-lg);
   background: linear-gradient(
     135deg,
-    var(--kid-blue-pale),
+    var(--card-accent-light, var(--kid-blue-pale)),
     var(--kid-white)
   );
   border: 1.5px solid var(--kid-border);
@@ -2024,8 +2066,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--kid-blue-pale);
-  color: var(--kid-blue);
+  background: var(--card-accent-light, var(--kid-blue-pale));
+  color: var(--card-accent, var(--kid-blue));
   box-shadow: var(--kid-shadow-sm);
 }
 .kid-continue-cover img {
@@ -2041,22 +2083,10 @@
   flex-direction: column;
   gap: 6px;
 }
-.kid-continue-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  width: fit-content;
-  font-family: var(--kid-font-body);
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: var(--kid-blue-dark);
-}
 .kid-continue-title {
   font-family: var(--kid-font-display);
   font-weight: 700;
-  font-size: calc(16px * var(--kid-font-scale));
+  font-size: calc(15px * var(--kid-font-scale));
   color: var(--kid-ink);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2066,18 +2096,22 @@
   width: 100%;
   height: 8px;
   border-radius: var(--kid-radius-pill);
-  background: var(--kid-blue-pale);
+  background: var(--card-accent-light, var(--kid-blue-pale));
   overflow: hidden;
 }
 .kid-continue-progress-fill {
   height: 100%;
   border-radius: var(--kid-radius-pill);
-  background: linear-gradient(90deg, var(--kid-blue), var(--kid-green));
+  background: linear-gradient(
+    90deg,
+    var(--card-accent, var(--kid-blue)),
+    var(--card-accent-dark, var(--kid-green))
+  );
   transition: width var(--kid-t-med);
 }
 .kid-continue-progress-label {
   font-family: var(--kid-font-body);
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--kid-ink-soft);
 }
@@ -2087,10 +2121,14 @@
   align-items: center;
   gap: 4px;
   font-family: var(--kid-font-body);
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 800;
   color: var(--kid-white);
-  background: var(--kid-blue);
+  background: linear-gradient(
+    135deg,
+    var(--card-accent, var(--kid-blue)),
+    var(--card-accent-dark, var(--kid-blue-dark))
+  );
   border-radius: var(--kid-radius-pill);
   padding: 9px 14px;
   white-space: nowrap;
@@ -2098,6 +2136,7 @@
 
 @media (max-width: 520px) {
   .kid-continue-card {
+    width: min(300px, 86vw);
     gap: 12px;
     padding: 12px 14px;
   }
@@ -2177,39 +2216,46 @@
 }
 
 /* mỗi "tem màu" gắn một bộ biến CSS riêng — dùng chung cho thẻ
-   sách ngoài lưới và cho modal chi tiết để cảm giác đồng nhất */
+   sách ngoài lưới, modal chi tiết, và thẻ "Đang đọc dở" để cùng
+   một cuốn sách luôn hiện cùng một màu ở mọi nơi trên trang */
 .kid-book-card--leaf,
-.kid-modal--leaf {
+.kid-modal--leaf,
+.kid-continue-card--leaf {
   --card-accent: var(--kid-green);
   --card-accent-light: var(--kid-green-light);
   --card-accent-dark: var(--kid-green-dark);
 }
 .kid-book-card--sky,
-.kid-modal--sky {
+.kid-modal--sky,
+.kid-continue-card--sky {
   --card-accent: var(--kid-blue);
   --card-accent-light: var(--kid-blue-pale);
   --card-accent-dark: var(--kid-blue-dark);
 }
 .kid-book-card--berry,
-.kid-modal--berry {
+.kid-modal--berry,
+.kid-continue-card--berry {
   --card-accent: var(--kid-pink);
   --card-accent-light: var(--kid-pink-light);
   --card-accent-dark: var(--kid-pink-dark);
 }
 .kid-book-card--sun,
-.kid-modal--sun {
+.kid-modal--sun,
+.kid-continue-card--sun {
   --card-accent: var(--kid-yellow);
   --card-accent-light: var(--kid-yellow-light);
   --card-accent-dark: var(--kid-yellow-dark);
 }
 .kid-book-card--grape,
-.kid-modal--grape {
+.kid-modal--grape,
+.kid-continue-card--grape {
   --card-accent: var(--kid-teal);
   --card-accent-light: var(--kid-teal-light);
   --card-accent-dark: var(--kid-teal-dark);
 }
 .kid-book-card--coral,
-.kid-modal--coral {
+.kid-modal--coral,
+.kid-continue-card--coral {
   --card-accent: var(--kid-orange);
   --card-accent-light: var(--kid-orange-light);
   --card-accent-dark: var(--kid-orange-dark);
@@ -3899,8 +3945,16 @@
   position: absolute;
   inset: -2px;
   background:
-    radial-gradient(120% 85% at 50% 100%, rgba(4, 28, 46, 0.16), transparent 62%),
-    radial-gradient(120% 85% at 50% 0%, rgba(255, 255, 255, 0.14), transparent 55%),
+    radial-gradient(
+      120% 85% at 50% 100%,
+      rgba(4, 28, 46, 0.16),
+      transparent 62%
+    ),
+    radial-gradient(
+      120% 85% at 50% 0%,
+      rgba(255, 255, 255, 0.14),
+      transparent 55%
+    ),
     linear-gradient(
       165deg,
       var(--curtain-s1) 0%,
@@ -3983,7 +4037,8 @@
      ngay khi từng mảng tách ra bay đi thì viền lởm chởm nhiều thuỳ này
      mới lộ ra, trông đúng là một áng mây bồng bềnh chứ không phải hình
      tròn hình học trơn tru */
-  background-image: radial-gradient(
+  background-image:
+    radial-gradient(
       46vmax 40vmax at 37% 33%,
       rgba(255, 255, 255, 0.97) 0%,
       rgba(255, 255, 255, 0.72) 55%,
