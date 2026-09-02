@@ -24,7 +24,7 @@ model User {
   role      Role     @default(CUSTOMER)
   isActive  Boolean  @default(true)
 
-  // Lý do vô hiệu hóa tài khoản (bắt buộc nhập khi khóa từ trang Admin)
+  // Lý do vô hiệu hóa tài khoản
   lockReason String?
   lockedAt   DateTime?
   lockedBy   String?
@@ -36,7 +36,7 @@ model User {
   resetOtpExpires   DateTime?
   resetOtpAttempts  Int       @default(0)
 
-  // ─ Parental PIN (bảo vệ trang Bảng điều khiển phụ huynh) ─
+  // Parental PIN (bảo vệ trang Bảng điều khiển phụ huynh)
   parentPinHash          String?
   parentPinAttempts      Int       @default(0)
   parentPinLockedUntil   DateTime?
@@ -61,7 +61,7 @@ model User {
   childAuditLogs ChildAuditLog[]
   gameResults   GameResult[]
 
-  // ─ Ticket liên hệ (Contact) ─
+  // Ticket liên hệ (Contact)
   tickets         Ticket[]      @relation("TicketRequester")
   assignedTickets Ticket[]      @relation("TicketAssignee")
   ticketReplies   TicketReply[]
@@ -86,7 +86,7 @@ enum Gender {
   OTHER
 }
 
-// ─ PENDING USER (chờ xác thực OTP khi đăng ký) ─
+//  PENDING USER (chờ xác thực OTP khi đăng ký)
 model PendingUser {
   id          String   @id @default(uuid())
   email       String   @unique
@@ -99,7 +99,7 @@ model PendingUser {
   createdAt   DateTime @default(now())
 }
 
-// ─ ADDRESS ─
+//  ADDRESS
 model Address {
   id        String  @id @default(uuid())
   userId    String
@@ -432,7 +432,6 @@ model Order {
   stripePaymentId String?
   couponCode      String?
   paymentRef      String?
-  // Mã giao dịch cổng thanh toán trả về sau khi thành công, dùng để đối soát.
   gatewayTxnId    String?
   paidAt          DateTime?
   paymentSessionExpiresAt DateTime?
@@ -510,7 +509,6 @@ enum PaymentTxnType {
 }
 
 // Lịch sử toàn bộ giao dịch/callback thanh toán — phục vụ đối soát, audit, và điều tra khi có tranh chấp.
-// Ghi cả những callback KHÔNG hợp lệ (sai chữ ký, sai TmnCode/partnerCode...) để phát hiện giả mạo.
 model PaymentTransaction {
   id               String              @id @default(uuid())
   orderId          String?
@@ -533,9 +531,6 @@ model PaymentTransaction {
   @@index([gateway, type])
 }
 
-// Dùng cho cơ chế idempotency của các endpoint tạo phiên thanh toán: 1 Idempotency-Key (do FE sinh,
-// 1 key/lần bấm) trong cùng cửa sổ thời gian chỉ được xử lý & tạo phiên gateway đúng 1 lần; các lần gọi
-// lại với cùng key (double click, FE tự retry do mất mạng...) sẽ nhận lại chính response cũ, không tạo trùng.
 model PaymentIdempotency {
   id             String   @id @default(uuid())
   userId         String

@@ -40,11 +40,7 @@ const ECOSYSTEM_LOGOS = [
 ];
 
 export default function EcosystemStrip() {
-  // 4 copies (not 2) so the track is wide enough to fully cover very wide
-  // viewports (ultrawide / large desktop monitors) before it loops. With
-  // only 2 copies, on wide screens the track could run out of logos before
-  // reaching the end of the visible area, exposing a blank/plain-background
-  // gap that looked like a broken/unloaded image.
+
   const track = [
     ...ECOSYSTEM_LOGOS,
     ...ECOSYSTEM_LOGOS,

@@ -26,10 +26,6 @@ passport.use(
           return done(null, user)
         }
 
-        // Từ đây trở đi là tạo user mới hoặc tự động link vào tài khoản có sẵn theo email —
-        // cả 2 trường hợp đều tin tưởng "email" do Google trả về là chủ sở hữu hợp lệ, nên
-        // bắt buộc Google phải xác nhận email đó đã verified. Nếu không, từ chối đăng nhập
-        // để tránh 1 email chưa xác minh tự động chiếm quyền truy cập 1 tài khoản đã tồn tại.
         if (emailVerified === false) {
           return done(new Error('Email Google chưa được xác thực.'), null)
         }

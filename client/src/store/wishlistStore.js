@@ -6,20 +6,24 @@ export const useWishlistStore = create((set, get) => ({
   wishlistCount: 0,
   loading: false,
   toggling: new Set(), // track hashId đang pending để chặn double-click
+  _seq: 0,
 
   fetchWishlist: async () => {
+    const mySeq = get()._seq + 1
+    set({ _seq: mySeq, loading: true })
     try {
-      set({ loading: true })
       const res = await wishlistService.getWishlist()
       // bookController getWishlist trả về: res.data.data = array book
       const items = res.data.data || []
+      if (get()._seq !== mySeq) return
       set({ items, wishlistCount: items.length, loading: false })
     } catch {
+      if (get()._seq !== mySeq) return
       set({ loading: false })
     }
   },
 
-  // Optimistic toggle — chặn double-click bằng toggling Set
+  // Optimistic toggle để chặn double-click bằng toggling Set
   toggleWishlist: async (slug, hashId) => {
     const { toggling, items } = get()
 
@@ -38,18 +42,24 @@ export const useWishlistStore = create((set, get) => ({
       ? items.filter((b) => b.hashId !== hashId)
       : [...items, { hashId, slug }] // placeholder, sẽ sync sau
 
-    set({ items: newItems, wishlistCount: newItems.length })
+    const mySeq = get()._seq + 1
+    set({ _seq: mySeq, items: newItems, wishlistCount: newItems.length })
 
     try {
       await wishlistService.toggleWishlist(slug, hashId)
       // Sync để lấy full book data từ server
       const res = await wishlistService.getWishlist()
       const synced = res.data.data || []
-      set({ items: synced, wishlistCount: synced.length })
+      if (get()._seq === mySeq) {
+        set({ items: synced, wishlistCount: synced.length })
+      }
       return true
     } catch {
-      // Rollback
-      set({ items, wishlistCount: items.length })
+      // Rollback — chỉ rollback nếu vẫn là thao tác mới nhất, tránh đè lên 1 thao tác
+      // mới hơn đã chạy sau đó
+      if (get()._seq === mySeq) {
+        set({ items, wishlistCount: items.length })
+      }
       return false
     } finally {
       // Unlock

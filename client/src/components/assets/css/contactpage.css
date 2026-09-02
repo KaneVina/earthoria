@@ -1,16 +1,9 @@
-/* ═══════════════════════════════════════════════
-   ContactPage.css — Earthoria Contact Page
-   Requires CSS variables from main.css to be loaded
-   ═══════════════════════════════════════════════ */
-
 /* ─ WRAPPER ─ */
 .contact-wrapper {
   position: relative;
 }
 
-/* ═══════════════════════════════════════════════
-   PANEL 1 — INTRO (sticky hero)
-   ═══════════════════════════════════════════════ */
+    /* PANEL 1 — INTRO (sticky hero) */
 .panel-intro {
   position: sticky;
   top: 0;
@@ -211,9 +204,7 @@
   z-index: 2;
 }
 
-/* ═══════════════════════════════════════════════
-   PANEL 2 — CONTACT FORM
-   ═══════════════════════════════════════════════ */
+   /* PANEL 2 — CONTACT FORM */
 .panel-form {
   position: relative;
   background: var(--ivory);
