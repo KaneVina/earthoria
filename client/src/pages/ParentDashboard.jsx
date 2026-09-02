@@ -350,8 +350,9 @@ export default function ParentDashboard() {
   const [dashboard, setDashboard] = useState(null); // { child, todayMinutes, weeklyMinutes, sessions, auditLog }
   const [dashboardLoading, setDashboardLoading] = useState(false);
 
-  const [books, setBooks] = useState([]);
+  const [books, setBooks] = useState({ ebooks: [], physicalBooks: [] });
   const [booksLoading, setBooksLoading] = useState(false);
+  const [booksTab, setBooksTab] = useState("ebook"); // 'ebook' | 'physical'
 
   const childrenReqId = useRef(0);
   const loadChildren = useCallback(async () => {
@@ -411,7 +412,10 @@ export default function ParentDashboard() {
     try {
       const res = await childService.getBooks(childId);
       if (reqId !== booksReqId.current) return; // đã có request mới hơn, bỏ kết quả cũ
-      setBooks(res.data.data.books);
+      setBooks({
+        ebooks: res.data.data.ebooks ?? [],
+        physicalBooks: res.data.data.physicalBooks ?? [],
+      });
     } catch (err) {
       // Im lặng: không để lỗi tải sách chặn phần còn lại của dashboard
       if (reqId !== booksReqId.current) return;
@@ -435,7 +439,7 @@ export default function ParentDashboard() {
       dashboardReqId.current += 1;
       booksReqId.current += 1;
       setDashboard(null);
-      setBooks([]);
+      setBooks({ ebooks: [], physicalBooks: [] });
     }
   }, [activeChildId, loadDashboard, loadBooks]);
 
@@ -458,9 +462,10 @@ export default function ParentDashboard() {
     // — nếu không, response cũ resolve trễ hơn sẽ đè mất optimistic update này
     // và state sai sẽ ở lại luôn (không có ai fetch lại để tự sửa).
     booksReqId.current += 1;
-    setBooks((prev) =>
-      prev.map((b) => (b.id === bookId ? { ...b, visible } : b)),
-    );
+    setBooks((prev) => ({
+      ...prev,
+      ebooks: prev.ebooks.map((b) => (b.id === bookId ? { ...b, visible } : b)),
+    }));
     try {
       await childService.setBookVisibility(activeChildId, bookId, visible);
     } catch (err) {
@@ -1826,11 +1831,39 @@ export default function ParentDashboard() {
                   Sách của {activeChild.name}
                 </h2>
                 <p className="pkd-section-sub">
-                  {activeChild.name} chỉ có thể xem những sách bạn đã mua VÀ bật
-                  hiển thị ở đây. Ẩn bớt để lọc theo độ tuổi hoặc chủ đề bạn
-                  muốn con tập trung.
+                  {activeChild.name} chỉ có thể xem những{" "}
+                  <strong>sách điện tử</strong> bạn đã mua VÀ bật hiển thị ở
+                  đây. Sách giấy chỉ để bạn theo dõi, bé không đọc được trên
+                  thiết bị nên không có công tắc hiển thị.
                 </p>
               </RevealCard>
+
+              <div className="pkd-book-tabs">
+                <button
+                  type="button"
+                  className={`pkd-book-tab ${booksTab === "ebook" ? "active" : ""}`}
+                  onClick={() => setBooksTab("ebook")}
+                >
+                  Sách điện tử
+                  {books.ebooks.length > 0 && (
+                    <span className="pkd-book-tab-count">
+                      {books.ebooks.length}
+                    </span>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className={`pkd-book-tab ${booksTab === "physical" ? "active" : ""}`}
+                  onClick={() => setBooksTab("physical")}
+                >
+                  Sách giấy
+                  {books.physicalBooks.length > 0 && (
+                    <span className="pkd-book-tab-count">
+                      {books.physicalBooks.length}
+                    </span>
+                  )}
+                </button>
+              </div>
 
               <RevealCard as="div" className="pkd-card">
                 {booksLoading ? (
@@ -1840,25 +1873,71 @@ export default function ParentDashboard() {
                   >
                     <Loader2 size={20} className="pkd-spin" />
                   </div>
-                ) : books.length === 0 ? (
+                ) : booksTab === "ebook" ? (
+                  books.ebooks.length === 0 ? (
+                    <div
+                      className="pkd-empty-state"
+                      style={{ padding: "32px 0" }}
+                    >
+                      <BookMarked size={28} strokeWidth={1.2} />
+                      <p>
+                        Bạn chưa mua sách điện tử nào. Sách sau khi mua và được
+                        giao sẽ tự động xuất hiện ở đây.
+                      </p>
+                      <Link
+                        to="/products"
+                        className="pf-confirm-ok pf-btn-tactile"
+                      >
+                        Khám phá sách
+                      </Link>
+                    </div>
+                  ) : (
+                    books.ebooks.map((book) => (
+                      <div key={book.id} className="pkd-book-visible-row">
+                        <div className="pkd-book-visible-info">
+                          {book.coverImage && (
+                            <img
+                              src={book.coverImage}
+                              alt={book.title}
+                              className="pkd-book-visible-cover"
+                            />
+                          )}
+                          <div>
+                            <div className="pkd-book-visible-title">
+                              {book.title}
+                            </div>
+                            {!!(book.ageMin || book.ageMax) && (
+                              <div className="pkd-child-meta">
+                                {book.ageMin ?? 0}–{book.ageMax ?? "∞"} tuổi
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <label className="pf-switch">
+                          <input
+                            type="checkbox"
+                            checked={book.visible}
+                            onChange={(e) =>
+                              toggleBookVisibility(book.id, e.target.checked)
+                            }
+                          />
+                          <span className="pf-switch-track">
+                            <span className="pf-switch-thumb" />
+                          </span>
+                        </label>
+                      </div>
+                    ))
+                  )
+                ) : books.physicalBooks.length === 0 ? (
                   <div
                     className="pkd-empty-state"
                     style={{ padding: "32px 0" }}
                   >
                     <BookMarked size={28} strokeWidth={1.2} />
-                    <p>
-                      Bạn chưa mua sách nào. Sách sau khi mua sẽ tự động xuất
-                      hiện ở đây.
-                    </p>
-                    <Link
-                      to="/products"
-                      className="pf-confirm-ok pf-btn-tactile"
-                    >
-                      Khám phá sách
-                    </Link>
+                    <p>Bạn chưa mua sách giấy nào.</p>
                   </div>
                 ) : (
-                  books.map((book) => (
+                  books.physicalBooks.map((book) => (
                     <div key={book.id} className="pkd-book-visible-row">
                       <div className="pkd-book-visible-info">
                         {book.coverImage && (
@@ -1872,25 +1951,16 @@ export default function ParentDashboard() {
                           <div className="pkd-book-visible-title">
                             {book.title}
                           </div>
-                          {(book.ageMin || book.ageMax) && (
+                          {!!(book.ageMin || book.ageMax) && (
                             <div className="pkd-child-meta">
                               {book.ageMin ?? 0}–{book.ageMax ?? "∞"} tuổi
                             </div>
                           )}
                         </div>
                       </div>
-                      <label className="pf-switch">
-                        <input
-                          type="checkbox"
-                          checked={book.visible}
-                          onChange={(e) =>
-                            toggleBookVisibility(book.id, e.target.checked)
-                          }
-                        />
-                        <span className="pf-switch-track">
-                          <span className="pf-switch-thumb" />
-                        </span>
-                      </label>
+                      <span className="pkd-book-physical-badge">
+                        Sách giấy — chỉ để biết
+                      </span>
                     </div>
                   ))
                 )}

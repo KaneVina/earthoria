@@ -509,52 +509,63 @@ const unlockChild = async (req, res) => {
 };
 
 // GET /api/v1/children/:childId/books
-// Chỉ tính là "sách của bé" khi: variant DIGITAL, đơn đã PAID + DELIVERED/COMPLETED,
-// và sách có bản Ebook đang active — đúng bằng điều kiện mà getKidPublicBooks
-// dùng để hiển thị cho bé ở /e-kid, để /family luôn đồng bộ với kidaccess.
+// Trả về 2 nhóm tách biệt để khớp đúng bản chất từng loại:
+//  - ebooks: variant DIGITAL, đơn đã DELIVERED/COMPLETED, có bản Ebook active
+//    → đúng bằng điều kiện getKidPublicBooks dùng cho /e-kid, nên có thể bật/tắt
+//    hiển thị cho bé và /family luôn đồng bộ với kidaccess.
+//  - physicalBooks: variant PHYSICAL đã mua (mọi trạng thái đơn đã thanh toán)
+//    → chỉ để phụ huynh biết đã mua sách giấy nào, KHÔNG có công tắc hiển thị
+//    vì bé không thể đọc sách giấy trên thiết bị qua kidaccess.
 const getChildBooks = async (req, res) => {
   try {
     const child = await findOwnChild(req.user.id, req.params.childId);
     if (!child) return formatResponse(res, 404, "Không tìm thấy hồ sơ trẻ");
 
-    const digitalOrderItems = await prisma.orderItem.findMany({
-      where: {
-        variant: { format: "DIGITAL" },
-        order: {
-          userId: req.user.id,
-          paymentStatus: "PAID",
-          status: { in: ["DELIVERED", "COMPLETED"] },
-        },
-      },
-      select: {
-        variant: {
-          select: {
-            book: {
-              select: {
-                id: true,
-                title: true,
-                slug: true,
-                coverImage: true,
-                ageMin: true,
-                ageMax: true,
-              },
-            },
+    const bookSelect = {
+      id: true,
+      title: true,
+      slug: true,
+      coverImage: true,
+      ageMin: true,
+      ageMax: true,
+    };
+
+    const [digitalOrderItems, physicalOrderItems] = await Promise.all([
+      prisma.orderItem.findMany({
+        where: {
+          variant: { format: "DIGITAL" },
+          order: {
+            userId: req.user.id,
+            paymentStatus: "PAID",
+            status: { in: ["DELIVERED", "COMPLETED"] },
           },
         },
-      },
-    });
+        select: { variant: { select: { book: { select: bookSelect } } } },
+      }),
+      prisma.orderItem.findMany({
+        where: {
+          variant: { format: "PHYSICAL" },
+          order: {
+            userId: req.user.id,
+            paymentStatus: "PAID",
+            status: { in: ["CONFIRMED", "SHIPPING", "DELIVERED", "COMPLETED"] },
+          },
+        },
+        select: { variant: { select: { book: { select: bookSelect } } } },
+      }),
+    ]);
 
-    const bookMap = new Map();
+    const digitalBookMap = new Map();
     for (const item of digitalOrderItems) {
       const book = item.variant?.book;
-      if (book) bookMap.set(book.id, book);
+      if (book) digitalBookMap.set(book.id, book);
     }
 
-    const ebooks = await prisma.ebook.findMany({
-      where: { isActive: true, bookId: { in: [...bookMap.keys()] } },
+    const ebookRecords = await prisma.ebook.findMany({
+      where: { isActive: true, bookId: { in: [...digitalBookMap.keys()] } },
       select: { bookId: true },
     });
-    const ebookBookIds = new Set(ebooks.map((e) => e.bookId));
+    const ebookBookIds = new Set(ebookRecords.map((e) => e.bookId));
 
     const access = await prisma.childBookAccess.findMany({
       where: { childId: child.id, bookId: { in: [...ebookBookIds] } },
@@ -563,14 +574,21 @@ const getChildBooks = async (req, res) => {
       access.map((a) => [a.bookId, a.visible]),
     );
 
-    const books = [...bookMap.values()]
+    const ebooks = [...digitalBookMap.values()]
       .filter((book) => ebookBookIds.has(book.id))
       .map((book) => ({
         ...book,
         visible: visibilityMap[book.id] ?? true,
       }));
 
-    return formatResponse(res, 200, "OK", { books });
+    const physicalBookMap = new Map();
+    for (const item of physicalOrderItems) {
+      const book = item.variant?.book;
+      if (book) physicalBookMap.set(book.id, book);
+    }
+    const physicalBooks = [...physicalBookMap.values()];
+
+    return formatResponse(res, 200, "OK", { ebooks, physicalBooks });
   } catch (error) {
     console.error(error);
     return formatResponse(res, 500, "Lỗi server");

@@ -1934,6 +1934,63 @@
   line-height: 1.4;
 }
 
+/* ═══════════ SÁCH CỦA BÉ — tab điện tử / giấy ═══════════ */
+.pkd-book-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.pkd-book-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 0.5px solid var(--border);
+  background: transparent;
+  color: var(--ink-soft, #6b6b63);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.pkd-book-tab:hover {
+  border-color: var(--gold);
+  color: var(--forest);
+}
+.pkd-book-tab.active {
+  background: var(--forest);
+  border-color: var(--forest);
+  color: #fff;
+}
+.pkd-book-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.08);
+  color: inherit;
+  font-size: 11px;
+  font-weight: 600;
+}
+.pkd-book-tab.active .pkd-book-tab-count {
+  background: rgba(255, 255, 255, 0.22);
+}
+.pkd-book-physical-badge {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-soft, #6b6b63);
+  background: rgba(0, 0, 0, 0.05);
+  border: 0.5px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 12px;
+  white-space: nowrap;
+}
+
 /* ═══════════ CREATE CHILD WIZARD ═══════════ */
 
 /* Step 1: Email confirm box */
