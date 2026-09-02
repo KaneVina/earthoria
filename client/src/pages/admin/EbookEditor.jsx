@@ -1101,7 +1101,6 @@ export function PreviewOverlay({
   const [scale, setScale] = useState(1);
   const [zoom, setZoom] = useState(1);
   const [theme, setTheme] = useState("forest");
-  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [pageView, setPageView] = useState("single");
   const [readMode, setReadMode] = useState("off"); // "off" | "auto" | "hover"
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -1118,8 +1117,6 @@ export function PreviewOverlay({
   const autoPlay = readMode === "auto";
 
   const wrapRef = useRef(null);
-  const themeBoxRef = useRef(null);
-  const toolsBoxRef = useRef(null);
   const timeBoxRef = useRef(null);
   const activeDotRef = useRef(null);
   const bottomHideTimer = useRef(null);
@@ -1201,27 +1198,6 @@ export function PreviewOverlay({
       if (lineHoverTimer.current) clearTimeout(lineHoverTimer.current);
     };
   }, []);
-
-  useEffect(() => {
-    if (!themeMenuOpen) return;
-    const onDocClick = (e) => {
-      if (themeBoxRef.current && !themeBoxRef.current.contains(e.target))
-        setThemeMenuOpen(false);
-    };
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, [themeMenuOpen]);
-
-  // Đóng popover công cụ (hamburger) khi bấm ra ngoài
-  useEffect(() => {
-    if (!toolsOpen) return;
-    const onDocClick = (e) => {
-      if (toolsBoxRef.current && !toolsBoxRef.current.contains(e.target))
-        setToolsOpen(false);
-    };
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
-  }, [toolsOpen]);
 
   // Đóng popover giờ đọc còn lại khi bấm ra ngoài
   useEffect(() => {
@@ -1530,7 +1506,7 @@ export function PreviewOverlay({
           </div>
         )}
 
-        <div className="er-tool-group" ref={toolsBoxRef}>
+        <div className="er-tool-group">
           <button
             className={`er-icon-btn er-hamburger-btn ${toolsOpen ? "active" : ""}`}
             title={toolsOpen ? "Ẩn công cụ" : "Công cụ"}
@@ -1538,161 +1514,6 @@ export function PreviewOverlay({
           >
             <Menu size={18} />
           </button>
-
-          {toolsOpen && (
-            <div className="er-popover er-popover--tools">
-              <div className="er-title er-title--floating">
-                <span className="er-title-page">{pageLabel}</span>
-                {page?.title && (
-                  <span className="er-title-name">{page.title}</span>
-                )}
-              </div>
-
-              <div className="er-tools">
-                <button
-                  className={`er-tool-btn ${tocOpen ? "active" : ""}`}
-                  title="Mục lục"
-                  onClick={() => {
-                    setTocOpen((v) => !v);
-                    setInfoOpen(false);
-                  }}
-                >
-                  <List size={15} />
-                </button>
-
-                <button
-                  className={`er-tool-btn ${
-                    page && bookmarks.includes(page.id) ? "active" : ""
-                  }`}
-                  title={
-                    page && bookmarks.includes(page.id)
-                      ? "Bỏ đánh dấu trang này"
-                      : "Đánh dấu trang này"
-                  }
-                  onClick={() => page && toggleBookmark(page.id)}
-                >
-                  {page && bookmarks.includes(page.id) ? (
-                    <BookmarkCheck size={15} className="er-bookmark-pop" />
-                  ) : (
-                    <Bookmark size={15} />
-                  )}
-                </button>
-
-                <button
-                  className={`er-tool-btn ${infoOpen ? "active" : ""}`}
-                  title="Thông tin sách"
-                  onClick={() => {
-                    setInfoOpen((v) => !v);
-                    setTocOpen(false);
-                  }}
-                >
-                  <Info size={15} />
-                </button>
-
-                <div className="er-tool-group" ref={themeBoxRef}>
-                  <button
-                    className={`er-tool-btn ${themeMenuOpen ? "active" : ""}`}
-                    title="Đổi màu nền"
-                    onClick={() => setThemeMenuOpen((v) => !v)}
-                  >
-                    <Palette size={15} />
-                  </button>
-                  {themeMenuOpen && (
-                    <div className="er-popover">
-                      {Object.entries(THEMES).map(([key, t]) => (
-                        <button
-                          key={key}
-                          className={`er-swatch ${theme === key ? "active" : ""}`}
-                          onClick={() => {
-                            setTheme(key);
-                            setThemeMenuOpen(false);
-                          }}
-                        >
-                          <span
-                            className={`er-swatch-dot er-swatch-dot--${key}`}
-                          />
-                          <span className="er-swatch-label">{t.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="er-zoom-group">
-                  <button
-                    className="er-tool-btn"
-                    title="Thu nhỏ trang"
-                    onClick={() =>
-                      setZoom((s) => Math.max(0.6, +(s - 0.15).toFixed(2)))
-                    }
-                  >
-                    <Minus size={14} />
-                  </button>
-                  <span className="er-font-value">
-                    {Math.round(zoom * 100)}%
-                  </span>
-                  <button
-                    className="er-tool-btn"
-                    title="Phóng to trang"
-                    onClick={() =>
-                      setZoom((s) => Math.min(2.2, +(s + 0.15).toFixed(2)))
-                    }
-                  >
-                    <Plus size={14} />
-                  </button>
-                </div>
-
-                <button
-                  className="er-tool-btn"
-                  title={pageView === "double" ? "Xem 1 trang" : "Xem 2 trang"}
-                  onClick={togglePageView}
-                >
-                  <BookOpen size={15} />
-                  <span className="er-tool-label">
-                    {pageView === "double" ? "2 trang" : "1 trang"}
-                  </span>
-                </button>
-
-                <button
-                  className={`er-tool-btn ${readMode === "auto" ? "active" : ""} ${
-                    readMode === "hover" ? "listening" : ""
-                  }`}
-                  title={
-                    readMode === "off"
-                      ? "Bấm để bật Tự động đọc"
-                      : readMode === "auto"
-                        ? "Đang tự động đọc — bấm để chuyển sang đọc khi rê chuột"
-                        : "Đang đọc khi rê chuột — bấm để tắt"
-                  }
-                  onClick={() =>
-                    setReadMode((m) =>
-                      m === "off" ? "auto" : m === "auto" ? "hover" : "off",
-                    )
-                  }
-                >
-                  {readMode === "off" && <VolumeX size={15} />}
-                  {readMode === "auto" && <Volume2 size={15} />}
-                  {readMode === "hover" && <MousePointer size={15} />}
-                  <span className="er-tool-label">
-                    {readMode === "off"
-                      ? "Tắt đọc"
-                      : readMode === "auto"
-                        ? "Tự động đọc"
-                        : "Đọc khi rê"}
-                  </span>
-                </button>
-
-                <button
-                  className={`er-tool-btn ${isFullscreen ? "active" : ""}`}
-                  title={isFullscreen ? "Thoát toàn màn hình" : "Toàn màn hình"}
-                  onClick={toggleFullscreen}
-                >
-                  <Maximize2 size={15} />
-                  <span className="er-tool-label">Toàn màn hình</span>
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -1951,6 +1772,202 @@ export function PreviewOverlay({
                     </span>
                   </button>
                 ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toolsOpen && (
+        <div className="er-info-backdrop" onClick={() => setToolsOpen(false)}>
+          <div className="er-tools-drawer" onClick={(e) => e.stopPropagation()}>
+            <div className="er-tools-drawer-head">
+              <div className="er-tools-drawer-head-text">
+                <h3>Công cụ đọc sách</h3>
+                <span>{pageLabel}</span>
+              </div>
+              <button
+                className="er-icon-btn"
+                onClick={() => setToolsOpen(false)}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="er-tools-drawer-scroll">
+              <div className="er-tools-section">
+                <div className="er-tools-section-label">Điều hướng</div>
+
+                <button
+                  className={`er-tools-row ${tocOpen ? "active" : ""}`}
+                  onClick={() => {
+                    setToolsOpen(false);
+                    setInfoOpen(false);
+                    setTocOpen(true);
+                  }}
+                >
+                  <span className="er-tools-row-icon">
+                    <List size={17} />
+                  </span>
+                  <span className="er-tools-row-body">
+                    <span className="er-tools-row-title">Mục lục</span>
+                    <span className="er-tools-row-desc">
+                      Xem và nhảy nhanh tới từng trang
+                    </span>
+                  </span>
+                  <ChevronRight size={16} style={{ opacity: 0.5 }} />
+                </button>
+
+                <button
+                  className={`er-tools-row ${
+                    page && bookmarks.includes(page.id) ? "active" : ""
+                  }`}
+                  onClick={() => page && toggleBookmark(page.id)}
+                >
+                  <span className="er-tools-row-icon">
+                    {page && bookmarks.includes(page.id) ? (
+                      <BookmarkCheck size={17} />
+                    ) : (
+                      <Bookmark size={17} />
+                    )}
+                  </span>
+                  <span className="er-tools-row-body">
+                    <span className="er-tools-row-title">
+                      {page && bookmarks.includes(page.id)
+                        ? "Đã đánh dấu trang này"
+                        : "Đánh dấu trang này"}
+                    </span>
+                    <span className="er-tools-row-desc">
+                      Lưu lại để quay về nhanh
+                    </span>
+                  </span>
+                </button>
+
+                <button
+                  className={`er-tools-row ${infoOpen ? "active" : ""}`}
+                  onClick={() => {
+                    setToolsOpen(false);
+                    setTocOpen(false);
+                    setInfoOpen(true);
+                  }}
+                >
+                  <span className="er-tools-row-icon">
+                    <Info size={17} />
+                  </span>
+                  <span className="er-tools-row-body">
+                    <span className="er-tools-row-title">Thông tin sách</span>
+                    <span className="er-tools-row-desc">
+                      Tác giả, NXB, độ tuổi phù hợp...
+                    </span>
+                  </span>
+                  <ChevronRight size={16} style={{ opacity: 0.5 }} />
+                </button>
+              </div>
+
+              <div className="er-tools-section">
+                <div className="er-tools-section-label">Hiển thị</div>
+
+                <div className="er-tools-swatch-grid">
+                  {Object.entries(THEMES).map(([key, t]) => (
+                    <button
+                      key={key}
+                      className={`er-tools-swatch ${theme === key ? "active" : ""}`}
+                      onClick={() => setTheme(key)}
+                    >
+                      <span className={`er-swatch-dot er-swatch-dot--${key}`} />
+                      <span className="er-tools-swatch-label">{t.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="er-tools-inline-row" style={{ marginTop: 8 }}>
+                  <span className="er-tools-inline-label">
+                    <span className="er-tools-row-icon">
+                      <ZoomIn size={15} />
+                    </span>
+                    Cỡ trang
+                  </span>
+                  <div className="er-zoom-group">
+                    <button
+                      className="er-tool-btn"
+                      title="Thu nhỏ trang"
+                      onClick={() =>
+                        setZoom((s) => Math.max(0.6, +(s - 0.15).toFixed(2)))
+                      }
+                    >
+                      <Minus size={14} />
+                    </button>
+                    <span className="er-font-value">
+                      {Math.round(zoom * 100)}%
+                    </span>
+                    <button
+                      className="er-tool-btn"
+                      title="Phóng to trang"
+                      onClick={() =>
+                        setZoom((s) => Math.min(2.2, +(s + 0.15).toFixed(2)))
+                      }
+                    >
+                      <Plus size={14} />
+                    </button>
+                  </div>
+                </div>
+
+                <button className="er-tools-row" onClick={togglePageView}>
+                  <span className="er-tools-row-icon">
+                    <BookOpen size={17} />
+                  </span>
+                  <span className="er-tools-row-body">
+                    <span className="er-tools-row-title">Kiểu xem</span>
+                    <span className="er-tools-row-desc">
+                      Bấm để đổi cách hiển thị trang
+                    </span>
+                  </span>
+                  <span className="er-tools-row-trailing">
+                    {pageView === "double" ? "2 trang" : "1 trang"}
+                  </span>
+                </button>
+
+                <button
+                  className={`er-tools-row ${isFullscreen ? "active" : ""}`}
+                  onClick={toggleFullscreen}
+                >
+                  <span className="er-tools-row-icon">
+                    <Maximize2 size={17} />
+                  </span>
+                  <span className="er-tools-row-body">
+                    <span className="er-tools-row-title">Toàn màn hình</span>
+                    <span className="er-tools-row-desc">
+                      {isFullscreen ? "Đang bật" : "Xem sách lớn hơn"}
+                    </span>
+                  </span>
+                </button>
+              </div>
+
+              <div className="er-tools-section">
+                <div className="er-tools-section-label">Đọc to nội dung</div>
+                <div className="er-tools-segmented">
+                  <button
+                    className={readMode === "off" ? "active" : ""}
+                    onClick={() => setReadMode("off")}
+                  >
+                    <VolumeX size={16} />
+                    Tắt
+                  </button>
+                  <button
+                    className={readMode === "auto" ? "active" : ""}
+                    onClick={() => setReadMode("auto")}
+                  >
+                    <Volume2 size={16} />
+                    Tự động
+                  </button>
+                  <button
+                    className={`${readMode === "hover" ? "active" : ""} listening`}
+                    onClick={() => setReadMode("hover")}
+                  >
+                    <MousePointer size={16} />
+                    Khi rê chuột
+                  </button>
+                </div>
               </div>
             </div>
           </div>

@@ -245,18 +245,6 @@
   flex-shrink: 0;
 }
 
-/* ─ Popover công cụ (mở bằng nút Hamburger trên header) ─ */
-.er-popover--tools {
-  top: calc(100% + 8px);
-  right: 0;
-  min-width: 240px;
-  max-width: min(92vw, 380px);
-  max-height: min(72vh, 560px);
-  overflow-y: auto;
-}
-.er-popover--tools .er-tools {
-  justify-content: flex-start;
-}
 .er-hamburger-btn.active {
   background: linear-gradient(135deg, #55ac48, var(--er-green));
   border-color: var(--er-green);
@@ -597,6 +585,288 @@
   background: linear-gradient(90deg, #c98f0e, #eeb62a);
 }
 
+/* ─ Drawer công cụ đọc sách (trượt từ bên phải, mở bằng nút Hamburger) ─
+   Kính mờ tối đồng bộ màu thương hiệu, bố cục dạng danh sách theo nhóm
+   thay vì các nút tròn xếp sát nhau — dễ đọc và "đẹp" hơn trên di động. */
+.er-tools-drawer {
+  width: min(360px, 100vw);
+  height: 100%;
+  background: linear-gradient(165deg, #143a32 0%, #0c261f 55%, #06140f 100%);
+  color: var(--er-ink);
+  box-shadow: -24px 0 60px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  animation: er-drawer-in 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+@media (prefers-reduced-motion: reduce) {
+  .er-tools-drawer {
+    animation: none;
+  }
+}
+.er-tools-drawer-head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 18px 16px 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+.er-tools-drawer-head-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.er-tools-drawer-head h3 {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+.er-tools-drawer-head span {
+  font-size: 11.5px;
+  font-weight: 700;
+  opacity: 0.55;
+  letter-spacing: 0.02em;
+}
+.er-tools-drawer-head .er-icon-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+.er-tools-drawer-head .er-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.er-tools-drawer-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 14px 28px;
+}
+.er-tools-section {
+  margin-bottom: 22px;
+}
+.er-tools-section-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  opacity: 0.45;
+  padding: 0 8px 9px;
+}
+
+.er-tools-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: inherit;
+  border-radius: 14px;
+  padding: 12px 13px;
+  margin-bottom: 7px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  transition:
+    background 0.15s ease,
+    transform 0.08s ease,
+    box-shadow 0.15s ease;
+}
+.er-tools-row:last-child {
+  margin-bottom: 0;
+}
+.er-tools-row:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.er-tools-row:active {
+  transform: scale(0.98);
+}
+.er-tools-row.active {
+  background: linear-gradient(
+    135deg,
+    rgba(85, 172, 72, 0.32),
+    rgba(74, 158, 63, 0.18)
+  );
+  box-shadow: inset 0 0 0 1px rgba(74, 158, 63, 0.55);
+}
+.er-tools-row.listening {
+  background: linear-gradient(
+    135deg,
+    rgba(238, 182, 42, 0.32),
+    rgba(201, 143, 14, 0.18)
+  );
+  box-shadow: inset 0 0 0 1px rgba(201, 143, 14, 0.55);
+}
+.er-tools-row-icon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--er-green);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.er-tools-row.active .er-tools-row-icon,
+.er-tools-row.listening .er-tools-row-icon {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+.er-tools-row-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.er-tools-row-title {
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.er-tools-row-desc {
+  font-size: 11.5px;
+  font-weight: 500;
+  opacity: 0.55;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.er-tools-row-trailing {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.8;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Lưới màu nền bên trong drawer */
+.er-tools-swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.er-tools-swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 13px;
+  padding: 10px 4px;
+  cursor: pointer;
+  color: inherit;
+  font-family: inherit;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.er-tools-swatch:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.er-tools-swatch.active {
+  background: rgba(74, 158, 63, 0.2);
+  box-shadow: inset 0 0 0 1px var(--er-green);
+}
+.er-tools-swatch .er-swatch-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+.er-tools-swatch-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+/* Hàng zoom + xem 1/2 trang bên trong drawer */
+.er-tools-inline-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  padding: 10px 13px;
+  margin-bottom: 7px;
+}
+.er-tools-inline-row:last-child {
+  margin-bottom: 0;
+}
+.er-tools-inline-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  font-weight: 700;
+  min-width: 0;
+}
+.er-tools-inline-label .er-tools-row-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+}
+
+/* Segmented control (đọc to: tắt / tự động / khi rê chuột) */
+.er-tools-segmented {
+  display: flex;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  padding: 5px;
+}
+.er-tools-segmented button {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  border-radius: 10px;
+  padding: 9px 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 10.5px;
+  font-weight: 700;
+  opacity: 0.7;
+  transition:
+    background 0.15s ease,
+    opacity 0.15s ease,
+    color 0.15s ease;
+}
+.er-tools-segmented button:hover {
+  opacity: 0.9;
+}
+.er-tools-segmented button.active {
+  background: linear-gradient(135deg, #55ac48, var(--er-green));
+  color: #fff;
+  opacity: 1;
+  box-shadow: 0 3px 10px rgba(74, 158, 63, 0.35);
+}
+.er-tools-segmented button.active.listening {
+  background: linear-gradient(135deg, #eeb62a, #c98f0e);
+  box-shadow: 0 3px 10px rgba(230, 170, 20, 0.35);
+}
+
+@media (max-width: 420px) {
+  .er-tools-drawer {
+    width: 100vw;
+  }
+}
+
 /* ─ Màu chấm minh hoạ cho từng theme trong popover ─ */
 .er-swatch-dot--forest {
   background: linear-gradient(135deg, #1a5c52, #0d3330);
@@ -650,7 +920,7 @@
 .er-info-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 20;
+  z-index: 40;
   background: rgba(5, 12, 10, 0.55);
   backdrop-filter: blur(2px);
   display: flex;
