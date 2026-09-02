@@ -589,13 +589,16 @@ const toggleChildBookVisibility = async (req, res) => {
       return formatResponse(res, 400, "Thiếu trạng thái hiển thị");
     }
 
+    // Điều kiện y hệt getChildBooks/getKidPublicBooks: variant DIGITAL,
+    // đơn đã DELIVERED/COMPLETED, và sách có bản Ebook đang active — để
+    // không thể bật hiển thị 1 cuốn mà /family và kidaccess không cùng thấy.
     const owned = await prisma.orderItem.findFirst({
       where: {
-        variant: { bookId },
+        variant: { bookId, format: "DIGITAL" },
         order: {
           userId: req.user.id,
           paymentStatus: "PAID",
-          status: { in: ["CONFIRMED", "SHIPPING", "DELIVERED", "COMPLETED"] },
+          status: { in: ["DELIVERED", "COMPLETED"] },
         },
       },
     });
@@ -604,6 +607,18 @@ const toggleChildBookVisibility = async (req, res) => {
         res,
         403,
         "Sách này không nằm trong đơn hàng đã mua của bạn",
+      );
+    }
+
+    const hasActiveEbook = await prisma.ebook.findFirst({
+      where: { bookId, isActive: true },
+      select: { id: true },
+    });
+    if (!hasActiveEbook) {
+      return formatResponse(
+        res,
+        403,
+        "Sách này chưa có bản sách điện tử để hiển thị cho bé",
       );
     }
 
