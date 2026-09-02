@@ -401,8 +401,11 @@ export default function GardenPage() {
                                 </div>
                                 <span className="kg-current-hint">
                                   Chỉ còn{" "}
-                                  {Math.max(0, 100 - activeTree.progressPercent)}%
-                                  để thành{" "}
+                                  {Math.max(
+                                    0,
+                                    100 - activeTree.progressPercent,
+                                  )}
+                                  % để thành{" "}
                                   <strong>{activeTree.nextLevel?.name}</strong>!
                                 </span>
                               </>
@@ -463,7 +466,8 @@ export default function GardenPage() {
                                   status={t.status}
                                   size={68}
                                   animated={
-                                    t.id === activeTree.id && t.status === "ALIVE"
+                                    t.id === activeTree.id &&
+                                    t.status === "ALIVE"
                                   }
                                 />
                               </button>
@@ -482,8 +486,8 @@ export default function GardenPage() {
 
                         {garden.forestUnlocked && (
                           <p className="kg-forest-note">
-                            🌲 Rừng Tri Thức đã mở — mỗi lần có cây trưởng thành,
-                            một cây mới lại được trồng thêm!
+                            🌲 Rừng Tri Thức đã mở — mỗi lần có cây trưởng
+                            thành, một cây mới lại được trồng thêm!
                           </p>
                         )}
                       </div>

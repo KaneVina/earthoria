@@ -1256,7 +1256,9 @@ function VoucherModal({
   const getDiscountAmount = (c) => {
     if (subtotal < (c.minOrder || 0)) return 0;
     let d =
-      c.type === "PERCENTAGE" ? Math.round((subtotal * c.value) / 100) : c.value;
+      c.type === "PERCENTAGE"
+        ? Math.round((subtotal * c.value) / 100)
+        : c.value;
     if (c.maxDiscount) d = Math.min(d, c.maxDiscount);
     return Math.min(d, subtotal);
   };
@@ -1389,7 +1391,9 @@ function VoucherModal({
                     padding: "3px 9px",
                   }}
                 >
-                  {eligibleCount > 0 ? `${eligibleCount}/${coupons.length}` : coupons.length}
+                  {eligibleCount > 0
+                    ? `${eligibleCount}/${coupons.length}`
+                    : coupons.length}
                 </span>
               )}
             </h3>
@@ -1472,7 +1476,9 @@ function VoucherModal({
                     style={{
                       position: "relative",
                       display: "flex",
-                      background: eligible ? "var(--gold-pale)" : "var(--white)",
+                      background: eligible
+                        ? "var(--gold-pale)"
+                        : "var(--white)",
                       border: `${isBest ? "1.5px" : "0.5px"} solid ${isBest ? "var(--gold)" : eligible ? "var(--border-gold)" : "var(--border)"}`,
                       opacity: eligible ? 1 : 0.8,
                       animationDelay: `${i * 45}ms`,
@@ -1600,13 +1606,18 @@ function VoucherModal({
 
                       {!eligible && c.minOrder > 0 && (
                         <div
-                          style={{ height: 3, background: "var(--border)", maxWidth: 200 }}
+                          style={{
+                            height: 3,
+                            background: "var(--border)",
+                            maxWidth: 200,
+                          }}
                         >
                           <div
                             style={{
                               height: "100%",
                               width: `${progress}%`,
-                              background: "linear-gradient(90deg, #4a9e3f, #5cb84f)",
+                              background:
+                                "linear-gradient(90deg, #4a9e3f, #5cb84f)",
                               transition: "width 0.4s ease",
                             }}
                           />
@@ -1661,7 +1672,9 @@ function VoucherModal({
                         className="eo-voucher-btn"
                         style={{
                           flexShrink: 0,
-                          background: eligible ? "var(--forest)" : "var(--border)",
+                          background: eligible
+                            ? "var(--forest)"
+                            : "var(--border)",
                           border: "none",
                           padding: "10px 14px",
                           cursor: eligible ? "pointer" : "not-allowed",
@@ -1669,7 +1682,9 @@ function VoucherModal({
                           fontSize: 10.5,
                           letterSpacing: "0.1em",
                           textTransform: "uppercase",
-                          color: eligible ? "var(--ivory)" : "var(--text-muted)",
+                          color: eligible
+                            ? "var(--ivory)"
+                            : "var(--text-muted)",
                           display: "flex",
                           alignItems: "center",
                           gap: 4,
@@ -1996,7 +2011,9 @@ export default function Checkout() {
         ward: newAddrForm.wardName,
         // Chưa có địa chỉ nào thì không cần gửi isDefault — backend tự động
         // đặt địa chỉ đầu tiên làm mặc định.
-        ...(savedAddresses.length > 0 ? { isDefault: newAddrForm.isDefault } : {}),
+        ...(savedAddresses.length > 0
+          ? { isDefault: newAddrForm.isDefault }
+          : {}),
       });
       const newAddr = data.data;
       setSavedAddresses((prev) => [...prev, newAddr]);
@@ -3180,9 +3197,7 @@ export default function Checkout() {
                                   : "var(--forest)",
                                 border: "none",
                                 padding: 13,
-                                cursor: savingAddr
-                                  ? "not-allowed"
-                                  : "pointer",
+                                cursor: savingAddr ? "not-allowed" : "pointer",
                                 fontFamily: "Be Vietnam Pro, sans-serif",
                                 fontSize: 11,
                                 letterSpacing: "0.16em",
@@ -4683,7 +4698,8 @@ export default function Checkout() {
                 <span>
                   {freeShipThreshold <= 0 ? (
                     <>
-                      Hạng <strong style={{ color: "var(--forest)" }}>
+                      Hạng{" "}
+                      <strong style={{ color: "var(--forest)" }}>
                         {loyaltyProfile?.tier?.name}
                       </strong>{" "}
                       của bạn được miễn phí giao hàng cho mọi đơn hàng

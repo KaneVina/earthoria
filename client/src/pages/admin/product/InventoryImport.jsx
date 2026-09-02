@@ -1,22 +1,3 @@
-// InventoryImport.jsx — Trang "Nhập kho" (đường link riêng, không phải modal)
-//
-// Luồng:
-//  1) Admin có thể tải file mẫu Excel, điền rồi import lại — HOẶC nhập tay từng dòng.
-//  2) Mỗi dòng có thể "Chọn sách có sẵn" (autocomplete, khoá các field hệ thống,
-//     tự lấy Số lượng cũ = tồn kho hiện tại) hoặc "Nhập mã mới" (gõ tay toàn bộ,
-//     Số lượng cũ mặc định = 0 vì sách chưa có trong hệ thống).
-//  3) Cột "Số lượng mới" tách 2 phần: Theo chứng từ / Thực nhập. Nếu 2 số này
-//     lệch nhau, dòng đó được cảnh báo (viền/nền đỏ nhạt) — nhưng khi cộng vào
-//     kho hệ thống CHỈ dùng số Thực nhập.
-//  4) Tổng số lượng = Số lượng cũ + Thực nhập. Thành tiền = Đơn giá × Thực nhập.
-//  5) Khi lưu, cả phiếu được gán 1 mã phiếu riêng (PN-...) + người tạo (lấy từ
-//     tài khoản admin đang đăng nhập) để sau này tra lịch sử nhập kho.
-//
-// TODO (backend, làm sau):
-//  - GET  /admin/products/search?code=EB-xxxxxx   → tìm chính xác 1 sách theo mã, dùng để auto-khớp khi import Excel.
-//  - POST /admin/inventory/imports                 body: { code, items: [...] }
-//        Server tự lấy người tạo từ token đăng nhập (không tin field FE gửi lên),
-//        cộng qtyActual vào stock của từng sách, và lưu lại lịch sử theo mã phiếu.
 import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";

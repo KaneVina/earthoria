@@ -31,7 +31,14 @@ function computeGeometry(level) {
     });
   }
 
-  return { trunkHeight, trunkWidth, groundY, trunkTopY, canopyCircles, decorations };
+  return {
+    trunkHeight,
+    trunkWidth,
+    groundY,
+    trunkTopY,
+    canopyCircles,
+    decorations,
+  };
 }
 
 const HEALTH_VISUAL = {
@@ -54,7 +61,9 @@ export default function GardenTreeVisual({
 }) {
   const geometry = useMemo(() => computeGeometry(level), [level]);
   const isDead = status === "DEAD" || healthBandKey === "dead";
-  const visual = isDead ? HEALTH_VISUAL.dead : HEALTH_VISUAL[healthBandKey] || HEALTH_VISUAL.healthy;
+  const visual = isDead
+    ? HEALTH_VISUAL.dead
+    : HEALTH_VISUAL[healthBandKey] || HEALTH_VISUAL.healthy;
   const isMature = status === "MATURE";
   const showFoliage = !isDead;
   const showDecor = !isDead && geometry.canopyCircles.length && health >= 40;
@@ -79,7 +88,9 @@ export default function GardenTreeVisual({
 
       {isDead && (
         <g className="kg-tree-branches">
-          <path d={`M60 ${geometry.trunkTopY} l-14 -14 M60 ${geometry.trunkTopY} l14 -12 M60 ${geometry.trunkTopY + 6} l-10 -18`} />
+          <path
+            d={`M60 ${geometry.trunkTopY} l-14 -14 M60 ${geometry.trunkTopY} l14 -12 M60 ${geometry.trunkTopY + 6} l-10 -18`}
+          />
         </g>
       )}
 
@@ -93,9 +104,21 @@ export default function GardenTreeVisual({
       />
 
       {showFoliage && (
-        <g style={{ filter: `saturate(${visual.saturate})`, opacity: visual.opacity }} className="kg-tree-canopy">
+        <g
+          style={{
+            filter: `saturate(${visual.saturate})`,
+            opacity: visual.opacity,
+          }}
+          className="kg-tree-canopy"
+        >
           {geometry.canopyCircles.map((c, i) => (
-            <circle key={i} cx={c.cx} cy={c.cy} r={c.r} className="kg-tree-leaf" />
+            <circle
+              key={i}
+              cx={c.cx}
+              cy={c.cy}
+              r={c.r}
+              className="kg-tree-leaf"
+            />
           ))}
         </g>
       )}
@@ -103,9 +126,21 @@ export default function GardenTreeVisual({
       {showDecor &&
         geometry.decorations.map((d, i) =>
           level >= 7 && i % 2 === 0 ? (
-            <circle key={i} cx={d.cx} cy={d.cy} r="3.2" className="kg-tree-fruit" />
+            <circle
+              key={i}
+              cx={d.cx}
+              cy={d.cy}
+              r="3.2"
+              className="kg-tree-fruit"
+            />
           ) : (
-            <circle key={i} cx={d.cx} cy={d.cy} r="3" className="kg-tree-flower" />
+            <circle
+              key={i}
+              cx={d.cx}
+              cy={d.cy}
+              r="3"
+              className="kg-tree-flower"
+            />
           ),
         )}
     </svg>

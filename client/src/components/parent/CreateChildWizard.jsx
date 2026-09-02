@@ -67,15 +67,27 @@ function IntroIllustration() {
       <ellipse cx="110" cy="150" rx="72" ry="10" fill="var(--gold-pale)" />
       <circle cx="110" cy="76" r="58" fill="var(--gold-pale)" />
       <circle cx="110" cy="90" r="34" fill="var(--forest-light)" />
-      <circle cx="110" cy="90" r="34" fill="var(--forest-light)" opacity="0.001" />
+      <circle
+        cx="110"
+        cy="90"
+        r="34"
+        fill="var(--forest-light)"
+        opacity="0.001"
+      />
       {/* Thân mascot lá cây */}
       <path
         d="M110 56C130 56 146 72 146 92C146 112 130 128 110 128C90 128 74 112 74 92C74 72 90 56 110 56Z"
         fill="var(--forest)"
       />
       {/* Hai lá trên đầu */}
-      <path d="M96 54C90 40 96 26 110 22C108 38 106 48 96 54Z" fill="var(--gold)" />
-      <path d="M124 54C130 40 124 26 110 22C112 38 114 48 124 54Z" fill="var(--gold)" />
+      <path
+        d="M96 54C90 40 96 26 110 22C108 38 106 48 96 54Z"
+        fill="var(--gold)"
+      />
+      <path
+        d="M124 54C130 40 124 26 110 22C112 38 114 48 124 54Z"
+        fill="var(--gold)"
+      />
       {/* Mắt */}
       <circle cx="98" cy="94" r="5" fill="var(--ivory)" />
       <circle cx="122" cy="94" r="5" fill="var(--ivory)" />
@@ -85,10 +97,21 @@ function IntroIllustration() {
       <circle cx="90" cy="104" r="4" fill="var(--gold)" opacity="0.5" />
       <circle cx="130" cy="104" r="4" fill="var(--gold)" opacity="0.5" />
       {/* Miệng cười */}
-      <path d="M100 108C104 114 116 114 120 108" stroke="var(--ivory)" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+      <path
+        d="M100 108C104 114 116 114 120 108"
+        stroke="var(--ivory)"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        fill="none"
+      />
       {/* Tay vẫy */}
       <circle cx="150" cy="80" r="9" fill="var(--forest)" />
-      <path d="M150 71V52" stroke="var(--forest)" strokeWidth="8" strokeLinecap="round" />
+      <path
+        d="M150 71V52"
+        stroke="var(--forest)"
+        strokeWidth="8"
+        strokeLinecap="round"
+      />
       {/* Sparkles xung quanh */}
       <circle cx="40" cy="50" r="4" fill="var(--gold)" />
       <circle cx="176" cy="46" r="3" fill="var(--gold)" />
@@ -114,7 +137,9 @@ export default function CreateChildWizard({
   // Chưa có PIN thì chèn bước "pin" ngay sau intro — bắt buộc thiết lập
   // trước khi tạo hồ sơ trẻ, vì PIN là thứ duy nhất bảo vệ các hành động
   // nhạy cảm (mở khoá AR, xoá hồ sơ...) sau này.
-  const STEPS = hasPin ? BASE_STEPS : ["intro", "pin", "email", "info", "terms"];
+  const STEPS = hasPin
+    ? BASE_STEPS
+    : ["intro", "pin", "email", "info", "terms"];
   const [stepIdx, setStepIdx] = useState(0);
   const [name, setName] = useState("");
   const [dob, setDob] = useState("");
@@ -170,7 +195,12 @@ export default function CreateChildWizard({
         }}
       >
         <div className="pf-confirm pkd-modal" role="dialog" aria-modal="true">
-          <button className="pkd-wizard-close" onClick={onClose} type="button" aria-label="Đóng">
+          <button
+            className="pkd-wizard-close"
+            onClick={onClose}
+            type="button"
+            aria-label="Đóng"
+          >
             <X size={16} />
           </button>
           <div className="auth-otp-step pkd-wizard-limit">
@@ -181,28 +211,44 @@ export default function CreateChildWizard({
               Đã đạt giới hạn {childLimit.max} hồ sơ trẻ em
             </h3>
             <p className="pf-confirm-msg">
-              Bạn đang ở <strong>Hạng {childLimit.tierRoman} · {childLimit.tierName}</strong> —
-              hạng này cho phép tối đa <strong>{childLimit.max}</strong> tài khoản trẻ em.
+              Bạn đang ở{" "}
+              <strong>
+                Hạng {childLimit.tierRoman} · {childLimit.tierName}
+              </strong>{" "}
+              — hạng này cho phép tối đa <strong>{childLimit.max}</strong> tài
+              khoản trẻ em.
               {childLimit.isMaxTier ? (
                 " Đây đã là hạng cao nhất, đây cũng là số hồ sơ tối đa của hệ thống."
               ) : (
                 <>
                   {" "}
-                  Lên <strong>Hạng {childLimit.nextTierRoman} · {childLimit.nextTierName}</strong>{" "}
-                  để mở khóa thêm, tối đa <strong>{childLimit.nextMax}</strong> hồ sơ.
+                  Lên{" "}
+                  <strong>
+                    Hạng {childLimit.nextTierRoman} · {childLimit.nextTierName}
+                  </strong>{" "}
+                  để mở khóa thêm, tối đa <strong>{childLimit.nextMax}</strong>{" "}
+                  hồ sơ.
                 </>
               )}
             </p>
             <p className="pkd-wizard-note">
               <Sparkles size={13} />
-              Hạng thành viên tăng theo tổng chi tiêu trọn đời tại Earthoria và không bao giờ bị
-              hạ hạng — mỗi đơn hàng đưa bạn tiến gần hơn tới hạng tiếp theo.
+              Hạng thành viên tăng theo tổng chi tiêu trọn đời tại Earthoria và
+              không bao giờ bị hạ hạng — mỗi đơn hàng đưa bạn tiến gần hơn tới
+              hạng tiếp theo.
             </p>
             <div className="pf-confirm-actions">
-              <button className="pf-confirm-cancel pf-btn-tactile" onClick={onClose}>
+              <button
+                className="pf-confirm-cancel pf-btn-tactile"
+                onClick={onClose}
+              >
                 Đóng
               </button>
-              <Link to="/loyalty" className="pf-confirm-ok pf-btn-tactile" onClick={onClose}>
+              <Link
+                to="/loyalty"
+                className="pf-confirm-ok pf-btn-tactile"
+                onClick={onClose}
+              >
                 Xem hạng thành viên <ArrowRight size={14} />
               </Link>
             </div>
@@ -231,8 +277,10 @@ export default function CreateChildWizard({
   };
 
   const submitPinStep = async () => {
-    if (!/^[0-9]{4}$/.test(newPin)) return setError("Mã PIN gồm đúng 4 chữ số.");
-    if (newPin !== confirmPin) return setError("Hai mã PIN không khớp, thử lại nhé.");
+    if (!/^[0-9]{4}$/.test(newPin))
+      return setError("Mã PIN gồm đúng 4 chữ số.");
+    if (newPin !== confirmPin)
+      return setError("Hai mã PIN không khớp, thử lại nhé.");
     setPinSubmitting(true);
     setError("");
     try {
@@ -240,15 +288,23 @@ export default function CreateChildWizard({
       onPinCreated?.();
       setStepIdx((i) => i + 1);
     } catch (err) {
-      setError(err.response?.data?.message || "Không thể lưu mã PIN, thử lại nhé.");
+      setError(
+        err.response?.data?.message || "Không thể lưu mã PIN, thử lại nhé.",
+      );
     } finally {
       setPinSubmitting(false);
     }
   };
 
   const handleCreate = async () => {
-    if (!agreeGuardian) return setError("Bạn cần đồng ý với điều khoản công bố phía trên để tiếp tục.");
-    if (!agreePolicy) return setError("Bạn cần đồng ý với Chính sách quyền riêng tư & Điều khoản dịch vụ.");
+    if (!agreeGuardian)
+      return setError(
+        "Bạn cần đồng ý với điều khoản công bố phía trên để tiếp tục.",
+      );
+    if (!agreePolicy)
+      return setError(
+        "Bạn cần đồng ý với Chính sách quyền riêng tư & Điều khoản dịch vụ.",
+      );
     setSubmitting(true);
     setError("");
     try {
@@ -263,7 +319,9 @@ export default function CreateChildWizard({
       onCreated?.(res.data.data.child);
       onClose();
     } catch (err) {
-      const msg = err.response?.data?.message || "Không thể tạo tài khoản cho bé. Thử lại nhé.";
+      const msg =
+        err.response?.data?.message ||
+        "Không thể tạo tài khoản cho bé. Thử lại nhé.";
       setError(msg);
       toast.error(msg, { duration: 6000 });
       // Trường hợp hiếm: giới hạn hạng vừa bị chạm (vd tạo ở tab khác) đúng
@@ -284,8 +342,17 @@ export default function CreateChildWizard({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="pf-confirm pkd-modal pkd-modal-wide" role="dialog" aria-modal="true">
-        <button className="pkd-wizard-close" onClick={onClose} type="button" aria-label="Đóng">
+      <div
+        className="pf-confirm pkd-modal pkd-modal-wide"
+        role="dialog"
+        aria-modal="true"
+      >
+        <button
+          className="pkd-wizard-close"
+          onClick={onClose}
+          type="button"
+          aria-label="Đóng"
+        >
           <X size={16} />
         </button>
 
@@ -307,20 +374,34 @@ export default function CreateChildWizard({
               Hãy nhờ cha mẹ đăng ký tài khoản <em>E-Kid</em> cho bạn
             </h3>
             <p className="pf-confirm-msg">
-              Chỉ mất khoảng 1 phút. Cha mẹ sẽ tạo hồ sơ riêng, giới hạn giờ xem AR và bật các quy
-              tắc bảo vệ mắt phù hợp với độ tuổi của bé.
+              Chỉ mất khoảng 1 phút. Cha mẹ sẽ tạo hồ sơ riêng, giới hạn giờ xem
+              AR và bật các quy tắc bảo vệ mắt phù hợp với độ tuổi của bé.
             </p>
             {childLimit && (
               <p className="pkd-wizard-note pkd-wizard-limit-note">
                 <Users size={13} />
-                Đây sẽ là hồ sơ thứ <strong>{childLimit.current + 1}/{childLimit.max}</strong>{" "}
+                Đây sẽ là hồ sơ thứ{" "}
+                <strong>
+                  {childLimit.current + 1}/{childLimit.max}
+                </strong>{" "}
                 được phép ở Hạng {childLimit.tierRoman} · {childLimit.tierName}.
-                {!childLimit.isMaxTier && childLimit.current + 1 === childLimit.max && (
-                  <> Lên hạng để mở khóa thêm — <Link to="/loyalty" onClick={onClose}>xem chi tiết</Link>.</>
-                )}
+                {!childLimit.isMaxTier &&
+                  childLimit.current + 1 === childLimit.max && (
+                    <>
+                      {" "}
+                      Lên hạng để mở khóa thêm —{" "}
+                      <Link to="/loyalty" onClick={onClose}>
+                        xem chi tiết
+                      </Link>
+                      .
+                    </>
+                  )}
               </p>
             )}
-            <div className="pf-confirm-actions" style={{ justifyContent: "center" }}>
+            <div
+              className="pf-confirm-actions"
+              style={{ justifyContent: "center" }}
+            >
               <button className="pf-confirm-ok pf-btn-tactile" onClick={goNext}>
                 Bắt đầu <ChevronRight size={14} />
               </button>
@@ -335,9 +416,11 @@ export default function CreateChildWizard({
             </div>
             <h3 className="pf-confirm-title">Thiết lập mã PIN phụ huynh</h3>
             <p className="pf-confirm-msg">
-              Mã PIN gồm 4 số dùng để mở khoá AR và xác nhận các thao tác nhạy cảm (ví dụ xoá hồ
-              sơ của bé). <b>Đây là lớp bảo vệ quan trọng nhất</b> cho tài khoản trẻ em — hãy chọn
-              mã bạn nhớ được nhưng người khác khó đoán, và đừng chia sẻ với bé.
+              Mã PIN gồm 4 số dùng để mở khoá AR và xác nhận các thao tác nhạy
+              cảm (ví dụ xoá hồ sơ của bé).{" "}
+              <b>Đây là lớp bảo vệ quan trọng nhất</b> cho tài khoản trẻ em —
+              hãy chọn mã bạn nhớ được nhưng người khác khó đoán, và đừng chia
+              sẻ với bé.
             </p>
             <div className="pkd-wizard-field">
               <label>Mã PIN mới</label>
@@ -347,7 +430,9 @@ export default function CreateChildWizard({
                 maxLength={4}
                 className="pf-pw-input pkd-wizard-input"
                 value={newPin}
-                onChange={(e) => setNewPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                onChange={(e) =>
+                  setNewPin(e.target.value.replace(/\D/g, "").slice(0, 4))
+                }
               />
             </div>
             <div className="pkd-wizard-field">
@@ -358,16 +443,31 @@ export default function CreateChildWizard({
                 maxLength={4}
                 className="pf-pw-input pkd-wizard-input"
                 value={confirmPin}
-                onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                onChange={(e) =>
+                  setConfirmPin(e.target.value.replace(/\D/g, "").slice(0, 4))
+                }
               />
             </div>
             {error && <p className="pf-field-error">{error}</p>}
             <div className="pf-confirm-actions">
-              <button className="pf-confirm-cancel pf-btn-tactile" onClick={onClose} disabled={pinSubmitting}>
+              <button
+                className="pf-confirm-cancel pf-btn-tactile"
+                onClick={onClose}
+                disabled={pinSubmitting}
+              >
                 Hủy
               </button>
-              <button className="pf-confirm-ok pf-btn-tactile" onClick={submitPinStep} disabled={pinSubmitting}>
-                {pinSubmitting ? <Loader2 size={14} className="pkd-spin" /> : "Lưu mã PIN"} <ChevronRight size={14} />
+              <button
+                className="pf-confirm-ok pf-btn-tactile"
+                onClick={submitPinStep}
+                disabled={pinSubmitting}
+              >
+                {pinSubmitting ? (
+                  <Loader2 size={14} className="pkd-spin" />
+                ) : (
+                  "Lưu mã PIN"
+                )}{" "}
+                <ChevronRight size={14} />
               </button>
             </div>
           </div>
@@ -387,12 +487,16 @@ export default function CreateChildWizard({
               <span>{user?.email || "—"}</span>
             </div>
             <p className="pkd-wizard-email-note">
-              Mọi thông báo quan trọng — cảnh báo vượt giờ xem, yêu cầu mở khóa, đặt lại mã PIN,
-              và các cập nhật liên quan đến tài khoản của bé — đều sẽ được gửi về đúng địa chỉ
-              email này. Vui lòng kiểm tra kỹ trước khi tiếp tục để không bỏ lỡ thông báo.
+              Mọi thông báo quan trọng — cảnh báo vượt giờ xem, yêu cầu mở khóa,
+              đặt lại mã PIN, và các cập nhật liên quan đến tài khoản của bé —
+              đều sẽ được gửi về đúng địa chỉ email này. Vui lòng kiểm tra kỹ
+              trước khi tiếp tục để không bỏ lỡ thông báo.
             </p>
             <div className="pf-confirm-actions">
-              <button className="pf-confirm-cancel pf-btn-tactile" onClick={onClose}>
+              <button
+                className="pf-confirm-cancel pf-btn-tactile"
+                onClick={onClose}
+              >
                 Hủy
               </button>
               <button className="pf-confirm-ok pf-btn-tactile" onClick={goNext}>
@@ -408,7 +512,9 @@ export default function CreateChildWizard({
               <Smile size={18} />
             </div>
             <h3 className="pf-confirm-title">Thông tin của bé</h3>
-            <p className="pf-confirm-msg">Nhập tên và ngày sinh — hệ thống sẽ tự tính tuổi cho bé.</p>
+            <p className="pf-confirm-msg">
+              Nhập tên và ngày sinh — hệ thống sẽ tự tính tuổi cho bé.
+            </p>
 
             <div className="pkd-wizard-row">
               <div className="pkd-wizard-avatar-group">
@@ -462,14 +568,18 @@ export default function CreateChildWizard({
 
             <p className="pkd-wizard-note">
               <Sparkles size={13} />
-              Chúng tôi sẽ tự động tuỳ chỉnh trải nghiệm tài khoản E-Kid theo đúng độ tuổi của con
-              bạn. Chỉ bạn và con bạn thấy được những thông tin này.
+              Chúng tôi sẽ tự động tuỳ chỉnh trải nghiệm tài khoản E-Kid theo
+              đúng độ tuổi của con bạn. Chỉ bạn và con bạn thấy được những thông
+              tin này.
             </p>
 
             {error && <p className="pf-field-error">{error}</p>}
 
             <div className="pf-confirm-actions">
-              <button className="pf-confirm-cancel pf-btn-tactile" onClick={goBack}>
+              <button
+                className="pf-confirm-cancel pf-btn-tactile"
+                onClick={goBack}
+              >
                 <ChevronLeft size={14} /> Quay lại
               </button>
               <button className="pf-confirm-ok pf-btn-tactile" onClick={goNext}>
@@ -483,10 +593,11 @@ export default function CreateChildWizard({
           <div className="auth-otp-step">
             <h3 className="pf-confirm-title">Điều khoản công bố</h3>
             <p className="pf-confirm-msg">
-              Trước khi tạo hồ sơ cho <strong>{name || "bé"}</strong>{" "}
-              ({age !== null ? `${age} tuổi` : "—"}), bạn cần xác nhận là phụ huynh/người giám hộ
-              hợp pháp và đồng ý để Earthoria tạo hồ sơ, lưu tiến trình đọc, cũng như áp dụng các
-              quy tắc bảo vệ mắt và giới hạn thời gian do chính bạn thiết lập cho bé.
+              Trước khi tạo hồ sơ cho <strong>{name || "bé"}</strong> (
+              {age !== null ? `${age} tuổi` : "—"}), bạn cần xác nhận là phụ
+              huynh/người giám hộ hợp pháp và đồng ý để Earthoria tạo hồ sơ, lưu
+              tiến trình đọc, cũng như áp dụng các quy tắc bảo vệ mắt và giới
+              hạn thời gian do chính bạn thiết lập cho bé.
             </p>
 
             <div className="pkd-wizard-terms-group">
@@ -500,8 +611,8 @@ export default function CreateChildWizard({
                   <FileText size={14} />
                 </span>
                 <span className="pkd-wizard-terms-text">
-                  Tôi xác nhận là phụ huynh/người giám hộ hợp pháp của bé và đồng ý với{" "}
-                  <strong>điều khoản công bố</strong> nêu trên.
+                  Tôi xác nhận là phụ huynh/người giám hộ hợp pháp của bé và
+                  đồng ý với <strong>điều khoản công bố</strong> nêu trên.
                 </span>
               </label>
 
@@ -516,11 +627,19 @@ export default function CreateChildWizard({
                 </span>
                 <span className="pkd-wizard-terms-text">
                   Tôi đồng ý với{" "}
-                  <Link to="/legal/privacy" target="_blank" rel="noopener noreferrer">
+                  <Link
+                    to="/legal/privacy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     Chính sách quyền riêng tư
                   </Link>{" "}
                   và{" "}
-                  <Link to="/legal/terms" target="_blank" rel="noopener noreferrer">
+                  <Link
+                    to="/legal/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     Điều khoản dịch vụ
                   </Link>{" "}
                   của Earthoria.
@@ -531,7 +650,11 @@ export default function CreateChildWizard({
             {error && <p className="pf-field-error">{error}</p>}
 
             <div className="pf-confirm-actions">
-              <button className="pf-confirm-cancel pf-btn-tactile" onClick={goBack} disabled={submitting}>
+              <button
+                className="pf-confirm-cancel pf-btn-tactile"
+                onClick={goBack}
+                disabled={submitting}
+              >
                 <ChevronLeft size={14} /> Quay lại
               </button>
               <button

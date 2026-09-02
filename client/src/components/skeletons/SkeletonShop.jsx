@@ -1,6 +1,3 @@
-// components/skeletons/SkeletonShop.jsx
-// Dùng trong Shop.jsx khi isLoading === true
-
 export function SkeletonProductCard() {
   return (
     <div className="skeleton-product-card">
@@ -18,7 +15,7 @@ export function SkeletonProductCard() {
         <span className="skeleton skeleton-product-btn" />
       </div>
     </div>
-  )
+  );
 }
 
 // Render N cards skeleton (default 6)
@@ -29,5 +26,5 @@ export function SkeletonProductGrid({ count = 6 }) {
         <SkeletonProductCard key={i} />
       ))}
     </>
-  )
+  );
 }

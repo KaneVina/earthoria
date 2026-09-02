@@ -797,12 +797,17 @@ export default function TermsOfService() {
 
       {/* Reading progress */}
       <div className="legal-progress-rail">
-        <div className="legal-progress-fill" style={{ width: `${progress}%` }} />
+        <div
+          className="legal-progress-fill"
+          style={{ width: `${progress}%` }}
+        />
       </div>
 
       {/* Breadcrumb */}
       <div className="breadcrumb">
-        <Link to="/" className="breadcrumb-item">Trang chủ</Link>
+        <Link to="/" className="breadcrumb-item">
+          Trang chủ
+        </Link>
         <span className="breadcrumb-sep">/</span>
         <span className="breadcrumb-current">Điều khoản dịch vụ</span>
       </div>
@@ -826,9 +831,9 @@ export default function TermsOfService() {
             <em>Dịch Vụ</em>
           </h1>
           <p className="legal-hero-sub">
-            Những quy định rõ ràng, công bằng để bạn và gia đình yên tâm
-            khám phá thế giới Earthoria — từ trang sách đầu tiên đến trải
-            nghiệm AR sống động.
+            Những quy định rõ ràng, công bằng để bạn và gia đình yên tâm khám
+            phá thế giới Earthoria — từ trang sách đầu tiên đến trải nghiệm AR
+            sống động.
           </p>
           <div className="legal-hero-meta">
             <div className="legal-hero-meta-item">
@@ -864,7 +869,10 @@ export default function TermsOfService() {
       <section className="legal-summary">
         <div className="legal-summary-inner">
           {SUMMARY_CARDS.map((card, i) => (
-            <div className={`legal-summary-card reveal reveal-delay-${i + 1}`} key={i}>
+            <div
+              className={`legal-summary-card reveal reveal-delay-${i + 1}`}
+              key={i}
+            >
               <div className="legal-summary-icon">
                 <card.icon size={20} />
               </div>
@@ -901,15 +909,23 @@ export default function TermsOfService() {
                 </button>
               ))}
               {filteredSections.length === 0 && (
-                <div className="legal-toc-empty">Không tìm thấy mục nào phù hợp</div>
+                <div className="legal-toc-empty">
+                  Không tìm thấy mục nào phù hợp
+                </div>
               )}
             </nav>
             <div className="legal-toc-divider" />
-            <button className="legal-toc-item" onClick={() => scrollToSection("faq")}>
+            <button
+              className="legal-toc-item"
+              onClick={() => scrollToSection("faq")}
+            >
               <Users size={14} />
               <span>Câu hỏi thường gặp</span>
             </button>
-            <button className="legal-toc-item" onClick={() => scrollToSection("lien-he-card")}>
+            <button
+              className="legal-toc-item"
+              onClick={() => scrollToSection("lien-he-card")}
+            >
               <Mail size={14} />
               <span>Liên hệ hỗ trợ</span>
             </button>
@@ -920,7 +936,10 @@ export default function TermsOfService() {
                 Đội ngũ pháp lý của Earthoria luôn sẵn sàng giải đáp mọi thắc
                 mắc của bạn.
               </p>
-              <a href="mailto:helpdesk.earthoria@gmail.com" className="legal-sidebar-card-link">
+              <a
+                href="mailto:helpdesk.earthoria@gmail.com"
+                className="legal-sidebar-card-link"
+              >
                 helpdesk.earthoria@gmail.com
               </a>
             </div>
@@ -938,7 +957,11 @@ export default function TermsOfService() {
                   title="Sao chép liên kết tới mục này"
                   onClick={() => handleCopyLink(s.id)}
                 >
-                  {copiedId === s.id ? <Check size={13} /> : <Link2 size={13} />}
+                  {copiedId === s.id ? (
+                    <Check size={13} />
+                  ) : (
+                    <Link2 size={13} />
+                  )}
                 </button>
               </div>
               <div className="legal-section-body">
@@ -951,7 +974,9 @@ export default function TermsOfService() {
                       <AlertTriangle size={17} />
                     </div>
                     <div>
-                      <div className="legal-callout-title">{s.callout.title}</div>
+                      <div className="legal-callout-title">
+                        {s.callout.title}
+                      </div>
                       <p>{s.callout.text}</p>
                     </div>
                   </div>
@@ -987,7 +1012,10 @@ export default function TermsOfService() {
           </div>
           <div className="legal-faq-list">
             {FAQS.map((f, i) => (
-              <div key={i} className={`legal-faq-item ${openFaq === i ? "open" : ""}`}>
+              <div
+                key={i}
+                className={`legal-faq-item ${openFaq === i ? "open" : ""}`}
+              >
                 <button
                   className="legal-faq-question"
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
@@ -1008,14 +1036,19 @@ export default function TermsOfService() {
       <section className="legal-contact-section" id="lien-he-card">
         <div className="legal-contact-bgtext">EARTHORIA</div>
         <div className="legal-contact-inner">
-          <span className="legal-contact-eyebrow reveal">Vẫn còn thắc mắc?</span>
+          <span className="legal-contact-eyebrow reveal">
+            Vẫn còn thắc mắc?
+          </span>
           <h2 className="legal-contact-title reveal">
             Đội ngũ pháp lý của chúng tôi
             <br />
             <em>luôn sẵn sàng lắng nghe</em>
           </h2>
           <div className="legal-contact-grid reveal">
-            <a href="mailto:helpdesk.earthoria@gmail.com" className="legal-contact-item">
+            <a
+              href="mailto:helpdesk.earthoria@gmail.com"
+              className="legal-contact-item"
+            >
               <Mail size={15} />
               helpdesk.earthoria@gmail.com
             </a>

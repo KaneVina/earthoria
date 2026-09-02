@@ -50,7 +50,7 @@ const SUMMARY_CARDS = [
   {
     icon: Clock,
     title: "Vòng đời rõ ràng",
-    desc: "Mỗi loại cookie có thời hạn lưu trữ cụ thể, được liệt kê minh bạch bên dưới — không có cookie \"vĩnh viễn\" ẩn.",
+    desc: 'Mỗi loại cookie có thời hạn lưu trữ cụ thể, được liệt kê minh bạch bên dưới — không có cookie "vĩnh viễn" ẩn.',
   },
   {
     icon: Eye,
@@ -84,7 +84,8 @@ const COOKIE_TABLE = [
   {
     name: "_ga, _gid",
     provider: "Google Analytics",
-    purpose: "Thống kê lượt truy cập và hành vi sử dụng ở cấp độ tổng hợp, ẩn danh",
+    purpose:
+      "Thống kê lượt truy cập và hành vi sử dụng ở cấp độ tổng hợp, ẩn danh",
     duration: "Tối đa 13 tháng",
     type: "Phân tích",
   },
@@ -98,7 +99,8 @@ const COOKIE_TABLE = [
   {
     name: "fb_pixel, ttq_*",
     provider: "Đối tác quảng cáo",
-    purpose: "Đo lường hiệu quả chiến dịch tiếp thị — chỉ đặt khi bạn đồng ý và không dành cho hồ sơ trẻ em",
+    purpose:
+      "Đo lường hiệu quả chiến dịch tiếp thị — chỉ đặt khi bạn đồng ý và không dành cho hồ sơ trẻ em",
     duration: "Tối đa 3 tháng",
     type: "Quảng cáo",
   },
@@ -110,7 +112,7 @@ const SECTIONS = [
     num: "01",
     title: "Cookie Là Gì & Hoạt Động Như Thế Nào",
     paragraphs: [
-      "Cookie là các tệp văn bản nhỏ được lưu trên trình duyệt hoặc thiết bị của bạn khi truy cập website hoặc sử dụng ứng dụng Earthoria. Cookie giúp hệ thống \"ghi nhớ\" bạn giữa các lượt truy cập — ví dụ như giữ sản phẩm trong giỏ hàng hoặc ghi nhớ trạng thái đăng nhập.",
+      'Cookie là các tệp văn bản nhỏ được lưu trên trình duyệt hoặc thiết bị của bạn khi truy cập website hoặc sử dụng ứng dụng Earthoria. Cookie giúp hệ thống "ghi nhớ" bạn giữa các lượt truy cập — ví dụ như giữ sản phẩm trong giỏ hàng hoặc ghi nhớ trạng thái đăng nhập.',
       "Chính sách này áp dụng cho cookie trình duyệt web, cũng như các công nghệ tương tự trên ứng dụng di động như local storage, SDK phân tích và mã định danh thiết bị, được mô tả chi tiết tại Mục 07.",
     ],
   },
@@ -166,12 +168,12 @@ const SECTIONS = [
       "Vì đối tượng phục vụ chính của Earthoria bao gồm trẻ em, chúng tôi áp dụng nguyên tắc thận trọng cao nhất đối với cookie trên các phiên sử dụng của trẻ.",
     ],
     callout: {
-      title: "Nguyên tắc \"không quảng cáo, không theo dõi\" cho trẻ em",
+      title: 'Nguyên tắc "không quảng cáo, không theo dõi" cho trẻ em',
       text: "Khi một hồ sơ trong Bảng điều khiển gia đình được đánh dấu là trẻ em, hệ thống tự động chặn toàn bộ cookie quảng cáo và giới hạn cookie phân tích ở mức tối thiểu cần thiết để vận hành ứng dụng. Dữ liệu từ các phiên này không bao giờ được dùng để xây dựng hồ sơ quảng cáo.",
     },
     list: [
       "Cookie cá nhân hóa cho hồ sơ trẻ em chỉ ghi nhớ độ tuổi và thể loại sách đã đọc, không thu thập vị trí, thiết bị liên kết hay hành vi ngoài ứng dụng",
-      "Phụ huynh có thể xem và xóa toàn bộ dữ liệu cookie liên quan đến hồ sơ trẻ thông qua \"Bảng điều khiển gia đình\"",
+      'Phụ huynh có thể xem và xóa toàn bộ dữ liệu cookie liên quan đến hồ sơ trẻ thông qua "Bảng điều khiển gia đình"',
       "Earthoria không cho phép bất kỳ đối tác quảng cáo nào đặt cookie theo dõi trên phiên được xác định là trẻ em dưới 13 tuổi",
     ],
   },
@@ -208,7 +210,7 @@ const SECTIONS = [
     list: [
       "Bảng điều khiển cookie của Earthoria — vào Cài đặt → Quyền riêng tư → Tùy chọn Cookie để bật/tắt từng nhóm (trừ nhóm Cần thiết)",
       "Cài đặt trình duyệt — hầu hết trình duyệt (Chrome, Safari, Firefox, Edge) cho phép chặn hoặc xóa cookie theo từng trang web trong phần Cài đặt quyền riêng tư",
-      "Cài đặt quảng cáo cá nhân hóa trên thiết bị di động — tắt \"Cho phép theo dõi\" (iOS) hoặc \"Tắt cá nhân hóa quảng cáo\" (Android) trong cài đặt hệ điều hành",
+      'Cài đặt quảng cáo cá nhân hóa trên thiết bị di động — tắt "Cho phép theo dõi" (iOS) hoặc "Tắt cá nhân hóa quảng cáo" (Android) trong cài đặt hệ điều hành',
       "Tín hiệu Do Not Track / Global Privacy Control — Earthoria tôn trọng các tín hiệu này khi trình duyệt của bạn gửi kèm yêu cầu truy cập",
     ],
   },
@@ -258,7 +260,7 @@ const FAQS = [
   },
   {
     q: "Tôi đã đồng ý cookie quảng cáo rồi, giờ muốn đổi ý thì sao?",
-    a: 'Bạn có thể rút lại sự đồng ý bất cứ lúc nào tại Cài đặt → Quyền riêng tư → Tùy chọn Cookie. Cookie quảng cáo hiện có sẽ hết hạn tự nhiên hoặc bị xóa trong vòng 24 giờ sau khi bạn tắt.',
+    a: "Bạn có thể rút lại sự đồng ý bất cứ lúc nào tại Cài đặt → Quyền riêng tư → Tùy chọn Cookie. Cookie quảng cáo hiện có sẽ hết hạn tự nhiên hoặc bị xóa trong vòng 24 giờ sau khi bạn tắt.",
   },
   {
     q: "Cookie phân tích có thu thập tên hoặc email của tôi không?",
@@ -288,12 +290,18 @@ export default function CookiePolicy() {
     const update = () => {
       const el = document.documentElement;
       const scrollTop = el.scrollTop || document.body.scrollTop;
-      const scrollHeight = (el.scrollHeight || document.body.scrollHeight) - el.clientHeight;
+      const scrollHeight =
+        (el.scrollHeight || document.body.scrollHeight) - el.clientHeight;
       setProgress(scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0);
       setShowTop(scrollTop > 700);
       ticking = false;
     };
-    const onScroll = () => { if (!ticking) { window.requestAnimationFrame(update); ticking = true; } };
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(update);
+        ticking = true;
+      }
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     update();
     return () => window.removeEventListener("scroll", onScroll);
@@ -302,10 +310,16 @@ export default function CookiePolicy() {
   /* scrollspy */
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) setActiveId(e.target.id); }),
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) setActiveId(e.target.id);
+        }),
       { rootMargin: "-130px 0px -65% 0px", threshold: 0 },
     );
-    SECTIONS.forEach((s) => { const el = document.getElementById(s.id); if (el) observer.observe(el); });
+    SECTIONS.forEach((s) => {
+      const el = document.getElementById(s.id);
+      if (el) observer.observe(el);
+    });
     return () => observer.disconnect();
   }, []);
 
@@ -330,7 +344,10 @@ export default function CookiePolicy() {
   /* reveal-on-scroll */
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("in"); }),
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) e.target.classList.add("in");
+        }),
       { threshold: 0.1 },
     );
     document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
@@ -354,16 +371,23 @@ export default function CookiePolicy() {
 
   const typeToClass = (type) => {
     switch (type) {
-      case "Cần thiết": return "necessary";
-      case "Phân tích": return "analytics";
-      case "Cá nhân hóa": return "personalization";
-      case "Quảng cáo": return "marketing";
-      default: return "necessary";
+      case "Cần thiết":
+        return "necessary";
+      case "Phân tích":
+        return "analytics";
+      case "Cá nhân hóa":
+        return "personalization";
+      case "Quảng cáo":
+        return "marketing";
+      default:
+        return "necessary";
     }
   };
 
   const filteredSections = tocQuery
-    ? SECTIONS.filter((s) => s.title.toLowerCase().includes(tocQuery.toLowerCase()))
+    ? SECTIONS.filter((s) =>
+        s.title.toLowerCase().includes(tocQuery.toLowerCase()),
+      )
     : SECTIONS;
 
   return (
@@ -797,13 +821,20 @@ export default function CookiePolicy() {
       `}</style>
 
       <div className="legal-progress-rail">
-        <div className="legal-progress-fill" style={{ width: `${progress}%` }} />
+        <div
+          className="legal-progress-fill"
+          style={{ width: `${progress}%` }}
+        />
       </div>
 
       <div className="breadcrumb">
-        <Link to="/" className="breadcrumb-item">Trang chủ</Link>
+        <Link to="/" className="breadcrumb-item">
+          Trang chủ
+        </Link>
         <span className="breadcrumb-sep">/</span>
-        <Link to="/legal" className="breadcrumb-item">Pháp lý</Link>
+        <Link to="/legal" className="breadcrumb-item">
+          Pháp lý
+        </Link>
         <span className="breadcrumb-sep">/</span>
         <span className="breadcrumb-current">Chính sách Cookie</span>
       </div>
@@ -846,7 +877,10 @@ export default function CookiePolicy() {
             </div>
           </div>
           <div className="legal-hero-actions">
-            <button className="legal-btn-main" onClick={() => scrollToSection(SECTIONS[0].id)}>
+            <button
+              className="legal-btn-main"
+              onClick={() => scrollToSection(SECTIONS[0].id)}
+            >
               Bắt đầu đọc <ChevronDown size={14} />
             </button>
             <button className="legal-btn-ghost" onClick={() => window.print()}>
@@ -860,8 +894,13 @@ export default function CookiePolicy() {
       <section className="legal-summary">
         <div className="legal-summary-inner">
           {SUMMARY_CARDS.map((card, i) => (
-            <div className={`legal-summary-card reveal reveal-delay-${i + 1}`} key={i}>
-              <div className="legal-summary-icon"><card.icon size={20} /></div>
+            <div
+              className={`legal-summary-card reveal reveal-delay-${i + 1}`}
+              key={i}
+            >
+              <div className="legal-summary-icon">
+                <card.icon size={20} />
+              </div>
               <h3>{card.title}</h3>
               <p>{card.desc}</p>
             </div>
@@ -895,20 +934,36 @@ export default function CookiePolicy() {
                 </button>
               ))}
               {filteredSections.length === 0 && (
-                <div className="legal-toc-empty">Không tìm thấy mục nào phù hợp</div>
+                <div className="legal-toc-empty">
+                  Không tìm thấy mục nào phù hợp
+                </div>
               )}
             </nav>
             <div className="legal-toc-divider" />
-            <button className="legal-toc-item" onClick={() => scrollToSection("faq")}>
-              <Users size={14} /><span>Câu hỏi thường gặp</span>
+            <button
+              className="legal-toc-item"
+              onClick={() => scrollToSection("faq")}
+            >
+              <Users size={14} />
+              <span>Câu hỏi thường gặp</span>
             </button>
-            <button className="legal-toc-item" onClick={() => scrollToSection("lien-he-card")}>
-              <Mail size={14} /><span>Liên hệ hỗ trợ</span>
+            <button
+              className="legal-toc-item"
+              onClick={() => scrollToSection("lien-he-card")}
+            >
+              <Mail size={14} />
+              <span>Liên hệ hỗ trợ</span>
             </button>
             <div className="legal-sidebar-card">
               <div className="legal-sidebar-card-title">Tùy chọn Cookie</div>
-              <p>Điều chỉnh nhóm cookie bạn cho phép trực tiếp trong tài khoản của bạn.</p>
-              <a href="mailto:helpdesk.earthoria@gmail.com" className="legal-sidebar-card-link">
+              <p>
+                Điều chỉnh nhóm cookie bạn cho phép trực tiếp trong tài khoản
+                của bạn.
+              </p>
+              <a
+                href="mailto:helpdesk.earthoria@gmail.com"
+                className="legal-sidebar-card-link"
+              >
                 helpdesk.earthoria@gmail.com
               </a>
             </div>
@@ -926,17 +981,27 @@ export default function CookiePolicy() {
                   title="Sao chép liên kết tới mục này"
                   onClick={() => handleCopyLink(s.id)}
                 >
-                  {copiedId === s.id ? <Check size={13} /> : <Link2 size={13} />}
+                  {copiedId === s.id ? (
+                    <Check size={13} />
+                  ) : (
+                    <Link2 size={13} />
+                  )}
                 </button>
               </div>
               <div className="legal-section-body">
-                {s.paragraphs?.map((p, i) => <p key={i}>{p}</p>)}
+                {s.paragraphs?.map((p, i) => (
+                  <p key={i}>{p}</p>
+                ))}
 
                 {s.callout && (
                   <div className="legal-callout">
-                    <div className="legal-callout-icon"><ShieldCheck size={17} /></div>
+                    <div className="legal-callout-icon">
+                      <ShieldCheck size={17} />
+                    </div>
                     <div>
-                      <div className="legal-callout-title">{s.callout.title}</div>
+                      <div className="legal-callout-title">
+                        {s.callout.title}
+                      </div>
                       <p>{s.callout.text}</p>
                     </div>
                   </div>
@@ -945,7 +1010,10 @@ export default function CookiePolicy() {
                 {s.list && (
                   <ul>
                     {s.list.map((item, i) => (
-                      <li key={i}><span className="legal-li-dot" /><span>{item}</span></li>
+                      <li key={i}>
+                        <span className="legal-li-dot" />
+                        <span>{item}</span>
+                      </li>
                     ))}
                   </ul>
                 )}
@@ -970,7 +1038,9 @@ export default function CookiePolicy() {
                             <td>{c.purpose}</td>
                             <td>{c.duration}</td>
                             <td>
-                              <span className={`legal-cookie-badge ${typeToClass(c.type)}`}>
+                              <span
+                                className={`legal-cookie-badge ${typeToClass(c.type)}`}
+                              >
                                 {c.type}
                               </span>
                             </td>
@@ -985,45 +1055,68 @@ export default function CookiePolicy() {
                   <div className="legal-data-grid">
                     <div className="legal-data-cell">
                       <span className="legal-data-cell-label">
-                        <Database size={11} style={{ marginRight: 5, verticalAlign: -1 }} />
+                        <Database
+                          size={11}
+                          style={{ marginRight: 5, verticalAlign: -1 }}
+                        />
                         Cookie cần thiết
                       </span>
-                      <span className="legal-data-cell-val">Phiên làm việc đến 12 tháng</span>
+                      <span className="legal-data-cell-val">
+                        Phiên làm việc đến 12 tháng
+                      </span>
                     </div>
                     <div className="legal-data-cell">
                       <span className="legal-data-cell-label">
-                        <BarChart3 size={11} style={{ marginRight: 5, verticalAlign: -1 }} />
+                        <BarChart3
+                          size={11}
+                          style={{ marginRight: 5, verticalAlign: -1 }}
+                        />
                         Cookie phân tích
                       </span>
-                      <span className="legal-data-cell-val">Tối đa 13 tháng</span>
+                      <span className="legal-data-cell-val">
+                        Tối đa 13 tháng
+                      </span>
                     </div>
                     <div className="legal-data-cell">
                       <span className="legal-data-cell-label">
-                        <Settings2 size={11} style={{ marginRight: 5, verticalAlign: -1 }} />
+                        <Settings2
+                          size={11}
+                          style={{ marginRight: 5, verticalAlign: -1 }}
+                        />
                         Cookie cá nhân hóa
                       </span>
-                      <span className="legal-data-cell-val">Tối đa 6 tháng</span>
+                      <span className="legal-data-cell-val">
+                        Tối đa 6 tháng
+                      </span>
                     </div>
                     <div className="legal-data-cell">
                       <span className="legal-data-cell-label">
-                        <Megaphone size={11} style={{ marginRight: 5, verticalAlign: -1 }} />
+                        <Megaphone
+                          size={11}
+                          style={{ marginRight: 5, verticalAlign: -1 }}
+                        />
                         Cookie quảng cáo
                       </span>
-                      <span className="legal-data-cell-val">Tối đa 3 tháng</span>
+                      <span className="legal-data-cell-val">
+                        Tối đa 3 tháng
+                      </span>
                     </div>
                   </div>
                 )}
 
                 {s.id === "cookie-tre-em" && (
                   <div className="legal-callout" style={{ marginTop: 0 }}>
-                    <div className="legal-callout-icon"><AlertTriangle size={17} /></div>
+                    <div className="legal-callout-icon">
+                      <AlertTriangle size={17} />
+                    </div>
                     <div>
-                      <div className="legal-callout-title">Phát hiện sai sót?</div>
+                      <div className="legal-callout-title">
+                        Phát hiện sai sót?
+                      </div>
                       <p>
                         Nếu bạn phát hiện cookie quảng cáo xuất hiện trên hồ sơ
-                        được đánh dấu trẻ em, vui lòng báo ngay cho Bộ phận
-                        Bảo vệ Dữ liệu để được xử lý và khắc phục trong vòng
-                        24 giờ.
+                        được đánh dấu trẻ em, vui lòng báo ngay cho Bộ phận Bảo
+                        vệ Dữ liệu để được xử lý và khắc phục trong vòng 24 giờ.
                       </p>
                     </div>
                   </div>
@@ -1031,13 +1124,17 @@ export default function CookiePolicy() {
 
                 {s.id === "ung-dung-di-dong" && (
                   <div className="legal-callout" style={{ marginTop: 0 }}>
-                    <div className="legal-callout-icon"><Smartphone size={17} /></div>
+                    <div className="legal-callout-icon">
+                      <Smartphone size={17} />
+                    </div>
                     <div>
-                      <div className="legal-callout-title">Tách biệt hoàn toàn với dữ liệu AR</div>
+                      <div className="legal-callout-title">
+                        Tách biệt hoàn toàn với dữ liệu AR
+                      </div>
                       <p>
                         Trải nghiệm AR và Trợ lý AI được thiết kế để không phụ
-                        thuộc vào cookie theo dõi hành vi hay quảng cáo, dù
-                        bạn có bật hay tắt các nhóm cookie khác.
+                        thuộc vào cookie theo dõi hành vi hay quảng cáo, dù bạn
+                        có bật hay tắt các nhóm cookie khác.
                       </p>
                     </div>
                   </div>
@@ -1045,14 +1142,17 @@ export default function CookiePolicy() {
 
                 {s.id === "ben-thu-ba" && (
                   <div className="legal-callout" style={{ marginTop: 0 }}>
-                    <div className="legal-callout-icon"><Globe2 size={17} /></div>
+                    <div className="legal-callout-icon">
+                      <Globe2 size={17} />
+                    </div>
                     <div>
-                      <div className="legal-callout-title">Hợp đồng bảo mật với đối tác</div>
+                      <div className="legal-callout-title">
+                        Hợp đồng bảo mật với đối tác
+                      </div>
                       <p>
-                        Mọi bên thứ ba đặt cookie trên hệ thống Earthoria đều
-                        ký hợp đồng xử lý dữ liệu (Data Processing Agreement)
-                        cam kết không sử dụng dữ liệu ngoài phạm vi được ủy
-                        quyền.
+                        Mọi bên thứ ba đặt cookie trên hệ thống Earthoria đều ký
+                        hợp đồng xử lý dữ liệu (Data Processing Agreement) cam
+                        kết không sử dụng dữ liệu ngoài phạm vi được ủy quyền.
                       </p>
                     </div>
                   </div>
@@ -1072,11 +1172,16 @@ export default function CookiePolicy() {
               <span className="section-eyebrow-text">Giải Đáp Nhanh</span>
               <div className="section-eyebrow-line" />
             </div>
-            <h2 className="section-title">Câu Hỏi <em>Thường Gặp</em></h2>
+            <h2 className="section-title">
+              Câu Hỏi <em>Thường Gặp</em>
+            </h2>
           </div>
           <div className="legal-faq-list">
             {FAQS.map((f, i) => (
-              <div key={i} className={`legal-faq-item ${openFaq === i ? "open" : ""}`}>
+              <div
+                key={i}
+                className={`legal-faq-item ${openFaq === i ? "open" : ""}`}
+              >
                 <button
                   className="legal-faq-question"
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
@@ -1084,7 +1189,9 @@ export default function CookiePolicy() {
                   {f.q}
                   <ChevronDown className="legal-faq-chevron" size={18} />
                 </button>
-                <div className="legal-faq-answer"><p>{f.a}</p></div>
+                <div className="legal-faq-answer">
+                  <p>{f.a}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -1095,21 +1202,29 @@ export default function CookiePolicy() {
       <section className="legal-contact-section" id="lien-he-card">
         <div className="legal-contact-bgtext">EARTHORIA</div>
         <div className="legal-contact-inner">
-          <span className="legal-contact-eyebrow reveal">Vẫn còn thắc mắc?</span>
+          <span className="legal-contact-eyebrow reveal">
+            Vẫn còn thắc mắc?
+          </span>
           <h2 className="legal-contact-title reveal">
             Bộ phận Bảo vệ Dữ liệu
             <br />
             <em>luôn sẵn sàng lắng nghe</em>
           </h2>
           <div className="legal-contact-grid reveal">
-            <a href="mailto:helpdesk.earthoria@gmail.com" className="legal-contact-item">
-              <Mail size={15} />helpdesk.earthoria@gmail.com
+            <a
+              href="mailto:helpdesk.earthoria@gmail.com"
+              className="legal-contact-item"
+            >
+              <Mail size={15} />
+              helpdesk.earthoria@gmail.com
             </a>
             <a href="tel:19006868" className="legal-contact-item">
-              <Phone size={15} />1900 6868
+              <Phone size={15} />
+              1900 6868
             </a>
             <span className="legal-contact-item">
-              <MapPin size={15} />Tầng 12, Tòa nhà Earthoria, Q.1, TP.HCM
+              <MapPin size={15} />
+              Tầng 12, Tòa nhà Earthoria, Q.1, TP.HCM
             </span>
           </div>
         </div>

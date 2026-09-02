@@ -49,7 +49,8 @@ export const emptyVariant = (format) => ({
 
 /* % giảm hiển thị dạng badge */
 export const calcDiscountPercent = (base, sale) => {
-  const b = Number(base), s = Number(sale);
+  const b = Number(base),
+    s = Number(sale);
   if (!b || !s || s >= b) return 0;
   return Math.round((1 - s / b) * 100);
 };
@@ -136,8 +137,18 @@ export const formToPayload = (form) => ({
       ...(v.id ? { id: v.id } : {}),
       format: v.format,
       price: basePrice,
-      salePrice: computeModePrice(v.saleMode, v.salePercent, v.salePrice, basePrice),
-      dealerPrice: computeModePrice(v.dealerMode, v.dealerPercent, v.dealerPrice, basePrice),
+      salePrice: computeModePrice(
+        v.saleMode,
+        v.salePercent,
+        v.salePrice,
+        basePrice,
+      ),
+      dealerPrice: computeModePrice(
+        v.dealerMode,
+        v.dealerPercent,
+        v.dealerPrice,
+        basePrice,
+      ),
       stock: Number(v.stock) || 0,
       unit: v.unit || "Cuốn",
       isUnlimitedStock: v.format === "DIGITAL",

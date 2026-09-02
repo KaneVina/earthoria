@@ -61,6 +61,8 @@ import {
   Bookmark,
   BookmarkCheck,
   SwatchBook,
+  Menu,
+  Clock,
 } from "lucide-react";
 import ColorPaletteStudio from "../../pages/admin/colorPalette/ColorPaletteStudio";
 
@@ -1051,6 +1053,9 @@ export function PreviewOverlay({
   storageKey,
   resumeFromStorage,
   onProgress,
+  // { dailyLimitMinutes, todayMinutes } — chỉ truyền khi đang ở link đọc
+  // riêng của bé, dùng để hiện "giờ đọc còn lại" do ba mẹ thiết lập.
+  kidTimeInfo,
 }) {
   const THEMES = {
     forest: { label: "Rừng đêm" },
@@ -1102,11 +1107,22 @@ export function PreviewOverlay({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   const [direction, setDirection] = useState("next");
+  // Header thu gọn: mặc định chỉ hiện nút Đóng + Hamburger, bấm Hamburger
+  // mới hiện các nút chức năng (giúp thấy sách nhiều hơn).
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [timeInfoOpen, setTimeInfoOpen] = useState(false);
+  // Thanh số trang dưới cùng: mặc định ẩn/trong suốt, chỉ hiện khi rê
+  // chuột / chạm vào vùng dưới màn hình.
+  const [bottomBarActive, setBottomBarActive] = useState(false);
 
   const autoPlay = readMode === "auto";
 
   const wrapRef = useRef(null);
   const themeBoxRef = useRef(null);
+  const toolsBoxRef = useRef(null);
+  const timeBoxRef = useRef(null);
+  const activeDotRef = useRef(null);
+  const bottomHideTimer = useRef(null);
   const lineHoverTimer = useRef(null);
 
   const toggleFullscreen = () => {
@@ -1195,6 +1211,56 @@ export function PreviewOverlay({
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, [themeMenuOpen]);
+
+  // Đóng popover công cụ (hamburger) khi bấm ra ngoài
+  useEffect(() => {
+    if (!toolsOpen) return;
+    const onDocClick = (e) => {
+      if (toolsBoxRef.current && !toolsBoxRef.current.contains(e.target))
+        setToolsOpen(false);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [toolsOpen]);
+
+  // Đóng popover giờ đọc còn lại khi bấm ra ngoài
+  useEffect(() => {
+    if (!timeInfoOpen) return;
+    const onDocClick = (e) => {
+      if (timeBoxRef.current && !timeBoxRef.current.contains(e.target))
+        setTimeInfoOpen(false);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [timeInfoOpen]);
+
+  // Tự cuộn dãy số trang phía dưới để trang đang active luôn lọt vào
+  // vùng nhìn thấy (trước đây chỉ đổi màu active nhưng không cuộn tới).
+  useEffect(() => {
+    activeDotRef.current?.scrollIntoView({
+      behavior: "smooth",
+      inline: "center",
+      block: "nearest",
+    });
+  }, [idx, pageView]);
+
+  // Hiện/ẩn thanh số trang dưới cùng khi rê chuột / chạm vào vùng dưới
+  const showBottomBar = () => {
+    if (bottomHideTimer.current) clearTimeout(bottomHideTimer.current);
+    setBottomBarActive(true);
+  };
+  const scheduleHideBottomBar = (delay = 1600) => {
+    if (bottomHideTimer.current) clearTimeout(bottomHideTimer.current);
+    bottomHideTimer.current = setTimeout(
+      () => setBottomBarActive(false),
+      delay,
+    );
+  };
+  useEffect(() => {
+    return () => {
+      if (bottomHideTimer.current) clearTimeout(bottomHideTimer.current);
+    };
+  }, []);
 
   // Tự lưu vị trí đang đọc (chỉ khi resumeFromStorage được bật, tức trang đọc công khai)
   useEffect(() => {
@@ -1351,9 +1417,14 @@ export function PreviewOverlay({
 
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === "Escape" && (infoOpen || tocOpen)) {
+      if (
+        e.key === "Escape" &&
+        (infoOpen || tocOpen || toolsOpen || timeInfoOpen)
+      ) {
         setInfoOpen(false);
         setTocOpen(false);
+        setToolsOpen(false);
+        setTimeInfoOpen(false);
         return;
       }
       if (e.key === "ArrowRight") goNext();
@@ -1366,7 +1437,7 @@ export function PreviewOverlay({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idx, pageView, autoPlay, infoOpen, tocOpen]);
+  }, [idx, pageView, autoPlay, infoOpen, tocOpen, toolsOpen, timeInfoOpen]);
 
   const stageW = visiblePages.length === 2 ? PAGE_W * 2 + SPREAD_GAP : PAGE_W;
   const effectiveScale = scale * zoom;
@@ -1376,6 +1447,27 @@ export function PreviewOverlay({
       : `Trang ${idx + 1} / ${pages.length}`;
   const canGoNext = nextGroupStart(idx) !== idx;
   const canGoPrev = idx !== 0;
+
+  const hasKidTimeLimit =
+    !!kidTimeInfo && Number(kidTimeInfo.dailyLimitMinutes) > 0;
+  const remainingMinutes = hasKidTimeLimit
+    ? Math.max(
+        0,
+        Math.round(
+          kidTimeInfo.dailyLimitMinutes - (kidTimeInfo.todayMinutes || 0),
+        ),
+      )
+    : null;
+  const usedPct = hasKidTimeLimit
+    ? Math.min(
+        100,
+        Math.round(
+          ((kidTimeInfo.todayMinutes || 0) / kidTimeInfo.dailyLimitMinutes) *
+            100,
+        ),
+      )
+    : 0;
+  const timeIsLow = remainingMinutes != null && remainingMinutes <= 10;
 
   return (
     <div className={`er-shell er-theme-${theme}`}>
@@ -1403,149 +1495,204 @@ export function PreviewOverlay({
           <X size={18} />
         </button>
 
-        <div className="er-title">
-          <span className="er-title-page">{pageLabel}</span>
-          {page?.title && <span className="er-title-name">{page.title}</span>}
-        </div>
+        <div className="er-topbar-spacer" />
 
-        <div className="er-tools">
-          <button
-            className={`er-tool-btn ${tocOpen ? "active" : ""}`}
-            title="Mục lục"
-            onClick={() => {
-              setTocOpen((v) => !v);
-              setInfoOpen(false);
-            }}
-          >
-            <List size={15} />
-          </button>
-
-          <button
-            className={`er-tool-btn ${
-              page && bookmarks.includes(page.id) ? "active" : ""
-            }`}
-            title={
-              page && bookmarks.includes(page.id)
-                ? "Bỏ đánh dấu trang này"
-                : "Đánh dấu trang này"
-            }
-            onClick={() => page && toggleBookmark(page.id)}
-          >
-            {page && bookmarks.includes(page.id) ? (
-              <BookmarkCheck size={15} className="er-bookmark-pop" />
-            ) : (
-              <Bookmark size={15} />
-            )}
-          </button>
-
-          <button
-            className={`er-tool-btn ${infoOpen ? "active" : ""}`}
-            title="Thông tin sách"
-            onClick={() => {
-              setInfoOpen((v) => !v);
-              setTocOpen(false);
-            }}
-          >
-            <Info size={15} />
-          </button>
-
-          <div className="er-tool-group" ref={themeBoxRef}>
+        {hasKidTimeLimit && (
+          <div className="er-tool-group" ref={timeBoxRef}>
             <button
-              className={`er-tool-btn ${themeMenuOpen ? "active" : ""}`}
-              title="Đổi màu nền"
-              onClick={() => setThemeMenuOpen((v) => !v)}
+              className={`er-tool-btn er-time-btn ${timeInfoOpen ? "active" : ""} ${
+                timeIsLow ? "warn" : ""
+              }`}
+              title="Giờ đọc còn lại hôm nay (ba mẹ thiết lập)"
+              onClick={() => setTimeInfoOpen((v) => !v)}
             >
-              <Palette size={15} />
+              <Clock size={15} />
+              <span className="er-tool-label">Còn {remainingMinutes} phút</span>
             </button>
-            {themeMenuOpen && (
-              <div className="er-popover">
-                {Object.entries(THEMES).map(([key, t]) => (
-                  <button
-                    key={key}
-                    className={`er-swatch ${theme === key ? "active" : ""}`}
-                    onClick={() => {
-                      setTheme(key);
-                      setThemeMenuOpen(false);
-                    }}
-                  >
-                    <span className={`er-swatch-dot er-swatch-dot--${key}`} />
-                    <span className="er-swatch-label">{t.label}</span>
-                  </button>
-                ))}
+            {timeInfoOpen && (
+              <div className="er-popover er-time-popover">
+                <div className="er-time-popover-row">
+                  <span>Đã đọc hôm nay</span>
+                  <strong>{kidTimeInfo.todayMinutes || 0} phút</strong>
+                </div>
+                <div className="er-time-bar">
+                  <div
+                    className={`er-time-bar-fill ${timeIsLow ? "warn" : ""}`}
+                    style={{ width: `${usedPct}%` }}
+                  />
+                </div>
+                <div className="er-time-popover-row">
+                  <span>Ba mẹ cho phép</span>
+                  <strong>{kidTimeInfo.dailyLimitMinutes} phút/ngày</strong>
+                </div>
               </div>
             )}
           </div>
+        )}
 
-          <div className="er-zoom-group">
-            <button
-              className="er-tool-btn"
-              title="Thu nhỏ trang"
-              onClick={() =>
-                setZoom((s) => Math.max(0.6, +(s - 0.15).toFixed(2)))
-              }
-            >
-              <Minus size={14} />
-            </button>
-            <span className="er-font-value">{Math.round(zoom * 100)}%</span>
-            <button
-              className="er-tool-btn"
-              title="Phóng to trang"
-              onClick={() =>
-                setZoom((s) => Math.min(2.2, +(s + 0.15).toFixed(2)))
-              }
-            >
-              <Plus size={14} />
-            </button>
-          </div>
-
+        <div className="er-tool-group" ref={toolsBoxRef}>
           <button
-            className="er-tool-btn"
-            title={pageView === "double" ? "Xem 1 trang" : "Xem 2 trang"}
-            onClick={togglePageView}
+            className={`er-icon-btn er-hamburger-btn ${toolsOpen ? "active" : ""}`}
+            title={toolsOpen ? "Ẩn công cụ" : "Công cụ"}
+            onClick={() => setToolsOpen((v) => !v)}
           >
-            <BookOpen size={15} />
-            <span className="er-tool-label">
-              {pageView === "double" ? "2 trang" : "1 trang"}
-            </span>
+            <Menu size={18} />
           </button>
 
-          <button
-            className={`er-tool-btn ${readMode === "auto" ? "active" : ""} ${
-              readMode === "hover" ? "listening" : ""
-            }`}
-            title={
-              readMode === "off"
-                ? "Bấm để bật Tự động đọc"
-                : readMode === "auto"
-                  ? "Đang tự động đọc — bấm để chuyển sang đọc khi rê chuột"
-                  : "Đang đọc khi rê chuột — bấm để tắt"
-            }
-            onClick={() =>
-              setReadMode((m) =>
-                m === "off" ? "auto" : m === "auto" ? "hover" : "off",
-              )
-            }
-          >
-            {readMode === "off" && <VolumeX size={15} />}
-            {readMode === "auto" && <Volume2 size={15} />}
-            {readMode === "hover" && <MousePointer size={15} />}
-            <span className="er-tool-label">
-              {readMode === "off"
-                ? "Tắt đọc"
-                : readMode === "auto"
-                  ? "Tự động đọc"
-                  : "Đọc khi rê"}
-            </span>
-          </button>
+          {toolsOpen && (
+            <div className="er-popover er-popover--tools">
+              <div className="er-title er-title--floating">
+                <span className="er-title-page">{pageLabel}</span>
+                {page?.title && (
+                  <span className="er-title-name">{page.title}</span>
+                )}
+              </div>
 
-          <button
-            className={`er-tool-btn ${isFullscreen ? "active" : ""}`}
-            title={isFullscreen ? "Thoát toàn màn hình" : "Toàn màn hình"}
-            onClick={toggleFullscreen}
-          >
-            <Maximize2 size={15} />
-            <span className="er-tool-label">Toàn màn hình</span>
-          </button>
+              <div className="er-tools">
+                <button
+                  className={`er-tool-btn ${tocOpen ? "active" : ""}`}
+                  title="Mục lục"
+                  onClick={() => {
+                    setTocOpen((v) => !v);
+                    setInfoOpen(false);
+                  }}
+                >
+                  <List size={15} />
+                </button>
+
+                <button
+                  className={`er-tool-btn ${
+                    page && bookmarks.includes(page.id) ? "active" : ""
+                  }`}
+                  title={
+                    page && bookmarks.includes(page.id)
+                      ? "Bỏ đánh dấu trang này"
+                      : "Đánh dấu trang này"
+                  }
+                  onClick={() => page && toggleBookmark(page.id)}
+                >
+                  {page && bookmarks.includes(page.id) ? (
+                    <BookmarkCheck size={15} className="er-bookmark-pop" />
+                  ) : (
+                    <Bookmark size={15} />
+                  )}
+                </button>
+
+                <button
+                  className={`er-tool-btn ${infoOpen ? "active" : ""}`}
+                  title="Thông tin sách"
+                  onClick={() => {
+                    setInfoOpen((v) => !v);
+                    setTocOpen(false);
+                  }}
+                >
+                  <Info size={15} />
+                </button>
+
+                <div className="er-tool-group" ref={themeBoxRef}>
+                  <button
+                    className={`er-tool-btn ${themeMenuOpen ? "active" : ""}`}
+                    title="Đổi màu nền"
+                    onClick={() => setThemeMenuOpen((v) => !v)}
+                  >
+                    <Palette size={15} />
+                  </button>
+                  {themeMenuOpen && (
+                    <div className="er-popover">
+                      {Object.entries(THEMES).map(([key, t]) => (
+                        <button
+                          key={key}
+                          className={`er-swatch ${theme === key ? "active" : ""}`}
+                          onClick={() => {
+                            setTheme(key);
+                            setThemeMenuOpen(false);
+                          }}
+                        >
+                          <span
+                            className={`er-swatch-dot er-swatch-dot--${key}`}
+                          />
+                          <span className="er-swatch-label">{t.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="er-zoom-group">
+                  <button
+                    className="er-tool-btn"
+                    title="Thu nhỏ trang"
+                    onClick={() =>
+                      setZoom((s) => Math.max(0.6, +(s - 0.15).toFixed(2)))
+                    }
+                  >
+                    <Minus size={14} />
+                  </button>
+                  <span className="er-font-value">
+                    {Math.round(zoom * 100)}%
+                  </span>
+                  <button
+                    className="er-tool-btn"
+                    title="Phóng to trang"
+                    onClick={() =>
+                      setZoom((s) => Math.min(2.2, +(s + 0.15).toFixed(2)))
+                    }
+                  >
+                    <Plus size={14} />
+                  </button>
+                </div>
+
+                <button
+                  className="er-tool-btn"
+                  title={pageView === "double" ? "Xem 1 trang" : "Xem 2 trang"}
+                  onClick={togglePageView}
+                >
+                  <BookOpen size={15} />
+                  <span className="er-tool-label">
+                    {pageView === "double" ? "2 trang" : "1 trang"}
+                  </span>
+                </button>
+
+                <button
+                  className={`er-tool-btn ${readMode === "auto" ? "active" : ""} ${
+                    readMode === "hover" ? "listening" : ""
+                  }`}
+                  title={
+                    readMode === "off"
+                      ? "Bấm để bật Tự động đọc"
+                      : readMode === "auto"
+                        ? "Đang tự động đọc — bấm để chuyển sang đọc khi rê chuột"
+                        : "Đang đọc khi rê chuột — bấm để tắt"
+                  }
+                  onClick={() =>
+                    setReadMode((m) =>
+                      m === "off" ? "auto" : m === "auto" ? "hover" : "off",
+                    )
+                  }
+                >
+                  {readMode === "off" && <VolumeX size={15} />}
+                  {readMode === "auto" && <Volume2 size={15} />}
+                  {readMode === "hover" && <MousePointer size={15} />}
+                  <span className="er-tool-label">
+                    {readMode === "off"
+                      ? "Tắt đọc"
+                      : readMode === "auto"
+                        ? "Tự động đọc"
+                        : "Đọc khi rê"}
+                  </span>
+                </button>
+
+                <button
+                  className={`er-tool-btn ${isFullscreen ? "active" : ""}`}
+                  title={isFullscreen ? "Thoát toàn màn hình" : "Toàn màn hình"}
+                  onClick={toggleFullscreen}
+                >
+                  <Maximize2 size={15} />
+                  <span className="er-tool-label">Toàn màn hình</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1613,39 +1760,60 @@ export function PreviewOverlay({
         </div>
       </div>
 
-      <div className="er-bottombar">
-        <button className="er-nav-btn" onClick={goPrev} disabled={!canGoPrev}>
-          <ChevronLeft size={18} />
-        </button>
-        <div className="er-page-dots">
-          {pages.map((p, i) => {
-            const isActive =
-              pageView === "double" ? i === idx || i === idx + 1 : i === idx;
-            return (
-              <button
-                key={p.id}
-                type="button"
-                className={`er-page-dot ${isActive ? "active" : ""} ${
-                  isActive && reading ? "is-reading" : ""
-                }`}
-                onClick={() => {
-                  if (i === idx) return;
-                  if (!autoPlay) stop();
-                  setDirection(i >= idx ? "next" : "prev");
-                  setIdx(groupStartFor(i));
-                }}
-              >
-                {i + 1}
-                {bookmarks.includes(p.id) && (
-                  <span className="er-page-dot-mark" />
-                )}
-              </button>
-            );
-          })}
+      <div
+        className={`er-bottom-hotspot ${
+          bottomBarActive ? "er-bottom-hotspot--visible" : ""
+        }`}
+        onMouseEnter={showBottomBar}
+        onMouseMove={showBottomBar}
+        onMouseLeave={() => scheduleHideBottomBar()}
+        onTouchStart={() => {
+          showBottomBar();
+          scheduleHideBottomBar(2200);
+        }}
+      >
+        <span className="er-bottom-hint" />
+        <div
+          className={`er-bottombar ${
+            bottomBarActive ? "er-bottombar--visible" : ""
+          }`}
+        >
+          <button className="er-nav-btn" onClick={goPrev} disabled={!canGoPrev}>
+            <ChevronLeft size={18} />
+          </button>
+          <div className="er-page-dots">
+            {pages.map((p, i) => {
+              const isActive =
+                pageView === "double" ? i === idx || i === idx + 1 : i === idx;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  ref={isActive ? activeDotRef : null}
+                  className={`er-page-dot ${isActive ? "active" : ""} ${
+                    isActive && reading ? "is-reading" : ""
+                  }`}
+                  onClick={() => {
+                    showBottomBar();
+                    scheduleHideBottomBar();
+                    if (i === idx) return;
+                    if (!autoPlay) stop();
+                    setDirection(i >= idx ? "next" : "prev");
+                    setIdx(groupStartFor(i));
+                  }}
+                >
+                  {i + 1}
+                  {bookmarks.includes(p.id) && (
+                    <span className="er-page-dot-mark" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          <button className="er-nav-btn" onClick={goNext} disabled={!canGoNext}>
+            <ChevronRight size={18} />
+          </button>
         </div>
-        <button className="er-nav-btn" onClick={goNext} disabled={!canGoNext}>
-          <ChevronRight size={18} />
-        </button>
       </div>
 
       {infoOpen && (
@@ -2451,7 +2619,9 @@ export default function BookBuilder() {
   const setLayerImageAsPageBackground = (src) => {
     if (!src) return;
     setPagesCommit((prev) =>
-      prev.map((p, i) => (i === pageIndex ? { ...p, backgroundImage: src } : p)),
+      prev.map((p, i) =>
+        i === pageIndex ? { ...p, backgroundImage: src } : p,
+      ),
     );
     toast.success(
       "Đã đặt làm ảnh nền trang. Vào tab Trang để chỉnh vị trí/kiểu hiển thị nếu cần.",
@@ -5096,7 +5266,8 @@ export default function BookBuilder() {
                 <h3>Bảng phối màu</h3>
                 <p className="cp-modal-hint">
                   Bấm 1 ô màu để copy mã · bấm dấu ✓ ở góc để{" "}
-                  {selected && (selected.type === "shape" || selected.type === "text")
+                  {selected &&
+                  (selected.type === "shape" || selected.type === "text")
                     ? "áp dụng vào lớp đang chọn"
                     : "áp dụng làm nền trang"}
                 </p>

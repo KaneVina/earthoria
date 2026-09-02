@@ -1,5 +1,13 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Heart, Flame, BookOpen, Gamepad2, Sparkles, Sprout } from "lucide-react";
+import {
+  X,
+  Heart,
+  Flame,
+  BookOpen,
+  Gamepad2,
+  Sparkles,
+  Sprout,
+} from "lucide-react";
 import GardenTreeVisual from "./GardenTreeVisual";
 import { fmtDurationVi, fmtNumberVi, fmtDateVi } from "./gardenHelpers";
 
@@ -33,7 +41,12 @@ export default function TreeDetailModal({ tree, streak, onClose }) {
             aria-modal="true"
             aria-label={`Chi tiết ${tree?.level?.name || "cây"}`}
           >
-            <button type="button" className="kg-modal-close" onClick={onClose} aria-label="Đóng">
+            <button
+              type="button"
+              className="kg-modal-close"
+              onClick={onClose}
+              aria-label="Đóng"
+            >
               <X size={16} />
             </button>
 
@@ -48,7 +61,9 @@ export default function TreeDetailModal({ tree, streak, onClose }) {
               />
             </div>
 
-            <span className={`kg-modal-status kg-status--${tree.status.toLowerCase()}`}>
+            <span
+              className={`kg-modal-status kg-status--${tree.status.toLowerCase()}`}
+            >
               {STATUS_LABEL[tree.status]}
             </span>
             <h3 className="kg-modal-title">{tree.level.name}</h3>
@@ -59,7 +74,9 @@ export default function TreeDetailModal({ tree, streak, onClose }) {
                 <Heart size={14} />
                 <span>Sức khoẻ</span>
                 <strong>{tree.health}%</strong>
-                <span className="kg-modal-stat-sub">· {tree.healthBand.label}</span>
+                <span className="kg-modal-stat-sub">
+                  · {tree.healthBand.label}
+                </span>
               </div>
             )}
 
@@ -114,7 +131,8 @@ export default function TreeDetailModal({ tree, streak, onClose }) {
 
             {tree.status === "DEAD" && (
               <p className="kg-modal-revive-tip">
-                Cây của con đang nghỉ. Cùng đọc thêm vài trang để khu vườn xanh trở lại nhé! 🌱
+                Cây của con đang nghỉ. Cùng đọc thêm vài trang để khu vườn xanh
+                trở lại nhé! 🌱
               </p>
             )}
           </motion.div>

@@ -1,49 +1,55 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 function buildPageWindow(page, totalPages) {
   if (totalPages <= 7) {
-    return Array.from({ length: totalPages }, (_, i) => i + 1)
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
   }
 
-  const delta = 2
-  const left  = page - delta
-  const right = page + delta
+  const delta = 2;
+  const left = page - delta;
+  const right = page + delta;
 
-  const pages = new Set([1, totalPages])
+  const pages = new Set([1, totalPages]);
   for (let p = Math.max(2, left); p <= Math.min(totalPages - 1, right); p++) {
-    pages.add(p)
+    pages.add(p);
   }
 
-  const sorted = [...pages].sort((a, b) => a - b)
-  const result = []
+  const sorted = [...pages].sort((a, b) => a - b);
+  const result = [];
 
   for (let i = 0; i < sorted.length; i++) {
-    result.push(sorted[i])
-    const next = sorted[i + 1]
+    result.push(sorted[i]);
+    const next = sorted[i + 1];
     if (next && next - sorted[i] > 1) {
-      result.push('…')
+      result.push("…");
     }
   }
 
-  return result
+  return result;
 }
 
-export default function Pagination({ page, totalPages, onPageChange, total, label = 'mục' }) {
-  if (totalPages <= 1 && !total) return null
+export default function Pagination({
+  page,
+  totalPages,
+  onPageChange,
+  total,
+  label = "mục",
+}) {
+  if (totalPages <= 1 && !total) return null;
 
-  const window = buildPageWindow(page, totalPages)
+  const window = buildPageWindow(page, totalPages);
 
   return (
     <div className="a-pagination">
       <span className="a-pagination-info">
-        Tổng <strong style={{ color: 'var(--a-ink)' }}>{total}</strong> {label}
+        Tổng <strong style={{ color: "var(--a-ink)" }}>{total}</strong> {label}
       </span>
 
       <div className="a-pagination-btns">
         {/* Prev */}
         <button
           className="a-page-btn"
-          onClick={() => onPageChange(p => Math.max(1, p - 1))}
+          onClick={() => onPageChange((p) => Math.max(1, p - 1))}
           disabled={page === 1}
           aria-label="Trang trước"
         >
@@ -52,15 +58,15 @@ export default function Pagination({ page, totalPages, onPageChange, total, labe
 
         {/* Page numbers */}
         {window.map((item, i) =>
-          item === '…' ? (
+          item === "…" ? (
             <span
               key={`gap-${i}`}
               style={{
-                padding: '0 4px',
+                padding: "0 4px",
                 fontSize: 12,
-                color: 'rgba(13,51,48,0.35)',
-                userSelect: 'none',
-                alignSelf: 'center',
+                color: "rgba(13,51,48,0.35)",
+                userSelect: "none",
+                alignSelf: "center",
               }}
             >
               …
@@ -68,19 +74,19 @@ export default function Pagination({ page, totalPages, onPageChange, total, labe
           ) : (
             <button
               key={item}
-              className={`a-page-btn${item === page ? ' active' : ''}`}
+              className={`a-page-btn${item === page ? " active" : ""}`}
               onClick={() => onPageChange(item)}
-              aria-current={item === page ? 'page' : undefined}
+              aria-current={item === page ? "page" : undefined}
             >
               {item}
             </button>
-          )
+          ),
         )}
 
         {/* Next */}
         <button
           className="a-page-btn"
-          onClick={() => onPageChange(p => Math.min(totalPages, p + 1))}
+          onClick={() => onPageChange((p) => Math.min(totalPages, p + 1))}
           disabled={page === totalPages}
           aria-label="Trang sau"
         >
@@ -88,5 +94,5 @@ export default function Pagination({ page, totalPages, onPageChange, total, labe
         </button>
       </div>
     </div>
-  )
+  );
 }

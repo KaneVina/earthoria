@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sprout, Flame, BookOpen, Gamepad2, TreeDeciduous, Sparkles, Heart } from "lucide-react";
+import {
+  Sprout,
+  Flame,
+  BookOpen,
+  Gamepad2,
+  TreeDeciduous,
+  Sparkles,
+  Heart,
+} from "lucide-react";
 import { kidAccessService } from "../../services/kidAccessService";
 import GardenTreeVisual from "./GardenTreeVisual";
 import TreeDetailModal from "./TreeDetailModal";
@@ -32,7 +40,10 @@ export default function KnowledgeGarden({ token }) {
         if (prev) {
           if (newLevel > prev.level) {
             setCelebrate(`${payload.activeTree.level.name}! 🎉`);
-          } else if (newStreak > prev.streak && payload.streakMilestones.includes(newStreak)) {
+          } else if (
+            newStreak > prev.streak &&
+            payload.streakMilestones.includes(newStreak)
+          ) {
             setCelebrate(`Chuỗi ${newStreak} ngày! 🔥`);
           }
         }
@@ -69,7 +80,9 @@ export default function KnowledgeGarden({ token }) {
   }, [fetchGarden]);
 
   const scrollToShelf = useCallback(() => {
-    document.querySelector(".kid-shelf")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document
+      .querySelector(".kid-shelf")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
 
   const selectedTree = useMemo(
@@ -94,10 +107,14 @@ export default function KnowledgeGarden({ token }) {
   if (status === "error" || !data) return null;
 
   const { garden, activeTree, trees } = data;
-  const isFreshStart = trees.length === 1 && activeTree.knowledgeXp === 0 && activeTree.status === "ALIVE";
+  const isFreshStart =
+    trees.length === 1 &&
+    activeTree.knowledgeXp === 0 &&
+    activeTree.status === "ALIVE";
   const isWiltingActive =
     activeTree.status === "ALIVE" &&
-    (activeTree.healthBand.key === "needs_care" || activeTree.healthBand.key === "critical");
+    (activeTree.healthBand.key === "needs_care" ||
+      activeTree.healthBand.key === "critical");
 
   return (
     <section className="kg-root" aria-label="Vườn Tri Thức">
@@ -105,8 +122,12 @@ export default function KnowledgeGarden({ token }) {
         <span className="kg-header-badge">
           <Sprout size={15} /> Vườn Tri Thức
         </span>
-        <p className="kg-header-tagline">Mỗi ngày một chút, khu vườn của con lại lớn hơn.</p>
-        <p className="kg-header-sub">Đọc sách • Học tập • Chơi game • Nuôi dưỡng cây</p>
+        <p className="kg-header-tagline">
+          Mỗi ngày một chút, khu vườn của con lại lớn hơn.
+        </p>
+        <p className="kg-header-sub">
+          Đọc sách • Học tập • Chơi game • Nuôi dưỡng cây
+        </p>
       </header>
 
       {isFreshStart ? (
@@ -116,60 +137,108 @@ export default function KnowledgeGarden({ token }) {
 
           <div className="kg-empty-pot" aria-hidden="true">
             <svg viewBox="0 0 120 120" className="kg-empty-seed-svg">
-              <ellipse className="kg-empty-soil-shadow" cx="60" cy="96" rx="34" ry="7" />
+              <ellipse
+                className="kg-empty-soil-shadow"
+                cx="60"
+                cy="96"
+                rx="34"
+                ry="7"
+              />
               <path
                 className="kg-empty-pot-body"
                 d="M34 62 L86 62 L78 100 Q60 106 42 100 Z"
               />
-              <rect className="kg-empty-pot-rim" x="30" y="54" width="60" height="12" rx="6" />
+              <rect
+                className="kg-empty-pot-rim"
+                x="30"
+                y="54"
+                width="60"
+                height="12"
+                rx="6"
+              />
               <motion.g
                 initial={{ y: 6, opacity: 0.6 }}
                 animate={{ y: [6, -2, 6], opacity: 1 }}
-                transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+                transition={{
+                  duration: 3.2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
               >
                 <path
                   className="kg-empty-sprout-stem"
                   d="M60 62 C60 48 60 42 60 34"
                 />
-                <path className="kg-empty-sprout-leaf" d="M60 40 C48 36 42 26 46 16 C58 20 62 32 60 40 Z" />
-                <path className="kg-empty-sprout-leaf" d="M60 34 C72 30 78 20 74 10 C62 14 58 26 60 34 Z" />
+                <path
+                  className="kg-empty-sprout-leaf"
+                  d="M60 40 C48 36 42 26 46 16 C58 20 62 32 60 40 Z"
+                />
+                <path
+                  className="kg-empty-sprout-leaf"
+                  d="M60 34 C72 30 78 20 74 10 C62 14 58 26 60 34 Z"
+                />
               </motion.g>
               <motion.circle
                 className="kg-empty-sparkle"
-                cx="86" cy="30" r="3"
+                cx="86"
+                cy="30"
+                r="3"
                 animate={{ opacity: [0.2, 1, 0.2], scale: [0.7, 1.15, 0.7] }}
-                transition={{ duration: 2.1, repeat: Infinity, ease: "easeInOut" }}
+                transition={{
+                  duration: 2.1,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
               />
               <motion.circle
                 className="kg-empty-sparkle"
-                cx="32" cy="22" r="2.2"
+                cx="32"
+                cy="22"
+                r="2.2"
                 animate={{ opacity: [0.15, 0.9, 0.15], scale: [0.7, 1.1, 0.7] }}
-                transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                transition={{
+                  duration: 2.6,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.5,
+                }}
               />
             </svg>
           </div>
 
           <div className="kg-empty-title">Con chưa có cây nào</div>
-          <p className="kg-empty-text">Đọc cuốn sách đầu tiên để gieo hạt cho Vườn Tri Thức nhé!</p>
+          <p className="kg-empty-text">
+            Đọc cuốn sách đầu tiên để gieo hạt cho Vườn Tri Thức nhé!
+          </p>
 
-          <button type="button" className="kg-cta-btn kg-cta-btn--lg" onClick={scrollToShelf}>
+          <button
+            type="button"
+            className="kg-cta-btn kg-cta-btn--lg"
+            onClick={scrollToShelf}
+          >
             <BookOpen size={16} />
             Đọc sách ngay
           </button>
 
           <div className="kg-empty-steps">
             <div className="kg-empty-step">
-              <span className="kg-empty-step-icon"><BookOpen size={14} /></span>
+              <span className="kg-empty-step-icon">
+                <BookOpen size={14} />
+              </span>
               <span>Đọc &amp; học</span>
             </div>
             <span className="kg-empty-step-arrow">→</span>
             <div className="kg-empty-step">
-              <span className="kg-empty-step-icon"><Sprout size={14} /></span>
+              <span className="kg-empty-step-icon">
+                <Sprout size={14} />
+              </span>
               <span>Gieo hạt</span>
             </div>
             <span className="kg-empty-step-arrow">→</span>
             <div className="kg-empty-step">
-              <span className="kg-empty-step-icon"><TreeDeciduous size={14} /></span>
+              <span className="kg-empty-step-icon">
+                <TreeDeciduous size={14} />
+              </span>
               <span>Cây lớn lên</span>
             </div>
           </div>
@@ -200,7 +269,10 @@ export default function KnowledgeGarden({ token }) {
               <Sparkles size={15} />
               <div>
                 <strong>Cây đang chờ con!</strong>
-                <span>Hãy đọc vài trang sách hoặc hoàn thành một trò chơi để chăm cây hôm nay.</span>
+                <span>
+                  Hãy đọc vài trang sách hoặc hoàn thành một trò chơi để chăm
+                  cây hôm nay.
+                </span>
               </div>
             </div>
           )}
@@ -210,7 +282,9 @@ export default function KnowledgeGarden({ token }) {
               <Heart size={15} />
               <div>
                 <strong>Cây đang hơi héo 🌿</strong>
-                <span>Con chỉ cần học một chút hôm nay để giúp cây khoẻ lại.</span>
+                <span>
+                  Con chỉ cần học một chút hôm nay để giúp cây khoẻ lại.
+                </span>
               </div>
             </div>
           )}
@@ -251,15 +325,21 @@ export default function KnowledgeGarden({ token }) {
                     />
                   </div>
                   <span className="kg-current-hint">
-                    Chỉ còn {Math.max(0, 100 - activeTree.progressPercent)}% để thành{" "}
-                    <strong>{activeTree.nextLevel?.name}</strong>!
+                    Chỉ còn {Math.max(0, 100 - activeTree.progressPercent)}% để
+                    thành <strong>{activeTree.nextLevel?.name}</strong>!
                   </span>
                 </>
               ) : (
-                <span className="kg-current-hint">Đã đạt cấp cao nhất — tuyệt vời! 🏆</span>
+                <span className="kg-current-hint">
+                  Đã đạt cấp cao nhất — tuyệt vời! 🏆
+                </span>
               )}
 
-              <button type="button" className="kg-cta-btn kg-cta-btn--sm" onClick={scrollToShelf}>
+              <button
+                type="button"
+                className="kg-cta-btn kg-cta-btn--sm"
+                onClick={scrollToShelf}
+              >
                 <BookOpen size={14} />
                 Đọc tiếp để chăm cây
               </button>
@@ -267,10 +347,22 @@ export default function KnowledgeGarden({ token }) {
           </div>
 
           <div className="kg-garden-scene">
-            <span className="kg-garden-deco kg-garden-deco--flower1" aria-hidden="true" />
-            <span className="kg-garden-deco kg-garden-deco--flower2" aria-hidden="true" />
-            <span className="kg-garden-deco kg-garden-deco--rock" aria-hidden="true" />
-            <span className="kg-garden-deco kg-garden-deco--firefly" aria-hidden="true" />
+            <span
+              className="kg-garden-deco kg-garden-deco--flower1"
+              aria-hidden="true"
+            />
+            <span
+              className="kg-garden-deco kg-garden-deco--flower2"
+              aria-hidden="true"
+            />
+            <span
+              className="kg-garden-deco kg-garden-deco--rock"
+              aria-hidden="true"
+            />
+            <span
+              className="kg-garden-deco kg-garden-deco--firefly"
+              aria-hidden="true"
+            />
             <div className="kg-garden-trees">
               {trees.map((t) => (
                 <button
@@ -298,7 +390,8 @@ export default function KnowledgeGarden({ token }) {
 
           {garden.forestUnlocked && (
             <p className="kg-forest-note">
-              🌲 Rừng Tri Thức đã mở — mỗi lần có cây trưởng thành, một cây mới lại được trồng thêm!
+              🌲 Rừng Tri Thức đã mở — mỗi lần có cây trưởng thành, một cây mới
+              lại được trồng thêm!
             </p>
           )}
         </>
@@ -318,7 +411,11 @@ export default function KnowledgeGarden({ token }) {
         )}
       </AnimatePresence>
 
-      <TreeDetailModal tree={selectedTree} streak={garden.currentStreak} onClose={() => setSelectedTreeId(null)} />
+      <TreeDetailModal
+        tree={selectedTree}
+        streak={garden.currentStreak}
+        onClose={() => setSelectedTreeId(null)}
+      />
     </section>
   );
 }

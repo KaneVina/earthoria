@@ -73,14 +73,23 @@ export default function MemoryMatchPlayer({ config, onFinish }) {
   };
 
   useEffect(() => {
-    if (pairs.length > 0 && matched.size === pairs.length && !finishedRef.current) {
+    if (
+      pairs.length > 0 &&
+      matched.size === pairs.length &&
+      !finishedRef.current
+    ) {
       finishedRef.current = true;
-      const score = Math.max(100, Math.round(1000 - (moves - pairs.length) * 25 - elapsed * 3));
+      const score = Math.max(
+        100,
+        Math.round(1000 - (moves - pairs.length) * 25 - elapsed * 3),
+      );
       setTimeout(() => onFinish(score, elapsed), 550);
     }
   }, [matched, pairs.length, moves, elapsed, onFinish]);
 
-  const progressPct = pairs.length ? Math.round((matched.size / pairs.length) * 100) : 0;
+  const progressPct = pairs.length
+    ? Math.round((matched.size / pairs.length) * 100)
+    : 0;
   const allDone = pairs.length > 0 && matched.size === pairs.length;
 
   return (
@@ -93,7 +102,8 @@ export default function MemoryMatchPlayer({ config, onFinish }) {
           <RotateCw size={14} /> {moves} lượt lật
         </span>
         <span className={allDone ? "g-stat-done" : ""}>
-          {allDone ? <Trophy size={14} /> : <Check size={14} />} {matched.size}/{pairs.length}
+          {allDone ? <Trophy size={14} /> : <Check size={14} />} {matched.size}/
+          {pairs.length}
         </span>
       </div>
 
@@ -101,9 +111,13 @@ export default function MemoryMatchPlayer({ config, onFinish }) {
         <div className="g-progress-fill" style={{ width: `${progressPct}%` }} />
       </div>
 
-      <div className="g-mm-grid" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+      <div
+        className="g-mm-grid"
+        style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
+      >
         {cards.map((card) => {
-          const isFlipped = flipped.includes(card.uid) || matched.has(card.pairId);
+          const isFlipped =
+            flipped.includes(card.uid) || matched.has(card.pairId);
           const isMatched = matched.has(card.pairId);
           return (
             <button

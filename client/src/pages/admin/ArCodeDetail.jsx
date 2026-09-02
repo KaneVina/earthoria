@@ -236,8 +236,7 @@ export default function ArCodeDetail() {
       qc.invalidateQueries(["admin-ar-codes-all"]);
       navigate("/dashboard/ar-codes");
     },
-    onError: (e) =>
-      toast.error(e.response?.data?.message || "Xóa thất bại!"),
+    onError: (e) => toast.error(e.response?.data?.message || "Xóa thất bại!"),
   });
 
   const isSaving = createMutation.isPending || updateMutation.isPending;

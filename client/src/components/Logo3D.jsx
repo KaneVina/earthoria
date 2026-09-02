@@ -8,8 +8,15 @@ const NAVY_COLOR = "#0E3B4D";
 const GREEN_COLOR = "#5BA13B";
 
 const ORIGINAL_OFFSETS = {
-  E: 107, A1: 234, R1: 389, T: 524, H: 661,
-  O: 818, R2: 965, I: 1102, A2: 1162,
+  E: 107,
+  A1: 234,
+  R1: 389,
+  T: 524,
+  H: 661,
+  O: 818,
+  R2: 965,
+  I: 1102,
+  A2: 1162,
 };
 
 function buildShapeFromPoints(outer, holes) {
@@ -47,7 +54,11 @@ function Letter3D({ letterDef, color, depth = 26, bevelSize = 1.6 }) {
     });
     geo.computeBoundingBox();
     const bb = geo.boundingBox;
-    geo.translate(-(bb.min.x + bb.max.x) / 2, -(bb.min.y + bb.max.y) / 2, -depth / 2);
+    geo.translate(
+      -(bb.min.x + bb.max.x) / 2,
+      -(bb.min.y + bb.max.y) / 2,
+      -depth / 2,
+    );
     return geo;
   }, [letterDef, depth, bevelSize]);
 
@@ -85,11 +96,21 @@ function PointerLight({ pointer }) {
   const lightRef = useRef();
   useFrame(() => {
     if (!lightRef.current) return;
-    const target = new THREE.Vector3(pointer.current.x * 6, pointer.current.y * 4 + 2, 5);
+    const target = new THREE.Vector3(
+      pointer.current.x * 6,
+      pointer.current.y * 4 + 2,
+      5,
+    );
     lightRef.current.position.lerp(target, 0.08);
   });
   return (
-    <pointLight ref={lightRef} intensity={1.5} color="#e8c878" distance={14} decay={2} />
+    <pointLight
+      ref={lightRef}
+      intensity={1.5}
+      color="#e8c878"
+      distance={14}
+      decay={2}
+    />
   );
 }
 
@@ -104,14 +125,24 @@ function LogoGroup({ pointer }) {
     // sẵn có — lerp để cảm giác "nặng tay", sang trọng hơn là bám cứng.
     const targetY = idleY + pointer.current.x * 0.32;
     const targetX = pointer.current.y * -0.18;
-    groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetY, 0.06);
-    groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetX, 0.06);
+    groupRef.current.rotation.y = THREE.MathUtils.lerp(
+      groupRef.current.rotation.y,
+      targetY,
+      0.06,
+    );
+    groupRef.current.rotation.x = THREE.MathUtils.lerp(
+      groupRef.current.rotation.x,
+      targetX,
+      0.06,
+    );
     groupRef.current.position.y = idleFloat;
   });
 
   const lastLetter = WORD_ORDER[WORD_ORDER.length - 1];
   const totalWidth =
-    ORIGINAL_OFFSETS[lastLetter.offsetKey] + lastLetter.def.width - ORIGINAL_OFFSETS["E"];
+    ORIGINAL_OFFSETS[lastLetter.offsetKey] +
+    lastLetter.def.width -
+    ORIGINAL_OFFSETS["E"];
   const centerX = ORIGINAL_OFFSETS["E"] + totalWidth / 2;
 
   const scale = 0.018;
@@ -147,7 +178,12 @@ export default function Logo3D() {
 
   return (
     <div
-      style={{ width: "100%", height: 220, position: "relative", overflow: "hidden" }}
+      style={{
+        width: "100%",
+        height: 220,
+        position: "relative",
+        overflow: "hidden",
+      }}
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
     >
@@ -166,7 +202,11 @@ export default function Logo3D() {
           shadow-mapSize-width={1024}
           shadow-mapSize-height={1024}
         />
-        <directionalLight position={[-6, 4, -6]} intensity={0.35} color={"#bcd6c4"} />
+        <directionalLight
+          position={[-6, 4, -6]}
+          intensity={0.35}
+          color={"#bcd6c4"}
+        />
         <PointerLight pointer={pointer} />
 
         {/* Environment map — yếu tố quan trọng nhất để vật liệu clearcoat
@@ -176,7 +216,13 @@ export default function Logo3D() {
 
         <LogoGroup pointer={pointer} />
 
-        <ContactShadows position={[0, -1.7, 0]} opacity={0.35} scale={18} blur={2.2} far={5} />
+        <ContactShadows
+          position={[0, -1.7, 0]}
+          opacity={0.35}
+          scale={18}
+          blur={2.2}
+          far={5}
+        />
 
         <OrbitControls
           enablePan={false}

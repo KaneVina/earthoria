@@ -140,7 +140,7 @@ const SECTIONS = [
       "Một số sản phẩm và trường hợp không thuộc phạm vi chính sách đổi trả này. Earthoria sẽ thông báo rõ ràng trên trang sản phẩm trước khi bạn đặt mua.",
     ],
     list: [
-      "Sản phẩm mua trong chương trình khuyến mãi clearance (đã ghi rõ \"Không áp dụng đổi trả\" trên trang sản phẩm)",
+      'Sản phẩm mua trong chương trình khuyến mãi clearance (đã ghi rõ "Không áp dụng đổi trả" trên trang sản phẩm)',
       "Sách đặt theo yêu cầu riêng hoặc in tên cá nhân hóa theo đơn đặt hàng đặc biệt",
       "Phụ kiện mở rộng như giá đỡ AR, bút NFC đã qua sử dụng hoặc đã tháo seal",
       "Sách bị hư hỏng do người dùng: ướt, rách, có vết viết hoặc dấu hiệu sử dụng rõ ràng",
@@ -155,7 +155,7 @@ const SECTIONS = [
       "Toàn bộ quy trình được thiết kế để giải quyết nhanh nhất có thể — thông thường hoàn tất trong vòng 5 đến 10 ngày làm việc kể từ khi bạn gửi yêu cầu.",
     ],
     list: [
-      "Bước 1 — Gửi yêu cầu: điền form đổi trả trong mục \"Đơn hàng của tôi\" hoặc email đến support@earthoria.vn kèm ảnh sản phẩm và lý do",
+      'Bước 1 — Gửi yêu cầu: điền form đổi trả trong mục "Đơn hàng của tôi" hoặc email đến support@earthoria.vn kèm ảnh sản phẩm và lý do',
       "Bước 2 — Xác nhận: Earthoria phản hồi trong vòng 1 ngày làm việc, xác nhận hợp lệ và cung cấp mã vận đơn trả hàng miễn phí (nếu áp dụng)",
       "Bước 3 — Gửi hàng: đóng gói cẩn thận và gửi hàng trong vòng 3 ngày kể từ khi nhận mã vận đơn",
       "Bước 4 — Kiểm tra: Earthoria kiểm tra hàng trong vòng 1–2 ngày làm việc sau khi nhận",
@@ -190,7 +190,7 @@ const SECTIONS = [
 const FAQS = [
   {
     q: "Tôi có thể đổi sang cuốn sách khác thay vì hoàn tiền không?",
-    a: "Có. Khi gửi yêu cầu đổi trả, bạn có thể chọn \"Đổi sang sản phẩm khác\" thay vì hoàn tiền. Nếu sản phẩm thay thế có giá cao hơn, bạn chỉ cần thanh toán phần chênh lệch. Nếu thấp hơn, Earthoria hoàn lại phần còn lại.",
+    a: 'Có. Khi gửi yêu cầu đổi trả, bạn có thể chọn "Đổi sang sản phẩm khác" thay vì hoàn tiền. Nếu sản phẩm thay thế có giá cao hơn, bạn chỉ cần thanh toán phần chênh lệch. Nếu thấp hơn, Earthoria hoàn lại phần còn lại.',
   },
   {
     q: "Mã AR của tôi đã kích hoạt rồi — sách có lỗi in thì làm sao?",
@@ -228,12 +228,18 @@ export default function ReturnPolicy() {
     const update = () => {
       const el = document.documentElement;
       const scrollTop = el.scrollTop || document.body.scrollTop;
-      const scrollHeight = (el.scrollHeight || document.body.scrollHeight) - el.clientHeight;
+      const scrollHeight =
+        (el.scrollHeight || document.body.scrollHeight) - el.clientHeight;
       setProgress(scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0);
       setShowTop(scrollTop > 700);
       ticking = false;
     };
-    const onScroll = () => { if (!ticking) { window.requestAnimationFrame(update); ticking = true; } };
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(update);
+        ticking = true;
+      }
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     update();
     return () => window.removeEventListener("scroll", onScroll);
@@ -242,10 +248,16 @@ export default function ReturnPolicy() {
   /* scrollspy */
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) setActiveId(e.target.id); }),
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) setActiveId(e.target.id);
+        }),
       { rootMargin: "-130px 0px -65% 0px", threshold: 0 },
     );
-    SECTIONS.forEach((s) => { const el = document.getElementById(s.id); if (el) observer.observe(el); });
+    SECTIONS.forEach((s) => {
+      const el = document.getElementById(s.id);
+      if (el) observer.observe(el);
+    });
     return () => observer.disconnect();
   }, []);
 
@@ -270,7 +282,10 @@ export default function ReturnPolicy() {
   /* reveal-on-scroll */
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("in"); }),
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) e.target.classList.add("in");
+        }),
       { threshold: 0.1 },
     );
     document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
@@ -293,7 +308,9 @@ export default function ReturnPolicy() {
   };
 
   const filteredSections = tocQuery
-    ? SECTIONS.filter((s) => s.title.toLowerCase().includes(tocQuery.toLowerCase()))
+    ? SECTIONS.filter((s) =>
+        s.title.toLowerCase().includes(tocQuery.toLowerCase()),
+      )
     : SECTIONS;
 
   return (
@@ -665,15 +682,24 @@ export default function ReturnPolicy() {
       `}</style>
 
       <div className="legal-progress-rail">
-        <div className="legal-progress-fill" style={{ width: `${progress}%` }} />
+        <div
+          className="legal-progress-fill"
+          style={{ width: `${progress}%` }}
+        />
       </div>
 
       <div className="breadcrumb">
-        <Link to="/" className="breadcrumb-item">Trang chủ</Link>
+        <Link to="/" className="breadcrumb-item">
+          Trang chủ
+        </Link>
         <span className="breadcrumb-sep">/</span>
-        <Link to="/legal" className="breadcrumb-item">Pháp lý</Link>
+        <Link to="/legal" className="breadcrumb-item">
+          Pháp lý
+        </Link>
         <span className="breadcrumb-sep">/</span>
-        <span className="breadcrumb-current">Chính sách trả hàng & hoàn tiền</span>
+        <span className="breadcrumb-current">
+          Chính sách trả hàng & hoàn tiền
+        </span>
       </div>
 
       {/* ═══ HERO ═══ */}
@@ -695,8 +721,8 @@ export default function ReturnPolicy() {
             <em>Trả Hàng & Hoàn Tiền</em>
           </h1>
           <p className="legal-hero-sub">
-            Mua sắm an tâm với chính sách đổi trả 30 ngày, bảo hành 12 tháng
-            và cam kết hoàn tiền minh bạch — không điều kiện ẩn.
+            Mua sắm an tâm với chính sách đổi trả 30 ngày, bảo hành 12 tháng và
+            cam kết hoàn tiền minh bạch — không điều kiện ẩn.
           </p>
           <div className="legal-hero-meta">
             <div className="legal-hero-meta-item">
@@ -713,7 +739,10 @@ export default function ReturnPolicy() {
             </div>
           </div>
           <div className="legal-hero-actions">
-            <button className="legal-btn-main" onClick={() => scrollToSection(SECTIONS[0].id)}>
+            <button
+              className="legal-btn-main"
+              onClick={() => scrollToSection(SECTIONS[0].id)}
+            >
               Xem chi tiết <ChevronDown size={14} />
             </button>
             <button className="legal-btn-ghost" onClick={() => window.print()}>
@@ -727,8 +756,13 @@ export default function ReturnPolicy() {
       <section className="legal-summary">
         <div className="legal-summary-inner">
           {SUMMARY_CARDS.map((card, i) => (
-            <div className={`legal-summary-card reveal reveal-delay-${i + 1}`} key={i}>
-              <div className="legal-summary-icon"><card.icon size={20} /></div>
+            <div
+              className={`legal-summary-card reveal reveal-delay-${i + 1}`}
+              key={i}
+            >
+              <div className="legal-summary-icon">
+                <card.icon size={20} />
+              </div>
               <h3>{card.title}</h3>
               <p>{card.desc}</p>
             </div>
@@ -762,20 +796,38 @@ export default function ReturnPolicy() {
                 </button>
               ))}
               {filteredSections.length === 0 && (
-                <div className="legal-toc-empty">Không tìm thấy mục nào phù hợp</div>
+                <div className="legal-toc-empty">
+                  Không tìm thấy mục nào phù hợp
+                </div>
               )}
             </nav>
             <div className="legal-toc-divider" />
-            <button className="legal-toc-item" onClick={() => scrollToSection("faq")}>
-              <Users size={14} /><span>Câu hỏi thường gặp</span>
+            <button
+              className="legal-toc-item"
+              onClick={() => scrollToSection("faq")}
+            >
+              <Users size={14} />
+              <span>Câu hỏi thường gặp</span>
             </button>
-            <button className="legal-toc-item" onClick={() => scrollToSection("lien-he-card")}>
-              <Mail size={14} /><span>Liên hệ hỗ trợ</span>
+            <button
+              className="legal-toc-item"
+              onClick={() => scrollToSection("lien-he-card")}
+            >
+              <Mail size={14} />
+              <span>Liên hệ hỗ trợ</span>
             </button>
             <div className="legal-sidebar-card">
-              <div className="legal-sidebar-card-title">Gửi yêu cầu đổi trả</div>
-              <p>Liên hệ trực tiếp để được hỗ trợ nhanh nhất — chúng tôi phản hồi trong 1 ngày làm việc.</p>
-              <a href="mailto:support@earthoria.vn" className="legal-sidebar-card-link">
+              <div className="legal-sidebar-card-title">
+                Gửi yêu cầu đổi trả
+              </div>
+              <p>
+                Liên hệ trực tiếp để được hỗ trợ nhanh nhất — chúng tôi phản hồi
+                trong 1 ngày làm việc.
+              </p>
+              <a
+                href="mailto:support@earthoria.vn"
+                className="legal-sidebar-card-link"
+              >
                 support@earthoria.vn
               </a>
             </div>
@@ -793,16 +845,26 @@ export default function ReturnPolicy() {
                   title="Sao chép liên kết tới mục này"
                   onClick={() => handleCopyLink(s.id)}
                 >
-                  {copiedId === s.id ? <Check size={13} /> : <Link2 size={13} />}
+                  {copiedId === s.id ? (
+                    <Check size={13} />
+                  ) : (
+                    <Link2 size={13} />
+                  )}
                 </button>
               </div>
               <div className="legal-section-body">
-                {s.paragraphs?.map((p, i) => <p key={i}>{p}</p>)}
+                {s.paragraphs?.map((p, i) => (
+                  <p key={i}>{p}</p>
+                ))}
                 {s.callout && (
                   <div className="legal-callout">
-                    <div className="legal-callout-icon"><AlertTriangle size={17} /></div>
+                    <div className="legal-callout-icon">
+                      <AlertTriangle size={17} />
+                    </div>
                     <div>
-                      <div className="legal-callout-title">{s.callout.title}</div>
+                      <div className="legal-callout-title">
+                        {s.callout.title}
+                      </div>
                       <p>{s.callout.text}</p>
                     </div>
                   </div>
@@ -810,7 +872,10 @@ export default function ReturnPolicy() {
                 {s.list && (
                   <ul>
                     {s.list.map((item, i) => (
-                      <li key={i}><span className="legal-li-dot" /><span>{item}</span></li>
+                      <li key={i}>
+                        <span className="legal-li-dot" />
+                        <span>{item}</span>
+                      </li>
                     ))}
                   </ul>
                 )}
@@ -829,11 +894,16 @@ export default function ReturnPolicy() {
               <span className="section-eyebrow-text">Giải Đáp Nhanh</span>
               <div className="section-eyebrow-line" />
             </div>
-            <h2 className="section-title">Câu Hỏi <em>Thường Gặp</em></h2>
+            <h2 className="section-title">
+              Câu Hỏi <em>Thường Gặp</em>
+            </h2>
           </div>
           <div className="legal-faq-list">
             {FAQS.map((f, i) => (
-              <div key={i} className={`legal-faq-item ${openFaq === i ? "open" : ""}`}>
+              <div
+                key={i}
+                className={`legal-faq-item ${openFaq === i ? "open" : ""}`}
+              >
                 <button
                   className="legal-faq-question"
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
@@ -841,7 +911,9 @@ export default function ReturnPolicy() {
                   {f.q}
                   <ChevronDown className="legal-faq-chevron" size={18} />
                 </button>
-                <div className="legal-faq-answer"><p>{f.a}</p></div>
+                <div className="legal-faq-answer">
+                  <p>{f.a}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -852,20 +924,29 @@ export default function ReturnPolicy() {
       <section className="legal-contact-section" id="lien-he-card">
         <div className="legal-contact-bgtext">EARTHORIA</div>
         <div className="legal-contact-inner">
-          <span className="legal-contact-eyebrow reveal">Cần hỗ trợ đổi trả?</span>
+          <span className="legal-contact-eyebrow reveal">
+            Cần hỗ trợ đổi trả?
+          </span>
           <h2 className="legal-contact-title reveal">
-            Chúng tôi giải quyết<br />
+            Chúng tôi giải quyết
+            <br />
             <em>trong 1 ngày làm việc</em>
           </h2>
           <div className="legal-contact-grid reveal">
-            <a href="mailto:support@earthoria.vn" className="legal-contact-item">
-              <Mail size={15} />support@earthoria.vn
+            <a
+              href="mailto:support@earthoria.vn"
+              className="legal-contact-item"
+            >
+              <Mail size={15} />
+              support@earthoria.vn
             </a>
             <a href="tel:19006868" className="legal-contact-item">
-              <Phone size={15} />1900 6868
+              <Phone size={15} />
+              1900 6868
             </a>
             <span className="legal-contact-item">
-              <MapPin size={15} />Tầng 12, Tòa nhà Earthoria, Q.1, TP.HCM
+              <MapPin size={15} />
+              Tầng 12, Tòa nhà Earthoria, Q.1, TP.HCM
             </span>
           </div>
         </div>

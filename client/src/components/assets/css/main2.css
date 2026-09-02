@@ -1,15 +1,6 @@
 /*
- * main2.css — Bổ sung cho main.css
- * Chỉ load SAU main.css: <link rel="stylesheet" href="main2.css">
- *
- * Nội dung:
- *  1. Dark mode — các component còn thiếu
- *  2. Mobile responsive — các breakpoint còn thiếu
- */
-
-/* ═══════════════════════════════════════════════════════════════
    1. DARK MODE — BỔ SUNG
-   ═══════════════════════════════════════════════════════════════ */
+      */
 
 /*  Nav chung  */
 body.dark-mode .nav-links a {
@@ -721,9 +712,9 @@ body.dark-mode .search-highlight {
   color: #c8d4cc;
 }
 
-/* ═══════════════════════════════════════════════════════════════
+/*
    2. MOBILE RESPONSIVE — BỔ SUNG
-   ═══════════════════════════════════════════════════════════════ */
+      */
 
 /* ─ Tablet: ≤ 768px ─ */
 @media (max-width: 768px) {
@@ -1285,15 +1276,15 @@ body.dark-mode .search-highlight {
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════
+/*
    PATCH 3 — Navbar / Footer / ForgotPassword / BookDetail /
              Cart / Checkout / Wishlist / GoogleAuthSuccess
-   ═══════════════════════════════════════════════════════════════ */
+      */
 
-/* ───────────────────────────────────────────────────────────
+/*
    NAVBAR — mobile panel + user dropdown dark mode
    (Navbar.jsx dùng className từ main.css + navbar.css)
-   ─────────────────────────────────────────────────────────── */
+     */
 body.dark-mode .nav-mobile-panel {
   background: #0f1510;
   border-top-color: rgba(255, 255, 255, 0.06);
@@ -1407,12 +1398,12 @@ body.dark-mode .nav-hamburger:hover {
   }
 }
 
-/* ───────────────────────────────────────────────────────────
+/*
    FOOTER — dark mode
    Footer.jsx dùng className + injected <style>.
    Background footer là var(--forest) → OK cả 2 mode.
    Bổ sung các class chưa có dark override.
-   ─────────────────────────────────────────────────────────── */
+     */
 body.dark-mode .footer-brand-name {
   color: rgba(180, 200, 188, 0.5);
 }
@@ -1461,11 +1452,11 @@ body.dark-mode .footer-bottom {
   }
 }
 
-/* ───────────────────────────────────────────────────────────
+/*
    FORGOTPASSWORD — dark mode
-   Dùng JS style object S. Panel trái (visual) = var(--forest) → OK.
-   Panel phải (formPanel) = var(--ivory) → cần override.
-   ─────────────────────────────────────────────────────────── */
+   Dùng JS style object S. Panel trái (visual)   var(--forest) → OK.
+   Panel phải (formPanel)   var(--ivory) → cần override.
+     */
 
 /* ForgotPassword không có className riêng → override qua selector cha */
 body.dark-mode .fp-visual {
@@ -1474,7 +1465,7 @@ body.dark-mode .fp-visual {
 
 /* Form panel phải — override background qua JS không được,
    dùng trick: target container chứa form */
-body.dark-mode [class*="fp-form"],
+body.dark-mode [class* "fp-form"],
 body.dark-mode .fp-form-panel {
   background: #121a16 !important;
 }
@@ -1482,8 +1473,8 @@ body.dark-mode .fp-form-panel {
 /* Input/OTP trong ForgotPassword dùng class co-input/otp-input đã patch trên.
    Style object S dùng var(--*) tokens → tự thích nghi dark mode nếu
    CSS vars được override đúng ở :root body.dark-mode. */
-body.dark-mode input[style*="var(--white)"],
-body.dark-mode input[style*="var(--ivory)"] {
+body.dark-mode input[style* "var(--white)"],
+body.dark-mode input[style* "var(--ivory)"] {
   background: #1c2822 !important;
   color: #c8d4cc !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
@@ -1492,7 +1483,7 @@ body.dark-mode input[style*="var(--ivory)"] {
 /* Mobile responsive */
 @media (max-width: 768px) {
   .fp-page,
-  [style*="gridTemplateColumns: '1fr 1fr'"] {
+  [style* "gridTemplateColumns: '1fr 1fr'"] {
     grid-template-columns: 1fr !important;
   }
   .fp-visual {
@@ -1500,11 +1491,11 @@ body.dark-mode input[style*="var(--ivory)"] {
   }
 }
 
-/* ───────────────────────────────────────────────────────────
+/*
    BOOKDETAIL — dark mode bổ sung
    Dùng className từ main.css — phần lớn đã được patch.
    Bổ sung các class riêng của BookDetail chưa có.
-   ─────────────────────────────────────────────────────────── */
+     */
 body.dark-mode .add-cart-mini {
   background: #2a5c3a;
   color: var(--ivory);
@@ -1593,14 +1584,14 @@ body.dark-mode .sticky-btn:hover {
   background: #336644;
 }
 
-/* ───────────────────────────────────────────────────────────
+/*
    CART — dark mode
    Cart.jsx dùng 100% inline style với var(--*).
    var(--forest), var(--ivory), var(--gold), var(--border),
    var(--text-muted) — tất cả tự thích nghi nếu ta override
    CSS vars trong dark mode.
    Bổ sung override CSS vars cho dark mode:
-   ─────────────────────────────────────────────────────────── */
+     */
 body.dark-mode {
   --ivory: #121a16;
   --white: #1c2822;
@@ -1619,30 +1610,30 @@ body.dark-mode {
 
 /* Cart responsive */
 @media (max-width: 900px) {
-  div[style*='gridTemplateColumns: "1fr 400px"'] {
+  div[style* 'gridTemplateColumns: "1fr 400px"'] {
     grid-template-columns: 1fr !important;
   }
 }
 @media (max-width: 600px) {
-  div[style*='gridTemplateColumns: "1fr 100px 140px 44px"'] {
+  div[style* 'gridTemplateColumns: "1fr 100px 140px 44px"'] {
     grid-template-columns: 1fr 80px !important;
     gap: 12px !important;
   }
-  div[style*='padding: "48px 100px"'],
-  div[style*='padding: "40px 100px"'],
-  div[style*='padding: "80px 100px"'] {
+  div[style* 'padding: "48px 100px"'],
+  div[style* 'padding: "40px 100px"'],
+  div[style* 'padding: "80px 100px"'] {
     padding-left: 16px !important;
     padding-right: 16px !important;
   }
 }
 
-/* ───────────────────────────────────────────────────────────
+/*
    CHECKOUT — dark mode
    Checkout.jsx dùng inline style var(--*) + injected <style>
    cho .co-input, .pay-tile.
    CSS vars override ở trên đã cover phần lớn.
    Bổ sung .co-input và .pay-tile dark mode:
-   ─────────────────────────────────────────────────────────── */
+     */
 body.dark-mode .co-input {
   background: #1c2822 !important;
   color: #c8d4cc !important;
@@ -1679,31 +1670,31 @@ body.dark-mode .co-step select {
 
 /* Checkout responsive */
 @media (max-width: 900px) {
-  div[style*="gridTemplateColumns: 1fr 400px"],
-  div[style*='gridTemplateColumns: "1fr 400px"'] {
+  div[style* "gridTemplateColumns: 1fr 400px"],
+  div[style* 'gridTemplateColumns: "1fr 400px"'] {
     grid-template-columns: 1fr !important;
   }
-  div[style*='padding: "8px 100px"'],
-  div[style*='padding: "32px 100px"'] {
+  div[style* 'padding: "8px 100px"'],
+  div[style* 'padding: "32px 100px"'] {
     padding-left: 20px !important;
     padding-right: 20px !important;
   }
 }
 @media (max-width: 600px) {
-  div[style*="gridTemplateColumns: '1fr 1fr'"],
-  div[style*='gridTemplateColumns: "1fr 1fr"'] {
+  div[style* "gridTemplateColumns: '1fr 1fr'"],
+  div[style* 'gridTemplateColumns: "1fr 1fr"'] {
     grid-template-columns: 1fr !important;
   }
-  div[style*='padding: "8px 100px"'] {
+  div[style* 'padding: "8px 100px"'] {
     padding: 8px 16px 80px !important;
   }
 }
 
-/* ───────────────────────────────────────────────────────────
+/*
    WISHLIST — dark mode bổ sung
    (Wishlist.jsx đã có injected dark mode khá đủ)
    Bổ sung các selector còn thiếu:
-   ─────────────────────────────────────────────────────────── */
+     */
 body.dark-mode .wl-page {
   background: var(--ivory);
 }

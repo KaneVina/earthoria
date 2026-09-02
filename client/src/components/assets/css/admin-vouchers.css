@@ -1,11 +1,3 @@
-/* ═══════════════════════════════════════════════════════════
-   EARTHORIA — Voucher / Coupon module
-   Dùng chung token với admin.css → PHẢI import SAU admin.css
-   Import trong Coupons.jsx:
-     import "../../components/assets/css/admin.css";
-     import "../../components/assets/css/admin-vouchers.css";
-   ═══════════════════════════════════════════════════════════ */
-
 /*  Toolbar: search + filter pills + create  */
 .a-vc-toolbar {
   display: flex;
@@ -124,7 +116,11 @@
 .a-voucher-stub {
   width: 104px;
   flex-shrink: 0;
-  background: linear-gradient(165deg, var(--a-forest) 0%, var(--a-forest-mid) 100%);
+  background: linear-gradient(
+    165deg,
+    var(--a-forest) 0%,
+    var(--a-forest-mid) 100%
+  );
   color: #ede8dc;
   display: flex;
   flex-direction: column;

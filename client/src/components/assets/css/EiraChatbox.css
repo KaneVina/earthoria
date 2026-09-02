@@ -1,10 +1,3 @@
-/* ============================================================
-   EIRA CHATBOX — Design system
-   Đồng bộ với bảng màu thương hiệu Earthoria (colorPalette.css:
-   nền kem ấm + forest xanh đậm), tinh giản shadow/gradient để
-   đạt cảm giác chuyên nghiệp, gọn gàng, nhất quán.
-   ============================================================ */
-
 @property --eg {
   syntax: "<color>";
   inherits: true;
@@ -158,7 +151,7 @@
 }
 
 #eira-root button:focus-visible,
-#eira-root [role="button"]:focus-visible {
+#eira-root [role "button"]:focus-visible {
   outline: 2px solid var(--g3);
   outline-offset: 2px;
   border-radius: 6px;
@@ -171,7 +164,7 @@
   outline: none; /* viền đã được xử lý qua #eira-input-row:focus-within */
 }
 
-/* ============  FAB  ============ */
+/*               FAB               */
 #eira-fab {
   position: fixed;
   bottom: 86px;
@@ -210,7 +203,8 @@
 }
 
 #eira-fab:hover {
-  transform: translate(var(--drag-x), var(--drag-y)) translateY(-2px) scale(1.05);
+  transform: translate(var(--drag-x), var(--drag-y)) translateY(-2px)
+    scale(1.05);
   box-shadow: 0 10px 26px rgba(20, 51, 42, 0.3);
   animation: none;
 }
@@ -228,7 +222,7 @@
   transform: translate(var(--drag-x), var(--drag-y));
 }
 
-/* ============  MASCOT  ============ */
+/*               MASCOT               */
 #eira-fab.mascot {
   width: 180px;
   height: 180px;
@@ -240,7 +234,8 @@
   cursor: pointer;
 }
 #eira-fab.mascot:hover {
-  transform: translate(var(--drag-x), var(--drag-y)) scale(1.04) translateY(-2px);
+  transform: translate(var(--drag-x), var(--drag-y)) scale(1.04)
+    translateY(-2px);
   box-shadow: none;
 }
 @media (max-width: 480px) {
@@ -307,7 +302,12 @@
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: radial-gradient(circle, #fffdf3 0%, var(--time-glow) 60%, transparent 100%);
+  background: radial-gradient(
+    circle,
+    #fffdf3 0%,
+    var(--time-glow) 60%,
+    transparent 100%
+  );
   box-shadow: 0 0 8px 2px color-mix(in srgb, var(--time-glow) 55%, transparent);
   z-index: 3;
   pointer-events: none;
@@ -375,10 +375,14 @@
 @keyframes fab-breathe {
   0%,
   100% {
-    box-shadow: var(--sh-fab), 0 0 0 0 color-mix(in srgb, var(--eg) 30%, transparent);
+    box-shadow:
+      var(--sh-fab),
+      0 0 0 0 color-mix(in srgb, var(--eg) 30%, transparent);
   }
   50% {
-    box-shadow: var(--sh-fab), 0 0 0 8px color-mix(in srgb, var(--eg) 0%, transparent);
+    box-shadow:
+      var(--sh-fab),
+      0 0 0 8px color-mix(in srgb, var(--eg) 0%, transparent);
   }
 }
 #eira-fab.fab-open {
@@ -414,7 +418,7 @@
   }
 }
 
-/* ============  BADGE  ============ */
+/*               BADGE               */
 .eira-badge {
   position: absolute;
   top: -3px;
@@ -531,7 +535,7 @@
     transform 0.18s ease;
 }
 
-/* ============  CHAT WINDOW  ============ */
+/*               CHAT WINDOW               */
 #eira-win {
   position: fixed;
   bottom: 88px;
@@ -549,7 +553,8 @@
   overflow: hidden;
 
   /* Animation */
-  transform: translate(var(--drag-x), var(--drag-y)) translateY(14px) scale(0.97);
+  transform: translate(var(--drag-x), var(--drag-y)) translateY(14px)
+    scale(0.97);
   opacity: 0;
   pointer-events: none;
   transform-origin: bottom right;
@@ -570,13 +575,13 @@
 /* MOBILE */
 @media (max-width: 480px) {
   #eira-win {
-    /* FAB bottom = 18 + safe, FAB height = 50, gap = 10 → 78 + safe */
+    /* FAB bottom   18 + safe, FAB height   50, gap   10 → 78 + safe */
     bottom: calc(10px + env(safe-area-inset-bottom, 0px));
     right: 8px;
     left: 8px;
     width: auto;
 
-    /* Height = từ bottom đến cách top màn 16px */
+    /* Height   từ bottom đến cách top màn 16px */
     height: auto;
     max-height: calc(100dvh - 78px - env(safe-area-inset-bottom, 0px) - 16px);
 
@@ -598,7 +603,7 @@
   }
 }
 
-/* ============  HEADER  ============ */
+/*               HEADER               */
 #eira-hdr {
   background: linear-gradient(120deg, var(--gh1) 0%, var(--gh2) 100%);
   padding: 14px 14px 14px 16px;
@@ -617,7 +622,11 @@
   width: 130px;
   height: 130px;
   border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, #fff 6%, transparent) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, #fff 6%, transparent) 0%,
+    transparent 70%
+  );
   pointer-events: none;
 }
 
@@ -750,7 +759,7 @@
   }
 }
 
-/* ============  WELCOME  ============ */
+/*               WELCOME               */
 #eira-root .eira-welcome {
   background: var(--c-surface) !important;
   border: 1px solid var(--c-border) !important;
@@ -843,7 +852,7 @@
   font-weight: 700 !important;
 }
 
-/* ============  MESSAGES  ============ */
+/*               MESSAGES               */
 #eira-msgs {
   flex: 1; /* chiếm hết space còn lại */
   min-height: 0; /* CRITICAL: cho phép flex child shrink */
@@ -948,7 +957,7 @@
   flex-direction: row-reverse;
 }
 
-/* ============  BUBBLES  ============ */
+/*               BUBBLES               */
 #eira-root .em-bubble {
   padding: 11px 15px;
   font-size: 14px;
@@ -992,7 +1001,7 @@
   text-align: right;
 }
 
-/* ============  Action buttons  ============ */
+/*               Action buttons               */
 .em-actions {
   display: flex;
   flex-direction: column;
@@ -1037,7 +1046,7 @@
   background: color-mix(in srgb, var(--eg) 8%, transparent);
 }
 
-/* ============  Typing  ============ */
+/*               Typing               */
 .eira-typing {
   animation: msg-in 0.2s var(--ease-out);
   margin-bottom: 12px;
@@ -1093,7 +1102,7 @@
   }
 }
 
-/* ============  Suggestion chips  ============ */
+/*               Suggestion chips               */
 #eira-sugg {
   padding: 9px 13px 10px;
   display: flex;
@@ -1148,7 +1157,7 @@
   transform: translateY(0) scale(0.97);
 }
 
-/* ============  Input  ============ */
+/*               Input               */
 #eira-input-wrap {
   padding: 10px 13px 12px;
   border-top: 1px solid var(--c-border);
@@ -1245,7 +1254,7 @@
   user-select: none;
 }
 
-/* ============  Footer  ============ */
+/*               Footer               */
 #eira-foot {
   padding: 5px 14px 8px;
   font-size: 10px;
@@ -1281,7 +1290,7 @@
   background-color: var(--g2);
 }
 
-/* ============  Scroll to bottom  ============ */
+/*               Scroll to bottom               */
 #eira-scroll-btn {
   position: absolute;
   right: 14px;
@@ -1360,7 +1369,7 @@
   padding: 10px 16px;
 }
 
-/* ============  Card sách gợi ý (tool suggest_books)  ============ */
+/*               Card sách gợi ý (tool suggest_books)               */
 .em-book-cards {
   display: flex;
   flex-direction: column;
@@ -1436,7 +1445,7 @@
   color: var(--c-hint);
 }
 
-/* ============  Chip mã giảm giá (tool apply_coupon)  ============ */
+/*               Chip mã giảm giá (tool apply_coupon)               */
 .em-coupon-chip {
   display: flex;
   align-items: center;
@@ -1486,7 +1495,7 @@
   background: #f6ead4;
 }
 
-/* ============  Thông báo chuyển nhân viên (tool escalate_to_human)  ============ */
+/*               Thông báo chuyển nhân viên (tool escalate_to_human)               */
 .em-escalate {
   display: flex;
   align-items: center;
@@ -1508,7 +1517,7 @@
   gap: 6px;
 }
 
-/* ============  REDUCED MOTION  ============ */
+/*               REDUCED MOTION               */
 @media (prefers-reduced-motion: reduce) {
   #eira-fab,
   .eira-online-dot,

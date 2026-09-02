@@ -738,7 +738,7 @@ export default function Orders() {
         </div>
       </div>
 
-           {/*  Bộ lọc  */}
+      {/*  Bộ lọc  */}
       <form
         onSubmit={handleSearchSubmit}
         style={{
@@ -820,7 +820,9 @@ export default function Orders() {
             >
               <option value="">Tất cả</option>
               {Object.entries(PAYMENT_METHOD_LABEL).map(([key, label]) => (
-                <option key={key} value={key}>{label}</option>
+                <option key={key} value={key}>
+                  {label}
+                </option>
               ))}
             </select>
           </FilterField>
@@ -837,7 +839,9 @@ export default function Orders() {
             >
               <option value="">Tất cả</option>
               {Object.entries(PAYMENT_STATUS).map(([key, label]) => (
-                <option key={key} value={key}>{label}</option>
+                <option key={key} value={key}>
+                  {label}
+                </option>
               ))}
             </select>
           </FilterField>
@@ -863,7 +867,9 @@ export default function Orders() {
                 }}
                 style={{ ...filterInputStyle, flex: 1 }}
               />
-              <span style={{ fontSize: 12, color: "rgba(13,51,48,0.35)" }}>→</span>
+              <span style={{ fontSize: 12, color: "rgba(13,51,48,0.35)" }}>
+                →
+              </span>
               <input
                 type="date"
                 value={dateTo}
@@ -891,7 +897,9 @@ export default function Orders() {
                   placeholder="Từ"
                   style={{ ...filterInputStyle, flex: 1, width: 0 }}
                 />
-                <span style={{ fontSize: 12, color: "rgba(13,51,48,0.35)" }}>→</span>
+                <span style={{ fontSize: 12, color: "rgba(13,51,48,0.35)" }}>
+                  →
+                </span>
                 <input
                   type="number"
                   min="0"
@@ -906,7 +914,13 @@ export default function Orders() {
               </div>
             </FilterField>
 
-            {(paymentMethod || paymentStatus || dateFrom || dateTo || totalMin || totalMax || search) && (
+            {(paymentMethod ||
+              paymentStatus ||
+              dateFrom ||
+              dateTo ||
+              totalMin ||
+              totalMax ||
+              search) && (
               <button
                 type="button"
                 onClick={() => {

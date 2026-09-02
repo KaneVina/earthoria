@@ -20,13 +20,17 @@ import { loyaltyService } from "../services/loyaltyService";
 import LoyaltyBadge from "../components/LoyaltyBadge";
 import toast from "react-hot-toast";
 import StepBar from "../components/StepBar";
-import { SkeletonCartItem, SkeletonCartSummary } from "../components/skeletons/SkeletonCart";
+import {
+  SkeletonCartItem,
+  SkeletonCartSummary,
+} from "../components/skeletons/SkeletonCart";
 
 const SHIPPING_THRESHOLD = 300000;
 const SHIPPING_FEE = 30000;
 
 export default function Cart() {
-  const { cart, fetchCart, updateItem, removeItem, clearCart, loading } = useCartStore();
+  const { cart, fetchCart, updateItem, removeItem, clearCart, loading } =
+    useCartStore();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [pendingItemId, setPendingItemId] = useState(null);
   const [loyaltyProfile, setLoyaltyProfile] = useState(null);
@@ -82,7 +86,9 @@ export default function Cart() {
       try {
         await useCartStore.getState().updateItem(item.id, newQty);
       } catch (err) {
-        toast.error(err?.response?.data?.message || "Không thể cập nhật giỏ hàng");
+        toast.error(
+          err?.response?.data?.message || "Không thể cập nhật giỏ hàng",
+        );
       }
     }, 400);
   };
@@ -139,7 +145,13 @@ export default function Cart() {
 
   if (loading && !cart) {
     return (
-      <div style={{ minHeight: "100vh", paddingTop: "80px", background: "var(--ivory)" }}>
+      <div
+        style={{
+          minHeight: "100vh",
+          paddingTop: "80px",
+          background: "var(--ivory)",
+        }}
+      >
         <div className="breadcrumb">
           <span className="breadcrumb-item">Trang chủ</span>
           <span className="breadcrumb-sep">›</span>
@@ -148,13 +160,34 @@ export default function Cart() {
           <span className="breadcrumb-current">Giỏ hàng</span>
         </div>
 
-        <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "40px 100px 0" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "20px" }}>
+        <div
+          style={{
+            maxWidth: "1400px",
+            margin: "0 auto",
+            padding: "40px 100px 0",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "14px",
+              marginBottom: "20px",
+            }}
+          >
             <div className="eyebrow-line" />
             <span className="eyebrow-text">Bước 1 / 5</span>
           </div>
           {/* Title skeleton */}
-          <span className="skeleton" style={{ display: "block", width: 220, height: 60, marginBottom: 8 }} />
+          <span
+            className="skeleton"
+            style={{
+              display: "block",
+              width: 220,
+              height: 60,
+              marginBottom: 8,
+            }}
+          />
         </div>
 
         <div
@@ -171,12 +204,28 @@ export default function Cart() {
           {/* LEFT — skeleton items */}
           <div>
             {/* Promo banner skeleton */}
-            <span className="skeleton" style={{ display: "block", height: 56, marginBottom: 32 }} />
+            <span
+              className="skeleton"
+              style={{ display: "block", height: 56, marginBottom: 32 }}
+            />
 
             {/* Header row skeleton */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 100px 140px 44px", gap: 20, paddingBottom: 14, borderBottom: "0.5px solid var(--border)", marginBottom: 8 }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 100px 140px 44px",
+                gap: 20,
+                paddingBottom: 14,
+                borderBottom: "0.5px solid var(--border)",
+                marginBottom: 8,
+              }}
+            >
               {["40%", "60px", "80px", "32px"].map((w, i) => (
-                <span key={i} className="skeleton" style={{ height: 10, width: w }} />
+                <span
+                  key={i}
+                  className="skeleton"
+                  style={{ height: 10, width: w }}
+                />
               ))}
             </div>
 
@@ -197,7 +246,13 @@ export default function Cart() {
   if (!cart || items.length === 0) {
     return (
       <div style={{ minHeight: "100vh", paddingTop: "80px" }}>
-        <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "80px 100px" }}>
+        <div
+          style={{
+            maxWidth: "1400px",
+            margin: "0 auto",
+            padding: "80px 100px",
+          }}
+        >
           <div
             style={{
               display: "flex",
@@ -233,9 +288,17 @@ export default function Cart() {
               }}
             >
               Giỏ hàng{" "}
-              <em style={{ fontStyle: "italic", color: "var(--gold)" }}>trống</em>
+              <em style={{ fontStyle: "italic", color: "var(--gold)" }}>
+                trống
+              </em>
             </h2>
-            <p style={{ fontSize: "13px", color: "var(--text-muted)", marginBottom: "32px" }}>
+            <p
+              style={{
+                fontSize: "13px",
+                color: "var(--text-muted)",
+                marginBottom: "32px",
+              }}
+            >
               Bạn chưa có sản phẩm nào trong giỏ.
             </p>
             <Link to="/shop">
@@ -250,19 +313,42 @@ export default function Cart() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", paddingTop: "80px", background: "var(--ivory)" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        paddingTop: "80px",
+        background: "var(--ivory)",
+      }}
+    >
       {/* Breadcrumb */}
       <div className="breadcrumb">
-        <Link to="/" className="breadcrumb-item">Trang chủ</Link>
+        <Link to="/" className="breadcrumb-item">
+          Trang chủ
+        </Link>
         <span className="breadcrumb-sep">›</span>
-        <Link to="/shop" className="breadcrumb-item">Cửa hàng</Link>
+        <Link to="/shop" className="breadcrumb-item">
+          Cửa hàng
+        </Link>
         <span className="breadcrumb-sep">›</span>
         <span className="breadcrumb-current">Giỏ hàng</span>
       </div>
 
       {/* Page header */}
-      <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "40px 100px 0" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "20px" }}>
+      <div
+        style={{
+          maxWidth: "1400px",
+          margin: "0 auto",
+          padding: "40px 100px 0",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "14px",
+            marginBottom: "20px",
+          }}
+        >
           <div className="eyebrow-line" />
           <span className="eyebrow-text">Bước 1 / 5</span>
         </div>
@@ -311,7 +397,13 @@ export default function Cart() {
           >
             {!confirmClear ? (
               <>
-                <span style={{ fontSize: "12px", color: "var(--text-muted)", fontWeight: 300 }}>
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "var(--text-muted)",
+                    fontWeight: 300,
+                  }}
+                >
                   <strong style={{ color: "var(--forest)", fontWeight: 500 }}>
                     {items.reduce((s, i) => s + i.quantity, 0)}
                   </strong>{" "}
@@ -340,8 +432,14 @@ export default function Cart() {
               </>
             ) : (
               <>
-                <span style={{ fontSize: "12px", color: "#c05050", fontWeight: 300 }}>
-                 Dọn toàn bộ sản phẩm khỏi giỏ hàng?
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "#c05050",
+                    fontWeight: 300,
+                  }}
+                >
+                  Dọn toàn bộ sản phẩm khỏi giỏ hàng?
                 </span>
                 <div style={{ display: "flex", gap: "10px", flexShrink: 0 }}>
                   <button
@@ -427,7 +525,13 @@ export default function Cart() {
                   }}
                 >
                   {/* Product info */}
-                  <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "20px",
+                    }}
+                  >
                     <div
                       style={{
                         width: "88px",
@@ -438,9 +542,16 @@ export default function Cart() {
                       }}
                     >
                       <img
-                        src={item.variant.book.coverImage || "https://placehold.co/88x112/0d3330/faf8f3?text=E"}
+                        src={
+                          item.variant.book.coverImage ||
+                          "https://placehold.co/88x112/0d3330/faf8f3?text=E"
+                        }
                         alt={item.variant.book.title}
-                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
                       />
                     </div>
                     <div>
@@ -453,7 +564,9 @@ export default function Cart() {
                           marginBottom: "6px",
                         }}
                       >
-                        {item.variant.format === "DIGITAL" ? "Sách điện tử" : "Sách giấy"}
+                        {item.variant.format === "DIGITAL"
+                          ? "Sách điện tử"
+                          : "Sách giấy"}
                       </div>
                       <div
                         style={{
@@ -470,24 +583,36 @@ export default function Cart() {
 
                   {/* Qty */}
                   <div style={{ display: "flex", justifyContent: "center" }}>
-                    <div style={{ display: "flex", alignItems: "center", border: "0.5px solid var(--border)" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        border: "0.5px solid var(--border)",
+                      }}
+                    >
                       <button
                         onClick={() => handleQtyChange(item, -1)}
                         style={{
-                          width: "32px", height: "36px",
-                          background: "transparent", border: "none",
+                          width: "32px",
+                          height: "36px",
+                          background: "transparent",
+                          border: "none",
                           cursor: "pointer",
                           color: "var(--text-muted)",
-                          display: "flex", alignItems: "center", justifyContent: "center",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
                       >
                         <Minus size={12} />
                       </button>
                       <span
                         style={{
-                          width: "36px", textAlign: "center",
+                          width: "36px",
+                          textAlign: "center",
                           fontFamily: "Playfair Display,serif",
-                          fontSize: "16px", color: "var(--forest)",
+                          fontSize: "16px",
+                          color: "var(--forest)",
                         }}
                       >
                         {item.quantity}
@@ -495,11 +620,15 @@ export default function Cart() {
                       <button
                         onClick={() => handleQtyChange(item, +1)}
                         style={{
-                          width: "32px", height: "36px",
-                          background: "transparent", border: "none",
+                          width: "32px",
+                          height: "36px",
+                          background: "transparent",
+                          border: "none",
                           cursor: "pointer",
                           color: "var(--text-muted)",
-                          display: "flex", alignItems: "center", justifyContent: "center",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
                         }}
                       >
                         <Plus size={12} />
@@ -509,11 +638,27 @@ export default function Cart() {
 
                   {/* Price */}
                   <div style={{ textAlign: "right" }}>
-                    <div style={{ fontFamily: "Playfair Display,serif", fontSize: "20px", color: "var(--forest)" }}>
-                      {formatPrice((item.variant.salePrice ?? item.variant.price) * item.quantity)}
+                    <div
+                      style={{
+                        fontFamily: "Playfair Display,serif",
+                        fontSize: "20px",
+                        color: "var(--forest)",
+                      }}
+                    >
+                      {formatPrice(
+                        (item.variant.salePrice ?? item.variant.price) *
+                          item.quantity,
+                      )}
                     </div>
                     {item.variant.salePrice != null && (
-                      <div style={{ fontSize: "12px", color: "var(--text-muted)", textDecoration: "line-through", marginTop: "2px" }}>
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: "var(--text-muted)",
+                          textDecoration: "line-through",
+                          marginTop: "2px",
+                        }}
+                      >
                         {formatPrice(item.variant.price * item.quantity)}
                       </div>
                     )}
@@ -525,12 +670,16 @@ export default function Cart() {
                       disabled={pendingItemId === item.id}
                       onClick={() => handleRemove(item)}
                       style={{
-                        width: "32px", height: "32px",
+                        width: "32px",
+                        height: "32px",
                         border: "0.5px solid var(--border)",
                         background: "transparent",
-                        cursor: pendingItemId === item.id ? "not-allowed" : "pointer",
+                        cursor:
+                          pendingItemId === item.id ? "not-allowed" : "pointer",
                         opacity: pendingItemId === item.id ? 0.4 : 1,
-                        display: "flex", alignItems: "center", justifyContent: "center",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                         color: "var(--text-muted)",
                       }}
                     >
@@ -538,8 +687,7 @@ export default function Cart() {
                     </button>
                   </div>
                 </div>
-              ))
-          }
+              ))}
         </div>
 
         {/* RIGHT — Order summary */}
@@ -553,11 +701,20 @@ export default function Cart() {
         >
           {/* Shipping progress */}
           <div style={{ background: "var(--forest)", padding: "24px 28px" }}>
-            <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.7)", marginBottom: "12px", fontWeight: 300 }}>
+            <div
+              style={{
+                fontSize: "12px",
+                color: "rgba(255,255,255,0.7)",
+                marginBottom: "12px",
+                fontWeight: 300,
+              }}
+            >
               {afterDiscount >= freeShipThreshold ? (
                 <span style={{ color: "var(--gold)" }}>
                   Bạn được{" "}
-                  <strong style={{ color: "var(--ivory)" }}>miễn phí giao hàng!</strong>
+                  <strong style={{ color: "var(--ivory)" }}>
+                    miễn phí giao hàng!
+                  </strong>
                 </span>
               ) : (
                 <>
@@ -565,23 +722,43 @@ export default function Cart() {
                     Còn {formatPrice(freeShipThreshold - afterDiscount)}
                   </strong>{" "}
                   nữa để được{" "}
-                  <span style={{ color: "var(--gold)" }}>miễn phí giao hàng!</span>
+                  <span style={{ color: "var(--gold)" }}>
+                    miễn phí giao hàng!
+                  </span>
                 </>
               )}
             </div>
-            <div style={{ height: "3px", background: "rgba(255,255,255,0.1)", borderRadius: "2px", overflow: "hidden", marginBottom: "8px" }}>
+            <div
+              style={{
+                height: "3px",
+                background: "rgba(255,255,255,0.1)",
+                borderRadius: "2px",
+                overflow: "hidden",
+                marginBottom: "8px",
+              }}
+            >
               <div
                 style={{
                   height: "100%",
-                  background: "linear-gradient(90deg,var(--gold),var(--gold-light))",
+                  background:
+                    "linear-gradient(90deg,var(--gold),var(--gold-light))",
                   width: `${shippingPct}%`,
                   transition: "width 0.6s ease",
                   borderRadius: "2px",
                 }}
               />
             </div>
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px", color: "rgba(255,255,255,0.35)" }}>
-              <span style={{ color: "var(--gold)" }}>{formatPrice(afterDiscount)}</span>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: "10px",
+                color: "rgba(255,255,255,0.35)",
+              }}
+            >
+              <span style={{ color: "var(--gold)" }}>
+                {formatPrice(afterDiscount)}
+              </span>
               <span>{formatPrice(freeShipThreshold)}</span>
             </div>
           </div>
@@ -601,7 +778,14 @@ export default function Cart() {
               Tóm tắt đơn hàng
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "24px" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "14px",
+                marginBottom: "24px",
+              }}
+            >
               {[
                 {
                   label: `Tạm tính (${items.reduce((s, i) => s + i.quantity, 0)} sản phẩm)`,
@@ -613,29 +797,54 @@ export default function Cart() {
                   green: true,
                 },
                 ...(tierDiscount > 0
-                  ? [{
-                      label: (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-                          Ưu đãi hạng{" "}
-                          <LoyaltyBadge
-                            tier={loyaltyProfile.tier}
-                            progress={loyaltyProfile}
-                            variant="light"
-                            align="left"
-                            showDot={false}
-                          />
-                        </span>
-                      ),
-                      val: `-${formatPrice(tierDiscount)}`,
-                      tierColor: loyaltyProfile?.tier?.color,
-                    }]
+                  ? [
+                      {
+                        label: (
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 5,
+                            }}
+                          >
+                            Ưu đãi hạng{" "}
+                            <LoyaltyBadge
+                              tier={loyaltyProfile.tier}
+                              progress={loyaltyProfile}
+                              variant="light"
+                              align="left"
+                              showDot={false}
+                            />
+                          </span>
+                        ),
+                        val: `-${formatPrice(tierDiscount)}`,
+                        tierColor: loyaltyProfile?.tier?.color,
+                      },
+                    ]
                   : []),
               ].map((line, i) => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
-                  <span style={{ color: "var(--text-muted)", fontWeight: 300 }}>{line.label}</span>
+                <div
+                  key={i}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    fontSize: "13px",
+                  }}
+                >
+                  <span style={{ color: "var(--text-muted)", fontWeight: 300 }}>
+                    {line.label}
+                  </span>
                   <span
                     style={{
-                      color: line.tierColor || (line.green ? "var(--gold)" : line.red ? "#c05050" : line.free ? "var(--gold)" : "var(--forest)"),
+                      color:
+                        line.tierColor ||
+                        (line.green
+                          ? "var(--gold)"
+                          : line.red
+                            ? "#c05050"
+                            : line.free
+                              ? "var(--gold)"
+                              : "var(--forest)"),
                       fontWeight: 400,
                     }}
                   >
@@ -645,13 +854,39 @@ export default function Cart() {
               ))}
             </div>
 
-            <div style={{ height: "0.5px", background: "var(--border)", margin: "20px 0" }} />
+            <div
+              style={{
+                height: "0.5px",
+                background: "var(--border)",
+                margin: "20px 0",
+              }}
+            />
 
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: "28px" }}>
-              <span style={{ fontFamily: "Playfair Display,serif", fontSize: "17px", color: "var(--forest)" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "baseline",
+                marginBottom: "28px",
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "Playfair Display,serif",
+                  fontSize: "17px",
+                  color: "var(--forest)",
+                }}
+              >
                 Tổng cộng
               </span>
-              <span style={{ fontFamily: "Playfair Display,serif", fontSize: "32px", fontWeight: 300, color: "var(--forest)" }}>
+              <span
+                style={{
+                  fontFamily: "Playfair Display,serif",
+                  fontSize: "32px",
+                  fontWeight: 300,
+                  color: "var(--forest)",
+                }}
+              >
                 {formatPrice(total)}
               </span>
             </div>
@@ -660,13 +895,20 @@ export default function Cart() {
               <button
                 onClick={handleCheckout}
                 style={{
-                  width: "100%", height: "56px",
-                  background: "var(--forest)", color: "var(--ivory)",
+                  width: "100%",
+                  height: "56px",
+                  background: "var(--forest)",
+                  color: "var(--ivory)",
                   border: "none",
                   fontFamily: "Be Vietnam Pro,sans-serif",
-                  fontSize: "12px", letterSpacing: "0.18em", textTransform: "uppercase",
+                  fontSize: "12px",
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
                   cursor: "pointer",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "12px",
                 }}
               >
                 Tiến hành thanh toán
@@ -677,21 +919,48 @@ export default function Cart() {
             <Link to="/shop" style={{ textDecoration: "none" }}>
               <button
                 style={{
-                  width: "100%", marginTop: "10px", height: "44px",
-                  background: "transparent", color: "var(--text-muted)",
-                  border: "0.5px solid var(--border)", cursor: "pointer",
+                  width: "100%",
+                  marginTop: "10px",
+                  height: "44px",
+                  background: "transparent",
+                  color: "var(--text-muted)",
+                  border: "0.5px solid var(--border)",
+                  cursor: "pointer",
                   fontFamily: "Be Vietnam Pro,sans-serif",
-                  fontSize: "11px", letterSpacing: "0.14em", textTransform: "uppercase",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                  fontSize: "11px",
+                  letterSpacing: "0.14em",
+                  textTransform: "uppercase",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
                 }}
               >
                 <ArrowLeft size={12} /> Tiếp tục mua sắm
               </button>
             </Link>
 
-            <div style={{ display: "flex", justifyContent: "center", gap: "10px", marginTop: "20px", paddingTop: "20px", borderTop: "0.5px solid var(--border)" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                gap: "10px",
+                marginTop: "20px",
+                paddingTop: "20px",
+                borderTop: "0.5px solid var(--border)",
+              }}
+            >
               {["VISA", "MC", "VNPAY", "MOMO", "COD"].map((p) => (
-                <div key={p} style={{ padding: "3px 8px", border: "0.5px solid var(--border)", fontSize: "9px", letterSpacing: "0.1em", color: "var(--text-muted)" }}>
+                <div
+                  key={p}
+                  style={{
+                    padding: "3px 8px",
+                    border: "0.5px solid var(--border)",
+                    fontSize: "9px",
+                    letterSpacing: "0.1em",
+                    color: "var(--text-muted)",
+                  }}
+                >
                   {p}
                 </div>
               ))}
@@ -703,7 +972,9 @@ export default function Cart() {
               padding: "16px 28px",
               background: "var(--cream)",
               borderTop: "0.5px solid var(--border)",
-              display: "flex", flexDirection: "column", gap: "10px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
             }}
           >
             {[
@@ -711,7 +982,16 @@ export default function Cart() {
               { text: "Đổi trả miễn phí trong 30 ngày", Icon: RotateCcw },
               { text: "Giao hàng toàn quốc 2–4 ngày", Icon: Truck },
             ].map(({ text, Icon }, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "11px", color: "var(--text-muted)" }}>
+              <div
+                key={i}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  fontSize: "11px",
+                  color: "var(--text-muted)",
+                }}
+              >
                 <Icon size={13} color="var(--gold)" strokeWidth={1.5} />
                 {text}
               </div>

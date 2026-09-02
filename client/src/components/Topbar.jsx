@@ -21,13 +21,19 @@ export default function Topbar({ breadcrumbItems, onOpenMobileMenu }) {
             const isLast = i === breadcrumbItems.length - 1;
             return (
               <Fragment key={`${c.label}-${i}`}>
-                <ChevronRight size={11} className="a-breadcrumb-sep" aria-hidden="true" />
+                <ChevronRight
+                  size={11}
+                  className="a-breadcrumb-sep"
+                  aria-hidden="true"
+                />
                 {!isLast && c.to ? (
                   <Link to={c.to} className="a-breadcrumb-link">
                     {c.label}
                   </Link>
                 ) : (
-                  <span className={isLast ? "a-breadcrumb-current" : ""}>{c.label}</span>
+                  <span className={isLast ? "a-breadcrumb-current" : ""}>
+                    {c.label}
+                  </span>
                 )}
               </Fragment>
             );

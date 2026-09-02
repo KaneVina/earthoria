@@ -370,7 +370,15 @@ export default function CustomCursor() {
             star: true,
           });
         }
-        bursts.push({ ripple: true, x, y, r: 4, life: 1, delay: 0, rainbow: true });
+        bursts.push({
+          ripple: true,
+          x,
+          y,
+          r: 4,
+          life: 1,
+          delay: 0,
+          rainbow: true,
+        });
         bursts.push({
           ripple: true,
           x,
@@ -417,7 +425,15 @@ export default function CustomCursor() {
           hue: darker ? 128 + Math.random() * 18 : 112 + Math.random() * 38,
         });
       }
-      bursts.push({ ripple: true, x, y, r: 4, life: 1, delay: 0, dark: darker });
+      bursts.push({
+        ripple: true,
+        x,
+        y,
+        r: 4,
+        life: 1,
+        delay: 0,
+        dark: darker,
+      });
       bursts.push({
         ripple: true,
         x,
@@ -564,7 +580,15 @@ export default function CustomCursor() {
           ctx.save();
           ctx.shadowBlur = 10;
           ctx.shadowColor = "#ffffff";
-          drawStar(ctx, mx, my, pressing ? 3.4 : 2.4, frame * 0.05, 0.9, "#ffffff");
+          drawStar(
+            ctx,
+            mx,
+            my,
+            pressing ? 3.4 : 2.4,
+            frame * 0.05,
+            0.9,
+            "#ffffff",
+          );
           ctx.restore();
         } else if (mode === "dashboard") {
           /* /dashboard: tối giản, chỉ 1 vòng + 1 chấm, màu xanh đậm, ít hiệu ứng glow */
@@ -756,7 +780,8 @@ export default function CustomCursor() {
           s.angle += s.spin;
           s.hue = (s.hue + 0.6) % 360; // đổi màu cầu vồng dần theo thời gian
 
-          const blink = 0.45 + 0.55 * Math.abs(Math.sin(frame * 0.05 + s.phase));
+          const blink =
+            0.45 + 0.55 * Math.abs(Math.sin(frame * 0.05 + s.phase));
           const sz = s.size * (pressing ? 1.4 : 1);
           const fadeMul = s.fadeOut ? Math.max(s.fadeAlpha, 0) : 1;
           const color = `hsl(${s.hue}, 92%, 66%)`;

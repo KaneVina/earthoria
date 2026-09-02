@@ -77,7 +77,9 @@ export default function EditableField({
   };
 
   return (
-    <div className={`a-field ${editing ? "is-editing" : ""} ${locked ? "is-locked" : ""}`}>
+    <div
+      className={`a-field ${editing ? "is-editing" : ""} ${locked ? "is-locked" : ""}`}
+    >
       <div className="a-field-label">
         <Icon size={13} strokeWidth={1.6} className="a-field-icon" />
         {label}
@@ -89,15 +91,18 @@ export default function EditableField({
       </div>
 
       {!editing ? (
-        <div className="a-field-display" onClick={locked ? undefined : startEdit}>
+        <div
+          className="a-field-display"
+          onClick={locked ? undefined : startEdit}
+        >
           <span className={`a-field-value ${!value ? "is-empty" : ""}`}>
             {options
               ? options.find((o) => o.value === value)?.label || placeholder
               : value
-              ? masked && !revealed
-                ? maskEmail(value)
-                : value
-              : placeholder}
+                ? masked && !revealed
+                  ? maskEmail(value)
+                  : value
+                : placeholder}
           </span>
           {!locked && (
             <button

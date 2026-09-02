@@ -4,7 +4,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { bookService } from "../services/bookService";
 import { useCartStore } from "../store/cartStore";
 import { useAuthStore } from "../store/authStore";
-import { formatPrice, formatDate, formatWeight, formatAgeRange } from "../utils/helpers";
+import {
+  formatPrice,
+  formatDate,
+  formatWeight,
+  formatAgeRange,
+} from "../utils/helpers";
 import { flyToCart } from "../utils/flyToCart";
 import { useWishlistStore } from "../store/wishlistStore";
 import { useHeartBurst, WishlistParticles } from "../hooks/useWishlistBurst";
@@ -178,7 +183,8 @@ export default function BookDetail() {
   const [qty, setQty] = useState(1);
   const [selectedFormat, setSelectedFormat] = useState("PHYSICAL");
   const heartBurst = useHeartBurst();
-  const { isInWishlist, toggleWishlist: toggleWishlistStore } = useWishlistStore();
+  const { isInWishlist, toggleWishlist: toggleWishlistStore } =
+    useWishlistStore();
   const wishlist = isInWishlist(hashId);
   const [addedToCart, setAddedToCart] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
@@ -257,7 +263,6 @@ export default function BookDetail() {
       revObserver.disconnect();
     };
   }, [book]);
-
 
   //  Derived data
   const images = book
@@ -572,7 +577,7 @@ export default function BookDetail() {
           <div className="info-eyebrow">
             <div className="info-eyebrow-line"></div>
             <span className="info-eyebrow-text">
-           {book.category?.name || "Sách AR"} ·{" "}
+              {book.category?.name || "Sách AR"} ·{" "}
               {ageRangeDisplay || "Mọi lứa tuổi"}
             </span>
           </div>
@@ -649,7 +654,7 @@ export default function BookDetail() {
           {/* Quick specs */}
           <div className="quick-specs">
             {[
-                 ["Độ tuổi", ageRangeDisplay || "6–12 tuổi"],
+              ["Độ tuổi", ageRangeDisplay || "6–12 tuổi"],
               [
                 "Mô hình AR",
                 book.arModelCount
@@ -890,7 +895,7 @@ export default function BookDetail() {
                       book.pages ? `${book.pages} trang` : "128 trang",
                     ],
                     ["Kích thước", book.dimensions || "21 × 28 × 1.2 cm"],
-                      ["Trọng lượng", formatWeight(book.weightGrams) || "680g"],
+                    ["Trọng lượng", formatWeight(book.weightGrams) || "680g"],
                     ["Bìa sách", book.coverType || "Cứng, chống nước"],
                     ["Giấy in", book.paperType || "FSC Certified 150gsm"],
                     ["Ngôn ngữ", book.language || "Tiếng Việt / Tiếng Anh"],
@@ -936,7 +941,7 @@ export default function BookDetail() {
           </div>
         )}
 
-         {/* Tab: Nội dung sách */}
+        {/* Tab: Nội dung sách */}
         {/* book.chapters/chapterIntro/arModelCount/languages/updatePeriod: chưa có field trong schema, đây là nội dung mặc định cố ý, không phải bug */}
         {activeTab === "chapters" && (
           <div className="tab-panel active">
@@ -987,7 +992,8 @@ export default function BookDetail() {
                     paddingTop: "16px",
                   }}
                 >
-                  ✦ {book.arModelCount ? `${book.arModelCount}+` : "120+"} mô hình AR
+                  ✦ {book.arModelCount ? `${book.arModelCount}+` : "120+"} mô
+                  hình AR
                 </div>
               </div>
               <div className="chapter-list">
@@ -1457,7 +1463,10 @@ export default function BookDetail() {
                     lineHeight: 1.3,
                   }}
                 >
-                  Giải Đáp <em style={{ fontStyle: "italic", color: "var(--gold)" }}>Thắc Mắc</em>
+                  Giải Đáp{" "}
+                  <em style={{ fontStyle: "italic", color: "var(--gold)" }}>
+                    Thắc Mắc
+                  </em>
                 </h3>
                 <p
                   style={{
@@ -1467,73 +1476,74 @@ export default function BookDetail() {
                     fontWeight: 300,
                   }}
                 >
-                  Không tìm thấy câu trả lời bạn cần? Đội ngũ Earthoria luôn sẵn sàng hỗ trợ 7 ngày/tuần.
+                  Không tìm thấy câu trả lời bạn cần? Đội ngũ Earthoria luôn sẵn
+                  sàng hỗ trợ 7 ngày/tuần.
                 </p>
               </div>
               <div>
                 {FAQS.map((faq, i) => (
-                <div
-                  key={i}
-                  style={{ borderBottom: "0.5px solid var(--border)" }}
-                >
-                  <button
-                    onClick={() => toggleFaq(i)}
-                    style={{
-                      width: "100%",
-                      textAlign: "left",
-                      background: "transparent",
-                      border: "none",
-                      padding: "22px 0",
-                      cursor: "pointer",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      gap: "20px",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontFamily: "'Playfair Display', serif",
-                        fontSize: "17px",
-                        fontWeight: 400,
-                        color: "var(--forest)",
-                      }}
-                    >
-                      {faq.q}
-                    </span>
-                    <span
-                      style={{
-                        color: "var(--gold)",
-                        fontSize: "20px",
-                        flexShrink: 0,
-                        transition: "transform 0.3s",
-                        transform: openFaq === i ? "rotate(45deg)" : "none",
-                      }}
-                    >
-                      +
-                    </span>
-                  </button>
                   <div
-                    style={{
-                      maxHeight: openFaq === i ? "200px" : "0",
-                      overflow: "hidden",
-                      transition: "max-height 0.4s ease",
-                    }}
+                    key={i}
+                    style={{ borderBottom: "0.5px solid var(--border)" }}
                   >
-                    <p
+                    <button
+                      onClick={() => toggleFaq(i)}
                       style={{
-                        fontSize: "13px",
-                        lineHeight: 1.8,
-                        color: "var(--text-muted)",
-                        paddingBottom: "20px",
-                        fontWeight: 300,
+                        width: "100%",
+                        textAlign: "left",
+                        background: "transparent",
+                        border: "none",
+                        padding: "22px 0",
+                        cursor: "pointer",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: "20px",
                       }}
                     >
-                      {faq.a}
-                    </p>
+                      <span
+                        style={{
+                          fontFamily: "'Playfair Display', serif",
+                          fontSize: "17px",
+                          fontWeight: 400,
+                          color: "var(--forest)",
+                        }}
+                      >
+                        {faq.q}
+                      </span>
+                      <span
+                        style={{
+                          color: "var(--gold)",
+                          fontSize: "20px",
+                          flexShrink: 0,
+                          transition: "transform 0.3s",
+                          transform: openFaq === i ? "rotate(45deg)" : "none",
+                        }}
+                      >
+                        +
+                      </span>
+                    </button>
+                    <div
+                      style={{
+                        maxHeight: openFaq === i ? "200px" : "0",
+                        overflow: "hidden",
+                        transition: "max-height 0.4s ease",
+                      }}
+                    >
+                      <p
+                        style={{
+                          fontSize: "13px",
+                          lineHeight: 1.8,
+                          color: "var(--text-muted)",
+                          paddingBottom: "20px",
+                          fontWeight: 300,
+                        }}
+                      >
+                        {faq.a}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
               </div>
             </div>
           </div>

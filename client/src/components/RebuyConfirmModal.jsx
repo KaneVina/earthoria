@@ -91,8 +91,8 @@ export default function RebuyConfirmModal({
         </h3>
         <p className="rbc-msg">
           {bookTitle ? <strong>“{bookTitle}”</strong> : "Sách điện tử này"} đã
-          có trong tài khoản của bạn. Bạn có chắc muốn mua lại bản điện tử
-          này không?
+          có trong tài khoản của bạn. Bạn có chắc muốn mua lại bản điện tử này
+          không?
         </p>
 
         <div className="rbc-actions">

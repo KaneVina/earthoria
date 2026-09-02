@@ -11,9 +11,7 @@ import {
 } from "lucide-react";
 import { bookService } from "../../services/bookService";
 
-/* ════════════════════════════════════════════════
-   CẤU HÌNH
-   ════════════════════════════════════════════════ */
+/* CẤU HÌNH */
 
 const CATEGORIES = [
   { id: "all",       label: "Tất cả" },
@@ -75,10 +73,7 @@ const LOGOUT_PAGE = {
   icon: LogOut, action: "logout", keywords: ["dang xuat", "logout", "thoat"],
 };
 
-/* ════════════════════════════════════════════════
-   LỊCH SỬ TÌM KIẾM — TTL 7 NGÀY
-   ════════════════════════════════════════════════ */
-
+/* LỊCH SỬ TÌM KIẾM — TTL 7 NGÀY */
 const HISTORY_KEY  = "earthoria_search_history";
 const MAX_HISTORY  = 8;
 const TTL_MS       = 7 * 24 * 60 * 60 * 1000;
@@ -111,10 +106,7 @@ function removeFromHistory(term) {
   } catch { return []; }
 }
 
-/* ════════════════════════════════════════════════
-   TIỆN ÍCH
-   ════════════════════════════════════════════════ */
-
+/* TIỆN ÍCH*/
 const VN_MAP = {
   à:"a",á:"a",ạ:"a",ả:"a",ã:"a",â:"a",ầ:"a",ấ:"a",ậ:"a",ẩ:"a",ẫ:"a",ă:"a",ằ:"a",ắ:"a",ặ:"a",ẳ:"a",ẵ:"a",
   è:"e",é:"e",ẹ:"e",ẻ:"e",ẽ:"e",ê:"e",ề:"e",ế:"e",ệ:"e",ể:"e",ễ:"e",
@@ -128,12 +120,9 @@ function nvn(str) {
   return String(str).toLowerCase().split("").map(c => VN_MAP[c] || c).join("");
 }
 
-/* ════════════════════════════════════════════════
-   TỪ KHOÁ NHẠY CẢM / TỰ HẠI — CHẶN & HIỂN THỊ HỖ TRỢ
-   ════════════════════════════════════════════════ */
-
+/* TỪ KHOÁ NHẠY CẢM / TỰ HẠI — CHẶN & HIỂN THỊ HỖ TRỢ */
 const SENSITIVE_KEYWORDS = [
-  // ===== TỰ TỬ / TỰ SÁT =====
+  //    TỰ TỬ / TỰ SÁT
   "tu tu",
   "tu tu di",
   "muon tu tu",
@@ -183,7 +172,7 @@ const SENSITIVE_KEYWORDS = [
   "lam sao de tu sat",
   "muon tim cach chet",
 
-  // ===== TỰ HẠI / TỰ GÂY THƯƠNG TÍCH =====
+  //    TỰ HẠI / TỰ GÂY THƯƠNG TÍCH
   "tu hai",
   "tu lam hai",
   "tu lam hai ban than",
@@ -217,7 +206,7 @@ const SENSITIVE_KEYWORDS = [
   "lam dau minh",
   "lam thuong minh",
 
-  // ===== TUYỆT VỌNG / KHỦNG HOẢNG =====
+  //    TUYỆT VỌNG / KHỦNG HOẢNG
   "tuyet vong",
   "cam thay tuyet vong",
   "hoan toan tuyet vong",
@@ -246,7 +235,7 @@ const SENSITIVE_KEYWORDS = [
   "muon bo tat ca",
   "khong muon lam gi nua",
 
-  // ===== TRẦM CẢM / SỨC KHỎE TÂM THẦN =====
+  //    TRẦM CẢM / SỨC KHỎE TÂM THẦN
   "tram cam",
   "bi tram cam",
   "dau tram cam",
@@ -269,7 +258,7 @@ const SENSITIVE_KEYWORDS = [
   "met moi tinh than",
   "kien suc tinh than",
 
-  // ===== CÔ ĐƠN / CẦU CỨU =====
+  //    CÔ ĐƠN / CẦU CỨU
   "khong ai can toi",
   "khong ai quan tam toi",
   "khong ai hieu toi",
@@ -292,7 +281,7 @@ const SENSITIVE_KEYWORDS = [
   "khong muon lam phien ai",
   "khong muon lam ganh nang",
 
-  // ===== Ý NGHĨA CÁI CHẾT =====
+  //    Ý NGHĨA CÁI CHẾT
   "cai chet",
   "ve cai chet",
   "nghi ve cai chet",
@@ -309,7 +298,7 @@ const SENSITIVE_KEYWORDS = [
   "sau khi chet",
   "ngay minh chet",
 
-  // ===== CÁCH VIẾT TIẾNG ANH THƯỜNG GẶP =====
+  //    CÁCH VIẾT TIẾNG ANH THƯỜNG GẶP
   "suicide",
   "suicidal",
   "suicidal thoughts",
@@ -401,10 +390,7 @@ function relativeTime(ts) {
   return `${d} ngày trước`;
 }
 
-/* ════════════════════════════════════════════════
-   COMPONENT CHÍNH
-   ════════════════════════════════════════════════ */
-
+/*  COMPONENT CHÍNH*/
 export default function SearchOverlay({
   isOpen,
   onClose,
@@ -590,9 +576,7 @@ export default function SearchOverlay({
 
   const quickAccessPages = isAuthenticated ? AUTH_PAGES.slice(0, 4) : [];
 
-  /* ════════════════════════════════════════════════
-     RENDER
-     ════════════════════════════════════════════════ */
+  /* RENDER */
   return (
     <>
       {/*  CSS toàn cục  */}

@@ -1,4 +1,3 @@
-// Analytics.jsx gộp vô dashboard
 import { useState, useEffect, useCallback } from "react";
 import {
   Users,
@@ -91,7 +90,10 @@ function getRange(period, customRange) {
     case "90d":
       return { startAt: end - 90 * 24 * 60 * 60 * 1000, endAt: end };
     case "thisYear":
-      return { startAt: new Date(now.getFullYear(), 0, 1).getTime(), endAt: end };
+      return {
+        startAt: new Date(now.getFullYear(), 0, 1).getTime(),
+        endAt: end,
+      };
     case "6m":
       return { startAt: end - 182 * 24 * 60 * 60 * 1000, endAt: end };
     case "12m":
@@ -577,147 +579,144 @@ function PeriodDropdown({ period, customRange, onChange, onCustomChange }) {
               overflowY: "auto",
             }}
           >
-            {!showCustom
-              ? PERIOD_OPTIONS.map((opt) => {
-                  const divider = lastGroup !== null && opt.group !== lastGroup;
-                  lastGroup = opt.group;
-                  const active = opt.value === period;
-                  return (
-                    <div key={opt.value}>
-                      {divider && (
-                        <div
-                          style={{
-                            height: 1,
-                            background: "rgba(255,255,255,0.08)",
-                            margin: "6px 0",
-                          }}
-                        />
-                      )}
-                      <button
-                        onClick={() => pick(opt)}
+            {!showCustom ? (
+              PERIOD_OPTIONS.map((opt) => {
+                const divider = lastGroup !== null && opt.group !== lastGroup;
+                lastGroup = opt.group;
+                const active = opt.value === period;
+                return (
+                  <div key={opt.value}>
+                    {divider && (
+                      <div
                         style={{
-                          width: "100%",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          gap: 8,
-                          background: "none",
-                          border: "none",
-                          textAlign: "left",
-                          padding: "9px 16px",
-                          fontSize: 13,
-                          fontWeight: active ? 600 : 400,
-                          color: active ? "#fff" : "#c8d4cc",
-                          cursor: "pointer",
+                          height: 1,
+                          background: "rgba(255,255,255,0.08)",
+                          margin: "6px 0",
                         }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.background =
-                            "rgba(255,255,255,0.06)")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.background = "none")
-                        }
-                      >
-                        {opt.label}
-                        {active && <Check size={14} />}
-                      </button>
-                    </div>
-                  );
-                })
-              : (
-                  <div style={{ padding: "10px 14px" }}>
-                    <div
-                      style={{
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: "#c8d4cc",
-                        marginBottom: 10,
-                      }}
-                    >
-                      Phạm vi tùy chỉnh
-                    </div>
-                    <label
-                      style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}
-                    >
-                      Từ ngày
-                    </label>
-                    <input
-                      type="date"
-                      value={draftStart}
-                      max={draftEnd || undefined}
-                      onChange={(e) => setDraftStart(e.target.value)}
+                      />
+                    )}
+                    <button
+                      onClick={() => pick(opt)}
                       style={{
                         width: "100%",
-                        marginTop: 4,
-                        marginBottom: 10,
-                        padding: "6px 8px",
-                        borderRadius: 6,
-                        border: "0.5px solid rgba(255,255,255,0.15)",
-                        background: "rgba(255,255,255,0.05)",
-                        color: "#fff",
-                        fontSize: 12,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: 8,
+                        background: "none",
+                        border: "none",
+                        textAlign: "left",
+                        padding: "9px 16px",
+                        fontSize: 13,
+                        fontWeight: active ? 600 : 400,
+                        color: active ? "#fff" : "#c8d4cc",
+                        cursor: "pointer",
                       }}
-                    />
-                    <label
-                      style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.background =
+                          "rgba(255,255,255,0.06)")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.background = "none")
+                      }
                     >
-                      Đến ngày
-                    </label>
-                    <input
-                      type="date"
-                      value={draftEnd}
-                      min={draftStart || undefined}
-                      max={new Date().toISOString().slice(0, 10)}
-                      onChange={(e) => setDraftEnd(e.target.value)}
-                      style={{
-                        width: "100%",
-                        marginTop: 4,
-                        marginBottom: 12,
-                        padding: "6px 8px",
-                        borderRadius: 6,
-                        border: "0.5px solid rgba(255,255,255,0.15)",
-                        background: "rgba(255,255,255,0.05)",
-                        color: "#fff",
-                        fontSize: 12,
-                      }}
-                    />
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <button
-                        onClick={() => setShowCustom(false)}
-                        style={{
-                          flex: 1,
-                          padding: "7px 0",
-                          borderRadius: 6,
-                          border: "0.5px solid rgba(255,255,255,0.15)",
-                          background: "none",
-                          color: "#c8d4cc",
-                          fontSize: 12,
-                          cursor: "pointer",
-                        }}
-                      >
-                        Quay lại
-                      </button>
-                      <button
-                        onClick={applyCustom}
-                        disabled={!draftStart || !draftEnd}
-                        style={{
-                          flex: 1,
-                          padding: "7px 0",
-                          borderRadius: 6,
-                          border: "none",
-                          background: "var(--a-green)",
-                          color: "#fff",
-                          fontSize: 12,
-                          fontWeight: 600,
-                          cursor: draftStart && draftEnd ? "pointer" : "not-allowed",
-                          opacity: draftStart && draftEnd ? 1 : 0.5,
-                        }}
-                      >
-                        Áp dụng
-                      </button>
-                    </div>
+                      {opt.label}
+                      {active && <Check size={14} />}
+                    </button>
                   </div>
-                )}
+                );
+              })
+            ) : (
+              <div style={{ padding: "10px 14px" }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "#c8d4cc",
+                    marginBottom: 10,
+                  }}
+                >
+                  Phạm vi tùy chỉnh
+                </div>
+                <label style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>
+                  Từ ngày
+                </label>
+                <input
+                  type="date"
+                  value={draftStart}
+                  max={draftEnd || undefined}
+                  onChange={(e) => setDraftStart(e.target.value)}
+                  style={{
+                    width: "100%",
+                    marginTop: 4,
+                    marginBottom: 10,
+                    padding: "6px 8px",
+                    borderRadius: 6,
+                    border: "0.5px solid rgba(255,255,255,0.15)",
+                    background: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    fontSize: 12,
+                  }}
+                />
+                <label style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>
+                  Đến ngày
+                </label>
+                <input
+                  type="date"
+                  value={draftEnd}
+                  min={draftStart || undefined}
+                  max={new Date().toISOString().slice(0, 10)}
+                  onChange={(e) => setDraftEnd(e.target.value)}
+                  style={{
+                    width: "100%",
+                    marginTop: 4,
+                    marginBottom: 12,
+                    padding: "6px 8px",
+                    borderRadius: 6,
+                    border: "0.5px solid rgba(255,255,255,0.15)",
+                    background: "rgba(255,255,255,0.05)",
+                    color: "#fff",
+                    fontSize: 12,
+                  }}
+                />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    onClick={() => setShowCustom(false)}
+                    style={{
+                      flex: 1,
+                      padding: "7px 0",
+                      borderRadius: 6,
+                      border: "0.5px solid rgba(255,255,255,0.15)",
+                      background: "none",
+                      color: "#c8d4cc",
+                      fontSize: 12,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Quay lại
+                  </button>
+                  <button
+                    onClick={applyCustom}
+                    disabled={!draftStart || !draftEnd}
+                    style={{
+                      flex: 1,
+                      padding: "7px 0",
+                      borderRadius: 6,
+                      border: "none",
+                      background: "var(--a-green)",
+                      color: "#fff",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor:
+                        draftStart && draftEnd ? "pointer" : "not-allowed",
+                      opacity: draftStart && draftEnd ? 1 : 0.5,
+                    }}
+                  >
+                    Áp dụng
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </>
       )}

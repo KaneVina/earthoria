@@ -1,4 +1,3 @@
-// AdminLayout.jsx — Shared layout cho toàn bộ trang admin
 import "../../components/assets/css/admin.css";
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -10,11 +9,6 @@ import Sidebar from "../../components/Sidebar";
 import Topbar from "../../components/Topbar";
 import { ALL_NAV_ITEMS } from "./navConfig";
 
-// Key lưu trạng thái thu gọn sidebar vào localStorage.
-// Vì mỗi route /dashboard/* trong App.jsx là 1 <Route> độc lập (không dùng
-// <Outlet/> chung), AdminLayout bị UNMOUNT rồi MOUNT LẠI mỗi lần đổi trang
-// admin — nên useState thường sẽ reset về false. Đọc/ghi localStorage giúp
-// giữ đúng trạng thái người dùng đã chọn qua các lần mount lại đó.
 const SIDEBAR_COLLAPSED_KEY = "a-sidebar-collapsed";
 
 function readCollapsedFromStorage() {
@@ -33,17 +27,17 @@ export default function AdminLayout({ children, crumbs }) {
   const { logout } = useAuthStore();
   const queryClient = useQueryClient();
 
- const handleLogout = async () => {
-  try {
-    await authService.logout(); // gọi POST /auth/logout — clear cookie + revoke token ở DB
-  } catch (err) {
-    console.error("Logout API failed:", err);
-  }
-  logout();
-  queryClient.clear();
-  toast.success("Đã đăng xuất");
-  navigate("/");
-};
+  const handleLogout = async () => {
+    try {
+      await authService.logout(); // gọi POST /auth/logout — clear cookie + revoke token ở DB
+    } catch (err) {
+      console.error("Logout API failed:", err);
+    }
+    logout();
+    queryClient.clear();
+    toast.success("Đã đăng xuất");
+    navigate("/");
+  };
 
   const [collapsed, setCollapsed] = useState(readCollapsedFromStorage);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -73,7 +67,8 @@ export default function AdminLayout({ children, crumbs }) {
   const currentLabel =
     ALL_NAV_ITEMS.find((n) => n.href === currentPath)?.label ?? "Dashboard";
 
-  const breadcrumbItems = crumbs && crumbs.length ? crumbs : [{ label: currentLabel }];
+  const breadcrumbItems =
+    crumbs && crumbs.length ? crumbs : [{ label: currentLabel }];
 
   return (
     <div className="admin-root">

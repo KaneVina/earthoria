@@ -1,13 +1,26 @@
-// ProductCreate.jsx — Trang riêng để thêm sách mới
+// ProductCreate.jsx — Trang riêng để thêm sách
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Save, X, Loader2, BookPlus, ImagePlus, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Save,
+  X,
+  Loader2,
+  BookPlus,
+  ImagePlus,
+  Trash2,
+} from "lucide-react";
 import api from "../../../services/api";
 import toast from "react-hot-toast";
 import AdminLayout from "../AdminLayout";
 import ProductFormFields from "./ProductFormFields";
-import { EMPTY_FORM, emptyVariant, formToPayload, FORMAT_LABEL } from "./productFormUtils";
+import {
+  EMPTY_FORM,
+  emptyVariant,
+  formToPayload,
+  FORMAT_LABEL,
+} from "./productFormUtils";
 import { formatPrice } from "../../../utils/helpers";
 
 const FORMAT_BADGE = { PHYSICAL: "info", DIGITAL: "dark" };
@@ -49,7 +62,10 @@ export default function ProductCreate() {
     if (!accepted.length) return;
     setImageFiles((prev) => [
       ...prev,
-      ...accepted.map((file) => ({ file, previewUrl: URL.createObjectURL(file) })),
+      ...accepted.map((file) => ({
+        file,
+        previewUrl: URL.createObjectURL(file),
+      })),
     ]);
   };
 
@@ -111,8 +127,18 @@ export default function ProductCreate() {
   const coverPreview = imageFiles[0]?.previewUrl;
 
   return (
-    <AdminLayout crumbs={[{ label: "Sản phẩm", to: "/dashboard/products" }, { label: "Thêm sách mới" }]}>
-      <button className="a-btn-ghost" onClick={() => navigate("/dashboard/products")} style={{ marginBottom: 18 }} disabled={isSaving}>
+    <AdminLayout
+      crumbs={[
+        { label: "Sản phẩm", to: "/dashboard/products" },
+        { label: "Thêm sách mới" },
+      ]}
+    >
+      <button
+        className="a-btn-ghost"
+        onClick={() => navigate("/dashboard/products")}
+        style={{ marginBottom: 18 }}
+        disabled={isSaving}
+      >
         <ArrowLeft size={13} /> Quay lại danh sách sách
       </button>
 
@@ -123,7 +149,9 @@ export default function ProductCreate() {
           </span>
           <div>
             <p className="a-page-eyebrow">Thêm mới</p>
-            <h1 className="a-page-title">Thêm <em>sách mới</em></h1>
+            <h1 className="a-page-title">
+              Thêm <em>sách mới</em>
+            </h1>
           </div>
         </div>
       </div>
@@ -135,9 +163,12 @@ export default function ProductCreate() {
             {/* ẢNH SÁCH */}
             <div className="a-chart-card">
               <div className="a-chart-card-header">
-                <h3 className="a-chart-title">Ảnh <em>sách</em></h3>
+                <h3 className="a-chart-title">
+                  Ảnh <em>sách</em>
+                </h3>
                 <p className="a-chart-sub">
-                  Tối đa {MAX_IMAGES} ảnh · ảnh đầu tiên sẽ dùng làm ảnh bìa · lưu cùng lúc bấm "Tạo sách"
+                  Tối đa {MAX_IMAGES} ảnh · ảnh đầu tiên sẽ dùng làm ảnh bìa ·
+                  lưu cùng lúc bấm "Tạo sách"
                 </p>
               </div>
 
@@ -166,7 +197,9 @@ export default function ProductCreate() {
                         <Trash2 size={13} />
                       </button>
                     </div>
-                    {i === 0 && <span className="a-pf-image-cover-badge">Bìa</span>}
+                    {i === 0 && (
+                      <span className="a-pf-image-cover-badge">Bìa</span>
+                    )}
                   </div>
                 ))}
 
@@ -179,7 +212,9 @@ export default function ProductCreate() {
                   >
                     <ImagePlus size={18} />
                     <span>Thêm ảnh</span>
-                    <span className="a-pf-image-hint">Còn {MAX_IMAGES - imageFiles.length} chỗ</span>
+                    <span className="a-pf-image-hint">
+                      Còn {MAX_IMAGES - imageFiles.length} chỗ
+                    </span>
                   </button>
                 )}
               </div>
@@ -187,14 +222,20 @@ export default function ProductCreate() {
 
             {/* CÁC FIELD CÒN LẠI — không đổi gì bên trong */}
             <div className="a-chart-card">
-              <ProductFormFields form={form} setForm={setForm} categories={categories} />
+              <ProductFormFields
+                form={form}
+                setForm={setForm}
+                categories={categories}
+              />
             </div>
           </div>
 
           {/* CỘT PHẢI — xem trước + hành động */}
           <aside className="a-pf-side">
             <div className="a-chart-card">
-              <p className="a-chart-title" style={{ marginBottom: 14 }}>Xem trước</p>
+              <p className="a-chart-title" style={{ marginBottom: 14 }}>
+                Xem trước
+              </p>
 
               <div style={{ display: "flex", gap: 12, marginBottom: 4 }}>
                 <div className="a-pf-cover">
@@ -207,11 +248,17 @@ export default function ProductCreate() {
                   )}
                 </div>
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <p className="a-pf-preview-title">{title || "Chưa đặt tên sách"}</p>
-                  <p className="a-pf-preview-author">
-                    {authorList?.length ? authorList.join(", ") : "Chưa có tác giả"}
+                  <p className="a-pf-preview-title">
+                    {title || "Chưa đặt tên sách"}
                   </p>
-                  <span className={`a-badge ${form.isVisible ? "success" : "neutral"}`}>
+                  <p className="a-pf-preview-author">
+                    {authorList?.length
+                      ? authorList.join(", ")
+                      : "Chưa có tác giả"}
+                  </p>
+                  <span
+                    className={`a-badge ${form.isVisible ? "success" : "neutral"}`}
+                  >
                     {form.isVisible ? "Đang hiển thị" : "Đang ẩn"}
                   </span>
                 </div>
@@ -219,10 +266,14 @@ export default function ProductCreate() {
 
               <div className="a-pf-preview-row">
                 <span className="a-pf-preview-label">Danh mục</span>
-                <span className="a-pf-preview-value">{selectedCategory?.name || "Chưa chọn"}</span>
+                <span className="a-pf-preview-value">
+                  {selectedCategory?.name || "Chưa chọn"}
+                </span>
               </div>
 
-              {description && <p className="a-pf-preview-desc">{description}</p>}
+              {description && (
+                <p className="a-pf-preview-desc">{description}</p>
+              )}
 
               {form.variants?.length > 0 ? (
                 <div className="a-pf-variant-list">
@@ -230,7 +281,9 @@ export default function ProductCreate() {
                     const price = Number(v.price);
                     return (
                       <div className="a-pf-variant-row" key={v._key}>
-                        <span className={`a-badge ${FORMAT_BADGE[v.format] || "neutral"}`}>
+                        <span
+                          className={`a-badge ${FORMAT_BADGE[v.format] || "neutral"}`}
+                        >
                           {FORMAT_LABEL[v.format] || v.format}
                         </span>
                         <span className="a-pf-variant-price">
@@ -246,10 +299,33 @@ export default function ProductCreate() {
             </div>
 
             <div className="a-chart-card">
-              <button type="submit" className="a-btn-primary" disabled={isSaving} style={{ width: "100%", justifyContent: "center" }}>
-                {isSaving ? (<><Loader2 size={14} className="a-spin" /> Đang lưu...</>) : (<><Save size={14} /> Tạo sách</>)}
+              <button
+                type="submit"
+                className="a-btn-primary"
+                disabled={isSaving}
+                style={{ width: "100%", justifyContent: "center" }}
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 size={14} className="a-spin" /> Đang lưu...
+                  </>
+                ) : (
+                  <>
+                    <Save size={14} /> Tạo sách
+                  </>
+                )}
               </button>
-              <button type="button" className="a-btn-ghost" onClick={() => navigate("/dashboard/products")} disabled={isSaving} style={{ width: "100%", justifyContent: "center", marginTop: 8 }}>
+              <button
+                type="button"
+                className="a-btn-ghost"
+                onClick={() => navigate("/dashboard/products")}
+                disabled={isSaving}
+                style={{
+                  width: "100%",
+                  justifyContent: "center",
+                  marginTop: 8,
+                }}
+              >
                 <X size={14} /> Hủy
               </button>
             </div>

@@ -69,9 +69,15 @@ export function analyzeMatchPairs(config) {
     const n = i + 1;
     const left = normText(p.left);
     const right = normText(p.right);
-    const issue = { left: !left, right: !right, leftDup: false, rightDup: false };
+    const issue = {
+      left: !left,
+      right: !right,
+      leftDup: false,
+      rightDup: false,
+    };
 
-    if (!left && !right) errors.push(`Cặp ${n}: cả cột trái và phải đều đang trống.`);
+    if (!left && !right)
+      errors.push(`Cặp ${n}: cả cột trái và phải đều đang trống.`);
     else if (!left) errors.push(`Cặp ${n}: cột trái đang trống.`);
     else if (!right) errors.push(`Cặp ${n}: cột phải đang trống.`);
 
@@ -136,8 +142,14 @@ export function validateWordSearchFull(config) {
   const { errors } = analyzeWordSearch(config);
   const words = (config?.words || []).map(normText).filter(Boolean);
   if (words.length > 0) {
-    const { placements } = generateWordSearchGrid(words, config?.rows, config?.cols);
-    const uniqueCount = new Set(words.map((w) => w.toUpperCase().replace(/\s+/g, ""))).size;
+    const { placements } = generateWordSearchGrid(
+      words,
+      config?.rows,
+      config?.cols,
+    );
+    const uniqueCount = new Set(
+      words.map((w) => w.toUpperCase().replace(/\s+/g, "")),
+    ).size;
     if (placements.length < uniqueCount) {
       errors.push(
         `Bảng hiện chưa đủ chỗ cho tất cả các từ (${placements.length}/${uniqueCount}) — hãy tăng số hàng/cột hoặc bớt bớt vài từ dài.`,
@@ -159,11 +171,19 @@ export function analyzeLetterHunt(config) {
 
   if (letterCount === 0) errors.push("Cần nhập từ khoá bí mật.");
   if (letterCount > capacity) {
-    errors.push(`Bảng ${rows}×${cols} (${capacity} ô) không đủ chỗ cho ${letterCount} chữ cái — hãy tăng số hàng/cột.`);
+    errors.push(
+      `Bảng ${rows}×${cols} (${capacity} ô) không đủ chỗ cho ${letterCount} chữ cái — hãy tăng số hàng/cột.`,
+    );
   }
-  if (timeLimitSeconds < 15) errors.push("Thời gian chơi cần tối thiểu 15 giây.");
+  if (timeLimitSeconds < 15)
+    errors.push("Thời gian chơi cần tối thiểu 15 giây.");
 
-  return { errors, letterCount, capacity, overCapacity: letterCount > capacity };
+  return {
+    errors,
+    letterCount,
+    capacity,
+    overCapacity: letterCount > capacity,
+  };
 }
 
 export function validateLetterHunt(config) {

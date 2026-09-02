@@ -65,21 +65,35 @@ export default function MatchPairsPlayer({ config, onFinish }) {
   };
 
   useEffect(() => {
-    if (pairs.length > 0 && matchedIds.size === pairs.length && !finishedRef.current) {
+    if (
+      pairs.length > 0 &&
+      matchedIds.size === pairs.length &&
+      !finishedRef.current
+    ) {
       finishedRef.current = true;
-      const score = Math.max(100, Math.round(1000 - mistakes * 40 - elapsed * 3));
+      const score = Math.max(
+        100,
+        Math.round(1000 - mistakes * 40 - elapsed * 3),
+      );
       setTimeout(() => onFinish(score, elapsed), 450);
     }
   }, [matchedIds, pairs.length, mistakes, elapsed, onFinish]);
 
   const stateOf = (side, id) => {
     if (matchedIds.has(id)) return "matched";
-    if (wrongFlash && (side === "left" ? wrongFlash.leftId === id : wrongFlash.rightId === id)) return "wrong";
-    if (side === "left" ? selectedLeft === id : selectedRight === id) return "selected";
+    if (
+      wrongFlash &&
+      (side === "left" ? wrongFlash.leftId === id : wrongFlash.rightId === id)
+    )
+      return "wrong";
+    if (side === "left" ? selectedLeft === id : selectedRight === id)
+      return "selected";
     return "idle";
   };
 
-  const progressPct = pairs.length ? Math.round((matchedIds.size / pairs.length) * 100) : 0;
+  const progressPct = pairs.length
+    ? Math.round((matchedIds.size / pairs.length) * 100)
+    : 0;
   const allDone = pairs.length > 0 && matchedIds.size === pairs.length;
 
   return (
@@ -92,7 +106,8 @@ export default function MatchPairsPlayer({ config, onFinish }) {
           <XIcon size={14} /> {mistakes} lần sai
         </span>
         <span className={allDone ? "g-stat-done" : ""}>
-          {allDone ? <Trophy size={14} /> : <Check size={14} />} {matchedIds.size}/{pairs.length}
+          {allDone ? <Trophy size={14} /> : <Check size={14} />}{" "}
+          {matchedIds.size}/{pairs.length}
         </span>
       </div>
 

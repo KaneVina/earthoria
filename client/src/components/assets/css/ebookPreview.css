@@ -13,17 +13,28 @@
   display: flex;
   flex-direction: column;
   font-family: "Be Vietnam Pro", system-ui, sans-serif;
-  background: radial-gradient(120% 70% at 50% 0%, rgba(74, 158, 63, 0.14) 0%, transparent 55%),
+  background:
+    radial-gradient(
+      120% 70% at 50% 0%,
+      rgba(74, 158, 63, 0.14) 0%,
+      transparent 55%
+    ),
     linear-gradient(160deg, #0d211c, #051210);
   color: var(--er-ink);
   animation: er-fade-in 0.22s ease;
 }
 @keyframes er-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.er-shell.er-theme-dark { background: #0a0a0a; }
+.er-shell.er-theme-dark {
+  background: #0a0a0a;
+}
 .er-shell.er-theme-light {
   background: linear-gradient(160deg, #f6f4ee, #e9e6db);
   color: #1f2a24;
@@ -33,15 +44,32 @@
   color: #3a2c15;
 }
 .er-shell.er-theme-light .er-ink,
-.er-shell.er-theme-sepia .er-ink { color: inherit; }
+.er-shell.er-theme-sepia .er-ink {
+  color: inherit;
+}
 
-/* ─ Top bar ─ */
+/* ─ Top bar ─
+   Overlay trong suốt nổi trên sân khấu sách (không chiếm layout) để lộ
+   nội dung sách nhiều hơn. Mặc định chỉ hiện nút Đóng + nút Hamburger;
+   toàn bộ công cụ nằm trong popover, chỉ hiện khi bấm Hamburger. */
 .er-topbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 30;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   padding: 14px 18px;
-  flex-wrap: wrap;
+  background: transparent;
+  pointer-events: none;
+}
+.er-topbar > * {
+  pointer-events: auto;
+}
+.er-topbar-spacer {
+  flex: 1;
 }
 .er-title {
   flex: 1;
@@ -49,6 +77,12 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
+}
+.er-title--floating {
+  flex: none;
+  margin-bottom: 6px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 .er-title-page {
   font-size: 12px;
@@ -110,14 +144,23 @@
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.15s ease, transform 0.08s ease, border-color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    transform 0.08s ease,
+    border-color 0.15s ease;
   backdrop-filter: blur(6px);
 }
-.er-icon-btn { padding: 9px; }
+.er-icon-btn {
+  padding: 9px;
+}
 .er-icon-btn:hover,
-.er-tool-btn:hover { background: rgba(255, 255, 255, 0.18); }
+.er-tool-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
 .er-tool-btn:active,
-.er-icon-btn:active { transform: scale(0.94); }
+.er-icon-btn:active {
+  transform: scale(0.94);
+}
 .er-tool-btn.active {
   background: linear-gradient(135deg, #55ac48, var(--er-green));
   border-color: var(--er-green);
@@ -144,7 +187,9 @@
 .er-theme-sepia .er-tool-btn:hover {
   background: rgba(20, 51, 42, 0.12);
 }
-.er-tool-label { white-space: nowrap; }
+.er-tool-label {
+  white-space: nowrap;
+}
 
 /* ─ Popover đổi màu nền ─ */
 .er-popover {
@@ -163,8 +208,14 @@
   animation: er-pop-in 0.14s ease;
 }
 @keyframes er-pop-in {
-  from { opacity: 0; transform: translateY(-4px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .er-swatch {
   display: flex;
@@ -180,8 +231,12 @@
   font-weight: 600;
   text-align: left;
 }
-.er-swatch:hover { background: rgba(255, 255, 255, 0.1); }
-.er-swatch.active { background: rgba(74, 158, 63, 0.28); }
+.er-swatch:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.er-swatch.active {
+  background: rgba(74, 158, 63, 0.28);
+}
 .er-swatch-dot {
   width: 16px;
   height: 16px;
@@ -190,19 +245,42 @@
   flex-shrink: 0;
 }
 
-/* ─ Sân khấu hiển thị trang ─ */
+/* ─ Popover công cụ (mở bằng nút Hamburger trên header) ─ */
+.er-popover--tools {
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 240px;
+  max-width: min(92vw, 380px);
+  max-height: min(72vh, 560px);
+  overflow-y: auto;
+}
+.er-popover--tools .er-tools {
+  justify-content: flex-start;
+}
+.er-hamburger-btn.active {
+  background: linear-gradient(135deg, #55ac48, var(--er-green));
+  border-color: var(--er-green);
+  color: #fff;
+}
+
+/* ─ Sân khấu hiển thị trang ─
+   Chiếm trọn overlay (topbar/bottombar nổi phía trên, không chiếm layout)
+   để sách hiển thị lớn nhất có thể. */
 .er-stage {
-  flex: 1;
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: auto;
   padding: 8px;
-  min-height: 0;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
 }
-.er-stage::-webkit-scrollbar { width: 10px; height: 10px; }
+.er-stage::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
 .er-stage::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.22);
   border-radius: 999px;
@@ -215,21 +293,77 @@
   position: relative;
   border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45), 0 4px 14px rgba(0, 0, 0, 0.25);
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.45),
+    0 4px 14px rgba(0, 0, 0, 0.25);
   flex-shrink: 0;
 }
 .er-theme-light .er-page,
 .er-theme-sepia .er-page {
-  box-shadow: 0 24px 60px rgba(31, 42, 36, 0.22), 0 4px 12px rgba(31, 42, 36, 0.12);
+  box-shadow:
+    0 24px 60px rgba(31, 42, 36, 0.22),
+    0 4px 12px rgba(31, 42, 36, 0.12);
 }
 
-/* ─ Thanh dưới ─ */
+/* ─ Thanh dưới ─
+   Nằm trong 1 vùng "hotspot" trong suốt phủ mép dưới màn hình. Bản thân
+   thanh (số trang + nút chuyển trang) ẩn/mờ mặc định, chỉ hiện lên khi
+   người dùng rê chuột vào vùng dưới (desktop) hoặc chạm vào (di động),
+   để lộ nội dung sách nhiều hơn phía sau. */
+.er-bottom-hotspot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  height: 116px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.er-bottom-hint {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+.er-theme-light .er-bottom-hint,
+.er-theme-sepia .er-bottom-hint {
+  background: rgba(20, 51, 42, 0.22);
+}
+.er-bottom-hotspot.er-bottom-hotspot--visible .er-bottom-hint {
+  opacity: 0;
+}
+
 .er-bottombar {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 14px;
   padding: 16px 20px 24px;
+  background: transparent;
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease;
+}
+.er-bottombar.er-bottombar--visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .er-bottombar {
+    transition: none;
+  }
 }
 .er-nav-btn {
   display: inline-flex;
@@ -242,11 +376,20 @@
   background: rgba(255, 255, 255, 0.08);
   color: var(--er-ink);
   cursor: pointer;
-  transition: background 0.15s ease, transform 0.08s ease;
+  transition:
+    background 0.15s ease,
+    transform 0.08s ease;
 }
-.er-nav-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.18); }
-.er-nav-btn:active:not(:disabled) { transform: scale(0.92); }
-.er-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.er-nav-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.18);
+}
+.er-nav-btn:active:not(:disabled) {
+  transform: scale(0.92);
+}
+.er-nav-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
 .er-theme-light .er-nav-btn,
 .er-theme-sepia .er-nav-btn {
   background: rgba(20, 51, 42, 0.06);
@@ -262,8 +405,11 @@
   overflow-x: auto;
   padding: 4px 2px;
   scrollbar-width: none;
+  scroll-behavior: smooth;
 }
-.er-page-dots::-webkit-scrollbar { display: none; }
+.er-page-dots::-webkit-scrollbar {
+  display: none;
+}
 .er-page-dot {
   flex-shrink: 0;
   width: 34px;
@@ -277,10 +423,16 @@
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease,
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
     color 0.15s ease;
 }
-.er-page-dot:hover { background: rgba(255, 255, 255, 0.16); color: var(--er-ink); }
+.er-page-dot:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--er-ink);
+}
 .er-page-dot.active {
   background: linear-gradient(135deg, #55ac48, var(--er-green));
   border-color: var(--er-green);
@@ -288,10 +440,19 @@
   box-shadow: 0 4px 14px rgba(74, 158, 63, 0.4);
   transform: scale(1.1);
 }
-.er-page-dot.is-reading { animation: er-dot-pulse 1.1s ease-in-out infinite; }
+.er-page-dot.is-reading {
+  animation: er-dot-pulse 1.1s ease-in-out infinite;
+}
 @keyframes er-dot-pulse {
-  0%, 100% { box-shadow: 0 4px 14px rgba(74, 158, 63, 0.4); }
-  50% { box-shadow: 0 4px 22px rgba(74, 158, 63, 0.75), 0 0 0 5px rgba(74, 158, 63, 0.16); }
+  0%,
+  100% {
+    box-shadow: 0 4px 14px rgba(74, 158, 63, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 4px 22px rgba(74, 158, 63, 0.75),
+      0 0 0 5px rgba(74, 158, 63, 0.16);
+  }
 }
 .er-theme-light .er-page-dot,
 .er-theme-sepia .er-page-dot {
@@ -300,13 +461,17 @@
   color: #5a6b62;
 }
 .er-theme-light .er-page-dot:hover,
-.er-theme-sepia .er-page-dot:hover { background: rgba(20, 51, 42, 0.14); }
+.er-theme-sepia .er-page-dot:hover {
+  background: rgba(20, 51, 42, 0.14);
+}
 
 /* ─ Khả năng tương tác với từng dòng chữ khi đọc ─ */
 .er-line {
   position: relative;
   border-radius: 8px;
-  transition: background 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease;
 }
 .er-line:hover {
   background: rgba(230, 170, 20, 0.14);
@@ -331,7 +496,10 @@
   opacity: 0;
   transform: translateY(2px);
   cursor: pointer;
-  transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease,
+    background 0.15s ease;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.28);
   z-index: 5;
 }
@@ -339,8 +507,12 @@
   opacity: 1;
   transform: translateY(0);
 }
-.er-line-badge:hover { background: var(--er-forest-mid); }
-.er-line-badge:active { transform: translateY(0) scale(0.94); }
+.er-line-badge:hover {
+  background: var(--er-forest-mid);
+}
+.er-line-badge:active {
+  transform: translateY(0) scale(0.94);
+}
 
 /* ─ Responsive: không có hover trên cảm ứng nên luôn hiện sẵn nhãn ─ */
 @media (hover: none) {
@@ -354,20 +526,90 @@
 
 /* ─ Responsive ─ */
 @media (max-width: 760px) {
-  .er-topbar { padding: 10px 12px; gap: 8px; }
-  .er-title-name { display: none; }
-  .er-tool-label { display: none; }
-  .er-tool-btn, .er-icon-btn { padding: 8px; }
-  .er-bottombar { padding: 12px 14px 18px; gap: 10px; }
-  .er-page-dot { width: 28px; height: 28px; font-size: 11px; }
-  .er-page-dots { max-width: 60vw; }
+  .er-topbar {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+  .er-title-name {
+    display: none;
+  }
+  .er-tool-label {
+    display: none;
+  }
+  .er-tool-btn,
+  .er-icon-btn {
+    padding: 8px;
+  }
+  .er-bottombar {
+    padding: 12px 14px 18px;
+    gap: 10px;
+  }
+  .er-page-dot {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+  .er-page-dots {
+    max-width: 60vw;
+  }
+}
+
+/* ─ Giờ đọc còn lại (chỉ hiện ở chế độ đọc của bé) ─ */
+.er-time-btn.warn {
+  background: linear-gradient(135deg, #eeb62a, #c98f0e);
+  border-color: #c98f0e;
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(230, 170, 20, 0.4);
+}
+.er-time-popover {
+  width: 220px;
+  padding: 14px;
+  gap: 10px;
+}
+.er-time-popover-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
+}
+.er-time-popover-row strong {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+}
+.er-time-bar {
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+.er-time-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--er-green), #55ac48);
+  transition:
+    width 0.25s ease,
+    background 0.25s ease;
+}
+.er-time-bar-fill.warn {
+  background: linear-gradient(90deg, #c98f0e, #eeb62a);
 }
 
 /* ─ Màu chấm minh hoạ cho từng theme trong popover ─ */
-.er-swatch-dot--forest { background: linear-gradient(135deg, #1a5c52, #0d3330); }
-.er-swatch-dot--dark { background: #111318; }
-.er-swatch-dot--light { background: linear-gradient(135deg, #f6f4ee, #e9e6db); }
-.er-swatch-dot--sepia { background: linear-gradient(135deg, #f1e3c6, #e2cf9d); }
+.er-swatch-dot--forest {
+  background: linear-gradient(135deg, #1a5c52, #0d3330);
+}
+.er-swatch-dot--dark {
+  background: #111318;
+}
+.er-swatch-dot--light {
+  background: linear-gradient(135deg, #f6f4ee, #e9e6db);
+}
+.er-swatch-dot--sepia {
+  background: linear-gradient(135deg, #f1e3c6, #e2cf9d);
+}
 
 /* ─ Hiệu ứng lật trang: trượt ngang mượt, không chớp sáng ─ */
 .er-flip {
@@ -375,18 +617,33 @@
   height: 100%;
   will-change: transform;
 }
-.er-flip--next { animation: er-slide-next 0.36s cubic-bezier(0.16, 1, 0.3, 1); }
-.er-flip--prev { animation: er-slide-prev 0.36s cubic-bezier(0.16, 1, 0.3, 1); }
+.er-flip--next {
+  animation: er-slide-next 0.36s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.er-flip--prev {
+  animation: er-slide-prev 0.36s cubic-bezier(0.16, 1, 0.3, 1);
+}
 @keyframes er-slide-next {
-  from { transform: translateX(42px); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(42px);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 @keyframes er-slide-prev {
-  from { transform: translateX(-42px); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(-42px);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .er-flip--next, .er-flip--prev { animation: none; }
+  .er-flip--next,
+  .er-flip--prev {
+    animation: none;
+  }
 }
 
 /* ─ Drawer thông tin sách (trượt từ bên phải) ─ */
@@ -412,11 +669,17 @@
   animation: er-drawer-in 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 @keyframes er-drawer-in {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .er-info-drawer { animation: none; }
+  .er-info-drawer {
+    animation: none;
+  }
 }
 .er-info-drawer-head {
   flex-shrink: 0;
@@ -440,7 +703,9 @@
   border-color: rgba(20, 51, 42, 0.12);
   color: inherit;
 }
-.er-info-drawer-head .er-icon-btn:hover { background: rgba(20, 51, 42, 0.12); }
+.er-info-drawer-head .er-icon-btn:hover {
+  background: rgba(20, 51, 42, 0.12);
+}
 .er-info-scroll {
   flex: 1;
   overflow-y: auto;
@@ -496,7 +761,9 @@
   white-space: pre-line;
 }
 @media (max-width: 480px) {
-  .er-info-drawer { width: 100vw; }
+  .er-info-drawer {
+    width: 100vw;
+  }
 }
 
 /* ─ Mục lục (dùng chung khung drawer với Thông tin sách) ─ */
@@ -518,7 +785,9 @@
   color: inherit;
   transition: background 0.15s ease;
 }
-.er-toc-item:hover { background: rgba(20, 51, 42, 0.06); }
+.er-toc-item:hover {
+  background: rgba(20, 51, 42, 0.06);
+}
 .er-toc-item.active {
   background: var(--er-green-pale);
 }
@@ -549,7 +818,10 @@
   white-space: nowrap;
   color: #2c3a33;
 }
-.er-toc-item.active .er-toc-title { color: var(--er-forest); font-weight: 800; }
+.er-toc-item.active .er-toc-title {
+  color: var(--er-forest);
+  font-weight: 800;
+}
 .er-toc-star {
   flex-shrink: 0;
   display: inline-flex;
@@ -559,12 +831,19 @@
   height: 30px;
   border-radius: 50%;
   color: #9aa8a0;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
 }
-.er-toc-star:hover { background: rgba(20, 51, 42, 0.08); color: var(--er-forest); }
+.er-toc-star:hover {
+  background: rgba(20, 51, 42, 0.08);
+  color: var(--er-forest);
+}
 
 /* ─ Dấu chấm đánh dấu (bookmark) trên số trang ở thanh dưới ─ */
-.er-page-dot { position: relative; }
+.er-page-dot {
+  position: relative;
+}
 .er-page-dot-mark {
   position: absolute;
   top: -2px;
@@ -582,22 +861,52 @@
 
 /* ─ Hiệu ứng nảy nhẹ khi bookmark trang ─ */
 @keyframes er-bookmark-pop {
-  0% { transform: scale(0.6); }
-  60% { transform: scale(1.25); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
-.er-bookmark-pop { animation: er-bookmark-pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.er-bookmark-pop {
+  animation: er-bookmark-pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 
 /* ─ Responsive mobile: an toàn vùng tai thỏ, nút to hơn để dễ chạm ─ */
-.er-topbar { padding-top: max(14px, env(safe-area-inset-top)); }
-.er-bottombar { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+.er-topbar {
+  padding-top: max(14px, env(safe-area-inset-top));
+}
+.er-bottombar {
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
 @media (max-width: 760px) {
-  .er-title-name { max-width: 46vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .er-toc-item { padding: 13px 10px; }
-  .er-toc-num, .er-toc-star { width: 32px; height: 32px; }
-  .er-info-drawer-head h3 { font-size: 14px; }
+  .er-title-name {
+    max-width: 46vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .er-toc-item {
+    padding: 13px 10px;
+  }
+  .er-toc-num,
+  .er-toc-star {
+    width: 32px;
+    height: 32px;
+  }
+  .er-info-drawer-head h3 {
+    font-size: 14px;
+  }
 }
 @media (max-width: 420px) {
-  .er-tools { gap: 6px; }
-  .er-zoom-group .er-font-value { min-width: 30px; font-size: 11px; }
+  .er-tools {
+    gap: 6px;
+  }
+  .er-zoom-group .er-font-value {
+    min-width: 30px;
+    font-size: 11px;
+  }
 }

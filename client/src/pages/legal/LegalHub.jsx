@@ -14,9 +14,7 @@ import {
   BadgeCheck,
 } from "lucide-react";
 
-/* ───────────────────────────────────────────────────────────
-   POLICY CARDS DATA
-───────────────────────────────────────────────────────────── */
+/* POLICY CARDS DATA */
 const POLICIES = [
   {
     icon: Scale,
@@ -25,7 +23,11 @@ const POLICIES = [
     desc: "Những quy định rõ ràng, công bằng điều chỉnh mối quan hệ giữa Earthoria và bạn — từ đặt hàng, thanh toán đến quy tắc sử dụng ứng dụng AR/AI và cơ chế giải quyết tranh chấp.",
     version: "v3.2",
     updated: "15/06/2026",
-    highlights: ["30 ngày đổi trả", "Quyền hủy tài khoản bất kỳ lúc nào", "Luật Việt Nam áp dụng"],
+    highlights: [
+      "30 ngày đổi trả",
+      "Quyền hủy tài khoản bất kỳ lúc nào",
+      "Luật Việt Nam áp dụng",
+    ],
     to: "/legal/terms",
     label: "Xem Điều Khoản",
   },
@@ -36,7 +38,11 @@ const POLICIES = [
     desc: "Cách Earthoria thu thập, sử dụng và bảo vệ thông tin cá nhân của bạn và gia đình — được giải thích rõ ràng, không thuật ngữ rối rắm, với cam kết đặc biệt về quyền riêng tư của trẻ em.",
     version: "v2.4",
     updated: "15/06/2026",
-    highlights: ["Không bán dữ liệu", "Giọng nói AI xóa sau 24 giờ", "Mã hóa TLS 1.3 & AES-256"],
+    highlights: [
+      "Không bán dữ liệu",
+      "Giọng nói AI xóa sau 24 giờ",
+      "Mã hóa TLS 1.3 & AES-256",
+    ],
     to: "/legal/privacy",
     label: "Xem Chính Sách Bảo Mật",
   },
@@ -47,7 +53,11 @@ const POLICIES = [
     desc: "Cách chúng tôi sử dụng cookie để vận hành website, ghi nhớ giỏ hàng và cá nhân hóa trải nghiệm đọc sách — cùng cam kết không quảng cáo theo dõi trên hồ sơ trẻ em.",
     version: "v1.6",
     updated: "15/06/2026",
-    highlights: ["Toàn quyền bật/tắt từng nhóm", "Không quảng cáo cho trẻ em", "Bảng chi tiết từng cookie"],
+    highlights: [
+      "Toàn quyền bật/tắt từng nhóm",
+      "Không quảng cáo cho trẻ em",
+      "Bảng chi tiết từng cookie",
+    ],
     to: "/legal/cookies",
     label: "Xem Chính Sách Cookie",
   },
@@ -58,7 +68,11 @@ const POLICIES = [
     desc: "Mua sắm an tâm với chính sách đổi trả 30 ngày, bảo hành 12 tháng và cam kết hoàn tiền minh bạch theo đúng phương thức thanh toán ban đầu của bạn.",
     version: "v2.0",
     updated: "15/06/2026",
-    highlights: ["7 ngày trả hàng không cần lý do", "Bảo hành lỗi sản xuất 12 tháng", "Hoàn tiền trong 5–10 ngày làm việc"],
+    highlights: [
+      "7 ngày trả hàng không cần lý do",
+      "Bảo hành lỗi sản xuất 12 tháng",
+      "Hoàn tiền trong 5–10 ngày làm việc",
+    ],
     to: "/legal/returns",
     label: "Xem Chính Sách Trả Hàng",
   },
@@ -69,7 +83,11 @@ const POLICIES = [
     desc: "Mọi thứ cần biết về thời gian giao hàng, phí vận chuyển, tiêu chuẩn đóng gói bảo vệ sách AR và cam kết xử lý khi hàng hỏng hoặc thất lạc trong quá trình vận chuyển.",
     version: "v2.1",
     updated: "15/06/2026",
-    highlights: ["Miễn phí ship từ 500k", "Giao 63 tỉnh thành", "Đổi mới nếu hàng hỏng do ship"],
+    highlights: [
+      "Miễn phí ship từ 500k",
+      "Giao 63 tỉnh thành",
+      "Đổi mới nếu hàng hỏng do ship",
+    ],
     to: "/legal/shipping",
     label: "Xem Chính Sách Vận Chuyển",
   },
@@ -80,7 +98,11 @@ const POLICIES = [
     desc: "Cách hạng thành viên của bạn được xác định theo tổng chi tiêu tích lũy, quyền lợi giảm giá và miễn phí vận chuyển của từng hạng, cùng cam kết không bao giờ hạ hạng.",
     version: "v1.0",
     updated: "23/08/2026",
-    highlights: ["5 chặng vé bay từ Chùa Một Cột đến Landmark 81", "Giảm giá tự động đến 12%", "Hạng cộng dồn vĩnh viễn, không hết hạn"],
+    highlights: [
+      "5 chặng vé bay từ Chùa Một Cột đến Landmark 81",
+      "Giảm giá tự động đến 12%",
+      "Hạng cộng dồn vĩnh viễn, không hết hạn",
+    ],
     to: "/legal/membership",
     label: "Xem Chính Sách Hạng Thành Viên",
   },
@@ -90,17 +112,21 @@ const TRUST_ITEMS = [
   { icon: BadgeCheck, text: "Tuân thủ Luật Bảo vệ Người tiêu dùng Việt Nam" },
   { icon: ShieldCheck, text: "Bảo mật dữ liệu theo tiêu chuẩn quốc tế" },
   { icon: BadgeCheck, text: "Cam kết bảo vệ đặc biệt cho trẻ em dưới 13 tuổi" },
-  { icon: ShieldCheck, text: "Cập nhật chính sách minh bạch, thông báo trước 14 ngày" },
+  {
+    icon: ShieldCheck,
+    text: "Cập nhật chính sách minh bạch, thông báo trước 14 ngày",
+  },
 ];
 
-/* ───────────────────────────────────────────────────────────
-   COMPONENT
-───────────────────────────────────────────────────────────── */
+/* COMPONENT */
 export default function LegalHub() {
   /* reveal-on-scroll */
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("in"); }),
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) e.target.classList.add("in");
+        }),
       { threshold: 0.08 },
     );
     document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
@@ -374,7 +400,9 @@ export default function LegalHub() {
 
       {/* Breadcrumb */}
       <div className="breadcrumb">
-        <Link to="/" className="breadcrumb-item">Trang chủ</Link>
+        <Link to="/" className="breadcrumb-item">
+          Trang chủ
+        </Link>
         <span className="breadcrumb-sep">/</span>
         <span className="breadcrumb-current">Pháp lý</span>
       </div>
@@ -390,7 +418,8 @@ export default function LegalHub() {
             <span>Tài Liệu Pháp Lý Earthoria</span>
           </div>
           <h1 className="lh-hero-title">
-            Minh Bạch<br />
+            Minh Bạch
+            <br />
             Là <em>Nền Tảng</em> Tin Tưởng
           </h1>
           <p className="lh-hero-sub">
@@ -459,13 +488,13 @@ export default function LegalHub() {
         <div className="lh-contact-inner">
           <span className="lh-contact-eyebrow reveal">Hỗ Trợ Pháp Lý</span>
           <h2 className="lh-contact-title reveal">
-            Vẫn còn câu hỏi về<br />
+            Vẫn còn câu hỏi về
+            <br />
             <em>quyền lợi của bạn?</em>
           </h2>
           <p className="lh-contact-sub reveal">
-            Đội ngũ Earthoria sẵn sàng giải đáp mọi thắc mắc liên quan đến
-            điều khoản, bảo mật, cookie hoặc vận chuyển — từ thứ Hai đến Chủ
-            Nhật.
+            Đội ngũ Earthoria sẵn sàng giải đáp mọi thắc mắc liên quan đến điều
+            khoản, bảo mật, cookie hoặc vận chuyển — từ thứ Hai đến Chủ Nhật.
           </p>
           <div className="lh-contact-grid reveal">
             <a href="mailto:legal@earthoria.vn" className="lh-contact-item">

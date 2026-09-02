@@ -58,7 +58,9 @@ export default function KidLinkCard({
       setLink(res.data.data.url);
     } catch (err) {
       console.error(err);
-      alert(err?.response?.data?.message || "Không tạo lại được link, thử lại sau.");
+      alert(
+        err?.response?.data?.message || "Không tạo lại được link, thử lại sau.",
+      );
     } finally {
       setRegenerating(false);
     }
@@ -146,8 +148,8 @@ export default function KidLinkCard({
       )}
 
       <p className="kid-link-hint">
-        Mở link này (hoặc quét QR) trên thiết bị/tablet riêng của bé để vào thẳng
-        thư viện sách.
+        Mở link này (hoặc quét QR) trên thiết bị/tablet riêng của bé để vào
+        thẳng thư viện sách.
       </p>
     </div>
   );

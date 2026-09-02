@@ -2,7 +2,15 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { QRCodeCanvas } from "qrcode.react";
-import { Search, Edit2, Plus, Download, Copy, Upload, Gamepad2 } from "lucide-react";
+import {
+  Search,
+  Edit2,
+  Plus,
+  Download,
+  Copy,
+  Upload,
+  Gamepad2,
+} from "lucide-react";
 import { gameService } from "../../services/gameService";
 import { GAME_TYPE_LIST, getGameDefinition } from "../../games/gameRegistry";
 import toast from "react-hot-toast";
@@ -51,7 +59,13 @@ export default function GameManager() {
     queryKey: ["admin-games-all", search, filterType, filterStatus, page],
     queryFn: () =>
       gameService
-        .list({ search, gameType: filterType, status: filterStatus, page, limit: BOOKS_PER_PAGE })
+        .list({
+          search,
+          gameType: filterType,
+          status: filterStatus,
+          page,
+          limit: BOOKS_PER_PAGE,
+        })
         .then((r) => r.data.data),
     keepPreviousData: true,
   });
@@ -69,7 +83,8 @@ export default function GameManager() {
   };
 
   const accessMutation = useMutation({
-    mutationFn: ({ id, accessType }) => gameService.updateAccess(id, accessType),
+    mutationFn: ({ id, accessType }) =>
+      gameService.updateAccess(id, accessType),
     onSuccess: () => {
       toast.success("Đã đổi quyền xem");
       qc.invalidateQueries(["admin-games-all"]);
@@ -77,7 +92,9 @@ export default function GameManager() {
     onError: () => toast.error("Đổi quyền xem thất bại!"),
   });
 
-  const qrUrl = qrTarget ? `${window.location.origin}/game/${qrTarget.book.slug}/${qrTarget.game.code}` : "";
+  const qrUrl = qrTarget
+    ? `${window.location.origin}/game/${qrTarget.book.slug}/${qrTarget.game.code}`
+    : "";
 
   const handleDownloadQr = () => {
     const canvas = qrWrapRef.current?.querySelector("canvas");
@@ -113,12 +130,27 @@ export default function GameManager() {
         </div>
       </div>
 
-      <div className="a-ar-filter-bar" style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
-        <button className="a-btn-primary" style={{ flexShrink: 0 }} onClick={() => navigate("/dashboard/games/new")}>
+      <div
+        className="a-ar-filter-bar"
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 10,
+          alignItems: "center",
+        }}
+      >
+        <button
+          className="a-btn-primary"
+          style={{ flexShrink: 0 }}
+          onClick={() => navigate("/dashboard/games/new")}
+        >
           <Plus size={13} />
           Tạo trò chơi mới
         </button>
-        <div className="a-search-wrap" style={{ marginBottom: 0, flex: "1 1 280px", maxWidth: 380 }}>
+        <div
+          className="a-search-wrap"
+          style={{ marginBottom: 0, flex: "1 1 280px", maxWidth: 380 }}
+        >
           <Search size={13} className="a-search-icon" />
           <input
             className="a-input"
@@ -181,7 +213,15 @@ export default function GameManager() {
             <table className="a-table">
               <thead>
                 <tr>
-                  {["Sách", "Trò chơi", "Loại", "Quyền xem", "Lượt chơi", "Trạng thái", ""].map((h) => (
+                  {[
+                    "Sách",
+                    "Trò chơi",
+                    "Loại",
+                    "Quyền xem",
+                    "Lượt chơi",
+                    "Trạng thái",
+                    "",
+                  ].map((h) => (
                     <th key={h}>{h}</th>
                   ))}
                 </tr>
@@ -189,14 +229,31 @@ export default function GameManager() {
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td colSpan={7} style={{ padding: 32, textAlign: "center", color: "rgba(13,51,48,0.3)" }}>
+                    <td
+                      colSpan={7}
+                      style={{
+                        padding: 32,
+                        textAlign: "center",
+                        color: "rgba(13,51,48,0.3)",
+                      }}
+                    >
                       Đang tải...
                     </td>
                   </tr>
                 ) : !groups.length ? (
                   <tr>
-                    <td colSpan={7} style={{ padding: 32, textAlign: "center", color: "rgba(13,51,48,0.3)" }}>
-                      <Gamepad2 size={22} style={{ opacity: 0.3, marginBottom: 8 }} />
+                    <td
+                      colSpan={7}
+                      style={{
+                        padding: 32,
+                        textAlign: "center",
+                        color: "rgba(13,51,48,0.3)",
+                      }}
+                    >
+                      <Gamepad2
+                        size={22}
+                        style={{ opacity: 0.3, marginBottom: 8 }}
+                      />
                       <div>Chưa có trò chơi nào khớp bộ lọc</div>
                     </td>
                   </tr>
@@ -205,16 +262,29 @@ export default function GameManager() {
                     group.games.map((g, idx) => (
                       <tr
                         key={g.id}
-                        onClick={() => setQrTarget({ game: g, book: group.book })}
+                        onClick={() =>
+                          setQrTarget({ game: g, book: group.book })
+                        }
                         style={{ cursor: "pointer" }}
-                        className={qrTarget?.game.id === g.id ? "a-row-active" : ""}
+                        className={
+                          qrTarget?.game.id === g.id ? "a-row-active" : ""
+                        }
                       >
                         {idx === 0 && (
-                          <td rowSpan={group.games.length} className="a-ar-book-cell">
+                          <td
+                            rowSpan={group.games.length}
+                            className="a-ar-book-cell"
+                          >
                             <div className="a-ar-book-cell-inner">
-                              <div className="a-book-thumb" style={{ width: 26, height: 34, flexShrink: 0 }}>
+                              <div
+                                className="a-book-thumb"
+                                style={{ width: 26, height: 34, flexShrink: 0 }}
+                              >
                                 {group.book.coverImage ? (
-                                  <img src={group.book.coverImage} alt={group.book.title} />
+                                  <img
+                                    src={group.book.coverImage}
+                                    alt={group.book.title}
+                                  />
                                 ) : (
                                   <Upload size={10} />
                                 )}
@@ -231,7 +301,9 @@ export default function GameManager() {
                                 >
                                   {group.book.title}
                                 </div>
-                                <div className="a-td-muted">{group.games.length} trò chơi</div>
+                                <div className="a-td-muted">
+                                  {group.games.length} trò chơi
+                                </div>
                               </div>
                             </div>
                           </td>
@@ -239,7 +311,10 @@ export default function GameManager() {
 
                         <td style={{ fontWeight: 500, fontSize: 12 }}>
                           {g.title}
-                          <div className="a-td-mono" style={{ fontSize: 10, marginTop: 2 }}>
+                          <div
+                            className="a-td-mono"
+                            style={{ fontSize: 10, marginTop: 2 }}
+                          >
                             {g.code}
                           </div>
                         </td>
@@ -251,9 +326,18 @@ export default function GameManager() {
                         <td onClick={(e) => e.stopPropagation()}>
                           <select
                             className="a-input a-select"
-                            style={{ fontSize: 11, padding: "4px 8px", maxWidth: 170 }}
+                            style={{
+                              fontSize: 11,
+                              padding: "4px 8px",
+                              maxWidth: 170,
+                            }}
                             value={g.accessType}
-                            onChange={(e) => accessMutation.mutate({ id: g.id, accessType: e.target.value })}
+                            onChange={(e) =>
+                              accessMutation.mutate({
+                                id: g.id,
+                                accessType: e.target.value,
+                              })
+                            }
                           >
                             {ACCESS_OPTIONS.map((opt) => (
                               <option key={opt.value} value={opt.value}>
@@ -266,16 +350,23 @@ export default function GameManager() {
                         <td className="a-td-muted">{g.playCount}</td>
 
                         <td>
-                          <span className={`a-badge ${g.isActive ? "success" : "neutral"}`}>
+                          <span
+                            className={`a-badge ${g.isActive ? "success" : "neutral"}`}
+                          >
                             {g.isActive ? "Hoạt động" : "Vô hiệu hoá"}
                           </span>
                         </td>
 
                         <td>
-                          <div style={{ display: "flex", gap: 6 }} onClick={(e) => e.stopPropagation()}>
+                          <div
+                            style={{ display: "flex", gap: 6 }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             <button
                               className="a-btn-icon edit"
-                              onClick={() => navigate(`/dashboard/games/${g.id}`)}
+                              onClick={() =>
+                                navigate(`/dashboard/games/${g.id}`)
+                              }
                               title="Xem / Sửa"
                             >
                               <Edit2 size={12} />
@@ -291,15 +382,25 @@ export default function GameManager() {
           </div>
 
           <div className="a-pagination">
-            <span className="a-pagination-info">Tổng {totalCount} sách có trò chơi</span>
+            <span className="a-pagination-info">
+              Tổng {totalCount} sách có trò chơi
+            </span>
             <div className="a-pagination-btns">
-              <button className="a-page-btn" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
+              <button
+                className="a-page-btn"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
                 ‹
               </button>
               {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
                 const p = i + 1;
                 return (
-                  <button key={p} className={`a-page-btn${p === page ? " active" : ""}`} onClick={() => setPage(p)}>
+                  <button
+                    key={p}
+                    className={`a-page-btn${p === page ? " active" : ""}`}
+                    onClick={() => setPage(p)}
+                  >
                     {p}
                   </button>
                 );
@@ -324,16 +425,39 @@ export default function GameManager() {
               <p className="a-chart-sub">Bấm 1 dòng bên trái để xem QR</p>
             </div>
             {!qrTarget ? (
-              <div style={{ padding: "32px 0", textAlign: "center", color: "rgba(13,51,48,0.3)", fontSize: 12 }}>
+              <div
+                style={{
+                  padding: "32px 0",
+                  textAlign: "center",
+                  color: "rgba(13,51,48,0.3)",
+                  fontSize: 12,
+                }}
+              >
                 Chưa chọn trò chơi nào
               </div>
             ) : (
               <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 12, fontWeight: 500, marginBottom: 10 }}>
+                <div
+                  style={{ fontSize: 12, fontWeight: 500, marginBottom: 10 }}
+                >
                   {qrTarget.book.title} — {qrTarget.game.title}
                 </div>
-                <div ref={qrWrapRef} style={{ display: "flex", justifyContent: "center", padding: "4px 0 16px" }}>
-                  <QRCodeCanvas value={qrUrl} size={160} level="M" includeMargin bgColor="#ffffff" fgColor="#0D3330" />
+                <div
+                  ref={qrWrapRef}
+                  style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    padding: "4px 0 16px",
+                  }}
+                >
+                  <QRCodeCanvas
+                    value={qrUrl}
+                    size={160}
+                    level="M"
+                    includeMargin
+                    bgColor="#ffffff"
+                    fgColor="#0D3330"
+                  />
                 </div>
                 <div
                   style={{
@@ -350,14 +474,26 @@ export default function GameManager() {
                 >
                   {qrUrl}
                 </div>
-                <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    justifyContent: "center",
+                    flexWrap: "wrap",
+                  }}
+                >
                   <button className="a-btn-primary" onClick={handleDownloadQr}>
                     <Download size={12} /> Tải PNG
                   </button>
                   <button className="a-btn-ghost" onClick={handleCopyLink}>
                     <Copy size={12} /> Sao chép link
                   </button>
-                  <button className="a-btn-ghost" onClick={() => navigate(`/dashboard/games/${qrTarget.game.id}`)}>
+                  <button
+                    className="a-btn-ghost"
+                    onClick={() =>
+                      navigate(`/dashboard/games/${qrTarget.game.id}`)
+                    }
+                  >
                     <Edit2 size={12} /> Xem / Sửa chi tiết
                   </button>
                 </div>

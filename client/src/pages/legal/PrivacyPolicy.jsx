@@ -63,7 +63,7 @@ const SECTIONS = [
     num: "01",
     title: "Tổng Quan & Cam Kết Của Chúng Tôi",
     paragraphs: [
-      "Chính sách Bảo mật này mô tả cách Công ty TNHH Earthoria Việt Nam (\"Earthoria\", \"chúng tôi\") thu thập, sử dụng, lưu trữ và bảo vệ thông tin cá nhân khi bạn sử dụng website, ứng dụng di động và các sản phẩm liên quan của chúng tôi.",
+      'Chính sách Bảo mật này mô tả cách Công ty TNHH Earthoria Việt Nam ("Earthoria", "chúng tôi") thu thập, sử dụng, lưu trữ và bảo vệ thông tin cá nhân khi bạn sử dụng website, ứng dụng di động và các sản phẩm liên quan của chúng tôi.',
       "Vì đối tượng phục vụ chính của Earthoria bao gồm trẻ em, chúng tôi áp dụng các tiêu chuẩn bảo mật nghiêm ngặt hơn mức yêu cầu pháp lý tối thiểu, đặt sự an toàn của trẻ làm trọng tâm trong mọi quyết định liên quan đến dữ liệu.",
     ],
   },
@@ -109,7 +109,7 @@ const SECTIONS = [
       text: "Earthoria không cố ý thu thập thông tin cá nhân từ trẻ em dưới 13 tuổi khi chưa có sự đồng ý có thể xác minh của phụ huynh. Mọi tài khoản trẻ em đều được tạo lập và quản lý hoàn toàn thông qua tài khoản của phụ huynh.",
     },
     list: [
-      "Phụ huynh có toàn quyền xem, chỉnh sửa hoặc xóa dữ liệu của con mình thông qua mục \"Bảng điều khiển gia đình\"",
+      'Phụ huynh có toàn quyền xem, chỉnh sửa hoặc xóa dữ liệu của con mình thông qua mục "Bảng điều khiển gia đình"',
       "Earthoria không hiển thị quảng cáo nhắm mục tiêu (targeted ads) cho bất kỳ người dùng nào được xác định là trẻ em",
       "Dữ liệu giọng nói của trẻ không bao giờ được sử dụng cho mục đích quảng cáo dưới bất kỳ hình thức nào",
       "Nếu phát hiện đã thu thập nhầm thông tin trẻ em ngoài quy trình đồng ý của phụ huynh, chúng tôi sẽ xóa dữ liệu ngay khi nhận được thông báo",
@@ -140,7 +140,7 @@ const SECTIONS = [
       "Mã hóa TLS 1.3 cho toàn bộ dữ liệu truyền tải giữa thiết bị của bạn và máy chủ Earthoria",
       "Mã hóa AES-256 cho dữ liệu nhạy cảm được lưu trữ trong hệ thống",
       "Kiểm tra bảo mật định kỳ được thực hiện bởi đơn vị kiểm toán độc lập bên thứ ba",
-      "Phân quyền truy cập nội bộ nghiêm ngặt theo nguyên tắc \"cần biết mới được biết\"",
+      'Phân quyền truy cập nội bộ nghiêm ngặt theo nguyên tắc "cần biết mới được biết"',
     ],
   },
   {
@@ -780,12 +780,17 @@ export default function PrivacyPolicy() {
 
       {/* Reading progress */}
       <div className="legal-progress-rail">
-        <div className="legal-progress-fill" style={{ width: `${progress}%` }} />
+        <div
+          className="legal-progress-fill"
+          style={{ width: `${progress}%` }}
+        />
       </div>
 
       {/* Breadcrumb */}
       <div className="breadcrumb">
-        <Link to="/" className="breadcrumb-item">Trang chủ</Link>
+        <Link to="/" className="breadcrumb-item">
+          Trang chủ
+        </Link>
         <span className="breadcrumb-sep">/</span>
         <span className="breadcrumb-current">Chính sách bảo mật</span>
       </div>
@@ -810,8 +815,8 @@ export default function PrivacyPolicy() {
           </h1>
           <p className="legal-hero-sub">
             Sự tin tưởng của gia đình bạn là nền tảng của Earthoria — đây là
-            cách chúng tôi thu thập, sử dụng và bảo vệ thông tin của bạn,
-            giải thích rõ ràng, không thuật ngữ rối rắm.
+            cách chúng tôi thu thập, sử dụng và bảo vệ thông tin của bạn, giải
+            thích rõ ràng, không thuật ngữ rối rắm.
           </p>
           <div className="legal-hero-meta">
             <div className="legal-hero-meta-item">
@@ -847,7 +852,10 @@ export default function PrivacyPolicy() {
       <section className="legal-summary">
         <div className="legal-summary-inner">
           {SUMMARY_CARDS.map((card, i) => (
-            <div className={`legal-summary-card reveal reveal-delay-${i + 1}`} key={i}>
+            <div
+              className={`legal-summary-card reveal reveal-delay-${i + 1}`}
+              key={i}
+            >
               <div className="legal-summary-icon">
                 <card.icon size={20} />
               </div>
@@ -884,26 +892,39 @@ export default function PrivacyPolicy() {
                 </button>
               ))}
               {filteredSections.length === 0 && (
-                <div className="legal-toc-empty">Không tìm thấy mục nào phù hợp</div>
+                <div className="legal-toc-empty">
+                  Không tìm thấy mục nào phù hợp
+                </div>
               )}
             </nav>
             <div className="legal-toc-divider" />
-            <button className="legal-toc-item" onClick={() => scrollToSection("faq")}>
+            <button
+              className="legal-toc-item"
+              onClick={() => scrollToSection("faq")}
+            >
               <Users size={14} />
               <span>Câu hỏi thường gặp</span>
             </button>
-            <button className="legal-toc-item" onClick={() => scrollToSection("lien-he-card")}>
+            <button
+              className="legal-toc-item"
+              onClick={() => scrollToSection("lien-he-card")}
+            >
               <Mail size={14} />
               <span>Liên hệ hỗ trợ</span>
             </button>
 
             <div className="legal-sidebar-card">
-              <div className="legal-sidebar-card-title">Bộ phận Bảo vệ Dữ liệu</div>
+              <div className="legal-sidebar-card-title">
+                Bộ phận Bảo vệ Dữ liệu
+              </div>
               <p>
-                Có câu hỏi về cách dữ liệu của bạn được xử lý? Liên hệ trực
-                tiếp với DPO của chúng tôi.
+                Có câu hỏi về cách dữ liệu của bạn được xử lý? Liên hệ trực tiếp
+                với DPO của chúng tôi.
               </p>
-              <a href="mailto:helpdesk.earthoria@gmail.com" className="legal-sidebar-card-link">
+              <a
+                href="mailto:helpdesk.earthoria@gmail.com"
+                className="legal-sidebar-card-link"
+              >
                 helpdesk.earthoria@gmail.com
               </a>
             </div>
@@ -921,7 +942,11 @@ export default function PrivacyPolicy() {
                   title="Sao chép liên kết tới mục này"
                   onClick={() => handleCopyLink(s.id)}
                 >
-                  {copiedId === s.id ? <Check size={13} /> : <Link2 size={13} />}
+                  {copiedId === s.id ? (
+                    <Check size={13} />
+                  ) : (
+                    <Link2 size={13} />
+                  )}
                 </button>
               </div>
               <div className="legal-section-body">
@@ -934,7 +959,9 @@ export default function PrivacyPolicy() {
                       <ShieldAlert size={17} />
                     </div>
                     <div>
-                      <div className="legal-callout-title">{s.callout.title}</div>
+                      <div className="legal-callout-title">
+                        {s.callout.title}
+                      </div>
                       <p>{s.callout.text}</p>
                     </div>
                   </div>
@@ -943,31 +970,49 @@ export default function PrivacyPolicy() {
                   <div className="legal-data-grid">
                     <div className="legal-data-cell">
                       <span className="legal-data-cell-label">
-                        <Database size={11} style={{ marginRight: 5, verticalAlign: -1 }} />
+                        <Database
+                          size={11}
+                          style={{ marginRight: 5, verticalAlign: -1 }}
+                        />
                         Dữ liệu tài khoản
                       </span>
-                      <span className="legal-data-cell-val">Đến khi bạn yêu cầu xóa</span>
+                      <span className="legal-data-cell-val">
+                        Đến khi bạn yêu cầu xóa
+                      </span>
                     </div>
                     <div className="legal-data-cell">
                       <span className="legal-data-cell-label">
-                        <FileText size={11} style={{ marginRight: 5, verticalAlign: -1 }} />
+                        <FileText
+                          size={11}
+                          style={{ marginRight: 5, verticalAlign: -1 }}
+                        />
                         Dữ liệu giao dịch
                       </span>
-                      <span className="legal-data-cell-val">10 năm (quy định kế toán)</span>
+                      <span className="legal-data-cell-val">
+                        10 năm (quy định kế toán)
+                      </span>
                     </div>
                     <div className="legal-data-cell">
                       <span className="legal-data-cell-label">
-                        <Clock size={11} style={{ marginRight: 5, verticalAlign: -1 }} />
+                        <Clock
+                          size={11}
+                          style={{ marginRight: 5, verticalAlign: -1 }}
+                        />
                         Dữ liệu giọng nói AI
                       </span>
                       <span className="legal-data-cell-val">Tối đa 24 giờ</span>
                     </div>
                     <div className="legal-data-cell">
                       <span className="legal-data-cell-label">
-                        <Cookie size={11} style={{ marginRight: 5, verticalAlign: -1 }} />
+                        <Cookie
+                          size={11}
+                          style={{ marginRight: 5, verticalAlign: -1 }}
+                        />
                         Cookie phân tích
                       </span>
-                      <span className="legal-data-cell-val">Tối đa 13 tháng</span>
+                      <span className="legal-data-cell-val">
+                        Tối đa 13 tháng
+                      </span>
                     </div>
                   </div>
                 )}
@@ -977,7 +1022,9 @@ export default function PrivacyPolicy() {
                       <Globe2 size={17} />
                     </div>
                     <div>
-                      <div className="legal-callout-title">Tiêu chuẩn bảo vệ tương đương</div>
+                      <div className="legal-callout-title">
+                        Tiêu chuẩn bảo vệ tương đương
+                      </div>
                       <p>
                         Dù dữ liệu được xử lý ở đâu, mức độ bảo vệ áp dụng cho
                         bạn luôn tương đương với những gì được cam kết trong
@@ -1017,7 +1064,10 @@ export default function PrivacyPolicy() {
           </div>
           <div className="legal-faq-list">
             {FAQS.map((f, i) => (
-              <div key={i} className={`legal-faq-item ${openFaq === i ? "open" : ""}`}>
+              <div
+                key={i}
+                className={`legal-faq-item ${openFaq === i ? "open" : ""}`}
+              >
                 <button
                   className="legal-faq-question"
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
@@ -1038,14 +1088,19 @@ export default function PrivacyPolicy() {
       <section className="legal-contact-section" id="lien-he-card">
         <div className="legal-contact-bgtext">EARTHORIA</div>
         <div className="legal-contact-inner">
-          <span className="legal-contact-eyebrow reveal">Vẫn còn thắc mắc?</span>
+          <span className="legal-contact-eyebrow reveal">
+            Vẫn còn thắc mắc?
+          </span>
           <h2 className="legal-contact-title reveal">
             Bộ phận Bảo vệ Dữ liệu
             <br />
             <em>luôn sẵn sàng lắng nghe</em>
           </h2>
           <div className="legal-contact-grid reveal">
-            <a href="mailto:helpdesk.earthoria@gmail.com" className="legal-contact-item">
+            <a
+              href="mailto:helpdesk.earthoria@gmail.com"
+              className="legal-contact-item"
+            >
               <Mail size={15} />
               helpdesk.earthoria@gmail.com
             </a>

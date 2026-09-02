@@ -17,7 +17,9 @@ function shuffle(arr) {
 }
 
 function buildGrid(secretWord, rows, cols) {
-  const targetLetters = Array.from(secretWord.toUpperCase()).filter((ch) => ch !== " ");
+  const targetLetters = Array.from(secretWord.toUpperCase()).filter(
+    (ch) => ch !== " ",
+  );
   let R = rows || 8;
   let C = cols || 8;
   if (targetLetters.length > R * C) {
@@ -35,7 +37,8 @@ function buildGrid(secretWord, rows, cols) {
   });
   for (let r = 0; r < R; r++) {
     for (let c = 0; c < C; c++) {
-      if (!grid[r][c]) grid[r][c] = FILLER_LETTERS[randomInt(FILLER_LETTERS.length)];
+      if (!grid[r][c])
+        grid[r][c] = FILLER_LETTERS[randomInt(FILLER_LETTERS.length)];
     }
   }
 
@@ -104,7 +107,10 @@ export default function LetterHuntPlayer({ config, onFinish }) {
   useEffect(() => {
     if (status === "won" && !finishedRef.current) {
       finishedRef.current = true;
-      const score = Math.max(50, Math.round(500 + remaining * 10 - mistakes * 15));
+      const score = Math.max(
+        50,
+        Math.round(500 + remaining * 10 - mistakes * 15),
+      );
       setTimeout(() => onFinish(score, timeLimit - remaining), 500);
     }
   }, [status, remaining, mistakes, onFinish, timeLimit]);
@@ -120,12 +126,18 @@ export default function LetterHuntPlayer({ config, onFinish }) {
     setRoundKey((k) => k + 1);
   };
 
-  const progressPct = targetLetters.length ? Math.round((progress / targetLetters.length) * 100) : 0;
+  const progressPct = targetLetters.length
+    ? Math.round((progress / targetLetters.length) * 100)
+    : 0;
 
   return (
     <div className="g-play g-play--letterhunt">
       <div className="g-play-stats">
-        <span className={remaining <= 10 && status === "playing" ? "g-timer-urgent" : ""}>
+        <span
+          className={
+            remaining <= 10 && status === "playing" ? "g-timer-urgent" : ""
+          }
+        >
           <Timer size={14} /> {remaining}s
         </span>
         <span>
@@ -142,7 +154,10 @@ export default function LetterHuntPlayer({ config, onFinish }) {
           slot.isSpace ? (
             <span key={i} className="g-lh-space" />
           ) : (
-            <span key={i} className={`g-lh-slot${slot.idx < progress ? " filled" : ""}`}>
+            <span
+              key={i}
+              className={`g-lh-slot${slot.idx < progress ? " filled" : ""}`}
+            >
               {slot.idx < progress ? targetLetters[slot.idx] : ""}
             </span>
           ),
@@ -157,7 +172,10 @@ export default function LetterHuntPlayer({ config, onFinish }) {
           </button>
         </div>
       ) : (
-        <div className="g-lh-grid" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+        <div
+          className="g-lh-grid"
+          style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}
+        >
           {grid.map((row, r) =>
             row.map((letter, c) => {
               const key = `${r}-${c}`;

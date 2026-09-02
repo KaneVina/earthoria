@@ -1,12 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-/**
- * Dual-thumb drag range slider.
- *
- * value: [lo, hi]  — controlled value shown while NOT dragging
- * onChange(next)   — fired continuously while dragging (for live labels)
- * onChangeCommitted(next) — fired once on release / key change (for triggering fetches)
- */
 export default function RangeSlider({
   min = 0,
   max = 100,

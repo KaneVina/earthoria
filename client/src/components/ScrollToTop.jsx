@@ -28,14 +28,21 @@ export default function ScrollToTop() {
       <div className="btt-tooltip">Lên đầu trang</div>
       <div className="btt-arrow">
         <svg
-          width="18" height="18" fill="none" stroke="currentColor"
-          strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+          width="18"
+          height="18"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
           viewBox="0 0 18 18"
         >
           <polyline points="4,12 9,6 14,12" />
         </svg>
         <div className="btt-trail">
-          <span /><span /><span />
+          <span />
+          <span />
+          <span />
         </div>
       </div>
     </button>

@@ -240,7 +240,9 @@ export default function Ecosystem() {
         x: parentRect.left + parentRect.width / 2 - chartRect.left,
         y: parentRect.bottom - chartRect.top,
       };
-      const childTops = childEls.map((el) => center(el.getBoundingClientRect()));
+      const childTops = childEls.map((el) =>
+        center(el.getBoundingClientRect()),
+      );
       const minY = Math.min(...childTops.map((p) => p.y));
       const midY = parentBottom.y + (minY - parentBottom.y) * 0.5;
 
@@ -337,9 +339,9 @@ export default function Ecosystem() {
           Sơ Đồ Hệ Sinh Thái <em>Earthoria</em>
         </h1>
         <p className="em-subtitle">
-          Từ một trang sách giấy đến một thế giới học tập sống động — mỗi
-          studio trong hệ sinh thái Earthoria đảm nhận một vai trò, cùng nhau
-          tạo nên trải nghiệm giáo dục liền mạch cho trẻ em và gia đình Việt.
+          Từ một trang sách giấy đến một thế giới học tập sống động — mỗi studio
+          trong hệ sinh thái Earthoria đảm nhận một vai trò, cùng nhau tạo nên
+          trải nghiệm giáo dục liền mạch cho trẻ em và gia đình Việt.
         </p>
         <div className="em-hint">Chạm vào từng ô để xem chi tiết</div>
       </header>
@@ -415,7 +417,11 @@ export default function Ecosystem() {
           </p>
 
           <div className="em-cycle-wheel">
-            <svg className="em-wheel-ring" viewBox="0 0 100 100" aria-hidden="true">
+            <svg
+              className="em-wheel-ring"
+              viewBox="0 0 100 100"
+              aria-hidden="true"
+            >
               <circle cx="50" cy="50" r={CYCLE_RADIUS} />
             </svg>
 
@@ -490,7 +496,11 @@ export default function Ecosystem() {
           <circle className="em-circuit-pad" cx="560" cy="200" r="3" />
 
           <circle r="3" className="em-flow-dot">
-            <animateMotion dur="3.4s" repeatCount="indefinite" path="M 0,70 L 66,70 L 66,26 L 122,26" />
+            <animateMotion
+              dur="3.4s"
+              repeatCount="indefinite"
+              path="M 0,70 L 66,70 L 66,26 L 122,26"
+            />
           </circle>
           <circle r="3" className="em-flow-dot">
             <animateMotion
@@ -504,10 +514,12 @@ export default function Ecosystem() {
 
         <div className="em-cta-content">
           <Sparkles className="em-cta-icon" size={26} strokeWidth={1.4} />
-          <h3 className="em-cta-title">Sẵn sàng bước vào hệ sinh thái Earthoria?</h3>
+          <h3 className="em-cta-title">
+            Sẵn sàng bước vào hệ sinh thái Earthoria?
+          </h3>
           <p className="em-cta-text">
-            Bắt đầu từ một cuốn sách, khám phá cả một thế giới học tập đang
-            chờ gia đình bạn.
+            Bắt đầu từ một cuốn sách, khám phá cả một thế giới học tập đang chờ
+            gia đình bạn.
           </p>
           <div className="em-cta-actions">
             <Link to="/shop" className="em-cta-btn em-cta-btn-primary">
@@ -525,7 +537,16 @@ export default function Ecosystem() {
 
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII"];
 
-function EcoNode({ data, isRoot, leaf, index, registerRef, expanded, onToggle, revealed }) {
+function EcoNode({
+  data,
+  isRoot,
+  leaf,
+  index,
+  registerRef,
+  expanded,
+  onToggle,
+  revealed,
+}) {
   const Icon = data.icon;
 
   return (

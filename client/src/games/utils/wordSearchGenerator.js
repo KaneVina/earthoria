@@ -24,7 +24,6 @@ function shuffle(arr) {
   return a;
 }
 
-
 export function generateWordSearchGrid(words, rows, cols) {
   const cleanWords = words.map(normalizeWord).filter((w) => w.length > 0);
   if (cleanWords.length === 0) {
@@ -34,7 +33,8 @@ export function generateWordSearchGrid(words, rows, cols) {
   const longest = Math.max(...cleanWords.map((w) => w.length), 4);
   const totalLetters = cleanWords.reduce((a, w) => a + w.length, 0);
 
-  let R = rows || Math.max(longest + 2, Math.ceil(Math.sqrt(totalLetters * 2.4)), 8);
+  let R =
+    rows || Math.max(longest + 2, Math.ceil(Math.sqrt(totalLetters * 2.4)), 8);
   let C = cols || R;
 
   for (let attempt = 0; attempt < 10; attempt++) {
@@ -92,7 +92,8 @@ export function generateWordSearchGrid(words, rows, cols) {
     if (ok) {
       for (let r = 0; r < R; r++) {
         for (let c = 0; c < C; c++) {
-          if (!grid[r][c]) grid[r][c] = FILLER_LETTERS[randomInt(FILLER_LETTERS.length)];
+          if (!grid[r][c])
+            grid[r][c] = FILLER_LETTERS[randomInt(FILLER_LETTERS.length)];
         }
       }
       return { grid, rows: R, cols: C, placements };
@@ -105,7 +106,10 @@ export function generateWordSearchGrid(words, rows, cols) {
   // Trường hợp cực hiếm không xếp vừa dù đã nới bảng nhiều lần — trả về
   // bảng trống với chỉ chữ ngẫu nhiên để tránh crash UI, tốt hơn là ném lỗi.
   const grid = Array.from({ length: R }, () =>
-    Array.from({ length: C }, () => FILLER_LETTERS[randomInt(FILLER_LETTERS.length)]),
+    Array.from(
+      { length: C },
+      () => FILLER_LETTERS[randomInt(FILLER_LETTERS.length)],
+    ),
   );
   return { grid, rows: R, cols: C, placements: [] };
 }

@@ -121,12 +121,12 @@ const SECTIONS = [
     ],
     callout: {
       title: "Đơn hàng nào được tính vào chi tiêu tích lũy?",
-      text: "Chỉ các đơn hàng có trạng thái thanh toán \"Đã thanh toán\" (PAID) và đang ở một trong các trạng thái: Đã xác nhận, Đang giao, Đã giao hoặc Hoàn tất mới được cộng vào tổng chi tiêu. Đơn hàng bị hủy, hoàn tiền toàn phần, hoặc đang chờ thanh toán sẽ không được tính.",
+      text: 'Chỉ các đơn hàng có trạng thái thanh toán "Đã thanh toán" (PAID) và đang ở một trong các trạng thái: Đã xác nhận, Đang giao, Đã giao hoặc Hoàn tất mới được cộng vào tổng chi tiêu. Đơn hàng bị hủy, hoàn tiền toàn phần, hoặc đang chờ thanh toán sẽ không được tính.',
     },
     list: [
       "Hệ thống tự động đối chiếu lại tổng chi tiêu mỗi khi trạng thái đơn hàng thay đổi — không cần bạn yêu cầu thủ công",
       "Giá trị được cộng dồn là giá trị sản phẩm (subtotal), không bao gồm phí vận chuyển hoặc các khoản giảm giá đã áp dụng trước đó",
-      "Bạn có thể xem chính xác tổng chi tiêu và tiến trình lên hạng tiếp theo tại trang \"Hành Trình Hạng Thành Viên\" trong hồ sơ cá nhân",
+      'Bạn có thể xem chính xác tổng chi tiêu và tiến trình lên hạng tiếp theo tại trang "Hành Trình Hạng Thành Viên" trong hồ sơ cá nhân',
     ],
   },
   {
@@ -148,7 +148,7 @@ const SECTIONS = [
     list: [
       "Mức giảm được áp dụng tự động ngay tại bước thanh toán — bạn không cần nhập mã hay yêu cầu thủ công",
       "Mỗi hạng có mức giảm tối đa cho một đơn hàng (ví dụ Hạng III giảm 5% nhưng không quá 200.000đ/đơn) nhằm đảm bảo công bằng giữa các đơn hàng giá trị khác nhau",
-      "Ưu đãi giảm giá theo hạng không được cộng dồn với mã giảm giá khuyến mãi có ghi chú \"không áp dụng cùng ưu đãi khác\" — hệ thống sẽ tự động áp dụng mức giảm có lợi hơn cho bạn",
+      'Ưu đãi giảm giá theo hạng không được cộng dồn với mã giảm giá khuyến mãi có ghi chú "không áp dụng cùng ưu đãi khác" — hệ thống sẽ tự động áp dụng mức giảm có lợi hơn cho bạn',
       "Ưu đãi chỉ áp dụng cho đơn hàng thanh toán thành công, không áp dụng hồi tố cho các đơn đã đặt trước khi lên hạng",
     ],
   },
@@ -194,7 +194,7 @@ const SECTIONS = [
     list: [
       "Hệ thống hạng thành viên chỉ áp dụng cho tài khoản khách hàng cá nhân đã đăng nhập — không áp dụng cho đơn hàng đặt dưới hình thức khách vãng lai (guest checkout)",
       "Mỗi khách hàng chỉ được sở hữu một tài khoản duy nhất để tích lũy hạng; Earthoria có quyền hợp nhất hoặc vô hiệu hóa các tài khoản trùng lặp được tạo nhằm mục đích trục lợi ưu đãi",
-      "Ưu đãi theo hạng không áp dụng cho các sản phẩm đã được đánh dấu \"không áp dụng khuyến mãi\" trên trang sản phẩm",
+      'Ưu đãi theo hạng không áp dụng cho các sản phẩm đã được đánh dấu "không áp dụng khuyến mãi" trên trang sản phẩm',
       "Earthoria bảo lưu quyền tạm ngưng quyền lợi hạng thành viên đối với tài khoản có dấu hiệu gian lận, lạm dụng hệ thống hoặc vi phạm Điều Khoản Dịch Vụ",
     ],
   },
@@ -232,11 +232,11 @@ const FAQS = [
   },
   {
     q: "Tôi có thể xem chính xác mình còn thiếu bao nhiêu để lên hạng tiếp theo không?",
-    a: "Có. Trang \"Hành Trình Hạng Thành Viên\" trong hồ sơ cá nhân hiển thị tổng chi tiêu hiện tại, hạng đang giữ, và số tiền cụ thể còn thiếu để đạt hạng kế tiếp, kèm thanh tiến trình trực quan.",
+    a: 'Có. Trang "Hành Trình Hạng Thành Viên" trong hồ sơ cá nhân hiển thị tổng chi tiêu hiện tại, hạng đang giữ, và số tiền cụ thể còn thiếu để đạt hạng kế tiếp, kèm thanh tiến trình trực quan.',
   },
   {
     q: "Ưu đãi giảm giá theo hạng có dùng chung được với mã giảm giá khuyến mãi khác không?",
-    a: "Tùy chương trình khuyến mãi. Nếu mã khuyến mãi ghi rõ \"không áp dụng cùng ưu đãi khác\", hệ thống sẽ tự động chọn mức giảm có lợi hơn cho bạn giữa hai ưu đãi, không cộng dồn cả hai.",
+    a: 'Tùy chương trình khuyến mãi. Nếu mã khuyến mãi ghi rõ "không áp dụng cùng ưu đãi khác", hệ thống sẽ tự động chọn mức giảm có lợi hơn cho bạn giữa hai ưu đãi, không cộng dồn cả hai.',
   },
   {
     q: "Tôi mua hàng nhiều nhưng đơn bị hủy — có bị trừ hạng không?",
@@ -266,12 +266,18 @@ export default function MembershipPolicy() {
     const update = () => {
       const el = document.documentElement;
       const scrollTop = el.scrollTop || document.body.scrollTop;
-      const scrollHeight = (el.scrollHeight || document.body.scrollHeight) - el.clientHeight;
+      const scrollHeight =
+        (el.scrollHeight || document.body.scrollHeight) - el.clientHeight;
       setProgress(scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0);
       setShowTop(scrollTop > 700);
       ticking = false;
     };
-    const onScroll = () => { if (!ticking) { window.requestAnimationFrame(update); ticking = true; } };
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(update);
+        ticking = true;
+      }
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     update();
     return () => window.removeEventListener("scroll", onScroll);
@@ -280,10 +286,16 @@ export default function MembershipPolicy() {
   /* scrollspy */
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) setActiveId(e.target.id); }),
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) setActiveId(e.target.id);
+        }),
       { rootMargin: "-130px 0px -65% 0px", threshold: 0 },
     );
-    SECTIONS.forEach((s) => { const el = document.getElementById(s.id); if (el) observer.observe(el); });
+    SECTIONS.forEach((s) => {
+      const el = document.getElementById(s.id);
+      if (el) observer.observe(el);
+    });
     return () => observer.disconnect();
   }, []);
 
@@ -308,7 +320,10 @@ export default function MembershipPolicy() {
   /* reveal-on-scroll */
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("in"); }),
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) e.target.classList.add("in");
+        }),
       { threshold: 0.1 },
     );
     document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
@@ -331,7 +346,9 @@ export default function MembershipPolicy() {
   };
 
   const filteredSections = tocQuery
-    ? SECTIONS.filter((s) => s.title.toLowerCase().includes(tocQuery.toLowerCase()))
+    ? SECTIONS.filter((s) =>
+        s.title.toLowerCase().includes(tocQuery.toLowerCase()),
+      )
     : SECTIONS;
 
   return (
@@ -731,13 +748,20 @@ export default function MembershipPolicy() {
       `}</style>
 
       <div className="legal-progress-rail">
-        <div className="legal-progress-fill" style={{ width: `${progress}%` }} />
+        <div
+          className="legal-progress-fill"
+          style={{ width: `${progress}%` }}
+        />
       </div>
 
       <div className="breadcrumb">
-        <Link to="/" className="breadcrumb-item">Trang chủ</Link>
+        <Link to="/" className="breadcrumb-item">
+          Trang chủ
+        </Link>
         <span className="breadcrumb-sep">/</span>
-        <Link to="/legal" className="breadcrumb-item">Pháp lý</Link>
+        <Link to="/legal" className="breadcrumb-item">
+          Pháp lý
+        </Link>
         <span className="breadcrumb-sep">/</span>
         <span className="breadcrumb-current">Chính sách hạng thành viên</span>
       </div>
@@ -779,7 +803,10 @@ export default function MembershipPolicy() {
             </div>
           </div>
           <div className="legal-hero-actions">
-            <button className="legal-btn-main" onClick={() => scrollToSection(SECTIONS[0].id)}>
+            <button
+              className="legal-btn-main"
+              onClick={() => scrollToSection(SECTIONS[0].id)}
+            >
               Xem chi tiết <ChevronDown size={14} />
             </button>
             <button className="legal-btn-ghost" onClick={() => window.print()}>
@@ -793,8 +820,13 @@ export default function MembershipPolicy() {
       <section className="legal-summary">
         <div className="legal-summary-inner">
           {SUMMARY_CARDS.map((card, i) => (
-            <div className={`legal-summary-card reveal reveal-delay-${i + 1}`} key={i}>
-              <div className="legal-summary-icon"><card.icon size={20} /></div>
+            <div
+              className={`legal-summary-card reveal reveal-delay-${i + 1}`}
+              key={i}
+            >
+              <div className="legal-summary-icon">
+                <card.icon size={20} />
+              </div>
               <h3>{card.title}</h3>
               <p>{card.desc}</p>
             </div>
@@ -828,19 +860,32 @@ export default function MembershipPolicy() {
                 </button>
               ))}
               {filteredSections.length === 0 && (
-                <div className="legal-toc-empty">Không tìm thấy mục nào phù hợp</div>
+                <div className="legal-toc-empty">
+                  Không tìm thấy mục nào phù hợp
+                </div>
               )}
             </nav>
             <div className="legal-toc-divider" />
-            <button className="legal-toc-item" onClick={() => scrollToSection("faq")}>
-              <Users size={14} /><span>Câu hỏi thường gặp</span>
+            <button
+              className="legal-toc-item"
+              onClick={() => scrollToSection("faq")}
+            >
+              <Users size={14} />
+              <span>Câu hỏi thường gặp</span>
             </button>
-            <button className="legal-toc-item" onClick={() => scrollToSection("lien-he-card")}>
-              <Mail size={14} /><span>Liên hệ hỗ trợ</span>
+            <button
+              className="legal-toc-item"
+              onClick={() => scrollToSection("lien-he-card")}
+            >
+              <Mail size={14} />
+              <span>Liên hệ hỗ trợ</span>
             </button>
             <div className="legal-sidebar-card">
               <div className="legal-sidebar-card-title">Xem hạng của bạn</div>
-              <p>Theo dõi tổng chi tiêu và tiến trình lên hạng tại trang Hành Trình Hạng Thành Viên.</p>
+              <p>
+                Theo dõi tổng chi tiêu và tiến trình lên hạng tại trang Hành
+                Trình Hạng Thành Viên.
+              </p>
               <Link to="/loyalty" className="legal-sidebar-card-link">
                 Hành Trình Hạng Thành Viên
               </Link>
@@ -859,16 +904,26 @@ export default function MembershipPolicy() {
                   title="Sao chép liên kết tới mục này"
                   onClick={() => handleCopyLink(s.id)}
                 >
-                  {copiedId === s.id ? <Check size={13} /> : <Link2 size={13} />}
+                  {copiedId === s.id ? (
+                    <Check size={13} />
+                  ) : (
+                    <Link2 size={13} />
+                  )}
                 </button>
               </div>
               <div className="legal-section-body">
-                {s.paragraphs?.map((p, i) => <p key={i}>{p}</p>)}
+                {s.paragraphs?.map((p, i) => (
+                  <p key={i}>{p}</p>
+                ))}
                 {s.callout && (
                   <div className="legal-callout">
-                    <div className="legal-callout-icon"><AlertTriangle size={17} /></div>
+                    <div className="legal-callout-icon">
+                      <AlertTriangle size={17} />
+                    </div>
                     <div>
-                      <div className="legal-callout-title">{s.callout.title}</div>
+                      <div className="legal-callout-title">
+                        {s.callout.title}
+                      </div>
                       <p>{s.callout.text}</p>
                     </div>
                   </div>
@@ -889,27 +944,42 @@ export default function MembershipPolicy() {
                           <tr key={t.roman}>
                             <td>
                               <div className="legal-tiers-tier-cell">
-                                <span className="legal-tiers-dot" style={{ background: t.color }} />
-                                <span className="legal-tiers-tier-name">Hạng {t.roman} · {t.name}</span>
+                                <span
+                                  className="legal-tiers-dot"
+                                  style={{ background: t.color }}
+                                />
+                                <span className="legal-tiers-tier-name">
+                                  Hạng {t.roman} · {t.name}
+                                </span>
                               </div>
                             </td>
                             <td>
                               {t.minSpend > 0 ? (
-                                <>từ <strong>{formatVnd(t.minSpend)}</strong></>
+                                <>
+                                  từ <strong>{formatVnd(t.minSpend)}</strong>
+                                </>
                               ) : (
                                 <>Mặc định khi tạo tài khoản</>
                               )}
                             </td>
                             <td>
                               {t.discountPercent > 0 ? (
-                                <><strong>{t.discountPercent}%</strong> (tối đa {formatVnd(t.maxDiscountPerOrder)}/đơn)</>
+                                <>
+                                  <strong>{t.discountPercent}%</strong> (tối đa{" "}
+                                  {formatVnd(t.maxDiscountPerOrder)}/đơn)
+                                </>
                               ) : (
                                 "Chưa có"
                               )}
                             </td>
                             <td>
                               {t.freeShipThreshold > 0 ? (
-                                <>Đơn từ <strong>{formatVnd(t.freeShipThreshold)}</strong></>
+                                <>
+                                  Đơn từ{" "}
+                                  <strong>
+                                    {formatVnd(t.freeShipThreshold)}
+                                  </strong>
+                                </>
                               ) : (
                                 <strong>Mọi đơn hàng</strong>
                               )}
@@ -923,7 +993,10 @@ export default function MembershipPolicy() {
                 {s.list && (
                   <ul>
                     {s.list.map((item, i) => (
-                      <li key={i}><span className="legal-li-dot" /><span>{item}</span></li>
+                      <li key={i}>
+                        <span className="legal-li-dot" />
+                        <span>{item}</span>
+                      </li>
                     ))}
                   </ul>
                 )}
@@ -942,11 +1015,16 @@ export default function MembershipPolicy() {
               <span className="section-eyebrow-text">Giải Đáp Nhanh</span>
               <div className="section-eyebrow-line" />
             </div>
-            <h2 className="section-title">Câu Hỏi <em>Thường Gặp</em></h2>
+            <h2 className="section-title">
+              Câu Hỏi <em>Thường Gặp</em>
+            </h2>
           </div>
           <div className="legal-faq-list">
             {FAQS.map((f, i) => (
-              <div key={i} className={`legal-faq-item ${openFaq === i ? "open" : ""}`}>
+              <div
+                key={i}
+                className={`legal-faq-item ${openFaq === i ? "open" : ""}`}
+              >
                 <button
                   className="legal-faq-question"
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
@@ -954,7 +1032,9 @@ export default function MembershipPolicy() {
                   {f.q}
                   <ChevronDown className="legal-faq-chevron" size={18} />
                 </button>
-                <div className="legal-faq-answer"><p>{f.a}</p></div>
+                <div className="legal-faq-answer">
+                  <p>{f.a}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -965,20 +1045,29 @@ export default function MembershipPolicy() {
       <section className="legal-contact-section" id="lien-he-card">
         <div className="legal-contact-bgtext">EARTHORIA</div>
         <div className="legal-contact-inner">
-          <span className="legal-contact-eyebrow reveal">Cần hỗ trợ về hạng thành viên?</span>
+          <span className="legal-contact-eyebrow reveal">
+            Cần hỗ trợ về hạng thành viên?
+          </span>
           <h2 className="legal-contact-title reveal">
-            Đội ngũ Earthoria<br />
+            Đội ngũ Earthoria
+            <br />
             <em>sẵn sàng giải đáp</em>
           </h2>
           <div className="legal-contact-grid reveal">
-            <a href="mailto:support@earthoria.vn" className="legal-contact-item">
-              <Mail size={15} />support@earthoria.vn
+            <a
+              href="mailto:support@earthoria.vn"
+              className="legal-contact-item"
+            >
+              <Mail size={15} />
+              support@earthoria.vn
             </a>
             <a href="tel:19006868" className="legal-contact-item">
-              <Phone size={15} />1900 6868
+              <Phone size={15} />
+              1900 6868
             </a>
             <span className="legal-contact-item">
-              <MapPin size={15} />Tầng 12, Tòa nhà Earthoria, Q.1, TP.HCM
+              <MapPin size={15} />
+              Tầng 12, Tòa nhà Earthoria, Q.1, TP.HCM
             </span>
           </div>
         </div>

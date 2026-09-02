@@ -3,7 +3,14 @@ import { useCompareStore } from "../store/compareStore";
 
 function IconCompareArrow() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
       <path d="M8 3L4 7l4 4" />
       <path d="M4 7h16" />
       <path d="M16 21l4-4-4-4" />
@@ -13,7 +20,14 @@ function IconCompareArrow() {
 }
 function IconX({ size = 12 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
@@ -21,7 +35,14 @@ function IconX({ size = 12 }) {
 }
 function IconArrowRight() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
       <path d="M5 12h14M12 5l7 7-7 7" />
     </svg>
   );
@@ -291,7 +312,10 @@ export default function FloatingCompareBar() {
             <strong>{items.length}</strong> / {maxCompare} đã chọn
           </span>
           <div className="compare-bar-progress">
-            <div className="compare-bar-progress-fill" style={{ width: `${fillPct}%` }} />
+            <div
+              className="compare-bar-progress-fill"
+              style={{ width: `${fillPct}%` }}
+            />
           </div>
         </div>
       </div>

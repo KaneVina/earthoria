@@ -1,5 +1,14 @@
 import React, { useMemo, useRef, useState } from "react";
-import { Plus, Trash2, Image as ImageIcon, Type, Loader2, X, AlertTriangle, CheckCircle2 } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Image as ImageIcon,
+  Type,
+  Loader2,
+  X,
+  AlertTriangle,
+  CheckCircle2,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { gameService } from "../../services/gameService";
 import { analyzeMemoryMatch } from "../validators";
@@ -37,7 +46,12 @@ function CardFaceEditor({ face, onChange, gameId, label, invalid }) {
           <button
             type="button"
             className={face.kind !== "image" ? "active" : ""}
-            onClick={() => onChange({ kind: "text", value: face.kind === "image" ? "" : face.value })}
+            onClick={() =>
+              onChange({
+                kind: "text",
+                value: face.kind === "image" ? "" : face.value,
+              })
+            }
             title="Chữ"
           >
             <Type size={11} />
@@ -45,7 +59,12 @@ function CardFaceEditor({ face, onChange, gameId, label, invalid }) {
           <button
             type="button"
             className={face.kind === "image" ? "active" : ""}
-            onClick={() => onChange({ kind: "image", value: face.kind === "image" ? face.value : "" })}
+            onClick={() =>
+              onChange({
+                kind: "image",
+                value: face.kind === "image" ? face.value : "",
+              })
+            }
             title="Ảnh"
           >
             <ImageIcon size={11} />
@@ -65,7 +84,10 @@ function CardFaceEditor({ face, onChange, gameId, label, invalid }) {
           {face.value ? (
             <div className="g-face-image-preview">
               <img src={face.value} alt="" />
-              <button type="button" onClick={() => onChange({ kind: "image", value: "" })}>
+              <button
+                type="button"
+                onClick={() => onChange({ kind: "image", value: "" })}
+              >
                 <X size={11} />
               </button>
             </div>
@@ -76,7 +98,11 @@ function CardFaceEditor({ face, onChange, gameId, label, invalid }) {
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
             >
-              {uploading ? <Loader2 size={14} className="a-spin" /> : <ImageIcon size={14} />}
+              {uploading ? (
+                <Loader2 size={14} className="a-spin" />
+              ) : (
+                <ImageIcon size={14} />
+              )}
               <span>{uploading ? "Đang tải..." : "Chọn ảnh"}</span>
             </button>
           )}
@@ -103,7 +129,11 @@ export default function MemoryMatchEditor({ config, onChange, gameId }) {
   const addPair = () => {
     setPairs([
       ...pairs,
-      { id: uid(), cardA: { kind: "text", value: "" }, cardB: { kind: "text", value: "" } },
+      {
+        id: uid(),
+        cardA: { kind: "text", value: "" },
+        cardB: { kind: "text", value: "" },
+      },
     ]);
   };
 
@@ -113,16 +143,19 @@ export default function MemoryMatchEditor({ config, onChange, gameId }) {
 
   const removePair = (id) => setPairs(pairs.filter((p) => p.id !== id));
 
-  const { errors, rowIssues } = useMemo(() => analyzeMemoryMatch(config), [config]);
+  const { errors, rowIssues } = useMemo(
+    () => analyzeMemoryMatch(config),
+    [config],
+  );
   const isValid = pairs.length > 0 && errors.length === 0;
 
   return (
     <div className="g-editor">
       <div className="g-editor-hint">
         Mỗi cặp gồm 2 mặt thẻ — người chơi lật để tìm 2 thẻ khớp nhau. Có thể
-        ghép <strong>ảnh với chữ</strong> (vd: ảnh con voi ↔ chữ "Con voi")
-        hoặc chữ với chữ. Cần tối thiểu 2 cặp, và không có 2 mặt thẻ nào trùng
-        nội dung với nhau ở 2 cặp khác nhau.
+        ghép <strong>ảnh với chữ</strong> (vd: ảnh con voi ↔ chữ "Con voi") hoặc
+        chữ với chữ. Cần tối thiểu 2 cặp, và không có 2 mặt thẻ nào trùng nội
+        dung với nhau ở 2 cặp khác nhau.
       </div>
 
       {pairs.length > 0 && (
@@ -141,7 +174,9 @@ export default function MemoryMatchEditor({ config, onChange, gameId }) {
       )}
 
       {pairs.length === 0 && (
-        <div className="g-editor-empty">Chưa có cặp thẻ nào — bấm "Thêm cặp thẻ" bên dưới</div>
+        <div className="g-editor-empty">
+          Chưa có cặp thẻ nào — bấm "Thêm cặp thẻ" bên dưới
+        </div>
       )}
 
       <div className="g-pair-list">
@@ -149,7 +184,10 @@ export default function MemoryMatchEditor({ config, onChange, gameId }) {
           const issue = rowIssues[pair.id] || {};
           const rowInvalid = issue.cardA || issue.cardB || issue.duplicate;
           return (
-            <div className={`g-pair-row${rowInvalid ? " g-pair-row--invalid" : ""}`} key={pair.id}>
+            <div
+              className={`g-pair-row${rowInvalid ? " g-pair-row--invalid" : ""}`}
+              key={pair.id}
+            >
               <div className="g-pair-index">{idx + 1}</div>
               <CardFaceEditor
                 label="Mặt A"
@@ -180,7 +218,12 @@ export default function MemoryMatchEditor({ config, onChange, gameId }) {
         })}
       </div>
 
-      <button type="button" className="a-btn-ghost" onClick={addPair} style={{ marginTop: 10 }}>
+      <button
+        type="button"
+        className="a-btn-ghost"
+        onClick={addPair}
+        style={{ marginTop: 10 }}
+      >
         <Plus size={13} /> Thêm cặp thẻ
       </button>
 

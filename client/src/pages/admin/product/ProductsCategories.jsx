@@ -1,6 +1,3 @@
-// ProductsCategories.jsx — Tab "Danh mục" trong trang Sản phẩm.
-// LƯU Ý: endpoint /admin/categories (POST/PUT/DELETE) là giả định theo cùng pattern
-// với /categories (GET) đã dùng ở tab Sách — đổi lại cho khớp backend thật của bạn.
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, Pencil, Trash2, X, FolderTree } from "lucide-react";
@@ -22,7 +19,7 @@ export default function ProductsCategories() {
   });
 
   const filtered = categories.filter((c) =>
-    c.name?.toLowerCase().includes(search.trim().toLowerCase())
+    c.name?.toLowerCase().includes(search.trim().toLowerCase()),
   );
 
   const openCreate = () => {
@@ -30,7 +27,11 @@ export default function ProductsCategories() {
     setModal("create");
   };
   const openEdit = (cat) => {
-    setForm({ name: cat.name ?? "", slug: cat.slug ?? "", description: cat.description ?? "" });
+    setForm({
+      name: cat.name ?? "",
+      slug: cat.slug ?? "",
+      description: cat.description ?? "",
+    });
     setModal(cat);
   };
   const closeModal = () => setModal(null);
@@ -41,7 +42,9 @@ export default function ProductsCategories() {
         ? api.post("/admin/categories", form)
         : api.put(`/admin/categories/${modal.id}`, form),
     onSuccess: () => {
-      toast.success(modal === "create" ? "Đã thêm danh mục!" : "Đã cập nhật danh mục!");
+      toast.success(
+        modal === "create" ? "Đã thêm danh mục!" : "Đã cập nhật danh mục!",
+      );
       qc.invalidateQueries(["admin-categories-full"]);
       qc.invalidateQueries(["admin-categories"]);
       closeModal();
@@ -57,14 +60,26 @@ export default function ProductsCategories() {
       qc.invalidateQueries(["admin-categories"]);
       setConfirmDelete(null);
     },
-    onError: () => toast.error("Xóa thất bại! Danh mục có thể đang chứa sản phẩm."),
+    onError: () =>
+      toast.error("Xóa thất bại! Danh mục có thể đang chứa sản phẩm."),
   });
 
   return (
     <>
       {/*  Search + nút thêm mới  */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", justifyContent: "space-between" }}>
-        <div className="a-search-wrap" style={{ marginBottom: 0, flex: "1 1 260px", maxWidth: 360 }}>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 10,
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div
+          className="a-search-wrap"
+          style={{ marginBottom: 0, flex: "1 1 260px", maxWidth: 360 }}
+        >
           <Search size={13} className="a-search-icon" />
           <input
             className="a-input"
@@ -95,13 +110,27 @@ export default function ProductsCategories() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={4} style={{ padding: 48, textAlign: "center", color: "rgba(13,51,48,0.3)" }}>
+                  <td
+                    colSpan={4}
+                    style={{
+                      padding: 48,
+                      textAlign: "center",
+                      color: "rgba(13,51,48,0.3)",
+                    }}
+                  >
                     Đang tải...
                   </td>
                 </tr>
               ) : !filtered.length ? (
                 <tr>
-                  <td colSpan={4} style={{ padding: 48, textAlign: "center", color: "rgba(13,51,48,0.3)" }}>
+                  <td
+                    colSpan={4}
+                    style={{
+                      padding: 48,
+                      textAlign: "center",
+                      color: "rgba(13,51,48,0.3)",
+                    }}
+                  >
                     Không tìm thấy danh mục nào
                   </td>
                 </tr>
@@ -109,7 +138,13 @@ export default function ProductsCategories() {
                 filtered.map((c) => (
                   <tr key={c.id}>
                     <td>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                        }}
+                      >
                         <div
                           style={{
                             width: 30,
@@ -126,11 +161,20 @@ export default function ProductsCategories() {
                           <FolderTree size={14} />
                         </div>
                         <div>
-                          <div style={{ fontWeight: 500, fontSize: 12, color: "var(--a-ink)" }}>
+                          <div
+                            style={{
+                              fontWeight: 500,
+                              fontSize: 12,
+                              color: "var(--a-ink)",
+                            }}
+                          >
                             {c.name}
                           </div>
                           {c.description ? (
-                            <div className="a-td-muted" style={{ maxWidth: 320 }}>
+                            <div
+                              className="a-td-muted"
+                              style={{ maxWidth: 320 }}
+                            >
                               {c.description}
                             </div>
                           ) : null}
@@ -170,7 +214,10 @@ export default function ProductsCategories() {
 
       {/* ══ CREATE / EDIT MODAL ══ */}
       {modal && (
-        <div className="a-modal-overlay" onClick={(e) => e.target === e.currentTarget && closeModal()}>
+        <div
+          className="a-modal-overlay"
+          onClick={(e) => e.target === e.currentTarget && closeModal()}
+        >
           <div className="a-modal" style={{ maxWidth: 460 }}>
             <div className="a-modal-header">
               <h3 className="a-modal-title">
@@ -180,13 +227,18 @@ export default function ProductsCategories() {
                 <X size={16} />
               </button>
             </div>
-            <div className="a-modal-body" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <div
+              className="a-modal-body"
+              style={{ display: "flex", flexDirection: "column", gap: 14 }}
+            >
               <div className="a-form-group">
                 <label className="a-form-label">Tên danh mục</label>
                 <input
                   className="a-input"
                   value={form.name}
-                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, name: e.target.value }))
+                  }
                   placeholder="VD: Sách thiếu nhi"
                 />
               </div>
@@ -195,7 +247,9 @@ export default function ProductsCategories() {
                 <input
                   className="a-input"
                   value={form.slug}
-                  onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, slug: e.target.value }))
+                  }
                   placeholder="VD: sach-thieu-nhi"
                 />
               </div>
@@ -204,7 +258,9 @@ export default function ProductsCategories() {
                 <textarea
                   className="a-input a-textarea"
                   value={form.description}
-                  onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, description: e.target.value }))
+                  }
                   placeholder="Mô tả ngắn (tùy chọn)"
                 />
               </div>
@@ -229,19 +285,31 @@ export default function ProductsCategories() {
       {confirmDelete && (
         <div
           className="a-modal-overlay"
-          onClick={(e) => e.target === e.currentTarget && setConfirmDelete(null)}
+          onClick={(e) =>
+            e.target === e.currentTarget && setConfirmDelete(null)
+          }
         >
           <div className="a-modal" style={{ maxWidth: 420 }}>
             <div className="a-modal-header">
               <h3 className="a-modal-title">Xác nhận xóa</h3>
-              <button className="a-modal-close" onClick={() => setConfirmDelete(null)}>
+              <button
+                className="a-modal-close"
+                onClick={() => setConfirmDelete(null)}
+              >
                 <X size={16} />
               </button>
             </div>
             <div className="a-modal-body">
-              <p style={{ fontSize: 13, color: "rgba(13,51,48,0.7)", lineHeight: 1.6 }}>
-                Bạn có chắc muốn xóa danh mục <strong>"{confirmDelete.name}"</strong>? Hành động
-                này không thể hoàn tác.
+              <p
+                style={{
+                  fontSize: 13,
+                  color: "rgba(13,51,48,0.7)",
+                  lineHeight: 1.6,
+                }}
+              >
+                Bạn có chắc muốn xóa danh mục{" "}
+                <strong>"{confirmDelete.name}"</strong>? Hành động này không thể
+                hoàn tác.
               </p>
             </div>
             <div className="a-modal-footer">
@@ -253,7 +321,10 @@ export default function ProductsCategories() {
               >
                 {deleteMutation.isPending ? "Đang xóa..." : "Xóa danh mục"}
               </button>
-              <button className="a-btn-ghost" onClick={() => setConfirmDelete(null)}>
+              <button
+                className="a-btn-ghost"
+                onClick={() => setConfirmDelete(null)}
+              >
                 Hủy
               </button>
             </div>

@@ -1,6 +1,3 @@
-// ProductsAccessories.jsx — Tab "Phụ kiện" trong trang Sản phẩm.
-// LƯU Ý: endpoint /admin/accessories và route /dashboard/products/accessories/*
-// là giả định theo cùng pattern với sách — đổi lại cho khớp backend/router thật của bạn.
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -43,8 +40,19 @@ export default function ProductsAccessories() {
   return (
     <>
       {/*  Search + nút thêm mới  */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", justifyContent: "space-between" }}>
-        <div className="a-search-wrap" style={{ marginBottom: 0, flex: "1 1 260px", maxWidth: 360 }}>
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 10,
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <div
+          className="a-search-wrap"
+          style={{ marginBottom: 0, flex: "1 1 260px", maxWidth: 360 }}
+        >
           <Search size={13} className="a-search-icon" />
           <input
             className="a-input"
@@ -73,7 +81,15 @@ export default function ProductsAccessories() {
           <table className="a-table">
             <thead>
               <tr>
-                {["Phụ kiện", "Loại", "Giá", "Tồn kho", "Đã bán", "Trạng thái", ""].map((h) => (
+                {[
+                  "Phụ kiện",
+                  "Loại",
+                  "Giá",
+                  "Tồn kho",
+                  "Đã bán",
+                  "Trạng thái",
+                  "",
+                ].map((h) => (
                   <th key={h}>{h}</th>
                 ))}
               </tr>
@@ -81,13 +97,27 @@ export default function ProductsAccessories() {
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} style={{ padding: 48, textAlign: "center", color: "rgba(13,51,48,0.3)" }}>
+                  <td
+                    colSpan={7}
+                    style={{
+                      padding: 48,
+                      textAlign: "center",
+                      color: "rgba(13,51,48,0.3)",
+                    }}
+                  >
                     Đang tải...
                   </td>
                 </tr>
               ) : !items.length ? (
                 <tr>
-                  <td colSpan={7} style={{ padding: 48, textAlign: "center", color: "rgba(13,51,48,0.3)" }}>
+                  <td
+                    colSpan={7}
+                    style={{
+                      padding: 48,
+                      textAlign: "center",
+                      color: "rgba(13,51,48,0.3)",
+                    }}
+                  >
                     Không tìm thấy phụ kiện nào
                   </td>
                 </tr>
@@ -96,16 +126,34 @@ export default function ProductsAccessories() {
                   <tr
                     key={it.id}
                     className="a-row-clickable"
-                    onClick={() => navigate(`/dashboard/products/accessories/${it.id}`)}
+                    onClick={() =>
+                      navigate(`/dashboard/products/accessories/${it.id}`)
+                    }
                     style={{ cursor: "pointer" }}
                   >
                     <td>
-                      <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 11,
+                        }}
+                      >
                         <div className="a-book-thumb" style={{ height: 34 }}>
-                          {it.image ? <img src={it.image} alt={it.name} /> : <Package size={12} />}
+                          {it.image ? (
+                            <img src={it.image} alt={it.name} />
+                          ) : (
+                            <Package size={12} />
+                          )}
                         </div>
                         <div>
-                          <div style={{ fontWeight: 500, fontSize: 12, color: "var(--a-ink)" }}>
+                          <div
+                            style={{
+                              fontWeight: 500,
+                              fontSize: 12,
+                              color: "var(--a-ink)",
+                            }}
+                          >
                             {it.name}
                           </div>
                           <div
@@ -126,13 +174,18 @@ export default function ProductsAccessories() {
                     </td>
                     <td className="a-td-serif">{formatPrice(it.price)}</td>
                     <td>
-                      <span className={it.stock <= 10 ? "a-td-danger" : ""} style={{ fontWeight: 600 }}>
+                      <span
+                        className={it.stock <= 10 ? "a-td-danger" : ""}
+                        style={{ fontWeight: 600 }}
+                      >
                         {it.stock}
                       </span>
                     </td>
                     <td className="a-td-muted">{it._count?.orderItems ?? 0}</td>
                     <td>
-                      <span className={`a-badge ${it.isVisible ? "success" : "neutral"}`}>
+                      <span
+                        className={`a-badge ${it.isVisible ? "success" : "neutral"}`}
+                      >
                         {it.isVisible ? "Hiển thị" : "Đã ẩn"}
                       </span>
                     </td>
@@ -140,7 +193,9 @@ export default function ProductsAccessories() {
                       <div style={{ display: "flex", gap: 6 }}>
                         <button
                           className="a-btn-icon edit"
-                          onClick={() => navigate(`/dashboard/products/accessories/${it.id}`)}
+                          onClick={() =>
+                            navigate(`/dashboard/products/accessories/${it.id}`)
+                          }
                           aria-label="Chi tiết"
                           title="Xem & sửa chi tiết"
                         >
@@ -199,19 +254,31 @@ export default function ProductsAccessories() {
       {confirmDelete && (
         <div
           className="a-modal-overlay"
-          onClick={(e) => e.target === e.currentTarget && setConfirmDelete(null)}
+          onClick={(e) =>
+            e.target === e.currentTarget && setConfirmDelete(null)
+          }
         >
           <div className="a-modal" style={{ maxWidth: 420 }}>
             <div className="a-modal-header">
               <h3 className="a-modal-title">Xác nhận xóa</h3>
-              <button className="a-modal-close" onClick={() => setConfirmDelete(null)}>
+              <button
+                className="a-modal-close"
+                onClick={() => setConfirmDelete(null)}
+              >
                 <X size={16} />
               </button>
             </div>
             <div className="a-modal-body">
-              <p style={{ fontSize: 13, color: "rgba(13,51,48,0.7)", lineHeight: 1.6 }}>
-                Bạn có chắc muốn xóa phụ kiện <strong>"{confirmDelete.name}"</strong>? Hành động
-                này không thể hoàn tác.
+              <p
+                style={{
+                  fontSize: 13,
+                  color: "rgba(13,51,48,0.7)",
+                  lineHeight: 1.6,
+                }}
+              >
+                Bạn có chắc muốn xóa phụ kiện{" "}
+                <strong>"{confirmDelete.name}"</strong>? Hành động này không thể
+                hoàn tác.
               </p>
             </div>
             <div className="a-modal-footer">
@@ -223,7 +290,10 @@ export default function ProductsAccessories() {
               >
                 {deleteMutation.isPending ? "Đang xóa..." : "Xóa phụ kiện"}
               </button>
-              <button className="a-btn-ghost" onClick={() => setConfirmDelete(null)}>
+              <button
+                className="a-btn-ghost"
+                onClick={() => setConfirmDelete(null)}
+              >
                 Hủy
               </button>
             </div>

@@ -460,7 +460,8 @@ export default function ArView() {
               status: "locked",
               data: {
                 title: "Hết giờ dùng hôm nay rồi",
-                message: "Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!",
+                message:
+                  "Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!",
               },
             });
             return;
@@ -470,7 +471,8 @@ export default function ArView() {
               status: "locked",
               data: {
                 title: "Ngoài giờ được phép rồi",
-                message: "Bây giờ không phải giờ ba mẹ cho phép bé dùng AR nhé.",
+                message:
+                  "Bây giờ không phải giờ ba mẹ cho phép bé dùng AR nhé.",
               },
             });
             return;
@@ -501,16 +503,25 @@ export default function ArView() {
 
     async function start() {
       try {
-        const res = await kidAccessService.startActivity(token, { bookId: state.data?.book?.id });
+        const res = await kidAccessService.startActivity(token, {
+          bookId: state.data?.book?.id,
+        });
         if (cancelled) return;
         activityId = res.data?.data?.activityId;
         if (!activityId) return;
 
         intervalId = setInterval(async () => {
           try {
-            const pingRes = await kidAccessService.pingActivity(token, activityId);
+            const pingRes = await kidAccessService.pingActivity(
+              token,
+              activityId,
+            );
             const info = pingRes.data?.data;
-            if (info?.locked || info?.limitReached || info?.withinWindow === false) {
+            if (
+              info?.locked ||
+              info?.limitReached ||
+              info?.withinWindow === false
+            ) {
               navigate(`/e-kid/${slug}/${token}`, { replace: true });
             }
           } catch {
@@ -527,7 +538,8 @@ export default function ArView() {
     return () => {
       cancelled = true;
       if (intervalId) clearInterval(intervalId);
-      if (activityId) kidAccessService.pingActivity(token, activityId).catch(() => {});
+      if (activityId)
+        kidAccessService.pingActivity(token, activityId).catch(() => {});
     };
   }, [isKidMode, state.status, state.data?.book?.id, token, slug, navigate]);
 
@@ -584,7 +596,10 @@ export default function ArView() {
           </div>
           <span className="ar-view__eyebrow">Earthoria AR</span>
           <h1>{state.data?.title || "AR đang bị khoá"}</h1>
-          <p>{state.data?.message || "Ba mẹ đã tạm khoá AR rồi. Nhờ ba mẹ mở khoá lại nhé!"}</p>
+          <p>
+            {state.data?.message ||
+              "Ba mẹ đã tạm khoá AR rồi. Nhờ ba mẹ mở khoá lại nhé!"}
+          </p>
           {isKidMode && (
             <Link to={`/e-kid/${slug}/${token}`} className="ar-view__back-link">
               Quay lại tủ sách

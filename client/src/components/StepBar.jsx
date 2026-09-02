@@ -31,7 +31,14 @@ export default function StepBar({ current, digital }) {
               flex: i < steps.length - 1 ? 1 : "none",
             }}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                flexShrink: 0,
+              }}
+            >
               <div
                 style={{
                   width: 36,
@@ -54,7 +61,11 @@ export default function StepBar({ current, digital }) {
                   fontSize: 11,
                   letterSpacing: "0.14em",
                   textTransform: "uppercase",
-                  color: active ? "var(--forest)" : done ? "var(--gold)" : "var(--text-muted)",
+                  color: active
+                    ? "var(--forest)"
+                    : done
+                      ? "var(--gold)"
+                      : "var(--text-muted)",
                   fontWeight: active ? 500 : 300,
                   transition: "color 0.35s",
                   whiteSpace: "nowrap",

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&display=swap");
 
 .gp-view {
   /* — màu gốc, kế thừa từ biến toàn cục nếu có, có fallback riêng — */
@@ -25,9 +25,12 @@
   --gp-sky-pale: #e2f3f7;
 
   /* — độ nổi, "giấy đặt trên bàn": bóng tiếp xúc sát + bóng lan toả mềm — */
-  --gp-shadow-sm: 0 1px 2px rgba(13, 43, 30, 0.07), 0 6px 14px rgba(13, 43, 30, 0.07);
-  --gp-shadow-md: 0 2px 6px rgba(13, 43, 30, 0.08), 0 16px 32px -8px rgba(13, 43, 30, 0.16);
-  --gp-shadow-lg: 0 6px 18px rgba(13, 43, 30, 0.10), 0 34px 64px -16px rgba(13, 43, 30, 0.26);
+  --gp-shadow-sm:
+    0 1px 2px rgba(13, 43, 30, 0.07), 0 6px 14px rgba(13, 43, 30, 0.07);
+  --gp-shadow-md:
+    0 2px 6px rgba(13, 43, 30, 0.08), 0 16px 32px -8px rgba(13, 43, 30, 0.16);
+  --gp-shadow-lg:
+    0 6px 18px rgba(13, 43, 30, 0.1), 0 34px 64px -16px rgba(13, 43, 30, 0.26);
   --gp-inset-hi: inset 0 1px 0 rgba(255, 255, 255, 0.65);
 
   --gp-r-sm: 12px;
@@ -53,9 +56,21 @@
   flex-direction: column;
 
   background:
-    radial-gradient(760px 420px at 12% -8%, rgba(74, 158, 63, 0.14), transparent 60%),
-    radial-gradient(640px 460px at 104% 6%, rgba(230, 170, 20, 0.10), transparent 55%),
-    radial-gradient(900px 520px at 50% 118%, rgba(26, 92, 82, 0.10), transparent 60%),
+    radial-gradient(
+      760px 420px at 12% -8%,
+      rgba(74, 158, 63, 0.14),
+      transparent 60%
+    ),
+    radial-gradient(
+      640px 460px at 104% 6%,
+      rgba(230, 170, 20, 0.1),
+      transparent 55%
+    ),
+    radial-gradient(
+      900px 520px at 50% 118%,
+      rgba(26, 92, 82, 0.1),
+      transparent 60%
+    ),
     var(--gp-ivory);
 }
 
@@ -70,8 +85,12 @@
   background-image:
     radial-gradient(rgba(74, 158, 63, 0.16) 1.1px, transparent 1.1px),
     radial-gradient(rgba(230, 170, 20, 0.13) 1.1px, transparent 1.1px);
-  background-size: 34px 34px, 34px 34px;
-  background-position: 0 0, 17px 17px;
+  background-size:
+    34px 34px,
+    34px 34px;
+  background-position:
+    0 0,
+    17px 17px;
   mask-image: radial-gradient(120% 90% at 50% 0%, #000 40%, transparent 92%);
 }
 
@@ -89,19 +108,59 @@
   opacity: 0.16;
   animation: gp-float 7s ease-in-out infinite;
 }
-.gp-ambient-1 { top: 12%; left: 4%; width: 30px; height: 30px; animation-delay: 0s; }
-.gp-ambient-2 { top: 22%; right: 6%; width: 22px; height: 22px; color: var(--gp-amber); opacity: 0.18; animation-delay: 1.4s; animation-duration: 8.5s; }
-.gp-ambient-3 { bottom: 16%; left: 7%; width: 20px; height: 20px; color: var(--gp-sky); opacity: 0.14; animation-delay: 2.6s; animation-duration: 9s; }
-.gp-ambient-4 { bottom: 26%; right: 5%; width: 26px; height: 26px; animation-delay: 0.8s; animation-duration: 7.8s; }
+.gp-ambient-1 {
+  top: 12%;
+  left: 4%;
+  width: 30px;
+  height: 30px;
+  animation-delay: 0s;
+}
+.gp-ambient-2 {
+  top: 22%;
+  right: 6%;
+  width: 22px;
+  height: 22px;
+  color: var(--gp-amber);
+  opacity: 0.18;
+  animation-delay: 1.4s;
+  animation-duration: 8.5s;
+}
+.gp-ambient-3 {
+  bottom: 16%;
+  left: 7%;
+  width: 20px;
+  height: 20px;
+  color: var(--gp-sky);
+  opacity: 0.14;
+  animation-delay: 2.6s;
+  animation-duration: 9s;
+}
+.gp-ambient-4 {
+  bottom: 26%;
+  right: 5%;
+  width: 26px;
+  height: 26px;
+  animation-delay: 0.8s;
+  animation-duration: 7.8s;
+}
 @keyframes gp-float {
-  0%, 100% { transform: translateY(0) rotate(-4deg); }
-  50% { transform: translateY(-16px) rotate(6deg); }
+  0%,
+  100% {
+    transform: translateY(0) rotate(-4deg);
+  }
+  50% {
+    transform: translateY(-16px) rotate(6deg);
+  }
 }
 @media (max-width: 720px) {
-  .gp-ambient { display: none; }
+  .gp-ambient {
+    display: none;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .gp-ambient { animation: none; }
+  .gp-ambient {
+    animation: none;
+  }
 }
 
 .gp-view--center {
@@ -115,7 +174,9 @@
   animation: gp-spin-rotate 0.85s linear infinite;
 }
 @keyframes gp-spin-rotate {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .gp-loading {
@@ -250,8 +311,14 @@
   animation: gp-rise 0.5s var(--gp-ease) both;
 }
 @keyframes gp-rise {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 .gp-intro-thumb {
   width: 100%;
@@ -272,7 +339,9 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 14px;
-  box-shadow: 0 10px 26px rgba(13, 51, 48, 0.28), var(--gp-inset-hi);
+  box-shadow:
+    0 10px 26px rgba(13, 51, 48, 0.28),
+    var(--gp-inset-hi);
 }
 .gp-intro-icon::after {
   content: "";
@@ -319,7 +388,11 @@
   align-items: center;
   justify-content: center;
   gap: 9px;
-  background: linear-gradient(135deg, var(--gp-forest-light), var(--gp-forest) 70%);
+  background: linear-gradient(
+    135deg,
+    var(--gp-forest-light),
+    var(--gp-forest) 70%
+  );
   color: var(--gp-ivory);
   border: none;
   border-radius: var(--gp-r-pill);
@@ -328,14 +401,21 @@
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  transition: transform 0.2s var(--gp-ease), box-shadow 0.2s var(--gp-ease), background 0.2s var(--gp-ease);
-  box-shadow: 0 12px 26px rgba(13, 51, 48, 0.28), var(--gp-inset-hi);
+  transition:
+    transform 0.2s var(--gp-ease),
+    box-shadow 0.2s var(--gp-ease),
+    background 0.2s var(--gp-ease);
+  box-shadow:
+    0 12px 26px rgba(13, 51, 48, 0.28),
+    var(--gp-inset-hi);
 }
 .gp-cta:hover,
 .gp-view .a-btn-primary:hover {
   transform: translateY(-2px);
   background: linear-gradient(135deg, var(--gp-leaf-light), var(--gp-leaf) 70%);
-  box-shadow: 0 16px 32px rgba(74, 158, 63, 0.32), var(--gp-inset-hi);
+  box-shadow:
+    0 16px 32px rgba(74, 158, 63, 0.32),
+    var(--gp-inset-hi);
 }
 .gp-cta:active,
 .gp-view .a-btn-primary:active {
@@ -392,7 +472,9 @@
   align-items: center;
   justify-content: center;
   margin-bottom: 12px;
-  box-shadow: 0 10px 24px rgba(230, 170, 20, 0.4), var(--gp-inset-hi);
+  box-shadow:
+    0 10px 24px rgba(230, 170, 20, 0.4),
+    var(--gp-inset-hi);
   animation: gp-pop 0.5s var(--gp-ease-spring) both;
 }
 .gp-finished-trophy::after {
@@ -400,17 +482,34 @@
   position: absolute;
   inset: -14px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(230, 170, 20, 0.32), transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(230, 170, 20, 0.32),
+    transparent 70%
+  );
   z-index: -1;
   animation: gp-glow-pulse 2.2s ease-in-out infinite;
 }
 @keyframes gp-glow-pulse {
-  0%, 100% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.12); }
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
 }
 @keyframes gp-pop {
-  0% { transform: scale(0.4); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 .gp-finished h1 {
   font-family: var(--gp-font-display);
@@ -540,7 +639,9 @@
   border-radius: var(--gp-r-pill);
   padding: 7px 16px 7px 8px;
   box-shadow: var(--gp-shadow-sm);
-  transition: transform 0.2s var(--gp-ease), box-shadow 0.2s var(--gp-ease);
+  transition:
+    transform 0.2s var(--gp-ease),
+    box-shadow 0.2s var(--gp-ease);
 }
 .g-play-stats span svg {
   flex-shrink: 0;
@@ -563,7 +664,11 @@
 }
 .g-timer-urgent {
   color: #fff !important;
-  background: linear-gradient(145deg, var(--gp-coral-light), var(--gp-coral)) !important;
+  background: linear-gradient(
+    145deg,
+    var(--gp-coral-light),
+    var(--gp-coral)
+  ) !important;
   animation: g-pulse 0.8s ease-in-out infinite;
 }
 .g-timer-urgent svg {
@@ -571,8 +676,13 @@
   color: #fff !important;
 }
 @keyframes g-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.06); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
 }
 
 /* ─ Thanh tiến độ dùng chung ─ */
@@ -598,16 +708,27 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(115deg, transparent 20%, rgba(255, 255, 255, 0.45) 40%, transparent 60%);
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.45) 40%,
+    transparent 60%
+  );
   background-size: 200% 100%;
   animation: gp-shimmer 2.4s linear infinite;
 }
 @keyframes gp-shimmer {
-  from { background-position: 140% 0; }
-  to { background-position: -60% 0; }
+  from {
+    background-position: 140% 0;
+  }
+  to {
+    background-position: -60% 0;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .g-progress-fill::after { animation: none; }
+  .g-progress-fill::after {
+    animation: none;
+  }
 }
 
 /* ─ MEMORY MATCH ─ */
@@ -650,7 +771,11 @@
   overflow: hidden;
 }
 .g-mm-card-back {
-  background: linear-gradient(150deg, var(--gp-forest-light), var(--gp-forest) 75%);
+  background: linear-gradient(
+    150deg,
+    var(--gp-forest-light),
+    var(--gp-forest) 75%
+  );
   color: rgba(255, 255, 255, 0.5);
   font-family: var(--gp-font-ui);
   font-size: 26px;
@@ -786,8 +911,12 @@
   color: var(--gp-coral);
 }
 @keyframes g-shake {
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
 }
 
 /* ─ WORD SEARCH ─ */
@@ -823,7 +952,10 @@
   color: var(--gp-forest);
   background: rgba(255, 255, 255, 0.65);
   box-shadow: inset 0 0 0 1px rgba(13, 51, 48, 0.04);
-  transition: background 0.12s ease, transform 0.12s ease, color 0.12s ease;
+  transition:
+    background 0.12s ease,
+    transform 0.12s ease,
+    color 0.12s ease;
 }
 .g-ws-cell.selecting {
   background: var(--gp-leaf-pale);
@@ -955,7 +1087,10 @@
   font-weight: 700;
   cursor: pointer;
   box-shadow: var(--gp-shadow-sm);
-  transition: transform 0.15s var(--gp-ease), box-shadow 0.15s var(--gp-ease), background 0.15s ease;
+  transition:
+    transform 0.15s var(--gp-ease),
+    box-shadow 0.15s var(--gp-ease),
+    background 0.15s ease;
 }
 .g-lh-cell:hover:not(:disabled) {
   transform: translateY(-2px);

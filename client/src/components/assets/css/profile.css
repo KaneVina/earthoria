@@ -1386,7 +1386,7 @@
 .pf-stack-16 {
   display: flex;
   flex-direction: column;
-   gap: 16px;
+  gap: 16px;
 }
 
 /*   LOYALTY (HẠNG THÀNH VIÊN)   */
@@ -1432,7 +1432,8 @@
   transition: filter 0.25s ease;
 }
 .pf-loyalty-preview-img.is-locked {
-  filter: grayscale(1) opacity(0.5) drop-shadow(0 6px 10px rgba(13, 43, 30, 0.1));
+  filter: grayscale(1) opacity(0.5)
+    drop-shadow(0 6px 10px rgba(13, 43, 30, 0.1));
 }
 .pf-loyalty-preview-name {
   font-family: "playfair display", serif;
@@ -1456,7 +1457,9 @@
   color: var(--forest);
   cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 .pf-loyalty-preview-nav:hover {
   background: var(--pale);
@@ -2876,7 +2879,11 @@
 
 /* Danh sách SÁCH AR — mỗi cuốn sách 1 thẻ (ảnh bìa + tên), các mã AR bên
    trong chỉ là chip phụ để chọn mô hình cụ thể */
-.pf-ar-book-grid { display: flex; flex-direction: column; gap: 18px; }
+.pf-ar-book-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
 .pf-ar-book-card {
   display: flex;
   gap: 18px;
@@ -2897,17 +2904,32 @@
   align-items: center;
   justify-content: center;
 }
-.pf-ar-book-cover img { width: 100%; height: 100%; object-fit: cover; }
-.pf-ar-book-cover-fallback { color: var(--gold); opacity: 0.5; }
-.pf-ar-book-info { flex: 1; min-width: 0; }
+.pf-ar-book-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pf-ar-book-cover-fallback {
+  color: var(--gold);
+  opacity: 0.5;
+}
+.pf-ar-book-info {
+  flex: 1;
+  min-width: 0;
+}
 .pf-ar-book-title {
-  font-family: 'Playfair Display', serif;
+  font-family: "Playfair Display", serif;
   font-size: 16px;
   font-weight: 400;
   color: var(--forest);
   margin-bottom: 8px;
 }
-.pf-ar-code-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.pf-ar-code-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
 .pf-ar-code-chip {
   display: inline-flex;
   align-items: center;
@@ -2921,9 +2943,22 @@
   text-decoration: none;
   transition: all 0.2s ease;
 }
-.pf-ar-code-chip:hover { border-color: var(--border-gold); background: var(--gold-pale); }
-.pf-ar-code-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); opacity: 0.4; flex-shrink: 0; }
-.pf-ar-code-chip.is-activated .pf-ar-code-dot { background: var(--forest); opacity: 1; }
+.pf-ar-code-chip:hover {
+  border-color: var(--border-gold);
+  background: var(--gold-pale);
+}
+.pf-ar-code-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.4;
+  flex-shrink: 0;
+}
+.pf-ar-code-chip.is-activated .pf-ar-code-dot {
+  background: var(--forest);
+  opacity: 1;
+}
 
 /*   EMPTY STATE   */
 .pf-empty-state {
@@ -3869,7 +3904,6 @@ body.dark-mode .pf-switch-track {
 .logo-display-tilt:hover .logo-display-glow {
   opacity: 1;
 }
-
 
 .logo-analysis-content {
   position: relative;

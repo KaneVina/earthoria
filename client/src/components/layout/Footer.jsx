@@ -445,9 +445,7 @@ export default function Footer() {
           >
             &copy; 2026 Hệ sinh thái Earthoria. Mọi quyền được bảo lưu.
           </span>
-          <span className="footer-tagline">
-            Phiên bản 5.26.09.1
-          </span>
+          <span className="footer-tagline">Phiên bản 5.26.09.1</span>
         </div>
       </div>
 

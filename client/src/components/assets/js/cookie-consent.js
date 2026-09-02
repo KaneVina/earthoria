@@ -1,24 +1,9 @@
-/* ═══════════════════════════════════════════════
-   COOKIE CONSENT — EARTHORIA
-   - essential: LUÔN bật, không thể tắt, không hỏi ý kiến
-   - các nhóm khác: chỉ chạy nếu người dùng đồng ý
-   - 3 hành động: Chỉ cần thiết / Chấp nhận tất cả / Tùy chỉnh
-   ═══════════════════════════════════════════════ */
 (function () {
   "use strict";
 
   const STORAGE_KEY = "earthoria-cookie-consent";
   const CONSENT_VERSION = 1; // tăng số này khi thay đổi chính sách để hỏi lại người dùng
-
-  // Đặt null để tắt hẳn đếm ngược (banner sẽ đứng yên cho tới khi người dùng
-  // chọn). Đặt số giây > 0 để tự động "Chỉ chấp nhận cần thiết" sau N giây
-  // nếu người dùng không tương tác — mặc định TẮT vì ép buộc kiểu này có
-  // thể gây khó chịu; bật khi cần cho mục tiêu conversion cụ thể.
   const AUTO_DISMISS_SECONDS = null; // ví dụ: 20
-
-  /*  Định nghĩa các nhóm cookie
-     essential: locked = true → luôn true, không hiển thị toggle tương tác được
-     Các nhóm khác mặc định false cho tới khi người dùng đồng ý */
   const COOKIE_GROUPS = [
     {
       key: "essential",
@@ -74,19 +59,11 @@
   }
 
   function applyConsent(payload) {
-    // Phát sự kiện toàn cục để các script khác (GA, FB Pixel, v.v.) lắng nghe và tự bật/tắt
     document.dispatchEvent(
-      new CustomEvent("earthoria:cookie-consent", { detail: payload })
+      new CustomEvent("earthoria:cookie-consent", { detail: payload }),
     );
-    // Cookie thiết yếu luôn chạy — không cần xử lý gì thêm ở đây.
   }
 
-  //  Đồng bộ đa tab
-  // Khi tab A ghi vào localStorage, trình duyệt tự bắn sự kiện "storage"
-  // tới các tab KHÁC đang mở cùng origin (tab hiện tại không nhận sự kiện
-  // của chính nó — đây là hành vi chuẩn của Web Storage API, không cần
-  // tự lọc thêm). Nhờ vậy tab B sẽ tự cập nhật ngay lập tức mà không cần
-  // reload trang hay người dùng phải bấm gì.
   function watchCrossTabSync(onExternalChange) {
     window.addEventListener("storage", (e) => {
       if (e.key !== STORAGE_KEY) return;
@@ -299,7 +276,8 @@
     }
 
     function openModal() {
-      const current = (loadConsent() && loadConsent().choices) || defaultChoices(false);
+      const current =
+        (loadConsent() && loadConsent().choices) || defaultChoices(false);
       overlay = buildModalOverlay();
       modal = buildModal(current);
       document.body.appendChild(overlay);
@@ -310,11 +288,15 @@
       });
 
       overlay.addEventListener("click", closeModal);
-      modal.querySelector("#cc-modal-close").addEventListener("click", closeModal);
+      modal
+        .querySelector("#cc-modal-close")
+        .addEventListener("click", closeModal);
 
-      modal.querySelector("#cc-modal-essential-only").addEventListener("click", () => {
-        finalize(defaultChoices(false));
-      });
+      modal
+        .querySelector("#cc-modal-essential-only")
+        .addEventListener("click", () => {
+          finalize(defaultChoices(false));
+        });
 
       modal.querySelector("#cc-modal-save").addEventListener("click", () => {
         const choices = {};
@@ -329,7 +311,8 @@
       if (!modal) return;
       overlay && overlay.classList.remove("show");
       modal.classList.remove("show");
-      const ov = overlay, md = modal;
+      const ov = overlay,
+        md = modal;
       setTimeout(() => {
         ov && ov.remove();
         md && md.remove();
@@ -362,9 +345,11 @@
       banner.querySelector("#cc-accept-all").addEventListener("click", () => {
         finalize(defaultChoices(true));
       });
-      banner.querySelector("#cc-essential-only").addEventListener("click", () => {
-        finalize(defaultChoices(false));
-      });
+      banner
+        .querySelector("#cc-essential-only")
+        .addEventListener("click", () => {
+          finalize(defaultChoices(false));
+        });
       banner.querySelector("#cc-customize").addEventListener("click", () => {
         stopCountdown(); // người dùng đã tương tác → không tự động hoá nữa
         openModal();

@@ -339,7 +339,10 @@ export default function Navbar() {
                             <li key={item.id} className="cart-dropdown-item">
                               <span className="cart-dropdown-thumb-wrap">
                                 <img
-                                  src={item.variant?.book?.coverImage || "https://placehold.co/88x112/0d3330/faf8f3?text=E"}
+                                  src={
+                                    item.variant?.book?.coverImage ||
+                                    "https://placehold.co/88x112/0d3330/faf8f3?text=E"
+                                  }
                                   alt={item.variant?.book?.title}
                                   className="cart-dropdown-thumb"
                                 />
@@ -399,13 +402,19 @@ export default function Navbar() {
                                     showDot={false}
                                   />
                                 </span>
-                                <strong style={{ color: loyaltyProfile?.tier?.color }}>
+                                <strong
+                                  style={{ color: loyaltyProfile?.tier?.color }}
+                                >
                                   −{formatPrice(cartTierDiscount)}
                                 </strong>
                               </div>
                             )}
                             <div className="cart-dropdown-footer">
-                              <span>{cartTierDiscount > 0 ? "Tạm tính sau ưu đãi" : "Tạm tính"}</span>
+                              <span>
+                                {cartTierDiscount > 0
+                                  ? "Tạm tính sau ưu đãi"
+                                  : "Tạm tính"}
+                              </span>
                               <strong>
                                 {formatPrice(cartSubtotal - cartTierDiscount)}
                               </strong>
@@ -481,7 +490,9 @@ export default function Navbar() {
                             borderColor: roleMeta.border,
                           }}
                         >
-                          <span style={{ color: roleMeta.color }}>{roleMeta.label}</span>
+                          <span style={{ color: roleMeta.color }}>
+                            {roleMeta.label}
+                          </span>
                         </span>
 
                         {loyaltyProfile && (
@@ -490,7 +501,8 @@ export default function Navbar() {
                             className="user-dropdown-tier-chip"
                             style={{
                               "--tier-color": loyaltyProfile.tier.color,
-                              "--tier-color-soft": loyaltyProfile.tier.colorSoft,
+                              "--tier-color-soft":
+                                loyaltyProfile.tier.colorSoft,
                             }}
                             onClick={() => navigate("/loyalty")}
                           >

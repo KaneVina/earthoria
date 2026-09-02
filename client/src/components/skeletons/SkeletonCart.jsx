@@ -1,6 +1,3 @@
-// components/skeletons/SkeletonCart.jsx
-// Dùng trong Cart.jsx khi loading === true
-
 export function SkeletonCartItem() {
   return (
     <div className="skeleton-cart-item">
@@ -23,7 +20,7 @@ export function SkeletonCartItem() {
       {/* Delete */}
       <span className="skeleton skeleton-delete" />
     </div>
-  )
+  );
 }
 
 export function SkeletonCartSummary() {
@@ -37,14 +34,22 @@ export function SkeletonCartSummary() {
             <span className="skeleton skeleton-summary-val" />
           </div>
         ))}
-        <div style={{ height: 0.5, background: 'var(--border)', margin: '4px 0' }} />
+        <div
+          style={{ height: 0.5, background: "var(--border)", margin: "4px 0" }}
+        />
         <div className="skeleton-summary-line">
-          <span className="skeleton skeleton-summary-label" style={{ width: 80, height: 17 }} />
+          <span
+            className="skeleton skeleton-summary-label"
+            style={{ width: 80, height: 17 }}
+          />
           <span className="skeleton skeleton-summary-total" />
         </div>
         <span className="skeleton skeleton-summary-btn" />
-        <span className="skeleton skeleton-summary-btn" style={{ height: 44, marginTop: 0 }} />
+        <span
+          className="skeleton skeleton-summary-btn"
+          style={{ height: 44, marginTop: 0 }}
+        />
       </div>
     </div>
-  )
+  );
 }

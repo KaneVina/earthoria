@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useCompareStore } from "../store/compareStore";
-import { formatPrice, getBookUrl, getPreferredCartFormat } from "../utils/helpers";
+import {
+  formatPrice,
+  getBookUrl,
+  getPreferredCartFormat,
+} from "../utils/helpers";
 import { flyToCart } from "../utils/flyToCart";
 import { useCartStore } from "../store/cartStore";
 import toast from "react-hot-toast";
@@ -9,7 +13,14 @@ import toast from "react-hot-toast";
 //  Icons
 function IconX({ size = 14 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
@@ -17,21 +28,42 @@ function IconX({ size = 14 }) {
 }
 function IconCheck({ color = "#4a9e3f" }) {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke={color}
+      strokeWidth="2.5"
+    >
       <polyline points="20 6 9 17 4 12" />
     </svg>
   );
 }
 function IconDash() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="var(--text-muted)"
+      strokeWidth="2"
+    >
       <line x1="5" y1="12" x2="19" y2="12" />
     </svg>
   );
 }
 function IconPrint() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
       <polyline points="6 9 6 2 18 2 18 9" />
       <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
       <rect x="6" y="14" width="12" height="8" />
@@ -40,7 +72,14 @@ function IconPrint() {
 }
 function IconLink() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
       <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
       <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
     </svg>
@@ -72,7 +111,9 @@ const ROWS = [
 ];
 
 function effectivePrice(item) {
-  return item.salePrice && item.salePrice < item.price ? item.salePrice : item.price;
+  return item.salePrice && item.salePrice < item.price
+    ? item.salePrice
+    : item.price;
 }
 
 export default function Compare() {
@@ -112,7 +153,8 @@ export default function Compare() {
     const values = items.map((it) => {
       if (row.type === "bool") return !!it[row.key];
       if (row.type === "price") return effectivePrice(it);
-      if (row.type === "category") return it.category?.name || it.category || "";
+      if (row.type === "category")
+        return it.category?.name || it.category || "";
       if (row.type === "age") return `${it.ageMin ?? ""}-${it.ageMax ?? ""}`;
       if (row.type === "rating") return it.avgRating || "";
       return it[row.key] ?? "";
@@ -148,7 +190,8 @@ export default function Compare() {
   const renderCell = (row, item) => {
     const val = item[row.key];
     const isBestPrice = row.type === "price" && item.hashId === bestPriceHashId;
-    const isBestRating = row.type === "rating" && item.hashId === bestRatingHashId;
+    const isBestRating =
+      row.type === "rating" && item.hashId === bestRatingHashId;
 
     switch (row.type) {
       case "price": {
@@ -156,7 +199,13 @@ export default function Compare() {
         return (
           <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
             {hasSale && (
-              <span style={{ fontSize: "12px", color: "var(--text-muted)", textDecoration: "line-through" }}>
+              <span
+                style={{
+                  fontSize: "12px",
+                  color: "var(--text-muted)",
+                  textDecoration: "line-through",
+                }}
+              >
                 {formatPrice(item.price)}
               </span>
             )}
@@ -188,13 +237,18 @@ export default function Compare() {
       case "category":
         return item.category?.name || item.category || "—";
       case "age":
-        return item.ageMin || item.ageMax ? `${item.ageMin ?? "?"}–${item.ageMax ?? "?"} tuổi` : "—";
+        return item.ageMin || item.ageMax
+          ? `${item.ageMin ?? "?"}–${item.ageMax ?? "?"} tuổi`
+          : "—";
       case "rating":
         return item.avgRating ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
             <span>
-              <span style={{ color: "var(--gold)" }}>★</span> {parseFloat(item.avgRating).toFixed(1)}{" "}
-              <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>({item.reviewCount || 0})</span>
+              <span style={{ color: "var(--gold)" }}>★</span>{" "}
+              {parseFloat(item.avgRating).toFixed(1)}{" "}
+              <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>
+                ({item.reviewCount || 0})
+              </span>
             </span>
             {isBestRating && (
               <span
@@ -263,10 +317,29 @@ export default function Compare() {
             So sánh
           </span>
           {items.map((item) => (
-            <div key={item.hashId} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <div style={{ width: "28px", height: "28px", overflow: "hidden", background: "var(--forest)", flexShrink: 0 }}>
+            <div
+              key={item.hashId}
+              style={{ display: "flex", alignItems: "center", gap: "8px" }}
+            >
+              <div
+                style={{
+                  width: "28px",
+                  height: "28px",
+                  overflow: "hidden",
+                  background: "var(--forest)",
+                  flexShrink: 0,
+                }}
+              >
                 {item.coverImage && (
-                  <img src={item.coverImage} alt={item.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <img
+                    src={item.coverImage}
+                    alt={item.title}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
                 )}
               </div>
               <span
@@ -295,14 +368,24 @@ export default function Compare() {
       )}
 
       <div className="breadcrumb" style={{ padding: "40px 100px 0" }}>
-        <Link to="/" className="breadcrumb-item">Trang chủ</Link>
+        <Link to="/" className="breadcrumb-item">
+          Trang chủ
+        </Link>
         <span className="breadcrumb-sep">›</span>
-        <Link to="/shop" className="breadcrumb-item">Cửa hàng</Link>
+        <Link to="/shop" className="breadcrumb-item">
+          Cửa hàng
+        </Link>
         <span className="breadcrumb-sep">›</span>
         <span className="breadcrumb-current">So sánh sản phẩm</span>
       </div>
 
-      <div style={{ maxWidth: "1400px", margin: "0 auto", padding: "24px 100px 100px" }}>
+      <div
+        style={{
+          maxWidth: "1400px",
+          margin: "0 auto",
+          padding: "24px 100px 100px",
+        }}
+      >
         <div
           style={{
             display: "flex",
@@ -314,17 +397,26 @@ export default function Compare() {
           }}
         >
           <div>
-            <div className="section-eyebrow" style={{ justifyContent: "flex-start" }}>
+            <div
+              className="section-eyebrow"
+              style={{ justifyContent: "flex-start" }}
+            >
               <div className="section-eyebrow-line"></div>
               <span className="section-eyebrow-text">So Sánh</span>
             </div>
-            <h1 className="section-title" style={{ fontSize: "clamp(32px, 4vw, 48px)", textAlign: "left" }}>
+            <h1
+              className="section-title"
+              style={{ fontSize: "clamp(32px, 4vw, 48px)", textAlign: "left" }}
+            >
               Bảng So Sánh <em>Chi Tiết</em>
             </h1>
           </div>
 
           {items.length >= 2 && (
-            <div style={{ display: "flex", gap: "10px" }} className="compare-actions-noprint">
+            <div
+              style={{ display: "flex", gap: "10px" }}
+              className="compare-actions-noprint"
+            >
               <button className="btn-secondary" onClick={handleCopyLink}>
                 <IconLink /> Sao chép liên kết
               </button>
@@ -344,11 +436,19 @@ export default function Compare() {
               background: "var(--cream)",
             }}
           >
-            <p style={{ fontSize: "15px", color: "var(--text-muted)", marginBottom: "24px" }}>
+            <p
+              style={{
+                fontSize: "15px",
+                color: "var(--text-muted)",
+                marginBottom: "24px",
+              }}
+            >
               Bạn cần chọn ít nhất 2 sản phẩm để so sánh.
             </p>
             <Link to="/shop">
-              <button className="btn-primary" style={{ padding: "14px 32px" }}>Quay lại cửa hàng</button>
+              <button className="btn-primary" style={{ padding: "14px 32px" }}>
+                Quay lại cửa hàng
+              </button>
             </Link>
           </div>
         ) : (
@@ -402,15 +502,34 @@ export default function Compare() {
                       {/* FIX: thêm style reset để bỏ underline xanh dương mặc định của trình duyệt
                           (trước đây Link không có style -> browser tự áp a{color:blue;text-decoration:underline}) */}
                       <Link
-                        to={getBookUrl ? getBookUrl(item) : `/books/${item.slug}/${item.hashId}`}
-                        style={{ textDecoration: "none", color: "inherit", display: "block" }}
+                        to={
+                          getBookUrl
+                            ? getBookUrl(item)
+                            : `/books/${item.slug}/${item.hashId}`
+                        }
+                        style={{
+                          textDecoration: "none",
+                          color: "inherit",
+                          display: "block",
+                        }}
                       >
-                        <div style={{ height: "160px", overflow: "hidden", marginBottom: "16px", background: "var(--forest)" }}>
+                        <div
+                          style={{
+                            height: "160px",
+                            overflow: "hidden",
+                            marginBottom: "16px",
+                            background: "var(--forest)",
+                          }}
+                        >
                           {item.coverImage && (
                             <img
                               src={item.coverImage}
                               alt={item.title}
-                              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                              }}
                             />
                           )}
                         </div>
@@ -429,11 +548,20 @@ export default function Compare() {
                       </Link>
                       <button
                         className={`btn-add-main compare-actions-noprint${addedIds.has(item.hashId) ? " btn-add-main--added" : ""}`}
-                        style={{ width: "100%", height: "40px", fontSize: "10px" }}
+                        style={{
+                          width: "100%",
+                          height: "40px",
+                          fontSize: "10px",
+                        }}
                         onClick={(e) => {
-                          const cardImg = e.currentTarget.parentElement?.querySelector("img");
+                          const cardImg =
+                            e.currentTarget.parentElement?.querySelector("img");
                           if (cardImg) flyToCart(cardImg);
-                          handleAdd(item.hashId, item.title, getPreferredCartFormat(item));
+                          handleAdd(
+                            item.hashId,
+                            item.title,
+                            getPreferredCartFormat(item),
+                          );
                         }}
                         disabled={addedIds.has(item.hashId)}
                       >
@@ -464,7 +592,9 @@ export default function Compare() {
                           fontWeight: 400,
                           borderBottom: "0.5px solid var(--border)",
                           verticalAlign: "middle",
-                          borderLeft: diff ? "2px solid var(--gold)" : "2px solid transparent",
+                          borderLeft: diff
+                            ? "2px solid var(--gold)"
+                            : "2px solid transparent",
                         }}
                       >
                         {row.label}
@@ -480,7 +610,9 @@ export default function Compare() {
                             borderBottom: "0.5px solid var(--border)",
                             borderLeft: "0.5px solid var(--border)",
                             borderRight: "0.5px solid var(--border)",
-                            background: diff ? "var(--gold-pale)" : "transparent",
+                            background: diff
+                              ? "var(--gold-pale)"
+                              : "transparent",
                           }}
                         >
                           {renderCell(row, item)}
@@ -505,7 +637,9 @@ export default function Compare() {
                 margin: "32px auto 0",
               }}
             >
-              <button className="btn-secondary" onClick={clear}>Xóa tất cả</button>
+              <button className="btn-secondary" onClick={clear}>
+                Xóa tất cả
+              </button>
               <Link to="/shop">
                 <button className="btn-secondary">+ Thêm sản phẩm khác</button>
               </Link>

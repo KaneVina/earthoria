@@ -1,7 +1,17 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, Edit2, Plus, Upload, BookOpen, Trash2, Eye, EyeOff, X } from "lucide-react";
+import {
+  Search,
+  Edit2,
+  Plus,
+  Upload,
+  BookOpen,
+  Trash2,
+  Eye,
+  EyeOff,
+  X,
+} from "lucide-react";
 import { ebookService } from "../../services/ebookService";
 import api from "../../services/api";
 import toast from "react-hot-toast";
@@ -13,7 +23,10 @@ function PickBookModal({ onPick, onClose }) {
   const [q, setQ] = useState("");
   const { data: results = [], isFetching } = useQuery({
     queryKey: ["admin-products-search-for-ebook", q],
-    queryFn: () => api.get("/admin/products/search", { params: { q } }).then((r) => r.data.data),
+    queryFn: () =>
+      api
+        .get("/admin/products/search", { params: { q } })
+        .then((r) => r.data.data),
     enabled: q.trim().length >= 1,
   });
 
@@ -21,17 +34,47 @@ function PickBookModal({ onPick, onClose }) {
     <div
       onClick={onClose}
       style={{
-        position: "fixed", inset: 0, background: "rgba(20,51,42,0.35)", zIndex: 100,
-        display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
+        position: "fixed",
+        inset: 0,
+        background: "rgba(20,51,42,0.35)",
+        zIndex: 100,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 16,
       }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{ background: "#fff", borderRadius: 14, width: 420, maxWidth: "100%", padding: 18, boxShadow: "0 20px 60px rgba(0,0,0,0.25)" }}
+        style={{
+          background: "#fff",
+          borderRadius: 14,
+          width: 420,
+          maxWidth: "100%",
+          padding: 18,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+        }}
       >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-          <h3 style={{ margin: 0, fontSize: 15 }}>Chọn sách để tạo bản điện tử</h3>
-          <button onClick={onClose} className="a-btn-icon" style={{ border: "none", background: "transparent", cursor: "pointer" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 10,
+          }}
+        >
+          <h3 style={{ margin: 0, fontSize: 15 }}>
+            Chọn sách để tạo bản điện tử
+          </h3>
+          <button
+            onClick={onClose}
+            className="a-btn-icon"
+            style={{
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+            }}
+          >
             <X size={16} />
           </button>
         </div>
@@ -47,28 +90,78 @@ function PickBookModal({ onPick, onClose }) {
         </div>
         <div style={{ maxHeight: 320, overflowY: "auto" }}>
           {q.trim().length < 1 ? (
-            <div style={{ padding: 16, fontSize: 12, color: "rgba(13,51,48,0.4)", textAlign: "center" }}>
+            <div
+              style={{
+                padding: 16,
+                fontSize: 12,
+                color: "rgba(13,51,48,0.4)",
+                textAlign: "center",
+              }}
+            >
               Nhập tên sách để tìm
             </div>
           ) : isFetching ? (
-            <div style={{ padding: 16, fontSize: 12, textAlign: "center", color: "rgba(13,51,48,0.4)" }}>Đang tìm...</div>
+            <div
+              style={{
+                padding: 16,
+                fontSize: 12,
+                textAlign: "center",
+                color: "rgba(13,51,48,0.4)",
+              }}
+            >
+              Đang tìm...
+            </div>
           ) : results.length === 0 ? (
-            <div style={{ padding: 16, fontSize: 12, textAlign: "center", color: "rgba(13,51,48,0.4)" }}>Không tìm thấy sách</div>
+            <div
+              style={{
+                padding: 16,
+                fontSize: 12,
+                textAlign: "center",
+                color: "rgba(13,51,48,0.4)",
+              }}
+            >
+              Không tìm thấy sách
+            </div>
           ) : (
             results.map((b) => (
               <div
                 key={b.id}
                 onClick={() => onPick(b)}
-                style={{ padding: "10px 8px", cursor: "pointer", fontSize: 13, borderBottom: "1px solid #f1efe9", display: "flex", justifyContent: "space-between" }}
+                style={{
+                  padding: "10px 8px",
+                  cursor: "pointer",
+                  fontSize: 13,
+                  borderBottom: "1px solid #f1efe9",
+                  display: "flex",
+                  justifyContent: "space-between",
+                }}
               >
                 <span>{b.title}</span>
-                {b.productCode && <span style={{ fontSize: 10, color: "rgba(13,51,48,0.4)", fontFamily: "monospace" }}>{b.productCode}</span>}
+                {b.productCode && (
+                  <span
+                    style={{
+                      fontSize: 10,
+                      color: "rgba(13,51,48,0.4)",
+                      fontFamily: "monospace",
+                    }}
+                  >
+                    {b.productCode}
+                  </span>
+                )}
               </div>
             ))
           )}
         </div>
-        <p style={{ fontSize: 11, color: "rgba(13,51,48,0.45)", marginTop: 10, marginBottom: 0 }}>
-          Sau khi tạo nội dung, nhớ vào trang sửa sản phẩm của sách này để thêm biến thể <strong>Sách điện tử</strong> và đặt giá bán.
+        <p
+          style={{
+            fontSize: 11,
+            color: "rgba(13,51,48,0.45)",
+            marginTop: 10,
+            marginBottom: 0,
+          }}
+        >
+          Sau khi tạo nội dung, nhớ vào trang sửa sản phẩm của sách này để thêm
+          biến thể <strong>Sách điện tử</strong> và đặt giá bán.
         </p>
       </div>
     </div>
@@ -125,7 +218,9 @@ export default function EbookManager() {
 
   const handleDelete = (e, ebook) => {
     e.stopPropagation();
-    if (window.confirm(`Xóa sách điện tử "${ebook.title}"? Không thể hoàn tác.`)) {
+    if (
+      window.confirm(`Xóa sách điện tử "${ebook.title}"? Không thể hoàn tác.`)
+    ) {
       deleteMutation.mutate(ebook.id);
     }
   };
@@ -141,12 +236,27 @@ export default function EbookManager() {
         </div>
       </div>
 
-      <div className="a-ar-filter-bar" style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
-        <button className="a-btn-primary" style={{ flexShrink: 0 }} onClick={() => setPickerOpen(true)}>
+      <div
+        className="a-ar-filter-bar"
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 10,
+          alignItems: "center",
+        }}
+      >
+        <button
+          className="a-btn-primary"
+          style={{ flexShrink: 0 }}
+          onClick={() => setPickerOpen(true)}
+        >
           <Plus size={13} />
           Tạo sách điện tử mới
         </button>
-        <div className="a-search-wrap" style={{ marginBottom: 0, flex: "1 1 280px", maxWidth: 380 }}>
+        <div
+          className="a-search-wrap"
+          style={{ marginBottom: 0, flex: "1 1 280px", maxWidth: 380 }}
+        >
           <Search size={13} className="a-search-icon" />
           <input
             className="a-input"
@@ -191,22 +301,41 @@ export default function EbookManager() {
           <table className="a-table">
             <thead>
               <tr>
-                {["Sách", "Sách điện tử", "Số trang", "Trạng thái", ""].map((h) => (
-                  <th key={h}>{h}</th>
-                ))}
+                {["Sách", "Sách điện tử", "Số trang", "Trạng thái", ""].map(
+                  (h) => (
+                    <th key={h}>{h}</th>
+                  ),
+                )}
               </tr>
             </thead>
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} style={{ padding: 32, textAlign: "center", color: "rgba(13,51,48,0.3)" }}>
+                  <td
+                    colSpan={5}
+                    style={{
+                      padding: 32,
+                      textAlign: "center",
+                      color: "rgba(13,51,48,0.3)",
+                    }}
+                  >
                     Đang tải...
                   </td>
                 </tr>
               ) : !groups.length ? (
                 <tr>
-                  <td colSpan={5} style={{ padding: 32, textAlign: "center", color: "rgba(13,51,48,0.3)" }}>
-                    <BookOpen size={22} style={{ opacity: 0.3, marginBottom: 8 }} />
+                  <td
+                    colSpan={5}
+                    style={{
+                      padding: 32,
+                      textAlign: "center",
+                      color: "rgba(13,51,48,0.3)",
+                    }}
+                  >
+                    <BookOpen
+                      size={22}
+                      style={{ opacity: 0.3, marginBottom: 8 }}
+                    />
                     <div>Chưa có sách điện tử nào khớp bộ lọc</div>
                   </td>
                 </tr>
@@ -219,11 +348,20 @@ export default function EbookManager() {
                       style={{ cursor: "pointer" }}
                     >
                       {idx === 0 && (
-                        <td rowSpan={group.ebooks.length} className="a-ar-book-cell">
+                        <td
+                          rowSpan={group.ebooks.length}
+                          className="a-ar-book-cell"
+                        >
                           <div className="a-ar-book-cell-inner">
-                            <div className="a-book-thumb" style={{ width: 26, height: 34, flexShrink: 0 }}>
+                            <div
+                              className="a-book-thumb"
+                              style={{ width: 26, height: 34, flexShrink: 0 }}
+                            >
                               {group.book.coverImage ? (
-                                <img src={group.book.coverImage} alt={group.book.title} />
+                                <img
+                                  src={group.book.coverImage}
+                                  alt={group.book.title}
+                                />
                               ) : (
                                 <Upload size={10} />
                               )}
@@ -240,38 +378,61 @@ export default function EbookManager() {
                               >
                                 {group.book.title}
                               </div>
-                              <div className="a-td-muted">{group.ebooks.length} sách điện tử</div>
+                              <div className="a-td-muted">
+                                {group.ebooks.length} sách điện tử
+                              </div>
                             </div>
                           </div>
                         </td>
                       )}
 
-                      <td style={{ fontWeight: 500, fontSize: 12 }}>{eb.title}</td>
+                      <td style={{ fontWeight: 500, fontSize: 12 }}>
+                        {eb.title}
+                      </td>
 
                       <td className="a-td-muted">{eb.pageCount} trang</td>
 
                       <td onClick={(e) => e.stopPropagation()}>
                         <button
                           className={`a-badge ${eb.isActive ? "success" : "neutral"}`}
-                          style={{ border: "none", cursor: "pointer", display: "inline-flex", gap: 4, alignItems: "center" }}
+                          style={{
+                            border: "none",
+                            cursor: "pointer",
+                            display: "inline-flex",
+                            gap: 4,
+                            alignItems: "center",
+                          }}
                           onClick={() => toggleMutation.mutate(eb.id)}
                           title="Bấm để đổi trạng thái"
                         >
-                          {eb.isActive ? <Eye size={11} /> : <EyeOff size={11} />}
+                          {eb.isActive ? (
+                            <Eye size={11} />
+                          ) : (
+                            <EyeOff size={11} />
+                          )}
                           {eb.isActive ? "Đã bật" : "Đang soạn"}
                         </button>
                       </td>
 
                       <td>
-                        <div style={{ display: "flex", gap: 6 }} onClick={(e) => e.stopPropagation()}>
+                        <div
+                          style={{ display: "flex", gap: 6 }}
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <button
                             className="a-btn-icon edit"
-                            onClick={() => navigate(`/dashboard/ebooks/${eb.id}`)}
+                            onClick={() =>
+                              navigate(`/dashboard/ebooks/${eb.id}`)
+                            }
                             title="Soạn nội dung"
                           >
                             <Edit2 size={12} />
                           </button>
-                          <button className="a-btn-icon delete" onClick={(e) => handleDelete(e, eb)} title="Xóa">
+                          <button
+                            className="a-btn-icon delete"
+                            onClick={(e) => handleDelete(e, eb)}
+                            title="Xóa"
+                          >
                             <Trash2 size={12} />
                           </button>
                         </div>
@@ -285,15 +446,25 @@ export default function EbookManager() {
         </div>
 
         <div className="a-pagination">
-          <span className="a-pagination-info">Tổng {totalCount} sách có nội dung điện tử</span>
+          <span className="a-pagination-info">
+            Tổng {totalCount} sách có nội dung điện tử
+          </span>
           <div className="a-pagination-btns">
-            <button className="a-page-btn" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
+            <button
+              className="a-page-btn"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
               ‹
             </button>
             {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
               const p = i + 1;
               return (
-                <button key={p} className={`a-page-btn${p === page ? " active" : ""}`} onClick={() => setPage(p)}>
+                <button
+                  key={p}
+                  className={`a-page-btn${p === page ? " active" : ""}`}
+                  onClick={() => setPage(p)}
+                >
                   {p}
                 </button>
               );

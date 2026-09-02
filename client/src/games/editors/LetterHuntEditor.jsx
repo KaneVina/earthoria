@@ -8,16 +8,19 @@ export default function LetterHuntEditor({ config, onChange }) {
   const cols = config?.cols || 8;
   const timeLimitSeconds = config?.timeLimitSeconds ?? 60;
 
-  const { errors, letterCount, capacity, overCapacity } = useMemo(() => analyzeLetterHunt(config), [config]);
+  const { errors, letterCount, capacity, overCapacity } = useMemo(
+    () => analyzeLetterHunt(config),
+    [config],
+  );
   const isValid = errors.length === 0 && letterCount > 0;
   const fillRatio = capacity > 0 ? Math.min(1, letterCount / capacity) : 0;
 
   return (
     <div className="g-editor">
       <div className="g-editor-hint">
-        Người chơi phải chạm đúng thứ tự các chữ cái rải rác trong bảng để
-        ghép lại thành <strong>từ khoá bí mật</strong>, chạy đua với đồng hồ
-        đếm ngược. Ví dụ từ khoá: <em>"CON VOI"</em>.
+        Người chơi phải chạm đúng thứ tự các chữ cái rải rác trong bảng để ghép
+        lại thành <strong>từ khoá bí mật</strong>, chạy đua với đồng hồ đếm
+        ngược. Ví dụ từ khoá: <em>"CON VOI"</em>.
       </div>
 
       {secretWord && (
@@ -42,7 +45,9 @@ export default function LetterHuntEditor({ config, onChange }) {
         <input
           className={`a-input${overCapacity || !secretWord.trim() ? "" : ""}`}
           value={secretWord}
-          onChange={(e) => onChange({ ...config, secretWord: e.target.value.toUpperCase() })}
+          onChange={(e) =>
+            onChange({ ...config, secretWord: e.target.value.toUpperCase() })
+          }
           placeholder="vd: CON VOI"
           style={{ textTransform: "uppercase", letterSpacing: 1 }}
           maxLength={40}
@@ -52,7 +57,9 @@ export default function LetterHuntEditor({ config, onChange }) {
       {secretWord && (
         <div className="g-lh-preview-track">
           {Array.from(secretWord).map((ch, i) =>
-            ch === " " ? <span key={i} className="g-lh-preview-space" /> : (
+            ch === " " ? (
+              <span key={i} className="g-lh-preview-space" />
+            ) : (
               <span key={i} className="g-lh-preview-slot">
                 {ch}
               </span>
@@ -70,7 +77,9 @@ export default function LetterHuntEditor({ config, onChange }) {
             min={4}
             max={14}
             value={rows}
-            onChange={(e) => onChange({ ...config, rows: Number(e.target.value) || 8 })}
+            onChange={(e) =>
+              onChange({ ...config, rows: Number(e.target.value) || 8 })
+            }
           />
         </label>
         <label>
@@ -81,7 +90,9 @@ export default function LetterHuntEditor({ config, onChange }) {
             min={4}
             max={14}
             value={cols}
-            onChange={(e) => onChange({ ...config, cols: Number(e.target.value) || 8 })}
+            onChange={(e) =>
+              onChange({ ...config, cols: Number(e.target.value) || 8 })
+            }
           />
         </label>
         <label>
@@ -92,7 +103,12 @@ export default function LetterHuntEditor({ config, onChange }) {
             min={15}
             max={300}
             value={timeLimitSeconds}
-            onChange={(e) => onChange({ ...config, timeLimitSeconds: Number(e.target.value) || 60 })}
+            onChange={(e) =>
+              onChange({
+                ...config,
+                timeLimitSeconds: Number(e.target.value) || 60,
+              })
+            }
           />
         </label>
       </div>
@@ -105,7 +121,11 @@ export default function LetterHuntEditor({ config, onChange }) {
               style={{ width: `${fillRatio * 100}%` }}
             />
           </div>
-          <span className={overCapacity ? "g-editor-warn-text" : "g-editor-hint-text"}>
+          <span
+            className={
+              overCapacity ? "g-editor-warn-text" : "g-editor-hint-text"
+            }
+          >
             {overCapacity
               ? `Bảng ${rows}×${cols} (${capacity} ô) không đủ chỗ cho ${letterCount} chữ cái — hãy tăng số hàng/cột.`
               : `Từ khoá có ${letterCount} chữ cái, bảng ${rows}×${cols} có ${capacity} ô — đủ chỗ.`}

@@ -10,20 +10,25 @@ export default function MatchPairsEditor({ config, onChange }) {
   const pairs = config?.pairs || [];
   const setPairs = (next) => onChange({ ...config, pairs: next });
 
-  const addPair = () => setPairs([...pairs, { id: uid(), left: "", right: "" }]);
-  const updatePair = (id, patch) => setPairs(pairs.map((p) => (p.id === id ? { ...p, ...patch } : p)));
+  const addPair = () =>
+    setPairs([...pairs, { id: uid(), left: "", right: "" }]);
+  const updatePair = (id, patch) =>
+    setPairs(pairs.map((p) => (p.id === id ? { ...p, ...patch } : p)));
   const removePair = (id) => setPairs(pairs.filter((p) => p.id !== id));
 
-  const { errors, rowIssues } = useMemo(() => analyzeMatchPairs(config), [config]);
+  const { errors, rowIssues } = useMemo(
+    () => analyzeMatchPairs(config),
+    [config],
+  );
   const isValid = pairs.length > 0 && errors.length === 0;
 
   return (
     <div className="g-editor">
       <div className="g-editor-hint">
-        Mỗi hàng là 1 cặp tương ứng — người chơi sẽ chạm 1 mục cột trái rồi
-        chạm đúng mục cột phải tương ứng để nối. Ví dụ: <em>"Con voi"</em> ↔{" "}
-        <em>"Loài động vật to lớn có vòi dài"</em>. Cần tối thiểu 2 cặp, mỗi
-        cột không nên có nội dung trùng lặp.
+        Mỗi hàng là 1 cặp tương ứng — người chơi sẽ chạm 1 mục cột trái rồi chạm
+        đúng mục cột phải tương ứng để nối. Ví dụ: <em>"Con voi"</em> ↔{" "}
+        <em>"Loài động vật to lớn có vòi dài"</em>. Cần tối thiểu 2 cặp, mỗi cột
+        không nên có nội dung trùng lặp.
       </div>
 
       {pairs.length > 0 && (
@@ -42,7 +47,9 @@ export default function MatchPairsEditor({ config, onChange }) {
       )}
 
       {pairs.length === 0 && (
-        <div className="g-editor-empty">Chưa có cặp nào — bấm "Thêm cặp" bên dưới</div>
+        <div className="g-editor-empty">
+          Chưa có cặp nào — bấm "Thêm cặp" bên dưới
+        </div>
       )}
 
       <div className="g-mp-list">
@@ -55,9 +62,13 @@ export default function MatchPairsEditor({ config, onChange }) {
         )}
         {pairs.map((pair, idx) => {
           const issue = rowIssues[pair.id] || {};
-          const rowInvalid = issue.left || issue.right || issue.leftDup || issue.rightDup;
+          const rowInvalid =
+            issue.left || issue.right || issue.leftDup || issue.rightDup;
           return (
-            <div className={`g-mp-row${rowInvalid ? " g-mp-row--invalid" : ""}`} key={pair.id}>
+            <div
+              className={`g-mp-row${rowInvalid ? " g-mp-row--invalid" : ""}`}
+              key={pair.id}
+            >
               <span className="g-pair-index">{idx + 1}</span>
               <input
                 className={`a-input${issue.left || issue.leftDup ? " g-input-error" : ""}`}
@@ -88,7 +99,12 @@ export default function MatchPairsEditor({ config, onChange }) {
         })}
       </div>
 
-      <button type="button" className="a-btn-ghost" onClick={addPair} style={{ marginTop: 10 }}>
+      <button
+        type="button"
+        className="a-btn-ghost"
+        onClick={addPair}
+        style={{ marginTop: 10 }}
+      >
         <Plus size={13} /> Thêm cặp
       </button>
 

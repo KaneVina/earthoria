@@ -1,10 +1,8 @@
-// client/src/hooks/useFacebookPosts.js
-// Toàn bộ Facebook API logic — không có gì liên quan đến UI ở đây
-
 const FB_PAGE_ID = import.meta.env.VITE_FB_PAGE_ID;
-const FB_TOKEN   = import.meta.env.VITE_FB_TOKEN;
-const FB_FIELDS  = "id,message,created_time,full_picture,permalink_url,likes.summary(true),shares";
-const FB_LIMIT   = 4;
+const FB_TOKEN = import.meta.env.VITE_FB_TOKEN;
+const FB_FIELDS =
+  "id,message,created_time,full_picture,permalink_url,likes.summary(true),shares";
+const FB_LIMIT = 4;
 
 /**
  * Fetch bài đăng từ Facebook Graph API
@@ -14,7 +12,7 @@ const FB_LIMIT   = 4;
 export async function fetchFacebookPosts() {
   if (!FB_PAGE_ID || !FB_TOKEN) {
     throw new Error(
-      "Thiếu VITE_FB_PAGE_ID hoặc VITE_FB_TOKEN trong file client/.env"
+      "Thiếu VITE_FB_PAGE_ID hoặc VITE_FB_TOKEN trong file client/.env",
     );
   }
 
@@ -24,7 +22,7 @@ export async function fetchFacebookPosts() {
     `&limit=${FB_LIMIT}` +
     `&access_token=${FB_TOKEN}`;
 
-  const res  = await fetch(url);
+  const res = await fetch(url);
   const json = await res.json();
 
   if (json.error) {

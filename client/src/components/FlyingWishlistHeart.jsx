@@ -56,7 +56,12 @@ export default function FlyingWishlistHeart() {
             "--wl-fly-ty": `${f.ty}px`,
           }}
         >
-          <Heart size={16} strokeWidth={1.5} fill="var(--gold)" color="var(--gold)" />
+          <Heart
+            size={16}
+            strokeWidth={1.5}
+            fill="var(--gold)"
+            color="var(--gold)"
+          />
         </span>
       ))}
     </>,

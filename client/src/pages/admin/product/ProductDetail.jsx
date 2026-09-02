@@ -1,7 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Upload, Trash2, X, Copy, ImagePlus, Star, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Upload,
+  Trash2,
+  X,
+  Copy,
+  ImagePlus,
+  Star,
+  Loader2,
+} from "lucide-react";
 import api from "../../../services/api";
 import { getGameDefinition } from "../../../games/gameRegistry";
 import toast from "react-hot-toast";
@@ -56,7 +65,8 @@ export default function ProductDetail() {
       qc.invalidateQueries(["admin-products"]);
       setDirty(false);
     },
-    onError: (e) => toast.error(e.response?.data?.message || "Cập nhật thất bại!"),
+    onError: (e) =>
+      toast.error(e.response?.data?.message || "Cập nhật thất bại!"),
   });
 
   const deleteMutation = useMutation({
@@ -79,7 +89,8 @@ export default function ProductDetail() {
   });
 
   const deleteVariantMutation = useMutation({
-    mutationFn: (variantId) => api.delete(`/admin/products/${id}/variants/${variantId}`),
+    mutationFn: (variantId) =>
+      api.delete(`/admin/products/${id}/variants/${variantId}`),
     onSuccess: () => {
       toast.success("Đã xóa định dạng bán!");
       qc.invalidateQueries(["admin-product-detail", id]);
@@ -95,7 +106,8 @@ export default function ProductDetail() {
     },
   });
 
-  const handleDeleteVariant = (variant) => deleteVariantMutation.mutateAsync(variant.id);
+  const handleDeleteVariant = (variant) =>
+    deleteVariantMutation.mutateAsync(variant.id);
 
   // ── Ảnh sách — thao tác lưu ngay qua API, không phụ thuộc nút "Lưu thay đổi" ──
   const imageInputRef = useRef(null);
@@ -116,17 +128,20 @@ export default function ProductDetail() {
       toast.success("Đã thêm ảnh");
       invalidateBook();
     },
-    onError: (e) => toast.error(e.response?.data?.message || "Tải ảnh thất bại"),
+    onError: (e) =>
+      toast.error(e.response?.data?.message || "Tải ảnh thất bại"),
   });
 
   const deleteImageMutation = useMutation({
-    mutationFn: (url) => api.delete(`/admin/products/${id}/images`, { data: { url } }),
+    mutationFn: (url) =>
+      api.delete(`/admin/products/${id}/images`, { data: { url } }),
     onMutate: (url) => setPendingImageUrl(url),
     onSuccess: () => {
       toast.success("Đã xóa ảnh");
       invalidateBook();
     },
-    onError: (e) => toast.error(e.response?.data?.message || "Xóa ảnh thất bại"),
+    onError: (e) =>
+      toast.error(e.response?.data?.message || "Xóa ảnh thất bại"),
     onSettled: () => setPendingImageUrl(null),
   });
 
@@ -137,7 +152,8 @@ export default function ProductDetail() {
       toast.success("Đã đặt làm ảnh bìa");
       invalidateBook();
     },
-    onError: (e) => toast.error(e.response?.data?.message || "Đặt ảnh bìa thất bại"),
+    onError: (e) =>
+      toast.error(e.response?.data?.message || "Đặt ảnh bìa thất bại"),
     onSettled: () => setPendingImageUrl(null),
   });
 
@@ -149,7 +165,9 @@ export default function ProductDetail() {
     e.target.value = "";
     if (!picked.length) return;
     if (picked.length > roomForImages) {
-      toast.error(`Chỉ còn ${roomForImages} chỗ trống — tối đa ${MAX_IMAGES} ảnh`);
+      toast.error(
+        `Chỉ còn ${roomForImages} chỗ trống — tối đa ${MAX_IMAGES} ảnh`,
+      );
     }
     const accepted = picked.slice(0, roomForImages);
     if (!accepted.length) return;
@@ -173,19 +191,37 @@ export default function ProductDetail() {
 
   const totalStock = (book?.variants ?? []).reduce(
     (sum, v) => (v.isUnlimitedStock ? sum : sum + (v.stock ?? 0)),
-    0
+    0,
   );
   const hasUnlimited = (book?.variants ?? []).some((v) => v.isUnlimitedStock);
-  const totalSold = (book?.variants ?? []).reduce((sum, v) => sum + (v.sold ?? 0), 0);
+  const totalSold = (book?.variants ?? []).reduce(
+    (sum, v) => sum + (v.sold ?? 0),
+    0,
+  );
 
   return (
-    <AdminLayout crumbs={[{ label: "Sản phẩm", to: "/dashboard/products" }, { label: book?.title ?? "Chi tiết sách" }]}>
-      <button className="a-btn-ghost" onClick={() => navigate("/dashboard/products")} style={{ marginBottom: 18 }}>
+    <AdminLayout
+      crumbs={[
+        { label: "Sản phẩm", to: "/dashboard/products" },
+        { label: book?.title ?? "Chi tiết sách" },
+      ]}
+    >
+      <button
+        className="a-btn-ghost"
+        onClick={() => navigate("/dashboard/products")}
+        style={{ marginBottom: 18 }}
+      >
         <ArrowLeft size={13} /> Quay lại danh sách sách
       </button>
 
       {isLoading || !book ? (
-        <div style={{ padding: 60, textAlign: "center", color: "rgba(13,51,48,0.3)" }}>
+        <div
+          style={{
+            padding: 60,
+            textAlign: "center",
+            color: "rgba(13,51,48,0.3)",
+          }}
+        >
           {isLoading ? "Đang tải..." : "Không tìm thấy sách"}
         </div>
       ) : (
@@ -193,35 +229,97 @@ export default function ProductDetail() {
           <div className="a-page-header">
             <div style={{ display: "flex", gap: 16 }}>
               <div className="a-book-thumb" style={{ width: 64, height: 88 }}>
-                {book.coverImage ? <img src={book.coverImage} alt={book.title} /> : <Upload size={16} />}
+                {book.coverImage ? (
+                  <img src={book.coverImage} alt={book.title} />
+                ) : (
+                  <Upload size={16} />
+                )}
               </div>
               <div>
                 <p className="a-page-eyebrow">Chi tiết sách</p>
                 <h1 className="a-page-title">{book.title}</h1>
-                <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                <div
+                  style={{
+                    marginTop: 6,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    flexWrap: "wrap",
+                  }}
+                >
                   {(book.variants ?? []).map((v) => (
                     <span
                       key={v.id}
-                      style={{ fontFamily: "monospace", fontSize: 11, background: "#f5f3ee", padding: "2px 8px", borderRadius: 5, color: "#0D3330" }}
-                      title={v.format === "DIGITAL" ? "Sách điện tử" : "Sách giấy"}
+                      style={{
+                        fontFamily: "monospace",
+                        fontSize: 11,
+                        background: "#f5f3ee",
+                        padding: "2px 8px",
+                        borderRadius: 5,
+                        color: "#0D3330",
+                      }}
+                      title={
+                        v.format === "DIGITAL" ? "Sách điện tử" : "Sách giấy"
+                      }
                     >
                       {v.productCode ?? "—"}
                     </span>
                   ))}
-                  <span style={{ fontSize: 12, color: "rgba(13,51,48,0.5)" }}>{(book.authors ?? []).join(", ") || "—"}</span>
+                  <span style={{ fontSize: 12, color: "rgba(13,51,48,0.5)" }}>
+                    {(book.authors ?? []).join(", ") || "—"}
+                  </span>
                 </div>
-                <div style={{ marginTop: 6, display: "flex", alignItems: "center", gap: 6 }}>
-                  <span style={{ fontSize: 11, color: "rgba(13,51,48,0.4)" }}>ID:</span>
-                  <span style={{ fontFamily: "monospace", fontSize: 11, color: "rgba(13,51,48,0.55)" }}>{book.id}</span>
-                  <button type="button" onClick={copyId} title="Sao chép ID" style={{ display: "inline-flex", alignItems: "center", background: "none", border: "none", cursor: "pointer", color: "rgba(13,51,48,0.4)", padding: 2 }}>
+                <div
+                  style={{
+                    marginTop: 6,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
+                  <span style={{ fontSize: 11, color: "rgba(13,51,48,0.4)" }}>
+                    ID:
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: "monospace",
+                      fontSize: 11,
+                      color: "rgba(13,51,48,0.55)",
+                    }}
+                  >
+                    {book.id}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={copyId}
+                    title="Sao chép ID"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      color: "rgba(13,51,48,0.4)",
+                      padding: 2,
+                    }}
+                  >
                     <Copy size={11} />
                   </button>
                 </div>
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span className={`a-badge ${book.isVisible ? "success" : "neutral"}`}>{book.isVisible ? "Hiển thị" : "Đã ẩn"}</span>
-              <button type="button" className="a-btn-icon delete" title="Xóa sách" onClick={() => setConfirmDelete(true)}>
+              <span
+                className={`a-badge ${book.isVisible ? "success" : "neutral"}`}
+              >
+                {book.isVisible ? "Hiển thị" : "Đã ẩn"}
+              </span>
+              <button
+                type="button"
+                className="a-btn-icon delete"
+                title="Xóa sách"
+                onClick={() => setConfirmDelete(true)}
+              >
                 <Trash2 size={14} />
               </button>
             </div>
@@ -230,11 +328,15 @@ export default function ProductDetail() {
           <div className="a-mini-stats">
             <div className="a-mini-stat">
               <div className="a-mini-stat-label">Định dạng đang bán</div>
-              <div className="a-mini-stat-value">{(book.variants ?? []).filter((v) => v.isActive).length}</div>
+              <div className="a-mini-stat-value">
+                {(book.variants ?? []).filter((v) => v.isActive).length}
+              </div>
             </div>
             <div className="a-mini-stat">
               <div className="a-mini-stat-label">Tồn kho</div>
-              <div className="a-mini-stat-value">{hasUnlimited ? `${totalStock}+` : totalStock}</div>
+              <div className="a-mini-stat-value">
+                {hasUnlimited ? `${totalStock}+` : totalStock}
+              </div>
             </div>
             <div className="a-mini-stat">
               <div className="a-mini-stat-label">Đã bán</div>
@@ -242,7 +344,9 @@ export default function ProductDetail() {
             </div>
             <div className="a-mini-stat">
               <div className="a-mini-stat-label">Mã AR</div>
-              <div className="a-mini-stat-value">{book._count?.arCodes ?? 0}</div>
+              <div className="a-mini-stat-value">
+                {book._count?.arCodes ?? 0}
+              </div>
             </div>
             <div className="a-mini-stat">
               <div className="a-mini-stat-label">Trò chơi</div>
@@ -253,9 +357,12 @@ export default function ProductDetail() {
           {/* ẢNH SÁCH — mỗi thao tác gọi API ngay lập tức, tách khỏi nút "Lưu thay đổi" bên dưới */}
           <div className="a-chart-card" style={{ marginBottom: 20 }}>
             <div className="a-chart-card-header">
-              <h3 className="a-chart-title">Ảnh <em>sách</em></h3>
+              <h3 className="a-chart-title">
+                Ảnh <em>sách</em>
+              </h3>
               <p className="a-chart-sub">
-                Tối đa {MAX_IMAGES} ảnh · bấm ngôi sao để đặt làm ảnh bìa · thao tác lưu ngay lập tức
+                Tối đa {MAX_IMAGES} ảnh · bấm ngôi sao để đặt làm ảnh bìa · thao
+                tác lưu ngay lập tức
               </p>
             </div>
 
@@ -286,7 +393,11 @@ export default function ProductDetail() {
                           title="Đặt làm ảnh bìa"
                           style={{ marginRight: 6 }}
                         >
-                          {busyThis && setCoverMutation.isPending ? <Loader2 size={13} className="a-spin" /> : <Star size={13} />}
+                          {busyThis && setCoverMutation.isPending ? (
+                            <Loader2 size={13} className="a-spin" />
+                          ) : (
+                            <Star size={13} />
+                          )}
                         </button>
                       )}
                       <button
@@ -296,10 +407,16 @@ export default function ProductDetail() {
                         disabled={busyThis}
                         title="Xóa ảnh"
                       >
-                        {busyThis && deleteImageMutation.isPending ? <Loader2 size={13} className="a-spin" /> : <Trash2 size={13} />}
+                        {busyThis && deleteImageMutation.isPending ? (
+                          <Loader2 size={13} className="a-spin" />
+                        ) : (
+                          <Trash2 size={13} />
+                        )}
                       </button>
                     </div>
-                    {isCover && <span className="a-pf-image-cover-badge">Bìa</span>}
+                    {isCover && (
+                      <span className="a-pf-image-cover-badge">Bìa</span>
+                    )}
                   </div>
                 );
               })}
@@ -311,9 +428,19 @@ export default function ProductDetail() {
                   onClick={() => imageInputRef.current?.click()}
                   disabled={uploadImagesMutation.isPending}
                 >
-                  {uploadImagesMutation.isPending ? <Loader2 size={18} className="a-spin" /> : <ImagePlus size={18} />}
-                  <span>{uploadImagesMutation.isPending ? "Đang tải..." : "Thêm ảnh"}</span>
-                  <span className="a-pf-image-hint">Còn {roomForImages} chỗ</span>
+                  {uploadImagesMutation.isPending ? (
+                    <Loader2 size={18} className="a-spin" />
+                  ) : (
+                    <ImagePlus size={18} />
+                  )}
+                  <span>
+                    {uploadImagesMutation.isPending
+                      ? "Đang tải..."
+                      : "Thêm ảnh"}
+                  </span>
+                  <span className="a-pf-image-hint">
+                    Còn {roomForImages} chỗ
+                  </span>
                 </button>
               )}
             </div>
@@ -336,17 +463,38 @@ export default function ProductDetail() {
 
           <div className="a-chart-card" style={{ marginBottom: 20 }}>
             <div className="a-chart-card-header">
-              <h3 className="a-chart-title">Thông <em>tin sách</em></h3>
-              <p className="a-chart-sub">Chỉnh sửa trực tiếp bên dưới rồi bấm Lưu thay đổi</p>
+              <h3 className="a-chart-title">
+                Thông <em>tin sách</em>
+              </h3>
+              <p className="a-chart-sub">
+                Chỉnh sửa trực tiếp bên dưới rồi bấm Lưu thay đổi
+              </p>
             </div>
             <form onSubmit={handleSubmit}>
-              <ProductFormFields form={form} setForm={handleFormChange} categories={categories} onDeleteVariant={handleDeleteVariant} productId={id} />
+              <ProductFormFields
+                form={form}
+                setForm={handleFormChange}
+                categories={categories}
+                onDeleteVariant={handleDeleteVariant}
+                productId={id}
+              />
               <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
-                <button type="submit" className="a-btn-primary" disabled={!dirty || updateMutation.isPending}>
+                <button
+                  type="submit"
+                  className="a-btn-primary"
+                  disabled={!dirty || updateMutation.isPending}
+                >
                   {updateMutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}
                 </button>
                 {dirty && (
-                  <button type="button" className="a-btn-ghost" onClick={() => { setForm(bookToForm(book)); setDirty(false); }}>
+                  <button
+                    type="button"
+                    className="a-btn-ghost"
+                    onClick={() => {
+                      setForm(bookToForm(book));
+                      setDirty(false);
+                    }}
+                  >
                     Hủy thay đổi
                   </button>
                 )}
@@ -356,8 +504,16 @@ export default function ProductDetail() {
 
           <div className="a-table-card">
             <div className="a-table-head">
-              <h3 className="a-table-title">Mã <em>AR</em> đã tạo</h3>
-              <a className="a-table-link" onClick={() => navigate(`/dashboard/ar-codes?bookId=${book.id}`)} style={{ cursor: "pointer" }}>
+              <h3 className="a-table-title">
+                Mã <em>AR</em> đã tạo
+              </h3>
+              <a
+                className="a-table-link"
+                onClick={() =>
+                  navigate(`/dashboard/ar-codes?bookId=${book.id}`)
+                }
+                style={{ cursor: "pointer" }}
+              >
                 Quản lý mã AR →
               </a>
             </div>
@@ -365,7 +521,13 @@ export default function ProductDetail() {
               <table className="a-table">
                 <thead>
                   <tr>
-                    {["Label", "Mã (code)", "Quyền xem", "Lượt quét", "Trạng thái"].map((h) => (
+                    {[
+                      "Label",
+                      "Mã (code)",
+                      "Quyền xem",
+                      "Lượt quét",
+                      "Trạng thái",
+                    ].map((h) => (
                       <th key={h}>{h}</th>
                     ))}
                   </tr>
@@ -373,20 +535,41 @@ export default function ProductDetail() {
                 <tbody>
                   {!book.arCodes?.length ? (
                     <tr>
-                      <td colSpan={5} style={{ padding: 32, textAlign: "center", color: "rgba(13,51,48,0.3)" }}>
+                      <td
+                        colSpan={5}
+                        style={{
+                          padding: 32,
+                          textAlign: "center",
+                          color: "rgba(13,51,48,0.3)",
+                        }}
+                      >
                         Sách này chưa có mã AR nào
                       </td>
                     </tr>
                   ) : (
                     book.arCodes.map((ac) => {
-                      const access = ACCESS_LABEL[ac.accessType] ?? ACCESS_LABEL.CUSTOMER_ONLY;
+                      const access =
+                        ACCESS_LABEL[ac.accessType] ??
+                        ACCESS_LABEL.CUSTOMER_ONLY;
                       return (
                         <tr key={ac.id}>
-                          <td style={{ fontWeight: 500, fontSize: 12 }}>{ac.label}</td>
+                          <td style={{ fontWeight: 500, fontSize: 12 }}>
+                            {ac.label}
+                          </td>
                           <td className="a-td-mono">{ac.code}</td>
-                          <td><span className={`a-badge ${access.cls}`}>{access.label}</span></td>
+                          <td>
+                            <span className={`a-badge ${access.cls}`}>
+                              {access.label}
+                            </span>
+                          </td>
                           <td className="a-td-muted">{ac.scanCount}</td>
-                          <td><span className={`a-badge ${ac.isActive ? "success" : "neutral"}`}>{ac.isActive ? "Hoạt động" : "Đã vô hiệu hoá"}</span></td>
+                          <td>
+                            <span
+                              className={`a-badge ${ac.isActive ? "success" : "neutral"}`}
+                            >
+                              {ac.isActive ? "Hoạt động" : "Đã vô hiệu hoá"}
+                            </span>
+                          </td>
                         </tr>
                       );
                     })
@@ -398,8 +581,14 @@ export default function ProductDetail() {
 
           <div className="a-table-card" style={{ marginTop: 20 }}>
             <div className="a-table-head">
-              <h3 className="a-table-title">Trò <em>chơi</em> đã tạo</h3>
-              <a className="a-table-link" onClick={() => navigate(`/dashboard/games?bookId=${book.id}`)} style={{ cursor: "pointer" }}>
+              <h3 className="a-table-title">
+                Trò <em>chơi</em> đã tạo
+              </h3>
+              <a
+                className="a-table-link"
+                onClick={() => navigate(`/dashboard/games?bookId=${book.id}`)}
+                style={{ cursor: "pointer" }}
+              >
                 Quản lý trò chơi →
               </a>
             </div>
@@ -407,7 +596,14 @@ export default function ProductDetail() {
               <table className="a-table">
                 <thead>
                   <tr>
-                    {["Tên trò chơi", "Loại", "Mã (code)", "Quyền xem", "Lượt chơi", "Trạng thái"].map((h) => (
+                    {[
+                      "Tên trò chơi",
+                      "Loại",
+                      "Mã (code)",
+                      "Quyền xem",
+                      "Lượt chơi",
+                      "Trạng thái",
+                    ].map((h) => (
                       <th key={h}>{h}</th>
                     ))}
                   </tr>
@@ -415,22 +611,47 @@ export default function ProductDetail() {
                 <tbody>
                   {!book.games?.length ? (
                     <tr>
-                      <td colSpan={6} style={{ padding: 32, textAlign: "center", color: "rgba(13,51,48,0.3)" }}>
+                      <td
+                        colSpan={6}
+                        style={{
+                          padding: 32,
+                          textAlign: "center",
+                          color: "rgba(13,51,48,0.3)",
+                        }}
+                      >
                         Sách này chưa có trò chơi nào
                       </td>
                     </tr>
                   ) : (
                     book.games.map((g) => {
-                      const access = ACCESS_LABEL[g.accessType] ?? ACCESS_LABEL.CUSTOMER_ONLY;
+                      const access =
+                        ACCESS_LABEL[g.accessType] ??
+                        ACCESS_LABEL.CUSTOMER_ONLY;
                       const def = getGameDefinition(g.gameType);
                       return (
-                        <tr key={g.id} onClick={() => navigate(`/dashboard/games/${g.id}`)} style={{ cursor: "pointer" }}>
-                          <td style={{ fontWeight: 500, fontSize: 12 }}>{g.title}</td>
+                        <tr
+                          key={g.id}
+                          onClick={() => navigate(`/dashboard/games/${g.id}`)}
+                          style={{ cursor: "pointer" }}
+                        >
+                          <td style={{ fontWeight: 500, fontSize: 12 }}>
+                            {g.title}
+                          </td>
                           <td>{def?.shortLabel ?? g.gameType}</td>
                           <td className="a-td-mono">{g.code}</td>
-                          <td><span className={`a-badge ${access.cls}`}>{access.label}</span></td>
+                          <td>
+                            <span className={`a-badge ${access.cls}`}>
+                              {access.label}
+                            </span>
+                          </td>
                           <td className="a-td-muted">{g.playCount}</td>
-                          <td><span className={`a-badge ${g.isActive ? "success" : "neutral"}`}>{g.isActive ? "Hoạt động" : "Đã vô hiệu hoá"}</span></td>
+                          <td>
+                            <span
+                              className={`a-badge ${g.isActive ? "success" : "neutral"}`}
+                            >
+                              {g.isActive ? "Hoạt động" : "Đã vô hiệu hoá"}
+                            </span>
+                          </td>
                         </tr>
                       );
                     })
@@ -443,22 +664,49 @@ export default function ProductDetail() {
       )}
 
       {confirmDelete && (
-        <div className="a-modal-overlay" onClick={(e) => e.target === e.currentTarget && setConfirmDelete(false)}>
+        <div
+          className="a-modal-overlay"
+          onClick={(e) =>
+            e.target === e.currentTarget && setConfirmDelete(false)
+          }
+        >
           <div className="a-modal" style={{ maxWidth: 420 }}>
             <div className="a-modal-header">
               <h3 className="a-modal-title">Xác nhận xóa</h3>
-              <button className="a-modal-close" onClick={() => setConfirmDelete(false)}><X size={16} /></button>
+              <button
+                className="a-modal-close"
+                onClick={() => setConfirmDelete(false)}
+              >
+                <X size={16} />
+              </button>
             </div>
             <div className="a-modal-body">
-              <p style={{ fontSize: 13, color: "rgba(13,51,48,0.7)", lineHeight: 1.6 }}>
-                Bạn có chắc muốn xóa sách <strong>"{book?.title}"</strong>? Hành động này không thể hoàn tác.
+              <p
+                style={{
+                  fontSize: 13,
+                  color: "rgba(13,51,48,0.7)",
+                  lineHeight: 1.6,
+                }}
+              >
+                Bạn có chắc muốn xóa sách <strong>"{book?.title}"</strong>? Hành
+                động này không thể hoàn tác.
               </p>
             </div>
             <div className="a-modal-footer">
-              <button className="a-btn-primary" style={{ background: "#c05050" }} onClick={() => deleteMutation.mutate()} disabled={deleteMutation.isPending}>
+              <button
+                className="a-btn-primary"
+                style={{ background: "#c05050" }}
+                onClick={() => deleteMutation.mutate()}
+                disabled={deleteMutation.isPending}
+              >
                 {deleteMutation.isPending ? "Đang xóa..." : "Xóa sách"}
               </button>
-              <button className="a-btn-ghost" onClick={() => setConfirmDelete(false)}>Hủy</button>
+              <button
+                className="a-btn-ghost"
+                onClick={() => setConfirmDelete(false)}
+              >
+                Hủy
+              </button>
             </div>
           </div>
         </div>

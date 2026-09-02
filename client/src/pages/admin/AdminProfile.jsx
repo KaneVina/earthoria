@@ -1,4 +1,3 @@
-// AdminProfile.jsx — Hồ sơ cá nhân của người quản trị (tách riêng khỏi Cài Đặt Hệ Thống)
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -37,7 +36,7 @@ export default function AdminProfile() {
     (field) => async (val) => {
       await updateProfileMutation.mutateAsync({ [field]: val });
     },
-    [updateProfileMutation]
+    [updateProfileMutation],
   );
 
   const handleLogout = async () => {
@@ -102,7 +101,9 @@ export default function AdminProfile() {
             type="tel"
             onSave={saveField("phone")}
             validate={(v) =>
-              v && !/^[0-9+\s-]{8,15}$/.test(v) ? "Số điện thoại không hợp lệ" : null
+              v && !/^[0-9+\s-]{8,15}$/.test(v)
+                ? "Số điện thoại không hợp lệ"
+                : null
             }
           />
           <EditableField
@@ -132,14 +133,18 @@ export default function AdminProfile() {
           <h3 className="a-chart-title">
             Giao Diện <em>Hiển Thị</em>
           </h3>
-          <p className="a-chart-sub">Chọn chế độ sáng hoặc tối cho trang quản trị</p>
+          <p className="a-chart-sub">
+            Chọn chế độ sáng hoặc tối cho trang quản trị
+          </p>
         </div>
 
         <div className="a-theme-row">
           <div>
             <div className="a-theme-row-title">Chế độ tối</div>
             <div className="a-theme-row-desc">
-              {isDark ? "Đang bật — dịu mắt hơn khi làm việc ban đêm" : "Đang tắt — giao diện sáng mặc định"}
+              {isDark
+                ? "Đang bật — dịu mắt hơn khi làm việc ban đêm"
+                : "Đang tắt — giao diện sáng mặc định"}
             </div>
           </div>
           <label className="a-switch">
@@ -159,9 +164,15 @@ export default function AdminProfile() {
           <h3 className="a-chart-title">
             Phiên <em>Đăng Nhập</em>
           </h3>
-          <p className="a-chart-sub">Đăng xuất khỏi tài khoản quản trị hiện tại</p>
+          <p className="a-chart-sub">
+            Đăng xuất khỏi tài khoản quản trị hiện tại
+          </p>
         </div>
-        <button onClick={handleLogout} className="a-btn-ghost" style={{ color: "#c05050", borderColor: "rgba(192,80,80,0.3)" }}>
+        <button
+          onClick={handleLogout}
+          className="a-btn-ghost"
+          style={{ color: "#c05050", borderColor: "rgba(192,80,80,0.3)" }}
+        >
           <LogOut size={14} /> Đăng Xuất
         </button>
       </div>

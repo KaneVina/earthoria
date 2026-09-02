@@ -1,5 +1,3 @@
-// Settings.jsx — Cài Đặt Hệ Thống (chỉ ADMIN mới thấy trang này)
-// Thông tin cá nhân / giao diện / đăng xuất đã tách sang AdminProfile.jsx (/dashboard/profile)
 import { useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -27,8 +25,11 @@ export default function Settings() {
   });
 
   const saveSiteSettings = useCallback(
-    (patch) => updateSiteSettingsMutation.mutateAsync(patch).then((res) => res.data.data),
-    [updateSiteSettingsMutation]
+    (patch) =>
+      updateSiteSettingsMutation
+        .mutateAsync(patch)
+        .then((res) => res.data.data),
+    [updateSiteSettingsMutation],
   );
 
   return (

@@ -1,6 +1,14 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
-import { Shuffle, Copy, Download, Plus, Trash2, ClipboardCopy, Check } from "lucide-react";
+import {
+  Shuffle,
+  Copy,
+  Download,
+  Plus,
+  Trash2,
+  ClipboardCopy,
+  Check,
+} from "lucide-react";
 import {
   hexToRgb,
   rgbToHex,
@@ -37,12 +45,27 @@ function uid() {
 function escapeXml(str) {
   return String(str).replace(
     /[<>&'"]/g,
-    (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" }[c])
+    (c) =>
+      ({
+        "<": "&lt;",
+        ">": "&gt;",
+        "&": "&amp;",
+        "'": "&apos;",
+        '"': "&quot;",
+      })[c],
   );
 }
 
 /* Slider dùng chung — nền gradient truyền vào qua CSS variable để luôn khớp màu hiện tại */
-function GradientSlider({ value, min, max, step, gradient, onChange, ariaLabel }) {
+function GradientSlider({
+  value,
+  min,
+  max,
+  step,
+  gradient,
+  onChange,
+  ariaLabel,
+}) {
   return (
     <input
       type="range"
@@ -68,7 +91,9 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
   const [exportFormat, setExportFormat] = useState("css");
 
   const primary = palettes[0];
-  const [hexDraft, setHexDraft] = useState(() => primary.hex.slice(1).toUpperCase());
+  const [hexDraft, setHexDraft] = useState(() =>
+    primary.hex.slice(1).toUpperCase(),
+  );
   const [syncedHex, setSyncedHex] = useState(primary.hex);
   if (primary.hex !== syncedHex) {
     setSyncedHex(primary.hex);
@@ -132,7 +157,9 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
   };
 
   const removePalette = (id) => {
-    setPalettes((prev) => (prev.length <= 1 ? prev : prev.filter((p) => p.id !== id)));
+    setPalettes((prev) =>
+      prev.length <= 1 ? prev : prev.filter((p) => p.id !== id),
+    );
   };
 
   const shufflePalette = (id) => setHexFor(id, randomHex());
@@ -149,7 +176,7 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
           contrastShift,
         }),
       })),
-    [palettes, algorithm, namingPatternId, shadeCount, contrastShift]
+    [palettes, algorithm, namingPatternId, shadeCount, contrastShift],
   );
 
   // Tránh trùng tên khi 2 bảng màu ra cùng 1 tên gần đúng
@@ -183,7 +210,7 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
           (p, i) =>
             `    '${slugs[i]}': {\n${p.palette.shades
               .map((s) => `      '${s.step}': '${s.hex}',`)
-              .join("\n")}\n    },`
+              .join("\n")}\n    },`,
         )
         .join("\n");
       return `// tailwind.config.js\nmodule.exports = {\n  theme: {\n    extend: {\n      colors: {\n${body}\n      },\n    },\n  },\n};`;
@@ -194,31 +221,43 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
           (p, i) =>
             `  "${slugs[i]}": {\n${p.palette.shades
               .map((s) => `    "${s.step}": { "value": "${s.hex}" },`)
-              .join("\n")}\n  },`
+              .join("\n")}\n  },`,
         )
         .join("\n");
       return `{\n${body}\n}`;
     }
     // css
     const body = palettesComputed
-      .map((p, i) => p.palette.shades.map((s) => `  --${slugs[i]}-${s.step}: ${s.hex};`).join("\n"))
+      .map((p, i) =>
+        p.palette.shades
+          .map((s) => `  --${slugs[i]}-${s.step}: ${s.hex};`)
+          .join("\n"),
+      )
       .join("\n\n");
     return `:root {\n${body}\n}`;
   }, [palettesComputed, slugs, exportFormat]);
 
   const buildSvgMarkup = () => {
-    const tileW = 108, tileH = 88, gap = 8, padding = 24, titleH = 26, rowGap = 30;
-    const maxCols = Math.max(...palettesComputed.map((p) => p.palette.shades.length));
+    const tileW = 108,
+      tileH = 88,
+      gap = 8,
+      padding = 24,
+      titleH = 26,
+      rowGap = 30;
+    const maxCols = Math.max(
+      ...palettesComputed.map((p) => p.palette.shades.length),
+    );
     const width = padding * 2 + maxCols * (tileW + gap) - gap;
     const rowHeight = titleH + tileH;
-    const height = padding * 2 + palettesComputed.length * (rowHeight + rowGap) - rowGap;
+    const height =
+      padding * 2 + palettesComputed.length * (rowHeight + rowGap) - rowGap;
 
     let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`;
     svg += `<rect width="100%" height="100%" fill="#ffffff"/>`;
     palettesComputed.forEach((row, ri) => {
       const y0 = padding + ri * (rowHeight + rowGap);
       svg += `<text x="${padding}" y="${y0 + 16}" font-family="Georgia, serif" font-size="15" font-weight="700" fill="#0d3330">${escapeXml(
-        row.palette.name
+        row.palette.name,
       )}</text>`;
       row.palette.shades.forEach((s, si) => {
         const x = padding + si * (tileW + gap);
@@ -247,7 +286,8 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
     toast.success("Đã tải file SVG");
   };
 
-  const copySvg = () => copyText(buildSvgMarkup(), "Đã copy mã SVG — dán trực tiếp vào Figma");
+  const copySvg = () =>
+    copyText(buildSvgMarkup(), "Đã copy mã SVG — dán trực tiếp vào Figma");
 
   const hueGradient =
     "linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)";
@@ -270,7 +310,13 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
                 aria-label="Chọn màu gốc"
               />
             </span>
-            <span style={{ color: "var(--cp-ink-40)", fontFamily: "var(--cp-font-serif)", fontSize: 19 }}>
+            <span
+              style={{
+                color: "var(--cp-ink-40)",
+                fontFamily: "var(--cp-font-serif)",
+                fontSize: 19,
+              }}
+            >
               #
             </span>
             <input
@@ -282,7 +328,11 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
               spellCheck={false}
               aria-label="Mã màu hex"
             />
-            <select className="cp-format-select" value={format} onChange={(e) => setFormat(e.target.value)}>
+            <select
+              className="cp-format-select"
+              value={format}
+              onChange={(e) => setFormat(e.target.value)}
+            >
               <option value="rgb">RGB</option>
               <option value="hsl">HSL</option>
             </select>
@@ -292,45 +342,109 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
             <div className="cp-rgb-grid">
               <label className="cp-rgb-field">
                 <span className="cp-rgb-field-label">R</span>
-                <input type="number" min={0} max={255} value={Math.round(rgb.r)} onChange={setRgbChannel("r")} />
+                <input
+                  type="number"
+                  min={0}
+                  max={255}
+                  value={Math.round(rgb.r)}
+                  onChange={setRgbChannel("r")}
+                />
               </label>
               <label className="cp-rgb-field">
                 <span className="cp-rgb-field-label">G</span>
-                <input type="number" min={0} max={255} value={Math.round(rgb.g)} onChange={setRgbChannel("g")} />
+                <input
+                  type="number"
+                  min={0}
+                  max={255}
+                  value={Math.round(rgb.g)}
+                  onChange={setRgbChannel("g")}
+                />
               </label>
               <label className="cp-rgb-field">
                 <span className="cp-rgb-field-label">B</span>
-                <input type="number" min={0} max={255} value={Math.round(rgb.b)} onChange={setRgbChannel("b")} />
+                <input
+                  type="number"
+                  min={0}
+                  max={255}
+                  value={Math.round(rgb.b)}
+                  onChange={setRgbChannel("b")}
+                />
               </label>
             </div>
           ) : (
             <div className="cp-rgb-grid">
               <label className="cp-rgb-field">
                 <span className="cp-rgb-field-label">H</span>
-                <input type="number" min={0} max={360} value={Math.round(hsl.h)} onChange={setHslChannel("h", 360)} />
+                <input
+                  type="number"
+                  min={0}
+                  max={360}
+                  value={Math.round(hsl.h)}
+                  onChange={setHslChannel("h", 360)}
+                />
               </label>
               <label className="cp-rgb-field">
                 <span className="cp-rgb-field-label">S</span>
-                <input type="number" min={0} max={100} value={Math.round(hsl.s)} onChange={setHslChannel("s", 100)} />
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={Math.round(hsl.s)}
+                  onChange={setHslChannel("s", 100)}
+                />
               </label>
               <label className="cp-rgb-field">
                 <span className="cp-rgb-field-label">L</span>
-                <input type="number" min={0} max={100} value={Math.round(hsl.l)} onChange={setHslChannel("l", 100)} />
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={Math.round(hsl.l)}
+                  onChange={setHslChannel("l", 100)}
+                />
               </label>
             </div>
           )}
 
           <div className="cp-slider-stack">
-            <GradientSlider value={hsl.h} min={0} max={360} step={1} gradient={hueGradient} onChange={setHue} ariaLabel="Hue" />
-            <GradientSlider value={hsl.s} min={0} max={100} step={1} gradient={satGradient} onChange={setSat} ariaLabel="Saturation" />
-            <GradientSlider value={hsl.l} min={0} max={100} step={1} gradient={lightGradient} onChange={setLight} ariaLabel="Lightness" />
+            <GradientSlider
+              value={hsl.h}
+              min={0}
+              max={360}
+              step={1}
+              gradient={hueGradient}
+              onChange={setHue}
+              ariaLabel="Hue"
+            />
+            <GradientSlider
+              value={hsl.s}
+              min={0}
+              max={100}
+              step={1}
+              gradient={satGradient}
+              onChange={setSat}
+              ariaLabel="Saturation"
+            />
+            <GradientSlider
+              value={hsl.l}
+              min={0}
+              max={100}
+              step={1}
+              gradient={lightGradient}
+              onChange={setLight}
+              ariaLabel="Lightness"
+            />
           </div>
         </div>
 
         {/* Thuật toán */}
         <div className="cp-card">
           <span className="cp-label">Algorithm</span>
-          <select className="cp-select" value={algorithm} onChange={(e) => setAlgorithm(e.target.value)}>
+          <select
+            className="cp-select"
+            value={algorithm}
+            onChange={(e) => setAlgorithm(e.target.value)}
+          >
             {ALGORITHMS.map((a) => (
               <option key={a.id} value={a.id}>
                 {a.label}
@@ -354,7 +468,11 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
         {/* Naming pattern + shade count */}
         <div className="cp-card">
           <span className="cp-label">Naming Pattern</span>
-          <select className="cp-select" value={namingPatternId} onChange={(e) => setNamingPatternId(e.target.value)}>
+          <select
+            className="cp-select"
+            value={namingPatternId}
+            onChange={(e) => setNamingPatternId(e.target.value)}
+          >
             {NAMING_PATTERNS.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.label}
@@ -367,7 +485,9 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
             <button
               type="button"
               className="cp-stepper-btn"
-              onClick={() => setShadeCount((c) => Math.max(SHADE_COUNT_MIN, c - 1))}
+              onClick={() =>
+                setShadeCount((c) => Math.max(SHADE_COUNT_MIN, c - 1))
+              }
               disabled={shadeCount <= SHADE_COUNT_MIN}
               aria-label="Giảm số lượng sắc độ"
             >
@@ -377,7 +497,9 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
             <button
               type="button"
               className="cp-stepper-btn"
-              onClick={() => setShadeCount((c) => Math.min(SHADE_COUNT_MAX, c + 1))}
+              onClick={() =>
+                setShadeCount((c) => Math.min(SHADE_COUNT_MAX, c + 1))
+              }
               disabled={shadeCount >= SHADE_COUNT_MAX}
               aria-label="Tăng số lượng sắc độ"
             >
@@ -388,14 +510,18 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
       </div>
 
       <p className="cp-hint">
-        Nhấn <kbd>Space</kbd> để random màu gốc, hoặc bấm vào từng ô màu bên dưới để copy mã hex
+        Nhấn <kbd>Space</kbd> để random màu gốc, hoặc bấm vào từng ô màu bên
+        dưới để copy mã hex
       </p>
 
       {palettesComputed.map((row, i) => (
         <div className="cp-palette-row" key={row.id}>
           <div className="cp-palette-header">
             <div className="cp-palette-title-group">
-              <span className="cp-palette-dot" style={{ background: row.hex }} />
+              <span
+                className="cp-palette-dot"
+                style={{ background: row.hex }}
+              />
               <h3 className="cp-palette-title">{row.palette.name}</h3>
             </div>
             <div className="cp-palette-actions">
@@ -444,7 +570,9 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
                 >
                   <span className="cp-swatch-step">
                     {s.step}
-                    {s.isAnchor && <span className="cp-anchor-dot" title="Màu gốc" />}
+                    {s.isAnchor && (
+                      <span className="cp-anchor-dot" title="Màu gốc" />
+                    )}
                   </span>
                   {onApplyColor && (
                     <button
@@ -465,9 +593,16 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
         </div>
       ))}
 
-      <button type="button" className="cp-add-palette" onClick={addPalette} disabled={palettes.length >= MAX_PALETTES}>
+      <button
+        type="button"
+        className="cp-add-palette"
+        onClick={addPalette}
+        disabled={palettes.length >= MAX_PALETTES}
+      >
         <Plus size={15} />
-        {palettes.length >= MAX_PALETTES ? "Đã đạt tối đa số bảng màu" : "Thêm bảng màu mới"}
+        {palettes.length >= MAX_PALETTES
+          ? "Đã đạt tối đa số bảng màu"
+          : "Thêm bảng màu mới"}
       </button>
 
       {/*   Xuất mã   */}
@@ -486,13 +621,25 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
             ))}
           </div>
           <div className="cp-export-actions">
-            <button type="button" className="cp-btn cp-btn-ghost" onClick={copySvg}>
+            <button
+              type="button"
+              className="cp-btn cp-btn-ghost"
+              onClick={copySvg}
+            >
               <ClipboardCopy size={13} /> SVG/Figma
             </button>
-            <button type="button" className="cp-btn cp-btn-ghost" onClick={downloadSvg}>
+            <button
+              type="button"
+              className="cp-btn cp-btn-ghost"
+              onClick={downloadSvg}
+            >
               <Download size={13} /> SVG
             </button>
-            <button type="button" className="cp-btn cp-btn-primary" onClick={() => copyText(exportText, "Đã copy mã màu")}>
+            <button
+              type="button"
+              className="cp-btn cp-btn-primary"
+              onClick={() => copyText(exportText, "Đã copy mã màu")}
+            >
               <Copy size={13} /> Copy code
             </button>
           </div>

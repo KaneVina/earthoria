@@ -152,7 +152,11 @@ body.dark-mode {
   width: 420px;
   height: 420px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(74, 158, 63, 0.16) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(74, 158, 63, 0.16) 0%,
+    transparent 70%
+  );
   pointer-events: none;
 }
 .lj-hero-glow-b {
@@ -162,7 +166,11 @@ body.dark-mode {
   width: 360px;
   height: 360px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(45, 122, 110, 0.14) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(45, 122, 110, 0.14) 0%,
+    transparent 70%
+  );
   pointer-events: none;
 }
 .lj-hero-watermark {
@@ -401,7 +409,9 @@ body.dark-mode {
   transition: fill 0.7s ease;
 }
 .lj-vnmap-dot {
-  transition: r 0.4s ease, fill 0.5s ease;
+  transition:
+    r 0.4s ease,
+    fill 0.5s ease;
 }
 .lj-vnmap-dot.is-active {
   filter: drop-shadow(0 0 2px rgba(13, 43, 30, 0.25));
@@ -426,7 +436,9 @@ body.dark-mode {
   font-size: 9.5px;
   color: var(--text-muted);
   opacity: 0.4;
-  transition: opacity 0.4s ease, color 0.4s ease;
+  transition:
+    opacity 0.4s ease,
+    color 0.4s ease;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -581,7 +593,9 @@ body.dark-mode {
   cursor: pointer;
   border-bottom: 0.5px solid var(--border-gold);
   padding-bottom: 3px;
-  transition: color 0.3s, border-color 0.3s;
+  transition:
+    color 0.3s,
+    border-color 0.3s;
 }
 .lj-passport-locate:hover {
   color: var(--lj-gold-true);
@@ -626,7 +640,9 @@ body.dark-mode {
   justify-content: center;
   background: var(--white, #fff);
   box-shadow: 0 2px 10px rgba(13, 43, 30, 0.08);
-  transition: transform 0.25s var(--lj-ease), box-shadow 0.25s var(--lj-ease);
+  transition:
+    transform 0.25s var(--lj-ease),
+    box-shadow 0.25s var(--lj-ease);
   cursor: default;
 }
 .lj-stamp:hover {
@@ -656,7 +672,9 @@ body.dark-mode {
   object-fit: contain;
   filter: grayscale(1);
   opacity: 0.35;
-  transition: filter 0.35s var(--lj-ease), opacity 0.35s var(--lj-ease);
+  transition:
+    filter 0.35s var(--lj-ease),
+    opacity 0.35s var(--lj-ease);
 }
 .lj-stamp.is-visited .lj-stamp-img,
 .lj-stamp.is-current .lj-stamp-img {
@@ -1319,7 +1337,9 @@ body.dark-mode {
 }
 .lj-row.is-current .lj-ticket {
   border-color: var(--tier-color);
-  box-shadow: 0 0 0 3px var(--tier-color-soft), var(--lj-shadow-lg);
+  box-shadow:
+    0 0 0 3px var(--tier-color-soft),
+    var(--lj-shadow-lg);
 }
 .lj-ticket::before {
   content: "";
@@ -1328,7 +1348,12 @@ body.dark-mode {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, var(--tier-color), var(--tier-color) 60%, transparent);
+  background: linear-gradient(
+    90deg,
+    var(--tier-color),
+    var(--tier-color) 60%,
+    transparent
+  );
   z-index: 3;
 }
 .lj-card-sheen {
@@ -1618,7 +1643,6 @@ body.dark-mode {
   text-overflow: ellipsis;
 }
 
-
 .lj-card-divider {
   display: flex;
   align-items: center;
@@ -1759,7 +1783,11 @@ body.dark-mode {
   padding: 20px 12px;
   background: var(--tier-color-soft, rgba(74, 158, 63, 0.06));
   border-left: 0.5px solid var(--tier-color);
-  -webkit-mask-image: radial-gradient(circle at 0 7px, transparent 7px, #000 7.5px);
+  -webkit-mask-image: radial-gradient(
+    circle at 0 7px,
+    transparent 7px,
+    #000 7.5px
+  );
   -webkit-mask-size: 100% 16px;
   -webkit-mask-repeat: repeat-y;
   mask-image: radial-gradient(circle at 0 7px, transparent 7px, #000 7.5px);

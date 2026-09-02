@@ -8,14 +8,28 @@ import toast from "react-hot-toast";
 //  Icons
 function IconCheck() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+    >
       <polyline points="20 6 9 17 4 12" />
     </svg>
   );
 }
 function IconPlus() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
       <line x1="12" y1="5" x2="12" y2="19" />
       <line x1="5" y1="12" x2="19" y2="12" />
     </svg>
@@ -23,7 +37,14 @@ function IconPlus() {
 }
 function IconX({ size = 18 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
       <line x1="18" y1="6" x2="6" y2="18" />
       <line x1="6" y1="6" x2="18" y2="18" />
     </svg>
@@ -32,7 +53,14 @@ function IconX({ size = 18 }) {
 // Thay IconScale (hay bị vỡ font ⚖ trên một số trình duyệt/hệ điều hành) bằng icon mũi tên so sánh an toàn
 function IconCompareArrow() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
       <path d="M8 3L4 7l4 4" />
       <path d="M4 7h16" />
       <path d="M16 21l4-4-4-4" />
@@ -42,7 +70,14 @@ function IconCompareArrow() {
 }
 function IconSearchIco() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
       <circle cx="11" cy="11" r="8" />
       <line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
@@ -77,7 +112,8 @@ function toCompareItem(p) {
 
 export default function CompareModal({ open, onClose, currentBook }) {
   const navigate = useNavigate();
-  const { items, isSelected, toggleItem, removeItem, maxCompare } = useCompareStore();
+  const { items, isSelected, toggleItem, removeItem, maxCompare } =
+    useCompareStore();
 
   const [allProducts, setAllProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -138,7 +174,10 @@ export default function CompareModal({ open, onClose, currentBook }) {
     }
   }, [open]);
 
-  const selectedHashIds = useMemo(() => new Set(items.map((i) => i.hashId)), [items]);
+  const selectedHashIds = useMemo(
+    () => new Set(items.map((i) => i.hashId)),
+    [items],
+  );
 
   if (!open) return null;
 
@@ -180,7 +219,10 @@ export default function CompareModal({ open, onClose, currentBook }) {
                 lineHeight: 1.2,
               }}
             >
-              Chọn Sản Phẩm <em style={{ fontStyle: "italic", color: "var(--gold)" }}>So Sánh</em>
+              Chọn Sản Phẩm{" "}
+              <em style={{ fontStyle: "italic", color: "var(--gold)" }}>
+                So Sánh
+              </em>
             </h3>
           </div>
           <button className="search-close-btn" onClick={onClose}>
@@ -190,13 +232,16 @@ export default function CompareModal({ open, onClose, currentBook }) {
         </div>
 
         <p className="search-panel-hint">
-          Chọn tối đa <em>{maxCompare} sản phẩm</em> để so sánh chi tiết giá, thông số và tính năng.
+          Chọn tối đa <em>{maxCompare} sản phẩm</em> để so sánh chi tiết giá,
+          thông số và tính năng.
         </p>
 
         {/*  Search input  */}
         <div className="search-panel-header" style={{ padding: "18px 28px 0" }}>
           <div className="search-input-wrap" style={{ height: "48px" }}>
-            <span className="search-input-icon"><IconSearchIco /></span>
+            <span className="search-input-icon">
+              <IconSearchIco />
+            </span>
             <input
               className="search-input"
               style={{ fontSize: "14px" }}
@@ -206,7 +251,10 @@ export default function CompareModal({ open, onClose, currentBook }) {
               autoFocus
             />
             {searchInput && (
-              <button className="search-clear-btn" onClick={() => setSearchInput("")}>
+              <button
+                className="search-clear-btn"
+                onClick={() => setSearchInput("")}
+              >
                 <IconX size={14} />
               </button>
             )}
@@ -247,7 +295,11 @@ export default function CompareModal({ open, onClose, currentBook }) {
               <div
                 key={item.hashId}
                 className="search-chip"
-                style={{ paddingRight: "8px", background: "var(--gold-pale)", borderColor: "var(--border-gold)" }}
+                style={{
+                  paddingRight: "8px",
+                  background: "var(--gold-pale)",
+                  borderColor: "var(--border-gold)",
+                }}
               >
                 <div
                   style={{
@@ -262,11 +314,22 @@ export default function CompareModal({ open, onClose, currentBook }) {
                     <img
                       src={item.coverImage}
                       alt={item.title}
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
                     />
                   )}
                 </div>
-                <span style={{ maxWidth: "140px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <span
+                  style={{
+                    maxWidth: "140px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
                   {item.title}
                 </span>
                 <span
@@ -305,7 +368,14 @@ export default function CompareModal({ open, onClose, currentBook }) {
           {loading ? (
             <div className="search-loading-state">
               <div className="search-spinner">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
                   <path d="M21 12a9 9 0 1 1-6.219-8.56" />
                 </svg>
               </div>
@@ -313,9 +383,15 @@ export default function CompareModal({ open, onClose, currentBook }) {
             </div>
           ) : allProducts.length === 0 ? (
             <div className="search-empty-state">
-              <div className="search-empty-icon"><IconCompareArrow /></div>
-              <div className="search-empty-title">Không tìm thấy sản phẩm phù hợp</div>
-              <div className="search-empty-sub">Thử tìm kiếm với từ khóa khác hoặc chọn danh mục khác</div>
+              <div className="search-empty-icon">
+                <IconCompareArrow />
+              </div>
+              <div className="search-empty-title">
+                Không tìm thấy sản phẩm phù hợp
+              </div>
+              <div className="search-empty-sub">
+                Thử tìm kiếm với từ khóa khác hoặc chọn danh mục khác
+              </div>
             </div>
           ) : (
             <div className="search-results-list">
@@ -328,18 +404,30 @@ export default function CompareModal({ open, onClose, currentBook }) {
                     key={p.hashId}
                     className={`search-result-row${selected ? " active" : ""}`}
                     onClick={() => !disabled && handleToggle(p)}
-                    style={disabled ? { opacity: 0.4, cursor: "not-allowed" } : {}}
-                    title={disabled ? `Đã chọn đủ ${maxCompare} sản phẩm` : undefined}
+                    style={
+                      disabled ? { opacity: 0.4, cursor: "not-allowed" } : {}
+                    }
+                    title={
+                      disabled ? `Đã chọn đủ ${maxCompare} sản phẩm` : undefined
+                    }
                   >
                     <div
                       className="search-result-thumb"
-                      style={{ padding: 0, overflow: "hidden", background: "var(--forest)" }}
+                      style={{
+                        padding: 0,
+                        overflow: "hidden",
+                        background: "var(--forest)",
+                      }}
                     >
                       {p.coverImage ? (
                         <img
                           src={p.coverImage}
                           alt={p.title}
-                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                          }}
                         />
                       ) : (
                         p.title?.[0]
@@ -348,7 +436,11 @@ export default function CompareModal({ open, onClose, currentBook }) {
                     <div className="search-result-info">
                       <span className="search-result-name">{p.title}</span>
                       <div className="search-result-meta">
-                        {p.category?.name && <span className="search-result-cat-tag">{p.category.name}</span>}
+                        {p.category?.name && (
+                          <span className="search-result-cat-tag">
+                            {p.category.name}
+                          </span>
+                        )}
                         {hasSale && (
                           <span
                             style={{
@@ -395,7 +487,9 @@ export default function CompareModal({ open, onClose, currentBook }) {
         {/*  Footer  */}
         <div className="search-panel-footer">
           <span className="search-footer-hint">
-            Đã chọn <strong style={{ color: "var(--forest)" }}>{items.length}</strong> / {maxCompare} sản phẩm
+            Đã chọn{" "}
+            <strong style={{ color: "var(--forest)" }}>{items.length}</strong> /{" "}
+            {maxCompare} sản phẩm
           </span>
           <button
             className="search-view-all-btn"
@@ -403,7 +497,11 @@ export default function CompareModal({ open, onClose, currentBook }) {
             disabled={items.length < 2}
             style={
               items.length < 2
-                ? { opacity: 0.4, cursor: "not-allowed", background: "var(--text-muted)" }
+                ? {
+                    opacity: 0.4,
+                    cursor: "not-allowed",
+                    background: "var(--text-muted)",
+                  }
                 : { background: "var(--gold)", color: "var(--ink)" }
             }
           >

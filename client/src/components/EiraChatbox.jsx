@@ -1012,9 +1012,7 @@ function EiraUI() {
         historyRef.current = historyRef.current.slice(0, -1);
       }
       setMessages((prev) => {
-        const lastBot = [...prev]
-          .reverse()
-          .findIndex((m) => m.role === "bot");
+        const lastBot = [...prev].reverse().findIndex((m) => m.role === "bot");
         if (lastBot === -1) return prev;
         return prev.filter((_, i) => i !== prev.length - 1 - lastBot);
       });

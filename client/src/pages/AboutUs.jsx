@@ -51,72 +51,61 @@ export default function AboutUs() {
     });
   }, [activeGuide]);
 
-const guides = [
-  {
-    id: "eira",
-    side: "a",
-    img: "/eira/eira-f.png",
-    name: "Eira Nguyen",
-    gender: "Nữ",
-    role: "Trợ Lý AI · Người Bạn Tri Thức",
-    birthday: "03/06/2026",
-    hobbies: [
-      "Đặt những câu hỏi ngược thật thú vị",
-      "Khám phá những hiện tượng thiên nhiên kỳ lạ",
-      "Thử sức với các câu đố khoa học",
-      "Ngắm những vì sao trên bầu trời đêm",
-    ],
+  const guides = [
+    {
+      id: "eira",
+      side: "a",
+      img: "/eira/eira-f.png",
+      name: "Eira Nguyen",
+      gender: "Nữ",
+      role: "Trợ Lý AI · Người Bạn Tri Thức",
+      birthday: "03/06/2026",
+      hobbies: [
+        "Đặt những câu hỏi ngược thật thú vị",
+        "Khám phá những hiện tượng thiên nhiên kỳ lạ",
+        "Thử sức với các câu đố khoa học",
+        "Ngắm những vì sao trên bầu trời đêm",
+      ],
 
-    traits: [
-      "Ấm áp",
-      "Kiên nhẫn",
-      "Tinh nghịch",
-      "Ham hiểu biết",
-    ],
+      traits: ["Ấm áp", "Kiên nhẫn", "Tinh nghịch", "Ham hiểu biết"],
 
-    shortDesc:
-      "Một người bạn nhỏ luôn lắng nghe những điều trẻ thắc mắc, khơi mở tư duy để mỗi câu hỏi là một cánh cửa mở ra điều kỳ diệu. ",
+      shortDesc:
+        "Một người bạn nhỏ luôn lắng nghe những điều trẻ thắc mắc, khơi mở tư duy để mỗi câu hỏi là một cánh cửa mở ra điều kỳ diệu. ",
 
-    fullDesc:
-      "Eira là người bạn tri thức của Earthoria — một trợ lý AI luôn ở bên trẻ trên hành trình đọc, học và khám phá thế giới. Eira không chỉ trả lời câu hỏi, mà thích cùng trẻ đi tìm câu trả lời theo cách riêng của mình. Với sự ấm áp, kiên nhẫn và một chút tinh nghịch, cô thường đặt lại những câu hỏi thật bất ngờ để khơi mở suy nghĩ và giúp trẻ tự mình phát hiện ra điều thú vị phía sau mỗi trang sách. Eira đặc biệt say mê những hiện tượng thiên nhiên kỳ lạ, những bí ẩn của vũ trụ và tất nhiên, luôn thủ sẵn vài câu đố vui dành cho những nhà thám hiểm nhí.",
+      fullDesc:
+        "Eira là người bạn tri thức của Earthoria — một trợ lý AI luôn ở bên trẻ trên hành trình đọc, học và khám phá thế giới. Eira không chỉ trả lời câu hỏi, mà thích cùng trẻ đi tìm câu trả lời theo cách riêng của mình. Với sự ấm áp, kiên nhẫn và một chút tinh nghịch, cô thường đặt lại những câu hỏi thật bất ngờ để khơi mở suy nghĩ và giúp trẻ tự mình phát hiện ra điều thú vị phía sau mỗi trang sách. Eira đặc biệt say mê những hiện tượng thiên nhiên kỳ lạ, những bí ẩn của vũ trụ và tất nhiên, luôn thủ sẵn vài câu đố vui dành cho những nhà thám hiểm nhí.",
 
-    quote:
-      "Câu hỏi này thú vị lắm! Mình cùng khám phá xem điều gì đang ẩn sau nó nhé?",
-  },
+      quote:
+        "Câu hỏi này thú vị lắm! Mình cùng khám phá xem điều gì đang ẩn sau nó nhé?",
+    },
 
-  {
-    id: "rori",
-    side: "b",
-    img: "/eira/rori-f.png",
-    name: "Rori Le",
-    gender: "Nam",
-    role: "Người Dẫn Chuyện · Bạn Đồng Hành",
-    birthday: "21/06/2026",
-    hobbies: [
-      "Khám phá những cung đường mới",
-      "Kể chuyện bên ánh lửa trại",
-      "Tự vẽ bản đồ cho những chuyến phiêu lưu",
-      "Chinh phục những ngọn núi trong AR",
-    ],
+    {
+      id: "rori",
+      side: "b",
+      img: "/eira/rori-f.png",
+      name: "Rori Le",
+      gender: "Nam",
+      role: "Người Dẫn Chuyện · Bạn Đồng Hành",
+      birthday: "21/06/2026",
+      hobbies: [
+        "Khám phá những cung đường mới",
+        "Kể chuyện bên ánh lửa trại",
+        "Tự vẽ bản đồ cho những chuyến phiêu lưu",
+        "Chinh phục những ngọn núi trong AR",
+      ],
 
-    traits: [
-      "Táo bạo",
-      "Vui vẻ",
-      "Quyết đoán",
-      "Truyền cảm hứng",
-    ],
+      traits: ["Táo bạo", "Vui vẻ", "Quyết đoán", "Truyền cảm hứng"],
 
-    shortDesc:
-      "Người bạn đồng hành luôn dẫn lối, khơi mở hành trình để mỗi bước chân là một câu chuyện đang chờ được khám phá.",
+      shortDesc:
+        "Người bạn đồng hành luôn dẫn lối, khơi mở hành trình để mỗi bước chân là một câu chuyện đang chờ được khám phá.",
 
-    fullDesc:
-      "Rori là người dẫn đường của Earthoria — người bạn đồng hành xuất hiện xuyên suốt những hành trình khám phá, đưa trẻ đi qua từng trang sách như bước vào một chuyến phiêu lưu thực sự. Cậu không thích đứng yên chờ đợi; Rori luôn là người khởi hành trước, mở ra những con đường mới, đặt ra thử thách và rủ trẻ cùng tiến về phía trước. Với tinh thần táo bạo, vui vẻ và đầy quyết đoán, Rori luôn biết cách biến một khoảnh khắc khó khăn thành động lực để tiếp tục. Bởi với Rori, mỗi hành trình không chỉ là nơi để đi đến — mà còn là nơi để trở nên can đảm hơn, tò mò hơn và khám phá thêm một điều mới mẻ.",
+      fullDesc:
+        "Rori là người dẫn đường của Earthoria — người bạn đồng hành xuất hiện xuyên suốt những hành trình khám phá, đưa trẻ đi qua từng trang sách như bước vào một chuyến phiêu lưu thực sự. Cậu không thích đứng yên chờ đợi; Rori luôn là người khởi hành trước, mở ra những con đường mới, đặt ra thử thách và rủ trẻ cùng tiến về phía trước. Với tinh thần táo bạo, vui vẻ và đầy quyết đoán, Rori luôn biết cách biến một khoảnh khắc khó khăn thành động lực để tiếp tục. Bởi với Rori, mỗi hành trình không chỉ là nơi để đi đến — mà còn là nơi để trở nên can đảm hơn, tò mò hơn và khám phá thêm một điều mới mẻ.",
 
-    quote:
-      "Ba lô sẵn sàng chưa? Đi thôi — phía trước còn cả một thế giới đang chờ chúng ta!",
-  },
-];
-
+      quote:
+        "Ba lô sẵn sàng chưa? Đi thôi — phía trước còn cả một thế giới đang chờ chúng ta!",
+    },
+  ];
 
   const handleLogoSectionMouseMove = useCallback((e) => {
     const el = logoSectionRef.current;
@@ -689,11 +678,18 @@ const guides = [
                   <p className="guide-desc">{g.shortDesc}</p>
                   <div className="guide-hobby-row">
                     {g.hobbies.slice(0, 2).map((h, i) => (
-                      <span className="guide-hobby-chip" key={i}>{h}</span>
+                      <span className="guide-hobby-chip" key={i}>
+                        {h}
+                      </span>
                     ))}
                   </div>
-                  <button className="guide-more" onClick={() => switchGuide(g.id)}>
-                    {g.side === "b" ? "← Xem hồ sơ đầy đủ" : "Xem hồ sơ đầy đủ →"}
+                  <button
+                    className="guide-more"
+                    onClick={() => switchGuide(g.id)}
+                  >
+                    {g.side === "b"
+                      ? "← Xem hồ sơ đầy đủ"
+                      : "Xem hồ sơ đầy đủ →"}
                   </button>
                 </div>
               </article>
@@ -704,7 +700,11 @@ const guides = [
                 className={`guide-full guide-full--${g.side} ${activeGuide === g.id ? "is-open" : ""}`}
                 key={`full-${g.id}`}
               >
-                <button className="guide-full-close" aria-label="Đóng" onClick={() => switchGuide(null)}>
+                <button
+                  className="guide-full-close"
+                  aria-label="Đóng"
+                  onClick={() => switchGuide(null)}
+                >
                   ✕
                 </button>
                 <div className="guide-full-media">
@@ -721,11 +721,15 @@ const guides = [
                     </div>
                     <div className="guide-full-stat">
                       <span className="guide-full-stat-label">Ngày sinh</span>
-                      <span className="guide-full-stat-value">{g.birthday}</span>
+                      <span className="guide-full-stat-value">
+                        {g.birthday}
+                      </span>
                     </div>
                     <div className="guide-full-stat">
                       <span className="guide-full-stat-label">Tuổi</span>
-                      <span className="guide-full-stat-value">{calculateAge(g.birthday)}</span>
+                      <span className="guide-full-stat-value">
+                        {calculateAge(g.birthday)}
+                      </span>
                     </div>
                   </div>
 
@@ -733,7 +737,9 @@ const guides = [
 
                   <div className="guide-full-traits">
                     {g.traits.map((t, i) => (
-                      <span className="guide-trait-chip" key={i}>{t}</span>
+                      <span className="guide-trait-chip" key={i}>
+                        {t}
+                      </span>
                     ))}
                   </div>
 
@@ -741,7 +747,9 @@ const guides = [
                     <span className="guide-full-hobbies-label">Sở thích</span>
                     <div className="guide-full-hobbies-list">
                       {g.hobbies.map((h, i) => (
-                        <span className="guide-hobby-chip" key={i}>{h}</span>
+                        <span className="guide-hobby-chip" key={i}>
+                          {h}
+                        </span>
                       ))}
                     </div>
                   </div>
@@ -1107,7 +1115,7 @@ const guides = [
                 <span
                   className="tech-editor-number"
                   id="tech-loc-counter"
-                  data-target="147922 "
+                  data-target="159112 "
                 >
                   0
                 </span>

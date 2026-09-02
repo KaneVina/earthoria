@@ -33,7 +33,8 @@ export const GAME_REGISTRY = {
     type: "MATCH_PAIRS",
     label: "Nối các cặp tương ứng",
     shortLabel: "Nối bảng",
-    description: "Chạm 1 mục cột trái rồi chạm đúng mục tương ứng ở cột phải để nối.",
+    description:
+      "Chạm 1 mục cột trái rồi chạm đúng mục tương ứng ở cột phải để nối.",
     icon: Link2,
     defaultConfig: () => ({ pairs: [] }),
     Editor: MatchPairsEditor,
@@ -44,7 +45,8 @@ export const GAME_REGISTRY = {
     type: "WORD_SEARCH",
     label: "Tìm từ ẩn trong bảng chữ cái",
     shortLabel: "Tìm từ",
-    description: "Kéo chọn theo hàng ngang / dọc / chéo để tìm các từ đang ẩn trong bảng.",
+    description:
+      "Kéo chọn theo hàng ngang / dọc / chéo để tìm các từ đang ẩn trong bảng.",
     icon: Search,
     defaultConfig: () => ({ words: [], rows: null, cols: null }),
     Editor: WordSearchEditor,
@@ -55,9 +57,15 @@ export const GAME_REGISTRY = {
     type: "LETTER_HUNT",
     label: "Săn chữ cái ghép từ khoá",
     shortLabel: "Tìm chữ trong bảng",
-    description: "Chạm đúng thứ tự các chữ cái rải trong bảng để ghép thành từ khoá, chạy đua với thời gian.",
+    description:
+      "Chạm đúng thứ tự các chữ cái rải trong bảng để ghép thành từ khoá, chạy đua với thời gian.",
     icon: Timer,
-    defaultConfig: () => ({ secretWord: "", rows: 8, cols: 8, timeLimitSeconds: 60 }),
+    defaultConfig: () => ({
+      secretWord: "",
+      rows: 8,
+      cols: 8,
+      timeLimitSeconds: 60,
+    }),
     Editor: LetterHuntEditor,
     Player: LetterHuntPlayer,
     validate: validateLetterHunt,
@@ -78,6 +86,8 @@ export function validateGameConfig(type, config) {
   try {
     return def.validate(config) || [];
   } catch {
-    return ["Không thể kiểm tra nội dung trò chơi — vui lòng kiểm tra lại dữ liệu đã nhập."];
+    return [
+      "Không thể kiểm tra nội dung trò chơi — vui lòng kiểm tra lại dữ liệu đã nhập.",
+    ];
   }
 }

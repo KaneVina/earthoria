@@ -1,10 +1,4 @@
-/* ═══════════════════════════════════════════════════════════
-   EARTHORIA — Admin Design System
-   Tách biệt hoàn toàn khỏi main.css (không import, không ghi đè)
-   Import: @import './admin.css' trong AdminLayout.jsx hoặc admin entry
-   ═══════════════════════════════════════════════════════════ */
-
-/*  1. TOKENS ────────────────────────────────────────── */
+/*  1. TOKENS   */
 :root {
   /* Brand */
   --a-forest: #0d3330;
@@ -73,7 +67,7 @@
   --a-trans-luxury: 0.42s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/*  2. RESET (scoped to admin) ───────────────────────── */
+/*  2. RESET (scoped to admin)      */
 .admin-root *,
 .admin-root *::before,
 .admin-root *::after {
@@ -106,7 +100,7 @@
   background: var(--a-bg);
 }
 
-/*  3. LAYOUT ────────────────────────────────────────── */
+/*  3. LAYOUT   */
 .admin-root {
   display: flex;
   min-height: 100vh;
@@ -520,7 +514,7 @@
   padding: var(--a-page-pad-top) var(--a-page-pad);
 }
 
-/*  4. PAGE HEADER ───────────────────────────────────── */
+/*  4. PAGE HEADER   ─── */
 .a-page-eyebrow {
   font-size: 10px;
   letter-spacing: 0.22em;
@@ -550,7 +544,7 @@
   margin-bottom: 24px;
 }
 
-/*  5. KPI CARDS ─────────────────────────────────────── */
+/*  5. KPI CARDS    ─ */
 .a-kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -659,7 +653,7 @@
   color: var(--a-danger-text);
 }
 
-/*  6. CHART CARDS ───────────────────────────────────── */
+/*  6. CHART CARDS   ─── */
 .a-chart-grid-2 {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -734,7 +728,7 @@
   flex-shrink: 0;
 }
 
-/*  7. TABLE CARD ────────────────────────────────────── */
+/*  7. TABLE CARD     */
 .a-table-card {
   background: var(--a-white);
   border-radius: var(--a-radius-lg);
@@ -819,9 +813,15 @@
 
 /*  Skeleton loading  */
 @keyframes a-skeleton-pulse {
-  0%   { opacity: 0.55; }
-  50%  { opacity: 1; }
-  100% { opacity: 0.55; }
+  0% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.55;
+  }
 }
 
 .a-skeleton {
@@ -942,7 +942,7 @@
   border-color: var(--a-forest);
 }
 
-/*  8. BADGES ────────────────────────────────────────── */
+/*  8. BADGES   */
 .a-badge {
   display: inline-flex;
   align-items: center;
@@ -998,7 +998,7 @@
   letter-spacing: 0.04em;
 }
 
-/*  9. BUTTONS ───────────────────────────────────────── */
+/*  9. BUTTONS     */
 .a-btn-primary {
   display: inline-flex;
   align-items: center;
@@ -1096,7 +1096,7 @@
   color: var(--a-ink-40);
 }
 
-/*  10. FORM ELEMENTS ────────────────────────────────── */
+/*  10. FORM ELEMENTS    */
 .a-input,
 .a-textarea {
   background: var(--a-bg);
@@ -1243,7 +1243,7 @@
   border-color: var(--a-forest);
 }
 
-/*  11. MODAL ─────────────────────────────────────────── */
+/*  11. MODAL  ─ */
 .a-modal-overlay {
   position: fixed;
   inset: 0;
@@ -1319,7 +1319,7 @@
   gap: 8px;
 }
 
-/*  12. MINI STATS (Coupons) ─────────────────────────── */
+/*  12. MINI STATS (Coupons)   */
 .a-mini-stats {
   display: flex;
   gap: 12px;
@@ -1355,7 +1355,7 @@
   color: var(--a-green);
 }
 
-/*  13. ACTIVITY FEED ────────────────────────────────── */
+/*  13. ACTIVITY FEED    */
 .a-activity {
   display: flex;
   flex-direction: column;
@@ -1407,7 +1407,7 @@
   margin-top: 2px;
 }
 
-/*  14. INLINE SELECT (Orders update) ────────────────── */
+/*  14. INLINE SELECT (Orders update)     */
 .a-inline-select {
   font-size: 11px;
   border: 1px solid var(--a-ink-20);
@@ -1425,7 +1425,7 @@
   border-color: var(--a-green);
 }
 
-/*  15. LOADING STATES ───────────────────────────────── */
+/*  15. LOADING STATES   ── */
 @keyframes a-shimmer {
   0% {
     background-position: -600px 0;
@@ -1447,7 +1447,7 @@
   border-radius: 4px;
 }
 
-/*  16. TOAST (override react-hot-toast for admin) ───── */
+/*  16. TOAST (override react-hot-toast for admin)  */
 .a-toast-success {
   background: var(--a-forest) !important;
   color: #ede8dc !important;
@@ -1456,7 +1456,7 @@
   border-radius: var(--a-radius) !important;
 }
 
-/*  17. RESPONSIVE ───────────────────────────────────── */
+/*  17. RESPONSIVE   ─── */
 @media (max-width: 768px) {
   .a-sidebar {
     transform: translateX(-100%);
@@ -1511,11 +1511,7 @@
     grid-template-columns: 1fr;
   }
 }
-/* ═══════════════════════════════════════════════════════════
-   DARK MODE — Earthoria Admin
-   Kích hoạt bằng cách thêm class "dark" vào .admin-root
-   Ví dụ: <div className={`admin-root ${isDark ? "dark" : ""}`}>
-   ═══════════════════════════════════════════════════════════ */
+/*DARK MODE  */
 
 .admin-root.dark {
   /* Brand — giữ nguyên tông forest/green nhưng làm sáng hơn để nổi trên nền tối */
@@ -1811,9 +1807,7 @@
   background: var(--a-forest-mid) !important;
   color: #ede8dc !important;
 }
-/* ═══════════════════════════════════════════════════════════
-   DARK MODE — Mobile overrides
-   ═══════════════════════════════════════════════════════════ */
+/* DARK MODE — Mobile overrides*/
 @media (max-width: 768px) {
   .admin-root.dark .a-mobile-overlay.open {
     background: rgba(0, 0, 0, 0.65);
@@ -2080,12 +2074,7 @@
   transform: rotate(-90deg);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   ADMIN — Tab bar (Sách / Phụ kiện / Danh mục)
-   File riêng, import thêm vào Products.jsx:
-     import "./admin-tabs.css";
-   Dùng chung token màu với admin.css nên phải load SAU admin.css.
-   ═══════════════════════════════════════════════════════════ */
+/*ADMIN */
 
 .a-tabbar {
   position: relative;
@@ -2405,9 +2394,6 @@
   border-right: 1px solid var(--a-ink-08);
 }
 
-/* Nội dung bên trong "dính" (sticky) trong đúng phạm vi ô đã gộp dòng —
-   khi cuộn, nó tự trượt lên/xuống nhưng không bao giờ vượt ra khỏi
-   block dòng của chính sách đó. */
 .a-ar-book-cell-inner {
   position: sticky;
   top: 0;
@@ -2421,7 +2407,7 @@
 .admin-root.dark .a-ar-book-cell-inner {
   background: var(--a-white);
 }
-/*  Ma trận quyền xem (ArCodeDetail) ─────────────────── */
+/*  Ma trận quyền xem (ArCodeDetail)    ─ */
 .a-access-row {
   display: flex;
   gap: 16px;
@@ -2462,7 +2448,7 @@
 .a-access-toggle-btn.active {
   background: var(--a-forest);
   border-color: var(--a-forest);
-  color: #EDE8DC;
+  color: #ede8dc;
 }
 
 .a-access-toggle-btn .a-access-toggle-dot {
@@ -2589,8 +2575,14 @@
 .admin-root.dark .a-role-chip.lit .a-role-chip-icon {
   box-shadow: 0 0 0 3px rgba(92, 184, 79, 0.16);
 }
-.a-spin { animation: a-spin-rotate 0.8s linear infinite; }
-@keyframes a-spin-rotate { to { transform: rotate(360deg); } }
+.a-spin {
+  animation: a-spin-rotate 0.8s linear infinite;
+}
+@keyframes a-spin-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 @media (max-width: 900px) {
   .a-product-form-grid {
@@ -2614,8 +2606,12 @@
 }
 
 @media (max-width: 1100px) {
-  .a-pf-grid { grid-template-columns: 1fr; }
-  .a-pf-side { position: static; }
+  .a-pf-grid {
+    grid-template-columns: 1fr;
+  }
+  .a-pf-side {
+    position: static;
+  }
 }
 
 /* Preview card */
@@ -2660,8 +2656,14 @@
   border-top: 1px solid var(--a-ink-05);
   font-size: 12px;
 }
-.a-pf-preview-label { color: var(--a-ink-40); }
-.a-pf-preview-value { color: var(--a-ink); font-weight: 500; text-align: right; }
+.a-pf-preview-label {
+  color: var(--a-ink-40);
+}
+.a-pf-preview-value {
+  color: var(--a-ink);
+  font-weight: 500;
+  text-align: right;
+}
 
 .a-pf-preview-desc {
   font-size: 11px;
@@ -2700,19 +2702,100 @@
   padding-top: 10px;
   border-top: 1px dashed var(--a-ink-08);
 }
-.a-pf-image-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-@media (max-width: 640px) { .a-pf-image-grid { grid-template-columns: repeat(2, 1fr); } }
-.a-pf-image-slot { position: relative; aspect-ratio: 3/4; border-radius: var(--a-radius); overflow: hidden; }
-.a-pf-image-slot.filled { border: 1px solid var(--a-ink-08); }
-.a-pf-image-slot.filled img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.a-pf-image-overlay { position: absolute; inset: 0; display: flex; align-items: flex-start; justify-content: flex-end; padding: 6px; background: linear-gradient(180deg, rgba(13,51,48,0.35) 0%, transparent 35%); opacity: 0; transition: var(--a-trans-fast); }
-.a-pf-image-slot.filled:hover .a-pf-image-overlay { opacity: 1; }
-.a-pf-image-trash { width: 24px; height: 24px; border-radius: 6px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(255,255,255,0.92); color: var(--a-ink-60); }
-.a-pf-image-trash:hover:not(:disabled) { color: var(--a-danger-text); }
-.a-pf-image-cover-badge { position: absolute; bottom: 6px; left: 6px; font-size: 9px; font-weight: 600; text-transform: uppercase; background: var(--a-forest); color: #ede8dc; padding: 2px 7px; border-radius: 20px; }
-.a-pf-image-add { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border: 1.5px dashed var(--a-ink-20); background: var(--a-surface); color: var(--a-ink-40); cursor: pointer; font-family: var(--a-font-sans); font-size: 11px; font-weight: 500; }
-.a-pf-image-add:hover:not(:disabled) { border-color: var(--a-green); background: var(--a-green-pale); color: var(--a-forest); }
-.a-pf-image-hint { font-size: 9px; color: var(--a-ink-40); font-weight: 400; }
+.a-pf-image-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media (max-width: 640px) {
+  .a-pf-image-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.a-pf-image-slot {
+  position: relative;
+  aspect-ratio: 3/4;
+  border-radius: var(--a-radius);
+  overflow: hidden;
+}
+.a-pf-image-slot.filled {
+  border: 1px solid var(--a-ink-08);
+}
+.a-pf-image-slot.filled img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.a-pf-image-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 6px;
+  background: linear-gradient(
+    180deg,
+    rgba(13, 51, 48, 0.35) 0%,
+    transparent 35%
+  );
+  opacity: 0;
+  transition: var(--a-trans-fast);
+}
+.a-pf-image-slot.filled:hover .a-pf-image-overlay {
+  opacity: 1;
+}
+.a-pf-image-trash {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--a-ink-60);
+}
+.a-pf-image-trash:hover:not(:disabled) {
+  color: var(--a-danger-text);
+}
+.a-pf-image-cover-badge {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  background: var(--a-forest);
+  color: #ede8dc;
+  padding: 2px 7px;
+  border-radius: 20px;
+}
+.a-pf-image-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: 1.5px dashed var(--a-ink-20);
+  background: var(--a-surface);
+  color: var(--a-ink-40);
+  cursor: pointer;
+  font-family: var(--a-font-sans);
+  font-size: 11px;
+  font-weight: 500;
+}
+.a-pf-image-add:hover:not(:disabled) {
+  border-color: var(--a-green);
+  background: var(--a-green-pale);
+  color: var(--a-forest);
+}
+.a-pf-image-hint {
+  font-size: 9px;
+  color: var(--a-ink-40);
+  font-weight: 400;
+}
 .a-badge.blue {
   background: rgba(42, 120, 214, 0.12);
   color: #2a78d6;

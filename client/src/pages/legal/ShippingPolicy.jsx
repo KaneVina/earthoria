@@ -123,7 +123,7 @@ const SECTIONS = [
     ],
     list: [
       "Email theo dõi được gửi trong vòng 2 giờ sau khi kiện hàng được bàn giao cho đơn vị vận chuyển",
-      "Trạng thái đơn hàng cũng được cập nhật theo thời gian thực trong mục \"Đơn hàng của tôi\" trên tài khoản Earthoria",
+      'Trạng thái đơn hàng cũng được cập nhật theo thời gian thực trong mục "Đơn hàng của tôi" trên tài khoản Earthoria',
       "Nếu sau 48 giờ bạn chưa nhận được email theo dõi, vui lòng liên hệ bộ phận hỗ trợ qua 1900 6868 hoặc support@earthoria.vn",
     ],
   },
@@ -185,7 +185,7 @@ const SECTIONS = [
 const FAQS = [
   {
     q: "Tôi có thể thay đổi địa chỉ giao hàng sau khi đặt đơn không?",
-    a: 'Có thể, nhưng chỉ khi đơn hàng chưa được bàn giao cho đơn vị vận chuyển. Vui lòng liên hệ 1900 6868 hoặc gửi email đến support@earthoria.vn ngay sau khi đặt hàng. Một khi mã vận đơn đã được tạo, địa chỉ không thể chỉnh sửa và bạn cần đặt lại đơn mới.',
+    a: "Có thể, nhưng chỉ khi đơn hàng chưa được bàn giao cho đơn vị vận chuyển. Vui lòng liên hệ 1900 6868 hoặc gửi email đến support@earthoria.vn ngay sau khi đặt hàng. Một khi mã vận đơn đã được tạo, địa chỉ không thể chỉnh sửa và bạn cần đặt lại đơn mới.",
   },
   {
     q: "Đơn hàng của tôi có thể giao vào cuối tuần không?",
@@ -201,7 +201,7 @@ const FAQS = [
   },
   {
     q: "Tôi có thể yêu cầu giao hàng vào khung giờ cụ thể không?",
-    a: "Hiện tại tính năng chọn khung giờ giao hàng chưa được hỗ trợ do phụ thuộc vào lịch trình của từng đơn vị vận chuyển. Tuy nhiên, bạn có thể ghi ghi chú trong phần \"Hướng dẫn giao hàng\" khi đặt đơn để đơn vị vận chuyển nắm thông tin.",
+    a: 'Hiện tại tính năng chọn khung giờ giao hàng chưa được hỗ trợ do phụ thuộc vào lịch trình của từng đơn vị vận chuyển. Tuy nhiên, bạn có thể ghi ghi chú trong phần "Hướng dẫn giao hàng" khi đặt đơn để đơn vị vận chuyển nắm thông tin.',
   },
 ];
 
@@ -230,7 +230,10 @@ export default function ShippingPolicy() {
       ticking = false;
     };
     const onScroll = () => {
-      if (!ticking) { window.requestAnimationFrame(update); ticking = true; }
+      if (!ticking) {
+        window.requestAnimationFrame(update);
+        ticking = true;
+      }
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     update();
@@ -240,10 +243,16 @@ export default function ShippingPolicy() {
   /* scrollspy */
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) setActiveId(e.target.id); }),
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) setActiveId(e.target.id);
+        }),
       { rootMargin: "-130px 0px -65% 0px", threshold: 0 },
     );
-    SECTIONS.forEach((s) => { const el = document.getElementById(s.id); if (el) observer.observe(el); });
+    SECTIONS.forEach((s) => {
+      const el = document.getElementById(s.id);
+      if (el) observer.observe(el);
+    });
     return () => observer.disconnect();
   }, []);
 
@@ -268,7 +277,10 @@ export default function ShippingPolicy() {
   /* reveal-on-scroll */
   useEffect(() => {
     const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("in"); }),
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) e.target.classList.add("in");
+        }),
       { threshold: 0.1 },
     );
     document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
@@ -291,7 +303,9 @@ export default function ShippingPolicy() {
   };
 
   const filteredSections = tocQuery
-    ? SECTIONS.filter((s) => s.title.toLowerCase().includes(tocQuery.toLowerCase()))
+    ? SECTIONS.filter((s) =>
+        s.title.toLowerCase().includes(tocQuery.toLowerCase()),
+      )
     : SECTIONS;
 
   return (
@@ -701,12 +715,17 @@ export default function ShippingPolicy() {
 
       {/* Reading progress */}
       <div className="legal-progress-rail">
-        <div className="legal-progress-fill" style={{ width: `${progress}%` }} />
+        <div
+          className="legal-progress-fill"
+          style={{ width: `${progress}%` }}
+        />
       </div>
 
       {/* Breadcrumb */}
       <div className="breadcrumb">
-        <Link to="/" className="breadcrumb-item">Trang chủ</Link>
+        <Link to="/" className="breadcrumb-item">
+          Trang chủ
+        </Link>
         <span className="breadcrumb-sep">/</span>
         <span className="breadcrumb-current">Chính sách vận chuyển</span>
       </div>
@@ -730,8 +749,8 @@ export default function ShippingPolicy() {
             <em>Vận Chuyển</em>
           </h1>
           <p className="legal-hero-sub">
-            Từ kho đến tay bạn — mọi thứ cần biết về thời gian giao hàng,
-            phí vận chuyển và cam kết bảo vệ kiện hàng của Earthoria.
+            Từ kho đến tay bạn — mọi thứ cần biết về thời gian giao hàng, phí
+            vận chuyển và cam kết bảo vệ kiện hàng của Earthoria.
           </p>
           <div className="legal-hero-meta">
             <div className="legal-hero-meta-item">
@@ -767,7 +786,10 @@ export default function ShippingPolicy() {
       <section className="legal-summary">
         <div className="legal-summary-inner">
           {SUMMARY_CARDS.map((card, i) => (
-            <div className={`legal-summary-card reveal reveal-delay-${i + 1}`} key={i}>
+            <div
+              className={`legal-summary-card reveal reveal-delay-${i + 1}`}
+              key={i}
+            >
               <div className="legal-summary-icon">
                 <card.icon size={20} />
               </div>
@@ -804,22 +826,36 @@ export default function ShippingPolicy() {
                 </button>
               ))}
               {filteredSections.length === 0 && (
-                <div className="legal-toc-empty">Không tìm thấy mục nào phù hợp</div>
+                <div className="legal-toc-empty">
+                  Không tìm thấy mục nào phù hợp
+                </div>
               )}
             </nav>
             <div className="legal-toc-divider" />
-            <button className="legal-toc-item" onClick={() => scrollToSection("faq")}>
+            <button
+              className="legal-toc-item"
+              onClick={() => scrollToSection("faq")}
+            >
               <Users size={14} />
               <span>Câu hỏi thường gặp</span>
             </button>
-            <button className="legal-toc-item" onClick={() => scrollToSection("lien-he-card")}>
+            <button
+              className="legal-toc-item"
+              onClick={() => scrollToSection("lien-he-card")}
+            >
               <Mail size={14} />
               <span>Liên hệ hỗ trợ</span>
             </button>
             <div className="legal-sidebar-card">
               <div className="legal-sidebar-card-title">Tra cứu đơn hàng</div>
-              <p>Kiểm tra trạng thái giao hàng hoặc liên hệ bộ phận hỗ trợ vận chuyển.</p>
-              <a href="mailto:support@earthoria.vn" className="legal-sidebar-card-link">
+              <p>
+                Kiểm tra trạng thái giao hàng hoặc liên hệ bộ phận hỗ trợ vận
+                chuyển.
+              </p>
+              <a
+                href="mailto:support@earthoria.vn"
+                className="legal-sidebar-card-link"
+              >
                 support@earthoria.vn
               </a>
             </div>
@@ -837,18 +873,26 @@ export default function ShippingPolicy() {
                   title="Sao chép liên kết tới mục này"
                   onClick={() => handleCopyLink(s.id)}
                 >
-                  {copiedId === s.id ? <Check size={13} /> : <Link2 size={13} />}
+                  {copiedId === s.id ? (
+                    <Check size={13} />
+                  ) : (
+                    <Link2 size={13} />
+                  )}
                 </button>
               </div>
               <div className="legal-section-body">
-                {s.paragraphs?.map((p, i) => <p key={i}>{p}</p>)}
+                {s.paragraphs?.map((p, i) => (
+                  <p key={i}>{p}</p>
+                ))}
                 {s.callout && (
                   <div className="legal-callout">
                     <div className="legal-callout-icon">
                       <AlertTriangle size={17} />
                     </div>
                     <div>
-                      <div className="legal-callout-title">{s.callout.title}</div>
+                      <div className="legal-callout-title">
+                        {s.callout.title}
+                      </div>
                       <p>{s.callout.text}</p>
                     </div>
                   </div>
@@ -884,7 +928,10 @@ export default function ShippingPolicy() {
           </div>
           <div className="legal-faq-list">
             {FAQS.map((f, i) => (
-              <div key={i} className={`legal-faq-item ${openFaq === i ? "open" : ""}`}>
+              <div
+                key={i}
+                className={`legal-faq-item ${openFaq === i ? "open" : ""}`}
+              >
                 <button
                   className="legal-faq-question"
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
@@ -905,14 +952,19 @@ export default function ShippingPolicy() {
       <section className="legal-contact-section" id="lien-he-card">
         <div className="legal-contact-bgtext">EARTHORIA</div>
         <div className="legal-contact-inner">
-          <span className="legal-contact-eyebrow reveal">Cần hỗ trợ giao hàng?</span>
+          <span className="legal-contact-eyebrow reveal">
+            Cần hỗ trợ giao hàng?
+          </span>
           <h2 className="legal-contact-title reveal">
             Đội ngũ hỗ trợ vận chuyển
             <br />
             <em>làm việc 7 ngày trong tuần</em>
           </h2>
           <div className="legal-contact-grid reveal">
-            <a href="mailto:support@earthoria.vn" className="legal-contact-item">
+            <a
+              href="mailto:support@earthoria.vn"
+              className="legal-contact-item"
+            >
               <Mail size={15} />
               support@earthoria.vn
             </a>

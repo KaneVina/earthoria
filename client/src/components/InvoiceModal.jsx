@@ -60,7 +60,12 @@ function InfoRow({ label, value, highlight }) {
       }}
     >
       <span style={{ color: MUTED }}>{label}</span>
-      <span style={{ color: highlight ? GOLD : INK, fontWeight: highlight ? 600 : 400 }}>
+      <span
+        style={{
+          color: highlight ? GOLD : INK,
+          fontWeight: highlight ? 600 : 400,
+        }}
+      >
         {value}
       </span>
     </div>
@@ -92,7 +97,11 @@ const th = (align, width) => ({
   color: MUTED,
   width,
 });
-const td = (align) => ({ textAlign: align, padding: "10px 8px", verticalAlign: "top" });
+const td = (align) => ({
+  textAlign: align,
+  padding: "10px 8px",
+  verticalAlign: "top",
+});
 
 const toolbarBtnStyle = {
   display: "flex",
@@ -166,7 +175,11 @@ export default function InvoiceModal({ order, buyerEmail, onClose }) {
       });
       const imgData = canvas.toDataURL("image/jpeg", 0.95);
 
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
       const imgWidth = pageWidth;
@@ -258,7 +271,11 @@ export default function InvoiceModal({ order, buyerEmail, onClose }) {
             </button>
             <button
               onClick={onClose}
-              style={{ ...toolbarBtnStyle, border: "none", padding: "8px 10px" }}
+              style={{
+                ...toolbarBtnStyle,
+                border: "none",
+                padding: "8px 10px",
+              }}
               aria-label="Đóng"
             >
               <X size={16} strokeWidth={1.5} />
@@ -379,14 +396,19 @@ export default function InvoiceModal({ order, buyerEmail, onClose }) {
                   highlight={isPaid}
                 />
                 {order.paidAt && (
-                  <InfoRow label="Thời gian thanh toán" value={formatDateTime(order.paidAt)} />
+                  <InfoRow
+                    label="Thời gian thanh toán"
+                    value={formatDateTime(order.paidAt)}
+                  />
                 )}
               </div>
             </div>
           </div>
 
           {/* Bảng sản phẩm */}
-          <table style={{ width: "100%", borderCollapse: "collapse", marginTop: 22 }}>
+          <table
+            style={{ width: "100%", borderCollapse: "collapse", marginTop: 22 }}
+          >
             <thead>
               <tr style={{ borderBottom: `1.5px solid ${INK}` }}>
                 <th style={th("left", 28)}>#</th>
@@ -398,26 +420,43 @@ export default function InvoiceModal({ order, buyerEmail, onClose }) {
             </thead>
             <tbody>
               {items.map((item, i) => (
-                <tr key={item.id || i} style={{ borderBottom: "1px solid rgba(13,43,30,0.08)" }}>
+                <tr
+                  key={item.id || i}
+                  style={{ borderBottom: "1px solid rgba(13,43,30,0.08)" }}
+                >
                   <td style={td("left")}>{i + 1}</td>
                   <td style={td("left")}>
                     {item.book?.title || "Sản phẩm không xác định"}
                   </td>
                   <td style={td("center")}>{item.quantity}</td>
                   <td style={td("right")}>{formatPrice(item.price)}</td>
-                  <td style={td("right")}>{formatPrice(item.price * item.quantity)}</td>
+                  <td style={td("right")}>
+                    {formatPrice(item.price * item.quantity)}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
 
           {/* Tổng kết */}
-          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 18 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginTop: 18,
+            }}
+          >
             <div style={{ width: 270 }}>
-              <TotalRow label="Tạm tính" value={formatPrice(order.subtotal ?? order.total)} />
+              <TotalRow
+                label="Tạm tính"
+                value={formatPrice(order.subtotal ?? order.total)}
+              />
               {(() => {
                 const tierPortion = order.loyaltyDiscount || 0;
-                const couponPortion = Math.max((order.discount || 0) - tierPortion, 0);
+                const couponPortion = Math.max(
+                  (order.discount || 0) - tierPortion,
+                  0,
+                );
                 return (
                   <>
                     {couponPortion > 0 && (
@@ -439,12 +478,29 @@ export default function InvoiceModal({ order, buyerEmail, onClose }) {
               })()}
               <TotalRow
                 label="Phí vận chuyển"
-                value={order.shippingFee ? formatPrice(order.shippingFee) : "Miễn phí"}
+                value={
+                  order.shippingFee
+                    ? formatPrice(order.shippingFee)
+                    : "Miễn phí"
+                }
               />
               <div style={{ height: 1, background: INK, margin: "10px 0" }} />
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                }}
+              >
                 <span style={{ fontSize: 13, fontWeight: 600 }}>Tổng cộng</span>
-                <span style={{ fontSize: 19, fontWeight: 700, color: INK, fontFamily: F.serif }}>
+                <span
+                  style={{
+                    fontSize: 19,
+                    fontWeight: 700,
+                    color: INK,
+                    fontFamily: F.serif,
+                  }}
+                >
                   {formatPrice(order.total)}
                 </span>
               </div>
@@ -452,7 +508,13 @@ export default function InvoiceModal({ order, buyerEmail, onClose }) {
           </div>
 
           {/* Footer / chữ ký */}
-          <div style={{ marginTop: 40, paddingTop: 20, borderTop: "1px dashed rgba(13,43,30,0.25)" }}>
+          <div
+            style={{
+              marginTop: 40,
+              paddingTop: 20,
+              borderTop: "1px dashed rgba(13,43,30,0.25)",
+            }}
+          >
             <div
               style={{
                 fontSize: 11.5,
@@ -464,16 +526,39 @@ export default function InvoiceModal({ order, buyerEmail, onClose }) {
             >
               Cảm ơn bạn đã tin tưởng và mua sắm tại {seller.name}!
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, textAlign: "center" }}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: 24,
+                textAlign: "center",
+              }}
+            >
               <div>
-                <div style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                  }}
+                >
                   Người mua hàng
                 </div>
                 <div style={{ height: 64 }} />
-                <div style={{ fontSize: 10, color: MUTED }}>(Ký, ghi rõ họ tên)</div>
+                <div style={{ fontSize: 10, color: MUTED }}>
+                  (Ký, ghi rõ họ tên)
+                </div>
               </div>
               <div>
-                <div style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                  }}
+                >
                   Đại diện {seller.name}
                 </div>
                 <div
@@ -485,7 +570,14 @@ export default function InvoiceModal({ order, buyerEmail, onClose }) {
                     justifyContent: "center",
                   }}
                 >
-                  <div style={{ fontFamily: F.serif, fontStyle: "italic", fontSize: 21, color: INK }}>
+                  <div
+                    style={{
+                      fontFamily: F.serif,
+                      fontStyle: "italic",
+                      fontSize: 21,
+                      color: INK,
+                    }}
+                  >
                     {seller.name}
                   </div>
                   <div style={{ fontSize: 9, color: GOLD, marginTop: 4 }}>
@@ -497,9 +589,17 @@ export default function InvoiceModal({ order, buyerEmail, onClose }) {
                 </div>
               </div>
             </div>
-            <div style={{ fontSize: 9.5, color: FAINT, textAlign: "center", marginTop: 32 }}>
-              Chứng từ được hệ thống {seller.name} tạo tự động để đối soát và lưu trữ cá nhân —
-              không phải hoá đơn điện tử phát hành qua cơ quan thuế.
+            <div
+              style={{
+                fontSize: 9.5,
+                color: FAINT,
+                textAlign: "center",
+                marginTop: 32,
+              }}
+            >
+              Chứng từ được hệ thống {seller.name} tạo tự động để đối soát và
+              lưu trữ cá nhân — không phải hoá đơn điện tử phát hành qua cơ quan
+              thuế.
             </div>
           </div>
         </div>

@@ -35,8 +35,10 @@ export default function SproutModel({ className = "" }) {
     /*  Theme colors from CSS variables (auto light/dark)  */
     const rootStyles = getComputedStyle(document.documentElement);
     const goldHex = rootStyles.getPropertyValue("--gold").trim() || "#4a9e3f";
-    const forestHex = rootStyles.getPropertyValue("--forest").trim() || "#0d3330";
-    const goldLightHex = rootStyles.getPropertyValue("--gold-light").trim() || "#5cb84f";
+    const forestHex =
+      rootStyles.getPropertyValue("--forest").trim() || "#0d3330";
+    const goldLightHex =
+      rootStyles.getPropertyValue("--gold-light").trim() || "#5cb84f";
     const isDark = document.body.classList.contains("dark-mode");
 
     const goldColor = new THREE.Color(goldHex);
@@ -69,9 +71,17 @@ export default function SproutModel({ className = "" }) {
     function makeGlowTexture(hex) {
       const size = 128;
       const canvas = document.createElement("canvas");
-      canvas.width = size; canvas.height = size;
+      canvas.width = size;
+      canvas.height = size;
       const ctx = canvas.getContext("2d");
-      const grad = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+      const grad = ctx.createRadialGradient(
+        size / 2,
+        size / 2,
+        0,
+        size / 2,
+        size / 2,
+        size / 2,
+      );
       grad.addColorStop(0, hex);
       grad.addColorStop(0.4, hex.replace("1)", "0.5)"));
       grad.addColorStop(1, "rgba(0,0,0,0)");
@@ -80,17 +90,25 @@ export default function SproutModel({ className = "" }) {
       const tex = new THREE.CanvasTexture(canvas);
       return tex;
     }
-    const glowTexGold = makeGlowTexture(`rgba(${Math.round(goldColor.r*255)},${Math.round(goldColor.g*255)},${Math.round(goldColor.b*255)},1)`);
+    const glowTexGold = makeGlowTexture(
+      `rgba(${Math.round(goldColor.r * 255)},${Math.round(goldColor.g * 255)},${Math.round(goldColor.b * 255)},1)`,
+    );
 
     /*  Materials  */
     const nodeMat = new THREE.MeshStandardMaterial({
-      color: goldColor, roughness: 0.25, metalness: 0.55,
-      transparent: true, opacity: isDark ? 0.65 : 0.5,
+      color: goldColor,
+      roughness: 0.25,
+      metalness: 0.55,
+      transparent: true,
+      opacity: isDark ? 0.65 : 0.5,
       flatShading: true,
     });
     const nodeMatAlt = new THREE.MeshStandardMaterial({
-      color: forestColor, roughness: 0.3, metalness: 0.5,
-      transparent: true, opacity: isDark ? 0.6 : 0.45,
+      color: forestColor,
+      roughness: 0.3,
+      metalness: 0.5,
+      transparent: true,
+      opacity: isDark ? 0.6 : 0.45,
       flatShading: true,
     });
 
@@ -103,8 +121,8 @@ export default function SproutModel({ className = "" }) {
         new THREE.Vector3(
           (Math.random() - 0.5) * spread.x,
           (Math.random() - 0.5) * spread.y,
-          (Math.random() - 0.5) * spread.z - 0.5
-        )
+          (Math.random() - 0.5) * spread.z - 0.5,
+        ),
       );
     }
 
@@ -124,7 +142,11 @@ export default function SproutModel({ className = "" }) {
       }
       candidates.sort((a, b) => a.d - b.d);
       for (const { j } of candidates) {
-        if (linkCounts[i] >= maxLinksPerNode || linkCounts[j] >= maxLinksPerNode) continue;
+        if (
+          linkCounts[i] >= maxLinksPerNode ||
+          linkCounts[j] >= maxLinksPerNode
+        )
+          continue;
         const key = i < j ? `${i}_${j}` : `${j}_${i}`;
         if (seen.has(key)) continue;
         seen.add(key);
@@ -139,7 +161,10 @@ export default function SproutModel({ className = "" }) {
     const linePosArray = new Float32Array(lineVertexCount * 3);
     const lineColorArray = new Float32Array(lineVertexCount * 3);
     const lineGeo = new THREE.BufferGeometry();
-    lineGeo.setAttribute("position", new THREE.BufferAttribute(linePosArray, 3));
+    lineGeo.setAttribute(
+      "position",
+      new THREE.BufferAttribute(linePosArray, 3),
+    );
     lineGeo.setAttribute("color", new THREE.BufferAttribute(lineColorArray, 3));
 
     const lineMat = new THREE.LineBasicMaterial({
@@ -168,10 +193,15 @@ export default function SproutModel({ className = "" }) {
       // small glow halo only on the larger "hub" nodes for visual hierarchy
       let glow = null;
       if (roll >= 0.8) {
-        glow = new THREE.Sprite(new THREE.SpriteMaterial({
-          map: glowTexGold, transparent: true, opacity: isDark ? 0.5 : 0.32,
-          blending: THREE.AdditiveBlending, depthWrite: false,
-        }));
+        glow = new THREE.Sprite(
+          new THREE.SpriteMaterial({
+            map: glowTexGold,
+            transparent: true,
+            opacity: isDark ? 0.5 : 0.32,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false,
+          }),
+        );
         const glowScale = 0.55;
         glow.scale.set(glowScale, glowScale, 1);
         glow.position.copy(basePos);
@@ -216,8 +246,10 @@ export default function SproutModel({ className = "" }) {
       // 1) update each node's live position (organic drift)
       nodes.forEach((n) => {
         n.livePos.x = n.basePos.x + Math.sin(t * n.speed + n.phase) * 0.14;
-        n.livePos.y = n.basePos.y + Math.cos(t * n.speed * 0.85 + n.phaseY) * 0.11;
-        n.livePos.z = n.basePos.z + Math.sin(t * n.speed * 0.6 + n.phase) * 0.08;
+        n.livePos.y =
+          n.basePos.y + Math.cos(t * n.speed * 0.85 + n.phaseY) * 0.11;
+        n.livePos.z =
+          n.basePos.z + Math.sin(t * n.speed * 0.6 + n.phase) * 0.08;
 
         n.mesh.position.copy(n.livePos);
         n.mesh.rotation.x += 0.0025 * n.rotSpeed;
@@ -261,7 +293,8 @@ export default function SproutModel({ className = "" }) {
 
     /*  Resize  */
     const onResize = () => {
-      const w = el.clientWidth, h = el.clientHeight;
+      const w = el.clientWidth,
+        h = el.clientHeight;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);

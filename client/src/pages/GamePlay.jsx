@@ -1,6 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Loader2, PlayCircle, Trophy, RotateCcw, ArrowLeft, Lock, SearchX, Info, Leaf, Sparkles } from "lucide-react";
+import {
+  Loader2,
+  PlayCircle,
+  Trophy,
+  RotateCcw,
+  ArrowLeft,
+  Lock,
+  SearchX,
+  Info,
+  Leaf,
+  Sparkles,
+} from "lucide-react";
 import { gameService } from "../services/gameService";
 import { getGameDefinition } from "../games/gameRegistry";
 import "../components/assets/css/gameplay.css";
@@ -47,7 +58,9 @@ export default function GamePlay() {
 
         if (httpStatus === 401) {
           const currentUrl = `${window.location.pathname}${window.location.search}`;
-          navigate(`/login?redirect=${encodeURIComponent(currentUrl)}`, { replace: true });
+          navigate(`/login?redirect=${encodeURIComponent(currentUrl)}`, {
+            replace: true,
+          });
           return;
         }
         if (httpStatus === 403) {
@@ -85,7 +98,7 @@ export default function GamePlay() {
   if (state.status === "loading") {
     return (
       <main className="gp-view gp-view--center">
-      <GpAmbient />
+        <GpAmbient />
         <div className="gp-loading">
           <Loader2 size={26} className="gp-spin" />
           <span>Đang tải trò chơi…</span>
@@ -97,7 +110,7 @@ export default function GamePlay() {
   if (state.status === "forbidden") {
     return (
       <main className="gp-view gp-view--center">
-      <GpAmbient />
+        <GpAmbient />
         <div className="gp-empty">
           <div className="gp-empty-badge">
             <Lock size={22} />
@@ -105,8 +118,9 @@ export default function GamePlay() {
           <span className="gp-eyebrow">Trò chơi</span>
           <h1>Bạn chưa có quyền chơi trò chơi này</h1>
           <p>
-            Trò chơi này chỉ dành cho khách hàng đã mua và nhận được cuốn sách tương ứng. Nếu bạn đã mua sách này,
-            vui lòng kiểm tra lại tài khoản đang đăng nhập hoặc liên hệ với chúng tôi để được hỗ trợ.
+            Trò chơi này chỉ dành cho khách hàng đã mua và nhận được cuốn sách
+            tương ứng. Nếu bạn đã mua sách này, vui lòng kiểm tra lại tài khoản
+            đang đăng nhập hoặc liên hệ với chúng tôi để được hỗ trợ.
           </p>
         </div>
       </main>
@@ -116,14 +130,17 @@ export default function GamePlay() {
   if (state.status === "not-found") {
     return (
       <main className="gp-view gp-view--center">
-      <GpAmbient />
+        <GpAmbient />
         <div className="gp-empty">
           <div className="gp-empty-badge">
             <SearchX size={22} />
           </div>
           <span className="gp-eyebrow">Trò chơi</span>
           <h1>Không tìm thấy trò chơi này</h1>
-          <p>Mã trò chơi không tồn tại hoặc đã bị vô hiệu hoá. Vui lòng kiểm tra lại trang sách hoặc mã QR.</p>
+          <p>
+            Mã trò chơi không tồn tại hoặc đã bị vô hiệu hoá. Vui lòng kiểm tra
+            lại trang sách hoặc mã QR.
+          </p>
         </div>
       </main>
     );
@@ -138,7 +155,14 @@ export default function GamePlay() {
     <main className="gp-view">
       <GpAmbient />
       <div className="gp-topbar">
-        <Link to={data.book?.slug && data.book?.hashId ? `/books/${data.book.slug}/${data.book.hashId}` : "/"} className="gp-back">
+        <Link
+          to={
+            data.book?.slug && data.book?.hashId
+              ? `/books/${data.book.slug}/${data.book.hashId}`
+              : "/"
+          }
+          className="gp-back"
+        >
           <ArrowLeft size={14} /> {data.book?.title || "Về trang sách"}
         </Link>
       </div>
@@ -146,17 +170,27 @@ export default function GamePlay() {
       <div className="gp-shell">
         {stage === "intro" && (
           <div className="gp-intro">
-            {data.thumbnailUrl && <img className="gp-intro-thumb" src={data.thumbnailUrl} alt="" />}
+            {data.thumbnailUrl && (
+              <img className="gp-intro-thumb" src={data.thumbnailUrl} alt="" />
+            )}
             <div className="gp-intro-icon">
               <Icon size={26} />
             </div>
             <span className="gp-eyebrow">{def?.label}</span>
             <h1>{data.title}</h1>
-            {data.instructions && <p className="gp-instructions">{data.instructions}</p>}
-            <button type="button" className="gp-cta" onClick={() => setStage("playing")}>
+            {data.instructions && (
+              <p className="gp-instructions">{data.instructions}</p>
+            )}
+            <button
+              type="button"
+              className="gp-cta"
+              onClick={() => setStage("playing")}
+            >
               <PlayCircle size={18} /> Bắt đầu chơi
             </button>
-            <div className="gp-play-count">{data.playCount} người đã chơi trò này</div>
+            <div className="gp-play-count">
+              {data.playCount} người đã chơi trò này
+            </div>
           </div>
         )}
 
@@ -175,7 +209,9 @@ export default function GamePlay() {
             <h1>Hoàn thành! 🎉</h1>
             <div className="gp-score">{result?.score ?? 0} điểm</div>
             {typeof result?.durationSeconds === "number" && (
-              <div className="gp-duration">Thời gian: {result.durationSeconds}s</div>
+              <div className="gp-duration">
+                Thời gian: {result.durationSeconds}s
+              </div>
             )}
 
             {leaderboard.length > 0 && (

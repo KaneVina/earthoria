@@ -114,7 +114,8 @@ export default function LogoutConfirmModal({
               style={{ animationDuration: `${seconds}s` }}
             />
             <span className="lcm-btn-label">
-              Đăng Xuất Ngay <span className="lcm-countdown">({remaining}s)</span>
+              Đăng Xuất Ngay{" "}
+              <span className="lcm-countdown">({remaining}s)</span>
             </span>
           </button>
         </div>

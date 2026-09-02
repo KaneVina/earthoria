@@ -49,8 +49,15 @@
 }
 
 @keyframes eco-seam-shimmer {
-  0%, 100% { transform: translateX(-140px); opacity: 0; }
-  50% { transform: translateX(140px); opacity: 0.7; }
+  0%,
+  100% {
+    transform: translateX(-140px);
+    opacity: 0;
+  }
+  50% {
+    transform: translateX(140px);
+    opacity: 0.7;
+  }
 }
 
 .eco-strip-inner {
@@ -111,7 +118,13 @@
   right: 2%;
   bottom: -4px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold) 70%, transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--gold) 30%,
+    var(--gold) 70%,
+    transparent
+  );
   opacity: 0.5;
 }
 
@@ -139,17 +152,6 @@
   );
 }
 
-/* Sized to fully cover one logo item's rendered width (item + its side
-   margins), so whichever item gets cropped at the edge by overflow:hidden
-   is completely hidden under solid cream before it fades to transparent -
-   instead of showing a half-visible "chunk" of a logo, which is what
-   looked broken. Keep this >= one item's total width at each breakpoint. */
-/* Blur-based, not color-based: a flat cream fill sits on top of the
-   section's tinted radial-gradient background and reads as a plain white
-   patch. Blurring the underlying content instead lets the real background
-   (with its tint) show through untouched - it always matches, because
-   nothing is painted over it - while still softening/hiding the cropped
-   edge item. */
 .eco-strip-fade {
   position: absolute;
   top: 0;
@@ -162,16 +164,28 @@
 }
 .eco-strip-fade-left {
   left: 0;
-  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 55%, transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    #000 0%,
+    #000 55%,
+    transparent 100%
+  );
   mask-image: linear-gradient(90deg, #000 0%, #000 55%, transparent 100%);
 }
 .eco-strip-fade-right {
   right: 0;
-  -webkit-mask-image: linear-gradient(270deg, #000 0%, #000 55%, transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    270deg,
+    #000 0%,
+    #000 55%,
+    transparent 100%
+  );
   mask-image: linear-gradient(270deg, #000 0%, #000 55%, transparent 100%);
 }
 
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
   .eco-strip-fade-left {
     background: linear-gradient(90deg, var(--cream) 0%, transparent 100%);
   }
@@ -180,10 +194,6 @@
   }
 }
 
-/* track holds four identical copies of the logo set back-to-back so the
-   -25% translate loops with no visible seam. Four copies (rather than two)
-   keep the track wide enough to fully cover very wide viewports before the
-   loop point, so no blank/background gap is ever exposed at the edge. */
 .eco-strip-track {
   display: flex;
   align-items: center;
@@ -199,8 +209,12 @@
 }
 
 @keyframes eco-marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-25%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-25%);
+  }
 }
 
 .eco-strip-logo-item {
@@ -209,9 +223,6 @@
   align-items: center;
 }
 
-/* fixed-size stage, tall enough to reserve room for the name + description
-   labels that appear beneath the mark on hover without shifting layout.
-   Sized up so the marks read clearly next to the rest of the page. */
 .eco-strip-logo {
   position: relative;
   flex: 0 0 auto;
@@ -252,11 +263,6 @@
   transform: translateY(-16px) scale(0.9);
 }
 
-/* name label — sits close under the mark, invisible and shifted down
-   slightly until hover reveals it in place.
-   font-size reduced + white-space: nowrap forces the label onto a single
-   line instead of wrapping to 2 lines and colliding with the desc line
-   below it. */
 .eco-strip-logo-name {
   position: absolute;
   left: 0;
@@ -287,10 +293,6 @@
   transition-delay: 0.04s;
 }
 
-/* description line — smaller, lighter tone than the name, revealed just
-   after it for a subtle staggered feel.
-   font-size reduced + white-space: nowrap keeps it on one line so it can't
-   wrap and overlap the name label above it. */
 .eco-strip-logo-desc {
   position: absolute;
   left: 0;

@@ -7,7 +7,7 @@ const ECOSYSTEM_LOGOS = [
     name: "Earthoria",
     desc: "Hệ sinh thái gốc",
   },
-    {
+  {
     src: "/logo/logo-mau/lg-m-cce.png",
     alt: "Earthoria Commerce & Customer Experience",
     name: "Commerce & Customer Experience",
@@ -40,7 +40,6 @@ const ECOSYSTEM_LOGOS = [
 ];
 
 export default function EcosystemStrip() {
-
   const track = [
     ...ECOSYSTEM_LOGOS,
     ...ECOSYSTEM_LOGOS,

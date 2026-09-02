@@ -4,7 +4,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { bookService } from "../services/bookService";
 import { useCartStore } from "../store/cartStore";
-import { formatPrice, getBookUrl, getPreferredCartFormat } from "../utils/helpers";
+import {
+  formatPrice,
+  getBookUrl,
+  getPreferredCartFormat,
+} from "../utils/helpers";
 import { flyToCart } from "../utils/flyToCart";
 import { useAuthStore } from "../store/authStore";
 import { useWishlistStore } from "../store/wishlistStore";
@@ -18,7 +22,9 @@ const PRICE_BOUNDS = [0, 600000];
 const AGE_BOUNDS = [0, 15];
 
 const formatPriceLabel = (v) =>
-  v >= PRICE_BOUNDS[1] ? `${Math.round(v / 1000)}k+` : `${Math.round(v / 1000)}k`;
+  v >= PRICE_BOUNDS[1]
+    ? `${Math.round(v / 1000)}k+`
+    : `${Math.round(v / 1000)}k`;
 
 const formatAgeLabel = (v) =>
   v >= AGE_BOUNDS[1] ? `${AGE_BOUNDS[1]}+ tuổi` : `${v} tuổi`;
@@ -29,8 +35,6 @@ const FEATURE_META = [
   { label: "Âm thanh 3D", key: "3d" },
   { label: "Bộ sưu tập", key: "featured" },
 ];
-
-
 
 const TRUST_ITEMS = [
   {
@@ -637,7 +641,11 @@ function ProductCard({ book, onAddToCart, delay, isAdding }) {
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <WishlistBtn wishlisted={wishlisted} onToggle={handleWishlist} disabled={wishlistBusy} />
+          <WishlistBtn
+            wishlisted={wishlisted}
+            onToggle={handleWishlist}
+            disabled={wishlistBusy}
+          />
         </div>
       </div>
 
@@ -859,9 +867,12 @@ export default function Shop() {
   const { addToCart } = useCartStore();
 
   const [activeCategory, setActiveCategory] = useState("all");
-const [activeFeatures, setActiveFeatures] = useState([]);
-const [priceRange, setPriceRange] = useState([PRICE_BOUNDS[0], PRICE_BOUNDS[1]]);
-const [ageRange, setAgeRange] = useState([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
+  const [activeFeatures, setActiveFeatures] = useState([]);
+  const [priceRange, setPriceRange] = useState([
+    PRICE_BOUNDS[0],
+    PRICE_BOUNDS[1],
+  ]);
+  const [ageRange, setAgeRange] = useState([AGE_BOUNDS[0], AGE_BOUNDS[1]]);
   const [minRating, setMinRating] = useState(0);
   const [gridCols, setGridCols] = useState(3);
   const [sortValue, setSortValue] = useState("Nổi bật");

@@ -7,13 +7,15 @@ function toLocalInputValue(isoString) {
   if (Number.isNaN(d.getTime())) return "";
   const pad = (n) => String(n).padStart(2, "0");
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
-    d.getHours()
+    d.getHours(),
   )}:${pad(d.getMinutes())}`;
 }
 
 export default function MaintenancePanel({ settings, onSave, saving }) {
   const [enabled, setEnabled] = useState(Boolean(settings.maintenanceEnabled));
-  const [start, setStart] = useState(toLocalInputValue(settings.maintenanceStart));
+  const [start, setStart] = useState(
+    toLocalInputValue(settings.maintenanceStart),
+  );
   const [end, setEnd] = useState(toLocalInputValue(settings.maintenanceEnd));
   const [message, setMessage] = useState(settings.maintenanceMessage || "");
   const [dirty, setDirty] = useState(false);
@@ -28,11 +30,14 @@ export default function MaintenancePanel({ settings, onSave, saving }) {
     setError("");
   }, [settings]);
 
-  const touch = useCallback((setter) => (value) => {
-    setter(value);
-    setDirty(true);
-    setError("");
-  }, []);
+  const touch = useCallback(
+    (setter) => (value) => {
+      setter(value);
+      setDirty(true);
+      setError("");
+    },
+    [],
+  );
 
   const handleSave = async () => {
     if (start && end && new Date(start) >= new Date(end)) {
@@ -53,9 +58,17 @@ export default function MaintenancePanel({ settings, onSave, saving }) {
   };
 
   const scheduleWillActivate =
-    !enabled && start && end && new Date() < new Date(end) && new Date(start) > new Date();
+    !enabled &&
+    start &&
+    end &&
+    new Date() < new Date(end) &&
+    new Date(start) > new Date();
   const scheduleCurrentlyActive =
-    !enabled && start && end && new Date() >= new Date(start) && new Date() <= new Date(end);
+    !enabled &&
+    start &&
+    end &&
+    new Date() >= new Date(start) &&
+    new Date() <= new Date(end);
 
   return (
     <div className="a-chart-card" style={{ marginBottom: 20 }}>
@@ -64,8 +77,9 @@ export default function MaintenancePanel({ settings, onSave, saving }) {
           Chế Độ <em>Bảo Trì</em>
         </h3>
         <p className="a-chart-sub">
-          Bật thủ công để có hiệu lực ngay, hoặc đặt lịch để hệ thống tự bật/tắt đúng giờ. Admin
-          luôn vào được dashboard bình thường; khách và nhân viên sẽ thấy trang bảo trì.
+          Bật thủ công để có hiệu lực ngay, hoặc đặt lịch để hệ thống tự bật/tắt
+          đúng giờ. Admin luôn vào được dashboard bình thường; khách và nhân
+          viên sẽ thấy trang bảo trì.
         </p>
       </div>
 
@@ -121,7 +135,8 @@ export default function MaintenancePanel({ settings, onSave, saving }) {
 
       {scheduleCurrentlyActive && (
         <div className="a-field-error" style={{ marginTop: 10 }}>
-          Lịch trên đang trong khung giờ hiệu lực — trang bảo trì đang tự động hiển thị cho khách.
+          Lịch trên đang trong khung giờ hiệu lực — trang bảo trì đang tự động
+          hiển thị cho khách.
         </div>
       )}
       {scheduleWillActivate && (

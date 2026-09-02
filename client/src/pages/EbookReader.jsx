@@ -16,6 +16,11 @@ export default function EbookReader() {
 
   const [state, setState] = useState({ status: "loading", data: null });
   const book = state.data?.book;
+
+  // Giờ đọc còn lại hôm nay (do ba mẹ thiết lập) — chỉ có ở chế độ đọc
+  // riêng của bé. Lấy 1 lần từ hồ sơ bé, rồi cập nhật số phút đã đọc theo
+  // mỗi lần ping phiên hoạt động bên dưới.
+  const [kidTimeInfo, setKidTimeInfo] = useState(null);
   const saveKidReadingProgress = useCallback(
     (currentPage, totalPages) => {
       if (!isKidMode || !token || !book?.slug || !totalPages) return;
@@ -38,6 +43,30 @@ export default function EbookReader() {
     },
     [isKidMode, token, book],
   );
+
+  // Lấy giới hạn giờ đọc/ngày do ba mẹ đặt + số phút bé đã đọc hôm nay,
+  // để hiện icon "giờ đọc còn lại" trên header của trình đọc sách.
+  useEffect(() => {
+    if (!isKidMode || !token) return;
+    let cancelled = false;
+    kidAccessService
+      .getProfile(token)
+      .then((res) => {
+        if (cancelled) return;
+        const child = res.data?.data?.child;
+        if (!child) return;
+        setKidTimeInfo({
+          dailyLimitMinutes: child.dailyLimitMinutes || 0,
+          todayMinutes: child.todayMinutes || 0,
+        });
+      })
+      .catch(() => {
+        // Không chặn trải nghiệm đọc nếu không lấy được thông tin giờ đọc
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isKidMode, token]);
 
   useEffect(() => {
     let cancelled = false;
@@ -64,7 +93,9 @@ export default function EbookReader() {
             return;
           }
           const currentUrl = `${window.location.pathname}${window.location.search}`;
-          navigate(`/login?redirect=${encodeURIComponent(currentUrl)}`, { replace: true });
+          navigate(`/login?redirect=${encodeURIComponent(currentUrl)}`, {
+            replace: true,
+          });
           return;
         }
         if (httpStatus === 403) {
@@ -74,7 +105,8 @@ export default function EbookReader() {
               status: "restricted",
               data: {
                 title: "Thiết bị đang bị khoá",
-                message: "Ba mẹ đã tạm khoá thiết bị của bé rồi. Nhờ ba mẹ mở khoá lại nhé!",
+                message:
+                  "Ba mẹ đã tạm khoá thiết bị của bé rồi. Nhờ ba mẹ mở khoá lại nhé!",
               },
             });
             return;
@@ -84,7 +116,8 @@ export default function EbookReader() {
               status: "restricted",
               data: {
                 title: "Hết giờ dùng hôm nay rồi",
-                message: "Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!",
+                message:
+                  "Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!",
               },
             });
             return;
@@ -94,7 +127,8 @@ export default function EbookReader() {
               status: "restricted",
               data: {
                 title: "Ngoài giờ được phép rồi",
-                message: "Bây giờ không phải giờ ba mẹ cho phép bé đọc sách nhé.",
+                message:
+                  "Bây giờ không phải giờ ba mẹ cho phép bé đọc sách nhé.",
               },
             });
             return;
@@ -124,16 +158,31 @@ export default function EbookReader() {
 
     async function start() {
       try {
-        const res = await kidAccessService.startActivity(token, { bookId: state.data?.book?.id });
+        const res = await kidAccessService.startActivity(token, {
+          bookId: state.data?.book?.id,
+        });
         if (cancelled) return;
         activityId = res.data?.data?.activityId;
         if (!activityId) return;
 
         intervalId = setInterval(async () => {
           try {
-            const pingRes = await kidAccessService.pingActivity(token, activityId);
+            const pingRes = await kidAccessService.pingActivity(
+              token,
+              activityId,
+            );
             const info = pingRes.data?.data;
-            if (info?.locked || info?.limitReached || info?.withinWindow === false) {
+            if (typeof info?.todayMinutes === "number") {
+              setKidTimeInfo((prev) => ({
+                dailyLimitMinutes: prev?.dailyLimitMinutes ?? 0,
+                todayMinutes: info.todayMinutes,
+              }));
+            }
+            if (
+              info?.locked ||
+              info?.limitReached ||
+              info?.withinWindow === false
+            ) {
               navigate(`/e-kid/${slug}/${token}`, { replace: true });
             }
           } catch {
@@ -150,7 +199,8 @@ export default function EbookReader() {
     return () => {
       cancelled = true;
       if (intervalId) clearInterval(intervalId);
-      if (activityId) kidAccessService.pingActivity(token, activityId).catch(() => {});
+      if (activityId)
+        kidAccessService.pingActivity(token, activityId).catch(() => {});
     };
   }, [isKidMode, state.status, state.data?.book?.id, token, slug, navigate]);
 
@@ -176,7 +226,11 @@ export default function EbookReader() {
           <h1>{state.data?.title || "Chưa đọc được sách này"}</h1>
           <p>{state.data?.message || "Nhờ ba mẹ kiểm tra lại nhé!"}</p>
           {isKidMode && (
-            <Link to={`/e-kid/${slug}/${token}`} className="gp-cta" style={{ marginTop: 12 }}>
+            <Link
+              to={`/e-kid/${slug}/${token}`}
+              className="gp-cta"
+              style={{ marginTop: 12 }}
+            >
               Quay lại tủ sách
             </Link>
           )}
@@ -193,18 +247,30 @@ export default function EbookReader() {
             <Lock size={22} />
           </div>
           <span className="gp-eyebrow">Sách điện tử</span>
-          <h1>{isKidMode ? "Chưa đọc được sách này" : "Bạn chưa có quyền đọc sách điện tử này"}</h1>
+          <h1>
+            {isKidMode
+              ? "Chưa đọc được sách này"
+              : "Bạn chưa có quyền đọc sách điện tử này"}
+          </h1>
           <p>
             {isKidMode
               ? "Sách điện tử chỉ đọc được khi gia đình đã mua bản điện tử của cuốn sách này. Nhờ ba mẹ kiểm tra lại nhé!"
               : "Sách điện tử chỉ dành cho khách hàng đã mua bản điện tử (ebook) của cuốn sách này. Nếu bạn đã mua, vui lòng kiểm tra lại tài khoản đang đăng nhập hoặc liên hệ với chúng tôi để được hỗ trợ."}
           </p>
           {isKidMode ? (
-            <Link to={`/e-kid/${slug}/${token}`} className="gp-cta" style={{ marginTop: 12 }}>
+            <Link
+              to={`/e-kid/${slug}/${token}`}
+              className="gp-cta"
+              style={{ marginTop: 12 }}
+            >
               Quay lại tủ sách
             </Link>
           ) : (
-            <button className="gp-cta" style={{ marginTop: 12 }} onClick={() => navigate("/")}>
+            <button
+              className="gp-cta"
+              style={{ marginTop: 12 }}
+              onClick={() => navigate("/")}
+            >
               Về trang chủ
             </button>
           )}
@@ -224,7 +290,11 @@ export default function EbookReader() {
           <h1>Không tìm thấy sách điện tử này</h1>
           <p>Sách này chưa có bản điện tử hoặc đường dẫn không còn hiệu lực.</p>
           {isKidMode && (
-            <Link to={`/e-kid/${slug}/${token}`} className="gp-cta" style={{ marginTop: 12 }}>
+            <Link
+              to={`/e-kid/${slug}/${token}`}
+              className="gp-cta"
+              style={{ marginTop: 12 }}
+            >
               Quay lại tủ sách
             </Link>
           )}
@@ -253,6 +323,7 @@ export default function EbookReader() {
       resumeFromStorage
       onProgress={saveKidReadingProgress}
       onClose={() => navigate(bookUrl)}
+      kidTimeInfo={isKidMode ? kidTimeInfo : null}
     />
   );
 }

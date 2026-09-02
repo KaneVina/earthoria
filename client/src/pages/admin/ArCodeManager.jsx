@@ -2,14 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { QRCodeCanvas } from "qrcode.react";
-import {
-  Search,
-  Edit2,
-  Plus,
-  Download,
-  Copy,
-  Upload,
-} from "lucide-react";
+import { Search, Edit2, Plus, Download, Copy, Upload } from "lucide-react";
 import api from "../../services/api";
 import toast from "react-hot-toast";
 import AdminLayout from "./AdminLayout";
@@ -38,7 +31,9 @@ export default function ArCodeManager() {
   const preselectId = searchParams.get("bookId");
   useEffect(() => {
     if (preselectId) {
-      navigate(`/dashboard/ar-codes/new?bookId=${preselectId}`, { replace: true });
+      navigate(`/dashboard/ar-codes/new?bookId=${preselectId}`, {
+        replace: true,
+      });
     }
   }, [preselectId, navigate]);
 
@@ -202,11 +197,16 @@ export default function ArCodeManager() {
             <table className="a-table">
               <thead>
                 <tr>
-                  {["Sách", "Label", "Quyền xem", "Lượt quét", "Trạng thái", ""].map(
-                    (h) => (
-                      <th key={h}>{h}</th>
-                    ),
-                  )}
+                  {[
+                    "Sách",
+                    "Label",
+                    "Quyền xem",
+                    "Lượt quét",
+                    "Trạng thái",
+                    "",
+                  ].map((h) => (
+                    <th key={h}>{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>

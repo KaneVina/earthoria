@@ -6,11 +6,6 @@
   --av-ivory: var(--ivory, #faf8f3);
   --av-text-muted: var(--text-muted, #5a6b60);
   --av-border-gold: var(--border-gold, rgba(74, 158, 63, 0.3));
-
-  /* Tech-green accent reserved for the scan/glow "AR machine" moments —
-     a brighter, more saturated green than --av-gold so it still reads as
-     a distinct "technology" register from the warm book content, while
-     staying in the same green family as the rest of the brand. */
   --av-tech-green: #6fe06a;
   --av-tech-green-soft: rgba(111, 224, 106, 0.42);
   --av-glow-a: rgba(74, 158, 63, 0.45);
@@ -20,14 +15,21 @@
   width: 100%;
   height: 100vh;
   min-height: 100vh;
-  background: radial-gradient(120% 90% at 50% 8%, rgba(26, 92, 82, 0.22) 0%, transparent 55%),
-    radial-gradient(100% 80% at 50% 100%, rgba(13, 51, 48, 0.32) 0%, transparent 60%),
+  background:
+    radial-gradient(
+      120% 90% at 50% 8%,
+      rgba(26, 92, 82, 0.22) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      100% 80% at 50% 100%,
+      rgba(13, 51, 48, 0.32) 0%,
+      transparent 60%
+    ),
     #060907;
   color: var(--av-ivory);
   overflow: hidden;
   font-family: "Be Vietnam Pro", sans-serif;
-  /* Khung viền xanh rất mảnh, bao trọn viewport — chỉ dùng tông xanh có
-     sẵn của thương hiệu, không thêm màu mới. */
   box-shadow: inset 0 0 0 1px var(--av-border-gold);
 }
 
@@ -53,18 +55,18 @@
   cursor: grabbing;
 }
 
-/* ─ GLOW NỀN — ánh sáng xanh chuyển động chậm phía sau model ─
-   Hai khối glow lệch pha nhau, trôi nhẹ theo quỹ đạo riêng để cảm giác
-   "sống", không lặp lại đều đặn như một animation máy móc. */
+/* GLOW NỀN */
 .ar-view__glow {
   position: absolute;
   inset: -10%;
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  /* Quầng sáng tĩnh, rất nhẹ ở chính giữa — như ánh đèn sân khấu rọi vào
-     bệ trưng bày, tạo chiều sâu ngay cả trước khi 2 khối glow trôi tới. */
-  background: radial-gradient(52% 46% at 50% 45%, rgba(250, 248, 243, 0.055), transparent 72%);
+  background: radial-gradient(
+    52% 46% at 50% 45%,
+    rgba(250, 248, 243, 0.055),
+    transparent 72%
+  );
 }
 
 .ar-view__glow::before,
@@ -82,7 +84,11 @@
 .ar-view__glow::before {
   top: 12%;
   left: 18%;
-  background: radial-gradient(circle, var(--av-glow-a) 0%, rgba(74, 158, 63, 0) 70%);
+  background: radial-gradient(
+    circle,
+    var(--av-glow-a) 0%,
+    rgba(74, 158, 63, 0) 70%
+  );
   animation: ar-glow-drift-a 16s ease-in-out infinite alternate;
 }
 
@@ -91,7 +97,11 @@
   right: 14%;
   width: 44vmax;
   height: 44vmax;
-  background: radial-gradient(circle, var(--av-glow-b) 0%, rgba(26, 92, 82, 0) 72%);
+  background: radial-gradient(
+    circle,
+    var(--av-glow-b) 0%,
+    rgba(26, 92, 82, 0) 72%
+  );
   animation: ar-glow-drift-b 19s ease-in-out infinite alternate;
 }
 
@@ -127,14 +137,23 @@
   z-index: 2;
   pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(10, 14, 12, 0.55) 0%, rgba(10, 14, 12, 0) 30%, rgba(10, 14, 12, 0) 70%, rgba(10, 14, 12, 0.55) 100%),
-    linear-gradient(180deg, rgba(10, 14, 12, 0.35) 0%, rgba(10, 14, 12, 0) 18%, rgba(10, 14, 12, 0) 75%, rgba(10, 14, 12, 0.4) 100%);
+    linear-gradient(
+      90deg,
+      rgba(10, 14, 12, 0.55) 0%,
+      rgba(10, 14, 12, 0) 30%,
+      rgba(10, 14, 12, 0) 70%,
+      rgba(10, 14, 12, 0.55) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(10, 14, 12, 0.35) 0%,
+      rgba(10, 14, 12, 0) 18%,
+      rgba(10, 14, 12, 0) 75%,
+      rgba(10, 14, 12, 0.4) 100%
+    );
 }
 
-/* ─ HIỆU ỨNG QUÉT — chạy qua model trước khi 2 panel hiện ra ─
-   Một khung viewfinder kiểu máy quét AR: 4 góc, 1 line quét dọc lặp lại,
-   lưới mờ dần, và nhãn trạng thái. Luôn render trong DOM (để fade-out
-   mượt) nhưng vô hình + bất hoạt khi không phải "is-active". */
+/*  HIỆU ỨNG QUÉT */
 .ar-scan {
   position: absolute;
   inset: 0;
@@ -166,10 +185,8 @@
   height: 30px;
   border: 1.6px solid var(--av-tech-green);
   opacity: 0;
-  /* Lớp bóng tối sát viền trước, rồi mới tới glow xanh — giữ cho nét góc
-     luôn rõ ràng ngay cả khi vệt quét/glow sáng đi ngang qua (đặc biệt
-     2 góc dưới, nơi line "nán" lại lâu hơn do easing ease-in-out). */
-  filter: drop-shadow(0 0 2px rgba(4, 9, 7, 0.85)) drop-shadow(0 0 6px var(--av-tech-green-soft));
+  filter: drop-shadow(0 0 2px rgba(4, 9, 7, 0.85))
+    drop-shadow(0 0 6px var(--av-tech-green-soft));
   transition: opacity 0.4s ease;
 }
 
@@ -177,10 +194,18 @@
   animation: ar-scan-corner-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.ar-scan__corner--tl { animation-delay: 0s; }
-.ar-scan__corner--tr { animation-delay: 0.06s; }
-.ar-scan__corner--bl { animation-delay: 0.12s; }
-.ar-scan__corner--br { animation-delay: 0.18s; }
+.ar-scan__corner--tl {
+  animation-delay: 0s;
+}
+.ar-scan__corner--tr {
+  animation-delay: 0.06s;
+}
+.ar-scan__corner--bl {
+  animation-delay: 0.12s;
+}
+.ar-scan__corner--br {
+  animation-delay: 0.18s;
+}
 
 @keyframes ar-scan-corner-in {
   from {
@@ -225,26 +250,35 @@
     linear-gradient(rgba(111, 224, 106, 0.16) 1px, transparent 1px),
     linear-gradient(90deg, rgba(111, 224, 106, 0.16) 1px, transparent 1px);
   background-size: 12.5% 12.5%;
-  -webkit-mask-image: radial-gradient(ellipse at center, #000 55%, transparent 85%);
+  -webkit-mask-image: radial-gradient(
+    ellipse at center,
+    #000 55%,
+    transparent 85%
+  );
   mask-image: radial-gradient(ellipse at center, #000 55%, transparent 85%);
   opacity: 0;
 }
 
 .ar-scan.is-active .ar-scan__grid {
-  animation: ar-scan-grid-fade-in 0.8s ease-out 0.15s both,
+  animation:
+    ar-scan-grid-fade-in 0.8s ease-out 0.15s both,
     ar-scan-grid-pulse 2.2s ease-in-out 0.9s infinite;
 }
 
-/* Đường quét: chạy MỘT LẦN từ trên xuống dưới, để lại vệt "đã dựng xong"
-   phía sau nó (revealed area) — cảm giác model đang được build dần thay
-   vì một thanh sáng lặp lại vô hồn. Khớp với SCAN_DURATION_MS trong JSX. */
+/* Đường quét */
 .ar-scan__line {
   position: absolute;
   left: 4%;
   right: 4%;
   height: 2px;
   top: 0;
-  background: linear-gradient(90deg, transparent, var(--av-tech-green) 20%, var(--av-tech-green) 80%, transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--av-tech-green) 20%,
+    var(--av-tech-green) 80%,
+    transparent
+  );
   box-shadow: 0 0 16px 3px var(--av-tech-green-soft);
   opacity: 0;
 }
@@ -261,7 +295,12 @@
   inset: 0 4% auto 4%;
   top: 0;
   height: 0%;
-  background: linear-gradient(180deg, rgba(111, 224, 106, 0.1) 0%, rgba(111, 224, 106, 0.02) 70%, transparent 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(111, 224, 106, 0.1) 0%,
+    rgba(111, 224, 106, 0.02) 70%,
+    transparent 100%
+  );
   pointer-events: none;
   opacity: 0;
 }
@@ -393,7 +432,8 @@
   pointer-events: none; /* chỉ nội dung bên trong mới bắt sự kiện, để kéo xoay model xuyên qua khoảng trống panel */
   opacity: 1;
   transform: translateX(0);
-  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+  transition:
+    opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -449,14 +489,28 @@
   animation: ar-panel-child-in 0.62s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.ar-panel--left:not(.is-hidden):not(.is-collapsed) > *:nth-child(1) { animation-delay: 0.05s; }
-.ar-panel--left:not(.is-hidden):not(.is-collapsed) > *:nth-child(2) { animation-delay: 0.14s; }
-.ar-panel--left:not(.is-hidden):not(.is-collapsed) > *:nth-child(3) { animation-delay: 0.24s; }
+.ar-panel--left:not(.is-hidden):not(.is-collapsed) > *:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.ar-panel--left:not(.is-hidden):not(.is-collapsed) > *:nth-child(2) {
+  animation-delay: 0.14s;
+}
+.ar-panel--left:not(.is-hidden):not(.is-collapsed) > *:nth-child(3) {
+  animation-delay: 0.24s;
+}
 
-.ar-panel--right:not(.is-hidden):not(.is-collapsed) > *:nth-child(1) { animation-delay: 0.08s; }
-.ar-panel--right:not(.is-hidden):not(.is-collapsed) > *:nth-child(2) { animation-delay: 0.18s; }
-.ar-panel--right:not(.is-hidden):not(.is-collapsed) > *:nth-child(3) { animation-delay: 0.3s; }
-.ar-panel--right:not(.is-hidden):not(.is-collapsed) > *:nth-child(4) { animation-delay: 0.4s; }
+.ar-panel--right:not(.is-hidden):not(.is-collapsed) > *:nth-child(1) {
+  animation-delay: 0.08s;
+}
+.ar-panel--right:not(.is-hidden):not(.is-collapsed) > *:nth-child(2) {
+  animation-delay: 0.18s;
+}
+.ar-panel--right:not(.is-hidden):not(.is-collapsed) > *:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.ar-panel--right:not(.is-hidden):not(.is-collapsed) > *:nth-child(4) {
+  animation-delay: 0.4s;
+}
 
 @keyframes ar-panel-child-in {
   from {
@@ -529,7 +583,12 @@
   height: 2px;
   margin-top: 6px;
   border-radius: 2px;
-  background: linear-gradient(90deg, var(--av-tech-green), var(--av-gold) 70%, transparent);
+  background: linear-gradient(
+    90deg,
+    var(--av-tech-green),
+    var(--av-gold) 70%,
+    transparent
+  );
   transform-origin: left center;
   transform: scaleX(0);
 }
@@ -677,7 +736,12 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, transparent, var(--av-tech-green-soft) 50%, transparent);
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--av-tech-green-soft) 50%,
+    transparent
+  );
   height: 40%;
   top: -40%;
   opacity: 0;
@@ -719,7 +783,8 @@
   pointer-events: none;
   opacity: 0;
   background-repeat: no-repeat;
-  background-image: linear-gradient(var(--av-border-gold), var(--av-border-gold)),
+  background-image:
+    linear-gradient(var(--av-border-gold), var(--av-border-gold)),
     linear-gradient(var(--av-border-gold), var(--av-border-gold)),
     linear-gradient(var(--av-border-gold), var(--av-border-gold)),
     linear-gradient(var(--av-border-gold), var(--av-border-gold)),
@@ -727,11 +792,24 @@
     linear-gradient(var(--av-border-gold), var(--av-border-gold)),
     linear-gradient(var(--av-border-gold), var(--av-border-gold)),
     linear-gradient(var(--av-border-gold), var(--av-border-gold));
-  background-position: top 10px left 10px, top 10px left 10px, top 10px right 10px,
-    top 10px right 10px, bottom 10px left 10px, bottom 10px left 10px,
-    bottom 10px right 10px, bottom 10px right 10px;
-  background-size: 13px 1.4px, 1.4px 13px, 13px 1.4px, 1.4px 13px, 13px 1.4px, 1.4px 13px,
-    13px 1.4px, 1.4px 13px;
+  background-position:
+    top 10px left 10px,
+    top 10px left 10px,
+    top 10px right 10px,
+    top 10px right 10px,
+    bottom 10px left 10px,
+    bottom 10px left 10px,
+    bottom 10px right 10px,
+    bottom 10px right 10px;
+  background-size:
+    13px 1.4px,
+    1.4px 13px,
+    13px 1.4px,
+    1.4px 13px,
+    13px 1.4px,
+    1.4px 13px,
+    13px 1.4px,
+    1.4px 13px;
 }
 
 .ar-panel--right:not(.is-hidden):not(.is-collapsed) .ar-specs::after {
@@ -766,12 +844,30 @@
   animation: ar-specs-row-in 0.4s ease-out both;
 }
 
-.ar-panel--right:not(.is-hidden):not(.is-collapsed) .ar-specs__row:nth-child(1) { animation-delay: 0.4s; }
-.ar-panel--right:not(.is-hidden):not(.is-collapsed) .ar-specs__row:nth-child(2) { animation-delay: 0.46s; }
-.ar-panel--right:not(.is-hidden):not(.is-collapsed) .ar-specs__row:nth-child(3) { animation-delay: 0.52s; }
-.ar-panel--right:not(.is-hidden):not(.is-collapsed) .ar-specs__row:nth-child(4) { animation-delay: 0.58s; }
-.ar-panel--right:not(.is-hidden):not(.is-collapsed) .ar-specs__row:nth-child(5) { animation-delay: 0.64s; }
-.ar-panel--right:not(.is-hidden):not(.is-collapsed) .ar-specs__row:nth-child(n+6) { animation-delay: 0.7s; }
+.ar-panel--right:not(.is-hidden):not(.is-collapsed)
+  .ar-specs__row:nth-child(1) {
+  animation-delay: 0.4s;
+}
+.ar-panel--right:not(.is-hidden):not(.is-collapsed)
+  .ar-specs__row:nth-child(2) {
+  animation-delay: 0.46s;
+}
+.ar-panel--right:not(.is-hidden):not(.is-collapsed)
+  .ar-specs__row:nth-child(3) {
+  animation-delay: 0.52s;
+}
+.ar-panel--right:not(.is-hidden):not(.is-collapsed)
+  .ar-specs__row:nth-child(4) {
+  animation-delay: 0.58s;
+}
+.ar-panel--right:not(.is-hidden):not(.is-collapsed)
+  .ar-specs__row:nth-child(5) {
+  animation-delay: 0.64s;
+}
+.ar-panel--right:not(.is-hidden):not(.is-collapsed)
+  .ar-specs__row:nth-child(n + 6) {
+  animation-delay: 0.7s;
+}
 
 @keyframes ar-specs-row-in {
   from {
@@ -871,7 +967,10 @@
   cursor: pointer;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.25s ease;
 }
 
 .ar-more-btn svg {
@@ -987,9 +1086,15 @@
   justify-content: center;
   border-radius: 50%;
   color: var(--av-gold, #4a9e3f);
-  background: radial-gradient(circle at 34% 30%, rgba(74, 158, 63, 0.16), rgba(10, 14, 12, 0.45));
+  background: radial-gradient(
+    circle at 34% 30%,
+    rgba(74, 158, 63, 0.16),
+    rgba(10, 14, 12, 0.45)
+  );
   border: 0.5px solid var(--av-border-gold, rgba(74, 158, 63, 0.3));
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.25), 0 18px 40px -18px rgba(0, 0, 0, 0.7);
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.25),
+    0 18px 40px -18px rgba(0, 0, 0, 0.7);
   animation: ar-badge-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -1062,7 +1167,9 @@
   font-size: 12.5px;
   letter-spacing: 0.04em;
   text-decoration: none;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
 }
 
 .ar-view__back-link:hover {
@@ -1093,10 +1200,15 @@
   cursor: pointer;
   overflow: hidden;
   transform: translate(-50%, 0);
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3), 0 16px 34px -16px rgba(0, 0, 0, 0.7);
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.3),
+    0 16px 34px -16px rgba(0, 0, 0, 0.7);
   animation: ar-expand-btn-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-  transition: background 0.25s ease, border-color 0.25s ease,
-    box-shadow 0.25s ease, transform 0.25s ease;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
 }
 
 /* Vệt sáng xanh lướt qua khi hover — ánh phản chiếu nhẹ, chỉ chạy một
@@ -1108,7 +1220,12 @@
   left: -60%;
   width: 35%;
   height: 100%;
-  background: linear-gradient(120deg, transparent, var(--av-tech-green-soft), transparent);
+  background: linear-gradient(
+    120deg,
+    transparent,
+    var(--av-tech-green-soft),
+    transparent
+  );
   transform: skewX(-20deg);
   transition: left 0.7s ease;
   pointer-events: none;
@@ -1127,8 +1244,11 @@
 .ar-expand-btn:hover {
   background: rgba(13, 51, 48, 0.7);
   border-color: var(--av-gold);
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3), 0 16px 34px -16px rgba(0, 0, 0, 0.7),
-    0 0 0 1px var(--av-border-gold), 0 8px 28px rgba(74, 158, 63, 0.18);
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.3),
+    0 16px 34px -16px rgba(0, 0, 0, 0.7),
+    0 0 0 1px var(--av-border-gold),
+    0 8px 28px rgba(74, 158, 63, 0.18);
   transform: translate(-50%, -2px);
 }
 
@@ -1165,11 +1285,16 @@
   border-radius: 50%;
   color: var(--av-ivory);
   cursor: pointer;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3), 0 14px 30px -16px rgba(0, 0, 0, 0.7);
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.3),
+    0 14px 30px -16px rgba(0, 0, 0, 0.7);
   transform: translateY(-50%) scale(1);
   animation: ar-mini-btn-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: 0.15s;
-  transition: background 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.2s ease;
 }
 
 .ar-mini-btn svg {
@@ -1235,7 +1360,8 @@
   -webkit-backdrop-filter: blur(40px) saturate(1.6);
   border-left: 0.5px solid var(--av-border-gold);
   box-shadow: -50px 0 90px -40px rgba(0, 0, 0, 0.65);
-  transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+  transition:
+    width 0.55s cubic-bezier(0.22, 1, 0.36, 1),
     background 0.4s ease;
   z-index: 10;
 }
@@ -1280,7 +1406,10 @@
   border-radius: 50%;
   color: var(--av-ivory);
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
 .ar-more-close svg {
@@ -1496,7 +1625,11 @@
     top: 0;
     bottom: auto;
     justify-content: flex-start;
-    background: linear-gradient(180deg, rgba(10, 14, 12, 0.75) 0%, rgba(10, 14, 12, 0) 100%);
+    background: linear-gradient(
+      180deg,
+      rgba(10, 14, 12, 0.75) 0%,
+      rgba(10, 14, 12, 0) 100%
+    );
     padding-top: max(22px, env(safe-area-inset-top, 0px));
   }
 
@@ -1642,8 +1775,12 @@
 }
 
 @keyframes ar-book-marquee {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-100%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

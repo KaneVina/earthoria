@@ -5,7 +5,7 @@ import { settingsService } from "../services/settingsService";
 /* ─ helpers ───────────────────────────────────────────── */
 const IS_DEV =
   typeof import.meta !== "undefined"
-    ? import.meta.env?.DEV === true          // Vite
+    ? import.meta.env?.DEV === true // Vite
     : process.env?.NODE_ENV === "development"; // CRA
 
 const isMobileDevice = (() => {
@@ -112,10 +112,10 @@ export default function EarthoriaSecurity() {
   const protectionEnabled = siteSettings?.devtoolsProtectionEnabled !== false; // mặc định true khi chưa load xong
 
   const stateRef = useRef({
-    devToolsOpen:        false,
+    devToolsOpen: false,
     orientationChanging: false,
-    tabHidden:           false,
-    pollTimer:           null,
+    tabHidden: false,
+    pollTimer: null,
   });
 
   /*  inject CSS once  */

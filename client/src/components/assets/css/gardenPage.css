@@ -12,8 +12,16 @@
   inset: 0;
   z-index: -2;
   background:
-    radial-gradient(380px 380px at 90% 4%, rgba(255, 205, 90, 0.32) 0%, transparent 72%),
-    radial-gradient(260px 260px at 4% 16%, rgba(120, 200, 255, 0.22) 0%, transparent 72%);
+    radial-gradient(
+      380px 380px at 90% 4%,
+      rgba(255, 205, 90, 0.32) 0%,
+      transparent 72%
+    ),
+    radial-gradient(
+      260px 260px at 4% 16%,
+      rgba(120, 200, 255, 0.22) 0%,
+      transparent 72%
+    );
   pointer-events: none;
 }
 .gp-page::after {
@@ -25,9 +33,21 @@
   height: 24vh;
   z-index: -1;
   background:
-    radial-gradient(55% 140% at 12% 100%, rgba(150, 214, 120, 0.5) 0%, transparent 72%),
-    radial-gradient(48% 120% at 52% 100%, rgba(122, 198, 108, 0.45) 0%, transparent 72%),
-    radial-gradient(60% 150% at 90% 100%, rgba(150, 214, 120, 0.45) 0%, transparent 72%);
+    radial-gradient(
+      55% 140% at 12% 100%,
+      rgba(150, 214, 120, 0.5) 0%,
+      transparent 72%
+    ),
+    radial-gradient(
+      48% 120% at 52% 100%,
+      rgba(122, 198, 108, 0.45) 0%,
+      transparent 72%
+    ),
+    radial-gradient(
+      60% 150% at 90% 100%,
+      rgba(150, 214, 120, 0.45) 0%,
+      transparent 72%
+    );
   pointer-events: none;
 }
 
@@ -54,7 +74,9 @@
   background: var(--kid-green-light);
   color: var(--kid-green-dark);
   cursor: pointer;
-  transition: transform var(--kid-t-fast), background var(--kid-t-fast);
+  transition:
+    transform var(--kid-t-fast),
+    background var(--kid-t-fast);
   flex-shrink: 0;
 }
 .gp-back-btn:hover {
@@ -146,7 +168,11 @@
   font-weight: 800;
   font-size: 18px;
   color: var(--kid-white);
-  background: linear-gradient(145deg, var(--kid-green) 0%, var(--kid-teal) 100%);
+  background: linear-gradient(
+    145deg,
+    var(--kid-green) 0%,
+    var(--kid-teal) 100%
+  );
   border: 2px solid var(--kid-white);
   box-shadow:
     0 0 0 2px var(--kid-green-light),
@@ -223,10 +249,21 @@
 }
 
 @media (max-width: 380px) {
-  .gp-hud { padding: 8px 10px; }
-  .gp-hud-avatar { width: 38px; height: 38px; font-size: 15px; }
-  .gp-hud-name { font-size: 13.5px; }
-  .gp-hud-stat { font-size: 11.5px; padding: 3px 8px; }
+  .gp-hud {
+    padding: 8px 10px;
+  }
+  .gp-hud-avatar {
+    width: 38px;
+    height: 38px;
+    font-size: 15px;
+  }
+  .gp-hud-name {
+    font-size: 13.5px;
+  }
+  .gp-hud-stat {
+    font-size: 11.5px;
+    padding: 3px 8px;
+  }
 }
 .gp-root .kg-current-card {
   background: linear-gradient(165deg, var(--kid-green-light) 0%, #ffffff 75%);
@@ -303,8 +340,15 @@
   animation: gp-empty-slot-breathe 3.8s ease-in-out infinite;
 }
 @keyframes gp-empty-slot-breathe {
-  0%, 100% { opacity: 0.65; transform: scale(0.97); }
-  50% { opacity: 1; transform: scale(1); }
+  0%,
+  100% {
+    opacity: 0.65;
+    transform: scale(0.97);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .kg-garden-tree-slot--empty {

@@ -157,8 +157,7 @@ export default function Login() {
               className="auth-social-btn google-btn"
               type="button"
               onClick={() =>
-                (window.location.href =
-                  `${import.meta.env.VITE_API_URL || "https://earthoria.onrender.com/api/v1"}/auth/google`)
+                (window.location.href = `${import.meta.env.VITE_API_URL || "https://earthoria.onrender.com/api/v1"}/auth/google`)
               }
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
@@ -268,10 +267,7 @@ export default function Login() {
                   Ghi nhớ đăng nhập
                 </span>
               </label>
-              <Link
-                to="/forgot-password"
-                className="auth-forgot-link"
-              >
+              <Link to="/forgot-password" className="auth-forgot-link">
                 Quên mật khẩu?
               </Link>
             </div>

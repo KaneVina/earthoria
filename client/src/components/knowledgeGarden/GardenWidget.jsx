@@ -87,10 +87,13 @@ export default function GardenWidget({ token, slug }) {
 
   const { garden, activeTree } = data;
   const isFreshStart =
-    data.trees.length === 1 && activeTree.knowledgeXp === 0 && activeTree.status === "ALIVE";
+    data.trees.length === 1 &&
+    activeTree.knowledgeXp === 0 &&
+    activeTree.status === "ALIVE";
   const isWiltingActive =
     activeTree.status === "ALIVE" &&
-    (activeTree.healthBand.key === "needs_care" || activeTree.healthBand.key === "critical");
+    (activeTree.healthBand.key === "needs_care" ||
+      activeTree.healthBand.key === "critical");
 
   return createPortal(
     <AnimatePresence>

@@ -52,7 +52,8 @@ function sameCells(a, b) {
 
 export default function WordSearchPlayer({ config, onFinish }) {
   const { grid, rows, cols, placements } = useMemo(
-    () => generateWordSearchGrid(config?.words || [], config?.rows, config?.cols),
+    () =>
+      generateWordSearchGrid(config?.words || [], config?.rows, config?.cols),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [],
   );
@@ -100,7 +101,10 @@ export default function WordSearchPlayer({ config, onFinish }) {
 
     for (const p of placements) {
       if (foundWords.has(p.word)) continue;
-      if (sameCells(selection, p.cells) || sameCells(selection, [...p.cells].reverse())) {
+      if (
+        sameCells(selection, p.cells) ||
+        sameCells(selection, [...p.cells].reverse())
+      ) {
         setFoundWords((prev) => new Set(prev).add(p.word));
         setFoundCells((prev) => {
           const next = new Set(prev);
@@ -117,7 +121,11 @@ export default function WordSearchPlayer({ config, onFinish }) {
   const totalWords = new Set(placements.map((p) => p.word)).size;
 
   useEffect(() => {
-    if (totalWords > 0 && foundWords.size === totalWords && !finishedRef.current) {
+    if (
+      totalWords > 0 &&
+      foundWords.size === totalWords &&
+      !finishedRef.current
+    ) {
       finishedRef.current = true;
       const score = Math.max(100, Math.round(1000 - elapsed * 4));
       setTimeout(() => onFinish(score, elapsed), 500);
@@ -125,8 +133,16 @@ export default function WordSearchPlayer({ config, onFinish }) {
   }, [foundWords, totalWords, elapsed, onFinish]);
 
   const selectionKeys = new Set(selection.map((c) => `${c.r}-${c.c}`));
-  const uniqueWords = [...new Set((config?.words || []).map((w) => w.toUpperCase().trim().replace(/\s+/g, "")))];
-  const progressPct = totalWords ? Math.round((foundWords.size / totalWords) * 100) : 0;
+  const uniqueWords = [
+    ...new Set(
+      (config?.words || []).map((w) =>
+        w.toUpperCase().trim().replace(/\s+/g, ""),
+      ),
+    ),
+  ];
+  const progressPct = totalWords
+    ? Math.round((foundWords.size / totalWords) * 100)
+    : 0;
   const allDone = totalWords > 0 && foundWords.size === totalWords;
 
   return (
@@ -136,7 +152,8 @@ export default function WordSearchPlayer({ config, onFinish }) {
           <Timer size={14} /> {elapsed}s
         </span>
         <span className={allDone ? "g-stat-done" : ""}>
-          {allDone ? <Trophy size={14} /> : <ListChecks size={14} />} {foundWords.size}/{totalWords}
+          {allDone ? <Trophy size={14} /> : <ListChecks size={14} />}{" "}
+          {foundWords.size}/{totalWords}
         </span>
       </div>
 
@@ -179,7 +196,10 @@ export default function WordSearchPlayer({ config, onFinish }) {
           </div>
           <div className="g-ws-word-list">
             {uniqueWords.map((w) => (
-              <div key={w} className={`g-ws-word-chip${foundWords.has(w) ? " found" : ""}`}>
+              <div
+                key={w}
+                className={`g-ws-word-chip${foundWords.has(w) ? " found" : ""}`}
+              >
                 {foundWords.has(w) && <Check size={11} />}
                 {w}
               </div>
