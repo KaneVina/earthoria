@@ -400,16 +400,20 @@ export default function ParentDashboard() {
     }
   }, []);
 
+  const booksReqId = useRef(0);
   const loadBooks = useCallback(async (childId) => {
     if (!childId) return;
+    const reqId = ++booksReqId.current;
     setBooksLoading(true);
     try {
       const res = await childService.getBooks(childId);
+      if (reqId !== booksReqId.current) return; // đã có request mới hơn, bỏ kết quả cũ
       setBooks(res.data.data.books);
     } catch (err) {
       // Im lặng: không để lỗi tải sách chặn phần còn lại của dashboard
+      if (reqId !== booksReqId.current) return;
     } finally {
-      setBooksLoading(false);
+      if (reqId === booksReqId.current) setBooksLoading(false);
     }
   }, []);
 
@@ -434,6 +438,10 @@ export default function ParentDashboard() {
   };
 
   const toggleBookVisibility = async (bookId, visible) => {
+    // Vô hiệu hóa mọi loadBooks() cũ đang bay ngầm (vd: gọi lúc mount/đổi bé)
+    // — nếu không, response cũ resolve trễ hơn sẽ đè mất optimistic update này
+    // và state sai sẽ ở lại luôn (không có ai fetch lại để tự sửa).
+    booksReqId.current += 1;
     setBooks((prev) =>
       prev.map((b) => (b.id === bookId ? { ...b, visible } : b)),
     );
@@ -495,6 +503,13 @@ export default function ParentDashboard() {
 
   const updateSettings = async (patch) => {
     if (!activeChildId) return;
+    // Vô hiệu hóa mọi loadDashboard() cũ đang bay ngầm (vd: gọi lúc mount hoặc
+    // lúc đổi bé) TRƯỚC khi ghi optimistic — nếu không, response cũ (chứa dữ
+    // liệu trước khi đổi setting) có thể resolve trễ hơn và đè mất giá trị vừa
+    // đổi. Khác với cart/wishlist, ở đây không có bước nào tự fetch lại sau
+    // khi lưu thành công, nên nếu bị đè thì UI sẽ SAI VĨNH VIỄN cho tới khi
+    // người dùng tự F5 — đây chính là lỗi đã gặp.
+    dashboardReqId.current += 1;
     // Optimistic update để UI mượt, rollback bằng cách tải lại nếu API lỗi
     setDashboard((prev) =>
       prev ? { ...prev, child: { ...prev.child, ...patch } } : prev,
@@ -578,6 +593,10 @@ export default function ParentDashboard() {
     try {
       const res = await childService.lock(lockTarget.id);
       if (lockTarget.id === activeChildId) {
+        // Vô hiệu hóa loadDashboard() cũ đang bay ngầm — tránh trường hợp nó
+        // resolve trễ hơn với isLocked=false (dữ liệu trước khi khóa) rồi đè
+        // lại đúng lúc mình vừa set isLocked=true.
+        dashboardReqId.current += 1;
         setDashboard((prev) =>
           prev ? { ...prev, child: res.data.data.child } : prev,
         );
@@ -611,6 +630,9 @@ export default function ParentDashboard() {
     if (!lockTarget) return;
     const res = await childService.unlock(lockTarget.id, pin);
     if (lockTarget.id === activeChildId) {
+      // Cùng lý do như confirmLock: tránh loadDashboard() cũ resolve trễ hơn
+      // rồi đè lại isLocked=false → false, xoá mất kết quả mở khóa vừa xong.
+      dashboardReqId.current += 1;
       setDashboard((prev) =>
         prev ? { ...prev, child: res.data.data.child } : prev,
       );
