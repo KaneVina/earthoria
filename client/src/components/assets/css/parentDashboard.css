@@ -224,8 +224,7 @@
   object-fit: contain;
   opacity: 0.92;
   /* buộc logo (vốn nhiều màu) hiển thị thuần trắng, giữ nguyên vùng trong suốt */
-  filter: brightness(0) invert(1)
-    drop-shadow(0 4px 16px rgba(0, 0, 0, 0.25));
+  filter: brightness(0) invert(1) drop-shadow(0 4px 16px rgba(0, 0, 0, 0.25));
   transition:
     opacity 0.3s ease,
     transform 0.3s ease;
@@ -293,6 +292,18 @@
 }
 .pkd-autosave.is-saved svg {
   color: var(--gold);
+}
+.pkd-autosave.is-pending {
+  animation: pkdAutosavePulse 1.1s ease-in-out infinite;
+}
+@keyframes pkdAutosavePulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
 }
 
 /* ═══════════ BODY LAYOUT ═══════════ */

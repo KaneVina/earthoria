@@ -57,9 +57,8 @@ const WEEK_LABELS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 // Chủ nhật (0) xuống cuối mảng (index 6).
 const TODAY_INDEX = (new Date().getDay() + 6) % 7;
 
-// TODO: thay bằng đường dẫn/URL video thật (vd: "/videos/earthoria-intro.mp4"
-// hoặc link CDN như các trang khác đang dùng trong AboutUs.jsx).
-const POWERED_BY_VIDEO_SRC = "/videos/earthoria-poweredby.mp4";
+const POWERED_BY_VIDEO_SRC =
+  "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260808_075824_7c8a2ef3-826c-43ca-81a1-162429faa306.mp4";
 
 const AUDIT_TYPE_MAP = {
   LOCK: "lock",
@@ -515,52 +514,114 @@ export default function ParentDashboard() {
     trendDeltaPct <= -5 ? "down" : trendDeltaPct >= 5 ? "up" : "flat";
 
   /*  Autosave feedback  */
-  const [saveStatus, setSaveStatus] = useState("idle"); // idle | saving | saved
-  const saveTimers = useRef({ toSaved: null, toIdle: null });
+  // Không có nút "Lưu" nào cả — mọi thay đổi tự lưu ngầm. Để phụ huynh biết
+  // rõ khi nào nó thực sự lưu (thay vì lưu ngay từng cú bấm, dễ spam API),
+  // ta gộp các thay đổi liên tiếp lại và chỉ thực sự gửi lên server sau khi
+  // ngừng chỉnh được SETTINGS_AUTOSAVE_DEBOUNCE_MS, có đếm ngược hiển thị.
+  const SETTINGS_AUTOSAVE_DEBOUNCE_MS = 2000;
 
-  const updateSettings = async (patch) => {
-    if (!activeChildId) return;
-    // Vô hiệu hóa mọi loadDashboard() cũ đang bay ngầm (vd: gọi lúc mount hoặc
-    // lúc đổi bé) TRƯỚC khi ghi optimistic — nếu không, response cũ (chứa dữ
-    // liệu trước khi đổi setting) có thể resolve trễ hơn và đè mất giá trị vừa
-    // đổi. Khác với cart/wishlist, ở đây không có bước nào tự fetch lại sau
-    // khi lưu thành công, nên nếu bị đè thì UI sẽ SAI VĨNH VIỄN cho tới khi
-    // người dùng tự F5 — đây chính là lỗi đã gặp.
-    dashboardReqId.current += 1;
-    // Optimistic update để UI mượt, rollback bằng cách tải lại nếu API lỗi
-    setDashboard((prev) =>
-      prev ? { ...prev, child: { ...prev.child, ...patch } } : prev,
-    );
+  const [saveStatus, setSaveStatus] = useState("idle"); // idle | pending | saving | saved
+  const [saveCountdown, setSaveCountdown] = useState(0); // giây còn lại, chỉ có ý nghĩa khi saveStatus === "pending"
+  const saveTimers = useRef({
+    debounce: null,
+    tick: null,
+    toSaved: null,
+    toIdle: null,
+  });
+  const pendingSettingsRef = useRef(null); // { childId, patch } — gộp các thay đổi chưa gửi lên server
+  // Bản sao "luôn mới" của activeChildId để đọc trong setTimeout/closure cũ,
+  // tránh trường hợp phụ huynh đổi sang xem bé khác trong lúc đang đếm ngược.
+  const activeChildIdRef = useRef(activeChildId);
+  useEffect(() => {
+    activeChildIdRef.current = activeChildId;
+  }, [activeChildId]);
+
+  const clearSaveTimers = () => {
+    clearTimeout(saveTimers.current.debounce);
+    clearInterval(saveTimers.current.tick);
     clearTimeout(saveTimers.current.toSaved);
     clearTimeout(saveTimers.current.toIdle);
+  };
+
+  // Gửi patch đang chờ (nếu có) lên server thật. Tách riêng khỏi updateSettings
+  // để có thể gọi ngay lập tức (không chờ hết giờ đếm ngược) trong trường hợp
+  // phụ huynh chuyển sang chỉnh cho bé khác trước khi patch cũ kịp lưu.
+  const flushPendingSettings = async () => {
+    const pending = pendingSettingsRef.current;
+    pendingSettingsRef.current = null;
+    if (!pending) return;
+    const { childId, patch } = pending;
     setSaveStatus("saving");
     try {
-      await childService.updateSettings(activeChildId, patch);
-      // Cùng lý do: chặn loadChildren() cũ resolve trễ hơn đè mất field vừa lưu
+      await childService.updateSettings(childId, patch);
+      // Chặn loadChildren() cũ resolve trễ hơn đè mất field vừa lưu
       childrenReqId.current += 1;
       setChildren((prev) =>
-        prev.map((c) => (c.id === activeChildId ? { ...c, ...patch } : c)),
+        prev.map((c) => (c.id === childId ? { ...c, ...patch } : c)),
       );
       saveTimers.current.toSaved = setTimeout(
         () => setSaveStatus("saved"),
         350,
       );
-      saveTimers.current.toIdle = setTimeout(() => setSaveStatus("idle"), 2600);
+      saveTimers.current.toIdle = setTimeout(() => setSaveStatus("idle"), 2950);
     } catch (err) {
       setSaveStatus("idle");
       toast.error(
         err.response?.data?.message ||
           "Không thể lưu thay đổi, đang tải lại...",
       );
-      loadDashboard(activeChildId);
+      // Chỉ tải lại dashboard nếu vẫn đang xem đúng bé đó — nếu phụ huynh đã
+      // chuyển sang bé khác thì đừng lấy dữ liệu bé cũ đè lên màn hình hiện tại.
+      if (childId === activeChildIdRef.current) {
+        loadDashboard(childId);
+      }
     }
   };
 
-  useEffect(() => {
-    return () => {
-      clearTimeout(saveTimers.current.toSaved);
-      clearTimeout(saveTimers.current.toIdle);
+  const updateSettings = (patch) => {
+    if (!activeChildId) return;
+    const targetChildId = activeChildId;
+    // Vô hiệu hóa mọi loadDashboard() cũ đang bay ngầm (vd: gọi lúc mount hoặc
+    // lúc đổi bé) TRƯỚC khi ghi optimistic — nếu không, response cũ (chứa dữ
+    // liệu trước khi đổi setting) có thể resolve trễ hơn và đè mất giá trị vừa
+    // đổi. Không có bước nào tự fetch lại sau khi lưu thành công, nên nếu bị
+    // đè thì UI sẽ SAI VĨNH VIỄN cho tới khi người dùng tự F5.
+    dashboardReqId.current += 1;
+    // Optimistic update để UI mượt ngay khi bấm — không cần chờ debounce
+    setDashboard((prev) =>
+      prev ? { ...prev, child: { ...prev.child, ...patch } } : prev,
+    );
+
+    // Nếu đang có patch của BÉ KHÁC chờ lưu (hiếm: chỉnh cho bé A rồi đổi bé
+    // trước khi kịp lưu) → lưu ngay patch cũ đó, tránh gộp nhầm 2 bé vào 1 request.
+    if (
+      pendingSettingsRef.current &&
+      pendingSettingsRef.current.childId !== targetChildId
+    ) {
+      clearSaveTimers();
+      flushPendingSettings();
+    }
+
+    pendingSettingsRef.current = {
+      childId: targetChildId,
+      patch: { ...pendingSettingsRef.current?.patch, ...patch },
     };
+
+    clearSaveTimers();
+    const totalSeconds = Math.ceil(SETTINGS_AUTOSAVE_DEBOUNCE_MS / 1000);
+    setSaveCountdown(totalSeconds);
+    setSaveStatus("pending");
+    saveTimers.current.tick = setInterval(() => {
+      setSaveCountdown((s) => Math.max(0, s - 1));
+    }, 1000);
+    saveTimers.current.debounce = setTimeout(() => {
+      clearInterval(saveTimers.current.tick);
+      flushPendingSettings();
+    }, SETTINGS_AUTOSAVE_DEBOUNCE_MS);
+  };
+
+  useEffect(() => {
+    return () => clearSaveTimers();
   }, []);
 
   const [allowStartDraft, setAllowStartDraft] = useState(settings.allowStart);
@@ -1091,7 +1152,11 @@ export default function ParentDashboard() {
                   className={`pkd-autosave ${saveStatus !== "idle" ? "is-visible" : ""} is-${saveStatus}`}
                   aria-live="polite"
                 >
-                  {saveStatus === "saving" ? (
+                  {saveStatus === "pending" ? (
+                    <>
+                      <Clock size={12} /> Tự động lưu sau {saveCountdown}s…
+                    </>
+                  ) : saveStatus === "saving" ? (
                     <>
                       <Loader2 size={12} /> Đang lưu…
                     </>
