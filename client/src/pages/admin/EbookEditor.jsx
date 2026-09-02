@@ -240,6 +240,33 @@ function wordIndexForCharIndex(words, charIndex) {
   return wIdx;
 }
 
+// Tách 1 đoạn văn thành từng "câu" theo dấu chấm/chấm than/chấm hỏi/phẩy/
+// chấm phẩy/hai chấm, trả về từng câu kèm khoảng chỉ số từ (word index)
+// mà nó chiếm — dùng để khi rê chuột vào 1 từ, biết cần đọc to đúng câu
+// chứa từ đó, thay vì đọc lại toàn bộ đoạn văn (gây trùng với chế độ
+// Tự động đọc).
+function splitSentenceWordRanges(text) {
+  const words = (text || "").split(" ");
+  if (!words.length || (words.length === 1 && !words[0])) return [];
+  const ranges = [];
+  let start = 0;
+  words.forEach((w, i) => {
+    const isBoundary = /[.!?,;:…]+["'”’)]*$/.test(w);
+    if (isBoundary || i === words.length - 1) {
+      ranges.push({
+        start,
+        end: i,
+        text: words
+          .slice(start, i + 1)
+          .join(" ")
+          .trim(),
+      });
+      start = i + 1;
+    }
+  });
+  return ranges;
+}
+
 function speakText(text, { onWord, onEnd } = {}) {
   if (!speechAvailable() || !text || !text.trim()) {
     onEnd && onEnd();
@@ -519,6 +546,8 @@ function LayerView({
   onOpenFilePicker,
   onLineHover,
   onLineLeave,
+  onSentenceHover,
+  onSentenceLeave,
   onAskAI,
   isEditingText,
   editableRef,
@@ -1005,9 +1034,20 @@ function LayerView({
                           e.stopPropagation();
                           onWordHover({ word: w });
                         }
-                      : undefined
+                      : onSentenceHover
+                        ? (e) => {
+                            e.stopPropagation();
+                            onSentenceHover(layer, i);
+                          }
+                        : undefined
                   }
-                  onMouseLeave={!readOnly ? onWordLeave : undefined}
+                  onMouseLeave={
+                    !readOnly
+                      ? onWordLeave
+                      : onSentenceLeave
+                        ? onSentenceLeave
+                        : undefined
+                  }
                   style={{
                     padding: "1px 2px",
                     borderRadius: 4,
@@ -1113,6 +1153,10 @@ export function PreviewOverlay({
   // Thanh số trang dưới cùng: mặc định ẩn/trong suốt, chỉ hiện khi rê
   // chuột / chạm vào vùng dưới màn hình.
   const [bottomBarActive, setBottomBarActive] = useState(false);
+  // 2 nút điều hướng 2 bên: cùng kiểu ẩn/hiện như thanh số trang, để
+  // không phải kéo xuống dưới mới chuyển được trang.
+  const [leftNavActive, setLeftNavActive] = useState(false);
+  const [rightNavActive, setRightNavActive] = useState(false);
 
   const autoPlay = readMode === "auto";
 
@@ -1120,7 +1164,14 @@ export function PreviewOverlay({
   const timeBoxRef = useRef(null);
   const activeDotRef = useRef(null);
   const bottomHideTimer = useRef(null);
+  const leftNavHideTimer = useRef(null);
+  const rightNavHideTimer = useRef(null);
   const lineHoverTimer = useRef(null);
+  const hoverSentenceKeyRef = useRef(null);
+  const zoomRef = useRef(1);
+  const pinchStateRef = useRef({ startDist: 0, startZoom: 1 });
+  const swipeStateRef = useRef({ x: 0, y: 0, t: 0, active: false });
+  const lastTapRef = useRef({ time: 0, x: 0, y: 0 });
 
   const toggleFullscreen = () => {
     const el = document.documentElement;
@@ -1182,8 +1233,16 @@ export function PreviewOverlay({
       if (!wrapRef.current) return;
       const spreadCount = visiblePages.length === 2 ? 2 : 1;
       const stageW = spreadCount === 2 ? PAGE_W * 2 + SPREAD_GAP : PAGE_W;
-      const w = wrapRef.current.clientWidth - 48;
-      const h = wrapRef.current.clientHeight - 48;
+      // .er-stage giờ có padding CSS riêng để chừa chỗ cho topbar/bottombar
+      // nổi phía trên (tránh trang sách bị 2 thanh đó che/tràn ra ngoài).
+      // Đọc padding thực tế thay vì số cố định để 2 bên luôn khớp nhau.
+      const cs = window.getComputedStyle(wrapRef.current);
+      const padX =
+        (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+      const padY =
+        (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+      const w = wrapRef.current.clientWidth - padX - 16;
+      const h = wrapRef.current.clientHeight - padY - 16;
       setScale(Math.max(0.28, Math.min(1.3, w / stageW, h / PAGE_H)));
     };
     measure();
@@ -1238,6 +1297,141 @@ export function PreviewOverlay({
     };
   }, []);
 
+  // Hiện/ẩn 2 nút điều hướng 2 bên khi rê chuột / chạm vào vùng đó
+  const showLeftNav = () => {
+    if (leftNavHideTimer.current) clearTimeout(leftNavHideTimer.current);
+    setLeftNavActive(true);
+  };
+  const scheduleHideLeftNav = (delay = 1400) => {
+    if (leftNavHideTimer.current) clearTimeout(leftNavHideTimer.current);
+    leftNavHideTimer.current = setTimeout(() => setLeftNavActive(false), delay);
+  };
+  const showRightNav = () => {
+    if (rightNavHideTimer.current) clearTimeout(rightNavHideTimer.current);
+    setRightNavActive(true);
+  };
+  const scheduleHideRightNav = (delay = 1400) => {
+    if (rightNavHideTimer.current) clearTimeout(rightNavHideTimer.current);
+    rightNavHideTimer.current = setTimeout(
+      () => setRightNavActive(false),
+      delay,
+    );
+  };
+  useEffect(() => {
+    return () => {
+      if (leftNavHideTimer.current) clearTimeout(leftNavHideTimer.current);
+      if (rightNavHideTimer.current) clearTimeout(rightNavHideTimer.current);
+    };
+  }, []);
+
+  // Luôn giữ giá trị zoom mới nhất trong ref để dùng trong listener chạm
+  // (tránh closure cũ khi bắt đầu chụm 2 ngón).
+  useEffect(() => {
+    zoomRef.current = zoom;
+  }, [zoom]);
+
+  // Chụm/mở 2 ngón tay (pinch) trên sân khấu để phóng to/thu nhỏ trang.
+  // Gắn listener gốc (không phải React synthetic) để có thể preventDefault
+  // và chặn trình duyệt tự cuộn/zoom trang web khi đang chụm.
+  // Chụm/mở 2 ngón tay (pinch) để phóng to/thu nhỏ trang, vuốt ngang 1
+  // ngón để chuyển trang, và chạm đúp để phóng to nhanh 1 vùng (chạm đúp
+  // lần nữa để về bình thường). Gắn listener gốc (không phải React
+  // synthetic) để có thể preventDefault và chặn trình duyệt tự
+  // cuộn/zoom trang web khi đang thao tác.
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+
+    const dist = (touches) => {
+      const [a, b] = touches;
+      return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    };
+
+    const onTouchStart = (e) => {
+      if (e.touches.length === 2) {
+        pinchStateRef.current = {
+          startDist: dist(e.touches),
+          startZoom: zoomRef.current,
+        };
+        swipeStateRef.current.active = false;
+      } else if (e.touches.length === 1) {
+        const t = e.touches[0];
+        swipeStateRef.current = {
+          x: t.clientX,
+          y: t.clientY,
+          t: Date.now(),
+          active: true,
+        };
+      }
+    };
+    const onTouchMove = (e) => {
+      if (e.touches.length === 2 && pinchStateRef.current.startDist) {
+        e.preventDefault();
+        const ratio = dist(e.touches) / pinchStateRef.current.startDist;
+        const next = Math.max(
+          0.6,
+          Math.min(2.5, pinchStateRef.current.startZoom * ratio),
+        );
+        setZoom(+next.toFixed(2));
+      }
+    };
+    const onTouchEnd = (e) => {
+      if (e.touches.length < 2) pinchStateRef.current.startDist = 0;
+      if (e.touches.length > 0) return; // còn ngón khác trên màn hình, bỏ qua
+      if (!swipeStateRef.current.active || e.changedTouches.length !== 1)
+        return;
+
+      const t = e.changedTouches[0];
+      const dx = t.clientX - swipeStateRef.current.x;
+      const dy = t.clientY - swipeStateRef.current.y;
+      const dt = Date.now() - swipeStateRef.current.t;
+      swipeStateRef.current.active = false;
+
+      const isZoomedIn = zoomRef.current > 1.05;
+      const wasSwipe =
+        !isZoomedIn &&
+        Math.abs(dx) > 56 &&
+        Math.abs(dx) > Math.abs(dy) * 1.4 &&
+        dt < 700;
+
+      if (wasSwipe) {
+        e.preventDefault();
+        if (dx < 0) goNextRef.current();
+        else goPrevRef.current();
+        lastTapRef.current = { time: 0, x: 0, y: 0 };
+        return;
+      }
+
+      // Không phải vuốt trang: nếu gần như không di chuyển thì đây là 1
+      // cái chạm — kiểm tra có phải chạm đúp (double-tap) để zoom không.
+      if (Math.abs(dx) < 12 && Math.abs(dy) < 12) {
+        const now = Date.now();
+        const last = lastTapRef.current;
+        const closeEnough =
+          Math.abs(t.clientX - last.x) < 40 &&
+          Math.abs(t.clientY - last.y) < 40;
+        if (now - last.time < 320 && closeEnough) {
+          e.preventDefault();
+          setZoom((z) => (z > 1.05 ? 1 : 1.8));
+          lastTapRef.current = { time: 0, x: 0, y: 0 };
+        } else {
+          lastTapRef.current = { time: now, x: t.clientX, y: t.clientY };
+        }
+      }
+    };
+
+    el.addEventListener("touchstart", onTouchStart, { passive: true });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd, { passive: false });
+    el.addEventListener("touchcancel", onTouchEnd, { passive: true });
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+      el.removeEventListener("touchcancel", onTouchEnd);
+    };
+  }, []);
+
   // Tự lưu vị trí đang đọc (chỉ khi resumeFromStorage được bật, tức trang đọc công khai)
   useEffect(() => {
     if (!resumeFromStorage) return;
@@ -1270,6 +1464,7 @@ export function PreviewOverlay({
   const stop = () => {
     if (speechAvailable()) window.speechSynthesis.cancel();
     setReading(null);
+    hoverSentenceKeyRef.current = null;
   };
 
   const readSpread = (auto = false) => {
@@ -1326,8 +1521,13 @@ export function PreviewOverlay({
   }, [autoPlay]);
 
   const onLineHover = (layer) => {
+    // Chỉ dùng cách đọc "cả khối" này cho văn bản rich-text (không thể
+    // tách theo từng từ). Văn bản thường dùng onSentenceHover bên dưới để
+    // chỉ đọc đúng 1 câu đang rê tới, tránh đọc trùng với chế độ Tự động
+    // đọc (đọc toàn bộ).
     if (
       readMode !== "hover" ||
+      !layer.html ||
       reading ||
       !speechAvailable() ||
       !layer.text?.trim()
@@ -1343,6 +1543,43 @@ export function PreviewOverlay({
     }, 260);
   };
   const onLineLeave = () => {
+    if (lineHoverTimer.current) {
+      clearTimeout(lineHoverTimer.current);
+      lineHoverTimer.current = null;
+    }
+  };
+
+  // Rê chuột vào 1 từ trong văn bản thường: xác định câu (theo dấu chấm/
+  // phẩy/chấm than/chấm hỏi...) chứa từ đó và chỉ đọc to đúng câu này.
+  const onSentenceHover = (layer, wordIndex) => {
+    if (
+      readMode !== "hover" ||
+      layer.html ||
+      reading ||
+      !speechAvailable() ||
+      !layer.text?.trim()
+    )
+      return;
+    const ranges = splitSentenceWordRanges(layer.text);
+    const seg = ranges.find((r) => wordIndex >= r.start && wordIndex <= r.end);
+    if (!seg || !seg.text) return;
+    const key = `${layer.id}:${seg.start}`;
+    if (hoverSentenceKeyRef.current === key) return; // đang đọc đúng câu này rồi
+    if (lineHoverTimer.current) clearTimeout(lineHoverTimer.current);
+    lineHoverTimer.current = setTimeout(() => {
+      hoverSentenceKeyRef.current = key;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(seg.text);
+      utter.lang = "vi-VN";
+      utter.rate = 0.95;
+      utter.onend = () => {
+        if (hoverSentenceKeyRef.current === key)
+          hoverSentenceKeyRef.current = null;
+      };
+      window.speechSynthesis.speak(utter);
+    }, 200);
+  };
+  const onSentenceLeave = () => {
     if (lineHoverTimer.current) {
       clearTimeout(lineHoverTimer.current);
       lineHoverTimer.current = null;
@@ -1375,6 +1612,12 @@ export function PreviewOverlay({
     setDirection("next");
     setIdx(target);
   };
+  // Ref giữ bản mới nhất của goPrev/goNext để dùng trong listener chạm
+  // gốc bên dưới (gắn 1 lần lúc mount, tránh closure cũ).
+  const goPrevRef = useRef(goPrev);
+  const goNextRef = useRef(goNext);
+  goPrevRef.current = goPrev;
+  goNextRef.current = goNext;
   const goToPageId = (pageId) => {
     const target = pages.findIndex((p) => p.id === pageId);
     if (target === -1) return;
@@ -1517,7 +1760,11 @@ export function PreviewOverlay({
         </div>
       </div>
 
-      <div ref={wrapRef} className="er-stage">
+      <div
+        ref={wrapRef}
+        className="er-stage"
+        onDoubleClick={() => setZoom((z) => (z > 1.05 ? 1 : 1.8))}
+      >
         <div
           style={{
             width: stageW * effectiveScale,
@@ -1561,6 +1808,8 @@ export function PreviewOverlay({
                         onResizeStart={() => {}}
                         onLineHover={onLineHover}
                         onLineLeave={onLineLeave}
+                        onSentenceHover={onSentenceHover}
+                        onSentenceLeave={onSentenceLeave}
                         onAskAI={askAboutText}
                         onLayerClick={goToPageId}
                       />
@@ -1579,6 +1828,50 @@ export function PreviewOverlay({
             </div>
           </div>
         </div>
+      </div>
+
+      <div
+        className={`er-side-hotspot er-side-hotspot--left ${
+          leftNavActive ? "er-side-hotspot--visible" : ""
+        }`}
+        onMouseEnter={showLeftNav}
+        onMouseMove={showLeftNav}
+        onMouseLeave={() => scheduleHideLeftNav()}
+        onTouchStart={() => {
+          showLeftNav();
+          scheduleHideLeftNav(2000);
+        }}
+      >
+        <button
+          className="er-side-nav-btn"
+          onClick={goPrev}
+          disabled={!canGoPrev}
+          title="Trang trước"
+        >
+          <ChevronLeft size={22} />
+        </button>
+      </div>
+
+      <div
+        className={`er-side-hotspot er-side-hotspot--right ${
+          rightNavActive ? "er-side-hotspot--visible" : ""
+        }`}
+        onMouseEnter={showRightNav}
+        onMouseMove={showRightNav}
+        onMouseLeave={() => scheduleHideRightNav()}
+        onTouchStart={() => {
+          showRightNav();
+          scheduleHideRightNav(2000);
+        }}
+      >
+        <button
+          className="er-side-nav-btn"
+          onClick={goNext}
+          disabled={!canGoNext}
+          title="Trang sau"
+        >
+          <ChevronRight size={22} />
+        </button>
       </div>
 
       <div

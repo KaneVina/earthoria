@@ -253,7 +253,10 @@
 
 /* ─ Sân khấu hiển thị trang ─
    Chiếm trọn overlay (topbar/bottombar nổi phía trên, không chiếm layout)
-   để sách hiển thị lớn nhất có thể. */
+   để sách hiển thị lớn nhất có thể. Có chừa khoảng đệm trên/dưới bằng
+   chiều cao topbar/bottombar để trang sách không bao giờ bị 2 thanh đó
+   che mất hoặc bị cắt (lỗi flexbox center + overflow khi nội dung to
+   hơn khung nhìn thì phần đầu bị trôi mất khỏi vùng cuộn). */
 .er-stage {
   position: absolute;
   inset: 0;
@@ -261,7 +264,7 @@
   align-items: center;
   justify-content: center;
   overflow: auto;
-  padding: 8px;
+  padding: 62px 10px 108px;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
 }
@@ -293,8 +296,83 @@
     0 4px 12px rgba(31, 42, 36, 0.12);
 }
 
+/* ─ Nút điều hướng 2 bên (thay thế phải kéo xuống thanh số trang) ─
+   Ẩn/mờ mặc định, chỉ hiện khi rê chuột vào vùng đó (desktop) hoặc chạm
+   (di động) — cùng kiểu hành vi với thanh số trang phía dưới. */
+.er-side-hotspot {
+  position: absolute;
+  top: 64px;
+  bottom: 112px;
+  width: 104px;
+  z-index: 25;
+  display: flex;
+  align-items: center;
+}
+.er-side-hotspot--left {
+  left: 0;
+  justify-content: flex-start;
+}
+.er-side-hotspot--right {
+  right: 0;
+  justify-content: flex-end;
+}
+
+.er-side-nav-btn {
+  width: 46px;
+  height: 46px;
+  margin: 0 14px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(8, 22, 18, 0.55);
+  backdrop-filter: blur(6px);
+  color: var(--er-ink);
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.82);
+  pointer-events: none;
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease,
+    background 0.15s ease;
+}
+.er-side-hotspot.er-side-hotspot--visible .er-side-nav-btn {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+.er-side-nav-btn:hover {
+  background: rgba(8, 22, 18, 0.78);
+}
+.er-side-nav-btn:disabled {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+.er-theme-light .er-side-nav-btn,
+.er-theme-sepia .er-side-nav-btn {
+  background: rgba(255, 255, 255, 0.65);
+  border-color: rgba(20, 51, 42, 0.14);
+  color: #1f2a24;
+}
+.er-theme-light .er-side-nav-btn:hover,
+.er-theme-sepia .er-side-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.88);
+}
+@media (max-width: 640px) {
+  .er-side-hotspot {
+    width: 76px;
+  }
+  .er-side-nav-btn {
+    width: 40px;
+    height: 40px;
+    margin: 0 8px;
+  }
+}
 /* ─ Thanh dưới ─
-   Nằm trong 1 vùng "hotspot" trong suốt phủ mép dưới màn hình. Bản thân
+   Nằm trong 1 vùng 'hotspot' trong suốt phủ mép dưới màn hình. Bản thân
    thanh (số trang + nút chuyển trang) ẩn/mờ mặc định, chỉ hiện lên khi
    người dùng rê chuột vào vùng dưới (desktop) hoặc chạm vào (di động),
    để lộ nội dung sách nhiều hơn phía sau. */
@@ -867,6 +945,79 @@
   }
 }
 
+/* Drawer công cụ đổi màu theo theme người dùng đang chọn (không còn cố
+   định 1 màu xanh rừng như trước) */
+.er-theme-dark .er-tools-drawer {
+  background: linear-gradient(165deg, #1e1e1e 0%, #131313 55%, #070707 100%);
+  border-left-color: rgba(255, 255, 255, 0.08);
+}
+.er-theme-light .er-tools-drawer {
+  background: linear-gradient(165deg, #ffffff 0%, #f3f1ea 55%, #e9e6db 100%);
+  color: #1f2a24;
+  border-left-color: rgba(20, 51, 42, 0.1);
+  box-shadow: -24px 0 60px rgba(20, 51, 42, 0.16);
+}
+.er-theme-sepia .er-tools-drawer {
+  background: linear-gradient(165deg, #f8ecd2 0%, #f1e0b8 55%, #e6cf9a 100%);
+  color: #3a2c15;
+  border-left-color: rgba(58, 44, 21, 0.14);
+  box-shadow: -24px 0 60px rgba(58, 44, 21, 0.18);
+}
+
+.er-theme-light .er-tools-drawer-head,
+.er-theme-sepia .er-tools-drawer-head {
+  background: rgba(0, 0, 0, 0.03);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+.er-theme-light .er-tools-drawer-head .er-icon-btn,
+.er-theme-sepia .er-tools-drawer-head .er-icon-btn {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: inherit;
+}
+.er-theme-light .er-tools-drawer-head .er-icon-btn:hover,
+.er-theme-sepia .er-tools-drawer-head .er-icon-btn:hover {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.er-theme-light .er-tools-row,
+.er-theme-light .er-tools-swatch,
+.er-theme-light .er-tools-inline-row,
+.er-theme-light .er-tools-segmented,
+.er-theme-sepia .er-tools-row,
+.er-theme-sepia .er-tools-swatch,
+.er-theme-sepia .er-tools-inline-row,
+.er-theme-sepia .er-tools-segmented {
+  background: rgba(0, 0, 0, 0.045);
+}
+.er-theme-light .er-tools-row:hover,
+.er-theme-light .er-tools-swatch:hover,
+.er-theme-sepia .er-tools-row:hover,
+.er-theme-sepia .er-tools-swatch:hover {
+  background: rgba(0, 0, 0, 0.09);
+}
+.er-theme-light .er-tools-row-icon,
+.er-theme-sepia .er-tools-row-icon {
+  background: rgba(0, 0, 0, 0.06);
+}
+.er-theme-light .er-tools-row.active .er-tools-row-icon,
+.er-theme-sepia .er-tools-row.active .er-tools-row-icon {
+  background: rgba(74, 158, 63, 0.28);
+  color: #fff;
+}
+.er-theme-light .er-tools-section-label,
+.er-theme-sepia .er-tools-section-label {
+  opacity: 0.55;
+}
+.er-theme-light .er-tools-row-desc,
+.er-theme-sepia .er-tools-row-desc {
+  opacity: 0.6;
+}
+.er-theme-light .er-tools-segmented button,
+.er-theme-sepia .er-tools-segmented button {
+  color: inherit;
+}
+
 /* ─ Màu chấm minh hoạ cho từng theme trong popover ─ */
 .er-swatch-dot--forest {
   background: linear-gradient(135deg, #1a5c52, #0d3330);
@@ -881,32 +1032,51 @@
   background: linear-gradient(135deg, #f1e3c6, #e2cf9d);
 }
 
-/* ─ Hiệu ứng lật trang: trượt ngang mượt, không chớp sáng ─ */
+/* ─ Hiệu ứng lật trang: xoay 3D thật quanh trục gáy sách (tận dụng
+   perspective đã đặt sẵn ở phần tử cha), có đổ tối nhẹ lúc giữa lượt lật
+   để giả lập bóng đổ như trang giấy thật đang lật ─ */
 .er-flip {
   width: 100%;
   height: 100%;
-  will-change: transform;
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
 }
 .er-flip--next {
-  animation: er-slide-next 0.36s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: er-page-flip-next 0.46s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: left center;
 }
 .er-flip--prev {
-  animation: er-slide-prev 0.36s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: er-page-flip-prev 0.46s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: right center;
 }
-@keyframes er-slide-next {
-  from {
-    transform: translateX(42px);
+@keyframes er-page-flip-next {
+  0% {
+    transform: rotateY(-88deg);
+    opacity: 0.3;
+    filter: brightness(0.7);
   }
-  to {
-    transform: translateX(0);
+  55% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotateY(0deg);
+    opacity: 1;
+    filter: brightness(1);
   }
 }
-@keyframes er-slide-prev {
-  from {
-    transform: translateX(-42px);
+@keyframes er-page-flip-prev {
+  0% {
+    transform: rotateY(88deg);
+    opacity: 0.3;
+    filter: brightness(0.7);
   }
-  to {
-    transform: translateX(0);
+  55% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotateY(0deg);
+    opacity: 1;
+    filter: brightness(1);
   }
 }
 @media (prefers-reduced-motion: reduce) {
