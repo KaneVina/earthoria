@@ -2911,9 +2911,6 @@
   animation: kidFadeIn 0.3s ease both;
 }
 .kid-modal {
-  --card-accent: var(--kid-blue);
-  --card-accent-light: var(--kid-blue-pale);
-  --card-accent-dark: var(--kid-blue-dark);
   position: relative;
   width: 100%;
   max-width: 640px;
@@ -2923,7 +2920,8 @@
   border-radius: var(--kid-radius-xl);
   box-shadow:
     var(--kid-shadow-lg),
-    0 0 0 6px color-mix(in srgb, var(--card-accent) 14%, transparent);
+    0 0 0 6px
+      color-mix(in srgb, var(--card-accent, var(--kid-blue)) 14%, transparent);
   display: grid;
   grid-template-columns: 230px 1fr;
   animation: kidModalIn 0.4s var(--kid-ease-spring) both;
