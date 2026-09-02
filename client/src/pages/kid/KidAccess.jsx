@@ -29,7 +29,6 @@ import {
   Heart,
 } from "lucide-react";
 import { kidAccessService } from "../../services/kidAccessService";
-import KnowledgeGarden from "../../components/knowledgeGarden/KnowledgeGarden";
 import "../../components/assets/css/kidAccess.css";
 import GardenWidget from "../../components/knowledgeGarden/GardenWidget";
 import KidCloudCurtain from "../../components/KidCloudCurtain";
@@ -476,7 +475,7 @@ export default function KidAccess() {
         setChild(profileRes.data.data.child);
         setBooks(booksRes.data.data.books);
         setStatus("ok");
-      } catch (err) {
+      } catch {
         if (!cancelled) setStatus("invalid");
       }
     })();
@@ -907,6 +906,13 @@ export default function KidAccess() {
   const inWindow = child.allowWindowEnabled
     ? withinWindow(child.allowStart, child.allowEnd)
     : true;
+  // bé chỉ thực sự đọc được khi CẢ hai điều kiện đều thoả: chưa hết giờ
+  // trong ngày VÀ đang trong khung giờ ba mẹ cho phép — dùng chung 1 biến
+  // để mọi nút "Đọc ngay/Đọc tiếp" (kệ sách, thẻ đang đọc dở, modal) đều
+  // khoá đồng nhất, tránh trường hợp bấm được nhưng vào tới nơi lại bị
+  // server chặn (trải nghiệm dở, dù không mất an toàn vì server luôn
+  // kiểm tra lại).
+  const canRead = inWindow && !limitReached;
   const showRestTip =
     child.tipsEnabled &&
     (child.tipsFrequency === "rest" || child.tipsFrequency === "interval");
@@ -1173,7 +1179,7 @@ export default function KidAccess() {
                                     query={searchQuery}
                                   />
                                 </span>
-                                {(b.ageMin || b.ageMax) && (
+                                {!!(b.ageMin || b.ageMax) && (
                                   <span className="kid-search-result-age">
                                     {b.ageMin ?? "0"}–{b.ageMax ?? "17"} tuổi
                                   </span>
@@ -1347,11 +1353,11 @@ export default function KidAccess() {
                       <button
                         key={entry.slug}
                         type="button"
-                        className={`kid-continue-card kid-continue-card--${accent}${limitReached ? " is-locked" : ""}`}
+                        className={`kid-continue-card kid-continue-card--${accent}${canRead ? "" : " is-locked"}`}
                         onClick={(e) => {
-                          // hết giờ đọc hôm nay thì không cho mở sách tiếp,
-                          // giống hệt cách kệ sách bên dưới đang khoá
-                          if (limitReached) return;
+                          // hết giờ hôm nay hoặc ngoài khung giờ cho phép thì
+                          // không cho mở sách tiếp, giống hệt kệ sách bên dưới
+                          if (!canRead) return;
                           spawnRipple(e);
                           spawnSparkles(e, 8);
                           handleReadNow(entry);
@@ -1384,11 +1390,15 @@ export default function KidAccess() {
                           </div>
                         </div>
                         <span
-                          className={`kid-continue-cta${limitReached ? " is-locked" : ""}`}
+                          className={`kid-continue-cta${canRead ? "" : " is-locked"}`}
                         >
                           {limitReached ? (
                             <>
                               <Lock size={13} /> Hết giờ hôm nay
+                            </>
+                          ) : !inWindow ? (
+                            <>
+                              <Lock size={13} /> Ngoài giờ
                             </>
                           ) : (
                             <>
@@ -1464,17 +1474,21 @@ export default function KidAccess() {
                         <span className="kid-book-stamp" aria-hidden="true">
                           <Star size={14} fill="currentColor" />
                         </span>
-                        {(b.ageMin || b.ageMax) && (
+                        {!!(b.ageMin || b.ageMax) && (
                           <span className="kid-book-age">
                             {b.ageMin ?? "0"}–{b.ageMax ?? "17"} tuổi
                           </span>
                         )}
                         <span
-                          className={`kid-book-cta${limitReached ? " is-locked" : ""}`}
+                          className={`kid-book-cta${canRead ? "" : " is-locked"}`}
                         >
                           {limitReached ? (
                             <>
                               <Lock size={13} /> Hết giờ hôm nay
+                            </>
+                          ) : !inWindow ? (
+                            <>
+                              <Lock size={13} /> Ngoài giờ
                             </>
                           ) : (
                             <>
@@ -1567,7 +1581,7 @@ export default function KidAccess() {
                 >
                   <X size={16} />
                 </button>
-                {(activeBook.ageMin || activeBook.ageMax) && (
+                {!!(activeBook.ageMin || activeBook.ageMax) && (
                   <span className="kid-modal-age">
                     <Smile size={12} /> Dành cho {activeBook.ageMin ?? "0"}–
                     {activeBook.ageMax ?? "17"} tuổi
@@ -1584,10 +1598,10 @@ export default function KidAccess() {
                 </div>
                 <button
                   type="button"
-                  className={`kid-btn kid-modal-cta${limitReached ? " is-disabled" : ""}`}
-                  disabled={limitReached}
+                  className={`kid-btn kid-modal-cta${canRead ? "" : " is-disabled"}`}
+                  disabled={!canRead}
                   onClick={(e) => {
-                    if (limitReached) return;
+                    if (!canRead) return;
                     spawnRipple(e);
                     spawnSparkles(e, 12);
                     handleReadNow(activeBook);
@@ -1596,6 +1610,10 @@ export default function KidAccess() {
                   {limitReached ? (
                     <>
                       <Lock size={15} /> Hôm nay đã đọc đủ giờ
+                    </>
+                  ) : !inWindow ? (
+                    <>
+                      <Lock size={15} /> Ngoài giờ đọc sách
                     </>
                   ) : (
                     <>
