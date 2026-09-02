@@ -354,10 +354,13 @@ export default function ParentDashboard() {
   const [books, setBooks] = useState([]);
   const [booksLoading, setBooksLoading] = useState(false);
 
+  const childrenReqId = useRef(0);
   const loadChildren = useCallback(async () => {
+    const reqId = ++childrenReqId.current;
     setChildrenLoading(true);
     try {
       const res = await childService.list();
+      if (reqId !== childrenReqId.current) return; // đã có request/thao tác mới hơn, bỏ kết quả cũ
       const list = res.data.data.children;
       setChildren(list);
       setChildLimit(res.data.data.childLimit ?? null);
@@ -365,11 +368,12 @@ export default function ParentDashboard() {
         prev && list.some((c) => c.id === prev) ? prev : (list[0]?.id ?? null),
       );
     } catch (err) {
+      if (reqId !== childrenReqId.current) return;
       toast.error(
         err.response?.data?.message || "Không thể tải danh sách hồ sơ trẻ em",
       );
     } finally {
-      setChildrenLoading(false);
+      if (reqId === childrenReqId.current) setChildrenLoading(false);
     }
   }, []);
 
@@ -422,12 +426,25 @@ export default function ParentDashboard() {
       loadDashboard(activeChildId);
       loadBooks(activeChildId);
     } else {
+      // Vô hiệu hóa mọi loadDashboard()/loadBooks() cũ đang bay ngầm.
+      // Nếu không: khi bé đang xem bị xóa (hoặc bị bỏ chọn) → activeChildId
+      // về null → set về rỗng ở đây, nhưng nếu có 1 request GET dashboard/sách
+      // của bé đó gửi TRƯỚC lúc xóa vẫn đang bay và resolve SAU dòng này, nó
+      // sẽ "hồi sinh" lại dashboard/sách của bé đã xóa, và vì không còn ai gọi
+      // lại loadDashboard/loadBooks nữa (activeChildId vẫn là null) nên dữ
+      // liệu ma đó sẽ ở lại màn hình vĩnh viễn cho tới khi F5.
+      dashboardReqId.current += 1;
+      booksReqId.current += 1;
       setDashboard(null);
       setBooks([]);
     }
   }, [activeChildId, loadDashboard, loadBooks]);
 
   const handleChildCreated = (child) => {
+    // Vô hiệu hóa loadChildren() cũ đang bay ngầm (vd: từ lúc mount trang) —
+    // nếu nó resolve trễ hơn, dữ liệu cũ (chưa có bé mới) sẽ đè mất bé vừa
+    // tạo khỏi UI dù bé đã được tạo thành công trên server.
+    childrenReqId.current += 1;
     setChildren((prev) => [...prev, { ...child, todayMinutes: 0 }]);
     setActiveChildId(child.id);
     // Cập nhật lạc quan số hồ sơ hiện có ngay lập tức — tránh banner giới
@@ -519,6 +536,8 @@ export default function ParentDashboard() {
     setSaveStatus("saving");
     try {
       await childService.updateSettings(activeChildId, patch);
+      // Cùng lý do: chặn loadChildren() cũ resolve trễ hơn đè mất field vừa lưu
+      childrenReqId.current += 1;
       setChildren((prev) =>
         prev.map((c) => (c.id === activeChildId ? { ...c, ...patch } : c)),
       );
@@ -601,6 +620,8 @@ export default function ParentDashboard() {
           prev ? { ...prev, child: res.data.data.child } : prev,
         );
       }
+      // Cùng lý do: chặn loadChildren() cũ đè mất trạng thái isLocked vừa set
+      childrenReqId.current += 1;
       setChildren((prev) =>
         prev.map((c) =>
           c.id === lockTarget.id ? { ...c, isLocked: true } : c,
@@ -637,6 +658,8 @@ export default function ParentDashboard() {
         prev ? { ...prev, child: res.data.data.child } : prev,
       );
     }
+    // Cùng lý do: chặn loadChildren() cũ đè mất trạng thái isLocked vừa mở
+    childrenReqId.current += 1;
     setChildren((prev) =>
       prev.map((c) => (c.id === lockTarget.id ? { ...c, isLocked: false } : c)),
     );
