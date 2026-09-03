@@ -22,8 +22,8 @@ import {
 } from "lucide-react";
 
 const META = {
-  effectiveDate: "01 Tháng 01, 2026",
-  updatedDate: "04 Tháng 09, 2026",
+  effectiveDate: "05 Tháng 09, 2026",
+  updatedDate: "02 Tháng 09, 2026",
   version: "v1.0",
 };
 
@@ -47,6 +47,39 @@ const SUMMARY_CARDS = [
     icon: Flag,
     title: "Quy trình báo cáo minh bạch",
     desc: "Kênh tiếp nhận và xử lý báo cáo vi phạm bản quyền được công bố rõ ràng, phản hồi trong thời gian quy định.",
+  },
+];
+
+const LOGO_ASSETS = [
+  {
+    src: "/logo/logo-mau/lg-m-chinh.png",
+    name: "Earthoria",
+    desc: "Wordmark & biểu trưng chính",
+  },
+  {
+    src: "/logo/logo-mau/lg-m-cce.png",
+    name: "Commerce & Customer Experience",
+    desc: "Thương mại & trải nghiệm khách hàng",
+  },
+  {
+    src: "/logo/logo-mau/lg-m-family-studio.png",
+    name: "Family Studio",
+    desc: "Nội dung cho gia đình",
+  },
+  {
+    src: "/logo/logo-mau/lg-m-game-studio.png",
+    name: "Game Studio",
+    desc: "Sản xuất trò chơi giáo dục",
+  },
+  {
+    src: "/logo/logo-mau/lg-kf-big.png",
+    name: "Knowledge Farm",
+    desc: "Tri thức & giáo dục mở rộng",
+  },
+  {
+    src: "/logo/logo-mau/lg-m-im.png",
+    name: "Immersive Studio",
+    desc: "Trải nghiệm AR & AI tương tác",
   },
 ];
 
@@ -117,14 +150,17 @@ const SECTIONS = [
     title: "Logo & Bộ Nhận Diện Thị Giác",
     paragraphs: [
       "Toàn bộ logo, biểu trưng, biểu tượng ứng dụng, bảng màu thương hiệu (rừng xanh, vàng đồng, ngà voi), kiểu chữ Playfair Display và Be Vietnam Pro khi kết hợp theo bố cục đặc trưng, cùng các hoạ tiết trang trí xuất hiện trên Nền tảng đều cấu thành bộ nhận diện thương hiệu (trade dress) độc quyền của Earthoria.",
+      "Dưới đây là các logo chính thức thuộc hệ sinh thái Earthoria, tương ứng với các thương hiệu con được giới thiệu tại mục Hệ Sinh Thái trên trang chủ. Mỗi logo là một tài sản trí tuệ độc lập và được bảo hộ như một phần của bộ nhận diện chung.",
     ],
+    logoShowcase: true,
     callout: {
       title: "Không tự ý chỉnh sửa logo",
-      text: "Logo Earthoria dưới mọi phiên bản (logo ngang, logo dọc, logo rút gọn, logo dành cho nền tối) không được thay đổi màu sắc, tỷ lệ, hiệu ứng hoặc kết hợp với biểu tượng khác khi chưa có sự cho phép bằng văn bản từ Earthoria, kể cả trong tài liệu hợp tác hoặc bài viết truyền thông.",
+      text: "Logo Earthoria và các logo thương hiệu con dưới mọi phiên bản (ngang, dọc, rút gọn, dành cho nền tối) không được thay đổi màu sắc, tỷ lệ, hiệu ứng hoặc kết hợp với biểu tượng khác khi chưa có sự cho phép bằng văn bản từ Earthoria, kể cả trong tài liệu hợp tác hoặc bài viết truyền thông.",
     },
     list: [
       "Đối tác truyền thông, nhà bán lẻ liên kết có thể sử dụng logo gốc, không chỉnh sửa, kèm theo văn bản chấp thuận hợp tác cụ thể",
       "Nghiêm cấm sử dụng logo hoặc bộ nhận diện để tạo sản phẩm, giao diện, hoặc dịch vụ có khả năng gây nhầm lẫn là sản phẩm chính thức của Earthoria",
+      "Tệp gốc (vector, độ phân giải cao, phiên bản nền trong suốt) của mọi logo trong hệ sinh thái chỉ được cung cấp trực tiếp bởi Earthoria, không được tải xuống và tái sử dụng từ mã nguồn hoặc giao diện website dưới bất kỳ hình thức nào",
       "Mọi yêu cầu sử dụng logo cho mục đích báo chí, học thuật hoặc phi lợi nhuận vui lòng liên hệ qua kênh tại Mục 10",
     ],
   },
@@ -185,15 +221,64 @@ const SECTIONS = [
     num: "08",
     title: "Hành Vi Xâm Phạm Bị Nghiêm Cấm",
     paragraphs: [
-      "Các hành vi dưới đây, dù thực hiện trực tiếp hay gián tiếp, đều bị coi là xâm phạm quyền sở hữu trí tuệ của Earthoria và có thể bị xử lý theo quy định pháp luật.",
+      "Các hành vi dưới đây, dù thực hiện trực tiếp hay gián tiếp, toàn bộ hay một phần, đều bị coi là xâm phạm quyền sở hữu trí tuệ của Earthoria và có thể bị xử lý theo quy định của pháp luật sở hữu trí tuệ hiện hành. Danh sách được phân theo từng nhóm tài sản để thuận tiện tra cứu, nhưng không mang tính giới hạn — Earthoria có quyền đánh giá các hành vi tương tự chưa được liệt kê theo cùng nguyên tắc.",
     ],
-    list: [
-      "Sao chép, làm giả hoặc mô phỏng logo, tên thương hiệu, giao diện hoặc bộ nhận diện của Earthoria nhằm mục đích thương mại hoặc gây nhầm lẫn",
-      "Sử dụng kỹ thuật dịch ngược (reverse engineering), cạo dữ liệu (scraping) tự động hoặc truy cập trái phép nhằm sao chép mã nguồn, cơ sở dữ liệu sản phẩm",
-      "Đăng ký nhãn hiệu, kiểu dáng công nghiệp hoặc tên miền trùng hoặc gây nhầm lẫn với các tên gọi thuộc hệ sinh thái Earthoria",
-      "Sử dụng tên gọi hoặc hình ảnh của Eira, Kid Mode hoặc bất kỳ thương hiệu con nào để xây dựng sản phẩm hướng đến trẻ em mà không có sự cho phép",
-      "Phân phối lại, bán hoặc cấp phép thứ cấp nội dung, tài sản đồ họa của Earthoria dưới danh nghĩa của bên thứ ba",
+    groupedList: [
+      {
+        label: "Website & Giao Diện",
+        items: [
+          "Sao chép, phái sinh gần giống bố cục, luồng điều hướng, hiệu ứng chuyển động hoặc các thành phần giao diện đặc trưng của website/ứng dụng Earthoria cho một sản phẩm hoặc nền tảng khác",
+          "Tạo bản sao gương (mirror site), nhúng iframe hoặc đóng khung (framing) toàn bộ hoặc một phần website Earthoria mà không có sự cho phép",
+          "Sử dụng công cụ tự động để thu thập (scrape), tải hàng loạt hình ảnh sản phẩm, mô tả sách hoặc cấu trúc trang nhằm dựng lại một website, ứng dụng có nội dung hoặc giao diện tương tự",
+        ],
+      },
+      {
+        label: "Logo & Bộ Nhận Diện Thương Hiệu",
+        items: [
+          "Chỉnh sửa màu sắc, tỷ lệ, hiệu ứng hoặc ghép logo Earthoria và các logo thương hiệu con (Family Studio, Game Studio, Immersive Studio, Knowledge Farm...) với biểu tượng, khẩu hiệu của bên thứ ba",
+          "Sử dụng logo hoặc biến thể gây nhầm lẫn làm biểu tượng ứng dụng, favicon, ảnh đại diện mạng xã hội cho sản phẩm không thuộc Earthoria",
+          "Đăng ký logo, biểu tượng hoặc bố cục tương tự làm nhãn hiệu, kiểu dáng công nghiệp tại bất kỳ quốc gia hoặc vùng lãnh thổ nào",
+          "Tải xuống tệp logo trực tiếp từ mã nguồn hoặc giao diện website để tái sử dụng ngoài phạm vi được cho phép tại Mục 03",
+        ],
+      },
+      {
+        label: "Ứng Dụng Di Động & Hệ Thống Kỹ Thuật",
+        items: [
+          "Dịch ngược (reverse engineering), giải mã, giải nén hoặc trích xuất mã nguồn ứng dụng web, ứng dụng di động, mã QR/AR hoặc giao diện lập trình (API) nội bộ của Earthoria",
+          "Đóng gói lại ứng dụng dưới tên gọi, biểu tượng khác (rebrand/white-label) để phân phối trên kho ứng dụng hoặc kênh khác",
+          "Xây dựng công cụ, tiện ích mở rộng (extension) hoặc bot tự động can thiệp vào hệ thống nhằm khai thác trái phép API, cơ sở dữ liệu sản phẩm hoặc cơ chế Hạng Thành Viên",
+        ],
+      },
+      {
+        label: "Sách, Ấn Phẩm & Nội Dung Biên Tập",
+        items: [
+          "Sao chụp, in lại, số hóa hoặc chia sẻ toàn bộ nội dung sách giấy, sách điện tử Earthoria nhằm mục đích phân phối, bán lại dưới bất kỳ hình thức nào",
+          "Dịch, biên tập hoặc phái sinh nội dung sách, bài viết Knowledge Farm để xuất bản dưới tên tác giả khác mà chưa được cấp phép hoặc không ghi nguồn",
+          "Sử dụng hình minh họa, mô hình 3D của sách AR cho ấn phẩm, sản phẩm hoặc chiến dịch thương mại khác",
+        ],
+      },
+      {
+        label: "Trò Chơi Giáo Dục, Trải Nghiệm AR & Trợ Lý AI Eira",
+        items: [
+          "Sao chép luật chơi, giao diện, cơ chế tính điểm hoặc bảng xếp hạng của các minigame do Game Studio phát triển để xây dựng trò chơi cạnh tranh",
+          "Trích xuất, huấn luyện lại hoặc mô phỏng giọng điệu hội thoại, luồng gợi ý cá nhân hóa của trợ lý AI Eira cho sản phẩm hoặc dịch vụ khác",
+          "Tạo mã AR giả mạo, nội dung thực tế tăng cường không chính thức gắn mác Earthoria nhằm đánh lừa người dùng hoặc trẻ em",
+          "Sử dụng tên gọi, hình ảnh của Eira, Kid Mode hoặc bất kỳ thương hiệu con nào để phát triển sản phẩm, dịch vụ hướng đến trẻ em mà không có sự cho phép bằng văn bản",
+        ],
+      },
+      {
+        label: "Tên Miền, Mạng Xã Hội & Danh Tính Trực Tuyến",
+        items: [
+          "Đăng ký tên miền, trang mạng xã hội, kênh nội dung có tên gọi hoặc hình ảnh đại diện gây nhầm lẫn với Earthoria hoặc các thương hiệu con của hệ sinh thái",
+          "Mạo danh tài khoản, trang chính thức của Earthoria để tương tác, thu thập thông tin cá nhân hoặc trục lợi từ khách hàng, đặc biệt là phụ huynh và trẻ em",
+          "Sử dụng tên thương hiệu Earthoria làm từ khóa quảng cáo trả phí theo cách gây hiểu nhầm về nguồn gốc sản phẩm hoặc dịch vụ được quảng cáo",
+        ],
+      },
     ],
+    callout: {
+      title: "Hậu quả khi vi phạm",
+      text: "Tùy theo tính chất và mức độ, Earthoria có thể yêu cầu gỡ bỏ nội dung, tạm ngưng hoặc chấm dứt tài khoản liên quan, đồng thời bảo lưu quyền áp dụng các biện pháp pháp lý theo quy định của pháp luật sở hữu trí tuệ Việt Nam và các điều ước quốc tế mà Việt Nam là thành viên.",
+    },
   },
   {
     id: "quy-trinh-bao-cao",
@@ -614,6 +699,48 @@ export default function CopyrightNotice() {
           font-weight: 300; margin: 0;
         }
 
+        .legal-logo-grid {
+          display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+          margin: 24px 0 8px;
+        }
+        .legal-logo-card {
+          display: flex; flex-direction: column; align-items: center; text-align: center;
+          border: 0.5px solid var(--border); background: var(--white);
+          padding: 24px 18px; transition: all 0.3s ease;
+        }
+        .legal-logo-card:hover { border-color: var(--border-gold); transform: translateY(-2px); }
+        .legal-logo-frame {
+          width: 100%; height: 64px; margin-bottom: 16px;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .legal-logo-frame img {
+          max-width: 100%; max-height: 100%; object-fit: contain;
+          user-select: none; pointer-events: none;
+        }
+        .legal-logo-name {
+          font-family: 'Playfair Display', serif;
+          font-size: 14.5px; color: var(--forest); font-weight: 500; margin-bottom: 6px;
+        }
+        .legal-logo-desc {
+          font-size: 11.5px; color: var(--text-muted); font-weight: 300; line-height: 1.6;
+        }
+
+        .legal-grouped-list { margin: 24px 0 4px; display: flex; flex-direction: column; gap: 26px; }
+        .legal-group-label {
+          font-family: 'Be Vietnam Pro', sans-serif;
+          font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+          color: var(--gold); font-weight: 500; margin-bottom: 12px;
+          padding-bottom: 10px; border-bottom: 0.5px solid var(--border);
+        }
+        .legal-group ul {
+          list-style: none; padding: 0; margin: 0;
+          display: flex; flex-direction: column; gap: 13px;
+        }
+        .legal-group li {
+          display: flex; gap: 13px; align-items: flex-start;
+          font-size: 13.5px; line-height: 1.8; color: var(--text-muted); font-weight: 300;
+        }
+
         .legal-eco-grid {
           display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
           margin: 24px 0 8px;
@@ -709,6 +836,9 @@ export default function CopyrightNotice() {
         body.dark-mode .legal-section { border-color: rgba(255,255,255,0.07); }
         body.dark-mode .legal-section-title { color: #c8d4cc; }
         body.dark-mode .legal-copy-btn { border-color: rgba(255,255,255,0.1); color: rgba(180,200,188,0.5); }
+        body.dark-mode .legal-logo-card { background: #1c2822; border-color: rgba(255,255,255,0.07); }
+        body.dark-mode .legal-logo-name { color: #c8d4cc; }
+        body.dark-mode .legal-group-label { border-color: rgba(255,255,255,0.07); }
         body.dark-mode .legal-eco-card { background: #1c2822; border-color: rgba(255,255,255,0.07); }
         body.dark-mode .legal-eco-name { color: #c8d4cc; }
         body.dark-mode .legal-faq-section { background: #161e1a; }
@@ -726,8 +856,10 @@ export default function CopyrightNotice() {
           .legal-layout { grid-template-columns: 1fr; gap: 40px; }
           .legal-sidebar-sticky { position: relative; top: auto; max-height: none; overflow: visible; }
           .legal-eco-grid { grid-template-columns: 1fr; }
+          .legal-logo-grid { grid-template-columns: repeat(2, 1fr); }
         }
         @media (max-width: 600px) {
+          .legal-logo-grid { grid-template-columns: 1fr; }
           .legal-summary-inner { grid-template-columns: 1fr; }
           .legal-hero-actions { flex-direction: column; width: 100%; }
           .legal-btn-main, .legal-btn-ghost { width: 100%; justify-content: center; }
@@ -919,6 +1051,25 @@ export default function CopyrightNotice() {
                     </div>
                   </div>
                 )}
+                {s.logoShowcase && (
+                  <div className="legal-logo-grid">
+                    {LOGO_ASSETS.map((logo) => (
+                      <div className="legal-logo-card" key={logo.src}>
+                        <div className="legal-logo-frame">
+                          <img
+                            src={logo.src}
+                            alt={`Logo ${logo.name} — Earthoria`}
+                            draggable="false"
+                            onDragStart={(e) => e.preventDefault()}
+                            onContextMenu={(e) => e.preventDefault()}
+                          />
+                        </div>
+                        <span className="legal-logo-name">{logo.name}</span>
+                        <span className="legal-logo-desc">{logo.desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {s.ecosystemTable && (
                   <div className="legal-eco-grid">
                     {ECOSYSTEM_BRANDS.map((b) => (
@@ -928,6 +1079,23 @@ export default function CopyrightNotice() {
                           <span className="legal-eco-role">{b.role}</span>
                         </div>
                         <p className="legal-eco-desc">{b.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {s.groupedList && (
+                  <div className="legal-grouped-list">
+                    {s.groupedList.map((g, gi) => (
+                      <div className="legal-group" key={gi}>
+                        <div className="legal-group-label">{g.label}</div>
+                        <ul>
+                          {g.items.map((item, i) => (
+                            <li key={i}>
+                              <span className="legal-li-dot" />
+                              <span>{item}</span>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     ))}
                   </div>
