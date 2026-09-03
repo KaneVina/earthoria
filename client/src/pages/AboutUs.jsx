@@ -291,10 +291,11 @@ export default function AboutUs() {
             Công Nghệ
           </h1>
           <p className="about-hero-sub reveal reveal-delay-1">
-            Một nhóm sinh viên FPT University Campus Cần Thơ với niềm đam mê
-            cháy bỏng về giáo dục sáng tạo và công nghệ tương lai. Chúng tôi tin
-            rằng mỗi đứa trẻ xứng đáng được khám phá thế giới theo cách riêng
-            của mình.
+            Chúng tôi là nhóm sinh viên đến từ FPTU Cần Thơ, cùng chung định
+            hướng phát triển các giải pháp giáo dục sáng tạo dựa trên công nghệ.
+            Chúng tôi tin rằng mỗi trẻ em đều xứng đáng được tiếp cận tri thức
+            theo cách trực quan, tương tác và phù hợp với hành trình khám phá
+            của riêng mình.
           </p>
           <div className="about-hero-meta reveal reveal-delay-2">
             {[
@@ -348,7 +349,7 @@ export default function AboutUs() {
               </div>
               <blockquote className="mission-quote">
                 "Chúng tôi không chỉ tạo ra một cuốn sách —<br />
-                chúng tôi tạo ra một <em>cánh cửa</em> để trẻ em bước vào thế
+                chúng tôi kiến tạo một <em>cánh cửa</em>kết nối trẻ em với thế
                 giới tri thức."
               </blockquote>
               <p className="mission-desc">
@@ -358,14 +359,14 @@ export default function AboutUs() {
                 nối tình yêu đọc sách với sức mạnh của AI và Thực tế Tăng cường.
               </p>
               <p className="mission-desc">
-                Chúng tôi tin rằng khi công nghệ được sử dụng đúng mục đích, nó
-                không chỉ không làm hại việc học mà còn khuếch đại khả năng khám
-                phá tự nhiên của trẻ lên gấp nhiều lần.
+                Chúng tôi tin rằng công nghệ, khi được thiết kế với mục tiêu
+                giáo dục rõ ràng, có thể trở thành công cụ khuếch đại khả năng
+                khám phá, tương tác và hình thành tri thức của trẻ.
               </p>
               <div className="mission-signature">
                 <div className="mission-sig-line"></div>
                 <span className="mission-sig-text">
-                  Nguyễn Đoàn Quốc Thái — CEO, Earthoria
+                  Nguyễn Đoàn Quốc Thái — Leader & CEO, Earthoria
                 </span>
               </div>
             </div>
@@ -450,8 +451,7 @@ export default function AboutUs() {
               <Logo3D />
             </div>
             <p className="section-subtitle">
-              Mỗi đường nét, màu sắc và hình khối đều mang một ý nghĩa riêng —
-              phản ánh triết lý và tầm nhìn của Earthoria.
+              Mỗi đường nét, màu sắc và hình khối đều mang một ý nghĩa riêng góp phần thể hiện triết lý thiết kế và tầm nhìn thương hiệu của Earthoria.
             </p>
           </div>
 
@@ -489,17 +489,17 @@ export default function AboutUs() {
                 {
                   num: "02",
                   title: "Màu Xanh Lá — Forest Green",
-                  desc: "Bộ màu chủ đạo Forest Green (#0d3330) thể hiện sự bền vững, tin cậy và gần gũi với thiên nhiên. Màu xanh đậm truyền tải thông điệp giáo dục nghiêm túc, trong khi các sắc độ sáng hơn mang lại cảm giác tươi mới, phù hợp với đối tượng trẻ em.",
+                  desc: "Forest Green là màu sắc chủ đạo trong hệ thống nhận diện, thể hiện sự bền vững, tin cậy và gần gũi với thiên nhiên. Màu xanh đậm truyền tải thông điệp giáo dục nghiêm túc, trong khi các sắc độ sáng hơn mang lại cảm giác tươi mới, phù hợp với đối tượng trẻ em.",
                 },
                 {
                   num: "03",
                   title: "Ba Giá Trị Cốt Lõi",
-                  desc: "Logo ẩn chứa ba chữ E — Education (Giáo dục), Environment (Môi trường) và Exploration (Khám phá). Đây là ba trụ cột định hướng toàn bộ sản phẩm và nội dung của Earthoria, từ thiết kế sách đến tính năng AI và AR.",
+                  desc: "Logo tích hợp ba giá trị cốt lõi được đại diện bởi chữ E: Education (Giáo dục), Environment (Môi trường) và Exploration (Khám phá). Đây là ba trụ cột chiến lược định hướng hệ sinh thái sản phẩm và nội dung của Earthoria.",
                 },
                 {
                   num: "04",
                   title: "Ngôn Ngữ Thiết Kế Tối Giản",
-                  desc: "Đường nét sạch, hình khối đơn giản giúp logo dễ nhận diện trên mọi nền tảng — từ bìa sách in ấn đến icon ứng dụng di động. Tính scalable của logo đảm bảo thương hiệu luôn nhất quán dù ở kích thước nào.",
+                  desc: "Đường nét sạch, hình khối đơn giản giúp logo dễ nhận diện trên mọi nền tản. Thiết kế có khả năng mở rộng linh hoạt của logo đảm bảo thương hiệu luôn nhất quán dù ở kích thước nào.",
                 },
               ].map((item, i) => (
                 <div className="logo-analysis-item" data-logo-idx={i} key={i}>
@@ -542,20 +542,18 @@ export default function AboutUs() {
                 className="section-subtitle"
                 style={{ textAlign: "left", marginLeft: 0, marginTop: "20px" }}
               >
-                Sáu sinh viên FPT với năng lực đa dạng từ thiết kế, lập trình
-                đến marketing — cùng nhau đặt nền móng cho một sản phẩm giáo dục
-                đột phá.
+               Sáu sinh viên FPT với chuyên môn đa lĩnh vực, từ thiết kế, phát triển phần mềm đến marketing cùng xây dựng nền tảng cho một sản phẩm EdTech tích hợp AI và AR.
               </p>
             </div>
             <div className="team-intro-right reveal reveal-delay-1">
               {[
-                { num: "6", suffix: "+", label: "Chuyên môn kết hợp" },
+                { num: "6", suffix: "+", label: "Lĩnh vực chuyên môn" },
                 {
                   num: "2",
                   suffix: " tháng",
                   label: "Thời gian phát triển MVP",
                 },
-                { num: "To", suffix: "pic", label: "Dự án startup AI+AR" },
+                { num: "EdTech ", suffix: "tích hợp AI & AR", label: "Lĩnh vực hướng đến" },
               ].map((s, i) => (
                 <div className="team-intro-stat" key={i}>
                   <div className="team-intro-stat-num">

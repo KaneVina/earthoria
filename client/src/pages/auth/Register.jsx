@@ -742,8 +742,8 @@ export default function Register() {
                     </div>
                     <span className="auth-check-label">
                       Tôi đồng ý với{" "}
-                      <a href="/legal/terms">Điều khoản dịch vụ</a> và{" "}
-                      <a href="/legal/privacy">Chính sách bảo mật</a> của
+                      <Link to="/legal/terms">Điều khoản dịch vụ</Link> và{" "}
+                      <Link to="/legal/privacy">Chính sách bảo mật</Link> của
                       Earthoria.
                     </span>
                   </label>

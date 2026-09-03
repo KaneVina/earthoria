@@ -74,9 +74,9 @@ api.interceptors.response.use(
         const newToken = await refreshSession();
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return api(originalRequest);
-      } catch (refreshError) {
+       } catch (refreshError) {
         notifySessionExpired(refreshError.response?.data?.message);
-        window.location.href = "/login";
+        useAuthStore.getState().logout();
         return Promise.reject(refreshError);
       }
     }

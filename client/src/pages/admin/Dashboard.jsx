@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { lazy, Suspense, useRef, useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   Users,
   BookOpen,
@@ -751,13 +752,13 @@ export default function Dashboard() {
           <h3 className="a-table-title">
             Đơn hàng <em>gần đây</em>
           </h3>
-          <a href="/dashboard/orders" className="a-table-link">
+          <Link to="/dashboard/orders" className="a-table-link">
             Xem tất cả{" "}
             <ArrowUpRight
               size={11}
               style={{ display: "inline", verticalAlign: "middle" }}
             />
-          </a>
+          </Link>
         </div>
         <div className="a-table-wrap">
           <table className="a-table">

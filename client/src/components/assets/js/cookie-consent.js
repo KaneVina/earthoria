@@ -10,28 +10,28 @@
       title: "Cookie thiết yếu",
       badge: "Luôn bật",
       locked: true,
-      desc: "Cần thiết để website hoạt động: đăng nhập, giỏ hàng, bảo mật phiên làm việc. Không thể tắt vì thiếu chúng trang sẽ không hoạt động đúng.",
+      desc: "Cần thiết để duy trì các chức năng cốt lõi của website. Các cookie này không thể tắt vì cần thiết để hệ thống vận hành chính xác và an toàn.",
     },
     {
       key: "analytics",
       title: "Cookie phân tích",
       badge: "Tuỳ chọn",
       locked: false,
-      desc: "Giúp chúng tôi hiểu cách bạn sử dụng Earthoria (trang xem nhiều, thời gian ở lại) để cải thiện trải nghiệm.",
+      desc: "Giúp chúng tôi phân tích hành vi sử dụng và mức độ tương tác với Earthoria nhằm tối ưu hiệu suất và trải nghiệm người dùng.",
     },
     {
       key: "marketing",
       title: "Cookie tiếp thị",
       badge: "Tuỳ chọn",
       locked: false,
-      desc: "Dùng để cá nhân hoá quảng cáo và đo lường hiệu quả các chiến dịch trên mạng xã hội, công cụ tìm kiếm.",
+      desc: "Được sử dụng để cá nhân hoá nội dung quảng cáo, phân phối quảng cáo phù hợp và đo lường hiệu quả các chiến dịch tiếp thị trên nền tảng mạng xã hội và công cụ tìm kiếm.",
     },
     {
       key: "functional",
       title: "Cookie chức năng",
       badge: "Tuỳ chọn",
       locked: false,
-      desc: "Ghi nhớ tuỳ chọn của bạn như chế độ sáng/tối, ngôn ngữ hiển thị để lần sau ghé thăm được thuận tiện hơn.",
+      desc: "Ghi nhớ các tùy chọn và thiết lập cá nhân của bạn nhằm mang lại trải nghiệm nhất quán và thuận tiện trong các lần truy cập tiếp theo.",
     },
   ];
 
