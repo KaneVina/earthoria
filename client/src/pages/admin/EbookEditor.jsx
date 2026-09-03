@@ -1141,6 +1141,36 @@ export function PreviewOverlay({
     }
     return Math.max(0, Math.min(pages.length - 1, startIndex));
   });
+
+  // Nội dung THỰC SỰ được vẽ trong hiệu ứng lật (`.er-flip`), cố tình lùi
+  // lại 1 nhịp so với `idx`. Trước đây trang mới hiện ra ngay lập tức nên
+  // animation chỉ áp cho trang mới, tạo cảm giác "cắt cụt" giữa chừng.
+  // Giờ animation vẫn chạy liên tục 1 lần duy nhất (không remount giữa
+  // chừng), còn nội dung chỉ được tráo đúng lúc trang gần như úp cạnh
+  // (nhìn gần như biến mất) — y hệt cảm giác lật trang giấy thật, không
+  // còn chỗ ráp nối lộ liễu. Mọi phần khác (số trang, đánh dấu, mục lục…)
+  // vẫn dùng `idx` như cũ để phản hồi ngay khi bấm.
+  const [displayIdx, setDisplayIdx] = useState(idx);
+  const [flipId, setFlipId] = useState(0);
+  const flipContentTimer = useRef(null);
+  useEffect(() => {
+    if (idx === displayIdx) return;
+    setFlipId((k) => k + 1);
+    if (flipContentTimer.current) clearTimeout(flipContentTimer.current);
+    flipContentTimer.current = setTimeout(() => {
+      setDisplayIdx(idx);
+    }, 200); // đúng nửa thời lượng animation (0.4s) — khớp mốc 48–52% trong CSS, lúc trang gần như úp cạnh/vô hình
+    return () => {
+      if (flipContentTimer.current) clearTimeout(flipContentTimer.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idx]);
+  useEffect(() => {
+    return () => {
+      if (flipContentTimer.current) clearTimeout(flipContentTimer.current);
+    };
+  }, []);
+
   const [bookmarks, setBookmarks] = useState(() => {
     try {
       const raw = localStorage.getItem(`${STORAGE_PREFIX}:bookmarks`);
@@ -1228,6 +1258,13 @@ export function PreviewOverlay({
     pageView === "double"
       ? [pages[idx], pages[idx + 1]].filter(Boolean)
       : [pages[idx]].filter(Boolean);
+
+  // Trang thực tế được vẽ bên trong hiệu ứng lật — xem giải thích ở chỗ
+  // khai báo displayIdx phía trên.
+  const displayVisiblePages =
+    pageView === "double"
+      ? [pages[displayIdx], pages[displayIdx + 1]].filter(Boolean)
+      : [pages[displayIdx]].filter(Boolean);
 
   const page = pages[idx];
 
@@ -1774,9 +1811,9 @@ export function PreviewOverlay({
           }}
         >
           <div
-            key={idx}
+            key={flipId}
             className={`er-flip er-flip--${direction} ${
-              visiblePages.length === 2 ? "er-flip--spread" : ""
+              displayVisiblePages.length === 2 ? "er-flip--spread" : ""
             }`}
           >
             <div
@@ -1788,8 +1825,8 @@ export function PreviewOverlay({
                 gap: SPREAD_GAP,
               }}
             >
-              {visiblePages.map((p, i) => {
-                const globalIndex = idx + i;
+              {displayVisiblePages.map((p, i) => {
+                const globalIndex = displayIdx + i;
                 return (
                   <div
                     key={p.id}

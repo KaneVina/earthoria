@@ -1040,50 +1040,92 @@
 }
 
 /* ─ Hiệu ứng lật trang: xoay 3D thật quanh trục gáy sách (tận dụng
-   perspective đã đặt sẵn ở phần tử cha), có đổ tối nhẹ lúc giữa lượt lật
-   để giả lập bóng đổ như trang giấy thật đang lật ─ */
+   perspective đã đặt sẵn ở phần tử cha). Chỉ animate transform + opacity
+   (2 thuộc tính rẻ nhất cho GPU, không phải vẽ lại/tổng hợp lớp tốn kém
+   như filter) để chạy mượt kể cả trên máy yếu — phần đổ bóng lúc lật
+   dùng 1 lớp phủ gradient riêng, cũng chỉ animate opacity. ─ */
 .er-flip {
+  position: relative;
   width: 100%;
   height: 100%;
-  will-change: transform, opacity, filter;
+  will-change: transform, opacity;
   backface-visibility: hidden;
+  transform: translateZ(0);
+}
+.er-flip::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  border-radius: inherit;
 }
 .er-flip--next {
-  animation: er-page-flip-next 0.46s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: er-page-flip-next 0.4s cubic-bezier(0.45, 0, 0.55, 1);
   transform-origin: left center;
 }
 .er-flip--prev {
-  animation: er-page-flip-prev 0.46s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: er-page-flip-prev 0.4s cubic-bezier(0.45, 0, 0.55, 1);
   transform-origin: right center;
 }
+.er-flip--next::after {
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.45), transparent 60%);
+  animation: er-page-flip-shadow 0.4s cubic-bezier(0.45, 0, 0.55, 1);
+}
+.er-flip--prev::after {
+  background: linear-gradient(to left, rgba(0, 0, 0, 0.45), transparent 60%);
+  animation: er-page-flip-shadow 0.4s cubic-bezier(0.45, 0, 0.55, 1);
+}
+/* Đi rồi về: phẳng (thấy nội dung cũ) → gần như úp cạnh, gần như vô hình
+   (đúng lúc JS tráo sang nội dung mới, canh ở mốc 200ms = nửa 0.4s, nhờ
+   easing đối xứng nên mốc thời gian và mốc % khớp nhau chính xác) → mở
+   phẳng lại (thấy nội dung mới). Giữ nguyên góc ở 48–52% vài mili giây để
+   có dư thời gian cho JS, tránh lộ mối nối dù timer có trễ chút ít. */
 @keyframes er-page-flip-next {
   0% {
-    transform: rotateY(-88deg);
-    opacity: 0.3;
-    filter: brightness(0.7);
-  }
-  55% {
+    transform: rotateY(0deg);
     opacity: 1;
+  }
+  48% {
+    transform: rotateY(-88deg);
+    opacity: 0.4;
+  }
+  52% {
+    transform: rotateY(-88deg);
+    opacity: 0.4;
   }
   100% {
     transform: rotateY(0deg);
     opacity: 1;
-    filter: brightness(1);
   }
 }
 @keyframes er-page-flip-prev {
   0% {
-    transform: rotateY(88deg);
-    opacity: 0.3;
-    filter: brightness(0.7);
-  }
-  55% {
+    transform: rotateY(0deg);
     opacity: 1;
+  }
+  48% {
+    transform: rotateY(88deg);
+    opacity: 0.4;
+  }
+  52% {
+    transform: rotateY(88deg);
+    opacity: 0.4;
   }
   100% {
     transform: rotateY(0deg);
     opacity: 1;
-    filter: brightness(1);
+  }
+}
+@keyframes er-page-flip-shadow {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1091,35 +1133,59 @@
   .er-flip--prev {
     animation: none;
   }
+  .er-flip--next::after,
+  .er-flip--prev::after {
+    animation: none;
+  }
 }
 
 /* Xem 2 trang (spread): khối lật rộng gấp đôi nên nếu vẫn xoay quanh mép
-   ngoài như 1 trang sẽ tạo cảm giác vặn/méo rất kỳ. Đổi sang xoay quanh
-   tâm (gáy sách ở giữa) với góc nhẹ hơn + co nhẹ theo chiều ngang, giống
-   cảm giác gấp cả 2 trang lại rồi mở ra hơn là 1 cánh cửa xoay lớn. */
+   ngoài như 1 trang sẽ tạo cảm giác vặn/méo rất kỳ. Đổi sang co giãn nhẹ
+   theo chiều ngang quanh tâm (gáy sách ở giữa) — cũng đi rồi về (co nhỏ
+   lại rồi mở ra) đúng lúc JS tráo nội dung, kèm mờ đi ở giữa để che mối
+   nối, giống cảm giác gấp cả 2 trang lại rồi mở ra hơn là 1 cánh cửa
+   xoay lớn. */
 .er-flip--spread.er-flip--next,
 .er-flip--spread.er-flip--prev {
   transform-origin: center center;
   animation-name: er-page-flip-spread;
 }
+.er-flip--spread.er-flip--next::after,
+.er-flip--spread.er-flip--prev::after {
+  background: linear-gradient(
+    to right,
+    rgba(0, 0, 0, 0.35),
+    transparent 40%,
+    transparent 60%,
+    rgba(0, 0, 0, 0.35)
+  );
+  animation: er-page-flip-shadow 0.4s cubic-bezier(0.45, 0, 0.55, 1);
+}
 @keyframes er-page-flip-spread {
   0% {
-    transform: rotateY(0deg) scaleX(0.82);
-    opacity: 0.4;
-    filter: brightness(0.72);
-  }
-  55% {
+    transform: scaleX(1);
     opacity: 1;
+  }
+  48% {
+    transform: scaleX(0.72);
+    opacity: 0.45;
+  }
+  52% {
+    transform: scaleX(0.72);
+    opacity: 0.45;
   }
   100% {
-    transform: rotateY(0deg) scaleX(1);
+    transform: scaleX(1);
     opacity: 1;
-    filter: brightness(1);
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .er-flip--spread.er-flip--next,
   .er-flip--spread.er-flip--prev {
+    animation: none;
+  }
+  .er-flip--spread.er-flip--next::after,
+  .er-flip--spread.er-flip--prev::after {
     animation: none;
   }
 }
