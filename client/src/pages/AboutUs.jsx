@@ -349,7 +349,7 @@ export default function AboutUs() {
               </div>
               <blockquote className="mission-quote">
                 "Chúng tôi không chỉ tạo ra một cuốn sách —<br />
-                chúng tôi kiến tạo một <em>cánh cửa</em>kết nối trẻ em với thế
+                chúng tôi kiến tạo một <em>cánh cửa</em> kết nối trẻ em với thế
                 giới tri thức."
               </blockquote>
               <p className="mission-desc">
