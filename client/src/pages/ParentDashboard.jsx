@@ -1009,7 +1009,7 @@ export default function ParentDashboard() {
     return (
       <FullScreenLoader
         eyebrow="Vui lòng chờ"
-        message="Đang tải bảng điều khiển phụ huynh…"
+        message="Đang chuyển hướng đến nền tảng Family Studio dành cho bạn..."
       />
     );
   }

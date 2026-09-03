@@ -7,6 +7,7 @@ import {
   RefreshCcw,
   Cookie,
   Crown,
+  Copyright,
   ArrowRight,
   Mail,
   Phone,
@@ -105,6 +106,21 @@ const POLICIES = [
     ],
     to: "/legal/membership",
     label: "Xem Chính Sách Hạng Thành Viên",
+  },
+  {
+    icon: Copyright,
+    eyebrow: "Sở Hữu Trí Tuệ",
+    title: "Tuyên Bố Bản Quyền",
+    desc: "Quyền sở hữu của Earthoria đối với tên thương hiệu, logo, hệ sinh thái sản phẩm — Family Studio, Game Studio, Immersive Studio, Eira — và toàn bộ nội dung số trên nền tảng.",
+    version: "v1.0",
+    updated: "04/09/2026",
+    highlights: [
+      "Bảo hộ tên thương hiệu & logo",
+      "Toàn bộ hệ sinh thái sản phẩm con",
+      "Quy trình báo cáo vi phạm rõ ràng",
+    ],
+    to: "/legal/copyright",
+    label: "Xem Tuyên Bố Bản Quyền",
   },
 ];
 

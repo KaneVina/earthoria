@@ -42,6 +42,7 @@ import ShippingPolicy from "./pages/legal/ShippingPolicy";
 import ReturnPolicy from "./pages/legal/ReturnPolicy";
 import MembershipPolicy from "./pages/legal/MembershipPolicy";
 import LegalHub from "./pages/legal/LegalHub";
+import CopyrightNotice from "./pages/legal/CopyrightNotice";
 import Sitemap from "./pages/Sitemap";
 import EiraChatbox from "./components/EiraChatbox";
 import Wishlist from "./pages/Wishlist";
@@ -212,6 +213,7 @@ export default function App() {
           <Route path="/legal/cookies" element={<CookiePolicy />} />
           <Route path="/legal/returns" element={<ReturnPolicy />} />
           <Route path="/legal/membership" element={<MembershipPolicy />} />
+          <Route path="/legal/copyright" element={<CopyrightNotice />} />
           <Route path="/sitemap" element={<Sitemap />} />
           <Route path="/status" element={<StatusPage />} />
           <Route path="/loyalty" element={<LoyaltyJourney />} />

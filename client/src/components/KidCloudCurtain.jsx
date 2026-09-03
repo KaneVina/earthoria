@@ -54,7 +54,7 @@ export default function KidCloudCurtain({ stage, skyState }) {
         </span>
 
         <div className="kid-curtain-pill">
-          <p className="kid-curtain-text">Bé chờ một chút xíu nhé…</p>
+          <p className="kid-curtain-text">Đang di chuyển đến Trang trại tri thức...</p>
           <span className="kid-curtain-dots">
             <i />
             <i />
