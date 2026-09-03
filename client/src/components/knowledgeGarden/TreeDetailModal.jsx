@@ -16,6 +16,11 @@ const STATUS_LABEL = {
   MATURE: "Cây cổ thụ",
   DEAD: "Đang nghỉ",
 };
+const STATUS_ACCENT_VAR = {
+  ALIVE: "var(--kid-green)",
+  MATURE: "var(--kid-yellow)",
+  DEAD: "var(--kid-ink-soft)",
+};
 
 export default function TreeDetailModal({ tree, streak, onClose }) {
   const open = !!tree;
@@ -32,6 +37,7 @@ export default function TreeDetailModal({ tree, streak, onClose }) {
         >
           <motion.div
             className="kg-modal"
+            style={{ "--kg-modal-accent": STATUS_ACCENT_VAR[tree.status] }}
             onClick={(e) => e.stopPropagation()}
             initial={{ opacity: 0, y: 18, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
