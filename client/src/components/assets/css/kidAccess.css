@@ -287,11 +287,6 @@
   );
   filter: blur(2.4px);
 }
-@media (prefers-reduced-motion: reduce) {
-  .kid-sky-rainbow {
-    display: none;
-  }
-}
 
 /* mặt trời  */
 .kid-sun {

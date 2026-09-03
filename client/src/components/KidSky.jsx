@@ -113,12 +113,6 @@ function useOccasionalRainbow(active) {
       setVisible(false);
       return;
     }
-    if (
-      typeof window !== "undefined" &&
-      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
-    ) {
-      return; // tôn trọng lựa chọn giảm chuyển động — không tự bừng lên
-    }
 
     let showTimer;
     let hideTimer;
