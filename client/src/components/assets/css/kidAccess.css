@@ -212,35 +212,99 @@
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
 }
 
-/* mặt trời — lõi ấm áp + tia sáng xoay chầm chậm phía sau. Vị trí
-   (left/top) và độ mờ được JS tính theo giờ thực rồi truyền vào
-   qua inline style, nên chỉ cần transition mượt ở đây. */
+/* mặt trời — lõi nhiều lớp mô phỏng quang cầu thật (sáng trắng ở tâm,
+   ngả vàng rồi cam dần ra rìa — "limb darkening" như ảnh chụp mặt trời
+   thật), quầng khí quyển mờ lan toả phía ngoài, và tia sáng mềm xoay
+   chầm chậm phía sau thay vì viền chấm cứng như bản cũ. Vị trí (left/top)
+   và độ mờ được JS tính theo giờ thực rồi truyền vào qua inline style,
+   nên chỉ cần transition mượt ở đây. */
 .kid-sun {
   position: absolute;
   width: 150px;
   height: 150px;
   border-radius: 50%;
   background: radial-gradient(
-    circle at 34% 30%,
-    #fffdf3,
-    var(--kid-yellow) 46%,
-    transparent 74%
+    circle at 36% 32%,
+    #ffffff 0%,
+    #fffbe8 14%,
+    #fff0b0 32%,
+    var(--kid-yellow) 52%,
+    #ffb545 70%,
+    #ff9d2e 82%,
+    transparent 88%
   );
+  box-shadow:
+    0 0 40px 6px rgba(255, 214, 110, 0.55),
+    0 0 90px 30px rgba(255, 190, 90, 0.28),
+    0 0 160px 60px rgba(255, 170, 80, 0.12);
   transform: translate(-50%, -50%);
+  animation: kidSunBreathe 6s ease-in-out infinite;
   transition:
     left 3.5s ease,
     top 3.5s ease,
     opacity 2.5s ease;
 }
+/* đốm sáng nhỏ lấm tấm trên bề mặt — gợi cảm giác có kết cấu thay vì
+   một mảng màu phẳng tuyệt đối */
+.kid-sun::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      10px 7px at 62% 40%,
+      rgba(255, 255, 255, 0.5),
+      transparent 70%
+    ),
+    radial-gradient(
+      14px 9px at 40% 62%,
+      rgba(255, 200, 110, 0.4),
+      transparent 70%
+    ),
+    radial-gradient(
+      8px 6px at 68% 68%,
+      rgba(255, 150, 60, 0.35),
+      transparent 70%
+    );
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+@keyframes kidSunBreathe {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.06);
+  }
+}
 .kid-sun::before {
   content: "";
   position: absolute;
-  inset: -46px;
+  inset: -58px;
   border-radius: 50%;
   background: repeating-conic-gradient(
     from 0deg,
-    rgba(255, 224, 130, 0.4) 0deg 4deg,
-    transparent 4deg 20deg
+    rgba(255, 224, 130, 0.32) 0deg 2.4deg,
+    transparent 2.4deg 7deg,
+    rgba(255, 200, 110, 0.16) 7deg 8.5deg,
+    transparent 8.5deg 20deg
+  );
+  filter: blur(2.5px);
+  -webkit-mask: radial-gradient(
+    circle,
+    transparent 46%,
+    #000 58%,
+    #000 88%,
+    transparent 100%
+  );
+  mask: radial-gradient(
+    circle,
+    transparent 46%,
+    #000 58%,
+    #000 88%,
+    transparent 100%
   );
   animation: kidRingSpin 46s linear infinite;
   z-index: -1;
@@ -1901,6 +1965,13 @@
 .kid-clock-colon {
   animation: kidColonBlink 2s step-end infinite;
   color: var(--kid-pink);
+  margin: 0 2px;
+}
+.kid-clock-seconds {
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--kid-ink);
+  vertical-align: baseline;
 }
 @keyframes kidColonBlink {
   0%,

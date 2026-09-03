@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Sun, Moon, Sunrise, Sunset, Star, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useState, useId } from "react";
+import { Moon, Sunrise, Sunset, Star, Sparkles } from "lucide-react";
 
 // Bầu trời sống động theo giờ thực (mặt trời/mặt trăng lên xuống, mây trôi,
 // sao lấp lánh ban đêm...) — dùng chung cho mọi trang thuộc khu vực của bé
@@ -107,11 +107,60 @@ export function useSkyState() {
   return useMemo(() => computeSkyState(date), [date]);
 }
 
+// Mặt trời "thật" hơn bản line-icon mặc định của lucide: có gradient vàng
+// cam ở lõi, quầng sáng mềm lan toả, và các tia nắng thon nhỏ dần ra ngoài
+// thay vì que thẳng đều — nhìn ấm và có chiều sâu hơn.
+function RealisticSunIcon({ size = 18, className }) {
+  const gid = useId();
+  const coreId = `sun-core-${gid}`;
+  const glowId = `sun-glow-${gid}`;
+  const rays = Array.from({ length: 8 }, (_, i) => i * 45);
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      className={className}
+      aria-hidden="true"
+    >
+      <defs>
+        <radialGradient id={coreId} cx="38%" cy="35%" r="65%">
+          <stop offset="0%" stopColor="#fff6d8" />
+          <stop offset="45%" stopColor="#ffd35c" />
+          <stop offset="100%" stopColor="#ffa63d" />
+        </radialGradient>
+        <radialGradient id={glowId} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#ffcf5c" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#ffcf5c" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <circle cx="12" cy="12" r="11" fill={`url(#${glowId})`} />
+      {rays.map((deg) => (
+        <path
+          key={deg}
+          d="M12 2.6 L13.1 5.9 L10.9 5.9 Z"
+          fill="#ffb545"
+          opacity="0.9"
+          transform={`rotate(${deg} 12 12)`}
+        />
+      ))}
+      <circle
+        cx="12"
+        cy="12"
+        r="6.4"
+        fill={`url(#${coreId})`}
+        stroke="#ff9d2e"
+        strokeWidth="0.5"
+      />
+    </svg>
+  );
+}
+
 export function PhaseIcon({ phase, ...props }) {
   if (phase === "night") return <Moon {...props} />;
   if (phase === "dawn") return <Sunrise {...props} />;
   if (phase === "dusk") return <Sunset {...props} />;
-  return <Sun {...props} />;
+  return <RealisticSunIcon {...props} />;
 }
 
 export function DynamicSky({ skyState, minimal = false }) {

@@ -80,7 +80,8 @@ const WEEKDAYS_VI = [
 function fmtTimeParts(date) {
   const h = pad2(date.getHours());
   const m = pad2(date.getMinutes());
-  return { h, m };
+  const s = pad2(date.getSeconds());
+  return { h, m, s };
 }
 
 function fmtDateVi(date) {
@@ -1034,6 +1035,10 @@ export default function KidAccess() {
                     {fmtTimeParts(now).h}
                     <span className="kid-clock-colon">:</span>
                     {fmtTimeParts(now).m}
+                    <span className="kid-clock-colon">:</span>
+                    <span className="kid-clock-seconds">
+                      {fmtTimeParts(now).s}
+                    </span>
                   </div>
                   <div className="kid-clock-date">{fmtDateVi(now)}</div>
                 </div>
