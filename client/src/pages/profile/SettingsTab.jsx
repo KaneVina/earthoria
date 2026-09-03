@@ -1,11 +1,63 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { formatDate } from "../../utils/helpers";
+import { statusService } from "../../services/statusService";
 import { Icon, SYSTEM_INFO, SectionHeader } from "../Profile";
 
-// ─ Đồng hồ server: cập nhật mỗi giây theo múi giờ Việt Nam (UTC+7) ─
-// Dùng Intl.DateTimeFormat với timeZone cố định nên hiển thị đúng giờ VN
-// bất kể máy người dùng đang ở múi giờ nào.
+const STATUS_REFRESH_MS = 60 * 1000; // khớp với thời gian cache 60s ở server /status
+
+async function fetchPublicStatus() {
+  const res = await statusService.getPublicStatus();
+  return res.data;
+}
+
+const SYSTEM_STATUS_META = {
+  up: {
+    label: "Hoạt động bình thường",
+    color: "#4a9e3f",
+    bg: "rgba(74,158,63,0.08)",
+  },
+  seems_down: {
+    label: "Có thể đang gián đoạn",
+    color: "#b8862e",
+    bg: "rgba(184,134,46,0.08)",
+  },
+  down: {
+    label: "Đang ngừng hoạt động",
+    color: "#b25450",
+    bg: "rgba(178,84,80,0.08)",
+  },
+  paused: {
+    label: "Tạm dừng giám sát",
+    color: "var(--text-muted)",
+    bg: "rgba(90,107,96,0.08)",
+  },
+  not_checked_yet: {
+    label: "Chưa có dữ liệu",
+    color: "var(--text-muted)",
+    bg: "rgba(90,107,96,0.08)",
+  },
+  unknown: {
+    label: "Không thể kiểm tra",
+    color: "var(--text-muted)",
+    bg: "rgba(90,107,96,0.08)",
+  },
+};
+
+// Chỉ tô màu con số thời gian phản hồi THẬT theo ngưỡng — không bịa dữ liệu
+function getResponseColor(ms) {
+  if (ms === null || ms === undefined) return undefined;
+  if (ms <= 200) return "#4a9e3f";
+  if (ms <= 500) return "#b8862e";
+  return "#b25450";
+}
+
+
+const PULSE_POINTS =
+  "0,30 20,30 34,30 40,18 46,30 54,30 60,6 66,54 72,26 78,34 82,30 100,30 120,30 134,30 140,18 146,30 154,30 160,6 166,54 172,26 178,34 182,30 200,30 220,30 234,30 240,18 246,30 254,30 260,6 266,54 272,26 278,34 282,30 300,30 320,30 334,30 340,18 346,30 354,30 360,6 366,54 372,26 378,34 382,30 400,30 420,30 434,30 440,18 446,30 454,30 460,6 466,54 472,26 478,34 482,30 500,30 520,30 534,30 540,18 546,30 554,30 560,6 566,54 572,26 578,34 582,30 600,30 620,30 634,30 640,18 646,30 654,30 660,6 666,54 672,26 678,34 682,30 700,30 720,30 734,30 740,18 746,30 754,30 760,6 766,54 772,26 778,34 782,30 800,30";
+
+
 function useServerClock(timeZone = "Asia/Ho_Chi_Minh") {
   const [now, setNow] = useState(() => new Date());
 
@@ -40,9 +92,6 @@ function useTheme() {
   }, [isDark]);
 
   useEffect(() => {
-    // Chỉ đồng bộ theo hệ điều hành nếu đây là lần đầu tiên vào web
-    // (chưa từng lưu theme nào). Nếu đã có giá trị lưu rồi (kể cả mặc định
-    // "light" ban đầu), tuyệt đối không ghi đè nữa mỗi khi tab này mount lại.
     const hasStoredTheme = localStorage.getItem("earthoria-theme") !== null;
     if (hasStoredTheme) return;
 
@@ -118,6 +167,36 @@ export default function SettingsTab() {
   const clock = useServerClock(SYSTEM_INFO.timezone);
   const [expandedChangelog, setExpandedChangelog] = useState(false);
 
+  const { data: statusData, isLoading: statusLoading } = useQuery({
+    queryKey: ["public-status"],
+    queryFn: fetchPublicStatus,
+    refetchInterval: STATUS_REFRESH_MS,
+    staleTime: STATUS_REFRESH_MS - 5000,
+  });
+
+  const statusKey = statusLoading ? null : statusData?.status || "unknown";
+  const statusMeta = statusKey
+    ? SYSTEM_STATUS_META[statusKey] || SYSTEM_STATUS_META.unknown
+    : null;
+
+  const uptimeValue =
+    statusData?.uptimeRatio30d !== null &&
+    statusData?.uptimeRatio30d !== undefined
+      ? Number(statusData.uptimeRatio30d)
+      : null;
+  const uptimeDisplay = uptimeValue !== null ? `${uptimeValue}%` : "—";
+
+  const avgMs = statusData?.avgResponseMs ?? null;
+  const responseColor = getResponseColor(avgMs);
+
+  const checkedAtDisplay = statusData?.checkedAt
+    ? new Date(statusData.checkedAt).toLocaleTimeString("vi-VN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+    : "—";
+
   const openCookieSettings = () => {
     if (window.EarthoriaCookies) {
       window.EarthoriaCookies.openSettings();
@@ -159,7 +238,7 @@ export default function SettingsTab() {
           <div>
             <h3 className="pf-settings-card-title">Thông Tin Hệ Thống</h3>
             <p className="pf-settings-card-sub">
-              Phiên bản, môi trường vận hành và cấu hình khu vực của{" "}
+              Phiên bản, trạng thái vận hành và cấu hình khu vực của{" "}
               {SYSTEM_INFO.systemName}
             </p>
           </div>
@@ -200,6 +279,68 @@ export default function SettingsTab() {
               {SYSTEM_INFO.nextUpdateDate}
               <span className="pf-env-badge pf-badge-upcoming">Dự kiến</span>
             </span>
+          </div>
+        </div>
+
+        <div className="pf-settings-subhead">
+          <span>Trạng Thái Vận Hành</span>
+        </div>
+        <div className="pf-settings-info-grid" style={{ marginBottom: 14 }}>
+          <div className="pf-settings-info-item">
+            <span className="pf-settings-info-label">Trạng thái</span>
+            <span className="pf-settings-info-val">
+              <span
+                className="pf-status-pill"
+                style={{
+                  background: statusMeta?.bg || "rgba(90,107,96,0.08)",
+                  color: statusMeta?.color || "var(--text-muted)",
+                }}
+              >
+                {statusLoading ? "Đang kiểm tra" : statusMeta.label}
+              </span>
+            </span>
+          </div>
+          <div className="pf-settings-info-item">
+            <span className="pf-settings-info-label">Thời gian cập nhật</span>
+            <span className="pf-settings-info-val pf-mono">
+              {statusLoading ? "—" : checkedAtDisplay}
+            </span>
+          </div>
+          <div className="pf-settings-info-item">
+            <span className="pf-settings-info-label">Uptime</span>
+            <span className="pf-settings-info-val pf-mono">
+              {statusLoading ? "—" : uptimeDisplay}
+            </span>
+          </div>
+          <div className="pf-settings-info-item">
+            <span className="pf-settings-info-label">Thời gian phản hồi</span>
+            <span
+              className="pf-settings-info-val pf-mono"
+              style={{ color: statusLoading ? undefined : responseColor }}
+            >
+              {statusLoading || avgMs === null ? "—" : `${avgMs}ms`}
+            </span>
+          </div>
+        </div>
+
+        <div
+          className="pf-status-pulse-wrap"
+          style={{
+            "--pulse-color": statusMeta?.color || "var(--text-muted)",
+            marginBottom: 30,
+          }}
+        >
+          <div className="pf-status-pulse-track">
+            <svg viewBox="0 0 800 60" preserveAspectRatio="none">
+              <polyline points={PULSE_POINTS} />
+            </svg>
+            <svg
+              viewBox="0 0 800 60"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <polyline points={PULSE_POINTS} />
+            </svg>
           </div>
         </div>
 
