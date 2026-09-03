@@ -104,7 +104,13 @@ export function useSkyState() {
   return useMemo(() => computeSkyState(date), [date]);
 }
 
-// Cầu vồng thỉnh thoảng bừng lên phía sau mặt trời gần chân trời
+// Cầu vồng thỉnh thoảng bừng lên phía sau mặt trời gần chân trời — chỉ
+// hoạt động khi trời đang là ban ngày rõ rệt (mặt trời lên cao đủ),
+// tự tắt hẳn về đêm. Cứ mỗi 1–5 phút "thử" một lần, mỗi lần thử có 25%
+// khả năng thực sự bừng lên; nếu hiện thì giữ 10–25 giây rồi mờ dần
+// biến mất, sau đó lại chờ ngẫu nhiên cho lần thử tiếp theo. Cầu vồng
+// luôn hoạt động bất kể thiết bị có bật "Giảm chuyển động" hay không —
+// không có nhánh reduced-motion nào tắt hiệu ứng này.
 function useOccasionalRainbow(active) {
   const [visible, setVisible] = useState(false);
 
@@ -119,21 +125,20 @@ function useOccasionalRainbow(active) {
     let cancelled = false;
 
     const scheduleNext = () => {
-      // chờ ngẫu nhiên 40s–2 phút rồi mới "thử" một lần — đủ thưa để không cảm thấy lặp lại theo nhịp cố định
-      const wait = 40000 + Math.random() * 80000;
+      // chờ ngẫu nhiên 1–5 phút rồi mới "thử" một lần
+      const wait = 60000 + Math.random() * 240000;
       showTimer = setTimeout(() => {
         if (cancelled) return;
-        // ~30% khả năng lần thử này thực sự hiện cầu vồng
-        if (Math.random() < 0.3) {
+        // 25% khả năng lần thử này thực sự hiện cầu vồng
+        if (Math.random() < 0.25) {
           setVisible(true);
-          hideTimer = setTimeout(
-            () => {
-              if (cancelled) return;
-              setVisible(false);
-              scheduleNext();
-            },
-            9000 + Math.random() * 7000,
-          );
+          // giữ hiện trong 10–25 giây rồi mờ dần biến mất
+          const holdMs = 10000 + Math.random() * 15000;
+          hideTimer = setTimeout(() => {
+            if (cancelled) return;
+            setVisible(false);
+            scheduleNext();
+          }, holdMs);
         } else {
           scheduleNext();
         }
@@ -229,9 +234,20 @@ export function DynamicSky({ skyState, minimal = false }) {
       <div className="kid-sky-wash" />
       <div className="kid-sky-warm" />
 
-      <span
-        className={`kid-sky-rainbow${rainbowVisible ? " is-visible" : ""}`}
-      />
+      <div
+        className={`kid-sky-rainbow-wrap${rainbowVisible ? " is-visible" : ""}`}
+      >
+        <div className="kid-rainbow-arch" aria-hidden="true">
+          <span className="kid-rainbow-band" style={{ "--i": 0, "--band-color": "#f0464a" }} />
+          <span className="kid-rainbow-band" style={{ "--i": 1, "--band-color": "#f5883c" }} />
+          <span className="kid-rainbow-band" style={{ "--i": 2, "--band-color": "#f7c93f" }} />
+          <span className="kid-rainbow-band" style={{ "--i": 3, "--band-color": "#63c25b" }} />
+          <span className="kid-rainbow-band" style={{ "--i": 4, "--band-color": "#3fb6d6" }} />
+          <span className="kid-rainbow-band" style={{ "--i": 5, "--band-color": "#4f6fdc" }} />
+          <span className="kid-rainbow-band" style={{ "--i": 6, "--band-color": "#9a5ed4" }} />
+        </div>
+        <div className="kid-rainbow-fade" />
+      </div>
 
       {sun.opacity > 0.01 && (
         <span

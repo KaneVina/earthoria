@@ -230,6 +230,45 @@ function spawnSparkles(e, count = 10) {
   spawnSparklesAt(e.clientX, e.clientY, count);
 }
 
+// seed cố định để hoạ tiết mép mây luôn giống nhau qua các lần render,
+// nhưng KHÔNG đều tăm tắp như hình tròn repeat trước đây
+function mulberry32(seed) {
+  return function () {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function buildCloudEdgePath(width = 1200, seed = 7) {
+  const rand = mulberry32(seed);
+  const baseline = 28; // đường đáy — chỗ chân các múi mây chạm nhau
+  const kappa = 0.5523; // hệ số Bezier xấp xỉ 1/4 hình elip → múi mây tròn trịa như mây thật, không nhọn
+
+  let d = `M0 ${baseline} `;
+  let cx = 0;
+  while (cx < width) {
+    // độ rộng mỗi múi mây dao động mạnh (50–180px) → múi to múi nhỏ xen kẽ
+    const w = Math.min(50 + rand() * 130, width - cx);
+    const rx = w / 2;
+    // độ cao múi mây dao động mạnh (8–32px) → có múi thấp bè, có múi vồng cao
+    const ry = 8 + rand() * 24;
+    const midX = cx + rx;
+    const peakY = baseline - ry;
+
+    // nửa đầu múi: cong tròn lên đỉnh (1/4 elip)
+    d += `C${cx.toFixed(1)} ${(baseline - ry * kappa).toFixed(1)} ${(midX - rx * kappa).toFixed(1)} ${peakY.toFixed(1)} ${midX.toFixed(1)} ${peakY.toFixed(1)} `;
+    // nửa sau múi: cong tròn xuống lại đường đáy (1/4 elip)
+    d += `C${(midX + rx * kappa).toFixed(1)} ${peakY.toFixed(1)} ${(cx + w).toFixed(1)} ${(baseline - ry * kappa).toFixed(1)} ${(cx + w).toFixed(1)} ${baseline.toFixed(1)} `;
+
+    cx += w;
+  }
+  d += `L${width} 60 L0 60 Z`;
+  return d;
+}
+
 export default function KidAccess() {
   const { slug, token } = useParams(); // :slug không dùng để tra cứu, chỉ để đẹp URL
   const navigate = useNavigate();
@@ -356,6 +395,7 @@ export default function KidAccess() {
     () => INSPIRE_LINES[Math.floor(Math.random() * INSPIRE_LINES.length)],
     [child?.id],
   );
+  const cloudEdgePath = useMemo(() => buildCloudEdgePath(1200, 7), []);
   const eyeTip = useMemo(
     () => EYE_TIPS[new Date().getDate() % EYE_TIPS.length],
     [],
@@ -812,7 +852,7 @@ export default function KidAccess() {
                 )}
                 <span className="kid-crest">
                   <img
-                    src="/logo/logo-mau/lg-m-kid-studio.png"
+                    src="/logo/logo-mau/lg-kf-small.png"
                     alt="Earthoria"
                     className="kid-crest-img"
                   />
@@ -871,11 +911,6 @@ export default function KidAccess() {
               {timeGreeting()},{" "}
               <span className="kid-name-highlight">{child.name}</span>!
             </h1>
-            {/* <div className="kid-hero-bubble"> */}
-            {/* <Sparkles size={15} className="kid-hero-bubble-icon" /> */}
-            {/* <p className="kid-hero-sub">{inspireLine}</p> */}
-            {/* <span className="kid-hero-bubble-tail" aria-hidden="true" /> */}
-            {/* </div> */}
             {Number.isFinite(child.age) && (
               <div className="kid-hero-age">
                 <Smile size={13} /> {child.age} tuổi
@@ -1144,7 +1179,9 @@ export default function KidAccess() {
               </div>
             )}
 
-            <GardenWidget token={token} slug={slug} />
+            <div id="kid-garden-anchor">
+              <GardenWidget token={token} slug={slug} />
+            </div>
 
             {recentReadings.length > 0 && (
               <section className="kid-continue">
@@ -1338,14 +1375,76 @@ export default function KidAccess() {
             </section>
           </div>
 
-          <div className="kid-footer-divider" aria-hidden="true">
-            <Star size={14} fill="currentColor" />
-          </div>
           <footer className="kid-footer">
-            <span>🌈 Earthoria — Mở sách, mở ra thế giới</span>
-            <Link to="/" className="kid-parent-link">
-              Dành cho ba mẹ
-            </Link>
+            <div className="kid-footer-cloud-edge" aria-hidden="true">
+              <svg
+                viewBox="0 0 1200 40"
+                preserveAspectRatio="none"
+                width="100%"
+                height="40"
+              >
+                <path d={cloudEdgePath} fill="#ffffff" />
+              </svg>
+            </div>
+
+            <div className="kid-footer-inner">
+              <div className="kid-footer-brand">
+                <img
+                  src="/logo/logo-mau/lg-kf-big.png"
+                  alt="Earthoria Knowledge Farm"
+                  className="kid-footer-logo"
+                />
+                <span className="kid-footer-tagline">
+                  Đồng hành cùng bé lớn khôn mỗi ngày
+                </span>
+              </div>
+
+              <div className="kid-footer-actions">
+                <Link
+                  to="/"
+                  className="kid-footer-btn"
+                  onClick={(e) => {
+                    spawnRipple(e);
+                    spawnSparkles(e, 8);
+                  }}
+                >
+                  <ArrowLeft size={15} /> Về trang chủ
+                </Link>
+                <Link
+                  to={`/e-kid/${slug}/${token}/garden`}
+                  className="kid-footer-btn"
+                  onClick={(e) => {
+                    spawnRipple(e);
+                    spawnSparkles(e, 8);
+                  }}
+                >
+                  <Sparkles size={15} /> Xem vườn tri thức
+                </Link>
+                <Link
+                  to="/family"
+                  className="kid-footer-btn kid-footer-btn--primary"
+                  onClick={(e) => {
+                    spawnRipple(e);
+                    spawnSparkles(e, 8);
+                  }}
+                >
+                  <Heart size={13} fill="currentColor" /> Dành cho ba mẹ
+                </Link>
+              </div>
+
+              <div className="kid-footer-divider-line" aria-hidden="true" />
+
+              <div className="kid-footer-devby">
+                <span className="kid-footer-devby-text">
+                  Earthoria &copy; 2026 · Được phát triển và vận hành bởi
+                </span>
+                <span
+                  className="kid-footer-devby-logo"
+                  role="img"
+                  aria-label="Family Studio"
+                />
+              </div>
+            </div>
           </footer>
         </div>
 
