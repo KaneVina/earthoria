@@ -451,7 +451,9 @@ export default function AboutUs() {
               <Logo3D />
             </div>
             <p className="section-subtitle">
-              Mỗi đường nét, màu sắc và hình khối đều mang một ý nghĩa riêng góp phần thể hiện triết lý thiết kế và tầm nhìn thương hiệu của Earthoria.
+              Mỗi đường nét, màu sắc và hình khối đều mang một ý nghĩa riêng góp
+              phần thể hiện triết lý thiết kế và tầm nhìn thương hiệu của
+              Earthoria.
             </p>
           </div>
 
@@ -542,7 +544,9 @@ export default function AboutUs() {
                 className="section-subtitle"
                 style={{ textAlign: "left", marginLeft: 0, marginTop: "20px" }}
               >
-               Sáu sinh viên FPT với chuyên môn đa lĩnh vực, từ thiết kế, phát triển phần mềm đến marketing cùng xây dựng nền tảng cho một sản phẩm EdTech tích hợp AI và AR.
+                Sáu sinh viên FPT với chuyên môn đa lĩnh vực, từ thiết kế, phát
+                triển phần mềm đến marketing cùng xây dựng nền tảng cho một sản
+                phẩm EdTech tích hợp AI và AR.
               </p>
             </div>
             <div className="team-intro-right reveal reveal-delay-1">
@@ -553,7 +557,11 @@ export default function AboutUs() {
                   suffix: " tháng",
                   label: "Thời gian phát triển MVP",
                 },
-                { num: "EdTech ", suffix: "tích hợp AI & AR", label: "Lĩnh vực hướng đến" },
+                {
+                  num: "EdTech ",
+                  suffix: "tích hợp AI & AR",
+                  label: "Lĩnh vực hướng đến",
+                },
               ].map((s, i) => (
                 <div className="team-intro-stat" key={i}>
                   <div className="team-intro-stat-num">
@@ -1113,7 +1121,7 @@ export default function AboutUs() {
                 <span
                   className="tech-editor-number"
                   id="tech-loc-counter"
-                  data-target="161959"
+                  data-target="163424"
                 >
                   0
                 </span>
@@ -1127,7 +1135,7 @@ export default function AboutUs() {
                 <span
                   className="tech-editor-number tech-editor-number--secondary"
                   id="tech-file-counter"
-                  data-target="352"
+                  data-target="353"
                 >
                   0
                 </span>
