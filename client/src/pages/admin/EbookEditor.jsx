@@ -63,6 +63,10 @@ import {
   SwatchBook,
   Menu,
   Clock,
+  Calendar,
+  Globe,
+  Building2,
+  Users,
 } from "lucide-react";
 import ColorPaletteStudio from "../../pages/admin/colorPalette/ColorPaletteStudio";
 
@@ -548,6 +552,7 @@ function LayerView({
   onLineLeave,
   onSentenceHover,
   onSentenceLeave,
+  forceWordSpans,
   onAskAI,
   isEditingText,
   editableRef,
@@ -905,6 +910,14 @@ function LayerView({
   const scaledFontSize = (layer.fontSize || 16) * (fontScale || 1);
   const askable = readOnly && !!layer.text?.trim() && !layer.tocTargetPageId;
   const isRich = !!layer.html;
+  // Trong trải nghiệm ĐỌC (reader) luôn tách văn bản theo từng từ (dù là
+  // rich-text) để tính năng "rê chuột đọc theo câu" + tô sáng từ đang đọc
+  // hoạt động đúng cho mọi đoạn văn — dữ liệu thật hầu như đoạn nào cũng
+  // có sẵn `html` (do trình soạn thảo luôn lưu html khi gõ) nên nếu vẫn ưu
+  // tiên hiển thị rich-html thì coi như không có đoạn nào tách được từ,
+  // khiến chế độ rê chuột buộc phải đọc nguyên khối. Chỗ khác (đang biên
+  // soạn / xuất PDF) vẫn giữ nguyên định dạng rich-text như cũ.
+  const useWordSpans = forceWordSpans || !isRich;
   const editingNow = !readOnly && !!isEditingText;
 
   const textInnerStyle = {
@@ -1018,7 +1031,7 @@ function LayerView({
               __html: layer.html || escapeHtml(layer.text || ""),
             }}
           />
-        ) : isRich ? (
+        ) : isRich && !useWordSpans ? (
           <div
             style={textInnerStyle}
             dangerouslySetInnerHTML={{ __html: layer.html }}
@@ -1465,6 +1478,10 @@ export function PreviewOverlay({
     if (speechAvailable()) window.speechSynthesis.cancel();
     setReading(null);
     hoverSentenceKeyRef.current = null;
+    if (lineHoverTimer.current) {
+      clearTimeout(lineHoverTimer.current);
+      lineHoverTimer.current = null;
+    }
   };
 
   const readSpread = (auto = false) => {
@@ -1520,45 +1537,21 @@ export function PreviewOverlay({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoPlay]);
 
-  const onLineHover = (layer) => {
-    // Chỉ dùng cách đọc "cả khối" này cho văn bản rich-text (không thể
-    // tách theo từng từ). Văn bản thường dùng onSentenceHover bên dưới để
-    // chỉ đọc đúng 1 câu đang rê tới, tránh đọc trùng với chế độ Tự động
-    // đọc (đọc toàn bộ).
-    if (
-      readMode !== "hover" ||
-      !layer.html ||
-      reading ||
-      !speechAvailable() ||
-      !layer.text?.trim()
-    )
-      return;
-    if (lineHoverTimer.current) clearTimeout(lineHoverTimer.current);
-    lineHoverTimer.current = setTimeout(() => {
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(layer.text);
-      utter.lang = "vi-VN";
-      utter.rate = 0.95;
-      window.speechSynthesis.speak(utter);
-    }, 260);
-  };
-  const onLineLeave = () => {
-    if (lineHoverTimer.current) {
-      clearTimeout(lineHoverTimer.current);
-      lineHoverTimer.current = null;
-    }
-  };
+  // Fix: trước đây khi chuyển "Đọc to nội dung" sang Tắt trong lúc đang
+  // đọc (chế độ rê chuột), tiếng vẫn không tắt vì effect trên chỉ theo
+  // dõi autoPlay (chỉ đúng cho chế độ Tự động đọc). Thêm effect riêng để
+  // LUÔN dừng đọc ngay khi người dùng chọn "Tắt", bất kể đang ở chế độ nào.
+  useEffect(() => {
+    if (readMode === "off") stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readMode]);
 
-  // Rê chuột vào 1 từ trong văn bản thường: xác định câu (theo dấu chấm/
-  // phẩy/chấm than/chấm hỏi...) chứa từ đó và chỉ đọc to đúng câu này.
+  // Rê chuột vào 1 từ trong văn bản: xác định câu (ngăn theo dấu chấm/
+  // phẩy/chấm than/chấm hỏi/hai chấm...) chứa từ đó và CHỈ đọc to đúng
+  // câu này — không đọc nguyên cả đoạn (tránh trùng với Tự động đọc).
+  // Đồng thời tô sáng đúng từ đang được đọc, khớp với giọng đọc.
   const onSentenceHover = (layer, wordIndex) => {
-    if (
-      readMode !== "hover" ||
-      layer.html ||
-      reading ||
-      !speechAvailable() ||
-      !layer.text?.trim()
-    )
+    if (readMode !== "hover" || !speechAvailable() || !layer.text?.trim())
       return;
     const ranges = splitSentenceWordRanges(layer.text);
     const seg = ranges.find((r) => wordIndex >= r.start && wordIndex <= r.end);
@@ -1569,12 +1562,20 @@ export function PreviewOverlay({
     lineHoverTimer.current = setTimeout(() => {
       hoverSentenceKeyRef.current = key;
       window.speechSynthesis.cancel();
+      const segWords = splitWords(seg.text);
       const utter = new SpeechSynthesisUtterance(seg.text);
       utter.lang = "vi-VN";
       utter.rate = 0.95;
+      utter.onboundary = (ev) => {
+        if (ev.charIndex === undefined) return;
+        const localIdx = wordIndexForCharIndex(segWords, ev.charIndex);
+        setReading({ layerId: layer.id, wordIndex: seg.start + localIdx });
+      };
       utter.onend = () => {
-        if (hoverSentenceKeyRef.current === key)
+        if (hoverSentenceKeyRef.current === key) {
           hoverSentenceKeyRef.current = null;
+          setReading(null);
+        }
       };
       window.speechSynthesis.speak(utter);
     }, 200);
@@ -1772,7 +1773,12 @@ export function PreviewOverlay({
             perspective: 1600,
           }}
         >
-          <div key={idx} className={`er-flip er-flip--${direction}`}>
+          <div
+            key={idx}
+            className={`er-flip er-flip--${direction} ${
+              visiblePages.length === 2 ? "er-flip--spread" : ""
+            }`}
+          >
             <div
               className="er-spread"
               style={{
@@ -1806,10 +1812,9 @@ export function PreviewOverlay({
                         onSelect={() => {}}
                         onDragStart={() => {}}
                         onResizeStart={() => {}}
-                        onLineHover={onLineHover}
-                        onLineLeave={onLineLeave}
                         onSentenceHover={onSentenceHover}
                         onSentenceLeave={onSentenceLeave}
+                        forceWordSpans
                         onAskAI={askAboutText}
                         onLayerClick={goToPageId}
                       />
@@ -1945,68 +1950,92 @@ export function PreviewOverlay({
             <div className="er-info-scroll">
               {bookInfo ? (
                 <>
-                  {bookInfo.coverImage && (
-                    <img
-                      className="er-info-cover"
-                      src={bookInfo.coverImage}
-                      alt={bookInfo.title || ""}
-                    />
-                  )}
-                  <div className="er-info-body">
-                    <h2 className="er-info-title">{bookInfo.title}</h2>
-                    {bookInfo.authors?.length > 0 && (
-                      <div className="er-info-authors">
-                        <User size={13} /> {bookInfo.authors.join(", ")}
+                  <div className="er-info-cover-wrap">
+                    {bookInfo.coverImage ? (
+                      <img
+                        className="er-info-cover"
+                        src={bookInfo.coverImage}
+                        alt={bookInfo.title || ""}
+                      />
+                    ) : (
+                      <div className="er-info-cover er-info-cover--placeholder">
+                        <BookOpen size={40} />
                       </div>
                     )}
+                    <div className="er-info-cover-fade" />
+                  </div>
+
+                  <div className="er-info-body">
+                    <h2 className="er-info-title">{bookInfo.title}</h2>
+
+                    {bookInfo.authors?.length > 0 && (
+                      <div className="er-info-authors">
+                        <span className="er-info-authors-icon">
+                          <User size={13} />
+                        </span>
+                        <span>{bookInfo.authors.join(", ")}</span>
+                      </div>
+                    )}
+
                     <div className="er-info-meta">
-                      {bookInfo.categoryName && (
-                        <span className="er-info-tag">
+                      {!!bookInfo.categoryName && (
+                        <span className="er-info-tag er-info-tag--accent">
+                          <Tag size={12} />
                           {bookInfo.categoryName}
                         </span>
                       )}
-                      {(bookInfo.ageMin || bookInfo.ageMax) && (
+                      {!!(bookInfo.ageMin || bookInfo.ageMax) && (
                         <span className="er-info-tag">
-                          {bookInfo.ageMin && bookInfo.ageMax
+                          <Users size={12} />
+                          {bookInfo.ageMin != null && bookInfo.ageMax != null
                             ? `${bookInfo.ageMin}-${bookInfo.ageMax} tuổi`
-                            : bookInfo.ageMin
+                            : bookInfo.ageMin != null
                               ? `Từ ${bookInfo.ageMin} tuổi`
                               : `Đến ${bookInfo.ageMax} tuổi`}
                         </span>
                       )}
-                      {bookInfo.publisher && (
+                      {!!bookInfo.pages && (
                         <span className="er-info-tag">
+                          <BookOpen size={12} />
+                          {bookInfo.pages} trang
+                        </span>
+                      )}
+                      {!!bookInfo.publisher && (
+                        <span className="er-info-tag">
+                          <Building2 size={12} />
                           NXB {bookInfo.publisher}
                         </span>
                       )}
-                      {bookInfo.publishYear && (
+                      {!!bookInfo.publishYear && (
                         <span className="er-info-tag">
+                          <Calendar size={12} />
                           {bookInfo.publishYear}
                         </span>
                       )}
-                      {bookInfo.pages ? (
+                      {!!bookInfo.language && (
                         <span className="er-info-tag">
-                          {bookInfo.pages} trang
-                        </span>
-                      ) : null}
-                      {bookInfo.language && (
-                        <span className="er-info-tag">
+                          <Globe size={12} />
                           {bookInfo.language === "VI"
                             ? "Tiếng Việt"
                             : bookInfo.language}
                         </span>
                       )}
                     </div>
-                    {bookInfo.description && (
+
+                    {!!bookInfo.description && (
                       <>
                         <div className="er-info-divider" />
+                        <div className="er-info-section-label">Giới thiệu</div>
                         <p className="er-info-desc">{bookInfo.description}</p>
                       </>
                     )}
                   </div>
                 </>
               ) : (
-                <div className="er-info-body">
+                <div className="er-info-body er-info-body--empty">
+                  <div className="er-info-empty-icon">
+                    <BookOpen size={30} />
+                  </div>
                   <h2 className="er-info-title">
                     {page?.title || "Sách điện tử"}
                   </h2>
