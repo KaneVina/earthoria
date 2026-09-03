@@ -59,7 +59,7 @@
   color: var(--lb-accent, #0d3330);
 }
 
-/* ── Panel chi tiết ── */
+/*  Panel chi tiết  */
 .lb-panel {
   position: absolute;
   top: calc(100% + 10px);

@@ -65,7 +65,7 @@ function SkeletonCard() {
   );
 }
 
-// ─ Wishlist item card ─────────────────────────────────────────────────────
+// ─ Wishlist item card
 function WishlistCard({
   book,
   onRemove,
@@ -213,7 +213,7 @@ function WishlistCard({
   );
 }
 
-// ─ Empty state  ──
+// Empty state
 function EmptyWishlist({ filtered, onReset }) {
   if (filtered) {
     return (
@@ -248,7 +248,7 @@ function EmptyWishlist({ filtered, onReset }) {
   );
 }
 
-// ─ Confirm dialog ─────────────────────────────────────────────────────────
+// Confirm dialog
 function ConfirmDialog({
   open,
   title,
@@ -288,7 +288,7 @@ function ConfirmDialog({
   );
 }
 
-// ─ Page  ─────────
+//  Page
 const SORT_OPTIONS = [
   { value: "default", label: "Mặc định" },
   { value: "price-asc", label: "Giá: Thấp → Cao" },
@@ -357,7 +357,7 @@ export default function Wishlist() {
     setVisibleCount(PAGE_SIZE);
   }, [filter, sort, search]);
 
-  //  Derived list ────────────────────────────────────────────────────────
+  //  Derived list
   const displayedItems = useMemo(() => {
     let list = [...items];
 
@@ -400,9 +400,7 @@ export default function Wishlist() {
     [displayedItems, visibleCount],
   );
 
-  //  Handlers  ──
-
-  // Xoá 1 item — optimistic từ store, kèm tuỳ chọn hoàn tác
+  //  Handlers
   const handleRemove = async (book) => {
     setRemovingIds((prev) => new Set(prev).add(book.hashId));
     try {
@@ -537,7 +535,7 @@ export default function Wishlist() {
     }
   };
 
-  //  Selection handlers ────────────────────────────────────────────────
+  //  Selection handlers
   const handleToggleSelectMode = () => {
     setSelectMode((prev) => !prev);
     setSelectedIds(new Set());

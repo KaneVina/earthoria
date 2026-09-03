@@ -407,9 +407,9 @@ export default function Maintenance({ until, message }) {
   );
 }
 
-/* ───────────────────────────────────────
+/*
    PALETTE — unchanged, copied 1:1 from main.css :root
-───────────────────────────────────────── */
+*/
 const INK = "#0a0e0c";
 const FOREST = "#0d3330";
 const GOLD = "#4a9e3f";

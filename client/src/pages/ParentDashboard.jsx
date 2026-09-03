@@ -1004,7 +1004,7 @@ export default function ParentDashboard() {
     return <Settings2 size={13} />;
   };
 
-  /* ── Trạng thái tải/rỗng: chưa có hồ sơ con nào, hoặc đang tải ── */
+  /*  Trạng thái tải/rỗng: chưa có hồ sơ con nào, hoặc đang tải */
   if (childrenLoading) {
     return (
       <FullScreenLoader
@@ -1137,7 +1137,7 @@ export default function ParentDashboard() {
       {/*   SIDEBAR (danh sách bé) + MAIN (thiết lập)   */}
       <div className="pkd-body pkd-body-top">
         <div className="pkd-layout">
-          {/* ── SIDEBAR: danh sách tài khoản E-kid ── */}
+          {/* SIDEBAR: danh sách tài khoản E-kid */}
           <aside className="pkd-sidebar">
             <RevealCard as="div" className="pkd-sidebar-head">
               <div className="pkd-sidebar-head-row">
@@ -1243,7 +1243,7 @@ export default function ParentDashboard() {
             </RevealCard>
           </aside>
 
-          {/* ── MAIN: thiết lập cho bé đang chọn ── */}
+          {/* MAIN: thiết lập cho bé đang chọn */}
           <div className="pkd-main">
             {/* Băng thông báo: đang cài đặt cho bé nào + hoạt động gần nhất */}
             <RevealCard as="div" className="pkd-active-child-banner">

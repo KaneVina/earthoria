@@ -159,8 +159,7 @@ const SECTIONS = [
   },
 ];
 
-// ─ COMPONENT ─────────────────────────────────────────────────────────────
-
+// COMPONENT
 export default function Sitemap() {
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -411,7 +410,7 @@ export default function Sitemap() {
   );
 }
 
-// ─ LINK ROW ITEM ──────────────────────────────────────────────────────────
+// LINK ROW ITEM
 
 function LinkRow({ link, color }) {
   return (

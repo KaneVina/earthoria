@@ -302,9 +302,7 @@ function LocationCombobox({
     </div>
   );
 }
-/* ───────────────────────────────────────
-   CONSTANTS
-───────────────────────────────────────── */
+/*CONSTANTS */
 const FREE_SHIP_THRESHOLD = 300_000;
 const SHIP_FEE = 30_000;
 
@@ -335,9 +333,7 @@ const PAYMENT_OPTIONS = [
   },
 ];
 
-/* ───────────────────────────────────────
-   PROVINCE API  (provinces.open-api.vn)
-───────────────────────────────────────── */
+/*    PROVINCE API  (provinces.open-api.vn)*/
 const API = "https://provinces.open-api.vn/api";
 
 const fetchProvinces = () =>
@@ -362,9 +358,7 @@ const fetchWards = (code) =>
     })
     .then((d) => d.wards || []);
 
-/* ───────────────────────────────────────
-   VALIDATION
-───────────────────────────────────────── */
+/* VALIDATION */
 function validateShipping(f, mode = "shipping") {
   const e = {};
   if (!f.fullName.trim() || f.fullName.trim().length < 2)
@@ -399,9 +393,7 @@ function validatePayment(method, card) {
   return e;
 }
 
-/* ───────────────────────────────────────
-   TINY HELPERS
-───────────────────────────────────────── */
+/* TINY HELPERS*/
 const fmtCard = (v) =>
   v
     .replace(/\D/g, "")
@@ -740,10 +732,7 @@ function ReviewBlock({ title, icon: Icon, onEdit, rows, children }) {
   );
 }
 
-/* ───────────────────────────────────────
-   ORDER SUMMARY SIDEBAR
-   (luôn hiển thị bên phải, sync với cart)
-───────────────────────────────────────── */
+/* ORDER SUMMARY SIDEBAR */
 function OrderSummary({
   items,
   subtotal,
@@ -1739,9 +1728,7 @@ function VoucherModal({
   );
 }
 
-/* ───────────────────────────────────────
-   MAIN COMPONENT
-───────────────────────────────────────── */
+/*MAIN COMPONENT*/
 export default function Checkout() {
   const navigate = useNavigate();
   const { cart, fetchCart } = useCartStore();
@@ -2424,9 +2411,7 @@ export default function Checkout() {
     );
   }
 
-  /* ───────────────────────────────────────
-     RENDER
-  ─────────────────────────────────────── */
+  /*  RENDER*/
   return (
     <div
       ref={topRef}
@@ -2508,13 +2493,9 @@ export default function Checkout() {
           alignItems: "start",
         }}
       >
-        {/* ══════════════════════════════════════
-            LEFT COLUMN — steps
-        ══════════════════════════════════════ */}
+        {/*LEFT COLUMN — steps         */}
         <div>
-          {/* ┌──────────────────────────────────┐
-              │  STEP 1 — Thông tin giao hàng    │
-              └──────────────────────────────────┘ */}
+          {/*  STEP 1 — Thông tin giao hàng  */}
           {step === 1 && !isDigitalOrder && (
             <div className="co-step">
               <SectionHead icon={MapPin} title="Thiết lập đơn hàng" />
@@ -2982,9 +2963,6 @@ export default function Checkout() {
                         </div>
                       )}
 
-                      {/* Chưa có địa chỉ nào -> không cần hiện thông báo hay
-                          nút bấm, form thêm địa chỉ bên dưới đã tự động mở
-                          sẵn (xem effect setShowAddForm(true) khi list rỗng). */}
                       {!addressesLoading && savedAddresses.length > 0 && (
                         <button
                           onClick={() => setShowAddForm((v) => !v)}
@@ -3434,9 +3412,8 @@ export default function Checkout() {
             </div>
           )}
 
-          {/* ┌──────────────────────────────────┐
-              │  STEP 2 — Phương thức thanh toán │
-              └──────────────────────────────────┘ */}
+          {/*  STEP 2 — Phương thức thanh toán
+           */}
           {step === 2 && (
             <div className="co-step">
               <SectionHead icon={CreditCard} title="Phương thức thanh toán" />
@@ -3832,9 +3809,7 @@ export default function Checkout() {
             </div>
           )}
 
-          {/* ┌──────────────────────────────────┐
-              │  STEP 3 — Xác nhận đơn hàng      │
-              └──────────────────────────────────┘ */}
+          {/*  STEP 3 — Xác nhận đơn hàng      */}
           {step === 3 && (
             <div className="co-step">
               <SectionHead icon={ShieldCheck} title="Xác nhận đơn hàng" />
@@ -4107,9 +4082,7 @@ export default function Checkout() {
             </div>
           )}
 
-          {/* ┌──────────────────────────────────┐
-              │  STEP 4 — Hoàn tất               │
-              └──────────────────────────────────┘ */}
+          {/*  STEP 4 — Hoàn tất  */}
           {step === 4 && bankQrData && bankQrStatus !== "success" && (
             <div className="co-step" style={{ padding: "20px 20px 40px" }}>
               <SectionHead icon={QrCode} title="Quét mã để chuyển khoản" />

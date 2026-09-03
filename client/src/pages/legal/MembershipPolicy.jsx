@@ -248,9 +248,9 @@ const FAQS = [
   },
 ];
 
-/* ───────────────────────────────────────────────────────────
+/*
    COMPONENT
-───────────────────────────────────────────────────────────── */
+ */
 export default function MembershipPolicy() {
   const [progress, setProgress] = useState(0);
   const [activeId, setActiveId] = useState(SECTIONS[0].id);

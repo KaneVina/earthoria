@@ -10,7 +10,7 @@ function faceLabel(face) {
   return normText(face.value).toLowerCase();
 }
 
-// ─ MEMORY MATCH ───────────────────────────────────────────────
+//   MEMORY MATCH
 export function analyzeMemoryMatch(config) {
   const pairs = config?.pairs || [];
   const errors = [];
@@ -52,7 +52,7 @@ export function analyzeMemoryMatch(config) {
   return { errors, rowIssues };
 }
 
-// ─ MATCH PAIRS ────────────────────────────────────────────────
+//   MATCH PAIRS
 export function analyzeMatchPairs(config) {
   const pairs = config?.pairs || [];
   const errors = [];
@@ -108,7 +108,7 @@ export function analyzeMatchPairs(config) {
   return { errors, rowIssues };
 }
 
-// ─ WORD SEARCH ────────────────────────────────────────────────
+//   WORD SEARCH
 // Kiểm tra nhanh (độ dài / trùng lặp) — dùng để tô đỏ tag khi đang gõ.
 export function analyzeWordSearch(config) {
   const words = config?.words || [];
@@ -159,7 +159,7 @@ export function validateWordSearchFull(config) {
   return errors;
 }
 
-// ─ LETTER HUNT ────────────────────────────────────────────────
+//   LETTER HUNT
 export function analyzeLetterHunt(config) {
   const secretWord = normText(config?.secretWord);
   const rows = Number(config?.rows) || 8;

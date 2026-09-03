@@ -327,7 +327,7 @@ export default function Ecosystem() {
       <div className="em-vignette" aria-hidden="true" />
       <div className="em-grain" aria-hidden="true" />
 
-      {/* ── Header ─────────────────────────────────────────── */}
+      {/*   Header   */}
       <header className="em-header">
         <div className="em-eyebrow">
           <span className="em-eyebrow-line" />
@@ -346,7 +346,7 @@ export default function Ecosystem() {
         <div className="em-hint">Chạm vào từng ô để xem chi tiết</div>
       </header>
 
-      {/* ── Tree diagram ───────────────────────────────────── */}
+      {/*   Tree diagram                   ─ */}
       <div className="em-chart" ref={chartRef}>
         <svg className="em-connector-svg" ref={svgRef}></svg>
 
@@ -392,14 +392,14 @@ export default function Ecosystem() {
         </div>
       </div>
 
-      {/* ── Brand divider — plain dark backdrop + wordmark, pinned
+      {/*   Brand divider — plain dark backdrop + wordmark, pinned
            in place as the bottom-most layer while sections scroll
-           over it. No photo — CSS gradient + text only. ─────── */}
+           over it. No photo — CSS gradient + text only.    ─ */}
       <div className="em-divider" aria-hidden="true">
         <span className="em-divider-word">Earthoria</span>
       </div>
 
-      {/* ── Lifecycle loop ─────────────────────────────────── */}
+      {/*   Lifecycle loop                  ─ */}
       <section className="em-cycle">
         <div className="em-cycle-inner">
           <div className="em-eyebrow">
@@ -465,7 +465,7 @@ export default function Ecosystem() {
         </div>
       </section>
 
-      {/* ── Closing CTA ────────────────────────────────────── */}
+      {/*   Closing CTA                     */}
       <section className="em-cta">
         <svg
           className="em-cta-circuit"

@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { settingsService } from "../services/settingsService";
 
-/* ─ helpers ───────────────────────────────────────────── */
+/* helpers   */
 const IS_DEV =
   typeof import.meta !== "undefined"
     ? import.meta.env?.DEV === true // Vite
@@ -35,9 +35,7 @@ input, textarea, [contenteditable] {
 }
 `;
 
-/* ─ DevTools detection ─────────────────────────────────── */
-
-// Đếm số lần detect liên tiếp — tránh false positive từ React DevTools extension
+/*  DevTools detection   */
 let _consecutiveHits = 0;
 const REQUIRED_HITS = 2; // phải detect 2 lần liên tiếp mới tính là mở
 
@@ -98,10 +96,7 @@ function logDevToolsWarning() {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════ */
 export default function EarthoriaSecurity() {
-  // Lấy cờ bật/tắt từ server, tự động refetch mỗi 60s — admin đổi ở dashboard
-  // là mọi người đang mở web đều nhận được ngay, không cần F5 lại trang.
   const { data: siteSettings } = useQuery({
     queryKey: ["public-site-settings"],
     queryFn: () => settingsService.getPublic().then((r) => r.data.data),

@@ -22,9 +22,9 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-/* ───────────────────────────────────────────────────────────
+/*
    META & CONTENT DATA
-───────────────────────────────────────────────────────────── */
+ */
 const META = {
   effectiveDate: "01 Tháng 01, 2026",
   updatedDate: "15 Tháng 06, 2026",
@@ -277,9 +277,9 @@ const FAQS = [
   },
 ];
 
-/* ───────────────────────────────────────────────────────────
+/*
    COMPONENT
-───────────────────────────────────────────────────────────── */
+ */
 export default function TermsOfService() {
   const [progress, setProgress] = useState(0);
   const [activeId, setActiveId] = useState(SECTIONS[0].id);

@@ -185,7 +185,7 @@ export default function CreateChildWizard({
 
   if (!isOpen) return null;
 
-  // ── Chặn tạo mới nếu đã đạt giới hạn hồ sơ của hạng hiện tại ──
+  // Chặn tạo mới nếu đã đạt giới hạn hồ sơ của hạng hiện tại
   if (limitReached) {
     return (
       <div

@@ -31,10 +31,7 @@ import { lazy, Suspense } from "react";
 import { SkeletonProductGrid } from "../components/skeletons/SkeletonShop";
 const SproutModel = lazy(() => import("../components/SproutModel"));
 
-/* ───────────────────────────────────────────────────────────
-   COUNTDOWN PRICE — đếm số chạy giảm dần từ giá gốc xuống giá sale,
-   chỉ bắt đầu chạy khi lướt tới viewport, chạy đúng 1 lần
-───────────────────────────────────────────────────────────── */
+/*COUNTDOWN PRICE */
 function CountdownPrice({ from, to, duration = 1200 }) {
   const [display, setDisplay] = useState(from);
   const rafRef = useRef(null);
@@ -83,9 +80,7 @@ function CountdownPrice({ from, to, duration = 1200 }) {
   return <span ref={wrapRef}>{formatPrice(display)}</span>;
 }
 
-/* ───────────────────────────────────────────────────────────
-   PRODUCT CARD COMPONENT
-───────────────────────────────────────────────────────────── */
+/* PRODUCT CARD COMPONENT */
 function CartIcon() {
   return (
     <svg
@@ -253,8 +248,6 @@ function WishlistBtn({ wishlisted, onToggle, disabled }) {
   };
 
   const handleClick = (e) => {
-    // Chỉ chạy hiệu ứng khi onToggle xác nhận hành động thực sự được thực hiện
-    // (đã đăng nhập, dữ liệu hợp lệ...) — tránh nổ hiệu ứng "giả" khi bị chặn.
     const proceeded = onToggle(e);
     if (!proceeded) return;
     trigger(!wishlisted);
@@ -330,9 +323,6 @@ function BookCard({
   const { isInWishlist, toggleWishlist, isToggling } = useWishlistStore();
   const wishlisted = isInWishlist(book.hashId);
   const wishlistBusy = isToggling(book.hashId);
-
-  // Trả về true/false để WishlistBtn biết có nên chạy hiệu ứng hay không
-  // (chỉ chạy khi thực sự tiến hành toggle, không chạy khi bị chặn do chưa đăng nhập...)
   const handleWishlist = (e) => {
     e.stopPropagation();
     if (!isAuthenticated) {
@@ -641,9 +631,7 @@ function BookCard({
   );
 }
 
-/* ───────────────────────────────────────────────────────────
-   HORIZONTAL SCROLL BOOK ROW
-───────────────────────────────────────────────────────────── */
+/*HORIZONTAL SCROLL BOOK ROW */
 function BookScrollRow({
   books,
   onAddCart,
@@ -848,9 +836,7 @@ function BookScrollRow({
   );
 }
 
-/* ───────────────────────────────────────────────────────────
-   NEWSLETTER SECTION
-───────────────────────────────────────────────────────────── */
+/*NEWSLETTER SECTION */
 function NewsletterSection() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
@@ -1034,9 +1020,9 @@ function NewsletterSection() {
   );
 }
 
-/* ───────────────────────────────────────────────────────────
+ /*
    APP SHOWCASE (MOBILE AR PREVIEW)
-───────────────────────────────────────────────────────────── */
+*/
 function AppShowcase() {
   return (
     <section className="tech-section">
@@ -1199,9 +1185,7 @@ function CountUpMetric({
     </div>
   );
 }
-/* ───────────────────────────────────────────────────────────
-   TESTIMONIALS SECTION (enhanced)
-───────────────────────────────────────────────────────────── */
+ /*   TESTIMONIALS SECTION (enhanced)*/
 const REVIEWS = [
   {
     name: "Nguyễn Thu Hà",
@@ -1226,9 +1210,7 @@ const REVIEWS = [
   },
 ];
 
-/* ───────────────────────────────────────────────────────────
-   FLASH DEAL — TRI ÂM NGƯỜI DÙNG (countdown + single book)
-───────────────────────────────────────────────────────────── */
+ /*   FLASH DEAL — TRI ÂM NGƯỜI DÙNG (countdown + single book)*/
 function FlashDealSection({ books, onAddCart }) {
   const book = books[0];
   const [timeLeft, setTimeLeft] = useState({ h: 5, m: 59, s: 47 });
@@ -1784,9 +1766,9 @@ function FlashDealSection({ books, onAddCart }) {
   );
 }
 
-/* ───────────────────────────────────────────────────────────
+ /*
    TOP RATED — sách được vote / đánh giá cao nhất
-───────────────────────────────────────────────────────────── */
+*/
 function TopRatedSection({ books, onAddCart }) {
   const TOP_RATINGS = [4.9, 4.8, 4.8, 4.7, 4.7, 4.6];
   const TOP_VOTES = [1240, 987, 856, 743, 698, 521];
@@ -2174,9 +2156,7 @@ function TopRatedSection({ books, onAddCart }) {
   );
 }
 
-/* ───────────────────────────────────────────────────────────
-   MAIN HOME COMPONENT
-───────────────────────────────────────────────────────────── */
+ /*   MAIN HOME COMPONENT*/
 export default function Home() {
   const ctaRef = useRef(null);
   const { addToCart } = useCartStore();
@@ -2447,10 +2427,10 @@ export default function Home() {
 
   return (
     <>
-      {/* ═══ HERO BANNER SLIDER ═══ */}
+      {/*   HERO BANNER SLIDER   */}
       <HeroBanner />
 
-      {/* ═══ MARQUEE — flush below hero gradient ═══ */}
+      {/*   MARQUEE — flush below hero gradient   */}
       <div
         className="marquee-section"
         style={{ marginTop: "-2px", position: "relative", zIndex: 10 }}
@@ -2476,7 +2456,7 @@ export default function Home() {
           ))}
         </div>
       </div>
-      {/* ═══ STATS ═══ */}
+      {/*   STATS   */}
       <section className="stats-section reveal">
         <div className="stats-inner">
           {[
@@ -2519,10 +2499,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ ECOSYSTEM LOGO STRIP ═══ */}
+      {/*   ECOSYSTEM LOGO STRIP   */}
       <EcosystemStrip />
 
-      {/* ═══ HOW IT WORKS ═══ */}
+      {/*   HOW IT WORKS   */}
       <section className="how-section">
         <div className="how-inner">
           <div className="section-header reveal">
@@ -2582,7 +2562,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ FEATURED COLLECTION (Grid) ═══ */}
+      {/*   FEATURED COLLECTION (Grid)   */}
       <section className="products-section">
         <div className="products-inner">
           <div className="products-top reveal">
@@ -2630,7 +2610,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ MỚI NHẤT — Horizontal Scroll ═══ */}
+      {/*   MỚI NHẤT — Horizontal Scroll   */}
       <section
         className="new-arrivals-section"
         style={{
@@ -2730,7 +2710,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ PROMO BANNER ═══ */}
+      {/*   PROMO BANNER   */}
       <section
         style={{
           background: "var(--forest)",
@@ -2876,7 +2856,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ BÁN CHẠY — Horizontal Scroll ═══ */}
+      {/*   BÁN CHẠY — Horizontal Scroll   */}
       <section
         className="bestseller-section"
         style={{ background: "var(--cream)" }}
@@ -3119,10 +3099,10 @@ export default function Home() {
 
       <StickyScrollTransition />
 
-      {/* ═══ TOP RATED — sách được vote cao nhất ═══ */}
+      {/*   TOP RATED — sách được vote cao nhất   */}
       <TopRatedSection books={displayBest} onAddCart={handleAddToCart} />
 
-      {/* ═══ VALUES ═══ */}
+      {/*   VALUES   */}
       <section className="values-section">
         <Suspense fallback={null}>
           <SproutModel className="values-3d-bg" />
@@ -3172,7 +3152,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ JOURNEY ═══ */}
+      {/*   JOURNEY   */}
       <section className="journey-section">
         <div className="journey-inner">
           <div className="section-header reveal">
@@ -3280,7 +3260,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ TESTIMONIALS ═══ */}
+      {/*   TESTIMONIALS   */}
       <section className="reviews-section">
         <div className="reviews-inner">
           <div className="section-header reveal">
@@ -3360,10 +3340,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ NEWSLETTER ═══ */}
+      {/*   NEWSLETTER   */}
       <NewsletterSection />
 
-      {/* ═══ CTA BANNER ═══ */}
+      {/*   CTA BANNER   */}
       <section className="cta-section" id="cta-section" ref={ctaRef}>
         <div className="cta-bg-text">Earthoria</div>
         <span className="cta-eyebrow reveal">Bắt Đầu Hành Trình</span>
