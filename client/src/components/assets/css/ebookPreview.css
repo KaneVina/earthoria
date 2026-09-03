@@ -261,12 +261,19 @@
   position: absolute;
   inset: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  /* KHÔNG dùng align-items/justify-content: center ở đây — khi nội dung
+     to hơn khung (ví dụ sau khi zoom), flexbox center + overflow:auto có
+     lỗi kinh điển: phần tràn ra phía TRÊN/TRÁI bị kẹt, không cách nào
+     cuộn tới được (trình duyệt chỉ cho cuộn về phía cuối). Thay vào đó
+     canh giữa phần tử con bằng margin:auto (xem .er-stage > div bên
+     dưới) — cách này luôn cuộn được đủ 4 hướng dù nội dung to cỡ nào. */
   overflow: auto;
   padding: 62px 10px 108px;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+.er-stage > div {
+  margin: auto;
 }
 .er-stage::-webkit-scrollbar {
   width: 10px;
