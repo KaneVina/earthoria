@@ -105,28 +105,57 @@ export default function GardenPage() {
       <span className="gp-ground" aria-hidden="true" />
 
       <div className="gp-shell">
-        <header className="gp-topbar">
-          <button
-            type="button"
-            className="gp-back-btn"
-            onClick={goBack}
-            aria-label="Quay lại"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <div className="gp-topbar-title-wrap">
-            <span className="gp-topbar-eyebrow">
-              <PhaseIcon phase={skyState.phase} size={13} />
-              Vườn Tri Thức
-            </span>
-            <h1 className="gp-topbar-title">
-              {data?.childName
-                ? `Của ${data.childName}`
-                : "Trang Trại Tri Thức"}
-            </h1>
+        <div className="gp-header">
+          <span className="gp-header-eyebrow">
+            <PhaseIcon phase={skyState.phase} size={14} />
+            Vườn Tri Thức
+          </span>
+
+          <div className="gp-header-row">
+            <button
+              type="button"
+              className="gp-back-btn"
+              onClick={goBack}
+              aria-label="Quay lại"
+            >
+              <ArrowLeft size={22} />
+            </button>
+
+            {status === "ok" && data && (
+              <>
+                <div className="gp-header-avatar" aria-hidden="true">
+                  {String(data.childName || "?")
+                    .trim()
+                    .charAt(0)
+                    .toUpperCase() || "?"}
+                </div>
+                <div className="gp-header-info">
+                  <h1 className="gp-header-name">
+                    {data.childName || "Bé yêu"}
+                  </h1>
+                  <span className="gp-header-level">
+                    <Sprout size={13} />
+                    {data.activeTree.level.name}
+                  </span>
+                </div>
+                <div className="gp-header-stats">
+                  <div className="gp-hud-stat">
+                    <Flame size={14} />
+                    <span>{data.garden.currentStreak} ngày</span>
+                  </div>
+                  <div className="gp-hud-stat">
+                    <BookOpen size={14} />
+                    <span>{fmtDurationVi(data.activeTree.readingMinutes)}</span>
+                  </div>
+                  <div className="gp-hud-stat">
+                    <TreeDeciduous size={14} />
+                    <span>{data.trees.length} cây</span>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
-          <span className="gp-topbar-spacer" aria-hidden="true" />
-        </header>
+        </div>
 
         <div className="gp-content">
           {status === "loading" && (
@@ -156,40 +185,6 @@ export default function GardenPage() {
 
           {status === "ok" && data && (
             <>
-              <div className="gp-hud">
-                <div className="gp-hud-left">
-                  <div className="gp-hud-avatar" aria-hidden="true">
-                    {String(data.childName || "?")
-                      .trim()
-                      .charAt(0)
-                      .toUpperCase() || "?"}
-                  </div>
-                  <div className="gp-hud-left-text">
-                    <span className="gp-hud-name">
-                      {data.childName || "Bé yêu"}
-                    </span>
-                    <span className="gp-hud-level">
-                      <Sprout size={12} />
-                      {data.activeTree.level.name}
-                    </span>
-                  </div>
-                </div>
-                <div className="gp-hud-right">
-                  <div className="gp-hud-stat">
-                    <Flame size={14} />
-                    <span>{data.garden.currentStreak} ngày</span>
-                  </div>
-                  <div className="gp-hud-stat">
-                    <BookOpen size={14} />
-                    <span>{fmtDurationVi(data.activeTree.readingMinutes)}</span>
-                  </div>
-                  <div className="gp-hud-stat">
-                    <TreeDeciduous size={14} />
-                    <span>{data.trees.length} cây</span>
-                  </div>
-                </div>
-              </div>
-
               <section className="kg-root gp-root">
                 {(() => {
                   const { garden, activeTree, trees } = data;
@@ -387,7 +382,7 @@ export default function GardenPage() {
                                 health={activeTree.health}
                                 healthBandKey={activeTree.healthBand.key}
                                 status={activeTree.status}
-                                size={124}
+                                size={176}
                                 animated
                               />
                             </div>
@@ -482,7 +477,7 @@ export default function GardenPage() {
                                     health={t.health}
                                     healthBandKey={t.healthBand.key}
                                     status={t.status}
-                                    size={68}
+                                    size={100}
                                     animated={
                                       t.id === activeTree.id &&
                                       t.status === "ALIVE"
@@ -497,7 +492,7 @@ export default function GardenPage() {
                                     className="kg-garden-tree-slot kg-garden-tree-slot--empty"
                                     aria-hidden="true"
                                   >
-                                    <Sprout size={20} />
+                                    <Sprout size={30} />
                                   </div>
                                 ),
                               )}
