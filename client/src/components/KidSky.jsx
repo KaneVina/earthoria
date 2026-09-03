@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useState, useId } from "react";
 import { Moon, Sunrise, Sunset, Star, Sparkles } from "lucide-react";
 
-// Bầu trời sống động theo giờ thực (mặt trời/mặt trăng lên xuống, mây trôi,
-// sao lấp lánh ban đêm...) — dùng chung cho mọi trang thuộc khu vực của bé
-// (KidAccess, Vườn Tri Thức...) để cả app luôn có chung một "linh hồn".
-
+// Bầu trời sống động theo giờ thực
 const SUNRISE_HOUR = 6; // 06:00 — mặt trời mọc
 const SUNSET_HOUR = 18; // 18:00 — mặt trời lặn
 const NIGHT_SKY_STOPS = [
@@ -107,9 +104,60 @@ export function useSkyState() {
   return useMemo(() => computeSkyState(date), [date]);
 }
 
-// Mặt trời "thật" hơn bản line-icon mặc định của lucide: có gradient vàng
-// cam ở lõi, quầng sáng mềm lan toả, và các tia nắng thon nhỏ dần ra ngoài
-// thay vì que thẳng đều — nhìn ấm và có chiều sâu hơn.
+// Cầu vồng thỉnh thoảng bừng lên phía sau mặt trời gần chân trời
+function useOccasionalRainbow(active) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!active) {
+      setVisible(false);
+      return;
+    }
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+    ) {
+      return; // tôn trọng lựa chọn giảm chuyển động — không tự bừng lên
+    }
+
+    let showTimer;
+    let hideTimer;
+    let cancelled = false;
+
+    const scheduleNext = () => {
+      // chờ ngẫu nhiên 40s–2 phút rồi mới "thử" một lần — đủ thưa để không cảm thấy lặp lại theo nhịp cố định
+      const wait = 40000 + Math.random() * 80000;
+      showTimer = setTimeout(() => {
+        if (cancelled) return;
+        // ~30% khả năng lần thử này thực sự hiện cầu vồng
+        if (Math.random() < 0.3) {
+          setVisible(true);
+          hideTimer = setTimeout(
+            () => {
+              if (cancelled) return;
+              setVisible(false);
+              scheduleNext();
+            },
+            9000 + Math.random() * 7000,
+          );
+        } else {
+          scheduleNext();
+        }
+      }, wait);
+    };
+
+    scheduleNext();
+    return () => {
+      cancelled = true;
+      clearTimeout(showTimer);
+      clearTimeout(hideTimer);
+    };
+  }, [active]);
+
+  return visible;
+}
+
+// Mặt trời
 function RealisticSunIcon({ size = 18, className }) {
   const gid = useId();
   const coreId = `sun-core-${gid}`;
@@ -165,6 +213,7 @@ export function PhaseIcon({ phase, ...props }) {
 
 export function DynamicSky({ skyState, minimal = false }) {
   const { stops, sun, moon, starOpacity, warmOpacity, warmX, phase } = skyState;
+  const rainbowVisible = useOccasionalRainbow(sun.visible && sun.opacity > 0.4);
   const skyStyle = {
     "--sky-s1": stops[0],
     "--sky-s2": stops[1],
@@ -185,6 +234,10 @@ export function DynamicSky({ skyState, minimal = false }) {
     >
       <div className="kid-sky-wash" />
       <div className="kid-sky-warm" />
+
+      <span
+        className={`kid-sky-rainbow${rainbowVisible ? " is-visible" : ""}`}
+      />
 
       {sun.opacity > 0.01 && (
         <span

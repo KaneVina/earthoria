@@ -212,12 +212,88 @@
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
 }
 
-/* mặt trời — lõi nhiều lớp mô phỏng quang cầu thật (sáng trắng ở tâm,
-   ngả vàng rồi cam dần ra rìa — "limb darkening" như ảnh chụp mặt trời
-   thật), quầng khí quyển mờ lan toả phía ngoài, và tia sáng mềm xoay
-   chầm chậm phía sau thay vì viền chấm cứng như bản cũ. Vị trí (left/top)
-   và độ mờ được JS tính theo giờ thực rồi truyền vào qua inline style,
-   nên chỉ cần transition mượt ở đây. */
+/* cầu vồng */
+.kid-sky-rainbow {
+  position: absolute;
+  left: 50%;
+  bottom: -78vh;
+  width: 150vw;
+  height: 150vw;
+  transform: translate(-50%, 0) scale(0.92);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    opacity 3.2s ease,
+    transform 3.6s ease;
+}
+.kid-sky-rainbow.is-visible {
+  opacity: 0.8;
+  transform: translate(-50%, 0) scale(1);
+}
+.kid-sky-rainbow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 100%,
+    transparent 0%,
+    transparent 60.6%,
+    rgba(230, 55, 65, 0.68) 60.6%,
+    rgba(230, 55, 65, 0.68) 62.2%,
+    rgba(240, 120, 55, 0.64) 62.2%,
+    rgba(240, 120, 55, 0.64) 63.8%,
+    rgba(245, 190, 55, 0.6) 63.8%,
+    rgba(245, 190, 55, 0.6) 65.4%,
+    rgba(120, 195, 95, 0.6) 65.4%,
+    rgba(120, 195, 95, 0.6) 67%,
+    rgba(70, 175, 200, 0.62) 67%,
+    rgba(70, 175, 200, 0.62) 68.6%,
+    rgba(80, 110, 210, 0.58) 68.6%,
+    rgba(80, 110, 210, 0.58) 70.2%,
+    rgba(150, 95, 205, 0.5) 70.2%,
+    rgba(150, 95, 205, 0.5) 71.8%,
+    transparent 71.8%,
+    transparent 100%
+  );
+  filter: blur(2px);
+}
+.kid-sky-rainbow::after {
+  content: "";
+  position: absolute;
+  inset: -2.4%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 100%,
+    transparent 0%,
+    transparent 60%,
+    rgba(150, 95, 205, 0.24) 60%,
+    rgba(150, 95, 205, 0.24) 61.6%,
+    rgba(80, 110, 210, 0.26) 61.6%,
+    rgba(80, 110, 210, 0.26) 63.2%,
+    rgba(70, 175, 200, 0.27) 63.2%,
+    rgba(70, 175, 200, 0.27) 64.8%,
+    rgba(120, 195, 95, 0.26) 64.8%,
+    rgba(120, 195, 95, 0.26) 66.4%,
+    rgba(245, 190, 55, 0.26) 66.4%,
+    rgba(245, 190, 55, 0.26) 68%,
+    rgba(240, 120, 55, 0.26) 68%,
+    rgba(240, 120, 55, 0.26) 69.6%,
+    rgba(230, 55, 65, 0.28) 69.6%,
+    rgba(230, 55, 65, 0.28) 71.2%,
+    transparent 71.2%,
+    transparent 100%
+  );
+  filter: blur(2.4px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .kid-sky-rainbow {
+    display: none;
+  }
+}
+
+/* mặt trời  */
 .kid-sun {
   position: absolute;
   width: 150px;
@@ -315,8 +391,7 @@
   }
 }
 
-/* mặt trăng — dịu mát, có vài miệng núi lửa và quầng sáng mờ,
-   cùng cách di chuyển và độ mờ như mặt trời nhưng dành cho ban đêm */
+/* mặt trăng  */
 .kid-moon {
   position: absolute;
   width: 108px;
