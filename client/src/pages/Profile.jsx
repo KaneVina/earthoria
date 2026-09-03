@@ -577,6 +577,18 @@ export const Icon = {
       <circle cx="9.5" cy="15.5" r="0.6" fill="currentColor" stroke="none" />
     </svg>
   ),
+  pulse: (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.2"
+    >
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+    </svg>
+  ),
 };
 
 // ─ Reveal-on-scroll ─

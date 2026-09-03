@@ -3589,6 +3589,57 @@
   color: var(--text-muted);
 }
 
+/* ─ Trạng Thái Hệ Thống — dải điện tâm đồ dưới lưới chỉ số ─
+   Cùng kỹ thuật cuộn vô hạn với statuspage.css (2 bản sao SVG, dịch đúng
+   1 bản sao rộng 400px) nhưng đặt trong khung "well" var(--cream) giống
+   hệt .pf-settings-info-item phía trên để trông liền một khối, không lạc
+   tông sang phong cách "terminal tối" của trang /status. */
+.pf-status-pulse-wrap {
+  background: var(--cream);
+  border: 0.5px solid var(--border);
+  border-radius: var(--pf-radius-sm);
+  padding: 6px 0;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 6%,
+    #000 94%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 6%,
+    #000 94%,
+    transparent
+  );
+}
+.pf-status-pulse-track {
+  display: flex;
+  width: max-content;
+  animation: pfStatusPulseScroll 7s linear infinite;
+}
+.pf-status-pulse-track svg {
+  display: block;
+  height: 30px;
+  width: 400px;
+  flex-shrink: 0;
+}
+.pf-status-pulse-track polyline {
+  fill: none;
+  stroke: var(--pulse-color, var(--gold));
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  opacity: 0.6;
+}
+@keyframes pfStatusPulseScroll {
+  to {
+    transform: translateX(-400px);
+  }
+}
+
 .pf-theme-row {
   display: flex;
   align-items: center;
@@ -3773,6 +3824,10 @@ body.dark-mode .pf-settings-card-title {
 }
 body.dark-mode .pf-settings-info-item {
   background: #0f1510;
+}
+body.dark-mode .pf-status-pulse-wrap {
+  background: #0f1510;
+  border-color: rgba(255, 255, 255, 0.07);
 }
 body.dark-mode .pf-settings-info-val {
   color: #c8d4cc;
