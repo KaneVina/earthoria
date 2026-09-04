@@ -149,7 +149,7 @@ export default function Footer() {
                 <Link to="/shop">Toàn Bộ Sản Phẩm</Link>
               </li>
               <li>
-                <Link to="/ar">Hướng Dẫn AR</Link>
+                <Link to="/technology">Hướng Dẫn AR</Link>
               </li>
               <li>
                 <Link to="/loyalty">Hạng Thành Viên</Link>
