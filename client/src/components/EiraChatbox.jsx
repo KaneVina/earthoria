@@ -156,6 +156,7 @@ const PUBLIC_LINK_WHITELIST = [
   "/technology",
   "/blog",
   "/about",
+  "/ecosystem",
   "/contact",
   "/cart",
   "/wishlist",

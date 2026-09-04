@@ -183,6 +183,11 @@ const SECTIONS = [
         sub: "Tình trạng hoạt động các dịch vụ của Earthoria",
         to: "/status",
       },
+      {
+        label: "Hệ Sinh Thái Earthoria",
+        sub: "5 mảng tạo nên hệ sinh thái Earthoria",
+        to: "/ecosystem",
+      },
     ],
   },
 ];

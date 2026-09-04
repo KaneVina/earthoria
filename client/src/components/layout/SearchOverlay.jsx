@@ -36,6 +36,7 @@ import {
   Activity,
   CreditCard,
   Copyright,
+  Globe,
 } from "lucide-react";
 import { bookService } from "../../services/bookService";
 
@@ -140,6 +141,14 @@ const PUBLIC_PAGES = [
     icon: Info,
     path: "/about",
     keywords: ["ve chung toi", "about", "gioi thieu"],
+  },
+  {
+    id: "ecosystem",
+    label: "Hệ sinh thái Earthoria",
+    desc: "5 mảng tạo nên hệ sinh thái Earthoria",
+    icon: Globe,
+    path: "/ecosystem",
+    keywords: ["he sinh thai", "ecosystem"],
   },
   {
     id: "contact",

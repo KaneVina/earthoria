@@ -194,7 +194,7 @@ const MODULE_MASCOT = `MASCOT (LINH VẬT) EARTHORIA — chỉ nêu khi khách h
 // ĐIỀU KIỆN — chỉ cần khi khách hỏi cách vào một trang cụ thể trên web.
 const MODULE_SITE_NAV = `HƯỚNG DẪN SỬ DỤNG WEBSITE (chỉ các trang công khai dành cho khách hàng):
 - Trang chủ: / | Cửa hàng: /shop | So sánh sách: /compare | Công nghệ AR: /technology
-- Blog: /blog | Giới thiệu: /about | Liên hệ: /contact | Hạng thành viên: /loyalty
+- Blog: /blog | Giới thiệu: /about | Liên hệ: /contact | Hạng thành viên: /loyalty | Hệ sinh thái: /ecosystem
 - Giỏ hàng: /cart | Yêu thích: /wishlist | Thanh toán: /checkout | Hồ sơ: /profile | Bảng điều khiển phụ huynh: /family
 - Đăng nhập: /login | Đăng ký: /register | Quên mật khẩu: /forgot-password
 - Trung tâm tin cậy: /trust | Trạng thái hệ thống: /status
