@@ -1,83 +1,367 @@
-import {
-  useState, useEffect, useRef, useCallback, useMemo,
-} from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
-  Search, X, Clock, TrendingUp, ArrowRight, SearchX,
-  BookOpen, Boxes, Sparkles, Tag, LayoutGrid, User,
-  Package, Heart, ShoppingCart, Settings, Home, Store,
-  Info, ShieldCheck, LogOut, LogIn, Zap, Mail, Crown,
-  GitCompare, Scale, Cookie, RefreshCcw, Truck, Map, Bot,
+  Search,
+  X,
+  Clock,
+  TrendingUp,
+  ArrowRight,
+  SearchX,
+  BookOpen,
+  Boxes,
+  Sparkles,
+  Tag,
+  LayoutGrid,
+  User,
+  Package,
+  Heart,
+  ShoppingCart,
+  Settings,
+  Home,
+  Store,
+  Info,
+  ShieldCheck,
+  LogOut,
+  LogIn,
+  Zap,
+  Mail,
+  Crown,
+  GitCompare,
+  Scale,
+  Cookie,
+  RefreshCcw,
+  Truck,
+  Map,
+  Bot,
+  Activity,
+  CreditCard,
+  Copyright,
 } from "lucide-react";
 import { bookService } from "../../services/bookService";
 
 /* CẤU HÌNH */
 
 const CATEGORIES = [
-  { id: "all",       label: "Tất cả" },
-  { id: "book",      label: "Sách AR" },
-  { id: "kit",       label: "Bộ dụng cụ" },
-  { id: "ar",        label: "Trải nghiệm AR" },
+  { id: "all", label: "Tất cả" },
+  { id: "book", label: "Sách AR" },
+  { id: "kit", label: "Bộ dụng cụ" },
+  { id: "ar", label: "Trải nghiệm AR" },
   { id: "accessory", label: "Phụ kiện" },
 ];
 
 const QUICK_CATEGORIES = [
-  { id: "book",      label: "Sách AR",          desc: "Câu chuyện sống động",    icon: BookOpen },
-  { id: "kit",       label: "Bộ dụng cụ",       desc: "Học mà chơi, chơi mà học", icon: Boxes },
-  { id: "ar",        label: "Trải nghiệm AR",   desc: "Khám phá thế giới 3D",    icon: Sparkles },
-  { id: "accessory", label: "Phụ kiện",         desc: "Kính AR, túi, thẻ bài",   icon: Tag },
+  {
+    id: "book",
+    label: "Sách AR",
+    desc: "Câu chuyện sống động",
+    icon: BookOpen,
+  },
+  {
+    id: "kit",
+    label: "Bộ dụng cụ",
+    desc: "Học mà chơi, chơi mà học",
+    icon: Boxes,
+  },
+  {
+    id: "ar",
+    label: "Trải nghiệm AR",
+    desc: "Khám phá thế giới 3D",
+    icon: Sparkles,
+  },
+  {
+    id: "accessory",
+    label: "Phụ kiện",
+    desc: "Kính AR, túi, thẻ bài",
+    icon: Tag,
+  },
 ];
 
-const TRENDING = ["khủng long", "bé 3 tuổi", "hệ mặt trời", "kính AR", "flashcard động vật"];
+const TRENDING = [
+  "khủng long",
+  "bé 3 tuổi",
+  "hệ mặt trời",
+  "kính AR",
+  "flashcard động vật",
+];
 
 const PUBLIC_PAGES = [
-  { id: "home",  label: "Trang chủ",    desc: "Quay lại trang chủ",                  icon: Home,        path: "/",         keywords: ["trang chu", "home"] },
-  { id: "shop",  label: "Cửa hàng",     desc: "Khám phá tất cả sản phẩm",            icon: Store,       path: "/shop",     keywords: ["cua hang", "shop", "san pham", "mua sam"] },
-  { id: "tech",  label: "Công nghệ AR", desc: "Tìm hiểu trải nghiệm thực tế ảo",    icon: Sparkles,    path: "/technology", keywords: ["cong nghe", "ar", "thuc te ao", "technology"] },
-  { id: "compare", label: "So sánh sản phẩm", desc: "Đối chiếu nhiều sản phẩm cạnh nhau", icon: GitCompare, path: "/compare", keywords: ["so sanh", "compare", "doi chieu"] },
-  { id: "loyalty", label: "Hạng thành viên", desc: "Hành trình 5 hạng thành viên & ưu đãi", icon: Crown, path: "/loyalty", keywords: ["hang thanh vien", "loyalty", "uu dai", "vip"] },
-  { id: "blog",  label: "Blog",         desc: "Bài viết & kiến thức cho bé",         icon: BookOpen,    path: "/blog",     keywords: ["blog", "bai viet", "kien thuc"] },
-  { id: "about", label: "Về chúng tôi", desc: "Câu chuyện thương hiệu Earthoria",    icon: Info,        path: "/about",    keywords: ["ve chung toi", "about", "gioi thieu"] },
-  { id: "contact", label: "Liên hệ",   desc: "Gửi câu hỏi hoặc phản hồi cho Earthoria", icon: Mail,      path: "/contact", keywords: ["lien he", "contact", "ho tro"] },
-  { id: "sitemap", label: "Sơ đồ website", desc: "Toàn bộ trang của Earthoria",     icon: Map,         path: "/sitemap", keywords: ["so do website", "sitemap"] },
+  {
+    id: "home",
+    label: "Trang chủ",
+    desc: "Quay lại trang chủ",
+    icon: Home,
+    path: "/",
+    keywords: ["trang chu", "home"],
+  },
+  {
+    id: "shop",
+    label: "Cửa hàng",
+    desc: "Khám phá tất cả sản phẩm",
+    icon: Store,
+    path: "/shop",
+    keywords: ["cua hang", "shop", "san pham", "mua sam"],
+  },
+  {
+    id: "tech",
+    label: "Công nghệ AR",
+    desc: "Tìm hiểu trải nghiệm thực tế ảo",
+    icon: Sparkles,
+    path: "/technology",
+    keywords: ["cong nghe", "ar", "thuc te ao", "technology"],
+  },
+  {
+    id: "compare",
+    label: "So sánh sản phẩm",
+    desc: "Đối chiếu nhiều sản phẩm cạnh nhau",
+    icon: GitCompare,
+    path: "/compare",
+    keywords: ["so sanh", "compare", "doi chieu"],
+  },
+  {
+    id: "loyalty",
+    label: "Hạng thành viên",
+    desc: "Hành trình 5 hạng thành viên & ưu đãi",
+    icon: Crown,
+    path: "/loyalty",
+    keywords: ["hang thanh vien", "loyalty", "uu dai", "vip"],
+  },
+  {
+    id: "blog",
+    label: "Blog",
+    desc: "Bài viết & kiến thức cho bé",
+    icon: BookOpen,
+    path: "/blog",
+    keywords: ["blog", "bai viet", "kien thuc"],
+  },
+  {
+    id: "about",
+    label: "Về chúng tôi",
+    desc: "Câu chuyện thương hiệu Earthoria",
+    icon: Info,
+    path: "/about",
+    keywords: ["ve chung toi", "about", "gioi thieu"],
+  },
+  {
+    id: "contact",
+    label: "Liên hệ",
+    desc: "Gửi câu hỏi hoặc phản hồi cho Earthoria",
+    icon: Mail,
+    path: "/contact",
+    keywords: ["lien he", "contact", "ho tro"],
+  },
+  {
+    id: "trust",
+    label: "Trung tâm tin cậy",
+    desc: "Cam kết bảo mật, an toàn & minh bạch của Earthoria",
+    icon: ShieldCheck,
+    path: "/trust",
+    keywords: ["trung tam tin cay", "trust", "bao mat", "an toan", "minh bach"],
+  },
+  {
+    id: "status",
+    label: "Trạng thái hệ thống",
+    desc: "Tình trạng hoạt động các dịch vụ của Earthoria",
+    icon: Activity,
+    path: "/status",
+    keywords: ["trang thai he thong", "status", "uptime", "su co"],
+  },
+  {
+    id: "sitemap",
+    label: "Sơ đồ website",
+    desc: "Toàn bộ trang của Earthoria",
+    icon: Map,
+    path: "/sitemap",
+    keywords: ["so do website", "sitemap"],
+  },
 ];
 
 const LEGAL_PAGES = [
-  { id: "legal-hub",       label: "Trung tâm pháp lý",              desc: "Tổng hợp các chính sách của Earthoria",          icon: Scale,     path: "/legal",            keywords: ["phap ly", "legal", "chinh sach", "trung tam phap ly"] },
-  { id: "legal-terms",     label: "Điều khoản dịch vụ",             desc: "Quy định sử dụng nền tảng",                       icon: Scale,     path: "/legal/terms",      keywords: ["dieu khoan", "dieu khoan dich vu", "terms"] },
-  { id: "legal-privacy",   label: "Chính sách quyền riêng tư",      desc: "Cách chúng tôi bảo vệ dữ liệu của bạn",           icon: ShieldCheck, path: "/legal/privacy",  keywords: ["bao mat", "rieng tu", "privacy", "du lieu ca nhan"] },
-  { id: "legal-shipping",  label: "Chính sách vận chuyển",          desc: "Thời gian & phí giao hàng",                       icon: Truck,     path: "/legal/shipping",   keywords: ["van chuyen", "giao hang", "shipping", "phi ship"] },
-  { id: "legal-cookies",   label: "Chính sách cookie",              desc: "Cách chúng tôi sử dụng cookie trên trang",        icon: Cookie,    path: "/legal/cookies",    keywords: ["cookie", "chinh sach cookie"] },
-  { id: "legal-returns",   label: "Chính sách trả hàng & hoàn tiền", desc: "Đổi trả, bảo hành & quy trình hoàn tiền",        icon: RefreshCcw, path: "/legal/returns",   keywords: ["tra hang", "hoan tien", "doi tra", "bao hanh", "returns"] },
-  { id: "legal-membership", label: "Chính sách hạng thành viên",    desc: "Cách xác định hạng & quyền lợi tương ứng",        icon: Crown,     path: "/legal/membership", keywords: ["hang thanh vien", "chinh sach hang thanh vien", "membership", "uu dai hang"] },
-  { id: "legal-ai",        label: "Chính sách An toàn & Minh bạch AI", desc: "Cách Eira AI xử lý dữ liệu và giới hạn của AI", icon: Bot,       path: "/legal/ai",         keywords: ["ai", "eira", "chinh sach ai", "tri tue nhan tao", "chatbot"] },
+  {
+    id: "legal-hub",
+    label: "Trung tâm pháp lý",
+    desc: "Tổng hợp các chính sách của Earthoria",
+    icon: Scale,
+    path: "/legal",
+    keywords: ["phap ly", "legal", "chinh sach", "trung tam phap ly"],
+  },
+  {
+    id: "legal-terms",
+    label: "Điều khoản dịch vụ",
+    desc: "Quy định sử dụng nền tảng",
+    icon: Scale,
+    path: "/legal/terms",
+    keywords: ["dieu khoan", "dieu khoan dich vu", "terms"],
+  },
+  {
+    id: "legal-privacy",
+    label: "Chính sách quyền riêng tư",
+    desc: "Cách chúng tôi bảo vệ dữ liệu của bạn",
+    icon: ShieldCheck,
+    path: "/legal/privacy",
+    keywords: ["bao mat", "rieng tu", "privacy", "du lieu ca nhan"],
+  },
+  {
+    id: "legal-shipping",
+    label: "Chính sách vận chuyển",
+    desc: "Thời gian & phí giao hàng",
+    icon: Truck,
+    path: "/legal/shipping",
+    keywords: ["van chuyen", "giao hang", "shipping", "phi ship"],
+  },
+  {
+    id: "legal-cookies",
+    label: "Chính sách cookie",
+    desc: "Cách chúng tôi sử dụng cookie trên trang",
+    icon: Cookie,
+    path: "/legal/cookies",
+    keywords: ["cookie", "chinh sach cookie"],
+  },
+  {
+    id: "legal-returns",
+    label: "Chính sách trả hàng & hoàn tiền",
+    desc: "Đổi trả, bảo hành & quy trình hoàn tiền",
+    icon: RefreshCcw,
+    path: "/legal/returns",
+    keywords: ["tra hang", "hoan tien", "doi tra", "bao hanh", "returns"],
+  },
+  {
+    id: "legal-membership",
+    label: "Chính sách hạng thành viên",
+    desc: "Cách xác định hạng & quyền lợi tương ứng",
+    icon: Crown,
+    path: "/legal/membership",
+    keywords: [
+      "hang thanh vien",
+      "chinh sach hang thanh vien",
+      "membership",
+      "uu dai hang",
+    ],
+  },
+  {
+    id: "legal-ai",
+    label: "Chính sách An toàn & Minh bạch AI",
+    desc: "Cách Eira AI xử lý dữ liệu và giới hạn của AI",
+    icon: Bot,
+    path: "/legal/ai",
+    keywords: ["ai", "eira", "chinh sach ai", "tri tue nhan tao", "chatbot"],
+  },
+  {
+    id: "legal-copyright",
+    label: "Thông báo bản quyền",
+    desc: "Quyền sở hữu trí tuệ & nội dung trên Earthoria",
+    icon: Copyright,
+    path: "/legal/copyright",
+    keywords: ["ban quyen", "copyright", "so huu tri tue"],
+  },
 ];
 
 const AUTH_PAGES = [
-  { id: "profile",  label: "Hồ sơ của tôi",       desc: "Thông tin & tài khoản cá nhân", icon: User,         path: "/profile",  keywords: ["ho so", "profile", "tai khoan", "thong tin ca nhan"] },
-  { id: "orders",   label: "Đơn hàng",             desc: "Lịch sử & trạng thái đơn hàng", icon: Package,      path: "/profile",  keywords: ["don hang", "orders", "lich su mua hang"] },
-  { id: "wishlist", label: "Sản phẩm yêu thích",  desc: "Danh sách bạn đã lưu",          icon: Heart,        path: "/wishlist", keywords: ["yeu thich", "wishlist", "da luu"] },
-  { id: "cart",     label: "Giỏ hàng",            desc: "Xem giỏ hàng hiện tại",         icon: ShoppingCart, path: "/cart",     keywords: ["gio hang", "cart"] },
-  { id: "family", label: "Bảng điều khiển phụ huynh", desc: "Quản lý & giám sát tài khoản của con", icon: LayoutGrid, path: "/family", keywords: ["phu huynh", "parent dashboard", "quan ly con"] },
-  { id: "settings", label: "Cài đặt tài khoản",   desc: "Đổi mật khẩu, thông tin liên hệ", icon: Settings,   path: "/profile",  keywords: ["cai dat", "settings", "doi mat khau"] },
+  {
+    id: "profile",
+    label: "Hồ sơ của tôi",
+    desc: "Thông tin & tài khoản cá nhân",
+    icon: User,
+    path: "/profile",
+    keywords: ["ho so", "profile", "tai khoan", "thong tin ca nhan"],
+  },
+  {
+    id: "orders",
+    label: "Đơn hàng",
+    desc: "Lịch sử & trạng thái đơn hàng",
+    icon: Package,
+    path: "/profile",
+    keywords: ["don hang", "orders", "lich su mua hang"],
+  },
+  {
+    id: "wishlist",
+    label: "Sản phẩm yêu thích",
+    desc: "Danh sách bạn đã lưu",
+    icon: Heart,
+    path: "/wishlist",
+    keywords: ["yeu thich", "wishlist", "da luu"],
+  },
+  {
+    id: "cart",
+    label: "Giỏ hàng",
+    desc: "Xem giỏ hàng hiện tại",
+    icon: ShoppingCart,
+    path: "/cart",
+    keywords: ["gio hang", "cart"],
+  },
+  {
+    id: "checkout",
+    label: "Thanh toán",
+    desc: "Hoàn tất đơn hàng & chọn phương thức thanh toán",
+    icon: CreditCard,
+    path: "/checkout",
+    keywords: ["thanh toan", "checkout", "dat hang"],
+  },
+  {
+    id: "family",
+    label: "Bảng điều khiển phụ huynh",
+    desc: "Quản lý & giám sát tài khoản của con",
+    icon: LayoutGrid,
+    path: "/family",
+    keywords: ["phu huynh", "parent dashboard", "quan ly con"],
+  },
+  {
+    id: "settings",
+    label: "Cài đặt tài khoản",
+    desc: "Đổi mật khẩu, thông tin liên hệ",
+    icon: Settings,
+    path: "/profile",
+    keywords: ["cai dat", "settings", "doi mat khau"],
+  },
 ];
 
 const ADMIN_PAGES = [
-  { id: "admin-dash",     label: "Tổng quan",        desc: "Dashboard quản trị",              icon: ShieldCheck, path: "/dashboard",          keywords: ["admin", "quan tri", "dashboard"] },
-  { id: "admin-products", label: "Quản lý sản phẩm", desc: "Thêm, sửa, xoá sản phẩm",        icon: Boxes,       path: "/dashboard/products", keywords: ["quan ly san pham", "products"] },
-  { id: "admin-orders",   label: "Quản lý đơn hàng", desc: "Xem & xử lý đơn hàng",           icon: Package,     path: "/dashboard/orders",   keywords: ["quan ly don hang", "orders"] },
-  { id: "admin-users",    label: "Quản lý người dùng", desc: "Tài khoản & phân quyền",        icon: User,        path: "/dashboard/users",    keywords: ["quan ly nguoi dung", "users"] },
+  {
+    id: "admin-dash",
+    label: "Tổng quan",
+    desc: "Dashboard quản trị",
+    icon: ShieldCheck,
+    path: "/dashboard",
+    keywords: ["admin", "quan tri", "dashboard"],
+  },
+  {
+    id: "admin-products",
+    label: "Quản lý sản phẩm",
+    desc: "Thêm, sửa, xoá sản phẩm",
+    icon: Boxes,
+    path: "/dashboard/products",
+    keywords: ["quan ly san pham", "products"],
+  },
+  {
+    id: "admin-orders",
+    label: "Quản lý đơn hàng",
+    desc: "Xem & xử lý đơn hàng",
+    icon: Package,
+    path: "/dashboard/orders",
+    keywords: ["quan ly don hang", "orders"],
+  },
+  {
+    id: "admin-users",
+    label: "Quản lý người dùng",
+    desc: "Tài khoản & phân quyền",
+    icon: User,
+    path: "/dashboard/users",
+    keywords: ["quan ly nguoi dung", "users"],
+  },
 ];
 
 const LOGOUT_PAGE = {
-  id: "logout", label: "Đăng xuất", desc: "Thoát khỏi tài khoản",
-  icon: LogOut, action: "logout", keywords: ["dang xuat", "logout", "thoat"],
+  id: "logout",
+  label: "Đăng xuất",
+  desc: "Thoát khỏi tài khoản",
+  icon: LogOut,
+  action: "logout",
+  keywords: ["dang xuat", "logout", "thoat"],
 };
 
 /* LỊCH SỬ TÌM KIẾM — TTL 7 NGÀY */
-const HISTORY_KEY  = "earthoria_search_history";
-const MAX_HISTORY  = 8;
-const TTL_MS       = 7 * 24 * 60 * 60 * 1000;
+const HISTORY_KEY = "earthoria_search_history";
+const MAX_HISTORY = 8;
+const TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 function loadHistory() {
   try {
@@ -85,40 +369,116 @@ function loadHistory() {
     if (!raw) return [];
     const items = JSON.parse(raw);
     const now = Date.now();
-    return items.filter(i => now - i.ts < TTL_MS);
-  } catch { return []; }
+    return items.filter((i) => now - i.ts < TTL_MS);
+  } catch {
+    return [];
+  }
 }
 
 function saveHistory(term) {
   if (!term.trim()) return [];
   try {
-    const existing = loadHistory().filter(i => i.term.toLowerCase() !== term.toLowerCase());
-    const next = [{ term: term.trim(), ts: Date.now() }, ...existing].slice(0, MAX_HISTORY);
+    const existing = loadHistory().filter(
+      (i) => i.term.toLowerCase() !== term.toLowerCase(),
+    );
+    const next = [{ term: term.trim(), ts: Date.now() }, ...existing].slice(
+      0,
+      MAX_HISTORY,
+    );
     localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
     return next;
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 
 function removeFromHistory(term) {
   try {
-    const next = loadHistory().filter(i => i.term !== term);
+    const next = loadHistory().filter((i) => i.term !== term);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
     return next;
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 
 /* TIỆN ÍCH*/
 const VN_MAP = {
-  à:"a",á:"a",ạ:"a",ả:"a",ã:"a",â:"a",ầ:"a",ấ:"a",ậ:"a",ẩ:"a",ẫ:"a",ă:"a",ằ:"a",ắ:"a",ặ:"a",ẳ:"a",ẵ:"a",
-  è:"e",é:"e",ẹ:"e",ẻ:"e",ẽ:"e",ê:"e",ề:"e",ế:"e",ệ:"e",ể:"e",ễ:"e",
-  ì:"i",í:"i",ị:"i",ỉ:"i",ĩ:"i",
-  ò:"o",ó:"o",ọ:"o",ỏ:"o",õ:"o",ô:"o",ồ:"o",ố:"o",ộ:"o",ổ:"o",ỗ:"o",ơ:"o",ờ:"o",ớ:"o",ợ:"o",ở:"o",ỡ:"o",
-  ù:"u",ú:"u",ụ:"u",ủ:"u",ũ:"u",ư:"u",ừ:"u",ứ:"u",ự:"u",ử:"u",ữ:"u",
-  ỳ:"y",ý:"y",ỵ:"y",ỷ:"y",ỹ:"y",đ:"d",
+  à: "a",
+  á: "a",
+  ạ: "a",
+  ả: "a",
+  ã: "a",
+  â: "a",
+  ầ: "a",
+  ấ: "a",
+  ậ: "a",
+  ẩ: "a",
+  ẫ: "a",
+  ă: "a",
+  ằ: "a",
+  ắ: "a",
+  ặ: "a",
+  ẳ: "a",
+  ẵ: "a",
+  è: "e",
+  é: "e",
+  ẹ: "e",
+  ẻ: "e",
+  ẽ: "e",
+  ê: "e",
+  ề: "e",
+  ế: "e",
+  ệ: "e",
+  ể: "e",
+  ễ: "e",
+  ì: "i",
+  í: "i",
+  ị: "i",
+  ỉ: "i",
+  ĩ: "i",
+  ò: "o",
+  ó: "o",
+  ọ: "o",
+  ỏ: "o",
+  õ: "o",
+  ô: "o",
+  ồ: "o",
+  ố: "o",
+  ộ: "o",
+  ổ: "o",
+  ỗ: "o",
+  ơ: "o",
+  ờ: "o",
+  ớ: "o",
+  ợ: "o",
+  ở: "o",
+  ỡ: "o",
+  ù: "u",
+  ú: "u",
+  ụ: "u",
+  ủ: "u",
+  ũ: "u",
+  ư: "u",
+  ừ: "u",
+  ứ: "u",
+  ự: "u",
+  ử: "u",
+  ữ: "u",
+  ỳ: "y",
+  ý: "y",
+  ỵ: "y",
+  ỷ: "y",
+  ỹ: "y",
+  đ: "d",
 };
 
 function nvn(str) {
-  return String(str).toLowerCase().split("").map(c => VN_MAP[c] || c).join("");
+  return String(str)
+    .toLowerCase()
+    .split("")
+    .map((c) => VN_MAP[c] || c)
+    .join("");
 }
 
 /* TỪ KHOÁ NHẠY CẢM / TỰ HẠI — CHẶN & HIỂN THỊ HỖ TRỢ */
@@ -338,7 +698,7 @@ const SENSITIVE_KEYWORDS = [
 function isSensitiveQuery(text) {
   const nq = nvn(text.trim());
   if (!nq) return false;
-  return SENSITIVE_KEYWORDS.some(k => nq.includes(k));
+  return SENSITIVE_KEYWORDS.some((k) => nq.includes(k));
 }
 
 function formatPrice(price) {
@@ -349,7 +709,8 @@ function formatPrice(price) {
 /** book.category từ API là object { name, slug } */
 function categoryLabel(cat) {
   if (!cat) return "";
-  if (typeof cat === "string") return CATEGORIES.find(c => c.id === cat)?.label || cat;
+  if (typeof cat === "string")
+    return CATEGORIES.find((c) => c.id === cat)?.label || cat;
   return cat.name || cat.slug || "";
 }
 
@@ -365,14 +726,16 @@ function buildAgeRange(book) {
 /** Highlight phần khớp trong text — hỗ trợ tiếng Việt có dấu */
 function Highlight({ text, query }) {
   if (!query.trim() || !text) return <>{text}</>;
-  const norm  = nvn(text);
+  const norm = nvn(text);
   const normQ = nvn(query.trim());
-  const idx   = norm.indexOf(normQ);
+  const idx = norm.indexOf(normQ);
   if (idx === -1) return <>{text}</>;
   return (
     <>
       {text.slice(0, idx)}
-      <mark className="so-mark">{text.slice(idx, idx + query.trim().length)}</mark>
+      <mark className="so-mark">
+        {text.slice(idx, idx + query.trim().length)}
+      </mark>
       {text.slice(idx + query.trim().length)}
     </>
   );
@@ -382,7 +745,7 @@ function Highlight({ text, query }) {
 function relativeTime(ts) {
   const diff = Date.now() - ts;
   const m = Math.floor(diff / 60000);
-  if (m < 1)  return "vừa xong";
+  if (m < 1) return "vừa xong";
   if (m < 60) return `${m} phút trước`;
   const h = Math.floor(m / 60);
   if (h < 24) return `${h} giờ trước`;
@@ -401,19 +764,19 @@ export default function SearchOverlay({
   onLogout,
   getProductLink = (b) => `/books/${b.slug}/${b.hashId}`,
 }) {
-  const navigate  = useNavigate();
-  const location  = useLocation();
-  const inputRef  = useRef(null);
-  const panelRef  = useRef(null);
-  const abortRef  = useRef(null);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const inputRef = useRef(null);
+  const panelRef = useRef(null);
+  const abortRef = useRef(null);
 
-  const [query,          setQuery]         = useState("");
+  const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
-  const [results,        setResults]        = useState([]);
-  const [loading,        setLoading]        = useState(false);
-  const [activeIndex,    setActiveIndex]    = useState(-1);
-  const [history,        setHistory]        = useState([]);
-  const [apiError,       setApiError]       = useState(false);
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const [history, setHistory] = useState([]);
+  const [apiError, setApiError] = useState(false);
 
   const hasQuery = query.trim().length > 0;
   const sensitive = useMemo(() => isSensitiveQuery(query), [query]);
@@ -433,17 +796,20 @@ export default function SearchOverlay({
     if (!hasQuery) return [];
     const nq = nvn(query.trim());
     return availablePages
-      .filter(p => {
+      .filter((p) => {
         const hay = nvn(`${p.label} ${p.desc} ${(p.keywords || []).join(" ")}`);
         return hay.includes(nq);
       })
       .slice(0, 4);
   }, [hasQuery, query, availablePages]);
 
-  const flatItems = useMemo(() => [
-    ...matchedPages.map(p => ({ ...p, _type: "page" })),
-    ...results.map(r => ({ ...r, _type: "product" })),
-  ], [matchedPages, results]);
+  const flatItems = useMemo(
+    () => [
+      ...matchedPages.map((p) => ({ ...p, _type: "page" })),
+      ...results.map((r) => ({ ...r, _type: "product" })),
+    ],
+    [matchedPages, results],
+  );
 
   /* ─ Khóa scroll + focus + load history khi mở ─ */
   useEffect(() => {
@@ -514,22 +880,31 @@ export default function SearchOverlay({
   }, [query, activeCategory, hasQuery, sensitive]);
 
   /* ─ Reset activeIndex khi query/category thay đổi ─ */
-  useEffect(() => { setActiveIndex(-1); }, [query, activeCategory]);
+  useEffect(() => {
+    setActiveIndex(-1);
+  }, [query, activeCategory]);
 
   /* ─ Activate một item ─ */
-  const handleActivate = useCallback((item) => {
-    if (!item) return;
-    if (item._type === "page") {
-      if (item.action === "logout") { onLogout?.(); onClose(); return; }
-      navigate(item.path);
+  const handleActivate = useCallback(
+    (item) => {
+      if (!item) return;
+      if (item._type === "page") {
+        if (item.action === "logout") {
+          onLogout?.();
+          onClose();
+          return;
+        }
+        navigate(item.path);
+        onClose();
+        return;
+      }
+      // product
+      setHistory(saveHistory(query));
+      navigate(getProductLink(item));
       onClose();
-      return;
-    }
-    // product
-    setHistory(saveHistory(query));
-    navigate(getProductLink(item));
-    onClose();
-  }, [query, navigate, getProductLink, onClose, onLogout]);
+    },
+    [query, navigate, getProductLink, onClose, onLogout],
+  );
 
   /* ─ Submit → tới /shop?search=...&category=... ─ */
   const handleSubmit = useCallback(() => {
@@ -545,29 +920,57 @@ export default function SearchOverlay({
   useEffect(() => {
     function onKey(e) {
       const tag = document.activeElement?.tagName;
-      const typing = tag === "INPUT" || tag === "TEXTAREA" || document.activeElement?.isContentEditable;
+      const typing =
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        document.activeElement?.isContentEditable;
 
       if (isOpen) {
-        if (e.key === "Escape") { onClose(); return; }
-        if (e.key === "ArrowDown") { e.preventDefault(); setActiveIndex(i => Math.min(i + 1, flatItems.length - 1)); return; }
-        if (e.key === "ArrowUp")   { e.preventDefault(); setActiveIndex(i => Math.max(i - 1, -1)); return; }
+        if (e.key === "Escape") {
+          onClose();
+          return;
+        }
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          setActiveIndex((i) => Math.min(i + 1, flatItems.length - 1));
+          return;
+        }
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          setActiveIndex((i) => Math.max(i - 1, -1));
+          return;
+        }
         if (e.key === "Enter") {
           e.preventDefault();
-          if (activeIndex >= 0 && flatItems[activeIndex]) handleActivate(flatItems[activeIndex]);
+          if (activeIndex >= 0 && flatItems[activeIndex])
+            handleActivate(flatItems[activeIndex]);
           else if (hasQuery) handleSubmit();
           return;
         }
         return;
       }
       if (!typing && onOpen) {
-        if (e.key === "/" || ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k")) {
-          e.preventDefault(); onOpen();
+        if (
+          e.key === "/" ||
+          ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k")
+        ) {
+          e.preventDefault();
+          onOpen();
         }
       }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [isOpen, activeIndex, flatItems, hasQuery, handleActivate, handleSubmit, onClose, onOpen]);
+  }, [
+    isOpen,
+    activeIndex,
+    flatItems,
+    hasQuery,
+    handleActivate,
+    handleSubmit,
+    onClose,
+    onOpen,
+  ]);
 
   /* ─ Helper ─ */
   const removeHistoryItem = (e, term) => {
@@ -585,7 +988,9 @@ export default function SearchOverlay({
 
       <div
         className={`so-backdrop ${isOpen ? "so-open" : ""}`}
-        onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}
+        onMouseDown={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
         aria-hidden={!isOpen}
       >
         <div
@@ -605,7 +1010,7 @@ export default function SearchOverlay({
                 className="so-input"
                 placeholder="Tìm sản phẩm, trang, chức năng..."
                 value={query}
-                onChange={e => setQuery(e.target.value)}
+                onChange={(e) => setQuery(e.target.value)}
                 autoComplete="off"
                 spellCheck="false"
               />
@@ -613,7 +1018,10 @@ export default function SearchOverlay({
                 <button
                   type="button"
                   className="so-clear"
-                  onClick={() => { setQuery(""); inputRef.current?.focus(); }}
+                  onClick={() => {
+                    setQuery("");
+                    inputRef.current?.focus();
+                  }}
                   aria-label="Xoá"
                 >
                   <X size={14} />
@@ -628,7 +1036,7 @@ export default function SearchOverlay({
 
           {/*  CATEGORY PILLS  */}
           <div className="so-pills" role="tablist">
-            {CATEGORIES.map(cat => (
+            {CATEGORIES.map((cat) => (
               <button
                 key={cat.id}
                 type="button"
@@ -647,7 +1055,6 @@ export default function SearchOverlay({
             {!hasQuery ? (
               /* ══ MÀN HÌNH MẶC ĐỊNH ══ */
               <div className="so-default">
-
                 {/* Lịch sử tìm kiếm */}
                 {history.length > 0 && (
                   <div className="so-section">
@@ -655,7 +1062,7 @@ export default function SearchOverlay({
                       <Clock size={13} /> Tìm kiếm gần đây
                     </div>
                     <div className="so-history-list">
-                      {history.map(item => (
+                      {history.map((item) => (
                         <button
                           key={item.term}
                           type="button"
@@ -664,13 +1071,18 @@ export default function SearchOverlay({
                         >
                           <Clock size={13} className="so-history-icon" />
                           <span className="so-history-term">{item.term}</span>
-                          <span className="so-history-time">{relativeTime(item.ts)}</span>
+                          <span className="so-history-time">
+                            {relativeTime(item.ts)}
+                          </span>
                           <span
                             role="button"
                             tabIndex={0}
                             className="so-history-remove"
-                            onClick={e => removeHistoryItem(e, item.term)}
-                            onKeyDown={e => { if (e.key === "Enter") removeHistoryItem(e, item.term); }}
+                            onClick={(e) => removeHistoryItem(e, item.term)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter")
+                                removeHistoryItem(e, item.term);
+                            }}
                             aria-label={`Xoá "${item.term}"`}
                           >
                             <X size={11} />
@@ -688,7 +1100,7 @@ export default function SearchOverlay({
                       <Zap size={13} /> Truy cập nhanh
                     </div>
                     <div className="so-quick-grid">
-                      {quickAccessPages.map(page => {
+                      {quickAccessPages.map((page) => {
                         const Icon = page.icon;
                         const active = location.pathname === page.path;
                         return (
@@ -696,11 +1108,18 @@ export default function SearchOverlay({
                             key={page.id}
                             type="button"
                             className={`so-quick-card ${active ? "so-quick-card-active" : ""}`}
-                            onClick={() => { navigate(page.path); onClose(); }}
+                            onClick={() => {
+                              navigate(page.path);
+                              onClose();
+                            }}
                           >
-                            <span className="so-quick-icon"><Icon size={17} /></span>
+                            <span className="so-quick-icon">
+                              <Icon size={17} />
+                            </span>
                             <span className="so-quick-label">{page.label}</span>
-                            {active && <span className="so-badge-current">Đang xem</span>}
+                            {active && (
+                              <span className="so-badge-current">Đang xem</span>
+                            )}
                           </button>
                         );
                       })}
@@ -709,8 +1128,17 @@ export default function SearchOverlay({
                 ) : (
                   <div className="so-login-prompt">
                     <LogIn size={16} />
-                    <p><strong>Đăng nhập</strong> để truy cập nhanh hồ sơ, đơn hàng và sản phẩm yêu thích</p>
-                    <button type="button" onClick={() => { navigate("/login"); onClose(); }}>
+                    <p>
+                      <strong>Đăng nhập</strong> để truy cập nhanh hồ sơ, đơn
+                      hàng và sản phẩm yêu thích
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigate("/login");
+                        onClose();
+                      }}
+                    >
                       Đăng nhập
                     </button>
                   </div>
@@ -722,8 +1150,15 @@ export default function SearchOverlay({
                     <TrendingUp size={13} /> Tìm kiếm phổ biến
                   </div>
                   <div className="so-chip-row">
-                    {TRENDING.map(t => (
-                      <button key={t} type="button" className="so-chip" onClick={() => setQuery(t)}>{t}</button>
+                    {TRENDING.map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        className="so-chip"
+                        onClick={() => setQuery(t)}
+                      >
+                        {t}
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -732,16 +1167,21 @@ export default function SearchOverlay({
                 <div className="so-section">
                   <div className="so-section-title">Khám phá theo danh mục</div>
                   <div className="so-cat-list">
-                    {QUICK_CATEGORIES.map(cat => {
+                    {QUICK_CATEGORIES.map((cat) => {
                       const Icon = cat.icon;
                       return (
                         <button
                           key={cat.id}
                           type="button"
                           className="so-cat-row"
-                          onClick={() => { navigate(`/shop?category=${cat.id}`); onClose(); }}
+                          onClick={() => {
+                            navigate(`/shop?category=${cat.id}`);
+                            onClose();
+                          }}
                         >
-                          <span className="so-cat-icon"><Icon size={18} /></span>
+                          <span className="so-cat-icon">
+                            <Icon size={18} />
+                          </span>
                           <span className="so-cat-info">
                             <span className="so-cat-label">{cat.label}</span>
                             <span className="so-cat-desc">{cat.desc}</span>
@@ -758,8 +1198,8 @@ export default function SearchOverlay({
               <div className="so-help-block">
                 <img src="/e-help.png" alt="" className="so-help-img" />
                 <p className="so-help-text">
-                  Bạn không đơn độc. Nếu bạn hoặc ai đó mà bạn biết đang trải qua
-                  thời kỳ khó khăn, hãy nói chuyện với một người nào đó.
+                  Bạn không đơn độc. Nếu bạn hoặc ai đó mà bạn biết đang trải
+                  qua thời kỳ khó khăn, hãy nói chuyện với một người nào đó.
                 </p>
               </div>
             ) : (
@@ -775,7 +1215,8 @@ export default function SearchOverlay({
                       {matchedPages.map((page, i) => {
                         const Icon = page.icon;
                         const isActive = i === activeIndex;
-                        const isCurrent = !page.action && location.pathname === page.path;
+                        const isCurrent =
+                          !page.action && location.pathname === page.path;
                         return (
                           <button
                             key={page.id}
@@ -784,14 +1225,22 @@ export default function SearchOverlay({
                             aria-selected={isActive}
                             className={`so-page-row ${isActive ? "so-row-active" : ""} ${page.action === "logout" ? "so-row-logout" : ""}`}
                             onMouseEnter={() => setActiveIndex(i)}
-                            onClick={() => handleActivate({ ...page, _type: "page" })}
+                            onClick={() =>
+                              handleActivate({ ...page, _type: "page" })
+                            }
                           >
-                            <span className="so-page-icon"><Icon size={16} /></span>
+                            <span className="so-page-icon">
+                              <Icon size={16} />
+                            </span>
                             <span className="so-page-info">
-                              <span className="so-page-label"><Highlight text={page.label} query={query} /></span>
+                              <span className="so-page-label">
+                                <Highlight text={page.label} query={query} />
+                              </span>
                               <span className="so-page-desc">{page.desc}</span>
                             </span>
-                            {isCurrent && <span className="so-badge-current">Đang xem</span>}
+                            {isCurrent && (
+                              <span className="so-badge-current">Đang xem</span>
+                            )}
                             <ArrowRight size={13} className="so-row-arrow" />
                           </button>
                         );
@@ -803,17 +1252,22 @@ export default function SearchOverlay({
                 {/* Kết quả sản phẩm */}
                 {loading ? (
                   <div className="so-section">
-                    {matchedPages.length > 0 && <div className="so-section-title">Sản phẩm</div>}
+                    {matchedPages.length > 0 && (
+                      <div className="so-section-title">Sản phẩm</div>
+                    )}
                     <div className="so-loading-label">
                       <span className="so-spinner" />
                       Đang tìm sản phẩm cho &ldquo;{query.trim()}&rdquo;...
                     </div>
                     <div className="so-skeleton-list">
-                      {[0, 1, 2].map(i => (
+                      {[0, 1, 2].map((i) => (
                         <div key={i} className="so-skeleton-row">
                           <div className="so-skeleton-thumb" />
                           <div className="so-skeleton-lines">
-                            <div className="so-skeleton-line" style={{ width: `${60 + i * 12}%` }} />
+                            <div
+                              className="so-skeleton-line"
+                              style={{ width: `${60 + i * 12}%` }}
+                            />
                             <div className="so-skeleton-line so-skeleton-short" />
                           </div>
                         </div>
@@ -824,20 +1278,27 @@ export default function SearchOverlay({
                   <div className="so-error-state">
                     <SearchX size={28} />
                     <p>Không thể kết nối máy chủ. Vui lòng thử lại.</p>
-                    <button type="button" onClick={() => setQuery(q => q + " ")}>Thử lại</button>
+                    <button
+                      type="button"
+                      onClick={() => setQuery((q) => q + " ")}
+                    >
+                      Thử lại
+                    </button>
                   </div>
                 ) : results.length > 0 ? (
                   <div className="so-section">
-                    {matchedPages.length > 0 && <div className="so-section-title">Sản phẩm</div>}
+                    {matchedPages.length > 0 && (
+                      <div className="so-section-title">Sản phẩm</div>
+                    )}
                     <div className="so-product-list" role="listbox">
                       {results.map((book, i) => {
                         const flatIdx = matchedPages.length + i;
                         const isActive = flatIdx === activeIndex;
-                        const title    = String(book.title ?? "");
-                        const cover    = book.coverImage ?? null;
+                        const title = String(book.title ?? "");
+                        const cover = book.coverImage ?? null;
                         const ageRange = buildAgeRange(book);
                         const catLabel = categoryLabel(book.category);
-                        const price    = book.salePrice ?? book.price ?? 0;
+                        const price = book.salePrice ?? book.price ?? 0;
                         return (
                           <button
                             key={book.hashId ?? book.id}
@@ -846,22 +1307,35 @@ export default function SearchOverlay({
                             aria-selected={isActive}
                             className={`so-product-row ${isActive ? "so-row-active" : ""}`}
                             onMouseEnter={() => setActiveIndex(flatIdx)}
-                            onClick={() => handleActivate({ ...book, _type: "product" })}
+                            onClick={() =>
+                              handleActivate({ ...book, _type: "product" })
+                            }
                           >
                             <span className="so-product-thumb" aria-hidden>
-                              {cover
-                                ? <img src={cover} alt="" />
-                                : <span className="so-product-thumb-letter">{title.charAt(0)}</span>
-                              }
+                              {cover ? (
+                                <img src={cover} alt="" />
+                              ) : (
+                                <span className="so-product-thumb-letter">
+                                  {title.charAt(0)}
+                                </span>
+                              )}
                             </span>
                             <span className="so-product-info">
-                              <span className="so-product-name"><Highlight text={title} query={query} /></span>
+                              <span className="so-product-name">
+                                <Highlight text={title} query={query} />
+                              </span>
                               <span className="so-product-meta">
-                                {catLabel && <span className="so-tag">{catLabel}</span>}
-                                {ageRange && <span className="so-age">{ageRange}</span>}
+                                {catLabel && (
+                                  <span className="so-tag">{catLabel}</span>
+                                )}
+                                {ageRange && (
+                                  <span className="so-age">{ageRange}</span>
+                                )}
                               </span>
                             </span>
-                            <span className="so-product-price">{formatPrice(price)}</span>
+                            <span className="so-product-price">
+                              {formatPrice(price)}
+                            </span>
                           </button>
                         );
                       })}
@@ -870,16 +1344,29 @@ export default function SearchOverlay({
                 ) : matchedPages.length === 0 ? (
                   <div className="so-empty">
                     <SearchX size={32} className="so-empty-icon" />
-                    <p className="so-empty-title">Không có kết quả cho &ldquo;{query.trim()}&rdquo;</p>
-                    <p className="so-empty-sub">Thử từ khoá khác hoặc kiểm tra chính tả</p>
+                    <p className="so-empty-title">
+                      Không có kết quả cho &ldquo;{query.trim()}&rdquo;
+                    </p>
+                    <p className="so-empty-sub">
+                      Thử từ khoá khác hoặc kiểm tra chính tả
+                    </p>
                     <div className="so-chip-row so-chip-row-center">
-                      {TRENDING.slice(0, 4).map(t => (
-                        <button key={t} type="button" className="so-chip" onClick={() => setQuery(t)}>{t}</button>
+                      {TRENDING.slice(0, 4).map((t) => (
+                        <button
+                          key={t}
+                          type="button"
+                          className="so-chip"
+                          onClick={() => setQuery(t)}
+                        >
+                          {t}
+                        </button>
                       ))}
                     </div>
                   </div>
                 ) : (
-                  <p className="so-no-product">Không có sản phẩm khớp với &ldquo;{query.trim()}&rdquo;</p>
+                  <p className="so-no-product">
+                    Không có sản phẩm khớp với &ldquo;{query.trim()}&rdquo;
+                  </p>
                 )}
               </>
             )}
@@ -888,12 +1375,18 @@ export default function SearchOverlay({
           {/*  FOOTER  */}
           {hasQuery && !sensitive && !loading && results.length > 0 && (
             <div className="so-footer">
-              <button type="button" className="so-view-all" onClick={handleSubmit}>
+              <button
+                type="button"
+                className="so-view-all"
+                onClick={handleSubmit}
+              >
                 Xem tất cả kết quả cho &ldquo;{query.trim()}&rdquo;
                 <ArrowRight size={14} />
               </button>
               <span className="so-footer-hint">
-                <kbd>↑</kbd><kbd>↓</kbd> di chuyển &nbsp;·&nbsp; <kbd>↵</kbd> chọn &nbsp;·&nbsp; <kbd>ESC</kbd> đóng
+                <kbd>↑</kbd>
+                <kbd>↓</kbd> di chuyển &nbsp;·&nbsp; <kbd>↵</kbd> chọn
+                &nbsp;·&nbsp; <kbd>ESC</kbd> đóng
               </span>
             </div>
           )}
