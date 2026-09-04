@@ -8,6 +8,7 @@ import {
   Cookie,
   Crown,
   Copyright,
+  Bot,
   ArrowRight,
   Mail,
   Phone,
@@ -121,6 +122,21 @@ const POLICIES = [
     ],
     to: "/legal/copyright",
     label: "Xem Tuyên Bố Bản Quyền",
+  },
+  {
+    icon: Bot,
+    eyebrow: "Trí Tuệ Nhân Tạo",
+    title: "Chính Sách An Toàn & Minh Bạch AI",
+    desc: "Eira AI là gì, dữ liệu nào được dùng để trả lời bạn, AI có thể sai ở đâu, giọng nói AI được lưu bao lâu — và quyền kiểm soát bạn luôn có.",
+    version: "v1.0",
+    updated: "04/09/2026",
+    highlights: [
+      "Không thay thế chuyên gia trong quyết định quan trọng",
+      "Ghi âm giọng nói AI tự xóa sau 24 giờ",
+      "Bạn luôn có thể xóa hội thoại bất cứ lúc nào",
+    ],
+    to: "/legal/ai",
+    label: "Xem Chính Sách AI",
   },
 ];
 

@@ -171,6 +171,8 @@ const PUBLIC_LINK_WHITELIST = [
   "/legal/cookies",
   "/legal/returns",
   "/legal/membership",
+  "/legal/copyright",
+  "/legal/ai",
   "/sitemap",
   "/loyalty",
 ];

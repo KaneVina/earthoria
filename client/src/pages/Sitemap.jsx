@@ -155,6 +155,11 @@ const SECTIONS = [
         sub: "Cách xác định hạng & quyền lợi tương ứng",
         to: "/legal/membership",
       },
+      {
+        label: "Chính Sách An Toàn & Minh Bạch AI",
+        sub: "Cách Eira AI xử lý dữ liệu và giới hạn của AI",
+        to: "/legal/ai",
+      },
     ],
   },
 ];

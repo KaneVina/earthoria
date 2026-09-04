@@ -7,7 +7,7 @@ import {
   BookOpen, Boxes, Sparkles, Tag, LayoutGrid, User,
   Package, Heart, ShoppingCart, Settings, Home, Store,
   Info, ShieldCheck, LogOut, LogIn, Zap, Mail, Crown,
-  GitCompare, Scale, Cookie, RefreshCcw, Truck, Map,
+  GitCompare, Scale, Cookie, RefreshCcw, Truck, Map, Bot,
 } from "lucide-react";
 import { bookService } from "../../services/bookService";
 
@@ -50,6 +50,7 @@ const LEGAL_PAGES = [
   { id: "legal-cookies",   label: "Chính sách cookie",              desc: "Cách chúng tôi sử dụng cookie trên trang",        icon: Cookie,    path: "/legal/cookies",    keywords: ["cookie", "chinh sach cookie"] },
   { id: "legal-returns",   label: "Chính sách trả hàng & hoàn tiền", desc: "Đổi trả, bảo hành & quy trình hoàn tiền",        icon: RefreshCcw, path: "/legal/returns",   keywords: ["tra hang", "hoan tien", "doi tra", "bao hanh", "returns"] },
   { id: "legal-membership", label: "Chính sách hạng thành viên",    desc: "Cách xác định hạng & quyền lợi tương ứng",        icon: Crown,     path: "/legal/membership", keywords: ["hang thanh vien", "chinh sach hang thanh vien", "membership", "uu dai hang"] },
+  { id: "legal-ai",        label: "Chính sách An toàn & Minh bạch AI", desc: "Cách Eira AI xử lý dữ liệu và giới hạn của AI", icon: Bot,       path: "/legal/ai",         keywords: ["ai", "eira", "chinh sach ai", "tri tue nhan tao", "chatbot"] },
 ];
 
 const AUTH_PAGES = [

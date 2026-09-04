@@ -197,7 +197,7 @@ const MODULE_SITE_NAV = `HƯỚNG DẪN SỬ DỤNG WEBSITE (chỉ các trang c�
 - Blog: /blog | Giới thiệu: /about | Liên hệ: /contact
 - Giỏ hàng: /cart | Yêu thích: /wishlist | Thanh toán: /checkout | Hồ sơ: /profile
 - Đăng nhập: /login | Đăng ký: /register | Quên mật khẩu: /forgot-password
-- Chính sách: /legal, /legal/terms, /legal/privacy, /legal/shipping, /legal/cookies | Sơ đồ trang: /sitemap`;
+- Chính sách: /legal, /legal/terms, /legal/privacy, /legal/shipping, /legal/cookies, /legal/returns, /legal/membership, /legal/copyright, /legal/ai | Sơ đồ trang: /sitemap`;
 
 function buildPattern(keywords) {
   return new RegExp(keywords.join("|"), "i");
