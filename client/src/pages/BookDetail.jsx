@@ -399,35 +399,236 @@ export default function BookDetail() {
 
   const toggleFaq = (i) => setOpenFaq(openFaq === i ? null : i);
 
-  //  Loading state
+  //  Loading state — skeleton khớp bố cục thật của trang (breadcrumb + hero split)
   if (isLoading)
     return (
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          paddingTop: "80px",
-        }}
-      >
-        <div style={{ textAlign: "center" }}>
-          <div
-            style={{
-              fontFamily: "'Playfair Display', serif",
-              fontSize: "28px",
-              fontWeight: 300,
-              color: "var(--forest)",
-              marginBottom: "12px",
-            }}
-          >
-            Đang tải...
+      <>
+        {/* Breadcrumb skeleton */}
+        <div className="breadcrumb">
+          <span
+            className="skeleton"
+            style={{ width: "70px", height: "11px" }}
+          />
+          <span className="breadcrumb-sep">›</span>
+          <span
+            className="skeleton"
+            style={{ width: "70px", height: "11px" }}
+          />
+          <span className="breadcrumb-sep">›</span>
+          <span
+            className="skeleton"
+            style={{ width: "120px", height: "11px" }}
+          />
+        </div>
+
+        {/* Hero split skeleton */}
+        <div className="product-hero">
+          {/* LEFT: Gallery skeleton */}
+          <div className="gallery-wrap">
+            <div
+              className="skeleton"
+              style={{
+                aspectRatio: "3/4",
+                width: "100%",
+                borderRadius: 0,
+              }}
+            />
+            <div className="gallery-thumbs">
+              {[0, 1, 2, 3].map((i) => (
+                <span
+                  key={i}
+                  className="skeleton"
+                  style={{ aspectRatio: "1", width: "100%", borderRadius: 0 }}
+                />
+              ))}
+            </div>
           </div>
-          <div style={{ fontSize: "13px", color: "var(--text-muted)" }}>
-            Vui lòng chờ một chút
+
+          {/* RIGHT: Info skeleton */}
+          <div className="product-info">
+            {/* Eyebrow */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "14px",
+                marginBottom: "20px",
+              }}
+            >
+              <span
+                className="skeleton"
+                style={{ width: "32px", height: "1px" }}
+              />
+              <span
+                className="skeleton"
+                style={{ width: "110px", height: "10px" }}
+              />
+            </div>
+
+            {/* Title */}
+            <span
+              className="skeleton"
+              style={{
+                display: "block",
+                width: "85%",
+                height: "48px",
+                marginBottom: "14px",
+              }}
+            />
+            {/* Subtitle */}
+            <span
+              className="skeleton"
+              style={{
+                display: "block",
+                width: "60%",
+                height: "16px",
+                marginBottom: "18px",
+              }}
+            />
+            {/* Author */}
+            <span
+              className="skeleton"
+              style={{
+                display: "block",
+                width: "40%",
+                height: "13px",
+                marginBottom: "18px",
+              }}
+            />
+
+            {/* Rating row */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "16px",
+                padding: "16px 0",
+                borderTop: "0.5px solid var(--border)",
+                borderBottom: "0.5px solid var(--border)",
+                marginBottom: "28px",
+              }}
+            >
+              <span
+                className="skeleton"
+                style={{ width: "80px", height: "14px" }}
+              />
+              <span
+                className="skeleton"
+                style={{ width: "90px", height: "14px" }}
+              />
+              <span
+                className="skeleton"
+                style={{ width: "70px", height: "14px" }}
+              />
+            </div>
+
+            {/* Tags */}
+            <div
+              style={{
+                display: "flex",
+                gap: "8px",
+                flexWrap: "wrap",
+                marginBottom: "28px",
+              }}
+            >
+              {[64, 76, 52].map((w, i) => (
+                <span
+                  key={i}
+                  className="skeleton"
+                  style={{ width: `${w}px`, height: "22px" }}
+                />
+              ))}
+            </div>
+
+            {/* Description */}
+            <div
+              style={{
+                borderLeft: "2px solid var(--gold-pale)",
+                paddingLeft: "20px",
+                marginBottom: "32px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "8px",
+              }}
+            >
+              <span
+                className="skeleton"
+                style={{ width: "100%", height: "13px" }}
+              />
+              <span
+                className="skeleton"
+                style={{ width: "94%", height: "13px" }}
+              />
+              <span
+                className="skeleton"
+                style={{ width: "70%", height: "13px" }}
+              />
+            </div>
+
+            {/* Quick specs */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "1px",
+                background: "var(--border)",
+                border: "0.5px solid var(--border)",
+                marginBottom: "32px",
+              }}
+            >
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <div
+                  key={i}
+                  style={{
+                    background: "var(--ivory)",
+                    padding: "16px 20px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "6px",
+                  }}
+                >
+                  <span
+                    className="skeleton"
+                    style={{ width: "50px", height: "9px" }}
+                  />
+                  <span
+                    className="skeleton"
+                    style={{ width: "80px", height: "17px" }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Price */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-end",
+                gap: "16px",
+                marginBottom: "28px",
+              }}
+            >
+              <span
+                className="skeleton"
+                style={{ width: "160px", height: "42px" }}
+              />
+              <span
+                className="skeleton"
+                style={{ width: "90px", height: "20px" }}
+              />
+            </div>
+
+            {/* CTA buttons */}
+            <div style={{ display: "flex", gap: "12px" }}>
+              <span className="skeleton" style={{ flex: 1, height: "52px" }} />
+              <span
+                className="skeleton"
+                style={{ width: "52px", height: "52px" }}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
 
   //  Error state
