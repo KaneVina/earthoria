@@ -1022,7 +1022,7 @@ function PassportStrip({ isAuthenticated, loading, loyaltyProfile, onLocate }) {
                 aria-hidden="true"
                 loading="lazy"
                 draggable="false"
-                className="lj-card-name-icon"
+                className="lj-passport-hero-img"
                 onDragStart={(e) => e.preventDefault()}
                 onContextMenu={(e) => e.preventDefault()}
                 onError={(e) => {
@@ -1062,6 +1062,38 @@ function PassportStrip({ isAuthenticated, loading, loyaltyProfile, onLocate }) {
                     </p>
                   </>
                 )}
+
+                <ul className="lj-passport-hero-benefits">
+                  <li>
+                    <Percent size={14} />
+                    {tier.discountPercent > 0 ? (
+                      <span>
+                        Giảm <strong>{tier.discountPercent}%</strong> mỗi đơn
+                        (tối đa {formatPrice(tier.maxDiscountPerOrder)})
+                      </span>
+                    ) : (
+                      <span>Chưa có ưu đãi giảm giá trực tiếp</span>
+                    )}
+                  </li>
+                  <li>
+                    <Truck size={14} />
+                    {tier.freeShipThreshold > 0 ? (
+                      <span>
+                        Freeship từ{" "}
+                        <strong>{formatPrice(tier.freeShipThreshold)}</strong>
+                      </span>
+                    ) : (
+                      <span>Miễn phí vận chuyển mọi đơn hàng</span>
+                    )}
+                  </li>
+                  <li>
+                    <Users size={14} />
+                    <span>
+                      Mở <strong>{tier.maxChildAccounts}</strong> tài khoản
+                      E-Kid
+                    </span>
+                  </li>
+                </ul>
               </div>
             </div>
           </div>
