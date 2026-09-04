@@ -9,12 +9,18 @@ import {
   TreeDeciduous,
   Sparkles,
   Heart,
+  Gamepad2,
 } from "lucide-react";
 import { kidAccessService } from "../../services/kidAccessService";
 import { useSkyState, DynamicSky, PhaseIcon } from "../../components/KidSky";
 import GardenTreeVisual from "../../components/knowledgeGarden/GardenTreeVisual";
 import TreeDetailModal from "../../components/knowledgeGarden/TreeDetailModal";
-import { fmtDurationVi } from "../../components/knowledgeGarden/gardenHelpers";
+import {
+  fmtDurationVi,
+  fmtNumberVi,
+  fmtDateVi,
+  TREE_STATUS_LABEL as STATUS_LABEL,
+} from "../../components/knowledgeGarden/gardenHelpers";
 import "../../components/assets/css/kidAccess.css";
 import "../../components/assets/css/knowledgeGarden.css";
 import "../../components/assets/css/gardenPage.css";
@@ -100,21 +106,21 @@ export default function GardenPage() {
   );
 
   return (
-    <div className="gp-page" data-phase={skyState.phase}>
+    <div className="kgp-page" data-phase={skyState.phase}>
       <DynamicSky skyState={skyState} minimal />
-      <span className="gp-ground" aria-hidden="true" />
+      <span className="kgp-ground" aria-hidden="true" />
 
-      <div className="gp-shell">
-        <div className="gp-header">
-          <span className="gp-header-eyebrow">
+      <div className="kgp-shell">
+        <div className="kgp-header">
+          <span className="kgp-header-eyebrow">
             <PhaseIcon phase={skyState.phase} size={14} />
             Vườn Tri Thức
           </span>
 
-          <div className="gp-header-row">
+          <div className="kgp-header-row">
             <button
               type="button"
-              className="gp-back-btn"
+              className="kgp-back-btn"
               onClick={goBack}
               aria-label="Quay lại"
             >
@@ -123,31 +129,31 @@ export default function GardenPage() {
 
             {status === "ok" && data && (
               <>
-                <div className="gp-header-avatar" aria-hidden="true">
+                <div className="kgp-header-avatar" aria-hidden="true">
                   {String(data.childName || "?")
                     .trim()
                     .charAt(0)
                     .toUpperCase() || "?"}
                 </div>
-                <div className="gp-header-info">
-                  <h1 className="gp-header-name">
+                <div className="kgp-header-info">
+                  <h1 className="kgp-header-name">
                     {data.childName || "Bé yêu"}
                   </h1>
-                  <span className="gp-header-level">
+                  <span className="kgp-header-level">
                     <Sprout size={13} />
                     {data.activeTree.level.name}
                   </span>
                 </div>
-                <div className="gp-header-stats">
-                  <div className="gp-hud-stat">
+                <div className="kgp-header-stats">
+                  <div className="kgp-hud-stat">
                     <Flame size={14} />
                     <span>{data.garden.currentStreak} ngày</span>
                   </div>
-                  <div className="gp-hud-stat">
+                  <div className="kgp-hud-stat">
                     <BookOpen size={14} />
                     <span>{fmtDurationVi(data.activeTree.readingMinutes)}</span>
                   </div>
-                  <div className="gp-hud-stat">
+                  <div className="kgp-hud-stat">
                     <TreeDeciduous size={14} />
                     <span>{data.trees.length} cây</span>
                   </div>
@@ -157,9 +163,12 @@ export default function GardenPage() {
           </div>
         </div>
 
-        <div className="gp-content">
+        <div className="kgp-content">
           {status === "loading" && (
-            <section className="kg-root gp-root kg-skeleton" aria-hidden="true">
+            <section
+              className="kg-root kgp-root kg-skeleton"
+              aria-hidden="true"
+            >
               <div className="kg-skeleton-line kg-skeleton-line--title" />
               <div className="kg-skeleton-row">
                 <div className="kg-skeleton-chip" />
@@ -171,7 +180,7 @@ export default function GardenPage() {
           )}
 
           {status === "error" && (
-            <div className="gp-error">
+            <div className="kgp-error">
               <p>Không tải được khu vườn. Vui lòng thử lại.</p>
               <button
                 type="button"
@@ -185,7 +194,7 @@ export default function GardenPage() {
 
           {status === "ok" && data && (
             <>
-              <section className="kg-root gp-root">
+              <section className="kg-root kgp-root">
                 {(() => {
                   const { garden, activeTree, trees } = data;
                   const isFreshStart =
@@ -373,9 +382,9 @@ export default function GardenPage() {
                         </div>
                       )}
 
-                      <div className="gp-layout">
-                        <div className="gp-layout-main">
-                          <div className="kg-current-card">
+                      <div className="kgp-layout">
+                        <div className="kgp-layout-main">
+                          <div className="kg-current-card kgp-current-card--rich">
                             <div className="kg-current-visual">
                               <GardenTreeVisual
                                 level={activeTree.level.level}
@@ -386,13 +395,45 @@ export default function GardenPage() {
                                 animated
                               />
                             </div>
-                            <div className="kg-current-info">
+                            <div className="kgp-current-info-left">
                               <span className="kg-current-eyebrow">
                                 Cây của hôm nay
+                              </span>
+                              <span
+                                className={`kgp-current-status kg-status--${activeTree.status.toLowerCase()}`}
+                              >
+                                {STATUS_LABEL[activeTree.status]}
                               </span>
                               <h3 className="kg-current-name">
                                 {activeTree.level.name}
                               </h3>
+                              {activeTree.level.description && (
+                                <p className="kgp-current-desc">
+                                  {activeTree.level.description}
+                                </p>
+                              )}
+
+                              <button
+                                type="button"
+                                className="kg-cta-btn kg-cta-btn--sm kgp-current-cta"
+                                onClick={goToShelf}
+                              >
+                                <BookOpen size={14} />
+                                Đọc tiếp để chăm cây
+                              </button>
+                            </div>
+
+                            <div className="kgp-current-info-right">
+                              {activeTree.status === "ALIVE" && (
+                                <div className="kgp-current-health">
+                                  <Heart size={14} />
+                                  <span>Sức khoẻ</span>
+                                  <strong>{activeTree.health}%</strong>
+                                  <span className="kgp-current-health-sub">
+                                    · {activeTree.healthBand.label}
+                                  </span>
+                                </div>
+                              )}
 
                               {!activeTree.isMaxLevel ? (
                                 <>
@@ -410,16 +451,11 @@ export default function GardenPage() {
                                     />
                                   </div>
                                   <span className="kg-current-hint">
-                                    Chỉ còn{" "}
-                                    {Math.max(
-                                      0,
-                                      100 - activeTree.progressPercent,
-                                    )}
-                                    % để thành{" "}
+                                    Còn {fmtNumberVi(activeTree.xpToNextLevel)}{" "}
+                                    điểm tri thức để thành{" "}
                                     <strong>
                                       {activeTree.nextLevel?.name}
                                     </strong>
-                                    !
                                   </span>
                                 </>
                               ) : (
@@ -428,19 +464,41 @@ export default function GardenPage() {
                                 </span>
                               )}
 
-                              <button
-                                type="button"
-                                className="kg-cta-btn kg-cta-btn--sm"
-                                onClick={goToShelf}
-                              >
-                                <BookOpen size={14} />
-                                Đọc tiếp để chăm cây
-                              </button>
+                              <div className="kgp-current-grid">
+                                {activeTree.status === "ALIVE" && (
+                                  <div className="kgp-current-cell">
+                                    <Flame size={15} />
+                                    <span>Chuỗi học</span>
+                                    <strong>{garden.currentStreak} ngày</strong>
+                                  </div>
+                                )}
+                                <div className="kgp-current-cell">
+                                  <BookOpen size={15} />
+                                  <span>Thời gian đọc</span>
+                                  <strong>
+                                    {fmtDurationVi(activeTree.readingMinutes)}
+                                  </strong>
+                                </div>
+                                <div className="kgp-current-cell">
+                                  <Gamepad2 size={15} />
+                                  <span>Game XP</span>
+                                  <strong>
+                                    {fmtNumberVi(activeTree.gameXp)}
+                                  </strong>
+                                </div>
+                                <div className="kgp-current-cell">
+                                  <Sprout size={15} />
+                                  <span>Ngày trồng</span>
+                                  <strong>
+                                    {fmtDateVi(activeTree.plantedAt)}
+                                  </strong>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>
 
-                        <div className="gp-layout-side">
+                        <div className="kgp-layout-side">
                           <div className="kg-garden-scene">
                             <span
                               className="kg-garden-deco kg-garden-deco--flower1"

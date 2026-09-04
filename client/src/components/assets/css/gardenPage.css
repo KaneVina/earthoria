@@ -2,7 +2,7 @@
     KidAccess để cả app cảm giác là một thế giới liền mạch, chỉ đổi "khung
     cảnh" bên dưới bầu trời từ "kệ sách" sang "khu vườn". */
 
-.gp-page {
+.kgp-page {
   position: relative;
   isolation: isolate;
   min-height: 100dvh;
@@ -16,7 +16,7 @@
 /* thảm cỏ mềm mại trải dưới chân trời — cùng lớp với kid-sky (z-index 0)
    nhưng vẽ SAU nên nổi lên trên bầu trời, tạo cảm giác đang đứng trong
    một khu vườn dưới bầu trời thật */
-.gp-ground {
+.kgp-ground {
   position: fixed;
   left: 0;
   right: 0;
@@ -43,7 +43,7 @@
     linear-gradient(180deg, transparent 0%, rgba(74, 158, 63, 0.16) 100%);
 }
 
-.gp-shell {
+.kgp-shell {
   position: relative;
   z-index: 1;
   max-width: 1180px;
@@ -54,7 +54,7 @@
 /*  HEADER — một khối DUY NHẤT: dòng nhãn "Vườn Tri Thức" gọn ở trên,
     rồi tới MỘT hàng dài duy nhất gồm nút quay lại + hồ sơ bé + số liệu,
     thay vì tách rời thành nhiều khối nhỏ như trước. */
-.gp-header {
+.kgp-header {
   position: relative;
   z-index: 2;
   margin: 22px 0 24px;
@@ -67,7 +67,7 @@
   box-shadow: 0 18px 40px -18px rgba(6, 42, 64, 0.5);
   animation: kidFadeDown 0.7s var(--kid-ease) both;
 }
-.gp-header-eyebrow {
+.kgp-header-eyebrow {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -80,7 +80,7 @@
   text-shadow: 0 1px 4px rgba(6, 42, 64, 0.55);
 }
 
-.gp-header-row {
+.kgp-header-row {
   display: flex;
   align-items: center;
   flex-wrap: nowrap;
@@ -91,10 +91,10 @@
   overflow-x: auto;
   scrollbar-width: none;
 }
-.gp-header-row::-webkit-scrollbar {
+.kgp-header-row::-webkit-scrollbar {
   display: none;
 }
-.gp-back-btn {
+.kgp-back-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -110,12 +110,12 @@
     transform var(--kid-t-fast),
     background var(--kid-t-fast);
 }
-.gp-back-btn:hover {
+.kgp-back-btn:hover {
   background: var(--kid-white);
   color: var(--kid-green-dark);
   transform: translateX(-2px) scale(1.06);
 }
-.gp-header-avatar {
+.kgp-header-avatar {
   flex-shrink: 0;
   width: 58px;
   height: 58px;
@@ -135,14 +135,14 @@
   border: 3px solid var(--kid-white);
   box-shadow: 0 6px 16px -4px rgba(6, 42, 64, 0.5);
 }
-.gp-header-info {
+.kgp-header-info {
   display: flex;
   flex-direction: column;
   gap: 6px;
   min-width: 0;
   flex-shrink: 0;
 }
-.gp-header-name {
+.kgp-header-name {
   margin: 0;
   font-family: var(--kid-font-display);
   font-weight: 700;
@@ -152,7 +152,7 @@
   text-shadow: var(--kid-title-outline);
   white-space: nowrap;
 }
-.gp-header-level {
+.kgp-header-level {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -166,7 +166,7 @@
 }
 
 /* số liệu — nằm cuối hàng, đẩy sát lề phải khi còn dư chỗ */
-.gp-header-stats {
+.kgp-header-stats {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -174,7 +174,7 @@
   flex-shrink: 0;
   margin-left: auto;
 }
-.gp-hud-stat {
+.kgp-hud-stat {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -188,7 +188,7 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
-.gp-hud-stat svg {
+.kgp-hud-stat svg {
   flex-shrink: 0;
   padding: 6px;
   border-radius: 50%;
@@ -198,27 +198,27 @@
 }
 
 @media (max-width: 560px) {
-  .gp-header {
+  .kgp-header {
     padding: 14px 16px 16px;
   }
-  .gp-header-avatar {
+  .kgp-header-avatar {
     width: 48px;
     height: 48px;
     font-size: 20px;
   }
-  .gp-hud-stat {
+  .kgp-hud-stat {
     font-size: 12.5px;
     padding: 4px 12px 4px 4px;
   }
 }
 
-.gp-content {
+.kgp-content {
   max-width: 1180px;
   margin: 0 auto;
   padding: 0 0 40px;
 }
 
-.gp-root {
+.kgp-root {
   margin: 0;
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: var(--kid-radius-xl);
@@ -227,11 +227,11 @@
   background-color: var(--kid-white);
   padding: 32px 30px 34px;
 }
-.gp-root::before {
+.kgp-root::before {
   display: none;
 }
 @media (max-width: 640px) {
-  .gp-root {
+  .kgp-root {
     border: 1px solid rgba(255, 255, 255, 0.6);
     box-shadow: var(--kid-shadow-md);
     background-color: color-mix(in srgb, var(--kid-white) 96%, transparent);
@@ -239,18 +239,18 @@
   }
 }
 
-.gp-error {
+.kgp-error {
   text-align: center;
   padding: 60px 20px;
   color: var(--kid-white);
   text-shadow: 0 2px 8px rgba(6, 42, 64, 0.5);
 }
-.gp-error p {
+.kgp-error p {
   margin-bottom: 14px;
   font-size: 14px;
 }
 
-.gp-root .kg-current-card {
+.kgp-root .kg-current-card {
   background: linear-gradient(165deg, var(--kid-green-light) 0%, #ffffff 75%);
   border: 1px solid rgba(74, 158, 63, 0.14);
   border-radius: var(--kid-radius-lg);
@@ -258,7 +258,7 @@
   padding: 32px 26px 28px;
 }
 @media (max-width: 640px) {
-  .gp-root .kg-current-card {
+  .kgp-root .kg-current-card {
     background: transparent;
     border: none;
     box-shadow: none;
@@ -266,66 +266,178 @@
   }
 }
 
-/* ── Bố cục dọc: cây hôm nay (trên, thu gọn vừa phải, canh giữa) rồi
-   đến khu vườn trồng cây (dưới, chiếm TRỌN chiều ngang) — bỏ layout 2 cột
-   trước đây vì khiến khu vườn bị dồn/co hẹp lệch sang phải trên màn rộng */
-.gp-layout {
+/* ── Bố cục dọc: cây hôm nay (trên, đầy đủ thông tin) rồi đến khu vườn
+   trồng cây (dưới, chiếm TRỌN chiều ngang) */
+.kgp-layout {
   display: flex;
   flex-direction: column;
   gap: 30px;
 }
-.gp-layout-main,
-.gp-layout-side {
+.kgp-layout-main,
+.kgp-layout-side {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
-.gp-layout-main {
-  width: 100%;
-  max-width: 460px;
-  margin: 0 auto;
-}
 
-/* Spotlight: cây hôm nay trình bày dạng thẻ trung tâm, to rõ, nổi bật */
-.gp-layout-main .kg-current-card {
+/* Thẻ "Cây của hôm nay" kiểu đầy đủ — 3 phần ngang hàng: cây (trái),
+   tên/mô tả/nút (giữa, nội dung ngắn hơn nên gánh luôn nút CTA), số liệu
+   sức khoẻ + tiến độ + thống kê (phải, nội dung dài hơn) — chia đều để
+   lấp hết chiều ngang, không còn khoảng trống thừa bên phải. */
+.kgp-current-card--rich {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 6px;
+  align-items: flex-start;
+  gap: 28px;
+  text-align: left;
 }
-.gp-layout-main .kg-current-visual {
+.kgp-current-card--rich .kg-current-visual {
+  flex-shrink: 0;
   width: 176px;
   height: 176px;
-  margin-bottom: 6px;
+  margin: 4px 0 0;
 }
-.gp-layout-main .kg-current-name {
+.kgp-current-info-left,
+.kgp-current-info-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+}
+.kgp-current-info-left {
+  flex: 0 1 300px;
+}
+.kgp-current-info-right {
+  flex: 1 1 340px;
+  padding-left: 26px;
+  border-left: 1px solid rgba(74, 158, 63, 0.16);
+}
+.kgp-current-info-left .kg-current-name {
   font-size: 24px;
+  margin: 0;
 }
-.gp-layout-main .kg-progress-track {
-  max-width: 260px;
+.kgp-current-status {
+  display: inline-block;
+  padding: 4px 13px;
+  border-radius: var(--kid-radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+}
+.kgp-current-desc {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--kid-ink-soft);
+}
+.kgp-current-cta {
+  margin-top: auto;
+  padding-top: 8px;
+}
+.kgp-current-health {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--kid-ink);
+}
+.kgp-current-health svg {
+  color: var(--kid-pink);
+}
+.kgp-current-health-sub {
+  font-weight: 600;
+  color: var(--kid-ink-soft);
+}
+.kgp-current-info-right .kg-progress-track {
+  width: 100%;
   height: 12px;
-  margin: 0 auto;
+  margin: 2px 0 0;
 }
-.gp-layout-main .kg-current-hint {
+.kgp-current-info-right .kg-current-hint {
   font-size: 14px;
 }
-.gp-layout-main .kg-cta-btn {
-  margin-top: 18px;
+
+.kgp-current-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(140px, 1fr));
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+}
+.kgp-current-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 14px;
+  background: var(--kid-cream);
+  border: 1px solid var(--kid-border);
+  border-radius: var(--kid-radius-md);
+}
+.kgp-current-cell svg {
+  color: var(--kid-green-dark);
+  margin-bottom: 2px;
+}
+.kgp-current-cell span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--kid-ink-soft);
+}
+.kgp-current-cell strong {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--kid-ink);
+}
+
+.kg-cta-btn.kgp-current-cta {
   padding: 13px 26px;
   font-size: 15px;
 }
 
+@media (max-width: 860px) {
+  .kgp-current-card--rich {
+    flex-wrap: wrap;
+  }
+  .kgp-current-info-right {
+    padding-left: 0;
+    border-left: none;
+    flex-basis: 100%;
+    margin-left: calc(176px + 28px);
+  }
+}
+
+@media (max-width: 680px) {
+  .kgp-current-card--rich {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .kgp-current-info-left,
+  .kgp-current-info-right {
+    align-items: center;
+    flex-basis: auto;
+    margin-left: 0;
+  }
+  .kgp-current-info-right {
+    padding-left: 0;
+    border-left: none;
+    padding-top: 14px;
+    border-top: 1px solid rgba(74, 158, 63, 0.16);
+  }
+  .kgp-current-info-right .kg-progress-track {
+    margin: 2px auto 0;
+  }
+}
+
 /* Khu vườn — chiếm trọn chiều ngang thẻ, cây to, giãn đều, canh giữa */
-.gp-root .kg-garden-scene {
+.kgp-root .kg-garden-scene {
   padding: 30px 26px 26px;
 }
-.gp-root .kg-garden-trees {
+.kgp-root .kg-garden-trees {
   gap: 22px 20px;
   max-width: 640px;
   margin: 0 auto;
 }
-.gp-root .kg-forest-note {
+.kgp-root .kg-forest-note {
   font-size: 14px;
   margin-top: 16px;
 }
@@ -344,9 +456,9 @@
   border: 2px dashed rgba(74, 158, 63, 0.35);
   background: rgba(255, 255, 255, 0.4);
   color: rgba(74, 158, 63, 0.4);
-  animation: gp-empty-slot-breathe 3.8s ease-in-out infinite;
+  animation: kgp-empty-slot-breathe 3.8s ease-in-out infinite;
 }
-@keyframes gp-empty-slot-breathe {
+@keyframes kgp-empty-slot-breathe {
   0%,
   100% {
     opacity: 0.65;
@@ -361,7 +473,7 @@
   .kg-garden-tree-slot--empty {
     animation: none !important;
   }
-  .gp-page {
+  .kgp-page {
     animation: none !important;
   }
 }

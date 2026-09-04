@@ -9,13 +9,13 @@ import {
   Sprout,
 } from "lucide-react";
 import GardenTreeVisual from "./GardenTreeVisual";
-import { fmtDurationVi, fmtNumberVi, fmtDateVi } from "./gardenHelpers";
+import {
+  fmtDurationVi,
+  fmtNumberVi,
+  fmtDateVi,
+  TREE_STATUS_LABEL,
+} from "./gardenHelpers";
 
-const STATUS_LABEL = {
-  ALIVE: "Đang lớn",
-  MATURE: "Cây cổ thụ",
-  DEAD: "Đang nghỉ",
-};
 const STATUS_ACCENT_VAR = {
   ALIVE: "var(--kid-green)",
   MATURE: "var(--kid-yellow)",
@@ -70,7 +70,7 @@ export default function TreeDetailModal({ tree, streak, onClose }) {
             <span
               className={`kg-modal-status kg-status--${tree.status.toLowerCase()}`}
             >
-              {STATUS_LABEL[tree.status]}
+              {TREE_STATUS_LABEL[tree.status]}
             </span>
             <h3 className="kg-modal-title">{tree.level.name}</h3>
             <p className="kg-modal-desc">{tree.level.description}</p>
