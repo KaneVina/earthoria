@@ -1678,28 +1678,36 @@ function OverviewTab({
           />
         </div>
       ) : (
-        <div className="pf-loyalty-card pf-loyalty-card-split">
+        <div
+          className={`pf-loyalty-card pf-loyalty-card-split${loyaltyProfile.isMaxTier ? " is-max" : ""}`}
+          style={{
+            "--tier-color": loyaltyProfile.tier.color,
+            "--tier-color-soft": loyaltyProfile.tier.colorSoft,
+          }}
+        >
+          <img
+            src={loyaltyProfile.tier.image}
+            alt=""
+            aria-hidden="true"
+            className="pf-loyalty-watermark"
+          />
+
           <div className="pf-loyalty-body">
             <div className="pf-loyalty-current">
-              <div>
-                <div className="pf-loyalty-current-label">Hạng hiện tại</div>
-                <div
-                  className="pf-loyalty-current-name"
-                  style={{ color: loyaltyProfile.tier.color }}
-                >
-                  {loyaltyProfile.tier.name}
-                </div>
+              <div className="pf-loyalty-current-badge">
+                <span className="pf-loyalty-current-dot" />
+                <span className="pf-loyalty-current-label">
+                  Hạng {loyaltyProfile.tier.roman} · Hạng hiện tại
+                </span>
               </div>
-              <div className="pf-loyalty-current-perk">
-                Giảm {loyaltyProfile.tier.discountPercent}% mỗi đơn
-                {loyaltyProfile.tier.freeShipThreshold === 0
-                  ? " · Miễn phí ship mọi đơn"
-                  : ` · Miễn phí ship từ ${formatPrice(loyaltyProfile.tier.freeShipThreshold)}`}
+              <div className="pf-loyalty-current-name">
+                {loyaltyProfile.tier.name}
               </div>
             </div>
 
             {loyaltyProfile.isMaxTier ? (
-              <p className="pf-loyalty-progress-caption">
+              <p className="pf-loyalty-progress-caption is-max">
+                {Icon.checkSm}
                 Bạn đang ở hạng cao nhất — cảm ơn đã đồng hành cùng Earthoria!
               </p>
             ) : (
@@ -1717,9 +1725,54 @@ function OverviewTab({
                   Chi thêm{" "}
                   <strong>{formatPrice(loyaltyProfile.amountToNext)}</strong> để
                   lên hạng <strong>{loyaltyProfile.nextTier.name}</strong>
+                  <span className="pf-loyalty-progress-percent">
+                    {loyaltyProfile.progressPercent}%
+                  </span>
                 </p>
               </div>
             )}
+
+            <ul className="pf-loyalty-benefits">
+              <li>
+                <span className="pf-loyalty-benefit-icon">{Icon.sparkle}</span>
+                {loyaltyProfile.tier.discountPercent > 0 ? (
+                  <span>
+                    Giảm <strong>{loyaltyProfile.tier.discountPercent}%</strong>{" "}
+                    mỗi đơn
+                    {loyaltyProfile.tier.maxDiscountPerOrder > 0 && (
+                      <>
+                        {" "}
+                        (tối đa{" "}
+                        {formatPrice(loyaltyProfile.tier.maxDiscountPerOrder)})
+                      </>
+                    )}
+                  </span>
+                ) : (
+                  <span>Chưa có ưu đãi giảm giá trực tiếp</span>
+                )}
+              </li>
+              <li>
+                <span className="pf-loyalty-benefit-icon">{Icon.truck}</span>
+                {loyaltyProfile.tier.freeShipThreshold === 0 ? (
+                  <span>Miễn phí vận chuyển mọi đơn hàng</span>
+                ) : (
+                  <span>
+                    Miễn phí ship từ{" "}
+                    <strong>
+                      {formatPrice(loyaltyProfile.tier.freeShipThreshold)}
+                    </strong>
+                  </span>
+                )}
+              </li>
+              <li>
+                <span className="pf-loyalty-benefit-icon">{Icon.family}</span>
+                <span>
+                  Mở tối đa{" "}
+                  <strong>{loyaltyProfile.tier.maxChildAccounts}</strong> tài
+                  khoản trẻ em (E-Kid)
+                </span>
+              </li>
+            </ul>
           </div>
 
           <div className="pf-loyalty-preview">
@@ -1733,12 +1786,38 @@ function OverviewTab({
             </button>
 
             <div className="pf-loyalty-preview-main">
-              <img
-                src={previewTier?.image}
-                alt={previewTier?.name}
-                className={`pf-loyalty-preview-img${isPreviewLocked ? " is-locked" : ""}`}
-              />
+              <div
+                className={`pf-loyalty-preview-frame${isPreviewLocked ? " is-locked" : ""}${previewTier?.isCurrent ? " is-current" : ""}`}
+                style={{
+                  "--preview-color": previewTier?.color,
+                  "--preview-color-soft": previewTier?.colorSoft,
+                }}
+              >
+                <img
+                  src={previewTier?.image}
+                  alt={previewTier?.name}
+                  className="pf-loyalty-preview-img"
+                />
+                {previewTier?.isCurrent && (
+                  <span className="pf-loyalty-preview-flag">Hiện tại</span>
+                )}
+                {!previewTier?.unlocked && !previewTier?.isCurrent && (
+                  <span className="pf-loyalty-preview-lock">{Icon.lock}</span>
+                )}
+              </div>
               <div className="pf-loyalty-preview-name">{previewTier?.name}</div>
+              <div className="pf-loyalty-preview-dots">
+                {loyaltyTiers.map((t, i) => (
+                  <button
+                    type="button"
+                    key={t.code}
+                    className={`pf-loyalty-preview-dot${i === activePreviewIdx ? " is-active" : ""}${t.unlocked || t.isCurrent ? " is-unlocked" : ""}`}
+                    style={{ "--dot-color": t.color }}
+                    onClick={() => setTierPreviewIndex(i)}
+                    aria-label={`Xem ${t.name}`}
+                  />
+                ))}
+              </div>
             </div>
 
             <button
