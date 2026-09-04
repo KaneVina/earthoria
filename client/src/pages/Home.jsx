@@ -2460,10 +2460,30 @@ export default function Home() {
       <section className="stats-section reveal">
         <div className="stats-inner">
           {[
-            { label: "Trẻ em khám phá", value: "1.000+", count: 1000 },
-            { label: "Chủ đề sinh thái", value: "5", count: 5, gold: true },
-            { label: "Tương tác thực tế", value: "AI+AR", noCount: true },
-            { label: "Giá trị giáo dục", value: "100%", count: 100 },
+            {
+              label: "Trẻ Em Khám Phá",
+              count: 1000,
+              suffix: "+",
+              desc: "Tài khoản e-kid và thành viên",
+            },
+            {
+              label: "Hệ Sinh Thái Nội Dung",
+              value: "05",
+              noCount: true,
+              desc: "Chủ đề khám phá",
+            },
+            {
+              label: "Công Nghệ Tương Tác",
+              value: "AI + AR",
+              noCount: true,
+              desc: "Trải nghiệm học tập sống động",
+            },
+            {
+              label: "Nội Dung Giáo Dục",
+              count: 100,
+              suffix: "%",
+              desc: "Định hướng giá trị giáo dục",
+            },
           ].map((stat, i) => (
             <div className="stat-item" key={i} style={{ "--bar-width": "85%" }}>
               <div className="stat-top">
@@ -2478,7 +2498,7 @@ export default function Home() {
                   {stat.label}
                 </div>
               </div>
-              <div className={`stat-number ${stat.gold ? "stat-gold" : ""}`}>
+              <div className="stat-number">
                 {stat.noCount ? (
                   stat.value
                 ) : (
@@ -2486,11 +2506,11 @@ export default function Home() {
                     <span className="stat-count" data-target={stat.count}>
                       0
                     </span>
-                    {stat.value.replace(/\d+/g, "")}
+                    {stat.suffix}
                   </>
                 )}
               </div>
-              <div className="stat-label">{stat.label}</div>
+              <div className="stat-label">{stat.desc}</div>
               <div className="stat-bar">
                 <div className="stat-bar-fill" />
               </div>

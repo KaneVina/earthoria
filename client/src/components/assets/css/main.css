@@ -557,7 +557,7 @@ nav {
   font-family: "Playfair Display", serif;
   font-size: 56px;
   font-weight: 300;
-  color: var(--ivory);
+  color: var(--gold);
   line-height: 1;
   margin-bottom: 14px;
   letter-spacing: -0.01em;
@@ -571,6 +571,8 @@ nav {
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.4);
   font-weight: 400;
+  line-height: 1.6;
+  min-height: 2.6em;
 }
 .stat-bar {
   margin-top: 20px;
