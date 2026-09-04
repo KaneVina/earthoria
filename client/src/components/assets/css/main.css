@@ -641,7 +641,7 @@ nav {
 /* ─ HOW IT WORKS ─ */
 .how-section {
   padding: 120px 100px;
-  background: url("/natura2.png") center center / cover no-repeat;
+  background: url("/homepage/natura.png") center center / cover no-repeat;
   position: relative;
 }
 .how-section::after {

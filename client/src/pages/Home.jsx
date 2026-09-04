@@ -1020,7 +1020,7 @@ function NewsletterSection() {
   );
 }
 
- /*
+/*
    APP SHOWCASE (MOBILE AR PREVIEW)
 */
 function AppShowcase() {
@@ -1185,7 +1185,7 @@ function CountUpMetric({
     </div>
   );
 }
- /*   TESTIMONIALS SECTION (enhanced)*/
+/*   TESTIMONIALS SECTION (enhanced)*/
 const REVIEWS = [
   {
     name: "Nguyễn Thu Hà",
@@ -1210,7 +1210,7 @@ const REVIEWS = [
   },
 ];
 
- /*   FLASH DEAL — TRI ÂM NGƯỜI DÙNG (countdown + single book)*/
+/*   FLASH DEAL — TRI ÂM NGƯỜI DÙNG (countdown + single book)*/
 function FlashDealSection({ books, onAddCart }) {
   const book = books[0];
   const [timeLeft, setTimeLeft] = useState({ h: 5, m: 59, s: 47 });
@@ -1766,7 +1766,7 @@ function FlashDealSection({ books, onAddCart }) {
   );
 }
 
- /*
+/*
    TOP RATED — sách được vote / đánh giá cao nhất
 */
 function TopRatedSection({ books, onAddCart }) {
@@ -2156,7 +2156,7 @@ function TopRatedSection({ books, onAddCart }) {
   );
 }
 
- /*   MAIN HOME COMPONENT*/
+/*   MAIN HOME COMPONENT*/
 export default function Home() {
   const ctaRef = useRef(null);
   const { addToCart } = useCartStore();
@@ -2834,7 +2834,7 @@ export default function Home() {
           >
             <Link to="/shop" style={{ display: "block", lineHeight: 0 }}>
               <img
-                src="/product1.png"
+                src="homepage/product1.png"
                 alt="Combo 3 cuốn — Tiết kiệm 30%"
                 draggable={false}
                 onContextMenu={(e) => e.preventDefault()}
@@ -3173,7 +3173,7 @@ export default function Home() {
               {
                 num: "01",
                 title: "Khám Phá",
-                img: "kham-pha.png",
+                img: "homepage/kham-pha.png",
                 desc: "Mở cuốn sách đầu tiên và để trí tò mò dẫn lối.",
                 detail:
                   "Hơn 80 loài sinh vật được minh họa chi tiết, mỗi trang là một cánh cửa dẫn vào thế giới tự nhiên kỳ diệu.",
@@ -3181,7 +3181,7 @@ export default function Home() {
               {
                 num: "02",
                 title: "Tương Tác",
-                img: "tuong-tac.png",
+                img: "homepage/tuong-tac.png",
                 desc: "Trò chuyện với 3D, hỏi đáp cùng AI thông minh.",
                 detail:
                   "Đặt câu hỏi cho bất kỳ sinh vật nào — AI sẽ trả lời bằng giọng nói tự nhiên, thân thiện với trẻ em.",
@@ -3189,7 +3189,7 @@ export default function Home() {
               {
                 num: "03",
                 title: "Ghi Nhớ",
-                img: "ghi-nho.png",
+                img: "homepage/ghi-nho.png",
                 desc: "Kiến thức hình ảnh đọng lại sâu hơn 5 lần so với đọc thông thường.",
                 detail:
                   "Phương pháp học qua hình ảnh 3D và tương tác thực tế giúp não bộ ghi nhớ lâu dài và hiệu quả hơn.",
@@ -3197,7 +3197,7 @@ export default function Home() {
               {
                 num: "04",
                 title: "Tiến Bộ",
-                img: "tien-bo.png",
+                img: "homepage/tien-bo.png",
                 desc: "AI theo dõi và điều chỉnh lộ trình học theo nhịp độ của từng bé.",
                 detail:
                   "Hệ thống AI cá nhân hóa nội dung, ghi nhớ tiến trình và đề xuất bài học phù hợp với từng độ tuổi.",
