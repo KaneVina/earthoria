@@ -77,7 +77,8 @@ import GamePlay from "./pages/GamePlay";
 import EbookReader from "./pages/EbookReader";
 import EbookManager from "./pages/admin/EbookManager";
 import EbookEditor from "./pages/admin/EbookEditor";
-import StatusPage from "./pages/StatusPage"
+import StatusPage from "./pages/StatusPage";
+import TrustCenter from "./pages/TrustCenter";
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated } = useAuthStore();
@@ -208,6 +209,7 @@ export default function App() {
           <Route path="/ecosystem" element={<Ecosystem />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/legal" element={<LegalHub />} />
+          <Route path="/trust" element={<TrustCenter />} />
           <Route path="/legal/terms" element={<TermsOfService />} />
           <Route path="/legal/privacy" element={<PrivacyPolicy />} />
           <Route path="/legal/shipping" element={<ShippingPolicy />} />

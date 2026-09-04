@@ -201,16 +201,16 @@ export default function Footer() {
             </h4>
             <ul className="footer-links">
               <li>
-                <Link to="/legal/shipping">Chính Sách Giao Hàng</Link>
+                <Link to="/legal">Trung Tâm Pháp Lý</Link>
+              </li>
+              <li>
+                <Link to="/trust">Trung Tâm Tin Cậy</Link>
               </li>
               <li>
                 <Link to="/legal/privacy">Chính Sách Bảo Mật</Link>
               </li>
               <li>
                 <Link to="/legal/terms">Điều Khoản Dịch Vụ</Link>
-              </li>
-              <li>
-                <Link to="/legal">Trung Tâm Pháp Lý</Link>
               </li>
             </ul>
           </div>
