@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   Scale,
@@ -14,6 +14,11 @@ import {
   Phone,
   MapPin,
   BadgeCheck,
+  Search,
+  X,
+  SearchX,
+  ArrowUpDown,
+  ChevronDown,
 } from "lucide-react";
 
 /* POLICY CARDS DATA */
@@ -150,9 +155,61 @@ const TRUST_ITEMS = [
   },
 ];
 
+/* helper: chuyển "dd/mm/yyyy" -> timestamp để so sánh ngày cập nhật */
+const parseUpdatedDate = (str) => {
+  const [d, m, y] = str.split("/").map(Number);
+  return new Date(y, (m || 1) - 1, d || 1).getTime();
+};
+
+const SORT_OPTIONS = [
+  { value: "newest", label: "Cập nhật mới nhất" },
+  { value: "oldest", label: "Cập nhật cũ nhất" },
+  { value: "az", label: "Tên A → Z" },
+  { value: "za", label: "Tên Z → A" },
+];
+
 /* COMPONENT */
 export default function LegalHub() {
-  /* reveal-on-scroll */
+  const [query, setQuery] = useState("");
+  const [sortBy, setSortBy] = useState("newest");
+
+  const visiblePolicies = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    let list = POLICIES;
+
+    if (q) {
+      list = list.filter((p) => {
+        const haystack = [p.title, p.eyebrow, p.desc, ...p.highlights]
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(q);
+      });
+    }
+
+    const sorted = [...list];
+    switch (sortBy) {
+      case "oldest":
+        sorted.sort(
+          (a, b) => parseUpdatedDate(a.updated) - parseUpdatedDate(b.updated),
+        );
+        break;
+      case "az":
+        sorted.sort((a, b) => a.title.localeCompare(b.title, "vi"));
+        break;
+      case "za":
+        sorted.sort((a, b) => b.title.localeCompare(a.title, "vi"));
+        break;
+      case "newest":
+      default:
+        sorted.sort(
+          (a, b) => parseUpdatedDate(b.updated) - parseUpdatedDate(a.updated),
+        );
+        break;
+    }
+    return sorted;
+  }, [query, sortBy]);
+
+  /* reveal-on-scroll — re-observe whenever the filtered/sorted list changes */
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) =>
@@ -163,7 +220,7 @@ export default function LegalHub() {
     );
     document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, []);
+  }, [visiblePolicies]);
 
   return (
     <>
@@ -244,6 +301,78 @@ export default function LegalHub() {
           display: grid; grid-template-columns: repeat(3, 1fr);
           gap: 20px;
         }
+
+        /* ══════════════ SEARCH & SORT TOOLBAR ══════════════ */
+        .lh-toolbar {
+          max-width: 760px; margin: 0 auto 18px;
+          display: flex; align-items: stretch;
+          border: 0.5px solid var(--border); background: var(--white);
+          transition: border-color 0.25s ease;
+        }
+        .lh-toolbar:focus-within { border-color: var(--border-gold); }
+        .lh-search {
+          flex: 1; min-width: 0;
+          display: flex; align-items: center; gap: 10px;
+          padding: 14px 18px; color: var(--text-muted);
+        }
+        .lh-search > svg { flex-shrink: 0; color: var(--gold); }
+        .lh-search input {
+          flex: 1; min-width: 0; border: none; outline: none; background: transparent;
+          font-family: 'Be Vietnam Pro', sans-serif;
+          font-size: 13px; color: var(--text-body);
+        }
+        .lh-search input::placeholder { color: var(--mist); }
+        .lh-search-clear {
+          display: flex; align-items: center; justify-content: center;
+          border: none; background: transparent; color: var(--text-muted);
+          cursor: pointer; flex-shrink: 0; transition: color 0.2s ease;
+        }
+        .lh-search-clear:hover { color: var(--gold); }
+        .lh-toolbar-divider {
+          width: 0.5px; flex-shrink: 0; align-self: stretch;
+          background: var(--border); margin: 10px 0;
+        }
+        .lh-sort {
+          position: relative; flex-shrink: 0;
+          display: flex; align-items: center; gap: 9px;
+          padding: 14px 34px 14px 18px;
+        }
+        .lh-sort > svg:first-child { color: var(--gold); flex-shrink: 0; }
+        .lh-sort select {
+          appearance: none; -webkit-appearance: none; -moz-appearance: none;
+          border: none; outline: none; background: transparent;
+          font-family: 'Be Vietnam Pro', sans-serif;
+          font-size: 12px; letter-spacing: 0.02em; color: var(--text-body);
+          cursor: pointer; max-width: 150px;
+        }
+        .lh-sort-chevron {
+          position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+          color: var(--text-muted); pointer-events: none;
+        }
+        .lh-toolbar-count {
+          max-width: 760px; margin: 0 auto 40px;
+          font-size: 12px; color: var(--text-muted); font-weight: 300;
+          text-align: center;
+        }
+        .lh-toolbar-count strong { color: var(--forest); font-weight: 500; }
+
+        .lh-empty {
+          max-width: 1400px; margin: 0 auto;
+          padding: 90px 20px;
+          display: flex; flex-direction: column; align-items: center; gap: 16px;
+          border: 0.5px dashed var(--border); background: var(--white);
+          text-align: center;
+        }
+        .lh-empty svg { color: var(--mist); }
+        .lh-empty p { font-size: 14px; color: var(--text-muted); font-weight: 300; max-width: 420px; }
+        .lh-empty p strong { color: var(--forest); font-weight: 500; }
+        .lh-empty-reset {
+          font-family: 'Be Vietnam Pro', sans-serif;
+          font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+          padding: 12px 24px; background: var(--gold); color: var(--ink);
+          border: none; cursor: pointer; transition: background 0.3s ease;
+        }
+        .lh-empty-reset:hover { background: var(--gold-light); }
         .lh-card {
           background: var(--white);
           border: 0.5px solid var(--border);
@@ -400,6 +529,14 @@ export default function LegalHub() {
 
         /* ══════════════ DARK MODE ══════════════ */
         body.dark-mode .lh-policies { background: #1a2420; }
+        body.dark-mode .lh-toolbar { background: #1c2822; border-color: rgba(255,255,255,0.08); }
+        body.dark-mode .lh-toolbar-divider { background: rgba(255,255,255,0.08); }
+        body.dark-mode .lh-search input { color: #c8d4cc; }
+        body.dark-mode .lh-sort select { color: #c8d4cc; }
+        body.dark-mode .lh-sort select option { background: #1c2822; color: #c8d4cc; }
+        body.dark-mode .lh-toolbar-count strong { color: #c8d4cc; }
+        body.dark-mode .lh-empty { background: #1c2822; border-color: rgba(255,255,255,0.08); }
+        body.dark-mode .lh-empty p strong { color: #c8d4cc; }
         body.dark-mode .lh-card { background: #1c2822; border-color: rgba(255,255,255,0.07); }
         body.dark-mode .lh-card-title { color: #c8d4cc; }
         body.dark-mode .lh-card-highlights { border-color: rgba(255,255,255,0.07); }
@@ -427,6 +564,9 @@ export default function LegalHub() {
           .lh-hero { padding: 120px 24px 64px; }
           .lh-policies, .lh-contact { padding-left: 24px; padding-right: 24px; }
           .lh-card-head, .lh-card-body, .lh-card-foot { padding-left: 24px; padding-right: 24px; }
+          .lh-toolbar { flex-direction: column; align-items: stretch; }
+          .lh-toolbar-divider { width: auto; height: 0.5px; align-self: auto; margin: 0 18px; }
+          .lh-sort { justify-content: space-between; padding: 14px 34px 14px 18px; }
         }
       `}</style>
 
@@ -464,42 +604,113 @@ export default function LegalHub() {
 
       {/* ═══ POLICY CARDS ═══ */}
       <section className="lh-policies">
-        <div className="lh-policies-grid">
-          {POLICIES.map((p, i) => (
-            <article className={`lh-card reveal reveal-delay-${i + 1}`} key={i}>
-              <div className="lh-card-head">
-                <div className="lh-card-icon">
-                  <p.icon size={22} />
-                </div>
-                <div className="lh-card-meta">
-                  <span className="lh-card-version">{p.version}</span>
-                  <span className="lh-card-updated">Cập nhật {p.updated}</span>
-                </div>
-              </div>
-
-              <div className="lh-card-body">
-                <div className="lh-card-eyebrow">{p.eyebrow}</div>
-                <h2 className="lh-card-title">{p.title}</h2>
-                <p className="lh-card-desc">{p.desc}</p>
-                <ul className="lh-card-highlights">
-                  {p.highlights.map((h, j) => (
-                    <li className="lh-card-highlight" key={j}>
-                      <span className="lh-highlight-dot" />
-                      {h}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="lh-card-foot">
-                <Link to={p.to} className="lh-card-link">
-                  {p.label}
-                  <ArrowRight size={14} />
-                </Link>
-              </div>
-            </article>
-          ))}
+        <div className="lh-toolbar reveal">
+          <div className="lh-search">
+            <Search size={15} />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Tìm kiếm chính sách theo tên, nội dung..."
+              aria-label="Tìm kiếm chính sách"
+            />
+            {query && (
+              <button
+                type="button"
+                className="lh-search-clear"
+                onClick={() => setQuery("")}
+                aria-label="Xóa nội dung tìm kiếm"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+          <div className="lh-toolbar-divider" />
+          <div className="lh-sort">
+            <ArrowUpDown size={14} />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              aria-label="Sắp xếp danh sách chính sách"
+            >
+              {SORT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown size={13} className="lh-sort-chevron" />
+          </div>
         </div>
+
+        <div className="lh-toolbar-count reveal">
+          Hiển thị <strong>{visiblePolicies.length}</strong> / {POLICIES.length}{" "}
+          chính sách
+          {query && (
+            <>
+              {" "}
+              cho từ khóa "<strong>{query}</strong>"
+            </>
+          )}
+        </div>
+
+        {visiblePolicies.length === 0 ? (
+          <div className="lh-empty reveal">
+            <SearchX size={32} />
+            <p>
+              Không tìm thấy chính sách nào khớp với <strong>"{query}"</strong>.
+              Hãy thử một từ khóa khác.
+            </p>
+            <button
+              type="button"
+              className="lh-empty-reset"
+              onClick={() => setQuery("")}
+            >
+              Xóa tìm kiếm
+            </button>
+          </div>
+        ) : (
+          <div className="lh-policies-grid">
+            {visiblePolicies.map((p, i) => (
+              <article
+                className={`lh-card reveal reveal-delay-${(i % 6) + 1}`}
+                key={p.to}
+              >
+                <div className="lh-card-head">
+                  <div className="lh-card-icon">
+                    <p.icon size={22} />
+                  </div>
+                  <div className="lh-card-meta">
+                    <span className="lh-card-version">{p.version}</span>
+                    <span className="lh-card-updated">
+                      Cập nhật {p.updated}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="lh-card-body">
+                  <div className="lh-card-eyebrow">{p.eyebrow}</div>
+                  <h2 className="lh-card-title">{p.title}</h2>
+                  <p className="lh-card-desc">{p.desc}</p>
+                  <ul className="lh-card-highlights">
+                    {p.highlights.map((h, j) => (
+                      <li className="lh-card-highlight" key={j}>
+                        <span className="lh-highlight-dot" />
+                        {h}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="lh-card-foot">
+                  <Link to={p.to} className="lh-card-link">
+                    {p.label}
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ═══ TRUST STRIP ═══ */}
