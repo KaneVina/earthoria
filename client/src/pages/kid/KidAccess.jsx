@@ -17,7 +17,6 @@ import {
   BookMarked,
   ArrowLeft,
   Star,
-  Wind,
   Settings,
   Type,
   ShieldCheck,
@@ -31,6 +30,8 @@ import { useSkyState, DynamicSky, PhaseIcon } from "../../components/KidSky";
 import "../../components/assets/css/kidAccess.css";
 import GardenWidget from "../../components/knowledgeGarden/GardenWidget";
 import KidCloudCurtain from "../../components/KidCloudCurtain";
+import { useKidRestBreak, fmtClock } from "../../hooks/useKidRestBreak";
+import { KidRestBreakOverlay } from "../../components/kid/KidRestBreakOverlay";
 
 const INSPIRE_LINES = [
   "Mỗi trang sách là một cánh cửa dẫn đến thế giới mới.",
@@ -40,15 +41,6 @@ const INSPIRE_LINES = [
   "Trí tưởng tượng của bé không có giới hạn đâu!",
 ];
 
-const EYE_TIPS = [
-  "Ngồi thẳng lưng và giữ sách cách mắt khoảng 30cm nhé!",
-  "Ánh sáng đủ sáng sẽ giúp mắt bé đỡ mỏi hơn khi đọc đó.",
-  "Bé nhớ chớp mắt thường xuyên để mắt không bị khô nhé.",
-  "Đọc to thành tiếng giúp bé nhớ câu chuyện lâu hơn đấy!",
-  "Uống một ngụm nước sẽ giúp bé tỉnh táo hơn đó!",
-];
-
-const BREATH_PHASES = ["Hít vào thật sâu…", "Thở ra thật chậm…"];
 const SHELF_ACCENTS = ["leaf", "sky", "berry", "sun", "grape", "coral"];
 // số cuốn tối đa hiện trong dải "Đang đọc dở"
 const MAX_RECENT_READING = 5;
@@ -98,12 +90,6 @@ function timeGreeting() {
 
 function pad2(n) {
   return String(n).padStart(2, "0");
-}
-
-function fmtClock(totalSeconds) {
-  const m = Math.floor(totalSeconds / 60);
-  const s = totalSeconds % 60;
-  return `${pad2(m)}:${pad2(s)}`;
 }
 
 function withinWindow(start, end) {
@@ -305,17 +291,6 @@ export default function KidAccess() {
   const [searchFocused, setSearchFocused] = useState(false);
   const searchInputRef = useRef(null);
 
-  //   nhắc nghỉ mắt
-  const [showRest, setShowRest] = useState(false);
-  const [restLeft, setRestLeft] = useState(0);
-
-  //   giải lao bắt buộc
-  const [showBreak, setShowBreak] = useState(false);
-  const [breakLeft, setBreakLeft] = useState(0);
-
-  //   nhịp thở hiển thị trong overlay
-  const [breathPhase, setBreathPhase] = useState(0);
-
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -396,12 +371,22 @@ export default function KidAccess() {
     [child?.id],
   );
   const cloudEdgePath = useMemo(() => buildCloudEdgePath(1200, 7), []);
-  const eyeTip = useMemo(
-    () => EYE_TIPS[new Date().getDate() % EYE_TIPS.length],
-    [],
-  );
 
   const isOk = status === "ok" && child && !child.isLocked;
+
+  //   nhắc nghỉ mắt định kỳ + giải lao bắt buộc — dùng chung với
+  //   EbookReader/ArView/GardenPage để tính năng chạy xuyên suốt cả lúc bé
+  //   đang đọc sách/xem AR, không chỉ lúc đứng ở trang kệ sách này.
+  const {
+    showRest,
+    showBreak,
+    restLeft,
+    breakLeft,
+    breathPhase,
+    eyeTip,
+    showRestTip,
+    dismissRest,
+  } = useKidRestBreak(child, isOk);
 
   //   đồng hồ giờ thực: cập nhật mỗi giây để hiển thị HH:MM cho bé
   useEffect(() => {
@@ -460,79 +445,6 @@ export default function KidAccess() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, [isOk]);
-
-  //   lịch nhắc nghỉ mắt định kỳ
-  useEffect(() => {
-    if (!isOk || !child?.ruleEnabled) return;
-    const periodMs = Math.max(1, child.ruleIntervalMinutes || 20) * 60000;
-    const id = setInterval(() => {
-      setShowBreak((isBreak) => {
-        if (!isBreak) {
-          setRestLeft(Math.max(5, child.ruleRestSeconds || 20));
-          setShowRest(true);
-        }
-        return isBreak;
-      });
-    }, periodMs);
-    return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isOk,
-    child?.ruleEnabled,
-    child?.ruleIntervalMinutes,
-    child?.ruleRestSeconds,
-  ]);
-
-  // đếm ngược khi overlay nghỉ mắt đang mở
-  useEffect(() => {
-    if (!showRest) return;
-    if (restLeft <= 0) {
-      setShowRest(false);
-      return;
-    }
-    const id = setTimeout(() => setRestLeft((s) => s - 1), 1000);
-    return () => clearTimeout(id);
-  }, [showRest, restLeft]);
-
-  //   lịch giải lao bắt buộc
-  useEffect(() => {
-    if (!isOk || !child?.mandatoryBreakEnabled) return;
-    const periodMs = Math.max(1, child.breakAfterMinutes || 45) * 60000;
-    const id = setInterval(() => {
-      setShowRest(false);
-      setBreakLeft(Math.max(30, (child.breakDurationMinutes || 10) * 60));
-      setShowBreak(true);
-    }, periodMs);
-    return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isOk,
-    child?.mandatoryBreakEnabled,
-    child?.breakAfterMinutes,
-    child?.breakDurationMinutes,
-  ]);
-
-  // đếm ngược khi đang giải lao bắt buộc
-  useEffect(() => {
-    if (!showBreak) return;
-    if (breakLeft <= 0) {
-      setShowBreak(false);
-      return;
-    }
-    const id = setTimeout(() => setBreakLeft((s) => s - 1), 1000);
-    return () => clearTimeout(id);
-  }, [showBreak, breakLeft]);
-
-  //   luân phiên "hít vào / thở ra" theo đúng nhịp vòng tròn thở (4.5s)
-  useEffect(() => {
-    if (!showRest && !showBreak) return;
-    setBreathPhase(0);
-    const id = setInterval(
-      () => setBreathPhase((p) => (p + 1) % BREATH_PHASES.length),
-      2250,
-    );
-    return () => clearInterval(id);
-  }, [showRest, showBreak]);
 
   //   mẹo hiển thị lúc mở app (tipsFrequency === 'open')
   useEffect(() => {
@@ -767,9 +679,6 @@ export default function KidAccess() {
   // server chặn (trải nghiệm dở, dù không mất an toàn vì server luôn
   // kiểm tra lại).
   const canRead = inWindow && !limitReached;
-  const showRestTip =
-    child.tipsEnabled &&
-    (child.tipsFrequency === "rest" || child.tipsFrequency === "interval");
   const modalAccent = activeBook ? accentForId(activeBook.id) : "sky";
 
   const liveTodayMinutes =
@@ -1175,6 +1084,18 @@ export default function KidAccess() {
                 </span>
                 <span>
                   Hôm nay bé đã đọc đủ giờ rồi, giỏi lắm! Mai mình đọc tiếp nhé.
+                </span>
+              </div>
+            )}
+
+            {!limitReached && !inWindow && (
+              <div className="kid-limit-banner kid-limit-banner--night">
+                <span className="kid-limit-banner-icon">
+                  <Moon size={16} />
+                </span>
+                <span>
+                  Bây giờ ngoài khung giờ ba mẹ cho phép đọc sách. Mình quay lại
+                  vào giờ mở nhé!
                 </span>
               </div>
             )}
@@ -1619,78 +1540,16 @@ export default function KidAccess() {
           </div>
         )}
 
-        {showRest && !showBreak && (
-          <div className="kid-overlay">
-            <div className="kid-overlay-card">
-              <div className="kid-breathe">
-                <span className="kid-breathe-ring" />
-                <span className="kid-breathe-ring d2" />
-                <span className="kid-breathe-ring d3" />
-                <span className="kid-breathe-core">
-                  <Eye
-                    size={16}
-                    className="kid-breathe-icon"
-                    aria-hidden="true"
-                  />
-                  <span className="kid-breathe-count">{restLeft}</span>
-                  <span className="kid-breathe-unit">giây</span>
-                </span>
-              </div>
-              <span className="kid-breathe-phase">
-                {BREATH_PHASES[breathPhase]}
-              </span>
-              <h2 className="kid-overlay-title">Cho mắt nghỉ ngơi nào!</h2>
-              <p className="kid-overlay-text">
-                Bé hãy nhìn ra xa và hít thở thật sâu trong giây lát nhé.
-              </p>
-              {showRestTip && (
-                <div className="kid-overlay-tip">
-                  <Sparkles size={14} /> {eyeTip}
-                </div>
-              )}
-              <div>
-                <button
-                  type="button"
-                  className="kid-overlay-skip"
-                  onClick={() => setShowRest(false)}
-                >
-                  Đã nghỉ xong, đọc tiếp nào →
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showBreak && (
-          <div className="kid-overlay is-break">
-            <div className="kid-overlay-card">
-              <div className="kid-breathe">
-                <span className="kid-breathe-ring" />
-                <span className="kid-breathe-ring d2" />
-                <span className="kid-breathe-ring d3" />
-                <span className="kid-breathe-core">
-                  <Wind
-                    size={16}
-                    className="kid-breathe-icon"
-                    aria-hidden="true"
-                  />
-                  <span className="kid-breathe-count">
-                    {fmtClock(breakLeft)}
-                  </span>
-                  <span className="kid-breathe-unit">còn lại</span>
-                </span>
-              </div>
-              <span className="kid-breathe-phase">
-                {BREATH_PHASES[breathPhase]}
-              </span>
-              <h2 className="kid-overlay-title">Giờ giải lao rồi!</h2>
-              <p className="kid-overlay-text">
-                Bé đã đọc miệt mài rồi đó — đứng dậy vươn vai, uống nước, rồi
-                quay lại đọc tiếp nhé!
-              </p>
-            </div>
-          </div>
-        )}
+        <KidRestBreakOverlay
+          showRest={showRest}
+          showBreak={showBreak}
+          restLeft={restLeft}
+          breakLeft={breakLeft}
+          breathPhase={breathPhase}
+          eyeTip={eyeTip}
+          showRestTip={showRestTip}
+          onDismissRest={dismissRest}
+        />
       </div>
     </>
   );

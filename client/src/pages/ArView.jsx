@@ -1,10 +1,15 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { AlarmClock } from "lucide-react";
+import toast from "react-hot-toast";
 import api from "../services/api";
 import { arService } from "../services/arService";
 import { kidAccessService } from "../services/kidAccessService";
 import Model3D from "../components/3d/Model3D";
+import { useKidRestBreak } from "../hooks/useKidRestBreak";
+import { KidRestBreakOverlay } from "../components/kid/KidRestBreakOverlay";
 import "../components/assets/css/arview.css";
+import "../components/assets/css/kidAccess.css";
 import ReactECharts from "echarts-for-react";
 import * as echarts from "echarts/core";
 
@@ -370,6 +375,33 @@ export default function ArView() {
     data: null,
   });
 
+  // Hồ sơ đầy đủ của bé (bao gồm cấu hình nhắc nghỉ mắt/giải lao bắt buộc) —
+  // để nhắc nghỉ mắt vẫn chạy được ngay trong lúc bé đang xem AR, đồng bộ
+  // với trang kệ sách (/e-kid/:slug/:token) và trang đọc ebook.
+  const [kidChild, setKidChild] = useState(null);
+  useEffect(() => {
+    if (!isKidMode || !token) return;
+    let cancelled = false;
+    kidAccessService
+      .getProfile(token)
+      .then((res) => {
+        if (cancelled) return;
+        const child = res.data?.data?.child;
+        if (child) setKidChild(child);
+      })
+      .catch(() => {
+        // Không chặn trải nghiệm xem AR nếu không lấy được hồ sơ bé
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isKidMode, token]);
+
+  const restBreak = useKidRestBreak(
+    kidChild,
+    isKidMode && state.status === "ready",
+  );
+
   // "scanning" -> "preview" -> "immersive" (and back)
   const [stage, setStage] = useState("scanning");
   const scanTimeoutRef = useRef(null);
@@ -522,6 +554,14 @@ export default function ArView() {
               info?.limitReached ||
               info?.withinWindow === false
             ) {
+              // Báo ngay cho bé biết vì sao bị đưa ra khỏi trang AR, thay vì
+              // chuyển trang lặng lẽ khiến bé không hiểu chuyện gì xảy ra.
+              const msg = info?.locked
+                ? "Ba mẹ đã khoá thiết bị rồi. Hẹn bé lần sau nhé!"
+                : info?.limitReached
+                  ? "Bé đã dùng đủ giờ hôm nay rồi, giỏi lắm!"
+                  : "Đã ngoài giờ được phép dùng rồi.";
+              toast(msg, { icon: <AlarmClock size={16} />, duration: 5000 });
               navigate(`/e-kid/${slug}/${token}`, { replace: true });
             }
           } catch {
@@ -1019,6 +1059,19 @@ export default function ArView() {
             </svg>
           </button>
         </>
+      )}
+
+      {isKidMode && (
+        <KidRestBreakOverlay
+          showRest={restBreak.showRest}
+          showBreak={restBreak.showBreak}
+          restLeft={restBreak.restLeft}
+          breakLeft={restBreak.breakLeft}
+          breathPhase={restBreak.breathPhase}
+          eyeTip={restBreak.eyeTip}
+          showRestTip={restBreak.showRestTip}
+          onDismissRest={restBreak.dismissRest}
+        />
       )}
     </main>
   );

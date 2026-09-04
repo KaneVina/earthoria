@@ -2106,6 +2106,18 @@
   background: var(--kid-white);
 }
 
+/* Biến thể "ngoài giờ cho phép" — tông xanh đêm thay vì xanh lá "hoàn thành",
+   vì đây là thông tin trung tính (chưa tới giờ) chứ không phải lời khen. */
+.kid-limit-banner--night {
+  background: linear-gradient(
+    135deg,
+    var(--kid-blue-pale),
+    var(--kid-blue-light)
+  );
+}
+.kid-limit-banner--night .kid-limit-banner-icon {
+  color: var(--kid-blue-dark);
+}
 /*   ĐANG ĐỌC DỞ (tối đa 5 cuốn gần đây nhất)   */
 .kid-continue {
   animation: kidFadeUp 0.8s 0.15s var(--kid-ease) both;
@@ -2734,7 +2746,8 @@
   height: 40px;
   line-height: 0;
   pointer-events: none;
-}.kid-footer-cloud-edge svg {
+}
+.kid-footer-cloud-edge svg {
   display: block;
   width: 100%;
   height: 100%;
@@ -4889,36 +4902,4 @@
     var(--kid-border-strong),
     transparent
   );
-}
-
-/* dòng "được phát triển bởi" — logo được tô lại đúng màu chữ bằng
-   mask-image, nên dù file logo gốc có nhiều màu vẫn luôn ra 1 khối
-   màu đồng nhất với .kid-footer-devby-text, nhìn liền một khối */
-.kid-footer-devby {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.kid-footer-devby-text {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  color: var(--kid-ink-soft);
-}
-.kid-footer-devby-logo {
-  display: inline-block;
-  width: 90px;
-  height: 20px;
-  flex-shrink: 0;
-  background-color: var(--kid-ink-soft);
-  -webkit-mask-image: url("/logo/logo-mau/lg-m-family-studio.png");
-  mask-image: url("/logo/logo-mau/lg-m-family-studio.png");
-  -webkit-mask-size: contain;
-  mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
 }

@@ -10,6 +10,7 @@ import {
   Sparkles,
   Heart,
   Gamepad2,
+  Lock,
 } from "lucide-react";
 import { kidAccessService } from "../../services/kidAccessService";
 import { useSkyState, DynamicSky, PhaseIcon } from "../../components/KidSky";
@@ -21,21 +22,65 @@ import {
   fmtDateVi,
   TREE_STATUS_LABEL as STATUS_LABEL,
 } from "../../components/knowledgeGarden/gardenHelpers";
+import { useKidRestBreak } from "../../hooks/useKidRestBreak";
+import { KidRestBreakOverlay } from "../../components/kid/KidRestBreakOverlay";
 import "../../components/assets/css/kidAccess.css";
 import "../../components/assets/css/knowledgeGarden.css";
 import "../../components/assets/css/gardenPage.css";
 
 const POLL_MS = 90_000;
 
+// Thông điệp thân thiện cho từng mã lỗi 403 — dùng chung nội dung với
+// EbookReader/ArView để bé thấy đồng nhất dù đang ở màn nào.
+const RESTRICTED_COPY = {
+  CHILD_LOCKED: {
+    title: "Thiết bị đang bị khoá",
+    message:
+      "Ba mẹ đã tạm khoá thiết bị của bé rồi. Nhờ ba mẹ mở khoá lại nhé!",
+  },
+  DAILY_LIMIT_REACHED: {
+    title: "Hết giờ dùng hôm nay rồi",
+    message: "Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!",
+  },
+  OUTSIDE_ALLOWED_WINDOW: {
+    title: "Ngoài giờ được phép rồi",
+    message: "Bây giờ không phải giờ ba mẹ cho phép bé dùng app nhé.",
+  },
+};
+
 export default function GardenPage() {
   const { slug, token } = useParams();
   const navigate = useNavigate();
   const [status, setStatus] = useState("loading");
   const [data, setData] = useState(null);
+  const [restricted, setRestricted] = useState(null);
   const [selectedTreeId, setSelectedTreeId] = useState(null);
   const [celebrate, setCelebrate] = useState(null);
   const prevSnapshotRef = useRef(null);
   const skyState = useSkyState(); // bầu trời theo giờ thực — đồng bộ với KidAccess
+
+  // Hồ sơ đầy đủ của bé (bao gồm cấu hình nhắc nghỉ mắt/giải lao bắt buộc) —
+  // getGarden() ở dưới chỉ trả dữ liệu khu vườn, không có các trường này,
+  // nên cần gọi riêng để nhắc nghỉ mắt cũng chạy được ở trang Vườn Tri Thức.
+  const [kidChild, setKidChild] = useState(null);
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+    kidAccessService
+      .getProfile(token)
+      .then((res) => {
+        if (cancelled) return;
+        const child = res.data?.data?.child;
+        if (child) setKidChild(child);
+      })
+      .catch(() => {
+        // Không chặn trải nghiệm xem vườn nếu không lấy được hồ sơ bé
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
+  const restBreak = useKidRestBreak(kidChild, status === "ok");
 
   const fetchGarden = useCallback(
     async ({ silent = false } = {}) => {
@@ -61,7 +106,13 @@ export default function GardenPage() {
           }
         }
         prevSnapshotRef.current = { level: newLevel, streak: newStreak };
-      } catch {
+      } catch (err) {
+        const errCode = err?.response?.data?.code;
+        if (err?.response?.status === 403 && RESTRICTED_COPY[errCode]) {
+          setRestricted(RESTRICTED_COPY[errCode]);
+          setStatus("restricted");
+          return;
+        }
         if (!silent) setStatus((s) => (s === "ok" ? s : "error"));
       }
     },
@@ -188,6 +239,20 @@ export default function GardenPage() {
                 onClick={() => fetchGarden()}
               >
                 Thử lại
+              </button>
+            </div>
+          )}
+
+          {status === "restricted" && restricted && (
+            <div className="kgp-error">
+              <Lock size={22} />
+              <p>
+                <strong>{restricted.title}</strong>
+                <br />
+                {restricted.message}
+              </p>
+              <button type="button" className="kg-cta-btn" onClick={goBack}>
+                Quay lại tủ sách
               </button>
             </div>
           )}
@@ -596,6 +661,17 @@ export default function GardenPage() {
           )}
         </div>
       </div>
+
+      <KidRestBreakOverlay
+        showRest={restBreak.showRest}
+        showBreak={restBreak.showBreak}
+        restLeft={restBreak.restLeft}
+        breakLeft={restBreak.breakLeft}
+        breathPhase={restBreak.breathPhase}
+        eyeTip={restBreak.eyeTip}
+        showRestTip={restBreak.showRestTip}
+        onDismissRest={restBreak.dismissRest}
+      />
     </div>
   );
 }

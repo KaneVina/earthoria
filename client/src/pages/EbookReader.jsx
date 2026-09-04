@@ -1,10 +1,14 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Loader2, Lock, SearchX } from "lucide-react";
+import { Loader2, Lock, SearchX, AlarmClock } from "lucide-react";
+import toast from "react-hot-toast";
 import { ebookService } from "../services/ebookService";
 import { kidAccessService } from "../services/kidAccessService";
 import { PreviewOverlay } from "./admin/EbookEditor";
+import { useKidRestBreak } from "../hooks/useKidRestBreak";
+import { KidRestBreakOverlay } from "../components/kid/KidRestBreakOverlay";
 import "../components/assets/css/gameplay.css";
+import "../components/assets/css/kidAccess.css";
 
 export default function EbookReader() {
   // :token + :bookSlug chỉ có khi vào từ link riêng của bé
@@ -21,6 +25,10 @@ export default function EbookReader() {
   // riêng của bé. Lấy 1 lần từ hồ sơ bé, rồi cập nhật số phút đã đọc theo
   // mỗi lần ping phiên hoạt động bên dưới.
   const [kidTimeInfo, setKidTimeInfo] = useState(null);
+  // Hồ sơ đầy đủ của bé (bao gồm cấu hình nhắc nghỉ mắt/giải lao bắt buộc) —
+  // để nhắc nghỉ mắt vẫn chạy được ngay trong lúc bé đang đọc sách, đồng bộ
+  // với trang kệ sách (/e-kid/:slug/:token) thay vì chỉ chạy ở đó.
+  const [kidChild, setKidChild] = useState(null);
   const saveKidReadingProgress = useCallback(
     (currentPage, totalPages) => {
       if (!isKidMode || !token || !book?.slug || !totalPages) return;
@@ -45,7 +53,8 @@ export default function EbookReader() {
   );
 
   // Lấy giới hạn giờ đọc/ngày do ba mẹ đặt + số phút bé đã đọc hôm nay,
-  // để hiện icon "giờ đọc còn lại" trên header của trình đọc sách.
+  // để hiện icon "giờ đọc còn lại" trên header của trình đọc sách. Đồng
+  // thời lưu cả hồ sơ đầy đủ để dùng cho nhắc nghỉ mắt/giải lao bắt buộc.
   useEffect(() => {
     if (!isKidMode || !token) return;
     let cancelled = false;
@@ -59,6 +68,7 @@ export default function EbookReader() {
           dailyLimitMinutes: child.dailyLimitMinutes || 0,
           todayMinutes: child.todayMinutes || 0,
         });
+        setKidChild(child);
       })
       .catch(() => {
         // Không chặn trải nghiệm đọc nếu không lấy được thông tin giờ đọc
@@ -67,6 +77,13 @@ export default function EbookReader() {
       cancelled = true;
     };
   }, [isKidMode, token]);
+
+  // Nhắc nghỉ mắt định kỳ + giải lao bắt buộc — chạy ngay trong lúc đọc,
+  // dùng chung hook/overlay với trang kệ sách (KidAccess) và trang AR.
+  const restBreak = useKidRestBreak(
+    kidChild,
+    isKidMode && state.status === "ready",
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -183,6 +200,14 @@ export default function EbookReader() {
               info?.limitReached ||
               info?.withinWindow === false
             ) {
+              // Báo ngay cho bé biết vì sao bị đưa ra khỏi trang đọc, thay vì
+              // chuyển trang lặng lẽ khiến bé không hiểu chuyện gì xảy ra.
+              const msg = info?.locked
+                ? "Ba mẹ đã khoá thiết bị rồi. Hẹn bé lần sau nhé!"
+                : info?.limitReached
+                  ? "Bé đã đọc đủ giờ hôm nay rồi, giỏi lắm!"
+                  : "Đã ngoài giờ đọc sách ba mẹ cho phép rồi.";
+              toast(msg, { icon: <AlarmClock size={16} />, duration: 5000 });
               navigate(`/e-kid/${slug}/${token}`, { replace: true });
             }
           } catch {
@@ -311,19 +336,33 @@ export default function EbookReader() {
       : "/";
 
   return (
-    <PreviewOverlay
-      pages={Array.isArray(data.pages) ? data.pages : []}
-      startIndex={0}
-      orientation={data.orientation === "PORTRAIT" ? "PORTRAIT" : "LANDSCAPE"}
-      pageNumberPos={{ v: "bottom", h: "center" }}
-      showTitleWithPageNumber={false}
-      hidePageNumberOnCover={false}
-      bookInfo={data.book}
-      storageKey={data.id}
-      resumeFromStorage
-      onProgress={saveKidReadingProgress}
-      onClose={() => navigate(bookUrl)}
-      kidTimeInfo={isKidMode ? kidTimeInfo : null}
-    />
+    <>
+      <PreviewOverlay
+        pages={Array.isArray(data.pages) ? data.pages : []}
+        startIndex={0}
+        orientation={data.orientation === "PORTRAIT" ? "PORTRAIT" : "LANDSCAPE"}
+        pageNumberPos={{ v: "bottom", h: "center" }}
+        showTitleWithPageNumber={false}
+        hidePageNumberOnCover={false}
+        bookInfo={data.book}
+        storageKey={data.id}
+        resumeFromStorage
+        onProgress={saveKidReadingProgress}
+        onClose={() => navigate(bookUrl)}
+        kidTimeInfo={isKidMode ? kidTimeInfo : null}
+      />
+      {isKidMode && (
+        <KidRestBreakOverlay
+          showRest={restBreak.showRest}
+          showBreak={restBreak.showBreak}
+          restLeft={restBreak.restLeft}
+          breakLeft={restBreak.breakLeft}
+          breathPhase={restBreak.breathPhase}
+          eyeTip={restBreak.eyeTip}
+          showRestTip={restBreak.showRestTip}
+          onDismissRest={restBreak.dismissRest}
+        />
+      )}
+    </>
   );
 }

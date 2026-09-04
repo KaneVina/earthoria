@@ -4,6 +4,8 @@ const {
   vnDateStr,
   shiftVnDateStr,
   vnDateStrToUtcStart,
+  isWithinAllowedWindow,
+  isDailyLimitReached,
 } = require("../utils/childPolicy");
 const {
   LEVEL_CONFIG,
@@ -252,10 +254,45 @@ const getKidGarden = async (req, res) => {
     const { token } = req.params;
     const child = await prisma.childProfile.findFirst({
       where: { kidLinkToken: token, isActive: true },
-      select: { id: true, name: true },
+      select: {
+        id: true,
+        name: true,
+        isLocked: true,
+        dailyLimitMinutes: true,
+        allowWindowEnabled: true,
+        allowStart: true,
+        allowEnd: true,
+      },
     });
     if (!child)
       return formatResponse(res, 404, "Link không hợp lệ hoặc đã bị thu hồi");
+
+    // Đồng bộ với ebookReaderController/arController: khu vườn tri thức cũng
+    // là một màn hình bé "dùng thiết bị" nên phải tôn trọng khoá/giờ giấc do
+    // ba mẹ đặt ở /family, giống hệt lúc đọc sách hay xem AR. Trả nguyên
+    // dạng res.json({code, ...}) (không qua formatResponse) để khớp đúng
+    // shape mà client đang đọc (err.response.data.code) ở 2 controller kia.
+    if (child.isLocked) {
+      return res.status(403).json({
+        success: false,
+        code: "CHILD_LOCKED",
+        message: "Thiết bị của bé đang bị phụ huynh khoá.",
+      });
+    }
+    if (!isWithinAllowedWindow(child)) {
+      return res.status(403).json({
+        success: false,
+        code: "OUTSIDE_ALLOWED_WINDOW",
+        message: "Ngoài khung giờ ba mẹ cho phép sử dụng.",
+      });
+    }
+    if (await isDailyLimitReached(prisma, child)) {
+      return res.status(403).json({
+        success: false,
+        code: "DAILY_LIMIT_REACHED",
+        message: "Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!",
+      });
+    }
 
     let garden = await prisma.childGarden.findUnique({
       where: { childId: child.id },
