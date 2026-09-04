@@ -163,25 +163,69 @@ function LostCompass() {
   );
 }
 
+// Chiều cao 2 nút được khoá cứng bằng cùng 1 hằng số + box-sizing: border-box,
+// để border/padding không làm lệch chiều cao giữa nút <Link> và <button>.
+const ACTION_BTN_HEIGHT = 46;
+
+const actionBtnBase = {
+  height: `${ACTION_BTN_HEIGHT}px`,
+  boxSizing: "border-box",
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "8px",
+  padding: "0 26px",
+  fontFamily: "'Be Vietnam Pro', sans-serif",
+  fontSize: "11px",
+  fontWeight: 600,
+  letterSpacing: "0.1em",
+  textTransform: "uppercase",
+  textDecoration: "none",
+  borderRadius: "0",
+  cursor: "pointer",
+  whiteSpace: "nowrap",
+  transition:
+    "background 0.25s ease, border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease",
+};
+
 export default function NotFound() {
   const navigate = useNavigate();
 
   return (
-    <div
+   <div
       style={{
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
-        padding: "56px 24px",
+        justifyContent: "flex-start",
+        padding: "80px 24px 64px",
         textAlign: "center",
         position: "relative",
         overflow: "hidden",
         background:
-          "radial-gradient(60% 50% at 50% 30%, color-mix(in srgb, var(--forest) 6%, transparent), transparent)",
+          "radial-gradient(60% 50% at 50% 30%, color-mix(in srgb, var(--forest) 7%, transparent), transparent), " +
+          "radial-gradient(45% 40% at 85% 85%, color-mix(in srgb, var(--gold) 5%, transparent), transparent)",
       }}
     >
+      {/* soft ambient glow behind everything */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: "8%",
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "420px",
+          height: "420px",
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, color-mix(in srgb, var(--forest) 10%, transparent) 0%, transparent 70%)",
+          filter: "blur(8px)",
+          pointerEvents: "none",
+        }}
+      />
+
       {/* breadcrumb */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -207,7 +251,13 @@ export default function NotFound() {
         initial={{ opacity: 0, scale: 0.85 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        style={{ marginBottom: "20px" }}
+        style={{
+          marginBottom: "20px",
+          position: "relative",
+          zIndex: 1,
+          filter:
+            "drop-shadow(0 8px 24px color-mix(in srgb, var(--forest) 18%, transparent))",
+        }}
       >
         <LostCompass />
       </motion.div>
@@ -217,6 +267,7 @@ export default function NotFound() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, delay: 0.15, ease: "easeOut" }}
+        style={{ position: "relative", zIndex: 1 }}
       >
         <div
           style={{
@@ -225,8 +276,12 @@ export default function NotFound() {
             fontWeight: 300,
             lineHeight: 1,
             letterSpacing: "-3px",
-            color: "var(--forest)",
-            opacity: 0.1,
+            background:
+              "linear-gradient(180deg, var(--forest) 0%, color-mix(in srgb, var(--forest) 40%, transparent) 100%)",
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+            color: "transparent",
+            opacity: 0.14,
             userSelect: "none",
             marginBottom: "-18px",
           }}
@@ -237,7 +292,7 @@ export default function NotFound() {
         <h1
           style={{
             fontFamily: "Playfair Display, serif",
-            fontSize: "30px",
+            fontSize: "clamp(26px, 4vw, 32px)",
             fontWeight: 400,
             color: "var(--forest)",
             margin: "0 0 14px",
@@ -260,11 +315,17 @@ export default function NotFound() {
         </p>
         <p
           style={{
-            fontSize: "11px",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "6px",
+            fontSize: "10.5px",
             color: "var(--text-muted)",
-            opacity: 0.6,
-            letterSpacing: "0.06em",
+            opacity: 0.75,
+            letterSpacing: "0.08em",
             margin: "0 auto 36px",
+            padding: "4px 12px",
+            border: "0.5px solid var(--border)",
+            borderRadius: "0",
           }}
         >
           MÃ LỖI · 404
@@ -280,13 +341,14 @@ export default function NotFound() {
         }}
       />
 
-      {/* primary actions */}
+      {/* primary actions — cùng chiều cao tuyệt đối, không dùng class global lệch padding */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.3 }}
         style={{
           display: "flex",
+          alignItems: "center",
           gap: "12px",
           flexWrap: "wrap",
           justifyContent: "center",
@@ -300,12 +362,21 @@ export default function NotFound() {
         >
           <Link
             to="/"
-            className="btn-primary"
             style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-              textDecoration: "none",
+              ...actionBtnBase,
+              color: "var(--ivory)",
+              background: "var(--forest)",
+              border: "1px solid var(--forest)",
+              boxShadow:
+                "0 6px 18px color-mix(in srgb, var(--forest) 22%, transparent)",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "var(--forest-mid)";
+              e.currentTarget.style.borderColor = "var(--forest-mid)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "var(--forest)";
+              e.currentTarget.style.borderColor = "var(--forest)";
             }}
           >
             <Compass size={15} />
@@ -314,12 +385,25 @@ export default function NotFound() {
         </motion.div>
 
         <motion.button
-          className="btn-secondary"
+          type="button"
           onClick={() => navigate(-1)}
           whileHover={{ y: -2 }}
           whileTap={{ y: 0 }}
           transition={{ type: "spring", stiffness: 400, damping: 20 }}
-          style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}
+          style={{
+            ...actionBtnBase,
+            color: "var(--forest)",
+            background: "transparent",
+            border: "1px solid var(--border)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = "var(--gold)";
+            e.currentTarget.style.color = "var(--gold)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = "var(--border)";
+            e.currentTarget.style.color = "var(--forest)";
+          }}
         >
           <ArrowLeft size={15} />
           Quay lại
