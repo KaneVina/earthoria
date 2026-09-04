@@ -23,6 +23,7 @@ import { useWishlistStore } from "../../store/wishlistStore";
 import { useTheme } from "../../hooks/useTheme";
 import { loyaltyService } from "../../services/loyaltyService";
 import LoyaltyBadge from "../LoyaltyBadge";
+import LogoFireworks from "../effects/LogoFireworks";
 import toast from "react-hot-toast";
 // import logoImg from "../assets/img/logoBT-ngangtext.png";
 import logoImg from "../assets/img/lgBT29.png";
@@ -62,6 +63,11 @@ export default function Navbar() {
   const [cartPeek, setCartPeek] = useState(false);
   const prevItemCountRef = useRef(itemCount);
   const cartPeekTimeoutRef = useRef(null);
+  const logoFireworksRef = useRef(null);
+
+  const fireLogoFireworks = () => {
+    logoFireworksRef.current?.burst();
+  };
 
   //  Effects
   useEffect(() => {
@@ -104,6 +110,12 @@ export default function Navbar() {
     setMobileOpen(false);
     setSearchOpen(false);
   }, [location.pathname, location.search]);
+
+  // Chào mừng bằng một loạt pháo hoa nhỏ trên logo ngay khi trang vừa tải
+  useEffect(() => {
+    const t = setTimeout(() => fireLogoFireworks(), 700);
+    return () => clearTimeout(t);
+  }, []);
 
   //  Helpers
   const handleLogout = async () => {
@@ -204,7 +216,14 @@ export default function Navbar() {
       >
         <div className="nav-inner">
           {/* Logo */}
-          <Link to="/" className="nav-logo">
+          <Link
+            to="/"
+            className="nav-logo"
+            onMouseEnter={fireLogoFireworks}
+            onFocus={fireLogoFireworks}
+            onClick={fireLogoFireworks}
+            onTouchStart={fireLogoFireworks}
+          >
             <span className="nav-logo-swap">
               <img src={logoImg} alt="EARTHORIA" className="nav-logo-full" />
               <span
@@ -228,6 +247,7 @@ export default function Navbar() {
                   maskImage: `url(${logoCompactImg})`,
                 }}
               />
+              <LogoFireworks ref={logoFireworksRef} />
             </span>
           </Link>
 

@@ -53,6 +53,25 @@ nav.is-scrolled .nav-logo {
   will-change: opacity, transform;
 }
 
+/*  LOGO FIREWORKS  */
+.logo-fireworks-canvas {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 340px;
+  height: 220px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 6;
+}
+
+@media (max-width: 900px) {
+  .logo-fireworks-canvas {
+    width: 220px;
+    height: 160px;
+  }
+}
+
 /* Logo nhỏ — MẶC ĐỊNH */
 .nav-logo-compact {
   position: absolute;
