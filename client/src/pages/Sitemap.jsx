@@ -160,6 +160,29 @@ const SECTIONS = [
         sub: "Cách Eira AI xử lý dữ liệu và giới hạn của AI",
         to: "/legal/ai",
       },
+      {
+        label: "Thông Báo Bản Quyền",
+        sub: "Quyền sở hữu trí tuệ & nội dung trên Earthoria",
+        to: "/legal/copyright",
+      },
+    ],
+  },
+  {
+    id: "khac",
+    eyebrow: "06",
+    title: "Khác",
+    color: "var(--gold)",
+    links: [
+      {
+        label: "Trung Tâm Tin Cậy",
+        sub: "Cam kết bảo mật, an toàn & minh bạch của Earthoria",
+        to: "/trust",
+      },
+      {
+        label: "Trạng Thái Hệ Thống",
+        sub: "Tình trạng hoạt động các dịch vụ của Earthoria",
+        to: "/status",
+      },
     ],
   },
 ];
