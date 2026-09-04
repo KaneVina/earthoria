@@ -4547,17 +4547,30 @@ body.dark-mode .social-card-handle {
   grid-template-columns: 1.1fr 1fr;
   background: var(--white);
   border: 0.5px solid var(--border);
+  border-top: 2px solid var(--gold);
   overflow: hidden;
+  position: relative;
   transition: all 0.5s ease;
 }
 .featured-product-card:hover {
   box-shadow: 0 40px 80px rgba(13, 43, 30, 0.12);
+  transform: translateY(-4px);
 }
 .featured-product-card .product-img-wrap {
   height: 440px;
 }
+.featured-product-card:hover .product-img-wrap img {
+  transform: scale(1.06);
+  filter: saturate(1);
+}
+.featured-product-card .product-img-overlay {
+  background: rgba(13, 43, 30, 0);
+}
+.featured-product-card:hover .product-img-overlay {
+  background: rgba(13, 43, 30, 0.45);
+}
 .featured-product-body {
-  padding: 56px 52px;
+  padding: 52px 52px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -4567,10 +4580,11 @@ body.dark-mode .social-card-handle {
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--gold);
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   display: flex;
   align-items: center;
   gap: 12px;
+  font-weight: 600;
 }
 .featured-label::before {
   content: "";
@@ -4581,30 +4595,36 @@ body.dark-mode .social-card-handle {
 }
 .featured-title {
   font-family: "Playfair Display", serif;
-  font-size: clamp(28px, 3vw, 44px);
+  font-size: clamp(28px, 3vw, 40px);
   font-weight: 300;
   color: var(--forest);
   line-height: 1.15;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 .featured-title em {
   font-style: italic;
   color: var(--gold);
+}
+.featured-product-body .product-rating {
+  margin-bottom: 16px;
 }
 .featured-desc {
   font-size: 14px;
   line-height: 1.85;
   color: var(--text-muted);
   font-weight: 300;
-  margin-bottom: 32px;
-  max-width: 360px;
+  margin-bottom: 18px;
+  max-width: 400px;
+}
+.featured-product-body .product-tags {
+  margin-bottom: 28px;
 }
 .featured-specs {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  margin-bottom: 40px;
-  padding: 28px;
+  margin-bottom: 28px;
+  padding: 22px 28px;
   background: var(--ivory);
   border: 0.5px solid var(--border);
 }
@@ -4621,10 +4641,39 @@ body.dark-mode .social-card-handle {
   color: var(--forest);
   font-weight: 400;
 }
+.featured-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+.featured-price-current {
+  font-family: "Montserrat", sans-serif;
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--forest);
+  letter-spacing: -0.01em;
+}
+.featured-price-old {
+  font-size: 15px;
+  color: var(--text-muted);
+  text-decoration: line-through;
+  font-weight: 300;
+}
+.featured-price-discount {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: #c05050;
+  background: rgba(192, 80, 80, 0.08);
+  padding: 3px 8px;
+  font-weight: 600;
+}
 .featured-cta {
   display: flex;
   gap: 12px;
 }
+
 .btn-add-cart {
   font-family: "Be Vietnam Pro", sans-serif;
   font-size: 11px;
@@ -4821,6 +4870,12 @@ body.dark-mode .featured-specs {
   border-color: rgba(255, 255, 255, 0.06);
 }
 body.dark-mode .featured-desc {
+  color: rgba(180, 200, 188, 0.5);
+}
+body.dark-mode .featured-price-current {
+  color: #c8d4cc;
+}
+body.dark-mode .featured-price-old {
   color: rgba(180, 200, 188, 0.5);
 }
 body.dark-mode .featured-spec-val {

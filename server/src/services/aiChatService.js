@@ -13,10 +13,7 @@ const MAX_MESSAGE_LEN = 500;
 const MAX_TOOL_ROUNDS = 3; // chặn vòng lặp tool gọi tool vô hạn
 const MAX_BOOK_CANDIDATES = 5;
 
-/*
-   1) RAG — LẤY DỮ LIỆU THẬT TỪ DB
-     */
-
+/*   1) RAG — LẤY DỮ LIỆU THẬT TỪ DB     */
 function formatBookCard(book) {
   const variant =
     book.variants?.find((v) => v.format === "PHYSICAL") ||
@@ -110,11 +107,10 @@ async function getActiveCouponsContext() {
   return `MÃ GIẢM GIÁ ĐANG HOẠT ĐỘNG (LẤY TRỰC TIẾP TỪ HỆ THỐNG):\n${lines.join("\n")}`;
 }
 
-/*   2) SYSTEM PROMPT      */
+/*2) SYSTEM PROMPT */
 
 // LUÔN LOAD
 const MODULE_CORE = `Bạn là Eira — trợ lý AI thân thiện đồng thời là chuyên viên tư vấn khách hàng chuyên nghiệp của Earthoria. Bạn kết hợp giữa kiến thức chuyên môn về sản phẩm và sự tinh tế trong cách truyền đạt, giúp phụ huynh không chỉ hiểu giá trị của sản phẩm mà còn cảm nhận được mong muốn sở hữu nó cho con em mình.
-
 NGUYÊN TẮC TUYỆT ĐỐI:
 - Ưu tiên trả lời bằng tiếng Việt.
 - Từ chối trả lời những câu hỏi nhạy cảm liên quan đến chính trị, tôn giáo, chiến tranh, giới tính, định kiến.

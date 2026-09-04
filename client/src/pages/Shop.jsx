@@ -864,8 +864,13 @@ function ProductCard({ book, onAddToCart, delay, isAdding }) {
 }
 
 export default function Shop() {
+  const navigate = useNavigate();
   const { addToCart } = useCartStore();
-
+  const {
+    isInWishlist,
+    toggleWishlist,
+    isToggling: isWishlistToggling,
+  } = useWishlistStore();
   const [activeCategory, setActiveCategory] = useState("all");
   const [activeFeatures, setActiveFeatures] = useState([]);
   const [priceRange, setPriceRange] = useState([
@@ -1043,7 +1048,23 @@ export default function Shop() {
   const totalPages = usingFallback
     ? 1
     : Math.max(1, pagination.totalPages || 1);
+  const goToFeaturedDetail = () => {
+    if (!featuredBook?.slug || !featuredBook?.hashId) return;
+    navigate(`/books/${featuredBook.slug}/${featuredBook.hashId}`);
+  };
 
+  const handleFeaturedWishlist = (e) => {
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      toast.error("Vui lòng đăng nhập để lưu yêu thích");
+      return false;
+    }
+    if (!featuredBook?.slug || !featuredBook?.hashId) return false;
+    toggleWishlist(featuredBook.slug, featuredBook.hashId).then((ok) => {
+      if (!ok) toast.error("Có lỗi xảy ra, vui lòng thử lại");
+    });
+    return true;
+  };
   const goToPage = (p) => {
     const next = Math.min(Math.max(1, p), totalPages);
     if (next === activePage) return;
@@ -1124,8 +1145,9 @@ export default function Shop() {
               className="shop-hero-sub reveal reveal-delay-1"
               style={{ color: "rgba(250,248,243,0.75)" }}
             >
-              Mỗi cuốn sách là một cổng thông tin sống động — nơi thiên nhiên
-              hiện ra qua lăng kính công nghệ tăng cường và trí tuệ nhân tạo.
+              Mỗi cuốn sách là một cánh cổng đến thế giới tự nhiên - nơi tri
+              thức được đánh thức bằng AR, AI và những trải nghiệm tương tác
+              sống động.
             </p>
           </div>
           <div className="shop-hero-right reveal">
@@ -1133,7 +1155,7 @@ export default function Shop() {
               className="shop-result-count"
               style={{ color: "rgba(250,248,243,0.15)" }}
             >
-              18
+              {usingFallback ? STATIC_PRODUCTS.length : pagination.total}
             </div>
             <div
               className="shop-result-label"
@@ -1462,28 +1484,78 @@ export default function Shop() {
           <div className={`products-grid grid-${gridCols}`}>
             {/* FEATURED WIDE CARD */}
             {featuredBook && (
-              <div className="featured-product-card reveal">
+              <div
+                className="featured-product-card reveal"
+                onClick={goToFeaturedDetail}
+                style={{ cursor: featuredBook.slug ? "pointer" : "default" }}
+              >
                 <div className="product-img-wrap">
                   <img
                     src={featuredBook.img || featuredBook.coverImage}
                     alt={featuredBook.title}
                   />
-                  <div className="product-img-overlay" />
+                  <div className="product-img-overlay">
+                    <button
+                      className="overlay-btn primary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        goToFeaturedDetail();
+                      }}
+                    >
+                      Xem chi tiết
+                    </button>
+                    <button
+                      className="overlay-btn"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Demo AR
+                    </button>
+                  </div>
                   {featuredBook.badge && (
                     <span className="product-badge gold">
                       {featuredBook.badge}
                     </span>
                   )}
+                  {(featuredBook.category?.name || featuredBook.category) && (
+                    <span className="product-category">
+                      {featuredBook.category?.name || featuredBook.category}
+                    </span>
+                  )}
+                  <div
+                    className="card-wishlist-wrap"
+                    style={{
+                      position: "absolute",
+                      top: "16px",
+                      right: "16px",
+                      zIndex: 10,
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <WishlistBtn
+                      wishlisted={isInWishlist(featuredBook.hashId)}
+                      onToggle={handleFeaturedWishlist}
+                      disabled={isWishlistToggling(featuredBook.hashId)}
+                    />
+                  </div>
                 </div>
                 <div className="featured-product-body">
                   <div className="featured-label">Sản phẩm nổi bật</div>
                   <h2 className="featured-title">{featuredBook.title}</h2>
+                  {featuredBook.rating && (
+                    <StarRating
+                      rating={featuredBook.rating}
+                      count={featuredBook.reviewCount || 0}
+                    />
+                  )}
                   <p className="featured-desc">
                     {featuredBook.desc ||
                       (featuredBook.description
                         ? featuredBook.description.slice(0, 140) + "…"
                         : "")}
                   </p>
+                  {featuredBook.tags?.length > 0 && (
+                    <TagList tags={featuredBook.tags} maxVisible={3} />
+                  )}
                   <div className="featured-specs">
                     {[
                       {
@@ -1494,19 +1566,6 @@ export default function Shop() {
                         label: "Ngôn ngữ",
                         val: featuredBook.language || "Tiếng Việt",
                       },
-                      {
-                        label: "Danh mục",
-                        val:
-                          featuredBook.category?.name ||
-                          featuredBook.category ||
-                          "—",
-                      },
-                      {
-                        label: "Đánh giá",
-                        val: featuredBook.rating
-                          ? `${featuredBook.rating}★`
-                          : "—",
-                      },
                     ].map((spec) => (
                       <div className="featured-spec-item" key={spec.label}>
                         <div className="featured-spec-label">{spec.label}</div>
@@ -1514,10 +1573,39 @@ export default function Shop() {
                       </div>
                     ))}
                   </div>
+                  <div className="featured-price-row">
+                    {featuredBook.salePrice &&
+                    featuredBook.salePrice < featuredBook.price ? (
+                      <>
+                        <span className="featured-price-old">
+                          {displayPrice(featuredBook.price)}
+                        </span>
+                        <span className="featured-price-discount">
+                          -
+                          {Math.round(
+                            (1 - featuredBook.salePrice / featuredBook.price) *
+                              100,
+                          )}
+                          %
+                        </span>
+                        <span className="featured-price-current">
+                          <CountdownPrice
+                            from={featuredBook.price}
+                            to={featuredBook.salePrice}
+                          />
+                        </span>
+                      </>
+                    ) : (
+                      <span className="featured-price-current">
+                        {displayPrice(featuredBook.price)}
+                      </span>
+                    )}
+                  </div>
                   <div className="featured-cta">
                     <button
                       className="btn-add-cart"
                       onClick={(e) => {
+                        e.stopPropagation();
                         const featuredImg = e.currentTarget
                           .closest(".featured-product-card")
                           ?.querySelector(".product-img-wrap img");
@@ -1530,18 +1618,12 @@ export default function Shop() {
                       disabled={addingIds.has(featuredBook.hashId)}
                     >
                       <CartIcon />
-                      Thêm vào giỏ —{" "}
-                      {featuredBook.salePrice &&
-                      featuredBook.salePrice < featuredBook.price ? (
-                        <CountdownPrice
-                          from={featuredBook.price}
-                          to={featuredBook.salePrice}
-                        />
-                      ) : (
-                        displayPrice(featuredBook.price)
-                      )}
+                      Thêm vào giỏ hàng
                     </button>
-                    <button className="btn-ar-preview">
+                    <button
+                      className="btn-ar-preview"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <svg
                         width="14"
                         height="14"
