@@ -8,7 +8,7 @@ const AI_MODEL_TIERS = [
     emoji: "⛰️",
     altitude: 1068,
     minSpend: LOYALTY_TIERS[0].minSpend, // 0 — luôn mở khóa, kể cả khách vãng lai
-    model: "llama-3.1-8b-instant",
+    model: "openai/gpt-oss-20b",
     label: "Yên Tử · Cơ bản",
     icon: "/icon-modal-ai/yen-tu.png",
     tagline: "Đáp ứng trọn vẹn những nhu cầu thường nhật.",
@@ -24,7 +24,7 @@ const AI_MODEL_TIERS = [
     emoji: "🌫️",
     altitude: 1450,
     minSpend: LOYALTY_TIERS[1].minSpend, // 3.000.000đ — cùng ngưỡng hạng "Cố Đô Huế"
-    model: "llama-3.3-70b-versatile",
+    model: "openai/gpt-oss-20b",
     label: "Bạch Mã · Nâng cao",
     icon: "/icon-modal-ai/bach-ma.png",
     tagline: "Thấu hiểu sâu hơn, nắm bắt ngữ cảnh và phản hồi tinh tế hơn",
@@ -40,7 +40,7 @@ const AI_MODEL_TIERS = [
     emoji: "🌉",
     altitude: 1487,
     minSpend: LOYALTY_TIERS[2].minSpend, // 7.000.000đ — cùng ngưỡng hạng "Cầu Rồng"
-    model: "openai/gpt-oss-20b",
+    model: "qwen/qwen3.6-27b",
     label: "Bà Nà · Chuyên sâu",
     icon: "/icon-modal-ai/ba-na.png",
     tagline: "Tư duy sắc bén, trả lời chặt chẽ, mạch lạc.",
@@ -56,7 +56,7 @@ const AI_MODEL_TIERS = [
     emoji: "🏔️",
     altitude: 1591,
     minSpend: LOYALTY_TIERS[3].minSpend, // 15.000.000đ — cùng ngưỡng hạng "Tháp Bà Ponagar"
-    model: "meta-llama/llama-4-maverick-17b-128e-instruct",
+    model: "qwen/qwen3.6-27b",
     label: "Tam Đảo · Cao cấp",
     icon: "/icon-modal-ai/tam-dao.png",
     tagline: "Suy luận và tư vấn sâu hơn",
