@@ -914,6 +914,14 @@ function EiraUI() {
     return () => document.removeEventListener("pointerdown", closeMenu);
   }, [showModelMenu]);
 
+  /* Tính vị trí menu (theo viewport) mỗi khi mở, để menu thoát khỏi
+     overflow:hidden của header thay vì bám theo layout cha */
+  useEffect(() => {
+    if (!showModelMenu || !modelBadgeRef.current) return;
+    const rect = modelBadgeRef.current.getBoundingClientRect();
+    setModelMenuPos({ top: rect.bottom + 8, left: rect.left });
+  }, [showModelMenu]);
+
   /* Core send */
   const sendMessage = useCallback(
     async (text) => {
@@ -1265,17 +1273,7 @@ function EiraUI() {
                   type="button"
                   ref={modelBadgeRef}
                   className="eira-model-badge"
-                  onClick={() => {
-                    if (!showModelMenu && modelBadgeRef.current) {
-                      const rect =
-                        modelBadgeRef.current.getBoundingClientRect();
-                      setModelMenuPos({
-                        top: rect.bottom + 8,
-                        left: rect.left,
-                      });
-                    }
-                    setShowModelMenu((v) => !v);
-                  }}
+                  onClick={() => setShowModelMenu((v) => !v)}
                   aria-haspopup="listbox"
                   aria-expanded={showModelMenu}
                 >
@@ -1288,9 +1286,7 @@ function EiraUI() {
                     className="eira-model-menu"
                     role="listbox"
                     style={{ top: modelMenuPos.top, left: modelMenuPos.left }}
-                  >
-                    {" "}
-                    {modelTiers.map((t) => (
+                  >                    {modelTiers.map((t) => (
                       <button
                         key={t.code}
                         type="button"
@@ -1302,7 +1298,9 @@ function EiraUI() {
                       >
                         <span className="eira-model-opt-emoji">{t.emoji}</span>
                         <span className="eira-model-opt-text">
-                          <span className="eira-model-opt-name">{t.name}</span>
+                          <span className="eira-model-opt-name">
+                            {t.name}
+                          </span>
                           <span className="eira-model-opt-tag">
                             {t.tagline}
                           </span>
