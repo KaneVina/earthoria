@@ -124,7 +124,7 @@ const SECTIONS = [
     list: [
       "Email theo dõi được gửi trong vòng 2 giờ sau khi kiện hàng được bàn giao cho đơn vị vận chuyển",
       'Trạng thái đơn hàng cũng được cập nhật theo thời gian thực trong mục "Đơn hàng của tôi" trên tài khoản Earthoria',
-      "Nếu sau 48 giờ bạn chưa nhận được email theo dõi, vui lòng liên hệ bộ phận hỗ trợ qua 1900 6868 hoặc support@earthoria.vn",
+      "Nếu sau 48 giờ bạn chưa nhận được email theo dõi, vui lòng liên hệ bộ phận hỗ trợ qua 0849324423 hoặc support@earthoria.vn",
     ],
   },
   {
@@ -185,7 +185,7 @@ const SECTIONS = [
 const FAQS = [
   {
     q: "Tôi có thể thay đổi địa chỉ giao hàng sau khi đặt đơn không?",
-    a: "Có thể, nhưng chỉ khi đơn hàng chưa được bàn giao cho đơn vị vận chuyển. Vui lòng liên hệ 1900 6868 hoặc gửi email đến support@earthoria.vn ngay sau khi đặt hàng. Một khi mã vận đơn đã được tạo, địa chỉ không thể chỉnh sửa và bạn cần đặt lại đơn mới.",
+    a: "Có thể, nhưng chỉ khi đơn hàng chưa được bàn giao cho đơn vị vận chuyển. Vui lòng liên hệ 0849324423 hoặc gửi email đến support@earthoria.vn ngay sau khi đặt hàng. Một khi mã vận đơn đã được tạo, địa chỉ không thể chỉnh sửa và bạn cần đặt lại đơn mới.",
   },
   {
     q: "Đơn hàng của tôi có thể giao vào cuối tuần không?",
@@ -970,11 +970,11 @@ export default function ShippingPolicy() {
             </a>
             <a href="tel:19006868" className="legal-contact-item">
               <Phone size={15} />
-              1900 6868
+              0849324423
             </a>
             <span className="legal-contact-item">
               <MapPin size={15} />
-              Tầng 12, Tòa nhà Earthoria, Q.1, TP.HCM
+            600 Nguyễn Văn Cừ Nối Dài, An Bình, Cần Thơ 900000
             </span>
           </div>
         </div>

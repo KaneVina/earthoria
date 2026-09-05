@@ -1106,11 +1106,11 @@ export default function PrivacyPolicy() {
             </a>
             <a href="tel:19006868" className="legal-contact-item">
               <Phone size={15} />
-              1900 6868
+              0849324423
             </a>
             <span className="legal-contact-item">
               <MapPin size={15} />
-              Tầng 12, Tòa nhà Earthoria, Q.1, TP.HCM
+            600 Nguyễn Văn Cừ Nối Dài, An Bình, Cần Thơ 900000
             </span>
           </div>
         </div>

@@ -27,9 +27,9 @@ import {
  */
 const META = {
   effectiveDate: "01 Tháng 01, 2026",
-  updatedDate: "15 Tháng 06, 2026",
-  version: "v3.2",
-  readTime: "14 phút",
+  updatedDate: "04 Tháng 09, 2026",
+  version: "v4.0",
+  readTime: "24 phút",
 };
 
 const SUMMARY_CARDS = [
@@ -59,15 +59,17 @@ const SECTIONS = [
   {
     id: "gioi-thieu",
     num: "01",
-    title: "Giới Thiệu & Chấp Nhận Điều Khoản",
+    title: "Giới Thiệu & Phạm Vi Áp Dụng",
     paragraphs: [
-      'Chào mừng bạn đến với Earthoria — nền tảng sách giáo dục kết hợp công nghệ Thực tế tăng cường (AR) và Trí tuệ nhân tạo (AI), được vận hành bởi Công ty TNHH Earthoria Việt Nam ("Earthoria", "chúng tôi"). Bằng việc truy cập website, ứng dụng di động, hoặc đặt mua bất kỳ sản phẩm nào của Earthoria, bạn — hoặc phụ huynh/người giám hộ hợp pháp của bạn nếu bạn dưới 18 tuổi — xác nhận đã đọc, hiểu và đồng ý bị ràng buộc bởi các Điều khoản Dịch vụ này.',
-      "Nếu bạn không đồng ý với bất kỳ điều khoản nào dưới đây, vui lòng ngừng sử dụng dịch vụ của chúng tôi. Việc tiếp tục sử dụng sau khi điều khoản được cập nhật đồng nghĩa với việc bạn chấp nhận các thay đổi đó.",
+      'Chào mừng bạn đến với Earthoria — nền tảng sách giáo dục kết hợp công nghệ Thực tế tăng cường (AR) và Trí tuệ nhân tạo (AI), được vận hành bởi Công ty TNHH Earthoria Việt Nam ("Earthoria", "chúng tôi", "chúng ta"). Bằng việc truy cập website, ứng dụng di động, hoặc đặt mua bất kỳ sản phẩm nào của Earthoria, bạn — hoặc phụ huynh/người giám hộ hợp pháp của bạn nếu bạn dưới 18 tuổi — xác nhận đã đọc, hiểu rõ và đồng ý bị ràng buộc bởi toàn bộ Điều khoản Dịch vụ này (sau đây gọi là "Điều khoản"), cùng với Chính sách Bảo mật, Chính sách Cookie và mọi phụ lục, hướng dẫn sử dụng được đăng tải kèm theo.',
+      "Điều khoản này cấu thành một thỏa thuận có giá trị pháp lý giữa bạn và Earthoria. Nếu bạn không đồng ý với bất kỳ điều khoản nào dưới đây, vui lòng ngừng truy cập và sử dụng dịch vụ của chúng tôi. Việc bạn tiếp tục sử dụng Dịch vụ sau khi Điều khoản được cập nhật đồng nghĩa với việc bạn đã chấp nhận các thay đổi đó, theo trình tự được quy định tại Điều 23 dưới đây.",
+      "Trường hợp có bất kỳ điều khoản riêng nào được ký kết trực tiếp giữa bạn và Earthoria (ví dụ: hợp đồng cung cấp sách cho trường học), điều khoản riêng đó sẽ được ưu tiên áp dụng đối với những nội dung có sự khác biệt, còn lại các nội dung không được quy định trong hợp đồng riêng vẫn tuân theo Điều khoản này.",
     ],
     list: [
-      "Áp dụng cho website earthoria.vn và toàn bộ các trang con liên quan",
-      "Áp dụng cho ứng dụng di động Earthoria AR trên nền tảng iOS và Android",
-      "Áp dụng cho mọi giao dịch mua hàng, dù thực hiện trực tuyến hay tại các điểm bán đối tác chính hãng",
+      "Áp dụng cho website earthoria.vn và toàn bộ các trang con, tên miền phụ liên quan",
+      "Áp dụng cho ứng dụng di động Earthoria AR trên nền tảng iOS và Android, cùng mọi bản cập nhật trong tương lai",
+      "Áp dụng cho mọi giao dịch mua hàng, dù thực hiện trực tuyến, qua tổng đài, hay tại các điểm bán đối tác chính hãng",
+      "Áp dụng cho mọi hình thức tương tác với đội ngũ Chăm sóc Khách hàng, bao gồm email, điện thoại và mạng xã hội chính thức của Earthoria",
     ],
   },
   {
@@ -75,13 +77,21 @@ const SECTIONS = [
     num: "02",
     title: "Định Nghĩa Thuật Ngữ",
     paragraphs: [
-      "Để thuận tiện cho việc đọc hiểu, các thuật ngữ viết hoa sau đây được sử dụng xuyên suốt văn bản với ý nghĩa thống nhất như dưới đây.",
+      "Để thuận tiện cho việc đọc hiểu, các thuật ngữ viết hoa sau đây được sử dụng xuyên suốt văn bản với ý nghĩa thống nhất như dưới đây, trừ khi ngữ cảnh yêu cầu một cách hiểu khác.",
     ],
     list: [
-      '"Người dùng" — bất kỳ cá nhân nào truy cập hoặc sử dụng Dịch vụ của Earthoria',
-      '"Nội dung AR" — mô hình 3D, hoạt ảnh và âm thanh được kích hoạt khi quét trang sách bằng ứng dụng',
-      '"Trợ lý AI" — hệ thống hội thoại bằng giọng nói được tích hợp trong ứng dụng Earthoria',
-      '"Phụ huynh/Người giám hộ" — người chịu trách nhiệm pháp lý đối với Người dùng chưa đủ 18 tuổi',
+      '"Dịch vụ" — toàn bộ website, ứng dụng di động, Nội dung AR, Trợ lý AI và các dịch vụ hỗ trợ khách hàng do Earthoria cung cấp',
+      '"Sản phẩm" — sách in, học cụ đi kèm và các vật phẩm hữu hình khác được Earthoria bán ra thị trường',
+      '"Người dùng" — bất kỳ cá nhân nào truy cập hoặc sử dụng Dịch vụ của Earthoria, bao gồm cả người mua hàng và người sử dụng ứng dụng không phát sinh giao dịch',
+      '"Nội dung AR" — mô hình 3D, hoạt ảnh, video và âm thanh được kích hoạt khi quét trang sách hợp lệ bằng camera của ứng dụng',
+      '"Trợ lý AI" — hệ thống hội thoại bằng giọng nói được tích hợp trong ứng dụng Earthoria, sử dụng công nghệ xử lý ngôn ngữ tự nhiên',
+      '"Nội dung do người dùng tạo" (UGC) — đánh giá, bình luận, câu hỏi, hình ảnh hoặc bất kỳ nội dung nào khác do Người dùng chủ động gửi qua Dịch vụ',
+      '"Phụ huynh/Người giám hộ" — người chịu trách nhiệm pháp lý đối với Người dùng chưa đủ 18 tuổi theo quy định của pháp luật Việt Nam',
+      '"Tài khoản gia đình" — tài khoản do Phụ huynh khởi tạo, trong đó có thể liên kết nhiều hồ sơ trẻ em để quản lý tập trung',
+      '"Đối tác vận chuyển" — đơn vị cung cấp dịch vụ logistics độc lập được Earthoria ủy quyền thực hiện giao nhận hàng hóa',
+      '"Ngày làm việc" — các ngày từ Thứ Hai đến Thứ Sáu, không bao gồm ngày lễ, Tết theo lịch nghỉ chính thức của Nhà nước Việt Nam',
+      '"Sự kiện Bất khả kháng" — sự kiện xảy ra khách quan, không thể lường trước và không thể khắc phục được dù đã áp dụng mọi biện pháp cần thiết trong khả năng cho phép',
+      '"Dữ liệu cá nhân" — thông tin dưới dạng ký hiệu, chữ viết, chữ số, hình ảnh, âm thanh gắn liền với một con người cụ thể hoặc giúp xác định một con người cụ thể, theo định nghĩa tại Nghị định 13/2023/NĐ-CP',
     ],
   },
   {
@@ -90,163 +100,335 @@ const SECTIONS = [
     title: "Tài Khoản & Điều Kiện Sử Dụng",
     paragraphs: [
       "Để mua hàng hoặc sử dụng đầy đủ tính năng AR/AI, bạn cần tạo một tài khoản Earthoria với thông tin chính xác, đầy đủ và được cập nhật thường xuyên. Tài khoản gắn liền với một gia đình hoặc cá nhân cụ thể và không được chia sẻ cho mục đích thương mại.",
+      "Khi đăng ký, bạn cam kết cung cấp họ tên, địa chỉ email, số điện thoại và các thông tin khác một cách trung thực. Earthoria không chịu trách nhiệm đối với bất kỳ hậu quả nào phát sinh từ việc bạn cung cấp thông tin sai lệch hoặc không đầy đủ.",
     ],
     callout: {
       title: "Người dùng dưới 13 tuổi",
-      text: "Trẻ em dưới 13 tuổi không được phép tự tạo tài khoản. Mọi hoạt động sử dụng ứng dụng AR/AI của trẻ phải được thực hiện dưới sự giám sát trực tiếp của phụ huynh, thông qua tài khoản gia đình do phụ huynh quản lý và chịu trách nhiệm.",
+      text: "Trẻ em dưới 13 tuổi không được phép tự tạo tài khoản. Mọi hoạt động sử dụng ứng dụng AR/AI của trẻ phải được thực hiện dưới sự giám sát trực tiếp của phụ huynh, thông qua Tài khoản gia đình do phụ huynh quản lý và chịu trách nhiệm.",
     },
     list: [
-      "Bạn chịu trách nhiệm bảo mật mật khẩu và mọi hoạt động diễn ra trên tài khoản của mình",
-      "Một tài khoản chỉ dành cho một gia đình hoặc cá nhân, không được chuyển nhượng cho bên thứ ba",
-      "Earthoria có quyền yêu cầu xác minh danh tính khi phát hiện dấu hiệu sử dụng bất thường",
+      "Bạn chịu trách nhiệm bảo mật mật khẩu và mọi hoạt động diễn ra trên tài khoản của mình, kể cả khi hoạt động đó không do chính bạn thực hiện nhưng xuất phát từ việc để lộ thông tin đăng nhập",
+      "Một tài khoản chỉ dành cho một gia đình hoặc cá nhân, không được chuyển nhượng, cho thuê hoặc bán lại cho bên thứ ba dưới bất kỳ hình thức nào",
+      "Earthoria có quyền yêu cầu xác minh danh tính bằng giấy tờ hợp lệ khi phát hiện dấu hiệu sử dụng bất thường hoặc nghi ngờ gian lận",
+      "Bạn phải thông báo ngay cho Earthoria qua kênh hỗ trợ chính thức nếu phát hiện tài khoản bị truy cập trái phép",
+      "Earthoria có quyền từ chối đăng ký hoặc yêu cầu bổ sung thông tin đối với các tài khoản có dấu hiệu không hợp lệ",
+    ],
+  },
+  {
+    id: "bao-ve-tre-em",
+    num: "04",
+    title: "Bảo Vệ Trẻ Em & Vai Trò Giám Sát Của Phụ Huynh",
+    paragraphs: [
+      "Vì phần lớn Người dùng của Earthoria là trẻ em, chúng tôi đặt việc bảo vệ trẻ em làm nguyên tắc trung tâm khi thiết kế sản phẩm, thu thập dữ liệu và vận hành Dịch vụ, phù hợp với tinh thần của Luật Trẻ em 2016 và các văn bản hướng dẫn thi hành.",
+      "Phụ huynh/Người giám hộ chịu trách nhiệm quyết định việc con em mình sử dụng Dịch vụ ở mức độ nào, thời lượng ra sao, và có quyền giới hạn hoặc thu hồi quyền truy cập bất kỳ lúc nào thông qua Tài khoản gia đình.",
+    ],
+    callout: {
+      title: "Cam kết của Earthoria đối với trẻ em",
+      text: "Earthoria không hiển thị quảng cáo hướng đến trẻ em trong ứng dụng, không yêu cầu trẻ em cung cấp thông tin cá nhân vượt quá mức cần thiết để vận hành tính năng, và không bán hoặc cho thuê dữ liệu của trẻ em cho bên thứ ba vì mục đích thương mại.",
+    },
+    list: [
+      "Ứng dụng khuyến nghị thời lượng sử dụng liên tục không quá 30 phút cho trẻ dưới 8 tuổi và có tính năng nhắc nhở nghỉ ngơi định kỳ",
+      "Nội dung AR và phản hồi của Trợ lý AI được kiểm duyệt theo tiêu chuẩn phù hợp lứa tuổi trước khi phát hành",
+      "Phụ huynh có thể xem lại lịch sử sử dụng, tắt micro/camera, hoặc xóa hồ sơ của con bất kỳ lúc nào trong phần cài đặt Tài khoản gia đình",
+      "Trường hợp phát hiện nội dung không phù hợp trong ứng dụng, vui lòng báo cáo ngay cho Earthoria để được xử lý và gỡ bỏ trong thời gian sớm nhất",
+      "Earthoria khuyến khích phụ huynh đồng hành cùng con trong những lần sử dụng đầu tiên để làm quen với các tính năng của sản phẩm",
     ],
   },
   {
     id: "dat-hang",
-    num: "04",
+    num: "05",
     title: "Đặt Hàng, Giá Cả & Thanh Toán",
     paragraphs: [
-      "Mọi đơn hàng đặt qua website hoặc ứng dụng đều tuân theo quy trình xác nhận hai bước nhằm hạn chế sai sót trước khi giao dịch được xử lý chính thức.",
+      "Mọi đơn hàng đặt qua website hoặc ứng dụng đều tuân theo quy trình xác nhận hai bước nhằm hạn chế sai sót trước khi giao dịch được xử lý chính thức. Việc bạn hoàn tất đặt hàng cấu thành một đề nghị giao kết hợp đồng, và hợp đồng chỉ được xác lập khi Earthoria gửi email xác nhận đơn hàng.",
     ],
     list: [
       "Giá hiển thị đã bao gồm thuế VAT, có thể thay đổi mà không cần báo trước nhưng không áp dụng hồi tố cho đơn hàng đã đặt trước thời điểm thay đổi",
-      "Earthoria chấp nhận thanh toán qua thẻ tín dụng/ghi nợ, ví điện tử và chuyển khoản ngân hàng",
-      "Đơn hàng chỉ được xác nhận sau khi thanh toán thành công, trừ trường hợp chọn hình thức thanh toán khi nhận hàng (COD)",
-      "Earthoria có quyền hủy đơn hàng nếu phát hiện lỗi hiển thị giá hoặc dấu hiệu gian lận, kèm theo hoàn tiền đầy đủ trong mọi trường hợp",
+      "Earthoria chấp nhận thanh toán qua thẻ tín dụng/ghi nợ, ví điện tử, chuyển khoản ngân hàng và thanh toán khi nhận hàng (COD) tùy khu vực",
+      "Đơn hàng chỉ được xác nhận sau khi thanh toán thành công, trừ trường hợp chọn hình thức COD",
+      "Earthoria có quyền hủy đơn hàng nếu phát hiện lỗi hiển thị giá, hết hàng ngoài dự kiến hoặc dấu hiệu gian lận, kèm theo hoàn tiền đầy đủ trong mọi trường hợp",
+      "Hóa đơn điện tử được xuất theo yêu cầu và gửi qua email đăng ký trong vòng 3 ngày làm việc kể từ khi đơn hàng hoàn tất",
+      "Mọi giao dịch được thực hiện bằng đồng Việt Nam (VNĐ), trừ khi có thỏa thuận khác bằng văn bản",
     ],
   },
   {
     id: "van-chuyen",
-    num: "05",
+    num: "06",
     title: "Vận Chuyển & Giao Nhận",
     paragraphs: [
-      "Thời gian giao hàng dự kiến từ 2–5 ngày làm việc đối với khu vực nội thành và 3–7 ngày làm việc đối với các khu vực còn lại, tùy thuộc vào đơn vị vận chuyển đối tác tại thời điểm giao hàng.",
+      "Thời gian giao hàng dự kiến từ 2–5 ngày làm việc đối với khu vực nội thành và 3–7 ngày làm việc đối với các khu vực còn lại, tùy thuộc vào Đối tác vận chuyển tại thời điểm giao hàng. Thời gian nêu trên chỉ mang tính chất tham khảo và không cấu thành cam kết ràng buộc về mặt thời hạn.",
     ],
     list: [
       "Miễn phí vận chuyển áp dụng cho đơn hàng từ 500.000đ trở lên trên toàn quốc",
-      "Earthoria không chịu trách nhiệm cho sự chậm trễ phát sinh do thiên tai, dịch bệnh hoặc các sự kiện bất khả kháng khác",
-      "Vui lòng kiểm tra tình trạng sản phẩm ngay khi nhận hàng và phản hồi trong vòng 24 giờ nếu phát hiện hư hỏng",
+      "Earthoria không chịu trách nhiệm cho sự chậm trễ phát sinh do Sự kiện Bất khả kháng hoặc lỗi từ phía Đối tác vận chuyển nằm ngoài khả năng kiểm soát hợp lý của chúng tôi",
+      "Vui lòng kiểm tra tình trạng sản phẩm ngay khi nhận hàng và phản hồi trong vòng 24 giờ nếu phát hiện hư hỏng, thiếu sót hoặc giao sai sản phẩm",
+      "Trường hợp giao hàng không thành công do thông tin liên hệ không chính xác hoặc không có người nhận sau 3 lần liên hệ, đơn hàng sẽ được hoàn về kho và chi phí vận chuyển hai chiều có thể được khấu trừ khi hoàn tiền",
+      "Bạn có thể theo dõi trạng thái đơn hàng theo thời gian thực thông qua mục 'Đơn hàng của tôi' trên ứng dụng hoặc website",
     ],
   },
   {
     id: "doi-tra",
-    num: "06",
+    num: "07",
     title: "Đổi Trả, Hoàn Tiền & Bảo Hành",
     paragraphs: [
-      "Chúng tôi mong muốn mỗi cuốn sách Earthoria mang lại trải nghiệm trọn vẹn cho cả gia đình bạn. Nếu sản phẩm chưa đáp ứng kỳ vọng, chính sách đổi trả dưới đây sẽ giúp bạn an tâm hơn khi mua sắm.",
+      "Chúng tôi mong muốn mỗi cuốn sách Earthoria mang lại trải nghiệm trọn vẹn cho cả gia đình bạn. Nếu sản phẩm chưa đáp ứng kỳ vọng, chính sách đổi trả dưới đây sẽ giúp bạn an tâm hơn khi mua sắm, phù hợp với quy định tại Luật Bảo vệ quyền lợi người tiêu dùng.",
     ],
     list: [
-      "Đổi trả miễn phí trong vòng 30 ngày kể từ ngày nhận hàng nếu sản phẩm còn nguyên vẹn, chưa qua sử dụng",
-      "Hoàn tiền được xử lý trong 5–10 ngày làm việc sau khi Earthoria nhận lại sản phẩm hợp lệ",
-      "Sản phẩm lỗi do nhà sản xuất được đổi mới hoàn toàn miễn phí trong vòng 12 tháng kể từ ngày mua",
-      "Mã kích hoạt AR đi kèm mỗi cuốn sách là duy nhất và không thể tái sử dụng sau khi sản phẩm đã được đổi trả",
+      "Đổi trả miễn phí trong vòng 30 ngày kể từ ngày nhận hàng nếu sản phẩm còn nguyên vẹn, chưa qua sử dụng và còn đầy đủ mã kích hoạt chưa được kích hoạt",
+      "Hoàn tiền được xử lý trong 5–10 ngày làm việc sau khi Earthoria nhận lại sản phẩm hợp lệ và hoàn tất kiểm tra chất lượng",
+      "Sản phẩm lỗi do nhà sản xuất được đổi mới hoàn toàn miễn phí trong vòng 12 tháng kể từ ngày mua, không tính phí vận chuyển hai chiều",
+      "Mã kích hoạt AR đi kèm mỗi cuốn sách là duy nhất và không thể tái sử dụng sau khi sản phẩm đã được đổi trả hoặc hoàn tiền",
+      "Sản phẩm được mua trong các chương trình khuyến mãi đặc biệt có thể áp dụng chính sách đổi trả riêng, được nêu rõ tại thời điểm mua hàng",
+      "Chi phí vận chuyển chiều trả hàng do lỗi từ phía Earthoria (giao sai, sản phẩm lỗi) sẽ do Earthoria chi trả; các trường hợp đổi ý sẽ do Người dùng chi trả",
+    ],
+  },
+  {
+    id: "khuyen-mai",
+    num: "08",
+    title: "Chương Trình Khuyến Mãi, Mã Giảm Giá & Thẻ Quà Tặng",
+    paragraphs: [
+      "Từ thời gian này qua thời gian khác, Earthoria có thể triển khai các chương trình khuyến mãi, mã giảm giá hoặc phát hành thẻ quà tặng. Mỗi chương trình có thể đi kèm điều kiện áp dụng riêng, được công bố cụ thể tại thời điểm triển khai và được xem là một phần bổ sung của Điều khoản này.",
+    ],
+    list: [
+      "Mã giảm giá chỉ áp dụng cho một đơn hàng duy nhất, không quy đổi thành tiền mặt và không cộng dồn với chương trình khuyến mãi khác trừ khi có thông báo riêng",
+      "Thẻ quà tặng có giá trị sử dụng trong 12 tháng kể từ ngày phát hành và không được hoàn lại bằng tiền mặt",
+      "Earthoria có quyền từ chối áp dụng khuyến mãi hoặc hủy đơn hàng nếu phát hiện hành vi lạm dụng mã giảm giá, tạo tài khoản ảo hoặc gian lận dưới mọi hình thức",
+      "Chương trình giới thiệu bạn bè (nếu có) chỉ áp dụng cho các lượt giới thiệu hợp lệ, không phát sinh từ hành vi mua bán tài khoản hoặc mã giới thiệu",
+    ],
+  },
+  {
+    id: "don-hang-truong-hoc",
+    num: "09",
+    title: "Đơn Hàng Dành Cho Trường Học & Tổ Chức Giáo Dục",
+    paragraphs: [
+      "Earthoria cung cấp chương trình đặt hàng số lượng lớn dành riêng cho trường học, thư viện và các tổ chức giáo dục, với mức giá và điều kiện thanh toán có thể khác biệt so với đơn hàng cá nhân thông thường.",
+    ],
+    list: [
+      "Đơn hàng từ 50 cuốn trở lên được xem xét áp dụng chính sách giá sỉ theo thỏa thuận riêng giữa Earthoria và tổ chức đặt hàng",
+      "Tổ chức giáo dục có thể yêu cầu hợp đồng mua bán riêng với điều khoản thanh toán trả sau, phù hợp quy trình tài chính của đơn vị công lập hoặc tư thục",
+      "Giấy phép sử dụng Nội dung AR cho mục đích trình chiếu trong lớp học được cấp miễn phí kèm theo đơn hàng, nhưng không bao gồm quyền sao chép hoặc phân phối lại cho bên ngoài tổ chức",
+      "Mọi yêu cầu hợp tác, tài trợ sách hoặc chương trình giáo dục cộng đồng vui lòng liên hệ trực tiếp bộ phận Quan hệ Đối tác Giáo dục của Earthoria",
     ],
   },
   {
     id: "ung-dung-ar",
-    num: "07",
+    num: "10",
     title: "Ứng Dụng AR/AI Earthoria — Quy Tắc Sử Dụng",
     paragraphs: [
-      "Ứng dụng Earthoria yêu cầu quyền truy cập camera và micro của thiết bị để kích hoạt Nội dung AR và Trợ lý AI. Các quyền này chỉ được sử dụng cho đúng mục đích giáo dục đã công bố.",
+      "Ứng dụng Earthoria yêu cầu quyền truy cập camera và micro của thiết bị để kích hoạt Nội dung AR và Trợ lý AI. Các quyền này chỉ được sử dụng cho đúng mục đích giáo dục đã công bố và không được sử dụng để theo dõi người dùng ngoài phạm vi phiên sử dụng ứng dụng.",
+    ],
+    list: [
+      "Quyền truy cập camera và micro có thể được thu hồi bất kỳ lúc nào trong phần cài đặt của thiết bị mà không ảnh hưởng đến các tính năng đọc sách cơ bản",
+      "Nội dung AR chỉ tương thích với sách Earthoria chính hãng có mã QR hợp lệ đi kèm; sách photo, sách lậu hoặc đã qua chỉnh sửa sẽ không thể kích hoạt tính năng này",
+      "Nghiêm cấm sử dụng ứng dụng để quét hoặc sao chép nội dung từ các ấn phẩm không thuộc sở hữu của Earthoria",
+      "Ứng dụng cần kết nối internet để tải Nội dung AR lần đầu; sau đó một số nội dung có thể được lưu trữ cục bộ để sử dụng ngoại tuyến",
+      "Earthoria khuyến nghị sử dụng ứng dụng trong không gian đủ ánh sáng và có người lớn giám sát đối với trẻ nhỏ để đảm bảo an toàn khi di chuyển theo hướng dẫn tương tác",
+    ],
+  },
+  {
+    id: "tro-ly-ai",
+    num: "11",
+    title: "Trợ Lý AI — Xử Lý Dữ Liệu & Giới Hạn Trách Nhiệm",
+    paragraphs: [
+      "Trợ lý AI được xây dựng nhằm hỗ trợ trẻ em học tập thông qua hội thoại bằng giọng nói. Do bản chất của công nghệ trí tuệ nhân tạo tạo sinh, phản hồi của Trợ lý AI có thể đôi khi không hoàn toàn chính xác hoặc phù hợp với ngữ cảnh mong muốn.",
     ],
     callout: {
       title: "Lưu ý quan trọng về Trợ lý AI",
-      text: "Trợ lý AI được thiết kế riêng cho mục đích giáo dục trẻ em và không lưu trữ vĩnh viễn nội dung hội thoại bằng giọng nói. Chi tiết đầy đủ về cách dữ liệu giọng nói được xử lý được trình bày tại Chính sách Bảo mật của chúng tôi.",
+      text: "Trợ lý AI được thiết kế riêng cho mục đích giáo dục trẻ em và không lưu trữ vĩnh viễn nội dung hội thoại bằng giọng nói dưới dạng có thể nhận diện danh tính. Chi tiết đầy đủ về cách dữ liệu giọng nói được xử lý được trình bày tại Chính sách Bảo mật của chúng tôi.",
     },
     list: [
-      "Quyền truy cập camera và micro có thể được thu hồi bất kỳ lúc nào trong phần cài đặt của thiết bị",
-      "Nội dung AR chỉ tương thích với sách Earthoria chính hãng có mã QR hợp lệ đi kèm",
-      "Nghiêm cấm sử dụng ứng dụng để quét hoặc sao chép nội dung từ các ấn phẩm không thuộc sở hữu của Earthoria",
+      "Trợ lý AI chỉ ghi âm khi được chủ động kích hoạt bằng thao tác của người dùng, không ghi âm liên tục hoặc ở chế độ nền",
+      "Nội dung do Trợ lý AI tạo ra không thay thế cho hướng dẫn của giáo viên, phụ huynh hoặc chuyên gia giáo dục, và không nên được xem là nguồn thông tin duy nhất cho các quyết định quan trọng",
+      "Earthoria liên tục rà soát và cải thiện chất lượng phản hồi của Trợ lý AI, nhưng không đảm bảo Trợ lý AI sẽ không bao giờ tạo ra nội dung sai lệch hoặc không phù hợp",
+      "Nếu phát hiện Trợ lý AI phản hồi nội dung không phù hợp, vui lòng báo cáo ngay qua ứng dụng để đội ngũ kỹ thuật kiểm tra và điều chỉnh",
+      "Người dùng không được sử dụng Trợ lý AI để yêu cầu thông tin nằm ngoài phạm vi giáo dục đã công bố, bao gồm nội dung bạo lực, phản cảm hoặc trái pháp luật",
     ],
   },
   {
     id: "so-huu-tri-tue",
-    num: "08",
+    num: "12",
     title: "Quyền Sở Hữu Trí Tuệ",
     paragraphs: [
-      "Toàn bộ nội dung trên website, ứng dụng và trong các ấn phẩm sách — bao gồm văn bản, hình minh họa, mô hình 3D, âm thanh và mã nguồn — là tài sản trí tuệ của Earthoria hoặc được cấp phép sử dụng hợp pháp từ các đối tác sáng tạo.",
+      "Toàn bộ nội dung trên website, ứng dụng và trong các ấn phẩm sách — bao gồm văn bản, hình minh họa, mô hình 3D, âm thanh, mã nguồn và thiết kế giao diện — là tài sản trí tuệ của Earthoria hoặc được cấp phép sử dụng hợp pháp từ các đối tác sáng tạo, được bảo hộ theo Luật Sở hữu trí tuệ Việt Nam và các điều ước quốc tế liên quan.",
     ],
     list: [
-      "Bạn được phép sử dụng nội dung cho mục đích cá nhân, gia đình và giáo dục phi thương mại, ví dụ như trình chiếu trong lớp học",
-      "Nghiêm cấm sao chép, phân phối lại hoặc thương mại hóa nội dung dưới mọi hình thức khi chưa có sự đồng ý bằng văn bản từ Earthoria",
+      "Bạn được phép sử dụng nội dung cho mục đích cá nhân, gia đình và giáo dục phi thương mại, ví dụ như trình chiếu trong lớp học hoặc chia sẻ trong phạm vi gia đình",
+      "Nghiêm cấm sao chép, phân phối lại, cho thuê, bán lại hoặc thương mại hóa nội dung dưới mọi hình thức khi chưa có sự đồng ý bằng văn bản từ Earthoria",
       'Logo, tên thương hiệu "Earthoria" và toàn bộ hệ thống nhận diện liên quan được bảo hộ độc quyền theo luật sở hữu trí tuệ hiện hành',
+      "Mọi phản hồi, ý tưởng hoặc đề xuất bạn gửi cho Earthoria liên quan đến sản phẩm có thể được chúng tôi sử dụng để cải tiến dịch vụ mà không phát sinh nghĩa vụ bồi hoàn, trừ khi có thỏa thuận khác",
+      "Nếu bạn cho rằng quyền sở hữu trí tuệ của mình bị xâm phạm bởi nội dung trên nền tảng Earthoria, vui lòng liên hệ theo thông tin tại Điều 25 để được xem xét, xử lý",
+    ],
+  },
+  {
+    id: "noi-dung-nguoi-dung",
+    num: "13",
+    title: "Nội Dung Do Người Dùng Tạo",
+    paragraphs: [
+      "Earthoria có thể cho phép Người dùng gửi đánh giá sản phẩm, bình luận, câu hỏi hoặc hình ảnh trải nghiệm thông qua ứng dụng và website. Việc gửi Nội dung do người dùng tạo đồng nghĩa với việc bạn xác nhận quyền hợp pháp đối với nội dung đó.",
+    ],
+    list: [
+      "Bằng việc gửi Nội dung do người dùng tạo, bạn cấp cho Earthoria quyền không độc quyền, miễn phí bản quyền để sử dụng, hiển thị và chỉnh sửa nội dung đó nhằm mục đích quảng bá sản phẩm và cải thiện Dịch vụ",
+      "Earthoria có quyền kiểm duyệt, chỉnh sửa hoặc gỡ bỏ Nội dung do người dùng tạo mà không cần thông báo trước nếu nội dung vi phạm Điều 14 dưới đây",
+      "Không được đăng tải thông tin cá nhân của trẻ em (họ tên đầy đủ, trường học, địa chỉ) trong phần đánh giá công khai nhằm bảo vệ sự an toàn của các em",
+      "Earthoria không chịu trách nhiệm về tính chính xác của Nội dung do người dùng tạo và không xác nhận đây là quan điểm chính thức của công ty",
     ],
   },
   {
     id: "hanh-vi-cam",
-    num: "09",
+    num: "14",
     title: "Hành Vi Bị Nghiêm Cấm",
     paragraphs: [
       "Khi sử dụng Dịch vụ, bạn đồng ý không thực hiện bất kỳ hành vi nào dưới đây, nhằm bảo vệ một môi trường an toàn và lành mạnh cho mọi gia đình sử dụng Earthoria.",
     ],
     list: [
       "Giả mạo danh tính hoặc cung cấp thông tin sai lệch khi đăng ký tài khoản",
-      "Sử dụng phần mềm tự động (bot) nhằm mua hàng số lượng lớn cho mục đích đầu cơ",
-      "Can thiệp, dịch ngược hoặc cố gắng trích xuất mã nguồn của ứng dụng AR/AI",
-      "Đăng tải nội dung phản cảm, bạo lực hoặc không phù hợp với trẻ em vào mục đánh giá sản phẩm",
-      "Sử dụng Dịch vụ cho bất kỳ mục đích nào trái với quy định của pháp luật Việt Nam",
+      "Sử dụng phần mềm tự động (bot) nhằm mua hàng số lượng lớn cho mục đích đầu cơ hoặc thao túng chương trình khuyến mãi",
+      "Can thiệp, dịch ngược, giải mã hoặc cố gắng trích xuất mã nguồn của ứng dụng AR/AI",
+      "Đăng tải nội dung phản cảm, bạo lực, phân biệt đối xử hoặc không phù hợp với trẻ em vào mục đánh giá sản phẩm hoặc bất kỳ khu vực tương tác nào khác",
+      "Sử dụng Dịch vụ cho bất kỳ mục đích nào trái với quy định của pháp luật Việt Nam hoặc xâm phạm quyền của bên thứ ba",
+      "Cố ý phát tán mã độc, thực hiện tấn công từ chối dịch vụ hoặc các hành vi khác gây ảnh hưởng đến tính ổn định, bảo mật của hệ thống Earthoria",
+      "Sử dụng hình ảnh, giọng nói hoặc thông tin của trẻ em thu được qua ứng dụng cho bất kỳ mục đích nào ngoài phạm vi sử dụng cá nhân, gia đình",
+    ],
+  },
+  {
+    id: "bao-mat-du-lieu",
+    num: "15",
+    title: "Bảo Mật & Bảo Vệ Dữ Liệu Cá Nhân",
+    paragraphs: [
+      "Earthoria cam kết thu thập, xử lý và lưu trữ Dữ liệu cá nhân của Người dùng phù hợp với Nghị định 13/2023/NĐ-CP về bảo vệ dữ liệu cá nhân và các quy định pháp luật hiện hành khác của Việt Nam. Chi tiết đầy đủ về loại dữ liệu thu thập, mục đích xử lý, thời gian lưu trữ và quyền của chủ thể dữ liệu được trình bày tại Chính sách Bảo mật, là một phần không tách rời của Điều khoản này.",
+    ],
+    list: [
+      "Bạn có quyền yêu cầu truy cập, chỉnh sửa, hạn chế xử lý hoặc yêu cầu xóa Dữ liệu cá nhân của mình hoặc của con em mình theo quy định pháp luật",
+      "Đối với dữ liệu của trẻ em, Earthoria chỉ xử lý khi có sự đồng ý của Phụ huynh/Người giám hộ và luôn xử lý ở mức tối thiểu cần thiết để vận hành tính năng",
+      "Earthoria áp dụng các biện pháp kỹ thuật và tổ chức phù hợp để bảo vệ dữ liệu khỏi truy cập trái phép, mất mát hoặc rò rỉ",
+      "Trong trường hợp xảy ra sự cố lộ, mất Dữ liệu cá nhân có khả năng gây ảnh hưởng đến quyền và lợi ích của Người dùng, Earthoria sẽ thông báo theo thời hạn và trình tự quy định tại pháp luật hiện hành",
+      "Mọi yêu cầu liên quan đến quyền dữ liệu cá nhân vui lòng gửi qua địa chỉ email được nêu tại Điều 25",
+    ],
+  },
+  {
+    id: "lien-ket-ben-thu-ba",
+    num: "16",
+    title: "Liên Kết & Dịch Vụ Bên Thứ Ba",
+    paragraphs: [
+      "Dịch vụ của Earthoria có thể chứa liên kết đến website, ứng dụng hoặc dịch vụ do bên thứ ba vận hành, bao gồm cổng thanh toán, đơn vị vận chuyển và nền tảng mạng xã hội.",
+    ],
+    list: [
+      "Earthoria không kiểm soát và không chịu trách nhiệm về nội dung, chính sách bảo mật hoặc hoạt động của các bên thứ ba này",
+      "Việc bạn tương tác với dịch vụ bên thứ ba tuân theo điều khoản và chính sách riêng của bên đó, không thuộc phạm vi điều chỉnh của văn bản này",
+      "Earthoria khuyến nghị bạn đọc kỹ điều khoản của bên thứ ba trước khi cung cấp thông tin cá nhân hoặc thực hiện giao dịch với họ",
     ],
   },
   {
     id: "cham-dut",
-    num: "10",
+    num: "17",
     title: "Tạm Ngưng & Chấm Dứt Tài Khoản",
     paragraphs: [
-      "Earthoria có quyền tạm ngưng hoặc chấm dứt tài khoản vi phạm nghiêm trọng các điều khoản này, tùy theo mức độ và tính chất của vi phạm được ghi nhận.",
+      "Earthoria có quyền tạm ngưng hoặc chấm dứt tài khoản vi phạm nghiêm trọng các điều khoản này, tùy theo mức độ và tính chất của vi phạm được ghi nhận. Bạn cũng có quyền yêu cầu chấm dứt tài khoản của mình bất kỳ lúc nào.",
     ],
     list: [
-      "Vi phạm sẽ được thông báo qua email đăng ký trước khi có hành động tạm ngưng, trừ trường hợp khẩn cấp ảnh hưởng đến an toàn người dùng khác",
+      "Vi phạm sẽ được thông báo qua email đăng ký trước khi có hành động tạm ngưng, trừ trường hợp khẩn cấp ảnh hưởng đến an toàn của trẻ em hoặc người dùng khác",
       "Bạn có quyền yêu cầu giải trình trong vòng 7 ngày kể từ khi nhận được thông báo",
-      "Việc chấm dứt tài khoản không ảnh hưởng đến các quyền lợi đã phát sinh trước đó, ví dụ như đơn hàng đang trong quá trình vận chuyển",
+      "Việc chấm dứt tài khoản không ảnh hưởng đến các quyền lợi đã phát sinh trước đó, ví dụ như đơn hàng đang trong quá trình vận chuyển hoặc yêu cầu bảo hành đang xử lý",
+      "Khi tài khoản bị chấm dứt, Dữ liệu cá nhân sẽ được xử lý theo thời hạn lưu trữ quy định tại Chính sách Bảo mật, trừ những dữ liệu pháp luật yêu cầu phải lưu giữ lâu hơn",
+      "Để yêu cầu chấm dứt tài khoản, bạn có thể thực hiện trực tiếp trong phần cài đặt ứng dụng hoặc liên hệ đội ngũ hỗ trợ",
+    ],
+  },
+  {
+    id: "bat-kha-khang",
+    num: "18",
+    title: "Sự Kiện Bất Khả Kháng",
+    paragraphs: [
+      "Earthoria được miễn trừ trách nhiệm đối với việc chậm trễ hoặc không thể thực hiện nghĩa vụ theo Điều khoản này nếu nguyên nhân xuất phát từ Sự kiện Bất khả kháng, bao gồm nhưng không giới hạn ở thiên tai, dịch bệnh, hỏa hoạn, chiến tranh, bạo loạn, thay đổi chính sách pháp luật đột ngột, sự cố hạ tầng viễn thông diện rộng hoặc quyết định của cơ quan nhà nước có thẩm quyền.",
+    ],
+    list: [
+      "Bên bị ảnh hưởng bởi Sự kiện Bất khả kháng phải thông báo cho bên còn lại trong thời gian sớm nhất có thể và áp dụng mọi biện pháp hợp lý để giảm thiểu thiệt hại",
+      "Nghĩa vụ bị ảnh hưởng sẽ được tạm hoãn trong thời gian Sự kiện Bất khả kháng diễn ra và được tiếp tục thực hiện ngay khi sự kiện chấm dứt",
+      "Nếu Sự kiện Bất khả kháng kéo dài quá 60 ngày liên tục, mỗi bên có quyền chấm dứt giao dịch liên quan mà không phải bồi thường, kèm theo hoàn trả các khoản đã thanh toán tương ứng với phần nghĩa vụ chưa thực hiện",
     ],
   },
   {
     id: "gioi-han-trach-nhiem",
-    num: "11",
+    num: "19",
     title: "Giới Hạn Trách Nhiệm & Miễn Trừ Bảo Đảm",
     paragraphs: [
-      'Dịch vụ được cung cấp trên cơ sở "nguyên trạng". Trong phạm vi pháp luật cho phép, Earthoria không chịu trách nhiệm cho các thiệt hại gián tiếp, ngẫu nhiên hoặc hệ quả phát sinh từ việc sử dụng hoặc không thể sử dụng Dịch vụ.',
+      'Dịch vụ được cung cấp trên cơ sở "nguyên trạng" và "trong khả năng sẵn có". Trong phạm vi pháp luật cho phép, Earthoria không chịu trách nhiệm cho các thiệt hại gián tiếp, ngẫu nhiên, đặc biệt hoặc hệ quả phát sinh từ việc sử dụng hoặc không thể sử dụng Dịch vụ.',
     ],
+    callout: {
+      title: "Giới hạn không áp dụng cho một số trường hợp",
+      text: "Điều khoản giới hạn trách nhiệm tại mục này không áp dụng đối với thiệt hại do lỗi cố ý hoặc do vi phạm nghiêm trọng nghĩa vụ bảo vệ an toàn trẻ em của Earthoria, cũng như không loại trừ bất kỳ trách nhiệm nào mà pháp luật Việt Nam không cho phép loại trừ.",
+    },
     list: [
-      "Earthoria không đảm bảo ứng dụng AR hoạt động hoàn hảo trên mọi dòng thiết bị và phiên bản hệ điều hành",
-      "Trách nhiệm tài chính tối đa của Earthoria trong mọi trường hợp được giới hạn ở giá trị đơn hàng liên quan trực tiếp",
-      "Điều khoản này không loại trừ bất kỳ trách nhiệm nào mà pháp luật hiện hành không cho phép loại trừ",
+      "Earthoria không đảm bảo ứng dụng AR hoạt động hoàn hảo trên mọi dòng thiết bị và phiên bản hệ điều hành, do sự đa dạng của thiết bị trên thị trường",
+      "Earthoria không đảm bảo Dịch vụ sẽ không bị gián đoạn, không có lỗi hoặc luôn có sẵn tại mọi thời điểm",
+      "Trách nhiệm tài chính tối đa của Earthoria trong mọi trường hợp phát sinh từ một đơn hàng được giới hạn ở giá trị đơn hàng liên quan trực tiếp đến khiếu nại đó",
+      "Người dùng chịu trách nhiệm sử dụng thiết bị điện tử (điện thoại, máy tính bảng) đúng hướng dẫn của nhà sản xuất thiết bị khi sử dụng ứng dụng Earthoria",
     ],
   },
   {
     id: "boi-thuong",
-    num: "12",
+    num: "20",
     title: "Bồi Thường",
     paragraphs: [
-      "Bạn đồng ý bồi thường và giữ Earthoria, đội ngũ nhân viên cùng các đối tác liên quan vô hại trước mọi khiếu nại, tổn thất hoặc chi phí hợp lý phát sinh từ việc bạn vi phạm Điều khoản này hoặc sử dụng Dịch vụ sai mục đích đã công bố.",
+      "Bạn đồng ý bồi thường và giữ Earthoria, đội ngũ nhân viên, người quản lý cùng các đối tác liên quan vô hại trước mọi khiếu nại, tổn thất, trách nhiệm pháp lý hoặc chi phí hợp lý (bao gồm phí luật sư) phát sinh từ việc bạn vi phạm Điều khoản này, vi phạm quyền của bên thứ ba, hoặc sử dụng Dịch vụ sai mục đích đã công bố.",
+    ],
+  },
+  {
+    id: "dieu-khoan-chung",
+    num: "21",
+    title: "Điều Khoản Chung",
+    paragraphs: [
+      "Các quy định dưới đây áp dụng chung cho toàn bộ Điều khoản này nhằm đảm bảo tính rõ ràng và khả năng thực thi trên thực tế.",
+    ],
+    list: [
+      "Hiệu lực từng phần: Nếu bất kỳ điều khoản nào trong văn bản này bị tuyên vô hiệu hoặc không thể thực thi bởi cơ quan có thẩm quyền, các điều khoản còn lại vẫn giữ nguyên hiệu lực",
+      "Từ bỏ quyền: Việc Earthoria không thực hiện ngay một quyền theo Điều khoản này không đồng nghĩa với việc từ bỏ quyền đó trong tương lai",
+      "Chuyển nhượng: Bạn không được chuyển nhượng quyền và nghĩa vụ theo Điều khoản này cho bên thứ ba mà không có sự đồng ý trước bằng văn bản của Earthoria; Earthoria có quyền chuyển nhượng trong trường hợp tái cấu trúc, sáp nhập hoặc chuyển nhượng doanh nghiệp",
+      "Toàn bộ thỏa thuận: Điều khoản này, cùng Chính sách Bảo mật và các phụ lục liên quan, cấu thành toàn bộ thỏa thuận giữa bạn và Earthoria về việc sử dụng Dịch vụ, thay thế mọi thỏa thuận hoặc trao đổi trước đó về cùng nội dung",
+      "Ngôn ngữ: Điều khoản này được soạn thảo bằng tiếng Việt; bản dịch sang ngôn ngữ khác (nếu có) chỉ nhằm mục đích tham khảo, bản tiếng Việt được ưu tiên áp dụng khi có sự khác biệt",
+    ],
+  },
+  {
+    id: "thong-bao",
+    num: "22",
+    title: "Thông Báo & Liên Lạc Điện Tử",
+    paragraphs: [
+      "Bằng việc tạo tài khoản, bạn đồng ý nhận thông báo từ Earthoria qua phương thức điện tử, bao gồm email, thông báo đẩy (push notification) trên ứng dụng và tin nhắn SMS.",
+    ],
+    list: [
+      "Thông báo giao dịch (xác nhận đơn hàng, cập nhật vận chuyển, thay đổi Điều khoản) được gửi bắt buộc và không thể tắt hoàn toàn",
+      "Thông báo tiếp thị, khuyến mãi có thể được tùy chỉnh hoặc hủy đăng ký bất kỳ lúc nào trong phần cài đặt tài khoản hoặc qua liên kết hủy đăng ký trong email",
+      "Mọi thông báo pháp lý gửi cho Earthoria phải được thực hiện bằng văn bản qua địa chỉ email hoặc địa chỉ liên hệ được nêu tại Điều 25 để được xem là hợp lệ",
     ],
   },
   {
     id: "thay-doi-dieu-khoan",
-    num: "13",
+    num: "23",
     title: "Thay Đổi Điều Khoản",
     paragraphs: [
-      "Chúng tôi có thể cập nhật Điều khoản này theo thời gian để phản ánh thay đổi pháp lý hoặc cải tiến dịch vụ. Phiên bản cập nhật sẽ luôn được đăng tải tại trang này kèm theo ngày hiệu lực mới.",
+      "Chúng tôi có thể cập nhật Điều khoản này theo thời gian để phản ánh thay đổi pháp lý hoặc cải tiến dịch vụ. Phiên bản cập nhật sẽ luôn được đăng tải tại trang này kèm theo ngày hiệu lực mới và số phiên bản tương ứng.",
     ],
     list: [
       "Thay đổi quan trọng ảnh hưởng đến quyền lợi của bạn sẽ được thông báo qua email ít nhất 14 ngày trước khi có hiệu lực",
-      "Việc tiếp tục sử dụng Dịch vụ sau ngày hiệu lực mới đồng nghĩa với việc bạn đã chấp nhận các điều khoản đã cập nhật",
+      "Đối với thay đổi liên quan trực tiếp đến việc xử lý dữ liệu của trẻ em, Earthoria sẽ yêu cầu Phụ huynh xác nhận đồng ý lại nếu pháp luật yêu cầu",
+      "Việc tiếp tục sử dụng Dịch vụ sau ngày hiệu lực mới đồng nghĩa với việc bạn đã chấp nhận các điều khoản đã cập nhật; nếu không đồng ý, bạn có quyền ngừng sử dụng và yêu cầu chấm dứt tài khoản trước ngày hiệu lực",
     ],
   },
   {
     id: "luat-ap-dung",
-    num: "14",
+    num: "24",
     title: "Luật Áp Dụng & Giải Quyết Tranh Chấp",
     paragraphs: [
-      "Điều khoản này được điều chỉnh và giải thích theo pháp luật nước Cộng hòa Xã hội Chủ nghĩa Việt Nam. Mọi tranh chấp phát sinh sẽ được ưu tiên giải quyết thông qua thương lượng thiện chí giữa hai bên.",
+      "Điều khoản này được điều chỉnh và giải thích theo pháp luật nước Cộng hòa Xã hội Chủ nghĩa Việt Nam. Mọi tranh chấp phát sinh từ hoặc liên quan đến Điều khoản này sẽ được ưu tiên giải quyết thông qua thương lượng thiện chí giữa hai bên.",
     ],
     list: [
-      "Trường hợp không đạt được thỏa thuận, tranh chấp sẽ được đưa ra Trung tâm Trọng tài Quốc tế Việt Nam (VIAC) hoặc Tòa án có thẩm quyền tại Thành phố Hồ Chí Minh",
+      "Trong vòng 30 ngày kể từ khi phát sinh tranh chấp, hai bên sẽ tiến hành trao đổi trực tiếp hoặc qua văn bản nhằm tìm kiếm giải pháp thỏa đáng",
+      "Trường hợp không đạt được thỏa thuận sau thời gian thương lượng, tranh chấp sẽ được đưa ra Trung tâm Trọng tài Quốc tế Việt Nam (VIAC) để giải quyết theo quy tắc tố tụng trọng tài hiện hành, hoặc Tòa án có thẩm quyền tại Thành phố Hồ Chí Minh nếu các bên không có thỏa thuận trọng tài",
+      "Chi phí giải quyết tranh chấp do bên thua kiện chi trả, trừ khi cơ quan giải quyết tranh chấp có quyết định khác",
+      "Đối với Người dùng là người tiêu dùng cá nhân, quyền khiếu nại đến cơ quan bảo vệ người tiêu dùng theo quy định pháp luật vẫn được đảm bảo song song với quyền thương lượng nêu trên",
     ],
   },
   {
     id: "lien-he",
-    num: "15",
+    num: "25",
     title: "Liên Hệ",
     paragraphs: [
       "Nếu bạn có bất kỳ câu hỏi nào về Điều khoản Dịch vụ này, đội ngũ Chăm sóc Khách hàng của Earthoria luôn sẵn sàng hỗ trợ qua các kênh liên hệ được liệt kê ở cuối trang.",
@@ -261,19 +443,31 @@ const FAQS = [
   },
   {
     q: "Ứng dụng AR có thu thập dữ liệu giọng nói của con tôi không?",
-    a: "Trợ lý AI chỉ ghi âm khi được chủ động kích hoạt và không lưu trữ vĩnh viễn nội dung hội thoại. Chi tiết đầy đủ được trình bày trong Chính sách Bảo mật của chúng tôi.",
+    a: "Trợ lý AI chỉ ghi âm khi được chủ động kích hoạt và không lưu trữ vĩnh viễn nội dung hội thoại dưới dạng có thể nhận diện danh tính. Chi tiết đầy đủ được trình bày trong Chính sách Bảo mật của chúng tôi.",
   },
   {
     q: "Tôi có thể dùng hình ảnh từ sách cho lớp học của mình không?",
-    a: "Hoàn toàn được, miễn là cho mục đích giáo dục phi thương mại. Việc sao chép để bán lại hoặc phân phối thương mại đều không được phép.",
+    a: "Hoàn toàn được, miễn là cho mục đích giáo dục phi thương mại như trình chiếu trong lớp học. Việc sao chép để bán lại hoặc phân phối thương mại đều không được phép.",
   },
   {
     q: "Điều gì xảy ra nếu tôi vi phạm điều khoản sử dụng?",
-    a: "Tùy mức độ vi phạm, tài khoản có thể bị tạm ngưng hoặc chấm dứt sau khi đã được thông báo, trừ trường hợp khẩn cấp. Bạn luôn có quyền giải trình trong vòng 7 ngày.",
+    a: "Tùy mức độ vi phạm, tài khoản có thể bị tạm ngưng hoặc chấm dứt sau khi đã được thông báo, trừ trường hợp khẩn cấp liên quan đến an toàn trẻ em. Bạn luôn có quyền giải trình trong vòng 7 ngày.",
   },
   {
     q: "Earthoria có quyền thay đổi giá sau khi tôi đã đặt hàng không?",
     a: "Không. Giá tại thời điểm bạn hoàn tất đơn hàng sẽ được giữ nguyên cho đơn hàng đó, kể cả khi giá niêm yết thay đổi sau này.",
+  },
+  {
+    q: "Trường học của chúng tôi muốn đặt sách số lượng lớn, cần liên hệ thế nào?",
+    a: "Với đơn hàng từ 50 cuốn trở lên, vui lòng liên hệ bộ phận Quan hệ Đối tác Giáo dục để nhận báo giá sỉ và điều khoản thanh toán phù hợp với quy trình tài chính của đơn vị bạn.",
+  },
+  {
+    q: "Tôi muốn yêu cầu xóa dữ liệu cá nhân của con mình thì làm sao?",
+    a: "Bạn có thể tự thực hiện trong phần cài đặt Tài khoản gia đình, hoặc gửi yêu cầu qua email hỗ trợ. Earthoria sẽ xử lý theo đúng thời hạn quy định tại Nghị định 13/2023/NĐ-CP về bảo vệ dữ liệu cá nhân.",
+  },
+  {
+    q: "Nếu ứng dụng ngừng hoạt động, sách giấy của tôi có còn dùng được không?",
+    a: "Có. Sách giấy vẫn có thể đọc và sử dụng bình thường như một cuốn sách thông thường. Chỉ riêng phần trải nghiệm AR/AI đi kèm sẽ phụ thuộc vào việc ứng dụng còn được vận hành hay không, và chúng tôi sẽ luôn thông báo trước nếu có kế hoạch ngừng một tính năng.",
   },
 ];
 
@@ -848,6 +1042,10 @@ export default function TermsOfService() {
               <FileText size={13} />
               Phiên bản <strong>{META.version}</strong>
             </div>
+            <div className="legal-hero-meta-item">
+              <BookOpen size={13} />
+              Thời gian đọc <strong>{META.readTime}</strong>
+            </div>
           </div>
           <div className="legal-hero-actions">
             <button
@@ -1054,15 +1252,24 @@ export default function TermsOfService() {
             </a>
             <a href="tel:19006868" className="legal-contact-item">
               <Phone size={15} />
-              1900 6868
+              0849324423
             </a>
             <span className="legal-contact-item">
               <MapPin size={15} />
-              Tầng 12, Tòa nhà Earthoria, Q.1, TP.HCM
+            600 Nguyễn Văn Cừ Nối Dài, An Bình, Cần Thơ 900000
             </span>
           </div>
         </div>
       </section>
+
+      {/* ═══ BACK TO TOP ═══ */}
+      <button
+        className={`legal-back-top ${showTop ? "visible" : ""}`}
+        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        aria-label="Lên đầu trang"
+      >
+        <ArrowUp size={18} />
+      </button>
     </>
   );
 }
