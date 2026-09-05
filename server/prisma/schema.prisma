@@ -321,22 +321,32 @@ enum GameType {
   MATCH_PAIRS  // Nối các cặp tương ứng (nối bảng)
   WORD_SEARCH  // Tìm từ ẩn trong bảng chữ cái
   LETTER_HUNT  // Săn chữ cái trong bảng để ghép thành từ khoá, tính giờ
+  QUIZ_CHOICE  // Trắc nghiệm vui: trả lời câu hỏi bằng cách chọn 1 trong nhiều đáp án
+}
+
+// Mức độ khó của trò chơi, dùng để phụ huynh/admin ước lượng độ tuổi phù hợp
+enum GameDifficulty {
+  EASY
+  MEDIUM
+  HARD
 }
 
 model Game {
-  id           String       @id @default(uuid())
-  code         String       @unique
+  id           String         @id @default(uuid())
+  code         String         @unique
   title        String
+  description  String?
   instructions String?
   gameType     GameType
+  difficulty   GameDifficulty @default(EASY)
   config       Json
   thumbnailUrl String?
   bookId       String
-  isActive     Boolean      @default(true)
-  accessType   ArAccessType @default(CUSTOMER_ONLY)
-  playCount    Int          @default(0)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  isActive     Boolean        @default(true)
+  accessType   ArAccessType   @default(CUSTOMER_ONLY)
+  playCount    Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 
   book    Book         @relation(fields: [bookId], references: [id], onDelete: Cascade)
   results GameResult[]

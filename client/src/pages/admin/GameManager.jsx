@@ -10,6 +10,8 @@ import {
   Copy,
   Upload,
   Gamepad2,
+  QrCode,
+  ExternalLink,
 } from "lucide-react";
 import { gameService } from "../../services/gameService";
 import { GAME_TYPE_LIST, getGameDefinition } from "../../games/gameRegistry";
@@ -21,6 +23,17 @@ const ACCESS_OPTIONS = [
   { value: "CUSTOMER_ONLY", label: "Chỉ khách đã mua" },
   { value: "PUBLIC", label: "Công khai" },
 ];
+
+const DIFFICULTY_LABELS = {
+  EASY: { label: "Dễ", className: "success" },
+  MEDIUM: { label: "Trung bình", className: "warning" },
+  HARD: { label: "Khó", className: "danger" },
+};
+
+function DifficultyBadge({ value }) {
+  const d = DIFFICULTY_LABELS[value] || DIFFICULTY_LABELS.EASY;
+  return <span className={`a-badge ${d.className}`}>{d.label}</span>;
+}
 
 function GameTypeBadge({ type }) {
   const def = getGameDefinition(type);
@@ -217,6 +230,7 @@ export default function GameManager() {
                     "Sách",
                     "Trò chơi",
                     "Loại",
+                    "Mức độ",
                     "Quyền xem",
                     "Lượt chơi",
                     "Trạng thái",
@@ -230,7 +244,7 @@ export default function GameManager() {
                 {isLoading ? (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={8}
                       style={{
                         padding: 32,
                         textAlign: "center",
@@ -243,7 +257,7 @@ export default function GameManager() {
                 ) : !groups.length ? (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={8}
                       style={{
                         padding: 32,
                         textAlign: "center",
@@ -262,9 +276,7 @@ export default function GameManager() {
                     group.games.map((g, idx) => (
                       <tr
                         key={g.id}
-                        onClick={() =>
-                          setQrTarget({ game: g, book: group.book })
-                        }
+                        onClick={() => navigate(`/dashboard/games/${g.id}`)}
                         style={{ cursor: "pointer" }}
                         className={
                           qrTarget?.game.id === g.id ? "a-row-active" : ""
@@ -323,6 +335,10 @@ export default function GameManager() {
                           <GameTypeBadge type={g.gameType} />
                         </td>
 
+                        <td>
+                          <DifficultyBadge value={g.difficulty} />
+                        </td>
+
                         <td onClick={(e) => e.stopPropagation()}>
                           <select
                             className="a-input a-select"
@@ -362,6 +378,15 @@ export default function GameManager() {
                             style={{ display: "flex", gap: 6 }}
                             onClick={(e) => e.stopPropagation()}
                           >
+                            <button
+                              className="a-btn-icon"
+                              onClick={() =>
+                                setQrTarget({ game: g, book: group.book })
+                              }
+                              title="Xem mã QR"
+                            >
+                              <QrCode size={12} />
+                            </button>
                             <button
                               className="a-btn-icon edit"
                               onClick={() =>
@@ -487,6 +512,14 @@ export default function GameManager() {
                   </button>
                   <button className="a-btn-ghost" onClick={handleCopyLink}>
                     <Copy size={12} /> Sao chép link
+                  </button>
+                  <button
+                    className="a-btn-ghost"
+                    onClick={() =>
+                      window.open(qrUrl, "_blank", "noopener,noreferrer")
+                    }
+                  >
+                    <ExternalLink size={12} /> Mở link
                   </button>
                   <button
                     className="a-btn-ghost"

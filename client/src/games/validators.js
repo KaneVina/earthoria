@@ -197,3 +197,64 @@ export function validateMemoryMatch(config) {
 export function validateMatchPairs(config) {
   return analyzeMatchPairs(config).errors;
 }
+
+//   QUIZ CHOICE
+export function analyzeQuizChoice(config) {
+  const questions = config?.questions || [];
+  const errors = [];
+  const rowIssues = {};
+
+  if (questions.length < 1) {
+    errors.push("Cần ít nhất 1 câu hỏi để trò chơi có thể chơi được.");
+  }
+
+  questions.forEach((q, i) => {
+    const n = i + 1;
+    const options = q.options || [];
+    const qText = normText(q.text);
+    const issue = {
+      text: !qText,
+      optionIssues: {},
+      noCorrect: false,
+      tooFewOptions: false,
+    };
+
+    if (!qText) errors.push(`Câu ${n}: chưa nhập nội dung câu hỏi.`);
+    if (options.length < 2) {
+      issue.tooFewOptions = true;
+      errors.push(`Câu ${n}: cần ít nhất 2 đáp án để chọn.`);
+    }
+
+    const seen = new Map();
+    options.forEach((o) => {
+      const t = normText(o.text);
+      if (!t) {
+        issue.optionIssues[o.id] = { empty: true };
+        errors.push(`Câu ${n}: có đáp án đang để trống.`);
+      } else {
+        const key = t.toLowerCase();
+        if (seen.has(key)) {
+          issue.optionIssues[o.id] = { duplicate: true };
+          errors.push(`Câu ${n}: có 2 đáp án trùng nội dung nhau.`);
+        }
+        seen.set(key, true);
+      }
+    });
+
+    if (
+      !q.correctOptionId ||
+      !options.some((o) => o.id === q.correctOptionId)
+    ) {
+      issue.noCorrect = true;
+      errors.push(`Câu ${n}: chưa chọn đáp án đúng.`);
+    }
+
+    rowIssues[q.id] = issue;
+  });
+
+  return { errors, rowIssues };
+}
+
+export function validateQuizChoice(config) {
+  return analyzeQuizChoice(config).errors;
+}

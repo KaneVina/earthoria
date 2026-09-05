@@ -21,7 +21,10 @@ const GAME_TYPES = [
   "MATCH_PAIRS",
   "WORD_SEARCH",
   "LETTER_HUNT",
+  "QUIZ_CHOICE",
 ];
+
+const DIFFICULTIES = ["EASY", "MEDIUM", "HARD"];
 
 function validateGameConfig(gameType, config) {
   if (!config || typeof config !== "object")
@@ -70,6 +73,28 @@ function validateGameConfig(gameType, config) {
       if (!word) return "Cần nhập từ khoá bí mật";
       if (word.replace(/\s/g, "").length > 12)
         return "Từ khoá tối đa 12 ký tự (không tính khoảng trắng)";
+      return null;
+    }
+    case "QUIZ_CHOICE": {
+      const questions = config.questions;
+      if (!Array.isArray(questions) || questions.length < 1)
+        return "Cần ít nhất 1 câu hỏi";
+      for (const q of questions) {
+        const options = q?.options;
+        if (!q?.id || !String(q?.text || "").trim())
+          return "Mỗi câu hỏi cần có nội dung";
+        if (!Array.isArray(options) || options.length < 2)
+          return "Mỗi câu hỏi cần ít nhất 2 đáp án";
+        for (const o of options) {
+          if (!o?.id || !String(o?.text || "").trim())
+            return "Mỗi đáp án cần có nội dung";
+        }
+        if (
+          !q?.correctOptionId ||
+          !options.some((o) => o.id === q.correctOptionId)
+        )
+          return "Mỗi câu hỏi cần chọn đúng 1 đáp án đúng";
+      }
       return null;
     }
     default:
@@ -202,8 +227,16 @@ exports.getGameById = async (req, res) => {
 exports.createGame = async (req, res) => {
   try {
     const { bookId } = req.params;
-    const { title, gameType, config, instructions, accessType, thumbnailUrl } =
-      req.body;
+    const {
+      title,
+      gameType,
+      config,
+      instructions,
+      accessType,
+      thumbnailUrl,
+      description,
+      difficulty,
+    } = req.body;
 
     if (!title?.trim())
       return res
@@ -233,7 +266,9 @@ exports.createGame = async (req, res) => {
       data: {
         code,
         title: title.trim(),
+        description: description?.trim() || null,
         gameType,
+        difficulty: DIFFICULTIES.includes(difficulty) ? difficulty : "EASY",
         config,
         instructions: instructions?.trim() || null,
         thumbnailUrl: thumbnailUrl || null,
@@ -251,7 +286,15 @@ exports.createGame = async (req, res) => {
 exports.updateGame = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, config, instructions, accessType, thumbnailUrl } = req.body;
+    const {
+      title,
+      config,
+      instructions,
+      accessType,
+      thumbnailUrl,
+      description,
+      difficulty,
+    } = req.body;
 
     const existing = await prisma.game.findUnique({ where: { id } });
     if (!existing)
@@ -262,14 +305,15 @@ exports.updateGame = async (req, res) => {
     const data = {};
     if (title !== undefined) {
       if (!title?.trim())
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "Tên trò chơi không được để trống",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "Tên trò chơi không được để trống",
+        });
       data.title = title.trim();
     }
+    if (description !== undefined)
+      data.description = description?.trim() || null;
+    if (DIFFICULTIES.includes(difficulty)) data.difficulty = difficulty;
     if (instructions !== undefined)
       data.instructions = instructions?.trim() || null;
     if (thumbnailUrl !== undefined) data.thumbnailUrl = thumbnailUrl || null;

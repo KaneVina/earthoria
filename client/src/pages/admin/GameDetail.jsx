@@ -10,6 +10,7 @@ import {
   X,
   Download,
   Copy,
+  ExternalLink,
   Upload,
   User,
   Users,
@@ -33,6 +34,12 @@ import "../../components/assets/css/gamestudio.css";
 const ACCESS_OPTIONS = [
   { value: "CUSTOMER_ONLY", label: "Khách đã mua" },
   { value: "PUBLIC", label: "Công khai" },
+];
+
+const DIFFICULTY_OPTIONS = [
+  { value: "EASY", label: "Dễ" },
+  { value: "MEDIUM", label: "Trung bình" },
+  { value: "HARD", label: "Khó" },
 ];
 
 const ROLE_MATRIX = [
@@ -89,8 +96,10 @@ export default function GameDetail() {
   const [gameType, setGameType] = useState(null);
   const [form, setForm] = useState({
     title: "",
+    description: "",
     instructions: "",
     accessType: "CUSTOMER_ONLY",
+    difficulty: "EASY",
     config: null,
   });
 
@@ -104,8 +113,10 @@ export default function GameDetail() {
     if (game) {
       setForm({
         title: game.title,
+        description: game.description || "",
         instructions: game.instructions || "",
         accessType: game.accessType,
+        difficulty: game.difficulty || "EASY",
         config: game.config,
       });
       setGameType(game.gameType);
@@ -148,8 +159,10 @@ export default function GameDetail() {
     mutationFn: () =>
       gameService.create(selectedBook.id, {
         title: form.title,
+        description: form.description,
         instructions: form.instructions,
         accessType: form.accessType,
+        difficulty: form.difficulty,
         gameType,
         config: form.config,
       }),
@@ -167,8 +180,10 @@ export default function GameDetail() {
     mutationFn: () =>
       gameService.update(id, {
         title: form.title,
+        description: form.description,
         instructions: form.instructions,
         accessType: form.accessType,
+        difficulty: form.difficulty,
         config: form.config,
       }),
     onSuccess: () => {
@@ -539,11 +554,44 @@ export default function GameDetail() {
                 </div>
 
                 <div className="a-form-group" style={{ marginBottom: 12 }}>
+                  <label className="a-form-label">Mô tả ngắn (tuỳ chọn)</label>
+                  <textarea
+                    className="a-input a-textarea"
+                    style={{ minHeight: 60 }}
+                    value={form.description}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, description: e.target.value }))
+                    }
+                    placeholder="vd: Trò chơi giúp bé nhận biết các loài động vật quen thuộc"
+                    maxLength={300}
+                  />
+                </div>
+
+                <div className="a-form-group" style={{ marginBottom: 12 }}>
+                  <label className="a-form-label">Mức độ</label>
+                  <div className="a-access-toggle">
+                    {DIFFICULTY_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        className={`a-access-toggle-btn${form.difficulty === opt.value ? " active" : ""}`}
+                        onClick={() =>
+                          setForm((f) => ({ ...f, difficulty: opt.value }))
+                        }
+                      >
+                        <span className="a-access-toggle-dot" />
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="a-form-group" style={{ marginBottom: 12 }}>
                   <label className="a-form-label">
                     Hướng dẫn chơi (tuỳ chọn)
                   </label>
-                  <input
-                    className="a-input"
+                  <textarea
+                    className="a-input a-textarea"
                     value={form.instructions}
                     onChange={(e) =>
                       setForm((f) => ({ ...f, instructions: e.target.value }))
@@ -742,6 +790,15 @@ export default function GameDetail() {
                   </button>
                   <button className="a-btn-ghost" onClick={handleCopyLink}>
                     <Copy size={12} /> Sao chép link
+                  </button>
+                  <button
+                    type="button"
+                    className="a-btn-ghost"
+                    onClick={() =>
+                      window.open(qrUrl, "_blank", "noopener,noreferrer")
+                    }
+                  >
+                    <ExternalLink size={12} /> Mở link
                   </button>
                 </div>
               </div>

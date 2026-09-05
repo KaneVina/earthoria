@@ -23,12 +23,10 @@ exports.getGame = async (req, res) => {
 
     if (game.accessType !== "PUBLIC") {
       if (!req.user) {
-        return res
-          .status(401)
-          .json({
-            success: false,
-            message: "Vui lòng đăng nhập để chơi trò chơi này",
-          });
+        return res.status(401).json({
+          success: false,
+          message: "Vui lòng đăng nhập để chơi trò chơi này",
+        });
       }
 
       if (req.user.role !== "ADMIN" && req.user.role !== "STAFF") {
@@ -49,8 +47,10 @@ exports.getGame = async (req, res) => {
         id: game.id,
         code: game.code,
         title: game.title,
+        description: game.description,
         instructions: game.instructions,
         gameType: game.gameType,
+        difficulty: game.difficulty,
         config: game.config,
         thumbnailUrl: game.thumbnailUrl,
         accessType: game.accessType,
@@ -85,24 +85,20 @@ exports.completeGame = async (req, res) => {
       // (của gia đình khác) đều có thể ghi GameResult vào hồ sơ đó (IDOR). Giờ bắt
       // buộc childId phải thuộc về chính req.user (nếu có đăng nhập) mới được nhận.
       if (!req.user) {
-        return res
-          .status(401)
-          .json({
-            success: false,
-            message: "Vui lòng đăng nhập để lưu kết quả cho hồ sơ trẻ em",
-          });
+        return res.status(401).json({
+          success: false,
+          message: "Vui lòng đăng nhập để lưu kết quả cho hồ sơ trẻ em",
+        });
       }
       const child = await prisma.childProfile.findFirst({
         where: { id: childId, parentId: req.user.id, isActive: true },
         select: { id: true },
       });
       if (!child) {
-        return res
-          .status(403)
-          .json({
-            success: false,
-            message: "Hồ sơ trẻ em không hợp lệ hoặc không thuộc về bạn",
-          });
+        return res.status(403).json({
+          success: false,
+          message: "Hồ sơ trẻ em không hợp lệ hoặc không thuộc về bạn",
+        });
       }
       validChildId = child.id;
     }

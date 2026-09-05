@@ -1,20 +1,23 @@
-import { Grid3x3, Link2, Search, Timer } from "lucide-react";
+import { Grid3x3, Link2, Search, Timer, HelpCircle } from "lucide-react";
 
 import MemoryMatchEditor from "./editors/MemoryMatchEditor";
 import MatchPairsEditor from "./editors/MatchPairsEditor";
 import WordSearchEditor from "./editors/WordSearchEditor";
 import LetterHuntEditor from "./editors/LetterHuntEditor";
+import QuizChoiceEditor from "./editors/QuizChoiceEditor";
 
 import MemoryMatchPlayer from "./players/MemoryMatchPlayer";
 import MatchPairsPlayer from "./players/MatchPairsPlayer";
 import WordSearchPlayer from "./players/WordSearchPlayer";
 import LetterHuntPlayer from "./players/LetterHuntPlayer";
+import QuizChoicePlayer from "./players/QuizChoicePlayer";
 
 import {
   validateMemoryMatch,
   validateMatchPairs,
   validateWordSearchFull,
   validateLetterHunt,
+  validateQuizChoice,
 } from "./validators";
 
 export const GAME_REGISTRY = {
@@ -69,6 +72,18 @@ export const GAME_REGISTRY = {
     Editor: LetterHuntEditor,
     Player: LetterHuntPlayer,
     validate: validateLetterHunt,
+  },
+  QUIZ_CHOICE: {
+    type: "QUIZ_CHOICE",
+    label: "Trắc nghiệm vui",
+    shortLabel: "Trắc nghiệm",
+    description:
+      "Trả lời từng câu hỏi bằng cách chọn 1 trong nhiều đáp án — phù hợp để kiểm tra kiến thức bé vừa đọc.",
+    icon: HelpCircle,
+    defaultConfig: () => ({ questions: [] }),
+    Editor: QuizChoiceEditor,
+    Player: QuizChoicePlayer,
+    validate: validateQuizChoice,
   },
 };
 
