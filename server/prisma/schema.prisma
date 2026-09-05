@@ -668,6 +668,8 @@ model ChildProfile {
   notifyEmail           Boolean @default(false)
   notifyOnLimitExceeded Boolean @default(true)
   notifyOnSkippedRest   Boolean @default(true)
+  notifyLimitExceededSentDate String?
+  notifySkippedRestSentDate   String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -726,6 +728,8 @@ enum ChildAuditType {
   PARENT_PIN_RESET
   CHILD_DELETED
   KID_LINK_REGENERATED
+  DAILY_LIMIT_EXCEEDED
+  SKIPPED_REST
 }
 
 // Nhật ký hành động của phụ huynh

@@ -1,4 +1,4 @@
-import api from './api'
+import api from "./api";
 
 export const kidAccessService = {
   getProfile: (token) => api.get(`/kid-access/${token}`),
@@ -9,5 +9,7 @@ export const kidAccessService = {
   pingActivity: (token, activityId) =>
     api.post(`/kid-access/${token}/activity/${activityId}/ping`),
 
+  reportSkippedRest: (token) => api.post(`/kid-access/${token}/skipped-rest`),
+
   getGarden: (token) => api.get(`/kid-access/${token}/garden`),
-}
+};

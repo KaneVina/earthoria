@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { kidAccessService } from "../services/kidAccessService";
 
 const EYE_TIPS = [
   "Ngồi thẳng lưng và giữ sách cách mắt khoảng 30cm nhé!",
@@ -18,7 +19,14 @@ export function fmtClock(totalSeconds) {
   return `${pad2(m)}:${pad2(s)}`;
 }
 
-export function useKidRestBreak(child, active) {
+/**
+ * @param {object|null} child
+ * @param {boolean} active
+ * @param {string} [token] - dùng để báo cho ba mẹ khi bé bấm "Đọc tiếp" để
+ *   bỏ qua lời nhắc nghỉ mắt (chỉ khi ba mẹ đã bật ở /family). Bỏ trống thì
+ *   tính năng nhắc nghỉ vẫn hoạt động bình thường, chỉ là không báo.
+ */
+export function useKidRestBreak(child, active, token) {
   const [showRest, setShowRest] = useState(false);
   const [restLeft, setRestLeft] = useState(0);
   const [showBreak, setShowBreak] = useState(false);
@@ -110,6 +118,15 @@ export function useKidRestBreak(child, active) {
     breathPhase,
     eyeTip,
     showRestTip,
-    dismissRest: () => setShowRest(false),
+    dismissRest: () => {
+      // restLeft > 0 nghĩa là bé chủ động bấm "Đọc tiếp" trước khi đếm
+      // ngược tự kết thúc — đây mới thực sự là "bỏ qua".
+      if (restLeft > 0 && token) {
+        kidAccessService.reportSkippedRest(token).catch(() => {
+          // không chặn trải nghiệm của bé nếu báo cho ba mẹ thất bại
+        });
+      }
+      setShowRest(false);
+    },
   };
 }

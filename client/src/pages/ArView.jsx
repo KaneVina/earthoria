@@ -400,6 +400,7 @@ export default function ArView() {
   const restBreak = useKidRestBreak(
     kidChild,
     isKidMode && state.status === "ready",
+    token,
   );
 
   // "scanning" -> "preview" -> "immersive" (and back)

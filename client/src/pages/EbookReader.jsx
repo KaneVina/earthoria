@@ -83,6 +83,7 @@ export default function EbookReader() {
   const restBreak = useKidRestBreak(
     kidChild,
     isKidMode && state.status === "ready",
+    token,
   );
 
   useEffect(() => {

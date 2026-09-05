@@ -3,6 +3,7 @@ const {
   isWithinAllowedWindow,
   isDailyLimitReached,
 } = require("../utils/childPolicy");
+const { notifyLimitExceeded } = require("../utils/childNotify");
 
 exports.getArCode = async (req, res) => {
   try {
@@ -54,6 +55,7 @@ exports.getArCode = async (req, res) => {
         }
 
         if (await isDailyLimitReached(prisma, child)) {
+          notifyLimitExceeded(child); // fire-and-forget, tự throttle 1 lần/ngày
           return res.status(403).json({
             success: false,
             code: "DAILY_LIMIT_REACHED",

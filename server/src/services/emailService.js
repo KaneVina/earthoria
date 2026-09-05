@@ -24,6 +24,9 @@ function wrapEmailTemplate({
 }) {
   const logoUrl = process.env.EMAIL_LOGO_URL || "";
   const clientUrl = ctaUrl || process.env.CLIENT_URL || "#";
+  // Logo header dùng ảnh cố định trong client/public thay vì phụ thuộc biến
+  // môi trường EMAIL_LOGO_URL (biến này vẫn giữ nguyên cho logo ở footer).
+  const headerLogoUrl = `${(process.env.CLIENT_URL || "").replace(/\/+$/, "")}/logo/logo-trang/logo-head-email.png`;
 
   return `<!DOCTYPE html>
 <html lang="vi">
@@ -43,7 +46,7 @@ function wrapEmailTemplate({
   <!-- HEADER -->
   <tr>
     <td style="background:#0b2e2b;padding:30px 40px;text-align:center;border-radius:12px 12px 0 0;">
-      <img src="${logoUrl}" alt="Earthoria" height="46" style="display:block;margin:0 auto;height:46px;width:auto;">
+      <img src="${headerLogoUrl}" alt="Earthoria" height="46" style="display:block;margin:0 auto;height:46px;width:auto;">
     </td>
   </tr>
 
@@ -1147,6 +1150,100 @@ async function sendOrderCancelledEmail({ to, name, order, reason }) {
   });
 }
 
+// ─ Family: Con vượt giới hạn thời gian dùng app trong ngày ─
+async function sendChildLimitExceededEmail({
+  to,
+  parentName,
+  childName,
+  dailyLimitMinutes,
+}) {
+  const bodyHtml = `
+    <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Thông báo từ Family Studio
+    </div>
+    <h1 style="font-size:26px;font-weight:600;color:#0b2e2b;line-height:1.3;margin:0 0 28px;text-align:center;letter-spacing:1px;text-transform:uppercase;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Con Đã Dùng Đủ Giờ Hôm Nay
+    </h1>
+
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(184,134,46,0.08);border:1px solid rgba(184,134,46,0.25);display:inline-block;line-height:52px;font-size:20px;color:#b8862e;text-align:center;">
+        ⏱
+      </div>
+    </div>
+
+    <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Xin chào, ${parentName || "bạn"}.
+    </p>
+    <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 24px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Bé <strong style="color:#0b2e2b;font-weight:500;">${childName}</strong> vừa dùng hết giới hạn
+      <strong style="color:#0b2e2b;font-weight:500;">${dailyLimitMinutes} phút/ngày</strong> mà bạn đã đặt.
+      Sách, AR và AI trợ lý của bé sẽ tạm khoá đến hết hôm nay theo đúng thiết lập của bạn.
+    </p>
+
+    <div style="background:rgba(74,158,63,0.04);border:1px solid rgba(74,158,63,0.14);border-radius:8px;padding:16px 20px;margin-bottom:8px;">
+      <p style="font-size:12px;color:#5a6b60;line-height:1.85;font-weight:300;margin:0;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+        <strong style="color:#0b2e2b;font-weight:500;">Muốn điều chỉnh?</strong>
+        Bạn có thể mở khoá sớm hoặc thay đổi giới hạn thời gian bất kỳ lúc nào trong trang quản lý dành cho phụ huynh.
+      </p>
+    </div>
+  `;
+
+  return sendMail({
+    from: `${process.env.EMAIL_FROM_NAME || "Earthoria"} <noreply@earthoria.id.vn>`,
+    to,
+    subject: `${childName} đã dùng đủ ${dailyLimitMinutes} phút hôm nay`,
+    html: wrapEmailTemplate({
+      preheader: `${childName} vừa dùng hết giới hạn ${dailyLimitMinutes} phút/ngày.`,
+      bodyHtml,
+      ctaUrl: `${(process.env.CLIENT_URL || "").replace(/\/+$/, "")}/family`,
+    }),
+  });
+}
+
+// ─ Family: Con bỏ qua nhắc nghỉ mắt ─
+async function sendChildSkippedRestEmail({ to, parentName, childName }) {
+  const bodyHtml = `
+    <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Thông báo từ Family Studio
+    </div>
+    <h1 style="font-size:26px;font-weight:600;color:#0b2e2b;line-height:1.3;margin:0 0 28px;text-align:center;letter-spacing:1px;text-transform:uppercase;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Con Đã Bỏ Qua Nhắc Nghỉ Mắt
+    </h1>
+
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(184,134,46,0.08);border:1px solid rgba(184,134,46,0.25);display:inline-block;line-height:52px;font-size:20px;color:#b8862e;text-align:center;">
+        👁
+      </div>
+    </div>
+
+    <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Xin chào, ${parentName || "bạn"}.
+    </p>
+    <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 24px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Bé <strong style="color:#0b2e2b;font-weight:500;">${childName}</strong> vừa bấm "Đọc tiếp" để bỏ qua lời nhắc nghỉ mắt
+      định kỳ thay vì nghỉ đủ thời gian. Đây chỉ là thông báo nhẹ để bạn nắm được — không ảnh hưởng gì đến việc đọc sách của bé.
+    </p>
+
+    <div style="background:rgba(74,158,63,0.04);border:1px solid rgba(74,158,63,0.14);border-radius:8px;padding:16px 20px;margin-bottom:8px;">
+      <p style="font-size:12px;color:#5a6b60;line-height:1.85;font-weight:300;margin:0;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+        <strong style="color:#0b2e2b;font-weight:500;">Muốn điều chỉnh?</strong>
+        Bạn có thể đổi tần suất nhắc nghỉ mắt hoặc bật giải lao bắt buộc trong trang quản lý dành cho phụ huynh.
+      </p>
+    </div>
+  `;
+
+  return sendMail({
+    from: `${process.env.EMAIL_FROM_NAME || "Earthoria"} <noreply@earthoria.id.vn>`,
+    to,
+    subject: `${childName} vừa bỏ qua nhắc nghỉ mắt`,
+    html: wrapEmailTemplate({
+      preheader: `${childName} đã bỏ qua lời nhắc nghỉ mắt định kỳ.`,
+      bodyHtml,
+      ctaUrl: `${(process.env.CLIENT_URL || "").replace(/\/+$/, "")}/family`,
+    }),
+  });
+}
+
 module.exports = {
   verifyEmailTransport,
   sendOtpEmail,
@@ -1162,4 +1259,6 @@ module.exports = {
   sendOrderConfirmedEmail,
   sendOrderDeliveredEmail,
   sendOrderCancelledEmail,
+  sendChildLimitExceededEmail,
+  sendChildSkippedRestEmail,
 };

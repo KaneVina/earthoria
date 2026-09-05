@@ -386,7 +386,7 @@ export default function KidAccess() {
     eyeTip,
     showRestTip,
     dismissRest,
-  } = useKidRestBreak(child, isOk);
+  } = useKidRestBreak(child, isOk, token);
 
   //   đồng hồ giờ thực: cập nhật mỗi giây để hiển thị HH:MM cho bé
   useEffect(() => {

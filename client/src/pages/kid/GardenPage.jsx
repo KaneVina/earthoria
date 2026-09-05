@@ -80,7 +80,7 @@ export default function GardenPage() {
       cancelled = true;
     };
   }, [token]);
-  const restBreak = useKidRestBreak(kidChild, status === "ok");
+  const restBreak = useKidRestBreak(kidChild, status === "ok", token);
 
   const fetchGarden = useCallback(
     async ({ silent = false } = {}) => {

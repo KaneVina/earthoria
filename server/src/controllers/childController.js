@@ -11,6 +11,10 @@ const {
   getTodayMinutes,
 } = require("../utils/childPolicy");
 const { getUserLoyaltyProfile } = require("../utils/loyaltyTier");
+const {
+  notifyLimitExceeded,
+  notifySkippedRest,
+} = require("../utils/childNotify");
 
 function buildChildLimitPayload(loyaltyProfile, currentCount) {
   const {
@@ -920,6 +924,9 @@ const startKidActivity = async (req, res) => {
       );
     }
     if (await isDailyLimitReached(prisma, child)) {
+      // fire-and-forget: không await để không làm chậm phản hồi cho bé nếu
+      // gửi email chậm/lỗi — notifyLimitExceeded tự throttle 1 lần/ngày
+      notifyLimitExceeded(child);
       return formatResponse(
         res,
         403,
@@ -983,6 +990,12 @@ const pingKidActivity = async (req, res) => {
     const limitReached =
       child.dailyLimitMinutes > 0 && todayMinutes >= child.dailyLimitMinutes;
 
+    if (limitReached) {
+      // fire-and-forget: đây là điểm phát hiện "vừa vượt giới hạn" đáng tin
+      // cậy nhất vì chạy đều đặn mỗi 45s trong lúc bé đang đọc/xem AR thật
+      notifyLimitExceeded(child);
+    }
+
     return formatResponse(res, 200, "OK", {
       minutes,
       todayMinutes,
@@ -990,6 +1003,25 @@ const pingKidActivity = async (req, res) => {
       locked: child.isLocked,
       withinWindow: isWithinAllowedWindow(child),
     });
+  } catch (error) {
+    console.error(error);
+    return formatResponse(res, 500, "Lỗi server");
+  }
+};
+
+// [PUBLIC] POST /api/v1/kid-access/:token/skipped-rest — bé bấm "Đọc tiếp"
+// để bỏ qua lời nhắc nghỉ mắt định kỳ trước khi đếm ngược kết thúc
+const reportSkippedRest = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const child = await prisma.childProfile.findFirst({
+      where: { kidLinkToken: token, isActive: true },
+    });
+    if (!child)
+      return formatResponse(res, 404, "Link không hợp lệ hoặc đã bị thu hồi");
+
+    await notifySkippedRest(child);
+    return formatResponse(res, 200, "OK");
   } catch (error) {
     console.error(error);
     return formatResponse(res, 500, "Lỗi server");
@@ -1013,4 +1045,5 @@ module.exports = {
   getKidPublicBooks,
   startKidActivity,
   pingKidActivity,
+  reportSkippedRest,
 };

@@ -7,6 +7,7 @@ const {
   isWithinAllowedWindow,
   isDailyLimitReached,
 } = require("../utils/childPolicy");
+const { notifyLimitExceeded } = require("../utils/childNotify");
 const {
   LEVEL_CONFIG,
   STREAK_MILESTONES,
@@ -257,11 +258,15 @@ const getKidGarden = async (req, res) => {
       select: {
         id: true,
         name: true,
+        parentId: true,
         isLocked: true,
         dailyLimitMinutes: true,
         allowWindowEnabled: true,
         allowStart: true,
         allowEnd: true,
+        notifyEmail: true,
+        notifyOnLimitExceeded: true,
+        notifyLimitExceededSentDate: true,
       },
     });
     if (!child)
@@ -287,6 +292,7 @@ const getKidGarden = async (req, res) => {
       });
     }
     if (await isDailyLimitReached(prisma, child)) {
+      notifyLimitExceeded(child); // fire-and-forget, tự throttle 1 lần/ngày
       return res.status(403).json({
         success: false,
         code: "DAILY_LIMIT_REACHED",

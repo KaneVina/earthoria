@@ -5,6 +5,7 @@ const {
   isWithinAllowedWindow,
   isDailyLimitReached,
 } = require("../utils/childPolicy");
+const { notifyLimitExceeded } = require("../utils/childNotify");
 
 exports.getEbookForReading = async (req, res) => {
   try {
@@ -71,6 +72,7 @@ exports.getEbookForReading = async (req, res) => {
       }
 
       if (await isDailyLimitReached(prisma, child)) {
+        notifyLimitExceeded(child); // fire-and-forget, tự throttle 1 lần/ngày
         return res.status(403).json({
           success: false,
           code: "DAILY_LIMIT_REACHED",
@@ -83,12 +85,10 @@ exports.getEbookForReading = async (req, res) => {
         select: { visible: true },
       });
       if (access && access.visible === false) {
-        return res
-          .status(403)
-          .json({
-            success: false,
-            message: "Sách này đã bị ẩn khỏi tủ sách của bé",
-          });
+        return res.status(403).json({
+          success: false,
+          message: "Sách này đã bị ẩn khỏi tủ sách của bé",
+        });
       }
 
       const owns = await userOwnsDigitalBook(prisma, child.parentId, book.id);
@@ -99,12 +99,10 @@ exports.getEbookForReading = async (req, res) => {
         });
       }
     } else if (!req.user) {
-      return res
-        .status(401)
-        .json({
-          success: false,
-          message: "Vui lòng đăng nhập để đọc sách điện tử",
-        });
+      return res.status(401).json({
+        success: false,
+        message: "Vui lòng đăng nhập để đọc sách điện tử",
+      });
     } else if (req.user.role !== "ADMIN" && req.user.role !== "STAFF") {
       const owns = await userOwnsDigitalBook(prisma, req.user.id, book.id);
       if (!owns) {
