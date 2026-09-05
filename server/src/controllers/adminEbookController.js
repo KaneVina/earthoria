@@ -156,7 +156,16 @@ exports.getEbookById = async (req, res) => {
 exports.createEbook = async (req, res) => {
   try {
     const { bookId } = req.params;
-    const { title, pages, thumbnailUrl, orientation } = req.body;
+    const {
+      title,
+      pages,
+      thumbnailUrl,
+      orientation,
+      pageNumberPos,
+      pageNumberColor,
+      showTitleWithPageNumber,
+      hidePageNumberOnCover,
+    } = req.body;
 
     if (!title?.trim())
       return res
@@ -182,6 +191,19 @@ exports.createEbook = async (req, res) => {
         orientation: orientation === "PORTRAIT" ? "PORTRAIT" : "LANDSCAPE",
         thumbnailUrl: thumbnailUrl || null,
         bookId,
+        pageNumberPos:
+          pageNumberPos && pageNumberPos.v && pageNumberPos.h
+            ? pageNumberPos
+            : undefined,
+        pageNumberColor: pageNumberColor || undefined,
+        showTitleWithPageNumber:
+          typeof showTitleWithPageNumber === "boolean"
+            ? showTitleWithPageNumber
+            : undefined,
+        hidePageNumberOnCover:
+          typeof hidePageNumberOnCover === "boolean"
+            ? hidePageNumberOnCover
+            : undefined,
       },
     });
 
@@ -194,7 +216,17 @@ exports.createEbook = async (req, res) => {
 exports.updateEbook = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, pages, thumbnailUrl, isActive, orientation } = req.body;
+    const {
+      title,
+      pages,
+      thumbnailUrl,
+      isActive,
+      orientation,
+      pageNumberPos,
+      pageNumberColor,
+      showTitleWithPageNumber,
+      hidePageNumberOnCover,
+    } = req.body;
 
     const existing = await prisma.ebook.findUnique({ where: { id } });
     if (!existing)
@@ -214,6 +246,14 @@ exports.updateEbook = async (req, res) => {
     if (typeof isActive === "boolean") data.isActive = isActive;
     if (orientation === "PORTRAIT" || orientation === "LANDSCAPE")
       data.orientation = orientation;
+    if (pageNumberPos && pageNumberPos.v && pageNumberPos.h)
+      data.pageNumberPos = pageNumberPos;
+    if (pageNumberColor !== undefined)
+      data.pageNumberColor = pageNumberColor || null;
+    if (typeof showTitleWithPageNumber === "boolean")
+      data.showTitleWithPageNumber = showTitleWithPageNumber;
+    if (typeof hidePageNumberOnCover === "boolean")
+      data.hidePageNumberOnCover = hidePageNumberOnCover;
 
     if (pages !== undefined) {
       const pagesError = validatePages(pages);

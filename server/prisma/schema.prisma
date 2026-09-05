@@ -381,15 +381,19 @@ enum EbookOrientation {
 }
 
 model Ebook {
-  id           String           @id @default(uuid())
-  title        String
-  bookId       String
-  pages        Json
-  orientation  EbookOrientation @default(LANDSCAPE)
-  thumbnailUrl String?
-  isActive     Boolean          @default(false)
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  id                      String           @id @default(uuid())
+  title                   String
+  bookId                  String
+  pages                   Json
+  orientation             EbookOrientation @default(LANDSCAPE)
+  thumbnailUrl            String?
+  isActive                Boolean          @default(false)
+  pageNumberPos           Json?
+  pageNumberColor         String?
+  showTitleWithPageNumber Boolean          @default(false)
+  hidePageNumberOnCover   Boolean          @default(false)
+  createdAt               DateTime         @default(now())
+  updatedAt               DateTime         @updatedAt
 
   book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
 

@@ -133,6 +133,18 @@ function resizeImageFileIfNeeded(file, maxDim = 1600, quality = 0.86) {
   });
 }
 
+// Icon "i" nhỏ đặt cạnh tiêu đề — rê chuột (hoặc focus bằng bàn phím) vào
+// mới hiện phần ghi chú/hướng dẫn, thay vì hiện chữ giải thích cố định
+// chiếm chỗ ngay dưới mỗi mục.
+function InfoHint({ children }) {
+  return (
+    <span className="bb-info-hint" tabIndex={0}>
+      <Info size={12} />
+      <span className="bb-info-tooltip">{children}</span>
+    </span>
+  );
+}
+
 function escapeHtml(str) {
   return (str || "")
     .replace(/&/g, "&amp;")
@@ -191,6 +203,65 @@ function hexToRgb(hex) {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
+// Lấy màu nền thực tế của ảnh bằng cách lấy mẫu 4 góc (mỗi góc 1 vùng nhỏ)
+// rồi tính trung bình — dùng làm màu gợi ý mặc định cho công cụ "xoá nền
+// theo màu", thay vì luôn mặc định màu trắng (khiến ảnh nền đen/tối không
+// bao giờ xoá được gì nếu người dùng không tự đổi màu trước).
+function sampleImageCornerColor(srcUrl) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+        const size = Math.max(
+          2,
+          Math.round(Math.min(canvas.width, canvas.height) * 0.04),
+        );
+        const corners = [
+          [0, 0],
+          [canvas.width - size, 0],
+          [0, canvas.height - size],
+          [canvas.width - size, canvas.height - size],
+        ];
+        let r = 0,
+          g = 0,
+          b = 0,
+          n = 0;
+        corners.forEach(([x, y]) => {
+          const data = ctx.getImageData(x, y, size, size).data;
+          for (let i = 0; i < data.length; i += 4) {
+            r += data[i];
+            g += data[i + 1];
+            b += data[i + 2];
+            n++;
+          }
+        });
+        if (!n) throw new Error("empty");
+        const hex = rgbToHex(
+          Math.round(r / n),
+          Math.round(g / n),
+          Math.round(b / n),
+        );
+        resolve(hex);
+      } catch (err) {
+        resolve(null);
+      }
+    };
+    img.onerror = () => resolve(null);
+    img.src = srcUrl;
+  });
+}
+
+function rgbToHex(r, g, b) {
+  const h = (n) => n.toString(16).padStart(2, "0");
+  return `#${h(r)}${h(g)}${h(b)}`;
+}
+
 function removeBackgroundByColor(srcUrl, hexColor, tolerancePercent) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -209,7 +280,11 @@ function removeBackgroundByColor(srcUrl, hexColor, tolerancePercent) {
         return;
       }
       const [tr, tg, tb] = hexToRgb(hexColor);
-      const tol = (tolerancePercent / 100) * 450;
+      // Thang đo trải trên TOÀN BỘ khoảng cách màu có thể có (0-765, ví dụ
+      // đen tuyệt đối cách trắng tuyệt đối 765) thay vì chỉ tới 450 — trước
+      // đây dù kéo tolerance lên mức tối đa vẫn không đủ để bắt các màu ở
+      // xa target, khiến việc "xoá nền" gần như luôn không ăn thua.
+      const tol = (tolerancePercent / 100) * 765;
       const d = data.data;
       for (let i = 0; i < d.length; i += 4) {
         const dist =
@@ -295,7 +370,10 @@ function defaultTextLayer(overrides = {}) {
   return {
     id: uid(),
     type: "text",
-    text: "Nhập chữ...",
+    // Để trống — hiển thị bằng placeholder mờ (xem LayerView) chứ không
+    // nhúng sẵn chữ mẫu vào nội dung thật, để người dùng gõ ngay không cần
+    // xoá chữ mẫu trước.
+    text: "",
     html: null,
     x: BASE_PAGE_W / 2 - 110,
     y: BASE_PAGE_H / 2 - 20,
@@ -492,7 +570,7 @@ function pageBackgroundStyle(page) {
   return style;
 }
 
-function pageNumberBoxStyle(pos) {
+function pageNumberBoxStyle(pos, color) {
   const p = pos || { v: "bottom", h: "center" };
   const style = {
     position: "absolute",
@@ -503,7 +581,7 @@ function pageNumberBoxStyle(pos) {
       p.h === "left" ? "flex-start" : p.h === "right" ? "flex-end" : "center",
     fontFamily: "Georgia, serif",
     fontSize: 12,
-    color: "rgba(31,42,36,0.45)",
+    color: color || "rgba(31,42,36,0.45)",
     pointerEvents: "none",
     userSelect: "none",
     zIndex: 2,
@@ -519,9 +597,9 @@ function pageNumberBoxStyle(pos) {
   return style;
 }
 
-function PageNumberBadge({ page, number, pos, showTitle }) {
+function PageNumberBadge({ page, number, pos, showTitle, color }) {
   return (
-    <div style={pageNumberBoxStyle(pos)}>
+    <div style={pageNumberBoxStyle(pos, color)}>
       {showTitle && page?.title ? (
         <span style={{ fontSize: 10, opacity: 0.85, whiteSpace: "nowrap" }}>
           {page.title}
@@ -919,6 +997,11 @@ function LayerView({
   // soạn / xuất PDF) vẫn giữ nguyên định dạng rich-text như cũ.
   const useWordSpans = forceWordSpans || !isRich;
   const editingNow = !readOnly && !!isEditingText;
+  // Chưa có nội dung thật (chỉ áp dụng cho lớp chữ MỚI, trong lúc soạn) —
+  // hiển thị chữ mờ "Nhập chữ..." kiểu placeholder, không phải nội dung
+  // thật, để không phải xoá tay trước khi gõ.
+  const showPlaceholder =
+    !readOnly && !editingNow && !isRich && !(layer.text || "").trim();
 
   const textInnerStyle = {
     fontFamily: layer.fontFamily,
@@ -1025,12 +1108,32 @@ function LayerView({
             onPointerDown={(e) => e.stopPropagation()}
             onMouseUp={onSelectionChange}
             onKeyUp={onSelectionChange}
-            onBlur={() => onCommitText && onCommitText(layer.id)}
+            onBlur={(e) => {
+              // Không kết thúc soạn thảo nếu người dùng đang chuyển focus
+              // sang thanh định dạng (nút Đậm/Nghiêng/Màu chữ...) — các
+              // control đó được đánh dấu data-keep-edit — để không làm mất
+              // vùng bôi đen đang chọn (xem applyTextFormat/applyTextColor).
+              const rt = e.relatedTarget;
+              if (rt && rt.closest && rt.closest("[data-keep-edit]")) return;
+              onCommitText && onCommitText(layer.id);
+            }}
             style={textInnerStyle}
             dangerouslySetInnerHTML={{
               __html: layer.html || escapeHtml(layer.text || ""),
             }}
           />
+        ) : showPlaceholder ? (
+          <div
+            style={{
+              ...textInnerStyle,
+              color: "#9aa79f",
+              fontStyle: "italic",
+              fontWeight: 400,
+              pointerEvents: "none",
+            }}
+          >
+            Nhập chữ...
+          </div>
         ) : isRich && !useWordSpans ? (
           <div
             style={textInnerStyle}
@@ -1100,6 +1203,7 @@ export function PreviewOverlay({
   onClose,
   orientation,
   pageNumberPos,
+  pageNumberColor,
   showTitleWithPageNumber,
   hidePageNumberOnCover,
   bookInfo,
@@ -1861,6 +1965,7 @@ export function PreviewOverlay({
                         page={p}
                         number={globalIndex + 1}
                         pos={pageNumberPos}
+                        color={pageNumberColor}
                         showTitle={showTitleWithPageNumber}
                       />
                     )}
@@ -2357,6 +2462,11 @@ export default function BookBuilder() {
     v: "bottom",
     h: "center",
   });
+  // Màu số trang — trước đây bị hard-code cứng "rgba(31,42,36,0.45)" nên
+  // khi nền trang trùng tông màu đó (vd nền tối), số trang gần như vô hình
+  // và không có cách nào chỉnh được. Giờ cho phép người dùng tự chọn màu
+  // (dùng input color nên lưu dạng mã hex thay vì rgba).
+  const [pageNumberColor, setPageNumberColor] = useState("#2c3b34");
   const [showTitleWithPageNumber, setShowTitleWithPageNumber] = useState(false);
   const [hidePageNumberOnCover, setHidePageNumberOnCover] = useState(false);
 
@@ -2398,7 +2508,7 @@ export default function BookBuilder() {
   const [, bump] = useState(0);
 
   const [bgRemoveColor, setBgRemoveColor] = useState("#ffffff");
-  const [bgRemoveTolerance, setBgRemoveTolerance] = useState(20);
+  const [bgRemoveTolerance, setBgRemoveTolerance] = useState(30);
   const [bgRemoving, setBgRemoving] = useState(false);
 
   // Set các layer ảnh đang trong quá trình upload lên Cloudinary — không lưu vào
@@ -2433,6 +2543,8 @@ export default function BookBuilder() {
   orientationRef.current = orientation;
   const pageNumberPosRef = useRef(pageNumberPos);
   pageNumberPosRef.current = pageNumberPos;
+  const pageNumberColorRef = useRef(pageNumberColor);
+  pageNumberColorRef.current = pageNumberColor;
   const showTitleWithPageNumberRef = useRef(showTitleWithPageNumber);
   showTitleWithPageNumberRef.current = showTitleWithPageNumber;
   const hidePageNumberOnCoverRef = useRef(hidePageNumberOnCover);
@@ -2447,6 +2559,42 @@ export default function BookBuilder() {
     currentPage?.height ||
     (orientation === "PORTRAIT" ? BASE_PAGE_W : BASE_PAGE_H);
   const PAGE_RADIUS = currentPage?.borderRadius ?? 10;
+
+  // ─ Ô nhập chiều rộng / chiều cao khổ giấy theo px ─
+  // Dùng state chuỗi riêng (không bind thẳng vào PAGE_W/PAGE_H) để người
+  // dùng có thể xoá trắng ô rồi gõ số mới (vd gõ "108" trước khi gõ tiếp
+  // "0" để thành "1080") mà không bị tự động nhảy về giá trị cũ giữa chừng.
+  // Giá trị chỉ thực sự được áp dụng (và làm tròn/giới hạn 200-4000) khi
+  // rời khỏi ô (blur) hoặc bấm Enter.
+  const [pageWInput, setPageWInput] = useState(String(Math.round(PAGE_W)));
+  const [pageHInput, setPageHInput] = useState(String(Math.round(PAGE_H)));
+  const pageSizeFocusRef = useRef({ w: false, h: false });
+  useEffect(() => {
+    if (!pageSizeFocusRef.current.w) setPageWInput(String(Math.round(PAGE_W)));
+  }, [PAGE_W]);
+  useEffect(() => {
+    if (!pageSizeFocusRef.current.h) setPageHInput(String(Math.round(PAGE_H)));
+  }, [PAGE_H]);
+  const commitPageWInput = (raw) => {
+    pageSizeFocusRef.current.w = false;
+    const n = Math.round(Number(raw));
+    const clamped =
+      Number.isFinite(n) && n > 0
+        ? Math.max(200, Math.min(4000, n))
+        : Math.round(PAGE_W);
+    setCustomPageWidth(clamped);
+    setPageWInput(String(clamped));
+  };
+  const commitPageHInput = (raw) => {
+    pageSizeFocusRef.current.h = false;
+    const n = Math.round(Number(raw));
+    const clamped =
+      Number.isFinite(n) && n > 0
+        ? Math.max(200, Math.min(4000, n))
+        : Math.round(PAGE_H);
+    setCustomPageHeight(clamped);
+    setPageHInput(String(clamped));
+  };
 
   // ─ Soạn thảo chữ theo từng đoạn (tô đậm/tô màu 1 phần trong câu) ─
   const [editingTextId, setEditingTextId] = useState(null);
@@ -2476,6 +2624,8 @@ export default function BookBuilder() {
           );
           if (eb.pageNumberPos && eb.pageNumberPos.v && eb.pageNumberPos.h)
             setPageNumberPos(eb.pageNumberPos);
+          if (typeof eb.pageNumberColor === "string" && eb.pageNumberColor)
+            setPageNumberColor(eb.pageNumberColor);
           if (typeof eb.showTitleWithPageNumber === "boolean")
             setShowTitleWithPageNumber(eb.showTitleWithPageNumber);
           if (typeof eb.hidePageNumberOnCover === "boolean")
@@ -2554,6 +2704,7 @@ export default function BookBuilder() {
         pages: pagesRef.current,
         orientation: orientationRef.current,
         pageNumberPos: pageNumberPosRef.current,
+        pageNumberColor: pageNumberColorRef.current,
         showTitleWithPageNumber: showTitleWithPageNumberRef.current,
         hidePageNumberOnCover: hidePageNumberOnCoverRef.current,
       };
@@ -2590,6 +2741,7 @@ export default function BookBuilder() {
     ebookTitle,
     orientation,
     pageNumberPos,
+    pageNumberColor,
     showTitleWithPageNumber,
     hidePageNumberOnCover,
     loaded,
@@ -2811,7 +2963,10 @@ export default function BookBuilder() {
         i === pageIndex ? { ...p, layers: [...p.layers, layer] } : p,
       ),
     );
-    selectLayer(layer.id);
+    // Mở sẵn chế độ gõ chữ ngay khi vừa thêm lớp chữ mới — vì lớp chữ mới
+    // không còn chứa sẵn nội dung mẫu (xem defaultTextLayer), người dùng có
+    // thể gõ luôn mà không cần nhấp đúp + xoá chữ mẫu trước.
+    startEditText(layer.id);
   };
   const addImageLayer = () => {
     multiImageInputRef.current?.click();
@@ -3359,6 +3514,12 @@ export default function BookBuilder() {
         title: "Mục lục",
         background: "#fffdf8",
         isToc: true,
+        // Trước đây thiếu width/height nên trang mục lục luôn rơi về khổ
+        // mặc định (ngang) bất kể khổ giấy thật của sách (dọc / tuỳ chỉnh
+        // theo px). Giờ lấy đúng khổ hiện tại của sách.
+        width: PAGE_W,
+        height: PAGE_H,
+        borderRadius: PAGE_RADIUS,
         layers,
       });
       const copy = [...prev];
@@ -3778,6 +3939,24 @@ export default function BookBuilder() {
 
   const selected = currentPage.layers.find((l) => l.id === selectedId) || null;
   const layersFrontFirst = [...currentPage.layers].reverse();
+
+  // Khi chọn 1 ảnh khác, tự dò màu nền thật của ảnh đó (lấy mẫu 4 góc) để
+  // làm màu gợi ý mặc định cho công cụ "Xoá nền theo màu" — trước đây luôn
+  // mặc định màu trắng nên với ảnh có nền đen/màu khác, xoá nền không có
+  // tác dụng gì nếu người dùng không tự đổi màu trước.
+  const bgSampleSrcRef = useRef(null);
+  useEffect(() => {
+    if (selected?.type !== "image" || !selected?.src) return;
+    if (bgSampleSrcRef.current === selected.src) return;
+    bgSampleSrcRef.current = selected.src;
+    let cancelled = false;
+    sampleImageCornerColor(selected.src).then((hex) => {
+      if (!cancelled && hex) setBgRemoveColor(hex);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [selected?.id, selected?.src]);
 
   // Áp dụng 1 màu từ Bảng phối màu vào đúng chỗ đang thao tác:
   // đang chọn hình khối -> tô nền hình; đang chọn chữ -> đổi màu chữ;
@@ -4328,7 +4507,13 @@ export default function BookBuilder() {
               )}
             </div>
             <div className="bb-field">
-              <label>Khổ sách (áp dụng cho toàn bộ sách)</label>
+              <label>
+                Khổ sách (áp dụng cho toàn bộ sách)
+                <InfoHint>
+                  Tự đặt chiều rộng &amp; chiều cao theo pixel nếu không muốn
+                  dùng khổ Ngang/Dọc mặc định.
+                </InfoHint>
+              </label>
               <div className="bb-row3">
                 <button
                   className={`bb-btn${orientation === "LANDSCAPE" ? " active" : ""}`}
@@ -4348,26 +4533,40 @@ export default function BookBuilder() {
                   type="number"
                   min={200}
                   max={4000}
-                  value={Math.round(PAGE_W)}
-                  onFocus={beginEdit}
-                  onBlur={endEdit}
-                  onChange={(e) => setCustomPageWidth(Number(e.target.value))}
+                  value={pageWInput}
+                  onFocus={() => {
+                    pageSizeFocusRef.current.w = true;
+                    beginEdit();
+                  }}
+                  onChange={(e) => setPageWInput(e.target.value)}
+                  onBlur={(e) => {
+                    commitPageWInput(e.target.value);
+                    endEdit();
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.currentTarget.blur();
+                  }}
                 />
                 <span style={{ fontSize: 12, color: "#6b7a72" }}>×</span>
                 <input
                   type="number"
                   min={200}
                   max={4000}
-                  value={Math.round(PAGE_H)}
-                  onFocus={beginEdit}
-                  onBlur={endEdit}
-                  onChange={(e) => setCustomPageHeight(Number(e.target.value))}
+                  value={pageHInput}
+                  onFocus={() => {
+                    pageSizeFocusRef.current.h = true;
+                    beginEdit();
+                  }}
+                  onChange={(e) => setPageHInput(e.target.value)}
+                  onBlur={(e) => {
+                    commitPageHInput(e.target.value);
+                    endEdit();
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.currentTarget.blur();
+                  }}
                 />
                 <span style={{ fontSize: 12, color: "#6b7a72" }}>px</span>
-              </div>
-              <div className="bb-hint">
-                Tự đặt chiều rộng &amp; chiều cao theo pixel nếu không muốn dùng
-                khổ Ngang/Dọc mặc định.
               </div>
             </div>
             <div className="bb-field">
@@ -4386,7 +4585,12 @@ export default function BookBuilder() {
             </div>
 
             <div className="bb-field">
-              <label>Vị trí số trang (áp dụng cho toàn bộ sách)</label>
+              <label>
+                Vị trí số trang (áp dụng cho toàn bộ sách)
+                <InfoHint>
+                  Số trang được đánh tự động theo thứ tự — không cần chỉnh tay.
+                </InfoHint>
+              </label>
               <div className="bb-row3">
                 <button
                   className={`bb-btn${pageNumberPos.v === "top" ? " active" : ""}`}
@@ -4427,6 +4631,21 @@ export default function BookBuilder() {
                   Phải
                 </button>
               </div>
+              <div
+                className="bb-color-size"
+                style={{ marginTop: 8, alignItems: "center" }}
+              >
+                <input
+                  type="color"
+                  value={pageNumberColor}
+                  onFocus={beginEdit}
+                  onBlur={endEdit}
+                  onChange={(e) => setPageNumberColor(e.target.value)}
+                />
+                <span style={{ fontSize: 12, color: "#6b7a72" }}>
+                  Màu số trang
+                </span>
+              </div>
             </div>
             <div className="bb-field">
               <label className="bb-checkbox-field" style={{ marginBottom: 0 }}>
@@ -4450,7 +4669,15 @@ export default function BookBuilder() {
             </div>
 
             <div className="bb-field">
-              <label>Mục lục tự động</label>
+              <label>
+                Mục lục tự động
+                <InfoHint>
+                  Vào bảng <strong>Chỉnh</strong>, chọn một dòng chữ và đặt "Vai
+                  trò trong mục lục" thành tiêu đề mục. Sau đó bấm nút này để tự
+                  tạo trang mục lục, liệt kê các tiêu đề kèm số trang (bấm vào
+                  từng dòng khi Xem trước sẽ nhảy tới trang đó).
+                </InfoHint>
+              </label>
               <button
                 type="button"
                 className="bb-btn"
@@ -4460,16 +4687,6 @@ export default function BookBuilder() {
                 <BookOpen size={14} />
                 Tạo / cập nhật mục lục
               </button>
-              <div className="bb-hint">
-                Vào bảng <strong>Chỉnh</strong>, chọn một dòng chữ và đặt "Vai
-                trò trong mục lục" thành tiêu đề mục. Sau đó bấm nút này để tự
-                tạo trang mục lục, liệt kê các tiêu đề kèm số trang (bấm vào
-                từng dòng khi Xem trước sẽ nhảy tới trang đó).
-              </div>
-            </div>
-
-            <div className="bb-hint">
-              Số trang được đánh tự động theo thứ tự — không cần chỉnh tay.
             </div>
           </div>
         )}
@@ -4546,7 +4763,16 @@ export default function BookBuilder() {
         {activePanel === "layers" && (
           <div className="bb-flyout">
             <div className="bb-flyout-head">
-              <h3>Các lớp ({currentPage.layers.length})</h3>
+              <h3>
+                Các lớp ({currentPage.layers.length})
+                {layersFrontFirst.length > 0 && (
+                  <InfoHint>
+                    Kéo{" "}
+                    <GripVertical size={11} style={{ verticalAlign: "-2px" }} />{" "}
+                    để sắp xếp thứ tự lớp trước / sau.
+                  </InfoHint>
+                )}
+              </h3>
               <button
                 className="bb-flyout-close"
                 onClick={() => setActivePanel(null)}
@@ -4556,15 +4782,6 @@ export default function BookBuilder() {
             </div>
             {layersFrontFirst.length === 0 && (
               <div className="bb-empty">Chưa có lớp nào trên trang này.</div>
-            )}
-            {layersFrontFirst.length > 0 && (
-              <div
-                className="bb-hint"
-                style={{ marginTop: 0, marginBottom: 10 }}
-              >
-                Kéo <GripVertical size={11} style={{ verticalAlign: "-2px" }} />{" "}
-                để sắp xếp thứ tự lớp trước / sau.
-              </div>
             )}
             {layersFrontFirst.map((layer) => (
               <div
@@ -4967,7 +5184,12 @@ export default function BookBuilder() {
                   </button>
                 </div>
                 <div className="bb-field">
-                  <label>Kích thước (rộng × cao)</label>
+                  <label>
+                    Kích thước (rộng × cao)
+                    <InfoHint>
+                      Nên để rộng = cao để mã QR không bị méo.
+                    </InfoHint>
+                  </label>
                   <div className="bb-color-size">
                     <input
                       type="number"
@@ -4992,9 +5214,6 @@ export default function BookBuilder() {
                         })
                       }
                     />
-                  </div>
-                  <div className="bb-hint">
-                    Nên để rộng = cao để mã QR không bị méo.
                   </div>
                 </div>
                 <div className="bb-field">
@@ -5068,7 +5287,15 @@ export default function BookBuilder() {
                   />
                 </div>
                 <div className="bb-field">
-                  <label>Xoá nền theo màu ({bgRemoveTolerance}%)</label>
+                  <label>
+                    Xoá nền theo màu ({bgRemoveTolerance}%)
+                    <InfoHint>
+                      Màu đã tự dò theo góc ảnh — nếu ảnh có nền đen/trắng
+                      thuần, dùng nút chọn nhanh bên dưới. Kéo thanh trượt lên
+                      cao hơn nếu ảnh nén JPEG bị nhiễu màu ở viền, xoá chưa hết
+                      nền.
+                    </InfoHint>
+                  </label>
                   <div className="bb-color-size">
                     <input
                       type="color"
@@ -5079,13 +5306,42 @@ export default function BookBuilder() {
                     <input
                       type="range"
                       min={2}
-                      max={60}
+                      max={100}
                       value={bgRemoveTolerance}
                       style={{ flex: 1 }}
                       onChange={(e) =>
                         setBgRemoveTolerance(Number(e.target.value))
                       }
                     />
+                  </div>
+                  <div className="bb-row3" style={{ marginTop: 6 }}>
+                    <button
+                      type="button"
+                      className="bb-btn"
+                      onClick={() => setBgRemoveColor("#ffffff")}
+                    >
+                      Nền trắng
+                    </button>
+                    <button
+                      type="button"
+                      className="bb-btn"
+                      onClick={() => setBgRemoveColor("#000000")}
+                    >
+                      Nền đen
+                    </button>
+                    <button
+                      type="button"
+                      className="bb-btn"
+                      disabled={!selected.src}
+                      onClick={() => {
+                        bgSampleSrcRef.current = null;
+                        sampleImageCornerColor(selected.src).then((hex) => {
+                          if (hex) setBgRemoveColor(hex);
+                        });
+                      }}
+                    >
+                      Lấy màu từ ảnh
+                    </button>
                   </div>
                   <button
                     type="button"
@@ -5149,9 +5405,17 @@ export default function BookBuilder() {
             ) : (
               <>
                 <div className="bb-field">
-                  <label>Nội dung</label>
+                  <label>
+                    Nội dung
+                    <InfoHint>
+                      Muốn tô đậm hoặc đổi màu riêng 1 vài chữ trong câu? Nhấp
+                      đúp vào dòng chữ đó trên trang, bôi đen phần muốn đổi rồi
+                      dùng các nút Đậm / Nghiêng / Màu chữ bên dưới.
+                    </InfoHint>
+                  </label>
                   <textarea
                     value={selected.text}
+                    placeholder="Nhập chữ..."
                     onFocus={beginEdit}
                     onBlur={endEdit}
                     onChange={(e) =>
@@ -5161,11 +5425,6 @@ export default function BookBuilder() {
                       })
                     }
                   />
-                  <div className="bb-hint">
-                    Muốn tô đậm hoặc đổi màu riêng 1 vài chữ trong câu? Nhấp đúp
-                    vào dòng chữ đó trên trang, bôi đen phần muốn đổi rồi dùng
-                    các nút Đậm / Nghiêng / Màu chữ bên dưới.
-                  </div>
                 </div>
                 <div className="bb-field">
                   <label className="bb-checkbox-field">
@@ -5246,7 +5505,13 @@ export default function BookBuilder() {
                   </div>
                 )}
                 <div className="bb-field">
-                  <label>Vai trò trong mục lục</label>
+                  <label>
+                    Vai trò trong mục lục
+                    <InfoHint>
+                      Đánh dấu tiêu đề để đưa vào mục lục tự động (bấm "Tạo /
+                      cập nhật mục lục" ở bảng Trang).
+                    </InfoHint>
+                  </label>
                   <select
                     value={selected.headingLevel || 0}
                     onFocus={beginEdit}
@@ -5262,10 +5527,6 @@ export default function BookBuilder() {
                     <option value={2}>Tiêu đề vừa (cấp 2)</option>
                     <option value={3}>Tiêu đề nhỏ (cấp 3)</option>
                   </select>
-                  <div className="bb-hint">
-                    Đánh dấu tiêu đề để đưa vào mục lục tự động (bấm "Tạo / cập
-                    nhật mục lục" ở bảng Trang).
-                  </div>
                 </div>
                 <div className="bb-field">
                   <label>Kiểu chữ</label>
@@ -5273,6 +5534,7 @@ export default function BookBuilder() {
                     <button
                       className={`bb-btn${selected.bold ? " active" : ""}`}
                       title="Đậm (bôi đen 1 đoạn để chỉ đổi đoạn đó)"
+                      data-keep-edit="true"
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => applyTextFormat("bold")}
                     >
@@ -5281,6 +5543,7 @@ export default function BookBuilder() {
                     <button
                       className={`bb-btn${selected.italic ? " active" : ""}`}
                       title="Nghiêng (bôi đen 1 đoạn để chỉ đổi đoạn đó)"
+                      data-keep-edit="true"
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => applyTextFormat("italic")}
                     >
@@ -5289,6 +5552,7 @@ export default function BookBuilder() {
                     <button
                       className={`bb-btn${selected.underline ? " active" : ""}`}
                       title="Gạch chân (bôi đen 1 đoạn để chỉ đổi đoạn đó)"
+                      data-keep-edit="true"
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => applyTextFormat("underline")}
                     >
@@ -5378,6 +5642,7 @@ export default function BookBuilder() {
                   <div className="bb-color-size">
                     <input
                       type="color"
+                      data-keep-edit="true"
                       value={selected.color}
                       onFocus={beginEdit}
                       onBlur={endEdit}
@@ -5615,6 +5880,7 @@ export default function BookBuilder() {
                     page={currentPage}
                     number={pageIndex + 1}
                     pos={pageNumberPos}
+                    color={pageNumberColor}
                     showTitle={showTitleWithPageNumber}
                   />
                 )}
@@ -5669,6 +5935,7 @@ export default function BookBuilder() {
           startIndex={pageIndex}
           orientation={orientation}
           pageNumberPos={pageNumberPos}
+          pageNumberColor={pageNumberColor}
           showTitleWithPageNumber={showTitleWithPageNumber}
           hidePageNumberOnCover={hidePageNumberOnCover}
           bookInfo={{ title: bookTitle }}

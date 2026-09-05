@@ -591,9 +591,14 @@
 .bb-canvas-frame {
   flex: 1;
   display: flex;
-  align-items: center;
+  /* Canh trang lên phía trên (không canh giữa) để khi phóng to, người
+     dùng chỉ cần cuộn xuống là thấy hết trang, không phải cuộn lên cuộn
+     xuống lộn xộn như khi trang bị kẹp giữa vùng có overflow. */
+  align-items: flex-start;
   justify-content: center;
   overflow: auto;
+  padding-top: 24px;
+  padding-bottom: 24px;
   background-image: radial-gradient(
     circle,
     rgba(20, 51, 42, 0.06) 1px,
@@ -812,6 +817,57 @@ label.bb-checkbox-field input {
   padding: 10px 12px;
   margin-top: 12px;
   line-height: 1.5;
+}
+
+/* Icon "i" thay cho ghi chú luôn hiện — rê chuột / focus mới hiện tooltip. */
+.bb-info-hint {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-left: 6px;
+  border-radius: 999px;
+  color: #6b7a72;
+  background: #eef1ee;
+  cursor: help;
+  vertical-align: middle;
+  outline: none;
+}
+.bb-info-hint:hover,
+.bb-info-hint:focus-visible {
+  background: #dde6dc;
+  color: #14332a;
+}
+.bb-info-tooltip {
+  position: absolute;
+  z-index: 30;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  width: 240px;
+  max-width: 60vw;
+  background: #14332a;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  padding: 8px 10px;
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
+  white-space: normal;
+  text-align: left;
+}
+.bb-info-hint:hover .bb-info-tooltip,
+.bb-info-hint:focus-visible .bb-info-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 .bb-empty {
   font-size: 13px;
