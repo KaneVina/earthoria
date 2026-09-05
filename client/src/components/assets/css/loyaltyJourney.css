@@ -1815,21 +1815,20 @@ body.dark-mode {
   font-weight: 600;
 }
 .lj-ai-tier-name {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
   font-weight: 700;
+  white-space: nowrap;
 }
 .lj-ai-tier-icon {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   object-fit: contain;
-  flex-shrink: 0;
-  vertical-align: -3px;
+  border-radius: 50%;
+  margin-right: 4px;
+  vertical-align: -2px;
 }
 .lj-ai-tier-emoji {
-  font-size: 0.95em;
-  line-height: 1;
+  font-size: 0.9em;
+  margin-right: 4px;
 }
 
 .lj-card-unlock {
