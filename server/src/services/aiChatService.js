@@ -120,6 +120,7 @@ NGUYÊN TẮC TUYỆT ĐỐI:
 - Ưu tiên trả lời bằng tiếng Việt.
 - Từ chối trả lời những câu hỏi nhạy cảm liên quan đến chính trị, tôn giáo, chiến tranh, giới tính, định kiến.
 - CHỈ được dùng số liệu (giá, tồn kho, mã giảm giá) xuất hiện trong khối DỮ LIỆU được cung cấp hoặc kết quả trả về từ tool. TUYỆT ĐỐI KHÔNG tự đoán, không bịa, không dùng số liệu cũ nhớ từ trước. Nếu không có dữ liệu liên quan, hãy nói rõ là chưa có thông tin chính xác và hướng dẫn khách liên hệ earthoriavn@gmail.com.
+- CÂU HỎI KIẾN THỨC CHUNG NGOÀI PHẠM VI EARTHORIA (địa lý, lịch sử, địa danh, số liệu tự nhiên, sự kiện...): TUYỆT ĐỐI không tự bịa chi tiết cụ thể (địa chỉ, tên gọi chính thức, số liệu, vị trí hành chính...) nếu không thật sự chắc chắn — đặc biệt không được gán ĐỊA CHỈ ĐƯỜNG/PHƯỜNG/QUẬN cụ thể cho các địa danh tự nhiên (hang động, núi, sông...) chỉ vì tên nghe giống tên đường/cửa hàng. Nếu không chắc chắn 100%, hãy thẳng thắn nói "mình không chắc chắn về thông tin này" thay vì đưa ra câu trả lời nghe có vẻ chính xác nhưng có thể sai — thà nhận không biết còn hơn bịa thông tin sai khiến khách hiểu lầm.
 - Khi trả lời về nội dung/cốt truyện/bài học của một cuốn sách, CHỈ dùng đúng "synopsis"/"themes"/"suitableFor" lấy từ tool get_book_details — đây là TÓM TẮT do Earthoria biên soạn, KHÔNG PHẢI toàn văn sách. Tuyệt đối không tự bịa thêm chi tiết truyện, nhân vật hay đoạn kết ngoài dữ liệu này. Nếu "hasContentData" là false, chỉ dùng "description" ngắn gọn hiện có và nói rõ đây là mô tả tổng quan, mời khách xem thêm khi đọc thử.
 - Mã đơn hàng (dạng ODE-xxxxxxx) khách gửi để tra cứu đơn KHÔNG phải thông tin nhạy cảm — hãy dùng tool get_order_status bình thường, đừng từ chối. Chỉ từ chối khi khách gửi một chuỗi rõ ràng là mã xác thực/mã bảo mật tài khoản (không phải mã đơn hàng, mã giảm giá, hay mã sản phẩm).
 
@@ -794,10 +795,18 @@ async function consumeGroqStream(res, { onToken }) {
         }
       }
 
-      // Chỉ stream token thật cho client khi lượt này KHÔNG phải là tool call
-      if (delta.content && !sawToolCall) {
+      // LƯU Ý QUAN TRỌNG: LUÔN tích lũy fullText bất kể sawToolCall — vì một số
+      // model (gpt-oss/qwen) có thể phát ra vài delta.tool_calls "dọ ý" rồi
+      // cuối cùng KHÔNG thật sự gọi tool nào (tên tool rỗng, bị lọc bỏ ở
+      // toolCalls.filter(tc => tc.name) bên dưới). Nếu chỉ tích lũy khi
+      // !sawToolCall, những trường hợp này sẽ mất trắng nội dung thật, khiến
+      // khách nhận được im lặng hoàn toàn dù model đã trả lời đầy đủ.
+      // Chỉ tạm ẩn việc STREAM LIVE cho client khi đang nghi có tool call
+      // (tránh hiện "xem trước" nội dung rồi lại đổi ý gọi tool), còn nội
+      // dung thật vẫn luôn được giữ lại trong fullText để trả về ở "done".
+      if (delta.content) {
         fullText += delta.content;
-        onToken?.(delta.content);
+        if (!sawToolCall) onToken?.(delta.content);
       }
     }
   }

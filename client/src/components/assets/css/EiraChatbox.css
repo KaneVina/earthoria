@@ -1217,6 +1217,50 @@ img.eira-model-opt-emoji {
   }
 }
 
+/* "Đang suy nghĩ..." — chữ chạy shimmer (kiểu Claude): 1 dải sáng lướt qua
+   chữ, nền chữ mờ đục để dải sáng nổi bật lên khi lướt qua. */
+.eira-thinking-text {
+  padding: 11px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  background: linear-gradient(
+    90deg,
+    var(--c-text-dim, rgba(0, 0, 0, 0.35)) 0%,
+    var(--c-text-dim, rgba(0, 0, 0, 0.35)) 40%,
+    var(--eg) 50%,
+    var(--c-text-dim, rgba(0, 0, 0, 0.35)) 60%,
+    var(--c-text-dim, rgba(0, 0, 0, 0.35)) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: thinking-shimmer 1.8s linear infinite;
+}
+.eira-thinking-text {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 4px 2px;
+}
+@keyframes thinking-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .eira-thinking-text {
+    animation: none;
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    color: var(--c-text-dim, rgba(0, 0, 0, 0.55));
+  }
+}
+
 /*               Suggestion chips               */
 #eira-sugg {
   padding: 9px 13px 10px;

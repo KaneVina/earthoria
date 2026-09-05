@@ -1093,6 +1093,16 @@ function EiraUI() {
           historyRef.current.push({ role: "assistant", content: reply });
           if (historyRef.current.length > MAX_HISTORY_TURNS)
             historyRef.current = historyRef.current.slice(-TRIM_HISTORY_TO);
+
+          // LỚP BẢO VỆ: bubble chat bình thường chỉ được tạo qua appendToken()
+          // khi có sự kiện "token". Nếu vì lý do gì đó server không stream
+          // token nào (vd model phát vài mẩu tool-call rồi rút lại giữa
+          // chừng) nhưng "done" vẫn trả về nội dung thật, phải tự tạo bubble
+          // ở đây — nếu không khách sẽ thấy im lặng hoàn toàn dù AI đã trả
+          // lời xong, rất khó phát hiện vì không có lỗi nào được ném ra.
+          if (botMsgId == null) {
+            setMessages((prev) => [...prev, makeMsg("bot", reply)]);
+          }
         }
 
         if (!isOpenRef.current) setUnreadCount((c) => c + 1);
@@ -1464,10 +1474,8 @@ function EiraUI() {
                   {statusLabel}
                 </div>
               ) : (
-                <div className="typing-bubble">
-                  <div className="typing-dot" />
-                  <div className="typing-dot" />
-                  <div className="typing-dot" />
+                <div className="typing-bubble eira-thinking-text">
+                  Đang suy nghĩ...
                 </div>
               )}
             </div>
