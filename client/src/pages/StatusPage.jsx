@@ -12,8 +12,10 @@ import {
   Zap,
   Terminal,
   ChevronRight,
+  Wrench,
 } from "lucide-react";
 import { statusService } from "../services/statusService";
+import { settingsService } from "../services/settingsService";
 import "../components/assets/css/statuspage.css";
 
 const REFRESH_MS = 60 * 1000; // khớp với thời gian cache 60s ở server
@@ -58,6 +60,13 @@ const STATUS_META = {
     icon: HelpCircle,
     desc: "Giám sát trạng thái đang tạm dừng.",
   },
+  maintenance: {
+    label: "Đang bảo trì hệ thống",
+    tag: "MAINTENANCE",
+    color: "#eda100",
+    icon: Wrench,
+    desc: "Earthoria đang tạm ngưng để nâng cấp theo lịch đã thông báo.",
+  },
   not_checked_yet: {
     label: "Chưa có dữ liệu kiểm tra",
     tag: "PENDING",
@@ -83,10 +92,25 @@ function getResponseBand(ms) {
   return { label: "Chậm", color: "#e34948" };
 }
 
+async function fetchSiteSettings() {
+  const res = await settingsService.getPublic();
+  return res.data.data;
+}
+
 export default function StatusPage() {
   const { data, isLoading, isFetching, refetch, dataUpdatedAt } = useQuery({
     queryKey: ["public-status"],
     queryFn: fetchStatus,
+    refetchInterval: REFRESH_MS,
+    staleTime: REFRESH_MS - 5000,
+  });
+
+  // Trạng thái bảo trì (bật/tắt + mốc thời gian dự kiến trở lại) lấy từ
+  // cấu hình admin — độc lập với dữ liệu UptimeRobot ở trên, vì server có
+  // thể vẫn "up" trong khi Earthoria chủ động đóng site để bảo trì.
+  const { data: siteSettings } = useQuery({
+    queryKey: ["public-site-settings"],
+    queryFn: fetchSiteSettings,
     refetchInterval: REFRESH_MS,
     staleTime: REFRESH_MS - 5000,
   });
@@ -99,7 +123,28 @@ export default function StatusPage() {
     return () => clearInterval(id);
   }, []);
 
-  const statusKey = isLoading ? null : data?.status || "unknown";
+  const maintenanceActive = Boolean(siteSettings?.maintenanceActive);
+  const maintenanceEndDate = siteSettings?.maintenanceEnd
+    ? new Date(siteSettings.maintenanceEnd)
+    : null;
+  // Hiện ngày giờ cụ thể (không chỉ đếm ngược) để người dùng biết chính xác
+  // khi nào hệ thống hoạt động lại, ví dụ: "18:00, 08/09/2026".
+  const maintenanceUntilText = maintenanceEndDate
+    ? `${maintenanceEndDate.toLocaleTimeString("vi-VN", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })}, ${maintenanceEndDate.toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })}`
+    : null;
+
+  const statusKey = maintenanceActive
+    ? "maintenance"
+    : isLoading
+      ? null
+      : data?.status || "unknown";
   const meta = statusKey ? STATUS_META[statusKey] || STATUS_META.unknown : null;
   const Icon = meta?.icon || Activity;
   const accent = meta?.color || "#8a9990";
@@ -181,8 +226,20 @@ export default function StatusPage() {
                 {isLoading ? "Đang kiểm tra hệ thống..." : meta.label}
               </p>
               <p className="status-banner__desc">
-                {isLoading ? "Đang tải dữ liệu giám sát..." : meta.desc}
+                {isLoading
+                  ? "Đang tải dữ liệu giám sát..."
+                  : maintenanceActive
+                    ? siteSettings?.maintenanceMessage || meta.desc
+                    : meta.desc}
               </p>
+              {!isLoading && maintenanceActive && (
+                <p className="status-banner__maintenance-until">
+                  <Clock3 size={12} />
+                  {maintenanceUntilText
+                    ? `Dự kiến hoạt động trở lại lúc ${maintenanceUntilText}`
+                    : "Thời gian hoạt động trở lại sẽ được thông báo sớm nhất"}
+                </p>
+              )}
             </div>
             <div className="status-banner__live">
               <span
@@ -273,6 +330,7 @@ export default function StatusPage() {
 
         {/* ── TERMINAL FOOTER ── */}
         <div className="status-terminal">
+          <span className="status-terminal__stars" aria-hidden="true" />
           <div className="status-terminal__bar">
             <span
               className="status-terminal__dot"
@@ -294,15 +352,23 @@ export default function StatusPage() {
           <div className="status-terminal__body">
             <p>
               <span className="status-terminal__prompt">$</span>
-              <span className="status-terminal__cmd">
+              <span className="status-terminal__cmd status-terminal__code-gradient">
                 curl -s https://earthoria.vn/api/v1/status
               </span>
             </p>
             <p className="status-terminal__out">
               <ChevronRight size={12} />
-              {isLoading
-                ? "đang kết nối tới máy chủ giám sát..."
-                : `{ "status": "${statusKey}", "uptime_30d": "${uptime}", "latency_ms": ${avgMs ?? "null"}, "checked_at": "${checkedAt}" }`}
+              <span className="status-terminal__code-gradient">
+                {isLoading
+                  ? "đang kết nối tới máy chủ giám sát..."
+                  : maintenanceActive
+                    ? `{ "status": "maintenance", "maintenance_until": "${
+                        siteSettings?.maintenanceEnd || "null"
+                      }", "maintenance_until_readable": "${
+                        maintenanceUntilText || "chưa xác định"
+                      }", "checked_at": "${checkedAt}" }`
+                    : `{ "status": "${statusKey}", "uptime_30d": "${uptime}", "latency_ms": ${avgMs ?? "null"}, "checked_at": "${checkedAt}" }`}
+              </span>
             </p>
             <p className="status-terminal__footer-row">
               <span>
