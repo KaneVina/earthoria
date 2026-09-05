@@ -674,6 +674,8 @@ function EiraUI() {
   );
   const [activeModel, setActiveModel] = useState(null); // hạng server thực sự đang dùng (đẩy về qua sự kiện "model")
   const [showModelMenu, setShowModelMenu] = useState(false);
+  const [modelMenuPos, setModelMenuPos] = useState(null); // { top, left } tính từ nút badge, để menu thoát khỏi overflow:hidden của header
+  const modelBadgeRef = useRef(null);
 
   /* Mascot: chỉ ẩn TẠM THỜI 5 phút khi người dùng bấm X, không lưu localStorage */
   const [promoVisible, setPromoVisible] = useState(false);
@@ -1261,8 +1263,19 @@ function EiraUI() {
               <div className="eira-model-picker">
                 <button
                   type="button"
+                  ref={modelBadgeRef}
                   className="eira-model-badge"
-                  onClick={() => setShowModelMenu((v) => !v)}
+                  onClick={() => {
+                    if (!showModelMenu && modelBadgeRef.current) {
+                      const rect =
+                        modelBadgeRef.current.getBoundingClientRect();
+                      setModelMenuPos({
+                        top: rect.bottom + 8,
+                        left: rect.left,
+                      });
+                    }
+                    setShowModelMenu((v) => !v);
+                  }}
                   aria-haspopup="listbox"
                   aria-expanded={showModelMenu}
                 >
@@ -1270,8 +1283,13 @@ function EiraUI() {
                   <span>{activeModel?.name || "Yên Tử"}</span>
                   <ChevronDown size={12} />
                 </button>
-                {showModelMenu && (
-                  <div className="eira-model-menu" role="listbox">
+                {showModelMenu && modelMenuPos && (
+                  <div
+                    className="eira-model-menu"
+                    role="listbox"
+                    style={{ top: modelMenuPos.top, left: modelMenuPos.left }}
+                  >
+                    {" "}
                     {modelTiers.map((t) => (
                       <button
                         key={t.code}

@@ -737,11 +737,10 @@
   opacity: 0.75;
 }
 .eira-model-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  z-index: 20;
+  position: fixed;
+  z-index: 99999;
   min-width: 240px;
+  max-width: min(300px, calc(100vw - 24px));
   background: var(--panel-bg, #fff);
   border-radius: var(--r-md, 14px);
   box-shadow:
