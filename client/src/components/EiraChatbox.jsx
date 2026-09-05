@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   MessageCircle,
   X,
@@ -675,6 +676,7 @@ function EiraUI() {
   const [activeModel, setActiveModel] = useState(null); // hạng server thực sự đang dùng (đẩy về qua sự kiện "model")
   const [showModelMenu, setShowModelMenu] = useState(false);
   const [modelMenuPos, setModelMenuPos] = useState(null); // { top, left } tính từ nút badge, để menu thoát khỏi overflow:hidden của header
+  const [brokenModelIcons, setBrokenModelIcons] = useState(() => new Set()); // mã hạng có ảnh icon bị lỗi (404) -> fallback về emoji
   const modelBadgeRef = useRef(null);
 
   /* Mascot: chỉ ẩn TẠM THỜI 5 phút khi người dùng bấm X, không lưu localStorage */
@@ -893,6 +895,34 @@ function EiraUI() {
     };
   }, [isOpen, modelTiers.length, selectedModel]);
 
+  const handleModelIconError = useCallback((code) => {
+    setBrokenModelIcons((prev) => {
+      if (prev.has(code)) return prev;
+      const next = new Set(prev);
+      next.add(code);
+      return next;
+    });
+  }, []);
+
+  // Hiện ảnh icon nếu có & chưa lỗi, ngược lại fallback về emoji.
+  const renderModelIcon = useCallback(
+    (t, className) => {
+      if (!t) return <span className={className}>⛰️</span>;
+      if (t.icon && !brokenModelIcons.has(t.code)) {
+        return (
+          <img
+            src={t.icon}
+            alt=""
+            className={className}
+            onError={() => handleModelIconError(t.code)}
+          />
+        );
+      }
+      return <span className={className}>{t.emoji || "⛰️"}</span>;
+    },
+    [brokenModelIcons, handleModelIconError],
+  );
+
   const handleSelectModel = useCallback(
     (tier) => {
       if (!tier.unlocked || isBusy) return;
@@ -904,11 +934,18 @@ function EiraUI() {
     [isBusy],
   );
 
-  /* Đóng menu chọn hạng model khi bấm ra ngoài */
+  /* Đóng menu chọn hạng model khi bấm ra ngoài — menu được portal ra
+     document.body nên không còn là con DOM thật của .eira-model-picker,
+     phải check thêm .eira-model-menu để không tự đóng khi bấm chọn 1 hạng */
   useEffect(() => {
     if (!showModelMenu) return;
     const closeMenu = (e) => {
-      if (!e.target.closest(".eira-model-picker")) setShowModelMenu(false);
+      if (
+        !e.target.closest(".eira-model-picker") &&
+        !e.target.closest(".eira-model-menu")
+      ) {
+        setShowModelMenu(false);
+      }
     };
     document.addEventListener("pointerdown", closeMenu);
     return () => document.removeEventListener("pointerdown", closeMenu);
@@ -1000,12 +1037,16 @@ function EiraUI() {
           } else if (event === "model") {
             // Server luôn tự xác thực quyền, đây là hạng THẬT SỰ được dùng cho lượt này
             // (có thể bị hạ xuống nếu client gửi hạng chưa mở khóa) — đồng bộ lại UI.
+            // Ưu tiên lấy nguyên object từ modelTiers đã tải (có icon/emoji đầy đủ),
+            // chỉ dựng object tối giản nếu vì lý do gì đó chưa có trong danh sách.
             setSelectedModel(data.code);
-            setActiveModel((prev) =>
-              prev?.code === data.code
-                ? prev
-                : { ...(prev || {}), code: data.code, name: data.name },
-            );
+            setActiveModel((prev) => {
+              if (prev?.code === data.code) return prev;
+              const full = modelTiers.find((t) => t.code === data.code);
+              return (
+                full || { ...(prev || {}), code: data.code, name: data.name }
+              );
+            });
           } else if (event === "status") {
             if (!streamedText) setStatusLabel(data.label);
           } else if (event === "books") {
@@ -1081,7 +1122,7 @@ function EiraUI() {
         setTimeout(() => inpRef.current?.focus(), 0);
       }
     },
-    [isBusy, configError, selectedModel],
+    [isBusy, configError, selectedModel, modelTiers],
   );
 
   const handleRegenerate = useCallback(
@@ -1277,39 +1318,46 @@ function EiraUI() {
                   aria-haspopup="listbox"
                   aria-expanded={showModelMenu}
                 >
-                  <span>{activeModel?.emoji || "⛰️"}</span>
+                  {renderModelIcon(activeModel, "eira-model-badge-icon")}
                   <span>{activeModel?.name || "Yên Tử"}</span>
                   <ChevronDown size={12} />
                 </button>
-                {showModelMenu && modelMenuPos && (
-                  <div
-                    className="eira-model-menu"
-                    role="listbox"
-                    style={{ top: modelMenuPos.top, left: modelMenuPos.left }}
-                  >                    {modelTiers.map((t) => (
-                      <button
-                        key={t.code}
-                        type="button"
-                        role="option"
-                        aria-selected={t.code === selectedModel}
-                        disabled={!t.unlocked}
-                        className={`eira-model-opt${t.code === selectedModel ? " active" : ""}${!t.unlocked ? " locked" : ""}`}
-                        onClick={() => handleSelectModel(t)}
-                      >
-                        <span className="eira-model-opt-emoji">{t.emoji}</span>
-                        <span className="eira-model-opt-text">
-                          <span className="eira-model-opt-name">
-                            {t.name}
+                {showModelMenu &&
+                  modelMenuPos &&
+                  createPortal(
+                    <div
+                      className="eira-model-menu"
+                      role="listbox"
+                      style={{
+                        top: modelMenuPos.top,
+                        left: modelMenuPos.left,
+                      }}
+                    >
+                      {modelTiers.map((t) => (
+                        <button
+                          key={t.code}
+                          type="button"
+                          role="option"
+                          aria-selected={t.code === selectedModel}
+                          disabled={!t.unlocked}
+                          className={`eira-model-opt${t.code === selectedModel ? " active" : ""}${!t.unlocked ? " locked" : ""}`}
+                          onClick={() => handleSelectModel(t)}
+                        >
+                          {renderModelIcon(t, "eira-model-opt-emoji")}
+                          <span className="eira-model-opt-text">
+                            <span className="eira-model-opt-name">
+                              {t.name}
+                            </span>
+                            <span className="eira-model-opt-tag">
+                              {t.tagline}
+                            </span>
                           </span>
-                          <span className="eira-model-opt-tag">
-                            {t.tagline}
-                          </span>
-                        </span>
-                        {!t.unlocked && <Lock size={12} />}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                          {!t.unlocked && <Lock size={12} />}
+                        </button>
+                      ))}
+                    </div>,
+                    document.body,
+                  )}
               </div>
             ) : (
               <div className="eira-hdr-sub">Người bạn khám phá</div>

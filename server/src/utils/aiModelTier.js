@@ -10,6 +10,7 @@ const AI_MODEL_TIERS = [
     minSpend: LOYALTY_TIERS[0].minSpend, // 0 — luôn mở khóa, kể cả khách vãng lai
     model: "llama-3.1-8b-instant",
     label: "Yên Tử · Cơ bản",
+    icon: "/icon-modal-ai/yen-tu.png",
     tagline: "Cấp mặc định — nhanh, nhẹ, đủ dùng cho tư vấn thường ngày",
     maxTokens: 450,
     historyMessages: 8,
@@ -25,6 +26,7 @@ const AI_MODEL_TIERS = [
     minSpend: LOYALTY_TIERS[1].minSpend, // 3.000.000đ — cùng ngưỡng hạng "Cố Đô Huế"
     model: "llama-3.3-70b-versatile",
     label: "Bạch Mã · Nâng cao",
+    icon: "/icon-modal-ai/bach-ma.png",
     tagline: "Hiểu ngữ cảnh tốt hơn, trả lời chi tiết hơn",
     maxTokens: 650,
     historyMessages: 12,
@@ -40,6 +42,7 @@ const AI_MODEL_TIERS = [
     minSpend: LOYALTY_TIERS[2].minSpend, // 7.000.000đ — cùng ngưỡng hạng "Cầu Rồng"
     model: "openai/gpt-oss-20b",
     label: "Bà Nà · Chuyên sâu",
+    icon: "/icon-modal-ai/ba-na.png",
     tagline: "Tư vấn sâu, ghi nhớ hội thoại dài hơn",
     maxTokens: 850,
     historyMessages: 16,
@@ -55,6 +58,7 @@ const AI_MODEL_TIERS = [
     minSpend: LOYALTY_TIERS[3].minSpend, // 15.000.000đ — cùng ngưỡng hạng "Tháp Bà Ponagar"
     model: "meta-llama/llama-4-maverick-17b-128e-instruct",
     label: "Tam Đảo · Cao cấp",
+    icon: "/icon-modal-ai/tam-dao.png",
     tagline: "Suy luận tốt hơn, trả lời dài & mạch lạc hơn",
     maxTokens: 1100,
     historyMessages: 20,
@@ -70,6 +74,7 @@ const AI_MODEL_TIERS = [
     minSpend: LOYALTY_TIERS[4].minSpend, // 30.000.000đ — cùng ngưỡng hạng "Landmark 81"
     model: "openai/gpt-oss-120b",
     label: "Fansipan · Đỉnh cao",
+    icon: "/icon-modal-ai/fansipan.png",
     tagline: "Model mạnh nhất — dành cho hạng thành viên cao nhất",
     maxTokens: 1400,
     historyMessages: 24,
@@ -102,6 +107,7 @@ const buildModelTierList = (spend) => {
     code: t.code,
     name: t.name,
     emoji: t.emoji,
+    icon: t.icon,
     label: t.label,
     tagline: t.tagline,
     minSpend: t.minSpend,
@@ -112,6 +118,7 @@ const buildModelTierList = (spend) => {
 
 /**
  * Khách vãng lai (chưa đăng nhập) chỉ dùng được hạng mặc định (Yên Tử).
+ * Khách đã đăng nhập: tra tổng chi tiêu thật để biết hạng cao nhất được mở khóa.
  */
 const resolveUserMaxTier = async (user) => {
   if (!user?.id) return DEFAULT_TIER;
@@ -119,6 +126,13 @@ const resolveUserMaxTier = async (user) => {
   return resolveMaxTierBySpend(spend);
 };
 
+/**
+ * Xác thực + chốt hạng model thực sự dùng cho 1 lượt chat:
+ * - Nếu không truyền / truyền mã không hợp lệ -> dùng hạng cao nhất đã mở khóa.
+ * - Nếu truyền mã hợp lệ nhưng CHƯA mở khóa -> hạ về hạng cao nhất đã mở khóa
+ *   (không bao giờ tin tưởng lựa chọn từ client vượt quá quyền thật sự).
+ * - Nếu truyền mã hợp lệ và đã mở khóa -> cho phép dùng (kể cả chọn hạng thấp hơn).
+ */
 const resolveEffectiveTier = async (user, requestedCode) => {
   const maxTier = await resolveUserMaxTier(user);
   if (!requestedCode) return maxTier;

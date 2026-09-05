@@ -736,6 +736,20 @@
 .eira-model-badge svg {
   opacity: 0.75;
 }
+.eira-model-badge-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+}
+span.eira-model-badge-icon {
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  font-size: 13px;
+  line-height: 1;
+}
 .eira-model-menu {
   position: fixed;
   z-index: 99999;
@@ -779,6 +793,12 @@
   font-size: 17px;
   line-height: 1;
   flex-shrink: 0;
+}
+img.eira-model-opt-emoji {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 .eira-model-opt-text {
   display: flex;
