@@ -1804,9 +1804,32 @@ body.dark-mode {
   flex-shrink: 0;
   margin-top: 2px;
 }
+.lj-card-benefits li.lj-benefit-ai {
+  align-items: center;
+}
+.lj-card-benefits li.lj-benefit-ai > svg {
+  margin-top: 0;
+}
 .lj-card-benefits strong {
   color: var(--forest);
   font-weight: 600;
+}
+.lj-ai-tier-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+}
+.lj-ai-tier-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
+  vertical-align: -3px;
+}
+.lj-ai-tier-emoji {
+  font-size: 0.95em;
+  line-height: 1;
 }
 
 .lj-card-unlock {

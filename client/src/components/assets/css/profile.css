@@ -1774,6 +1774,23 @@
   );
   color: var(--tier-color, var(--gold));
 }
+.pf-ai-tier-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+}
+.pf-ai-tier-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.pf-ai-tier-emoji {
+  font-size: 0.95em;
+  line-height: 1;
+}
 
 /* POINTER SHEEN  */
 .pf-sheen-surface {

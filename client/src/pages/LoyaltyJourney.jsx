@@ -1472,12 +1472,32 @@ function RankStop({
               </span>
             </li>
             {tier.aiModel && (
-              <li>
+              <li className="lj-benefit-ai">
                 <Bot size={14} />
                 <span>
                   Mở khóa trợ lý AI Eira hạng{" "}
-                  <strong>
-                    {tier.aiModel.emoji} {tier.aiModel.name}
+                  <strong
+                    className="lj-ai-tier-name"
+                    style={{ color: "var(--tier-color)" }}
+                  >
+                    <img
+                      src={tier.aiModel.icon}
+                      alt=""
+                      aria-hidden="true"
+                      className="lj-ai-tier-icon"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                        e.currentTarget.nextSibling.style.display = "inline";
+                      }}
+                    />
+                    <span
+                      className="lj-ai-tier-emoji"
+                      aria-hidden="true"
+                      style={{ display: "none" }}
+                    >
+                      {tier.aiModel.emoji}
+                    </span>
+                    {tier.aiModel.name}
                   </strong>
                   {tier.aiModel.tagline && <> — {tier.aiModel.tagline}</>}
                 </span>

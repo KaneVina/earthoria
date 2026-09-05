@@ -1795,8 +1795,27 @@ function OverviewTab({
                   <span className="pf-loyalty-benefit-icon">{Icon.bot}</span>
                   <span>
                     Trợ lý AI Eira hạng{" "}
-                    <strong>
-                      {loyaltyProfile.tier.aiModel.emoji}{" "}
+                    <strong
+                      className="pf-ai-tier-name"
+                      style={{ color: loyaltyProfile.tier.color }}
+                    >
+                      <img
+                        src={loyaltyProfile.tier.aiModel.icon}
+                        alt=""
+                        aria-hidden="true"
+                        className="pf-ai-tier-icon"
+                        onError={(e) => {
+                          e.currentTarget.style.display = "none";
+                          e.currentTarget.nextSibling.style.display = "inline";
+                        }}
+                      />
+                      <span
+                        className="pf-ai-tier-emoji"
+                        aria-hidden="true"
+                        style={{ display: "none" }}
+                      >
+                        {loyaltyProfile.tier.aiModel.emoji}
+                      </span>
                       {loyaltyProfile.tier.aiModel.name}
                     </strong>
                   </span>
@@ -1837,11 +1856,28 @@ function OverviewTab({
               </div>
               <div className="pf-loyalty-preview-name">{previewTier?.name}</div>
               {previewTier?.aiModel && (
-                <div className="pf-loyalty-preview-ai">
-                  {Icon.bot}
-                  <span>
-                    {previewTier.aiModel.emoji} {previewTier.aiModel.name}
+                <div
+                  className="pf-loyalty-preview-ai"
+                  style={{ color: previewTier.color }}
+                >
+                  <img
+                    src={previewTier.aiModel.icon}
+                    alt=""
+                    aria-hidden="true"
+                    className="pf-ai-tier-icon"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                      e.currentTarget.nextSibling.style.display = "inline";
+                    }}
+                  />
+                  <span
+                    className="pf-ai-tier-emoji"
+                    aria-hidden="true"
+                    style={{ display: "none" }}
+                  >
+                    {previewTier.aiModel.emoji}
                   </span>
+                  <span>{previewTier.aiModel.name}</span>
                 </div>
               )}
               <div className="pf-loyalty-preview-dots">
