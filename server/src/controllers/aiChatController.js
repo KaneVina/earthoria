@@ -1,11 +1,17 @@
 const { formatResponse } = require("../utils/helpers");
 const { runChatTurn } = require("../services/aiChatService");
+const {
+  buildModelTierList,
+  resolveUserMaxTier,
+  getTierByCode,
+} = require("../utils/aiModelTier");
+const { getUserLifetimeSpend } = require("../utils/loyaltyTier");
 
 const MAX_MESSAGE_LEN = 500;
 const MAX_HISTORY_ITEMS = 22;
 
 function validateBody(body) {
-  const { message, history } = body || {};
+  const { message, history, model } = body || {};
 
   if (typeof message !== "string" || !message.trim()) {
     return "Nội dung tin nhắn không hợp lệ";
@@ -28,6 +34,11 @@ function validateBody(body) {
       }
     }
   }
+  if (model !== undefined && model !== null) {
+    if (typeof model !== "string" || !getTierByCode(model)) {
+      return "Hạng mô hình AI không hợp lệ";
+    }
+  }
   return null;
 }
 
@@ -35,7 +46,7 @@ const sendMessage = async (req, res) => {
   const validationError = validateBody(req.body);
   if (validationError) return formatResponse(res, 400, validationError);
 
-  const { message, history } = req.body;
+  const { message, history, model } = req.body;
 
   res.writeHead(200, {
     "Content-Type": "text/event-stream; charset=utf-8",
@@ -58,6 +69,7 @@ const sendMessage = async (req, res) => {
       message,
       history,
       user: req.user || null,
+      modelCode: model || null,
       emit,
       signal: controller.signal,
     });
@@ -82,4 +94,19 @@ const sendMessage = async (req, res) => {
   }
 };
 
-module.exports = { sendMessage };
+// GET /api/v1/ai/models — danh sách 5 hạng model (núi) + trạng thái mở khóa của khách hiện tại.
+const getModels = async (req, res) => {
+  try {
+    const spend = req.user?.id ? await getUserLifetimeSpend(req.user.id) : 0;
+    const maxTier = await resolveUserMaxTier(req.user || null);
+    return formatResponse(res, 200, "OK", {
+      tiers: buildModelTierList(spend),
+      currentMaxTier: maxTier.code,
+    });
+  } catch (err) {
+    console.error("[aiChat] getModels error:", err.message);
+    return formatResponse(res, 500, "Không thể tải danh sách hạng mô hình AI");
+  }
+};
+
+module.exports = { sendMessage, getModels };

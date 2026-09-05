@@ -707,6 +707,102 @@
   align-items: center;
 }
 
+/*         Bộ chọn hạng model AI (núi)         */
+.eira-model-picker {
+  position: relative;
+  margin-top: 2px;
+}
+.eira-model-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 4px 8px 4px 7px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    background 0.16s,
+    border-color 0.16s;
+}
+.eira-model-badge:hover {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.26);
+}
+.eira-model-badge svg {
+  opacity: 0.75;
+}
+.eira-model-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  min-width: 240px;
+  background: var(--panel-bg, #fff);
+  border-radius: var(--r-md, 14px);
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.18),
+    0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.eira-model-opt {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  text-align: left;
+  padding: 8px 9px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #2a2a2a;
+  transition: background 0.14s;
+}
+.eira-model-opt:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.05);
+}
+.eira-model-opt.active {
+  background: color-mix(in srgb, var(--eg, #4a9e3f) 12%, transparent);
+}
+.eira-model-opt.locked {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.eira-model-opt-emoji {
+  font-size: 17px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.eira-model-opt-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.eira-model-opt-name {
+  font-size: 13px;
+  font-weight: 650;
+}
+.eira-model-opt-tag {
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.5);
+  margin-top: 1px;
+  white-space: normal;
+  line-height: 1.3;
+}
+.eira-model-opt svg {
+  flex-shrink: 0;
+  color: rgba(0, 0, 0, 0.4);
+}
+
 .eira-close-btn {
   z-index: 1;
   width: 30px;

@@ -6,14 +6,18 @@ const {
   isCouponUsable,
 } = require("../utils/couponUtil");
 const { generateTicketCode } = require("../utils/generateTicketCode");
-const { GROQ_API_KEY, GROQ_URL, GROQ_MODEL } = require("./groqClient");
+const { GROQ_API_KEY, GROQ_URL } = require("./groqClient");
+const { resolveEffectiveTier, DEFAULT_TIER } = require("../utils/aiModelTier");
 
-const MAX_HISTORY_MESSAGES = 18;
+const MAX_HISTORY_MESSAGES = 18; // trần tuyệt đối, mỗi hạng dùng historyMessages riêng nhưng không vượt trần này
 const MAX_MESSAGE_LEN = 500;
-const MAX_TOOL_ROUNDS = 3; // chặn vòng lặp tool gọi tool vô hạn
+const MAX_TOOL_ROUNDS = 3; // trần tuyệt đối, mỗi hạng dùng toolRounds riêng nhưng không vượt trần này
 const MAX_BOOK_CANDIDATES = 5;
 
-/*   1) RAG — LẤY DỮ LIỆU THẬT TỪ DB     */
+/*
+   1) RAG — LẤY DỮ LIỆU THẬT TỪ DB
+     */
+
 function formatBookCard(book) {
   const variant =
     book.variants?.find((v) => v.format === "PHYSICAL") ||
@@ -107,10 +111,10 @@ async function getActiveCouponsContext() {
   return `MÃ GIẢM GIÁ ĐANG HOẠT ĐỘNG (LẤY TRỰC TIẾP TỪ HỆ THỐNG):\n${lines.join("\n")}`;
 }
 
-/*2) SYSTEM PROMPT */
-
+/*   2) SYSTEM PROMPT      */
 // LUÔN LOAD
 const MODULE_CORE = `Bạn là Eira — trợ lý AI thân thiện đồng thời là chuyên viên tư vấn khách hàng chuyên nghiệp của Earthoria. Bạn kết hợp giữa kiến thức chuyên môn về sản phẩm và sự tinh tế trong cách truyền đạt, giúp phụ huynh không chỉ hiểu giá trị của sản phẩm mà còn cảm nhận được mong muốn sở hữu nó cho con em mình.
+
 NGUYÊN TẮC TUYỆT ĐỐI:
 - Ưu tiên trả lời bằng tiếng Việt.
 - Từ chối trả lời những câu hỏi nhạy cảm liên quan đến chính trị, tôn giáo, chiến tranh, giới tính, định kiến.
@@ -138,7 +142,8 @@ const MODULE_TOOL_GUIDE = `DÙNG TOOL KHI CẦN — RẤT QUAN TRỌNG:
 - Khi khách hỏi về trạng thái đơn hàng của họ ("đơn của tôi tới đâu rồi", "đơn hàng ABC123 sao rồi"): gọi tool get_order_status. Nếu không cung cấp mã, để trống để lấy đơn gần nhất. Kết quả tool luôn có "lookupLimit" (số đơn gần nhất được phép tra) — LUÔN mở đầu câu trả lời bằng một câu ngắn gọn kiểu "Do chính sách bảo mật, mình chỉ tra được tối đa {lookupLimit} đơn gần nhất của bạn thôi ạ, đây là kết quả mình tìm được:" rồi mới nêu chi tiết đơn hàng hoặc thông báo không tìm thấy — kể cả khi tra ra kết quả bình thường, không chỉ khi không tìm thấy.
 - Khi khách muốn dùng một mã giảm giá cụ thể: gọi tool apply_coupon để kiểm tra và xem trước số tiền được giảm dựa trên giỏ hàng thật của khách.
 - Khi bạn không chắc chắn về câu trả lời sau khi đã cố gắng, khi khách yêu cầu rõ ràng được nói chuyện với nhân viên thật, hoặc khách có dấu hiệu bực bội/lặp lại câu hỏi nhiều lần mà chưa được giải quyết: gọi tool escalate_to_human.
-- Không viết văn bản giải thích "để mình kiểm tra nhé" trước khi gọi tool — gọi tool ngay, rồi trả lời khách dựa trên kết quả.`;
+- Không viết văn bản giải thích "để mình kiểm tra nhé" trước khi gọi tool — gọi tool ngay, rồi trả lời khách dựa trên kết quả.
+- TUYỆT ĐỐI không nhắc đến tên tool/hàm nội bộ (suggest_books, get_book_details, check_stock, get_order_status, apply_coupon, escalate_to_human...) trong câu trả lời gửi cho khách, kể cả khi nói ở thì tương lai ("mình sẽ dùng tool X để..."). Khách không cần biết cơ chế kỹ thuật phía sau — chỉ cần nói tự nhiên kiểu "để mình xem thử/gợi ý cho bạn nhé" rồi hành động luôn.`;
 
 // LUÔN LOAD
 const MODULE_STYLE = `CÁCH TƯ VẤN VÀ VĂN PHONG:
@@ -874,9 +879,26 @@ function sleep(ms, signal) {
   });
 }
 
+// Nhận diện lỗi do model không tồn tại/bị Groq deprecate (khác với lỗi tạm
+// thời như 429 rate-limit hay lỗi mạng) — để runChatTurn tự hạ về model mặc định.
+function isModelUnavailableError(err) {
+  if (!err) return false;
+  if (err.status === 429) return false; // rate limit -> đã retry riêng, không phải lỗi model
+  if (err.status !== 400 && err.status !== 404) return false;
+  const msg = String(err.message || "").toLowerCase();
+  return (
+    msg.includes("model") &&
+    (msg.includes("decommission") ||
+      msg.includes("not found") ||
+      msg.includes("does not exist") ||
+      msg.includes("invalid") ||
+      msg.includes("not supported"))
+  );
+}
+
 async function streamGroqCompletion(
   messages,
-  { onToken, onRetry, signal } = {},
+  { onToken, onRetry, signal, model, maxTokens } = {},
 ) {
   if (!GROQ_API_KEY) {
     const err = new Error("Thiếu GROQ_API_KEY trên server");
@@ -894,12 +916,12 @@ async function streamGroqCompletion(
         Authorization: `Bearer ${GROQ_API_KEY}`,
       },
       body: JSON.stringify({
-        model: GROQ_MODEL,
+        model,
         messages,
         tools: TOOLS,
         tool_choice: "auto",
         temperature: 0.72,
-        max_tokens: 500,
+        max_tokens: maxTokens,
         top_p: 0.88,
         stream: true,
       }),
@@ -1005,6 +1027,7 @@ async function consumeGroqStream(res, { onToken }) {
  * @param {string} params.message
  * @param {Array<{role:string, content:string}>} params.history
  * @param {object|null} params.user - req.user (từ optionalAuth), null nếu khách
+ * @param {string|null} [params.modelCode] - mã hạng model client chọn (vd "BA_NA"); server luôn tự xác thực lại quyền, không tin tuyệt đối giá trị này
  * @param {(event:string, data:object) => void} params.emit - đẩy sự kiện SSE
  * @param {AbortSignal} [params.signal]
  */
@@ -1012,10 +1035,22 @@ async function runChatTurn({
   message,
   history = [],
   user = null,
+  modelCode = null,
   emit,
   signal,
 }) {
   const trimmedMessage = String(message).trim().slice(0, MAX_MESSAGE_LEN);
+
+  const tier = await resolveEffectiveTier(user, modelCode);
+  const historyLimit = Math.min(tier.historyMessages, MAX_HISTORY_MESSAGES);
+  const toolRoundsLimit = Math.min(tier.toolRounds, MAX_TOOL_ROUNDS);
+
+  emit("model", {
+    code: tier.code,
+    name: tier.name,
+    label: tier.label,
+    rank: tier.rank,
+  });
 
   const safeHistory = history
     .filter(
@@ -1024,7 +1059,7 @@ async function runChatTurn({
         (m.role === "user" || m.role === "assistant") &&
         typeof m.content === "string",
     )
-    .slice(-MAX_HISTORY_MESSAGES)
+    .slice(-historyLimit)
     .map((m) => ({
       role: m.role,
       content: m.content.slice(0, MAX_MESSAGE_LEN),
@@ -1051,15 +1086,53 @@ async function runChatTurn({
 
   const ctx = { user, candidateBooksById, emit };
 
-  for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-    const result = await streamGroqCompletion(messages, {
-      signal,
-      onToken: (text) => emit("token", { text }),
-      onRetry: (waitMs) =>
-        emit("status", {
-          label: `Hệ thống AI đang bận, đang thử lại sau ${Math.ceil(waitMs / 1000)}s...`,
-        }),
-    });
+  // Model của hạng đang dùng — có thể bị hạ về DEFAULT_TIER giữa chừng nếu
+  // Groq deprecate/model lỗi (xem isModelUnavailableError), để không bao giờ
+  // trả lỗi trắng cho khách chỉ vì 1 model bị Groq ngừng hỗ trợ.
+  let activeModel = tier.model;
+  let activeMaxTokens = tier.maxTokens;
+  let fellBackToDefault = false;
+
+  for (let round = 0; round < toolRoundsLimit; round++) {
+    let result;
+    try {
+      result = await streamGroqCompletion(messages, {
+        signal,
+        model: activeModel,
+        maxTokens: activeMaxTokens,
+        onToken: (text) => emit("token", { text }),
+        onRetry: (waitMs) =>
+          emit("status", {
+            label: `Hệ thống AI đang bận, đang thử lại sau ${Math.ceil(waitMs / 1000)}s...`,
+          }),
+      });
+    } catch (err) {
+      // Model của hạng cao bị Groq deprecate/lỗi cấu hình -> tự hạ về model
+      // mặc định (luôn ổn định) và thử lại NGAY round này, thay vì bắt khách
+      // chờ lỗi rồi tự bấm gửi lại.
+      if (
+        !fellBackToDefault &&
+        activeModel !== DEFAULT_TIER.model &&
+        isModelUnavailableError(err)
+      ) {
+        console.error(
+          `[aiChat] Model "${activeModel}" (hạng ${tier.code}) lỗi, tự hạ về model mặc định "${DEFAULT_TIER.model}":`,
+          err.message,
+        );
+        fellBackToDefault = true;
+        activeModel = DEFAULT_TIER.model;
+        activeMaxTokens = DEFAULT_TIER.maxTokens;
+        emit("model", {
+          code: DEFAULT_TIER.code,
+          name: DEFAULT_TIER.name,
+          label: DEFAULT_TIER.label,
+          rank: DEFAULT_TIER.rank,
+        });
+        round -= 1; // thử lại đúng round này với model mới
+        continue;
+      }
+      throw err;
+    }
 
     if (result.toolCalls.length === 0) {
       return sanitizeReply(result.text);

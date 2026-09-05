@@ -13,6 +13,7 @@ import {
   Check,
   ChevronDown,
   Trash2,
+  Lock,
   WifiOff,
   ArrowUpRight,
   Volume2,
@@ -666,6 +667,14 @@ function EiraUI() {
   const [configError, setConfigError] = useState(null);
   const [confirmClear, setConfirmClear] = useState(false);
 
+  /* Hạng model AI (núi) — Yên Tử -> Bạch Mã -> Bà Nà -> Tam Đảo -> Fansipan */
+  const [modelTiers, setModelTiers] = useState([]);
+  const [selectedModel, setSelectedModel] = useState(
+    () => localStorage.getItem("eira_model") || null,
+  );
+  const [activeModel, setActiveModel] = useState(null); // hạng server thực sự đang dùng (đẩy về qua sự kiện "model")
+  const [showModelMenu, setShowModelMenu] = useState(false);
+
   /* Mascot: chỉ ẩn TẠM THỜI 5 phút khi người dùng bấm X, không lưu localStorage */
   const [promoVisible, setPromoVisible] = useState(false);
   const [promoDismissed, setPromoDismissed] = useState(false);
@@ -856,6 +865,53 @@ function EiraUI() {
     return () => document.removeEventListener("keydown", handler);
   }, [isOpen]);
 
+  /* Tải danh sách hạng model AI khi mở chat lần đầu (chỉ gọi 1 lần) */
+  useEffect(() => {
+    if (!isOpen || modelTiers.length > 0) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await api.get("/ai/models");
+        const tiers = res?.data?.data?.tiers || [];
+        if (cancelled || !tiers.length) return;
+        setModelTiers(tiers);
+
+        // Chọn model đã lưu nếu vẫn còn hợp lệ & đã mở khóa, ngược lại dùng hạng cao nhất đã mở khóa.
+        const saved = tiers.find((t) => t.code === selectedModel && t.unlocked);
+        const fallback = tiers.find((t) => t.isMaxUnlocked) || tiers[0];
+        const toUse = saved || fallback;
+        setSelectedModel(toUse.code);
+        setActiveModel(toUse);
+      } catch {
+        // Không tải được danh sách hạng cũng không sao — server tự chọn hạng mặc định khi chat.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, modelTiers.length, selectedModel]);
+
+  const handleSelectModel = useCallback(
+    (tier) => {
+      if (!tier.unlocked || isBusy) return;
+      setSelectedModel(tier.code);
+      setActiveModel(tier);
+      localStorage.setItem("eira_model", tier.code);
+      setShowModelMenu(false);
+    },
+    [isBusy],
+  );
+
+  /* Đóng menu chọn hạng model khi bấm ra ngoài */
+  useEffect(() => {
+    if (!showModelMenu) return;
+    const closeMenu = (e) => {
+      if (!e.target.closest(".eira-model-picker")) setShowModelMenu(false);
+    };
+    document.addEventListener("pointerdown", closeMenu);
+    return () => document.removeEventListener("pointerdown", closeMenu);
+  }, [showModelMenu]);
+
   /* Core send */
   const sendMessage = useCallback(
     async (text) => {
@@ -913,6 +969,7 @@ function EiraUI() {
           body: JSON.stringify({
             message: trimmed,
             history: historyRef.current.slice(-TRIM_HISTORY_TO),
+            model: selectedModel || undefined,
           }),
           signal: controller.signal,
         });
@@ -930,6 +987,15 @@ function EiraUI() {
         await consumeSse(res, (event, data) => {
           if (event === "token") {
             appendToken(data.text);
+          } else if (event === "model") {
+            // Server luôn tự xác thực quyền, đây là hạng THẬT SỰ được dùng cho lượt này
+            // (có thể bị hạ xuống nếu client gửi hạng chưa mở khóa) — đồng bộ lại UI.
+            setSelectedModel(data.code);
+            setActiveModel((prev) =>
+              prev?.code === data.code
+                ? prev
+                : { ...(prev || {}), code: data.code, name: data.name },
+            );
           } else if (event === "status") {
             if (!streamedText) setStatusLabel(data.label);
           } else if (event === "books") {
@@ -1005,7 +1071,7 @@ function EiraUI() {
         setTimeout(() => inpRef.current?.focus(), 0);
       }
     },
-    [isBusy, configError],
+    [isBusy, configError, selectedModel],
   );
 
   const handleRegenerate = useCallback(
@@ -1191,7 +1257,47 @@ function EiraUI() {
           </div>
           <div className="eira-hdr-info">
             <div className="eira-hdr-name">Eira</div>
-            <div className="eira-hdr-sub">Người bạn khám phá</div>
+            {modelTiers.length > 0 ? (
+              <div className="eira-model-picker">
+                <button
+                  type="button"
+                  className="eira-model-badge"
+                  onClick={() => setShowModelMenu((v) => !v)}
+                  aria-haspopup="listbox"
+                  aria-expanded={showModelMenu}
+                >
+                  <span>{activeModel?.emoji || "⛰️"}</span>
+                  <span>{activeModel?.name || "Yên Tử"}</span>
+                  <ChevronDown size={12} />
+                </button>
+                {showModelMenu && (
+                  <div className="eira-model-menu" role="listbox">
+                    {modelTiers.map((t) => (
+                      <button
+                        key={t.code}
+                        type="button"
+                        role="option"
+                        aria-selected={t.code === selectedModel}
+                        disabled={!t.unlocked}
+                        className={`eira-model-opt${t.code === selectedModel ? " active" : ""}${!t.unlocked ? " locked" : ""}`}
+                        onClick={() => handleSelectModel(t)}
+                      >
+                        <span className="eira-model-opt-emoji">{t.emoji}</span>
+                        <span className="eira-model-opt-text">
+                          <span className="eira-model-opt-name">{t.name}</span>
+                          <span className="eira-model-opt-tag">
+                            {t.tagline}
+                          </span>
+                        </span>
+                        {!t.unlocked && <Lock size={12} />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="eira-hdr-sub">Người bạn khám phá</div>
+            )}
           </div>
           <div className="eira-hdr-actions">
             {messages.length > 0 && (
