@@ -9,6 +9,7 @@ import {
   Crown,
   Copyright,
   Bot,
+  Users,
   ArrowRight,
   Mail,
   Phone,
@@ -20,7 +21,6 @@ import {
   ArrowUpDown,
   ChevronDown,
 } from "lucide-react";
-
 /* POLICY CARDS DATA */
 const POLICIES = [
   {
@@ -143,8 +143,22 @@ const POLICIES = [
     to: "/legal/ai",
     label: "Xem Chính Sách AI",
   },
+  {
+    icon: Users,
+    eyebrow: "Gia Đình & Trẻ Em",
+    title: "Chính Sách Trang Gia Đình & Trang Trại Tri Thức",
+    desc: "Cách phụ huynh quản lý hồ sơ trẻ em, mã PIN, giờ giấc, bảo vệ mắt và nội dung tại /family — và cách Trang Trại Tri Thức biến mỗi phút đọc sách thành một cây tri thức lớn lên mỗi ngày.",
+    version: "v1.0",
+    updated: "05/09/2026",
+    highlights: [
+      "PIN 4 số + khoá thiết bị tức thời",
+      "Giờ giấc & bảo vệ mắt thực thi ở máy chủ",
+      "9 cấp độ cây tri thức, không mất tiến trình khi bỏ lỡ",
+    ],
+    to: "/legal/family",
+    label: "Xem Chính Sách Gia Đình",
+  },
 ];
-
 const TRUST_ITEMS = [
   { icon: BadgeCheck, text: "Tuân thủ Luật Bảo vệ Người tiêu dùng Việt Nam" },
   { icon: ShieldCheck, text: "Bảo mật dữ liệu theo tiêu chuẩn quốc tế" },
