@@ -22,6 +22,7 @@ import {
   PlaneLanding,
   User,
   Users,
+  Bot,
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 import { loyaltyService } from "../services/loyaltyService";
@@ -49,6 +50,13 @@ const TIERS_FALLBACK = [
     color: "#4a9e3f",
     colorSoft: "rgba(74,158,63,0.12)",
     tagline: "Khởi hành — mọi hành trình đều bắt đầu từ đây",
+    aiModel: {
+      code: "YEN_TU",
+      name: "Yên Tử",
+      emoji: "⛰️",
+      icon: "/icon-modal-ai/yen-tu.png",
+      tagline: "Đáp ứng trọn vẹn những nhu cầu thường nhật.",
+    },
     story: {
       title: "Diên Hựu Tự — nơi một giấc mơ của vua Lý hóa thành kiến trúc.",
       desc: "Từ một giấc mơ trên tòa sen, một biểu tượng đã được dựng nên — mở đầu cho hành trình đi qua những dấu ấn của thời gian.",
@@ -75,6 +83,13 @@ const TIERS_FALLBACK = [
     color: "#2a78d6",
     colorSoft: "rgba(42,120,214,0.12)",
     tagline: "Bước chân đầu tiên vượt khỏi vùng an toàn",
+    aiModel: {
+      code: "BACH_MA",
+      name: "Bạch Mã",
+      emoji: "🌫️",
+      icon: "/icon-modal-ai/bach-ma.png",
+      tagline: "Thấu hiểu sâu hơn, nắm bắt ngữ cảnh và phản hồi tinh tế hơn.",
+    },
     story: {
       title:
         "Kinh đô triều Nguyễn — nơi Ngũ phương, Ngũ hành, Ngũ sắc hòa thành một trật tự.",
@@ -102,6 +117,13 @@ const TIERS_FALLBACK = [
     color: "#b8862e",
     colorSoft: "rgba(184,134,46,0.12)",
     tagline: "Vươn mình bứt phá như rồng bay ra biển lớn",
+    aiModel: {
+      code: "BA_NA",
+      name: "Bà Nà",
+      emoji: "🌉",
+      icon: "/icon-modal-ai/ba-na.png",
+      tagline: "Tư duy sắc bén, trả lời chặt chẽ, mạch lạc.",
+    },
     story: {
       title:
         "666 mét, 6 làn xe — một con rồng thời Lý vươn mình qua sông Hàn, hướng ra biển lớn.",
@@ -129,6 +151,13 @@ const TIERS_FALLBACK = [
     color: "#7a4fb5",
     colorSoft: "rgba(122,79,181,0.12)",
     tagline: "Khám phá vùng đất của tháp cổ và biển xanh",
+    aiModel: {
+      code: "TAM_DAO",
+      name: "Tam Đảo",
+      emoji: "🏔️",
+      icon: "/icon-modal-ai/tam-dao.png",
+      tagline: "Suy luận và tư vấn sâu hơn.",
+    },
     story: {
       title:
         "Pô Nagar — nơi tín ngưỡng Chăm gặp gỡ văn hóa Việt, hòa vào hình tượng Thiên Y A Na Thánh Mẫu.",
@@ -156,6 +185,14 @@ const TIERS_FALLBACK = [
     color: "#c0392b",
     colorSoft: "rgba(192,57,43,0.12)",
     tagline: "Đỉnh cao — chạm tới nóc nhà của Sài Gòn hoa lệ",
+    aiModel: {
+      code: "FANSIPAN",
+      name: "Fansipan",
+      emoji: "🗻",
+      icon: "/icon-modal-ai/fansipan.png",
+      tagline:
+        "Xử lý yêu cầu phức tạp với khả năng suy luận mạnh mẽ và toàn diện nhất.",
+    },
     story: {
       title: "Từ hình ảnh bó tre Việt Nam đến tòa nhà cao nhất Việt Nam.",
       desc: "Nếu Chùa Một Cột bắt đầu bằng một giấc mơ, thì Landmark 81 là hình ảnh của một giấc mơ đã chạm tới bầu trời.",
@@ -1434,6 +1471,18 @@ function RankStop({
                 khoản trẻ em (E-Kid)
               </span>
             </li>
+            {tier.aiModel && (
+              <li>
+                <Bot size={14} />
+                <span>
+                  Mở khóa trợ lý AI Eira hạng{" "}
+                  <strong>
+                    {tier.aiModel.emoji} {tier.aiModel.name}
+                  </strong>
+                  {tier.aiModel.tagline && <> — {tier.aiModel.tagline}</>}
+                </span>
+              </li>
+            )}
           </ul>
 
           <div className="lj-card-unlock">

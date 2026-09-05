@@ -323,6 +323,24 @@ export const Icon = {
       <circle cx="18.5" cy="18.5" r="2.5" />
     </svg>
   ),
+  bot: (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+    >
+      <rect x="4" y="9" width="16" height="11" rx="2.5" />
+      <path d="M12 9V5" />
+      <circle cx="12" cy="3.5" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="9" cy="14.5" r="1.3" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="14.5" r="1.3" fill="currentColor" stroke="none" />
+      <path d="M1 13v3" />
+      <path d="M23 13v3" />
+    </svg>
+  ),
   plus: (
     <svg
       width="13"
@@ -1772,6 +1790,18 @@ function OverviewTab({
                   khoản trẻ em (E-Kid)
                 </span>
               </li>
+              {loyaltyProfile.tier.aiModel && (
+                <li>
+                  <span className="pf-loyalty-benefit-icon">{Icon.bot}</span>
+                  <span>
+                    Trợ lý AI Eira hạng{" "}
+                    <strong>
+                      {loyaltyProfile.tier.aiModel.emoji}{" "}
+                      {loyaltyProfile.tier.aiModel.name}
+                    </strong>
+                  </span>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -1806,6 +1836,14 @@ function OverviewTab({
                 )}
               </div>
               <div className="pf-loyalty-preview-name">{previewTier?.name}</div>
+              {previewTier?.aiModel && (
+                <div className="pf-loyalty-preview-ai">
+                  {Icon.bot}
+                  <span>
+                    {previewTier.aiModel.emoji} {previewTier.aiModel.name}
+                  </span>
+                </div>
+              )}
               <div className="pf-loyalty-preview-dots">
                 {loyaltyTiers.map((t, i) => (
                   <button

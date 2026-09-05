@@ -1567,6 +1567,16 @@
   max-width: 100%;
   text-align: center;
 }
+.pf-loyalty-preview-ai {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--preview-color, var(--gold));
+  letter-spacing: 0.01em;
+}
 .pf-loyalty-preview-dots {
   display: flex;
   align-items: center;
