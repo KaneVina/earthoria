@@ -733,6 +733,31 @@
   resize: vertical;
   min-height: 58px;
 }
+
+/* Ô xem trước nội dung chữ — chỉ để xem, bấm vào (hoặc bấm nút bên dưới)
+   sẽ mở đúng chế độ gõ trực tiếp trên trang thay vì gõ trong 1 ô riêng. */
+.bb-text-preview {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 58px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  border: 1px dashed rgba(20, 51, 42, 0.2);
+  background: #fbfaf7;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #2c3b34;
+  cursor: text;
+  word-break: break-word;
+}
+.bb-text-preview:hover {
+  border-color: #4a9e3f;
+  background: #fff;
+}
+.bb-text-preview-placeholder {
+  color: #9aa79f;
+  font-style: italic;
+}
 .bb-field input[type="range"] {
   width: 100%;
   accent-color: #4a9e3f;

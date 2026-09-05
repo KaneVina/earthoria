@@ -997,6 +997,24 @@ function LayerView({
   // soạn / xuất PDF) vẫn giữ nguyên định dạng rich-text như cũ.
   const useWordSpans = forceWordSpans || !isRich;
   const editingNow = !readOnly && !!isEditingText;
+  // Trước đây `dangerouslySetInnerHTML` được tính lại từ layer.html/layer.text
+  // (state React) MỖI lần render. Mỗi khi bấm Đậm/Nghiêng/Màu chữ, code commit
+  // state ngay lập tức để lưu, khiến React nạp lại DOM của vùng đang gõ với
+  // 1 object mới (dangerouslySetInnerHTML luôn coi là "thay đổi" vì object mới
+  // mỗi lần) — trình duyệt reset toàn bộ nội dung, con trỏ bị đẩy về đầu chữ.
+  // Fix: trong lúc đang soạn (editingNow), "chốt" nội dung HTML lúc bắt đầu
+  // vào 1 ref, không tính lại theo layer.html nữa — DOM contentEditable tự
+  // giữ nguyên trạng thái (kể cả con trỏ) vì React không còn ghi đè nó nữa;
+  // nội dung mới nhất được đọc trực tiếp từ DOM (editableRef) khi cần lưu.
+  const editingHtmlSnapshotRef = useRef(null);
+  if (editingNow) {
+    if (editingHtmlSnapshotRef.current === null) {
+      editingHtmlSnapshotRef.current =
+        layer.html || escapeHtml(layer.text || "");
+    }
+  } else {
+    editingHtmlSnapshotRef.current = null;
+  }
   // Chưa có nội dung thật (chỉ áp dụng cho lớp chữ MỚI, trong lúc soạn) —
   // hiển thị chữ mờ "Nhập chữ..." kiểu placeholder, không phải nội dung
   // thật, để không phải xoá tay trước khi gõ.
@@ -1119,7 +1137,7 @@ function LayerView({
             }}
             style={textInnerStyle}
             dangerouslySetInnerHTML={{
-              __html: layer.html || escapeHtml(layer.text || ""),
+              __html: editingHtmlSnapshotRef.current || "",
             }}
           />
         ) : showPlaceholder ? (
@@ -5405,26 +5423,37 @@ export default function BookBuilder() {
             ) : (
               <>
                 <div className="bb-field">
-                  <label>
-                    Nội dung
-                    <InfoHint>
-                      Muốn tô đậm hoặc đổi màu riêng 1 vài chữ trong câu? Nhấp
-                      đúp vào dòng chữ đó trên trang, bôi đen phần muốn đổi rồi
-                      dùng các nút Đậm / Nghiêng / Màu chữ bên dưới.
-                    </InfoHint>
-                  </label>
-                  <textarea
-                    value={selected.text}
-                    placeholder="Nhập chữ..."
-                    onFocus={beginEdit}
-                    onBlur={endEdit}
-                    onChange={(e) =>
-                      updateLayer(selected.id, {
-                        text: e.target.value,
-                        html: null,
-                      })
-                    }
-                  />
+                  <label>Nội dung</label>
+                  <div
+                    className="bb-text-preview"
+                    onClick={() => startEditText(selected.id)}
+                  >
+                    {(selected.text || "").trim() ? (
+                      <span
+                        dangerouslySetInnerHTML={{
+                          __html:
+                            selected.html || escapeHtml(selected.text || ""),
+                        }}
+                      />
+                    ) : (
+                      <span className="bb-text-preview-placeholder">
+                        Nhập chữ...
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    className="bb-btn"
+                    style={{
+                      width: "100%",
+                      justifyContent: "center",
+                      marginTop: 8,
+                    }}
+                    onClick={() => startEditText(selected.id)}
+                  >
+                    <Type size={14} />
+                    Gõ / sửa chữ ngay trên trang
+                  </button>
                 </div>
                 <div className="bb-field">
                   <label className="bb-checkbox-field">
