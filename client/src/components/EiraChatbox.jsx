@@ -853,6 +853,10 @@ function EiraUI() {
       if (!isOpen) return;
       const win = document.getElementById("eira-win");
       const fab = document.getElementById("eira-fab");
+      // Menu chọn hạng model được portal ra document.body (thoát overflow của
+      // #eira-win) nên không nằm trong win/fab — phải loại trừ riêng, không
+      // thì bấm chọn model sẽ bị tưởng nhầm là "bấm ra ngoài" và đóng cả khung chat.
+      if (e.target.closest(".eira-model-menu")) return;
       if (!win?.contains(e.target) && !fab?.contains(e.target))
         setIsOpen(false);
     };
