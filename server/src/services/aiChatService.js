@@ -112,6 +112,7 @@ async function getActiveCouponsContext() {
 }
 
 /*   2) SYSTEM PROMPT      */
+
 // LUÔN LOAD
 const MODULE_CORE = `Bạn là Eira — trợ lý AI thân thiện đồng thời là chuyên viên tư vấn khách hàng chuyên nghiệp của Earthoria. Bạn kết hợp giữa kiến thức chuyên môn về sản phẩm và sự tinh tế trong cách truyền đạt, giúp phụ huynh không chỉ hiểu giá trị của sản phẩm mà còn cảm nhận được mong muốn sở hữu nó cho con em mình.
 
@@ -201,236 +202,24 @@ const MODULE_SITE_NAV = `HƯỚNG DẪN SỬ DỤNG WEBSITE (chỉ các trang c�
 - Trung tâm tin cậy: /trust | Trạng thái hệ thống: /status
 - Chính sách: /legal, /legal/terms, /legal/privacy, /legal/shipping, /legal/cookies, /legal/returns, /legal/membership, /legal/copyright, /legal/ai | Sơ đồ trang: /sitemap`;
 
-function buildPattern(keywords) {
-  return new RegExp(keywords.join("|"), "i");
-}
-
-const BRAND_PRODUCT_KEYWORDS = [
-  "earthoria là gì",
-  "earthoria la gi",
-  "giới thiệu earthoria",
-  "giới thiệu về earthoria",
-  "giới thiệu công ty",
-  "về công ty",
-  "ve cong ty",
-  "về earthoria",
-  "company profile",
-  "brand story",
-  "câu chuyện thương hiệu",
-  "cau chuyen thuong hieu",
-  "tên dự án",
-  "ten du an",
-  "tên đầy đủ",
-  "tên tiếng anh",
-  "đăng ký chính thức",
-  "puzzle book",
-  "earth and story",
-  "virtual reality",
-  "công ty",
-  "cong ty",
-  "thương hiệu",
-  "thuong hieu",
-  "startup",
-  "khởi nghiệp",
-  "khoi nghiep",
-  "dự án môn học",
-  "du an mon hoc",
-  "exe101",
-  "\\bfpt\\b",
-  "sinh viên trường nào",
-  "trường đại học nào",
-  "thành lập",
-  "thanh lap",
-  "ra đời khi nào",
-  "ra doi khi nao",
-  "thành lập khi nào",
-  "năm nào thành lập",
-  "mới thành lập",
-  "công nghệ ar",
-  "cong nghe ar",
-  "augmented reality",
-  "mini.?game",
-  "học qua chơi",
-  "hoc qua choi",
-  "chủ đề sách",
-  "chu de sach",
-  "địa chỉ",
-  "dia chi",
-  "trụ sở",
-  "tru so",
-  "văn phòng ở đâu",
-  "ở đâu vậy",
-  "o dau vay",
-  "liên hệ",
-  "lien he",
-  "\\bcontact\\b",
-  "fanpage",
-  "facebook",
-  "hotline",
-  "số điện thoại",
-  "so dien thoai",
-  "email liên hệ",
-  "email là gì",
-  "support email",
-  "hỗ trợ kỹ thuật",
-  "ho tro ky thuat",
-  "helpdesk",
-  "\\bcskh\\b",
-  "chăm sóc khách hàng",
-  "cham soc khach hang",
-];
-const ECOSYSTEM_KEYWORDS = [
-  "hệ sinh thái",
-  "he sinh thai",
-  "\\becosystem\\b",
-  "the earthoria ecosystem",
-  "knowledge farm",
-  "nông trại tri thức",
-  "nong trai tri thuc",
-  "immersive studio",
-  "xưởng trải nghiệm",
-  "xuong trai nghiem",
-  "family studio",
-  "xưởng gắn kết",
-  "xuong gan ket",
-  "game studio",
-  "xưởng trò chơi",
-  "xuong tro choi",
-  "commerce.{0,3}customer",
-  "thương mại.{0,10}trải nghiệm khách hàng",
-  "các mảng của earthoria",
-  "cac mang cua earthoria",
-  "cấu trúc công ty",
-  "các bộ phận",
-  "\\b5 mảng\\b",
-  "các studio",
-  "cac studio",
-];
-const TEAM_KEYWORDS = [
-  "đội ngũ",
-  "doi ngu",
-  "người sáng lập",
-  "nguoi sang lap",
-  "sáng lập",
-  "sang lap",
-  "\\bfounder\\b",
-  "co-founder",
-  "nhà sáng lập",
-  "nha sang lap",
-  "ban lãnh đạo",
-  "ban lanh dao",
-  "ban quản trị",
-  "ban điều hành",
-  "management team",
-  "leadership team",
-  "\\bceo\\b",
-  "\\bcoo\\b",
-  "\\bcmo\\b",
-  "\\bcto\\b",
-  "\\bcdo\\b",
-  "\\bcco\\b",
-  "giám đốc điều hành",
-  "giám đốc vận hành",
-  "giám đốc marketing",
-  "giám đốc công nghệ",
-  "giám đốc thiết kế",
-  "giám đốc kinh doanh",
-  "giam doc",
-  "giảng viên",
-  "giang vien",
-  "\\blecturer\\b",
-  "\\bmentor\\b",
-  "cố vấn",
-  "co van",
-  "trưởng nhóm",
-  "truong nhom",
-  "quản lý dự án",
-  "quan ly du an",
-  "chủ dự án",
-  "chủ công ty",
-  "người đứng đầu",
-  "nguoi dung dau",
-  "thành viên nhóm",
-  "thanh vien nhom",
-  "thành viên team",
-  "core team",
-  "nhân sự chủ chốt",
-  "ai đứng sau",
-  "ai lam ra",
-  "ai làm ra",
-  "ai phụ trách",
-  "ai quản lý dự án này",
-];
-const MASCOT_KEYWORDS = [
-  "\\bmascot\\b",
-  "linh vật",
-  "linh vat",
-  "vật linh",
-  "biểu tượng nhân vật",
-  "eira và rori",
-  "eira and rori",
-  "\\brori\\b",
-  "eira là ai",
-  "eira co that khong",
-  "eira có thật không",
-  "eira là nhân vật gì",
-  "bạn là ai vậy",
-  "bạn tên gì",
-  "bạn có phải người thật không",
-  "nhân vật hoạt hình",
-  "nhân vật đại diện",
-  "hình ảnh đại diện",
-  "\\bavatar\\b",
-];
-const SITE_NAV_KEYWORDS = [
-  "trang chủ",
-  "trang nào",
-  "trang web",
-  "\\bwebsite\\b",
-  "web này",
-  "đăng nhập",
-  "đăng ký",
-  "quên mật khẩu",
-  "đổi mật khẩu",
-  "reset mật khẩu",
-  "giỏ hàng",
-  "yêu thích",
-  "\\bwishlist\\b",
-  "thanh toán",
-  "\\bcheckout\\b",
-  "hồ sơ",
-  "\\bprofile\\b",
-  "chính sách",
-  "điều khoản",
-  "chính sách vận chuyển",
-  "chính sách bảo mật",
-  "sơ đồ trang",
-  "\\bsitemap\\b",
-  "so sánh sách",
-  "trang so sánh",
-  "link shop",
-  "vào shop",
-  "đường dẫn",
-  "url trang nào",
-];
-
-const BRAND_PRODUCT_PATTERN = buildPattern(BRAND_PRODUCT_KEYWORDS);
-const ECOSYSTEM_PATTERN = buildPattern(ECOSYSTEM_KEYWORDS);
-const TEAM_PATTERN = buildPattern(TEAM_KEYWORDS);
-const MASCOT_PATTERN = buildPattern(MASCOT_KEYWORDS);
-const SITE_NAV_PATTERN = buildPattern(SITE_NAV_KEYWORDS);
-
-function selectStaticModules(message, history) {
-  const text = [message, ...(history || []).map((h) => h.content || "")]
-    .join(" \n ")
-    .toLowerCase();
-  const blocks = [MODULE_CORE, MODULE_TOOL_GUIDE, MODULE_STYLE]; // luôn load
-  if (BRAND_PRODUCT_PATTERN.test(text)) blocks.push(MODULE_BRAND_PRODUCT);
-  if (ECOSYSTEM_PATTERN.test(text)) blocks.push(MODULE_ECOSYSTEM);
-  if (TEAM_PATTERN.test(text)) blocks.push(MODULE_TEAM);
-  if (MASCOT_PATTERN.test(text)) blocks.push(MODULE_MASCOT);
-  if (SITE_NAV_PATTERN.test(text)) blocks.push(MODULE_SITE_NAV);
-  return blocks.join("\n\n");
+// LƯU Ý: trước đây các module bên dưới chỉ được nạp vào prompt khi câu hỏi
+// khớp 1 danh sách từ khóa cứng (regex) — cách này luôn thiếu case vì không
+// thể đoán trước hết mọi cách hỏi (vd hỏi đích danh tên riêng, viết tắt lạ,
+// gõ sai chính tả...). Toàn bộ các module này CỘNG LẠI chưa tới 10.000 ký tự
+// (~2-3k token), quá nhỏ so với giới hạn ngữ cảnh 131k token của model đang
+// dùng, nên không có lý do gì phải cắt — luôn nạp đủ để AI biết chắc chắn,
+// thay vì may rủi theo từ khóa.
+function selectStaticModules() {
+  return [
+    MODULE_CORE,
+    MODULE_TOOL_GUIDE,
+    MODULE_STYLE,
+    MODULE_BRAND_PRODUCT,
+    MODULE_ECOSYSTEM,
+    MODULE_TEAM,
+    MODULE_MASCOT,
+    MODULE_SITE_NAV,
+  ].join("\n\n");
 }
 
 function buildSystemPrompt(staticBlock, dynamicContextBlocks) {
@@ -1072,7 +861,7 @@ async function runChatTurn({
   const candidateBooksById = new Map(candidateBooks.map((b) => [b.id, b]));
   const booksContext = formatBooksContext(candidateBooks);
 
-  const staticBlock = selectStaticModules(trimmedMessage, safeHistory);
+  const staticBlock = selectStaticModules();
   const systemPrompt = buildSystemPrompt(staticBlock, [
     booksContext,
     couponsContext,
