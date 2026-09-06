@@ -1,0 +1,410 @@
+.rqn-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 960;
+  background: rgba(10, 14, 12, 0.28);
+  backdrop-filter: blur(2px);
+  animation: rqn-fade-in 0.35s ease both;
+  cursor: default;
+}
+
+@keyframes rqn-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.rqn-wrap {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 970;
+  border-radius: 50%;
+  transition:
+    width 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    margin-left 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.4s ease;
+  will-change: width, height, margin-left;
+  opacity: 0.4;
+  filter: saturate(0.85);
+}
+
+.rqn-wrap.is-hover {
+  opacity: 0.96;
+  filter: saturate(1);
+}
+
+.rqn-wrap.is-expanded {
+  opacity: 1;
+  filter: saturate(1);
+  animation: none;
+}
+
+/* Gentle breathing cue while fully idle, so the tab isn't invisible */
+.rqn-wrap:not(.is-hover):not(.is-expanded) {
+  animation: rqn-breathe 4.5s ease-in-out infinite;
+}
+@keyframes rqn-breathe {
+  0%,
+  100% {
+    opacity: 0.34;
+  }
+  50% {
+    opacity: 0.48;
+  }
+}
+
+/* Base circular surface behind the wedges */
+.rqn-base {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 32% 50%,
+    var(--forest-mid, #1a5c52) 0%,
+    var(--forest, #0d3330) 62%,
+    var(--ink, #0a0e0c) 100%
+  );
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.28),
+    inset -1px 0 0 rgba(255, 255, 255, 0.04);
+}
+
+/* Thin outer ring, brightens on hover/expand, with a soft radar-style scan
+   sweeping around it on hover for a bit of "tech" polish. */
+.rqn-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border-gold, rgba(74, 158, 63, 0.3));
+  opacity: 0.6;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  overflow: hidden;
+}
+.rqn-wrap.is-hover .rqn-ring,
+.rqn-wrap.is-expanded .rqn-ring {
+  opacity: 1;
+}
+
+.rqn-ring::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(92, 184, 79, 0.5) 16deg,
+    transparent 42deg,
+    transparent 360deg
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  animation: rqn-scan 5s linear infinite;
+}
+.rqn-wrap.is-hover .rqn-ring::after {
+  opacity: 1;
+}
+.rqn-wrap.is-expanded .rqn-ring::after {
+  opacity: 0;
+}
+@keyframes rqn-scan {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── spinner (everything that turns when the user scrolls) ─────────────
+   Only the wedges + their icon/label/dot overlay live in here. The hub
+   and the collapsed hover-flyouts stay outside so they never rotate. */
+
+.rqn-spinner {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+  transition: transform 0.06s ease-out;
+  will-change: transform;
+}
+
+/* ── wedges (clickable, clipped to their pie-slice shape) ─────────────── */
+
+.rqn-slice {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+  color: var(--ivory, #faf8f3);
+  -webkit-tap-highlight-color: transparent;
+  z-index: 1;
+}
+
+.rqn-slice::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.02);
+  transition: background 0.3s ease;
+}
+.rqn-slice:nth-child(odd)::before {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.rqn-slice.is-active::before,
+.rqn-slice:hover::before,
+.rqn-slice:focus-visible::before {
+  background: rgba(74, 158, 63, 0.32);
+}
+
+/* ── overlay (icons / labels / rim dots — never clipped) ───────────────── */
+
+.rqn-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.rqn-slice-dot {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--gold, #4a9e3f);
+  transform: translate(-50%, -50%);
+  opacity: 0.65;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+.rqn-wrap.is-expanded .rqn-slice-dot {
+  opacity: 0;
+}
+.rqn-slice-dot.is-active {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1.6);
+  box-shadow: 0 0 10px 2px rgba(74, 158, 63, 0.55);
+}
+
+/* Positioning wrapper for a wedge's icon+label. Handles WHERE it sits and
+   the bloom-in fade/scale. Also restores `color` so the lucide icon
+   (which draws with currentColor) actually inherits a visible tone instead
+   of falling back to the page's default (dark) text color. */
+.rqn-slice-content {
+  position: absolute;
+  color: var(--ivory, #faf8f3);
+  transform: translate(-50%, -50%) scale(0.85);
+  opacity: 0;
+  transition:
+    opacity 0.35s ease 0.05s,
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.05s;
+}
+.rqn-wrap.is-expanded .rqn-slice-content {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  transition-delay: 0.18s;
+}
+
+/* The part that actually rotates: icon + label as ONE rigid row, turned to
+   face the wedge's own radial direction (0° = due east = normal reading,
+   ±90° = pointing straight up/down). Icon leads (stays nearer the hub),
+   label trails outward toward the rim — this ordering is what keeps the
+   label the "outer" element at every angle, so nothing overlaps. */
+.rqn-slice-stack {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+  transform: rotate(var(--rqn-spin, 0deg));
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.rqn-slice-stack > svg {
+  flex: none;
+  opacity: 0.85;
+  transition:
+    opacity 0.25s ease,
+    color 0.25s ease,
+    filter 0.25s ease;
+}
+.rqn-slice-content.is-active .rqn-slice-stack > svg {
+  opacity: 1;
+  color: var(--gold-light, #5cb84f);
+  filter: drop-shadow(0 0 6px rgba(92, 184, 79, 0.55));
+}
+
+.rqn-slice-label {
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  line-height: 1.35;
+  color: rgba(250, 248, 243, 0.82);
+  transition: color 0.25s ease;
+}
+.rqn-slice-content.is-active .rqn-slice-label {
+  color: var(--ivory, #faf8f3);
+}
+
+/* ── per-wedge hover flyout ─────────────────────────────────────────────
+   Shows a wedge's own name the instant it's hovered, even while the whole
+   nav is still collapsed — no need to open the fan just to see what a
+   slice is for. Sits in a tidy column just past the bump's right edge. */
+
+.rqn-flyouts {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.rqn-flyout {
+  position: absolute;
+  left: calc(100% + 14px);
+  transform: translate(-8px, -50%);
+  white-space: nowrap;
+  background: var(--forest, #0d3330);
+  color: var(--ivory, #faf8f3);
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  padding: 7px 13px;
+  border-radius: 7px;
+  border: 1px solid var(--border-gold, rgba(74, 158, 63, 0.32));
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+  opacity: 0;
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease;
+}
+.rqn-flyout::before {
+  content: "";
+  position: absolute;
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 5px solid transparent;
+  border-right-color: var(--forest, #0d3330);
+}
+.rqn-flyout.is-visible {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+
+/* ── scroll-to-rotate hint ──────────────────────────────────────────────
+   A quiet caption near the hub while the menu is open, so people discover
+   the wheel-controlled dial instead of wondering why a label looks tilted. */
+
+.rqn-spin-hint {
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 40px);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: "Be Vietnam Pro", sans-serif;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: rgba(250, 248, 243, 0.45);
+  pointer-events: none;
+  z-index: 3;
+  animation: rqn-hint-fade 0.5s ease both 0.3s;
+}
+@keyframes rqn-hint-fade {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ── hub (always-visible center toggle, never spins) ───────────────────── */
+
+.rqn-hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border-gold, rgba(74, 158, 63, 0.35));
+  background: var(--forest, #0d3330);
+  color: var(--gold-light, #5cb84f);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 4;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  transition:
+    width 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.3s ease,
+    transform 0.25s ease,
+    box-shadow 0.3s ease;
+}
+.rqn-wrap.is-hover .rqn-hub {
+  width: 38px;
+  height: 38px;
+}
+.rqn-wrap.is-expanded .rqn-hub {
+  width: 46px;
+  height: 46px;
+  background: var(--gold, #4a9e3f);
+  color: var(--forest, #0d3330);
+  box-shadow: 0 6px 22px rgba(74, 158, 63, 0.4);
+}
+.rqn-hub:hover {
+  transform: translate(-50%, -50%) scale(1.08);
+}
+.rqn-hub:active {
+  transform: translate(-50%, -50%) scale(0.96);
+}
+
+.rqn-hub-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── reduced motion & mobile ────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .rqn-wrap,
+  .rqn-hub,
+  .rqn-spinner,
+  .rqn-slice-content,
+  .rqn-slice-stack,
+  .rqn-slice-stack > svg,
+  .rqn-slice-dot,
+  .rqn-flyout,
+  .rqn-spin-hint,
+  .rqn-ring::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .rqn-flyout {
+    font-size: 11px;
+    padding: 6px 11px;
+  }
+  .rqn-wrap {
+    transform: translateY(-42%);
+  }
+}

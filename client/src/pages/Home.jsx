@@ -23,12 +23,30 @@ import {
   ShieldCheck,
   Users,
   RotateCcw,
+  Sparkles,
+  BarChart3,
+  Compass,
+  Leaf,
+  Rocket,
 } from "lucide-react";
 import StickyScrollTransition from "./StickyScrollTransition";
 import HeroBanner from "../components/HeroBanner";
 import EcosystemStrip from "../components/EcosystemStrip";
 import { lazy, Suspense } from "react";
 import { SkeletonProductGrid } from "../components/skeletons/SkeletonShop";
+import RadialQuickNav from "../components/RadialQuickNav";
+
+// Các "điểm neo" cho menu điều hướng nhanh (nửa hình tròn bên trái).
+// Mỗi mục trỏ tới id của một section thật trong trang bên dưới.
+const HOME_QUICK_SECTIONS = [
+  { id: "section-hero", label: "Tổng Quan", icon: Sparkles },
+  { id: "section-stats", label: "Số Liệu", icon: BarChart3 },
+  { id: "section-how", label: "Vận Hành", icon: Compass },
+  { id: "section-products", label: "Sản Phẩm", icon: BookOpen },
+  { id: "section-values", label: "Giá Trị", icon: Leaf },
+  { id: "section-reviews", label: "Đánh Giá", icon: Star },
+  { id: "cta-section", label: "Bắt Đầu", icon: Rocket },
+];
 const SproutModel = lazy(() => import("../components/SproutModel"));
 
 /*COUNTDOWN PRICE */
@@ -2427,8 +2445,13 @@ export default function Home() {
 
   return (
     <>
+      {/*   QUICK NAV — nửa hình tròn bên trái, phóng to khi bấm vào tâm   */}
+      <RadialQuickNav sections={HOME_QUICK_SECTIONS} />
+
       {/*   HERO BANNER SLIDER   */}
-      <HeroBanner />
+      <div id="section-hero">
+        <HeroBanner />
+      </div>
 
       {/*   MARQUEE — flush below hero gradient   */}
       <div
@@ -2457,7 +2480,7 @@ export default function Home() {
         </div>
       </div>
       {/*   STATS   */}
-      <section className="stats-section reveal">
+      <section className="stats-section reveal" id="section-stats">
         <div className="stats-inner">
           {[
             {
@@ -2523,7 +2546,7 @@ export default function Home() {
       <EcosystemStrip />
 
       {/*   HOW IT WORKS   */}
-      <section className="how-section">
+      <section className="how-section" id="section-how">
         <div className="how-inner">
           <div className="section-header reveal">
             <div className="section-eyebrow">
@@ -2583,7 +2606,7 @@ export default function Home() {
       </section>
 
       {/*   FEATURED COLLECTION (Grid)   */}
-      <section className="products-section">
+      <section className="products-section" id="section-products">
         <div className="products-inner">
           <div className="products-top reveal">
             <div>
@@ -3123,7 +3146,7 @@ export default function Home() {
       <TopRatedSection books={displayBest} onAddCart={handleAddToCart} />
 
       {/*   VALUES   */}
-      <section className="values-section">
+      <section className="values-section" id="section-values">
         <Suspense fallback={null}>
           <SproutModel className="values-3d-bg" />
         </Suspense>
@@ -3281,7 +3304,7 @@ export default function Home() {
       </section>
 
       {/*   TESTIMONIALS   */}
-      <section className="reviews-section">
+      <section className="reviews-section" id="section-reviews">
         <div className="reviews-inner">
           <div className="section-header reveal">
             <div className="section-eyebrow">

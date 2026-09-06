@@ -3,6 +3,32 @@ import { Link } from "react-router-dom";
 import Logo3D from "../components/Logo3D.jsx";
 import "../components/assets/css/about-us.css";
 import OrgChart from "../components/OrgChart.jsx";
+import {
+  Sparkles,
+  Target,
+  Leaf,
+  Users,
+  Network,
+  Compass,
+  ScrollText,
+  Clock,
+  GraduationCap,
+  Code2,
+} from "lucide-react";
+import RadialQuickNav from "../components/RadialQuickNav";
+
+const aboutSections = [
+  { id: "section-hero", label: "Tổng Quan", icon: Sparkles },
+  { id: "section-mission", label: "Sứ Mệnh", icon: Target },
+  { id: "section-logo", label: "Thương Hiệu", icon: Leaf },
+  { id: "section-team", label: "Đội Ngũ", icon: Users },
+  { id: "section-orgchart", label: "Cơ Cấu", icon: Network },
+  { id: "section-guides", label: "Dẫn Đường", icon: Compass },
+  { id: "section-values", label: "Triết Lý", icon: ScrollText },
+  { id: "section-story", label: "Hành Trình", icon: Clock },
+  { id: "section-advisor", label: "Cố Vấn", icon: GraduationCap },
+  { id: "section-tech", label: "Kỹ Thuật", icon: Code2 },
+];
 
 function calculateAge(birthdayStr) {
   const [day, month, year] = birthdayStr.split("/").map(Number);
@@ -269,8 +295,9 @@ export default function AboutUs() {
 
   return (
     <>
+      <RadialQuickNav sections={aboutSections} />
       {/* ABOUT HERO */}
-      <section className="about-hero">
+      <section className="about-hero" id="section-hero">
         <div className="about-hero-left">
           <img
             src="/logo-nho2.png"
@@ -336,7 +363,7 @@ export default function AboutUs() {
       </section>
 
       {/* MISSION */}
-      <section className="mission-section">
+      <section className="mission-section" id="section-mission">
         <div className="mission-inner">
           <div className="mission-grid">
             <div className="mission-left reveal">
@@ -435,6 +462,7 @@ export default function AboutUs() {
       {/* LOGO ANALYSIS */}
       <section
         className="logo-section"
+        id="section-logo"
         ref={logoSectionRef}
         onMouseMove={handleLogoSectionMouseMove}
       >
@@ -518,7 +546,7 @@ export default function AboutUs() {
       </section>
 
       {/* TEAM */}
-      <section className="tm-section">
+      <section className="tm-section" id="section-team">
         <div className="team-inner">
           <div className="team-intro">
             <div className="reveal">
@@ -645,10 +673,12 @@ export default function AboutUs() {
       </section>
 
       {/* ORG CHART */}
-      <OrgChart />
+      <div id="section-orgchart">
+        <OrgChart />
+      </div>
 
       {/* GUIDES DUO */}
-      <section className="guide-section">
+      <section className="guide-section" id="section-guides">
         <div className="guide-inner">
           <div className="section-header reveal">
             <div className="section-eyebrow">
@@ -769,7 +799,7 @@ export default function AboutUs() {
       </section>
 
       {/* VALUES EXTENDED */}
-      <section className="about-values-section">
+      <section className="about-values-section" id="section-values">
         <div className="about-values-inner">
           <div className="about-values-layout">
             <div className="about-values-sticky reveal">
@@ -889,7 +919,7 @@ export default function AboutUs() {
       </section>
 
       {/* STORY / TIMELINE */}
-      <section className="story-section">
+      <section className="story-section" id="section-story">
         <div className="story-inner">
           <div className="section-header reveal">
             <div className="section-eyebrow">
@@ -1003,7 +1033,7 @@ export default function AboutUs() {
         <div className="mission-parallax-glass"></div>
       </div>
       {/* ADVISOR */}
-      <section className="advisor-section">
+      <section className="advisor-section" id="section-advisor">
         <div className="advisor-inner">
           <div className="section-header reveal">
             <div className="advisor-logo-wrap">
@@ -1070,7 +1100,7 @@ export default function AboutUs() {
 
       {/* Dong code */}
       {/* TECH STATS */}
-      <section className="tech-stats-section">
+      <section className="tech-stats-section" id="section-tech">
         <div className="tech-stats-blob tech-stats-blob-navy"></div>
         <div className="tech-stats-blob tech-stats-blob-green"></div>
 
@@ -1121,7 +1151,7 @@ export default function AboutUs() {
                 <span
                   className="tech-editor-number"
                   id="tech-loc-counter"
-                  data-target="174051"
+                  data-target="174613"
                 >
                   0
                 </span>
@@ -1135,7 +1165,7 @@ export default function AboutUs() {
                 <span
                   className="tech-editor-number tech-editor-number--secondary"
                   id="tech-file-counter"
-                  data-target="369"
+                  data-target="371"
                 >
                   0
                 </span>
