@@ -112,8 +112,8 @@ function HomeOnlyPromoBanner() {
 }
 
 // ==** KHỞI ĐỘNG TRANG BẢO TRÌ **==
-// const MAINTENANCE_MODE = false;
-const MAINTENANCE_MODE = true;
+const MAINTENANCE_MODE = false;
+// const MAINTENANCE_MODE = true;
 
 export default function App() {
   const { setAuth, setAuthChecked, authChecked, user, isAuthenticated } =
@@ -164,7 +164,7 @@ export default function App() {
   if (maintenanceActive && !isAdminUser) {
     return (
       <BrowserRouter>
-        {/* <EarthoriaSecurity /> */}
+        <EarthoriaSecurity />
         <Routes>
           <Route
             path="/login"
@@ -193,7 +193,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      {/* <EarthoriaSecurity /> */}
+      <EarthoriaSecurity />
       <ScrollToTop />
       <CustomCursor />
       <HomeOnlyPromoBanner />

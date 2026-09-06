@@ -13,6 +13,13 @@ import {
   Sparkles,
   Star,
   Users,
+  Gauge,
+  BookOpen,
+  Layers,
+  Search,
+  Type,
+  Timer,
+  HelpCircle,
 } from "lucide-react";
 import { gameService } from "../services/gameService";
 import { getGameDefinition } from "../games/gameRegistry";
@@ -25,6 +32,50 @@ function scoreToStars(score) {
   if (s >= 750) return 3;
   if (s >= 450) return 2;
   return 1;
+}
+
+const DIFFICULTY_META = {
+  EASY: { label: "Dễ", cls: "easy" },
+  MEDIUM: { label: "Trung bình", cls: "medium" },
+  HARD: { label: "Khó", cls: "hard" },
+};
+
+// Tóm tắt "độ lớn" của trò chơi theo từng loại (số cặp/từ/câu hỏi/giới hạn giờ...)
+function getPlayStats(gameType, config) {
+  if (!config) return [];
+  switch (gameType) {
+    case "MEMORY_MATCH":
+    case "MATCH_PAIRS":
+      return config.pairs?.length
+        ? [{ icon: Layers, label: `${config.pairs.length} cặp` }]
+        : [];
+    case "WORD_SEARCH":
+      return config.words?.length
+        ? [{ icon: Search, label: `${config.words.length} từ cần tìm` }]
+        : [];
+    case "LETTER_HUNT": {
+      const stats = [];
+      if (config.secretWord) {
+        stats.push({
+          icon: Type,
+          label: `${config.secretWord.replace(/\s/g, "").length} chữ cái`,
+        });
+      }
+      if (config.timeLimitSeconds) {
+        stats.push({
+          icon: Timer,
+          label: `${config.timeLimitSeconds}s giới hạn`,
+        });
+      }
+      return stats;
+    }
+    case "QUIZ_CHOICE":
+      return config.questions?.length
+        ? [{ icon: HelpCircle, label: `${config.questions.length} câu hỏi` }]
+        : [];
+    default:
+      return [];
+  }
 }
 
 function GpAmbient() {
@@ -200,15 +251,55 @@ export default function GamePlay() {
             </div>
 
             <div className="gp-intro-body">
-              <span className="gp-eyebrow">{def?.label}</span>
+              <div className="gp-badges-row">
+                <span className="gp-eyebrow">{def?.label}</span>
+                {DIFFICULTY_META[data.difficulty] && (
+                  <span
+                    className={`gp-difficulty-badge gp-difficulty-badge--${DIFFICULTY_META[data.difficulty].cls}`}
+                  >
+                    <Gauge size={11} />
+                    {DIFFICULTY_META[data.difficulty].label}
+                  </span>
+                )}
+              </div>
+
               <h1>{data.title}</h1>
+
+              {data.description && (
+                <p className="gp-description">{data.description}</p>
+              )}
+
+              {data.book?.title && (
+                <Link
+                  to={
+                    data.book?.slug && data.book?.hashId
+                      ? `/books/${data.book.slug}/${data.book.hashId}`
+                      : "/"
+                  }
+                  className="gp-book-chip"
+                >
+                  {data.book.coverImage ? (
+                    <img src={data.book.coverImage} alt="" />
+                  ) : (
+                    <BookOpen size={13} />
+                  )}
+                  <span>Trích từ sách "{data.book.title}"</span>
+                </Link>
+              )}
+
               {data.instructions && (
                 <p className="gp-instructions">{data.instructions}</p>
               )}
+
               <div className="gp-intro-meta">
                 <span className="gp-meta-chip">
                   <Users size={13} /> {data.playCount} người đã chơi
                 </span>
+                {getPlayStats(data.gameType, data.config).map((s, i) => (
+                  <span className="gp-meta-chip" key={i}>
+                    <s.icon size={13} /> {s.label}
+                  </span>
+                ))}
               </div>
             </div>
 
