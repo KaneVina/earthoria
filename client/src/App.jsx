@@ -53,6 +53,7 @@ import Maintenance from "./pages/Maintenance";
 import Logo3D from "./components/Logo3D";
 import ArView from "./pages/ArView";
 import CookiePolicy from "./pages/legal/CookiePolicy";
+import FamilyPolicy from "./pages/legal/FamilyPolicy";
 import Emails from "./pages/admin/Emails";
 import ProductDetail from "./pages/admin/product/ProductDetail";
 import ArCodeManager from "./pages/admin/ArCodeManager";
@@ -163,7 +164,7 @@ export default function App() {
   if (maintenanceActive && !isAdminUser) {
     return (
       <BrowserRouter>
-        <EarthoriaSecurity />
+        {/* <EarthoriaSecurity /> */}
         <Routes>
           <Route
             path="/login"
@@ -173,6 +174,9 @@ export default function App() {
               </GuestRoute>
             }
           />
+          {/* /status luôn phải xem được kể cả khi đang bảo trì, để người dùng
+              biết hệ thống đang bảo trì và biết chính xác thời gian trở lại */}
+          <Route path="/status" element={<StatusPage />} />
           <Route
             path="*"
             element={
@@ -189,7 +193,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <EarthoriaSecurity />
+      {/* <EarthoriaSecurity /> */}
       <ScrollToTop />
       <CustomCursor />
       <HomeOnlyPromoBanner />
@@ -218,6 +222,7 @@ export default function App() {
           <Route path="/legal/membership" element={<MembershipPolicy />} />
           <Route path="/legal/copyright" element={<CopyrightNotice />} />
           <Route path="/legal/ai" element={<AIPolicy />} />
+          <Route path="/legal/family" element={<FamilyPolicy />} />
           <Route path="/sitemap" element={<Sitemap />} />
           <Route path="/status" element={<StatusPage />} />
           <Route path="/loyalty" element={<LoyaltyJourney />} />

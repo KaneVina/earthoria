@@ -1,0 +1,22 @@
+# Earthoria
+
+> Earthoria là thương hiệu sách giáo dục tương tác AR & AI dành cho trẻ em tại Việt Nam. Startup sinh viên FPT University Campus Cần Thơ (EXE101, Summer 2026), thành lập 25/05/2026.
+
+Earthoria kết hợp sách giấy truyền thống với công nghệ thực tế tăng cường (AR) và trợ lý AI, giúp trẻ em vừa đọc vừa tương tác trực quan với nội dung sách qua điện thoại/máy tính bảng.
+
+## Trang chính
+
+- [Trang chủ](https://earthoria.id.vn/): Giới thiệu tổng quan Earthoria
+- [Cửa hàng](https://earthoria.id.vn/shop): Danh sách sách đang bán
+- [Công nghệ AR](https://earthoria.id.vn/technology): Giải thích công nghệ thực tế tăng cường dùng trong sách
+- [Hệ sinh thái Earthoria](https://earthoria.id.vn/ecosystem): Các mảng sản phẩm/dịch vụ của Earthoria
+- [So sánh sách](https://earthoria.id.vn/compare): So sánh các đầu sách
+- [Giới thiệu](https://earthoria.id.vn/about): Về đội ngũ và câu chuyện Earthoria
+- [Blog](https://earthoria.id.vn/blog): Bài viết về giáo dục trẻ em, đọc sách, công nghệ AR
+- [Liên hệ](https://earthoria.id.vn/contact): Thông tin liên hệ
+
+## Liên hệ
+
+- Email hỗ trợ: earthoriavn@gmail.com
+- Fanpage: https://facebook.com/Earthoriavn
+- Địa chỉ: 600 Nguyễn Văn Cừ, Ninh Kiều, Cần Thơ, Việt Nam

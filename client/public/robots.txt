@@ -1,0 +1,37 @@
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# ChatGPT (huấn luyện model)
+User-agent: GPTBot
+Allow: /
+
+# ChatGPT Search (trích dẫn/citation)
+User-agent: OAI-SearchBot
+Allow: /
+
+# Claude
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+# Perplexity
+User-agent: PerplexityBot
+Allow: /
+
+# Mọi crawler khác — chặn khu vực quản trị/nội bộ, cho phép còn lại
+User-agent: *
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /checkout
+Disallow: /cart
+Allow: /
+
+Sitemap: https://earthoria.id.vn/sitemap.xml

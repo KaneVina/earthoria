@@ -1,24 +1,25 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { Toaster } from 'react-hot-toast'
-import App from './App.jsx'
-import './components/assets/css/main.css'
-import './components/assets/css/main2.css'
-import './components/assets/css/navbar.css'
-import './components/assets/css/cookie-consent.css'
-import './components/assets/js/cookie-consent.js'
+import { StrictMode } from "react";
+import { createRoot, hydrateRoot } from "react-dom/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "react-hot-toast";
+import App from "./App.jsx";
+import "./components/assets/css/main.css";
+import "./components/assets/css/main2.css";
+import "./components/assets/css/navbar.css";
+import "./components/assets/css/cookie-consent.css";
+import "./components/assets/js/cookie-consent.js";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
-      staleTime: 5 * 60 * 1000
-    }
-  }
-})
+      staleTime: 5 * 60 * 1000,
+    },
+  },
+});
 
-createRoot(document.getElementById('root')).render(
+const rootEl = document.getElementById("root");
+const app = (
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <App />
@@ -26,15 +27,21 @@ createRoot(document.getElementById('root')).render(
         position="bottom-center"
         toastOptions={{
           style: {
-            fontFamily: 'Be Vietnam Pro, sans-serif',
-            fontSize: '13px',
-            background: '#0d3330',
-            color: '#faf8f3',
-            border: '0.5px solid rgba(74,158,63,0.3)',
-            maxWidth: '460px'
-          }
+            fontFamily: "Be Vietnam Pro, sans-serif",
+            fontSize: "13px",
+            background: "#0d3330",
+            color: "#faf8f3",
+            border: "0.5px solid rgba(74,158,63,0.3)",
+            maxWidth: "460px",
+          },
         }}
       />
     </QueryClientProvider>
   </StrictMode>
-)
+);
+
+if (rootEl.hasChildNodes()) {
+  hydrateRoot(rootEl, app);
+} else {
+  createRoot(rootEl).render(app);
+}
