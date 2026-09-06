@@ -65,7 +65,7 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  height: 1px;
+  height: 2.5px;
   background: linear-gradient(90deg, var(--gold), var(--forest-light));
   z-index: 1000;
   width: 0;
