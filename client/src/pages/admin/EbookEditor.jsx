@@ -246,6 +246,131 @@ function runFormatCommandKeepingSelection(range, runCommand) {
   return finalRange;
 }
 
+// Tự bọc/gỡ thẻ <b>/<i>/<u> bằng tay, KHÔNG dùng document.execCommand — vì
+// execCommand chạy trong vùng chọn bị thu hẹp giữa 2 cột mốc tạm (hàm ở
+// trên) đôi khi không nhận đúng ngữ cảnh và không bôi đậm/nghiêng gì cả.
+// Tự làm để chắc chắn 100% có hiệu lực, đồng thời tự xử lý bật/tắt (bấm lại
+// lần 2 thì bỏ đậm).
+function toggleWrapInRange(range, tagName) {
+  const preview = range.cloneContents();
+  const previewHolder = document.createElement("div");
+  previewHolder.appendChild(preview);
+  const walker = document.createTreeWalker(previewHolder, NodeFilter.SHOW_TEXT);
+  let hasText = false;
+  let allWrapped = true;
+  let node;
+  while ((node = walker.nextNode())) {
+    if (!node.textContent) continue;
+    hasText = true;
+    let wrapped = false;
+    let p = node.parentNode;
+    while (p && p !== previewHolder) {
+      if (p.tagName === tagName) {
+        wrapped = true;
+        break;
+      }
+      p = p.parentNode;
+    }
+    if (!wrapped) {
+      allWrapped = false;
+      break;
+    }
+  }
+
+  const frag = range.extractContents();
+  if (hasText && allWrapped) {
+    const holder = document.createElement("div");
+    holder.appendChild(frag);
+    holder.querySelectorAll(tagName.toLowerCase()).forEach((el) => {
+      while (el.firstChild) el.parentNode.insertBefore(el.firstChild, el);
+      el.parentNode.removeChild(el);
+    });
+    const result = document.createDocumentFragment();
+    while (holder.firstChild) result.appendChild(holder.firstChild);
+    range.insertNode(result);
+  } else {
+    const wrapper = document.createElement(tagName.toLowerCase());
+    wrapper.appendChild(frag);
+    range.insertNode(wrapper);
+  }
+}
+
+// Tự tô màu bằng cách bọc <span style="color:...">, gỡ trước các span màu
+// cũ lồng bên trong (nếu có) để không nhồi span chồng chéo mỗi lần đổi màu.
+function applyColorInRange(range, color) {
+  const frag = range.extractContents();
+  const holder = document.createElement("div");
+  holder.appendChild(frag);
+  holder.querySelectorAll("span[style]").forEach((el) => {
+    el.style.color = "";
+    if (!el.getAttribute("style") || !el.getAttribute("style").trim()) {
+      while (el.firstChild) el.parentNode.insertBefore(el.firstChild, el);
+      el.parentNode.removeChild(el);
+    }
+  });
+  const wrapper = document.createElement("span");
+  wrapper.style.color = color;
+  while (holder.firstChild) wrapper.appendChild(holder.firstChild);
+  range.insertNode(wrapper);
+}
+
+// Chế độ Xem trước / Đọc sách luôn tách chữ theo từng TỪ (để rê chuột tô
+// sáng/đọc theo từ hoạt động) — trước đây việc tách từ đó lấy thẳng từ
+// layer.text (chữ thô) nên định dạng riêng phần (đậm/nghiêng/màu 1 vài chữ)
+// bị mất hoàn toàn khi xem trước, dù đã lưu đúng trong layer.html. Hàm này
+// đọc layer.html, gán lại định dạng cho ĐÚNG từng từ tương ứng, để tách từ
+// mà vẫn giữ được định dạng riêng phần.
+function htmlToStyledWords(html) {
+  const container = document.createElement("div");
+  container.innerHTML = html || "";
+  const chars = [];
+  const walk = (node, style) => {
+    if (node.nodeType === 3) {
+      for (const ch of node.textContent) chars.push({ ch, ...style });
+      return;
+    }
+    if (node.nodeType !== 1) return;
+    const tag = node.tagName;
+    if (tag === "BR") {
+      chars.push({ ch: " ", ...style });
+      return;
+    }
+    const next = { ...style };
+    if (tag === "B" || tag === "STRONG") next.bold = true;
+    if (tag === "I" || tag === "EM") next.italic = true;
+    if (tag === "U") next.underline = true;
+    if (tag === "FONT" && node.getAttribute("color"))
+      next.color = node.getAttribute("color");
+    if (tag === "SPAN" && node.style && node.style.color)
+      next.color = node.style.color;
+    Array.from(node.childNodes).forEach((child) => walk(child, next));
+  };
+  walk(container, {
+    bold: false,
+    italic: false,
+    underline: false,
+    color: null,
+  });
+
+  const words = [];
+  let buf = "";
+  let bufStyle = null;
+  chars.forEach(({ ch, ...style }) => {
+    if (ch === " " || ch === "\n" || ch === "\t") {
+      if (buf) {
+        words.push({ text: buf, ...bufStyle });
+        buf = "";
+        bufStyle = null;
+      }
+    } else {
+      if (!buf) bufStyle = style;
+      buf += ch;
+    }
+  });
+  if (buf) words.push({ text: buf, ...bufStyle });
+  return words;
+}
+
 function hexToRgb(hex) {
   const clean = (hex || "#ffffff").replace("#", "");
   const n = parseInt(clean, 16);
@@ -1036,11 +1161,16 @@ function LayerView({
     );
   }
 
-  const words = (layer.text || "").split(" ");
   const hasFixedHeight = layer.height != null && layer.height > 0;
   const scaledFontSize = (layer.fontSize || 16) * (fontScale || 1);
   const askable = readOnly && !!layer.text?.trim() && !layer.tocTargetPageId;
   const isRich = !!layer.html;
+  // Tách theo từ nhưng vẫn giữ định dạng riêng phần (đậm/nghiêng/màu 1 vài
+  // chữ) đã lưu trong layer.html — nếu không có html (chưa từng định dạng
+  // riêng phần) thì tách thô từ layer.text như cũ.
+  const words = isRich
+    ? htmlToStyledWords(layer.html)
+    : (layer.text || "").split(" ").map((t) => ({ text: t }));
   // Trong trải nghiệm ĐỌC (reader) luôn tách văn bản theo từng từ (dù là
   // rich-text) để tính năng "rê chuột đọc theo câu" + tô sáng từ đang đọc
   // hoạt động đúng cho mọi đoạn văn — dữ liệu thật hầu như đoạn nào cũng
@@ -1219,7 +1349,7 @@ function LayerView({
                     !readOnly
                       ? (e) => {
                           e.stopPropagation();
-                          onWordHover({ word: w });
+                          onWordHover({ word: w.text });
                         }
                       : onSentenceHover
                         ? (e) => {
@@ -1244,9 +1374,13 @@ function LayerView({
                         ? "rgba(255,196,61,0.55)"
                         : "transparent",
                     transition: "background 0.12s ease",
+                    fontWeight: w.bold ? 700 : undefined,
+                    fontStyle: w.italic ? "italic" : undefined,
+                    textDecoration: w.underline ? "underline" : undefined,
+                    color: w.color || undefined,
                   }}
                 >
-                  {w}
+                  {w.text}
                 </span>
                 {i < words.length - 1 ? " " : ""}
               </React.Fragment>
@@ -2960,9 +3094,14 @@ export default function BookBuilder() {
     if (editingTextId === selected.id && editableRef.current) {
       const sel = restoreSavedSelection();
       if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
+        const tagMap = { bold: "B", italic: "I", underline: "U" };
+        const tagName = tagMap[command];
         const finalRange = runFormatCommandKeepingSelection(
           sel.getRangeAt(0),
-          () => document.execCommand(command, false, null),
+          () => {
+            const liveRange = window.getSelection().getRangeAt(0);
+            toggleWrapInRange(liveRange, tagName);
+          },
         );
         savedRangeRef.current = finalRange.cloneRange();
         const html = sanitizeRichHtml(editableRef.current.innerHTML);
@@ -2999,7 +3138,10 @@ export default function BookBuilder() {
       if (sel && !sel.isCollapsed) {
         const finalRange = runFormatCommandKeepingSelection(
           sel.getRangeAt(0),
-          () => document.execCommand("foreColor", false, color),
+          () => {
+            const liveRange = window.getSelection().getRangeAt(0);
+            applyColorInRange(liveRange, color);
+          },
         );
         savedRangeRef.current = finalRange.cloneRange();
         const html = sanitizeRichHtml(editableRef.current.innerHTML);
