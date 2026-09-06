@@ -9,8 +9,6 @@ import {
   Lock,
   SearchX,
   Info,
-  Leaf,
-  Sparkles,
   Star,
   Users,
   Gauge,
@@ -40,7 +38,15 @@ const DIFFICULTY_META = {
   HARD: { label: "Khó", cls: "hard" },
 };
 
+// Ba chặng của một lượt chơi — dùng cho thanh tiến trình phía trên.
+const STEPS = [
+  { key: "intro", label: "Giới thiệu" },
+  { key: "playing", label: "Đang chơi" },
+  { key: "finished", label: "Kết quả" },
+];
+
 // Tóm tắt "độ lớn" của trò chơi theo từng loại (số cặp/từ/câu hỏi/giới hạn giờ...)
+// để người chơi biết trước mình sắp thử thách gì, không cần thêm dữ liệu backend mới.
 function getPlayStats(gameType, config) {
   if (!config) return [];
   switch (gameType) {
@@ -78,14 +84,25 @@ function getPlayStats(gameType, config) {
   }
 }
 
-function GpAmbient() {
+// Thanh bước tiến trình Giới thiệu → Đang chơi → Kết quả, giúp người chơi
+// luôn biết mình đang ở đâu trong lượt chơi thay vì chỉ có 1 màn hình rời rạc.
+function GpSteps({ stage }) {
+  const currentIndex = STEPS.findIndex((s) => s.key === stage);
   return (
-    <div aria-hidden="true">
-      <Leaf className="gp-ambient gp-ambient-1" />
-      <Sparkles className="gp-ambient gp-ambient-2" />
-      <Sparkles className="gp-ambient gp-ambient-3" />
-      <Leaf className="gp-ambient gp-ambient-4" />
-    </div>
+    <ol className="gp-steps" aria-label="Tiến trình trò chơi">
+      {STEPS.map((s, i) => (
+        <li
+          key={s.key}
+          className={
+            "gp-step" +
+            (i === currentIndex ? " active" : i < currentIndex ? " done" : "")
+          }
+        >
+          <span className="gp-step-dot">{i < currentIndex ? "✓" : i + 1}</span>
+          <span className="gp-step-label">{s.label}</span>
+        </li>
+      ))}
+    </ol>
   );
 }
 
@@ -160,7 +177,6 @@ export default function GamePlay() {
   if (state.status === "loading") {
     return (
       <main className="gp-view gp-view--center">
-        <GpAmbient />
         <div className="gp-loading">
           <Loader2 size={26} className="gp-spin" />
           <span>Đang tải trò chơi…</span>
@@ -172,7 +188,6 @@ export default function GamePlay() {
   if (state.status === "forbidden") {
     return (
       <main className="gp-view gp-view--center">
-        <GpAmbient />
         <div className="gp-empty">
           <div className="gp-empty-badge">
             <Lock size={22} />
@@ -192,7 +207,6 @@ export default function GamePlay() {
   if (state.status === "not-found") {
     return (
       <main className="gp-view gp-view--center">
-        <GpAmbient />
         <div className="gp-empty">
           <div className="gp-empty-badge">
             <SearchX size={22} />
@@ -212,21 +226,18 @@ export default function GamePlay() {
   const def = getGameDefinition(data.gameType);
   const Icon = def?.icon || Info;
   const Player = def?.Player;
+  const bookHref =
+    data.book?.slug && data.book?.hashId
+      ? `/books/${data.book.slug}/${data.book.hashId}`
+      : "/";
 
   return (
     <main className="gp-view">
-      <GpAmbient />
       <div className="gp-topbar">
-        <Link
-          to={
-            data.book?.slug && data.book?.hashId
-              ? `/books/${data.book.slug}/${data.book.hashId}`
-              : "/"
-          }
-          className="gp-back"
-        >
+        <Link to={bookHref} className="gp-back">
           <ArrowLeft size={14} /> {data.book?.title || "Về trang sách"}
         </Link>
+        <GpSteps stage={stage} />
       </div>
 
       <div className="gp-shell">
@@ -250,83 +261,82 @@ export default function GamePlay() {
               </div>
             </div>
 
-            <div className="gp-intro-body">
-              <div className="gp-badges-row">
-                <span className="gp-eyebrow">{def?.label}</span>
-                {DIFFICULTY_META[data.difficulty] && (
-                  <span
-                    className={`gp-difficulty-badge gp-difficulty-badge--${DIFFICULTY_META[data.difficulty].cls}`}
-                  >
-                    <Gauge size={11} />
-                    {DIFFICULTY_META[data.difficulty].label}
-                  </span>
-                )}
-              </div>
-
-              <h1>{data.title}</h1>
-
-              {data.description && (
-                <p className="gp-description">{data.description}</p>
-              )}
-
-              {data.book?.title && (
-                <Link
-                  to={
-                    data.book?.slug && data.book?.hashId
-                      ? `/books/${data.book.slug}/${data.book.hashId}`
-                      : "/"
-                  }
-                  className="gp-book-chip"
-                >
-                  {data.book.coverImage ? (
-                    <img src={data.book.coverImage} alt="" />
-                  ) : (
-                    <BookOpen size={13} />
+            <div className="gp-intro-content">
+              <div className="gp-intro-body">
+                <div className="gp-badges-row">
+                  <span className="gp-eyebrow">{def?.label}</span>
+                  {DIFFICULTY_META[data.difficulty] && (
+                    <span
+                      className={`gp-difficulty-badge gp-difficulty-badge--${DIFFICULTY_META[data.difficulty].cls}`}
+                    >
+                      <Gauge size={11} />
+                      {DIFFICULTY_META[data.difficulty].label}
+                    </span>
                   )}
-                  <span>Trích từ sách "{data.book.title}"</span>
-                </Link>
-              )}
+                </div>
 
-              {data.instructions && (
-                <p className="gp-instructions">{data.instructions}</p>
-              )}
+                <h1>{data.title}</h1>
 
-              <div className="gp-intro-meta">
-                <span className="gp-meta-chip">
-                  <Users size={13} /> {data.playCount} người đã chơi
-                </span>
-                {getPlayStats(data.gameType, data.config).map((s, i) => (
-                  <span className="gp-meta-chip" key={i}>
-                    <s.icon size={13} /> {s.label}
+                {data.description && (
+                  <p className="gp-description">{data.description}</p>
+                )}
+
+                {data.book?.title && (
+                  <Link to={bookHref} className="gp-book-chip">
+                    {data.book.coverImage ? (
+                      <img src={data.book.coverImage} alt="" />
+                    ) : (
+                      <BookOpen size={13} />
+                    )}
+                    <span>Trích từ sách "{data.book.title}"</span>
+                  </Link>
+                )}
+
+                {data.instructions && (
+                  <p className="gp-instructions">{data.instructions}</p>
+                )}
+                <div className="gp-intro-meta">
+                  <span className="gp-meta-chip">
+                    <Users size={13} /> {data.playCount} người đã chơi
                   </span>
-                ))}
+                  {getPlayStats(data.gameType, data.config).map((s, i) => (
+                    <span className="gp-meta-chip" key={i}>
+                      <s.icon size={13} /> {s.label}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            <div className="gp-intro-footer">
-              <button
-                type="button"
-                className="gp-cta gp-cta-play"
-                onClick={() => setStage("playing")}
-              >
-                <PlayCircle size={19} /> Bắt đầu chơi
-              </button>
+              <div className="gp-intro-footer">
+                <button
+                  type="button"
+                  className="gp-cta gp-cta-play"
+                  onClick={() => setStage("playing")}
+                >
+                  <PlayCircle size={19} /> Bắt đầu chơi
+                </button>
+              </div>
             </div>
           </div>
         )}
 
         {stage === "playing" && Player && (
-          <div className="gp-board">
-            <div className="gp-board-frame">
-              <div className="gp-board-frame-header">
-                <span className="gp-board-badge">
-                  <Icon size={13} /> {def?.shortLabel || def?.label}
+          <div className="gp-arena">
+            <div className="gp-arena-top">
+              <div className="gp-arena-heading">
+                <span className="gp-arena-icon">
+                  <Icon size={20} />
                 </span>
-                <h2 className="gp-board-title">{data.title}</h2>
+                <div>
+                  <span className="gp-arena-kicker">
+                    {def?.shortLabel || def?.label}
+                  </span>
+                  <h2 className="gp-arena-title">{data.title}</h2>
+                </div>
               </div>
-              <div className="gp-board-screen">
-                <Player config={data.config} onFinish={handleFinish} />
-              </div>
+            </div>
+            <div className="gp-arena-surface">
+              <Player config={data.config} onFinish={handleFinish} />
             </div>
           </div>
         )}
@@ -375,14 +385,7 @@ export default function GamePlay() {
               <button type="button" className="gp-cta" onClick={handleReplay}>
                 <RotateCcw size={16} /> Chơi lại
               </button>
-              <Link
-                to={
-                  data.book?.slug && data.book?.hashId
-                    ? `/books/${data.book.slug}/${data.book.hashId}`
-                    : "/"
-                }
-                className="gp-cta gp-cta-ghost"
-              >
+              <Link to={bookHref} className="gp-cta gp-cta-ghost">
                 <ArrowLeft size={16} /> Về trang sách
               </Link>
             </div>

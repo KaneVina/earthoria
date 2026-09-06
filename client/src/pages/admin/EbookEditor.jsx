@@ -4236,7 +4236,7 @@ export default function BookBuilder() {
             </div>
           ) : (
             <img
-              src="/logo/logo-mau/lg-m-chinh.png"
+              src="/logo/logo-mau/lg-m-im.png"
               alt=""
               className="bb-brand-mark"
               onError={() => setLogoError(true)}
