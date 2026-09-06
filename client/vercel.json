@@ -1,5 +1,16 @@
 {
   "rewrites": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(Googlebot|Bingbot|GPTBot|OAI-SearchBot|ChatGPT-User|ClaudeBot|Claude-User|Claude-SearchBot|PerplexityBot|facebookexternalhit|Twitterbot|LinkedInBot|Slackbot|WhatsApp|TelegramBot).*"
+        }
+      ],
+      "destination": "https://REPLACE_WITH_YOUR_PRERENDER_SERVICE.onrender.com/https://earthoria.id.vn/:path*"
+    },
     { "source": "/(.*)", "destination": "/" }
   ]
 }

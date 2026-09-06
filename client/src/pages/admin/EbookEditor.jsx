@@ -197,6 +197,55 @@ function sanitizeRichHtml(html) {
   return container.innerHTML;
 }
 
+// document.execCommand thường tự đặt lại vị trí con trỏ sau khi chạy — có
+// khi nhảy hẳn về đầu đoạn văn — bất kể vùng vừa bôi đen nằm ở đâu. Để tránh
+// phụ thuộc vào hành vi không ổn định đó: chèn tạm 2 "cột mốc" (span rỗng)
+// ngay 2 đầu vùng đang bôi đen, chạy lệnh định dạng, rồi dựa vào 2 cột mốc
+// đó dựng lại ĐÚNG vùng chọn ban đầu (giờ đã được định dạng) thay vì tin vào
+// nơi trình duyệt tự đặt con trỏ.
+function runFormatCommandKeepingSelection(range, runCommand) {
+  const endMarker = document.createElement("span");
+  endMarker.setAttribute("data-fmt-marker", "1");
+  const endBoundary = range.cloneRange();
+  endBoundary.collapse(false);
+  endBoundary.insertNode(endMarker);
+
+  const startMarker = document.createElement("span");
+  startMarker.setAttribute("data-fmt-marker", "1");
+  const startBoundary = range.cloneRange();
+  startBoundary.collapse(true);
+  startBoundary.insertNode(startMarker);
+
+  const contentRange = document.createRange();
+  contentRange.setStartAfter(startMarker);
+  contentRange.setEndBefore(endMarker);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(contentRange);
+
+  runCommand();
+
+  const afterStart = startMarker.nextSibling;
+  const beforeEnd = endMarker.previousSibling;
+  startMarker.remove();
+  endMarker.remove();
+
+  const finalRange = document.createRange();
+  if (afterStart && afterStart.parentNode) {
+    finalRange.setStartBefore(afterStart);
+  } else {
+    finalRange.setStart(contentRange.startContainer, contentRange.startOffset);
+  }
+  if (beforeEnd && beforeEnd.parentNode) {
+    finalRange.setEndAfter(beforeEnd);
+  } else {
+    finalRange.setEnd(finalRange.startContainer, finalRange.startOffset);
+  }
+  sel.removeAllRanges();
+  sel.addRange(finalRange);
+  return finalRange;
+}
+
 function hexToRgb(hex) {
   const clean = (hex || "#ffffff").replace("#", "");
   const n = parseInt(clean, 16);
@@ -659,6 +708,10 @@ function LayerView({
       }
       return;
     }
+    // Đang gõ/bôi đen chữ trên chính lớp này thì bỏ qua — gọi lại onSelect
+    // (chọn lại layer) không cần thiết, còn re-render nó gây ra khiến vùng
+    // soạn thảo mất selection/con trỏ giữa chừng khi đang kéo bôi đen.
+    if (isEditingText) return;
     if (!layer.locked) onSelect(layer.id, e.shiftKey);
   };
   const handleDragStart = (e) => {
@@ -2907,11 +2960,11 @@ export default function BookBuilder() {
     if (editingTextId === selected.id && editableRef.current) {
       const sel = restoreSavedSelection();
       if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
-        document.execCommand(command, false, null);
-        const newSel = window.getSelection();
-        if (newSel && newSel.rangeCount > 0) {
-          savedRangeRef.current = newSel.getRangeAt(0).cloneRange();
-        }
+        const finalRange = runFormatCommandKeepingSelection(
+          sel.getRangeAt(0),
+          () => document.execCommand(command, false, null),
+        );
+        savedRangeRef.current = finalRange.cloneRange();
         const html = sanitizeRichHtml(editableRef.current.innerHTML);
         const text =
           editableRef.current.innerText ||
@@ -2944,11 +2997,11 @@ export default function BookBuilder() {
     ) {
       const sel = restoreSavedSelection();
       if (sel && !sel.isCollapsed) {
-        document.execCommand("foreColor", false, color);
-        const newSel = window.getSelection();
-        if (newSel && newSel.rangeCount > 0) {
-          savedRangeRef.current = newSel.getRangeAt(0).cloneRange();
-        }
+        const finalRange = runFormatCommandKeepingSelection(
+          sel.getRangeAt(0),
+          () => document.execCommand("foreColor", false, color),
+        );
+        savedRangeRef.current = finalRange.cloneRange();
         const html = sanitizeRichHtml(editableRef.current.innerHTML);
         const text =
           editableRef.current.innerText ||
