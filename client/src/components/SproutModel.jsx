@@ -284,7 +284,7 @@ export default function SproutModel({ className = "" }) {
       colAttr.needsUpdate = true;
 
       // 3) whole lattice drifts as one body — slow, luxurious
-      latticeGroup.rotation.y = Math.sin(t * 0.18) * 0.12 + t * 0.025;
+      latticeGroup.rotation.y = Math.sin(t * 0.12) * 0.18;
       latticeGroup.rotation.x = Math.sin(t * 0.13) * 0.05;
 
       renderer.render(scene, camera);
