@@ -137,14 +137,16 @@ const globalCSS = `
   .bp-newsava { width:26px; height:26px; border-radius:50%; background:${T.goldPale}; border:.5px solid ${T.borderGold}; display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:11px; color:${T.gold}; flex-shrink:0; overflow:hidden; }
   .bp-newsava img { width:100%; height:100%; object-fit:cover; }
 
-  .bp-filecard { position:relative; border:.5px solid ${T.border}; background:${T.white}; padding:16px 14px; display:flex; flex-direction:column; align-items:center; gap:8px; text-decoration:none; text-align:center; transition:box-shadow .3s,transform .3s,border-color .3s; cursor:pointer; }
+  .bp-filecard { position:relative; border:.5px solid ${T.border}; background:${T.white}; aspect-ratio:210/297; width:100%; overflow:hidden; text-decoration:none; transition:box-shadow .3s,transform .3s,border-color .3s; cursor:pointer; display:block; }
   .bp-filecard:hover { border-color:${T.borderGold}; box-shadow:0 16px 30px rgba(10,46,40,.09); transform:translateY(-3px); }
+  .bp-filecard-face { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:9px; padding:18px 14px; text-align:center; transition:opacity .3s,transform .3s; }
+  .bp-filecard:hover .bp-filecard-face { opacity:0; transform:scale(.94); }
   .bp-filename { font-size:11px; color:${T.forest}; line-height:1.35; word-break:break-word; }
   .bp-filetype { font-size:8.5px; letter-spacing:.14em; text-transform:uppercase; color:${T.gold}; background:${T.goldPale}; border:.5px solid ${T.borderGold}; padding:2px 8px; }
-  .bp-filetooltip { position:absolute; left:50%; bottom:calc(100% + 8px); transform:translateX(-50%) translateY(6px); min-width:210px; background:${T.forest}; color:${T.ivory}; padding:12px 14px; font-size:10.5px; line-height:1.7; text-align:left; opacity:0; pointer-events:none; transition:opacity .25s,transform .25s; z-index:5; box-shadow:0 14px 30px rgba(10,46,40,.28); }
-  .bp-filetooltip::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:6px solid transparent; border-top-color:${T.forest}; }
-  .bp-filecard:hover .bp-filetooltip { opacity:1; transform:translateX(-50%) translateY(0); }
-  .bp-filetooltip b { color:${T.gold}; font-weight:500; }
+  .bp-fileinfo { position:absolute; inset:0; background:${T.forest}; color:${T.ivory}; padding:18px 16px; display:flex; flex-direction:column; justify-content:center; gap:9px; text-align:left; font-size:10.5px; line-height:1.7; opacity:0; transform:scale(1.04); pointer-events:none; transition:opacity .3s,transform .3s; }
+  .bp-filecard:hover .bp-fileinfo { opacity:1; transform:none; }
+  .bp-fileinfo b { color:${T.gold}; font-weight:500; }
+  .bp-fileinfo-name { font-size:12px; font-weight:500; color:${T.ivory}; line-height:1.4; margin-bottom:2px; word-break:break-word; }
 
   .bp-pagebtn { width:28px; height:28px; display:flex; align-items:center; justify-content:center; border:.5px solid ${T.border}; background:${T.white}; color:${T.textMuted}; font-size:11px; cursor:pointer; transition:all .25s; }
   .bp-pagebtn:hover:not(:disabled) { border-color:${T.gold}; color:${T.gold}; }
@@ -2010,11 +2012,13 @@ function NewsBoard() {
   const [posts, setPosts] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState({}); // MỚI THÊM — theo dõi card nào đang "Xem thêm"
   const LIMIT = 4; // giới hạn vùng hiển thị — mới nhất phía trên, kéo phân trang nếu nhiều
 
   useEffect(() => {
     let alive = true;
     setLoading(true);
+    setExpanded({}); // MỚI THÊM — đổi trang thì thu gọn lại hết
     newsService
       .getPublicPosts({ page, limit: LIMIT })
       .then((res) => {
@@ -2044,8 +2048,9 @@ function NewsBoard() {
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-end",
+          justifyContent: "center",
+          alignItems: "center",
+          textAlign: "center",
           marginBottom: 34,
         }}
       >
@@ -2099,63 +2104,98 @@ function NewsBoard() {
           }}
           className="bp-ed-grid"
         >
-          {posts.map((p) => (
-            <article key={p.id} className="bp-newspost">
-              <h3
-                style={{
-                  fontFamily: "'Playfair Display',serif",
-                  fontSize: 17,
-                  fontWeight: 400,
-                  color: T.forest,
-                  lineHeight: 1.3,
-                }}
-              >
-                {p.title}
-              </h3>
-              <p
-                style={{
-                  fontSize: 12.5,
-                  lineHeight: 1.8,
-                  color: T.textMuted,
-                  fontWeight: 300,
-                }}
-              >
-                {p.description}
-              </p>
-              <div
-                className="bp-newsmeta"
-                style={{
-                  paddingTop: 12,
-                  borderTop: `.5px solid ${T.border}`,
-                  marginTop: "auto",
-                }}
-              >
-                <div className="bp-newsava">
-                  {p.author?.avatar ? (
-                    <img src={p.author.avatar} alt="" />
-                  ) : (
-                    p.author?.name?.[0]?.toUpperCase() || "?"
-                  )}
-                </div>
-                <span style={{ color: T.forest, fontWeight: 400 }}>
-                  {p.author?.name}
-                </span>
-                <span className="bp-newsrole">
-                  {ROLE_LABEL_VN[p.author?.role] || p.author?.role}
-                </span>
-                <span
+          {posts.map((p) => {
+            const isOpen = !!expanded[p.id];
+            const isLong = (p.description || "").length > 200; // MỚI THÊM — chỉ hiện nút khi nội dung dài
+            return (
+              <article key={p.id} className="bp-newspost">
+                <h3
                   style={{
-                    width: 3,
-                    height: 3,
-                    borderRadius: "50%",
-                    background: T.borderGold,
-                    display: "block",
+                    fontFamily: "'Playfair Display',serif",
+                    fontSize: 17,
+                    fontWeight: 400,
+                    color: T.forest,
+                    lineHeight: 1.3,
                   }}
-                />
-                <span>{formatVNDate(p.createdAt)}</span>
-              </div>
-            </article>
-          ))}
+                >
+                  {p.title}
+                </h3>
+                <p
+                  style={{
+                    fontSize: 12.5,
+                    lineHeight: 1.8,
+                    color: T.textMuted,
+                    fontWeight: 300,
+                    whiteSpace: "pre-line", // MỚI THÊM — giữ xuống dòng người dùng đã gõ
+                    margin: 0,
+                    ...(isOpen
+                      ? null
+                      : {
+                          display: "-webkit-box",
+                          WebkitLineClamp: 4,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }),
+                  }}
+                >
+                  {p.description}
+                </p>
+                {isLong && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setExpanded((prev) => ({ ...prev, [p.id]: !prev[p.id] }))
+                    }
+                    style={{
+                      alignSelf: "flex-start",
+                      background: "transparent",
+                      border: "none",
+                      padding: 0,
+                      fontFamily: "'Be Vietnam Pro',sans-serif",
+                      fontSize: 11,
+                      letterSpacing: ".04em",
+                      color: T.gold,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {isOpen ? "Thu gọn" : "Xem thêm"}
+                  </button>
+                )}
+                <div
+                  className="bp-newsmeta"
+                  style={{
+                    paddingTop: 12,
+                    borderTop: `.5px solid ${T.border}`,
+                    marginTop: "auto",
+                  }}
+                >
+                  <div className="bp-newsava">
+                    {p.author?.avatar ? (
+                      <img src={p.author.avatar} alt="" />
+                    ) : (
+                      p.author?.name?.[0]?.toUpperCase() || "?"
+                    )}
+                  </div>
+                  <span style={{ color: T.forest, fontWeight: 400 }}>
+                    {p.author?.name}
+                  </span>
+                  <span className="bp-newsrole">
+                    {ROLE_LABEL_VN[p.author?.role] || p.author?.role}
+                  </span>
+                  <span
+                    style={{
+                      width: 3,
+                      height: 3,
+                      borderRadius: "50%",
+                      background: T.borderGold,
+                      display: "block",
+                    }}
+                  />
+                  <span>{formatVNDate(p.createdAt)}</span>
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
 
@@ -2254,10 +2294,23 @@ function PublicFiles() {
               rel="noreferrer"
               className="bp-filecard"
             >
-              <div className="bp-filetooltip">
-                <div>
-                  <b>Tên:</b> {f.fileName}
-                </div>
+              <div className="bp-filecard-face">
+                <svg
+                  width="30"
+                  height="30"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke={T.gold}
+                  strokeWidth="1.3"
+                >
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                </svg>
+                <div className="bp-filename">{f.fileName}</div>
+                <span className="bp-filetype">{f.fileType?.toUpperCase()}</span>
+              </div>
+              <div className="bp-fileinfo">
+                <div className="bp-fileinfo-name">{f.fileName}</div>
                 <div>
                   <b>Loại:</b> {f.fileType?.toUpperCase()}
                 </div>
@@ -2272,19 +2325,6 @@ function PublicFiles() {
                   <b>Dung lượng:</b> {formatFileBytes(f.fileSize)}
                 </div>
               </div>
-              <svg
-                width="30"
-                height="30"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke={T.gold}
-                strokeWidth="1.3"
-              >
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-              </svg>
-              <div className="bp-filename">{f.fileName}</div>
-              <span className="bp-filetype">{f.fileType?.toUpperCase()}</span>
             </a>
           ))}
         </div>
@@ -2323,14 +2363,13 @@ export default function Blog() {
         paddingTop: `${NAV_H}px`,
       }}
     >
-      <Hero />
-      {/* MỚI THÊM — Bảng tin thật + Tệp công khai thật (module News) */}
       <NewsBoard />
       <PublicFiles />
+      <FacebookSection />
+      <Hero />
       <CatStrip />
       <Articles />
       <Editorial />
-      <FacebookSection />
       <Quote />
       <CTA />
     </div>
