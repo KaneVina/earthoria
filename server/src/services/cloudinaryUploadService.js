@@ -79,6 +79,33 @@ function extractPublicId(url) {
   return m ? m[1] : null;
 }
 
+// ═══════ MỚI THÊM — upload/xóa file công khai cho module News ═══════
+// Dùng resource_type "raw" để hỗ trợ mọi loại file (pdf, docx, xlsx, zip, ...),
+// không chỉ ảnh. Giữ tên gốc (đã làm sạch) trong public_id để dễ nhận diện trên Cloudinary.
+function uploadNewsFileBuffer(buffer, originalName) {
+  return new Promise((resolve, reject) => {
+    const safeName = (originalName || "file")
+      .replace(/\.[^/.]+$/, "") // bỏ đuôi file
+      .replace(/[^a-zA-Z0-9-_]/g, "_")
+      .slice(0, 60);
+    const ext = (originalName.split(".").pop() || "").toLowerCase();
+    const publicId = `news/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: "raw",
+        public_id: ext ? `${publicId}.${ext}` : publicId,
+        overwrite: false,
+      },
+      (err, result) => (err ? reject(err) : resolve(result)),
+    );
+    stream.end(buffer);
+  });
+}
+
+function deleteRawByPublicId(publicId) {
+  return cloudinary.uploader.destroy(publicId, { resource_type: "raw" });
+}
+
 module.exports = {
   uploadGlbFile,
   uploadImageBuffer,
@@ -86,4 +113,6 @@ module.exports = {
   uploadEbookImageBuffer,
   deleteImageByPublicId,
   extractPublicId,
+  uploadNewsFileBuffer,
+  deleteRawByPublicId,
 };

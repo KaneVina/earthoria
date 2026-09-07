@@ -65,6 +65,10 @@ model User {
   tickets         Ticket[]      @relation("TicketRequester")
   assignedTickets Ticket[]      @relation("TicketAssignee")
   ticketReplies   TicketReply[]
+
+  // ═══════ MỚI THÊM — Module News (bảng tin nội bộ + tệp công khai) ═══════
+  newsPosts   NewsPost[]
+  newsFiles   NewsFile[]
 }
 
 // Bảng đếm số thứ tự theo ngày để sinh userCode
@@ -912,4 +916,45 @@ model TicketReply {
   staff  User   @relation(fields: [staffId], references: [id])
 
   @@index([ticketId])
+}
+
+model NewsPost {
+  id          String   @id @default(uuid())
+  title       String
+  description String   @db.Text
+
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  isHidden    Boolean  @default(false) // Ẩn — vẫn còn trong DB nhưng không hiện công khai
+  isDeleted   Boolean  @default(false) // Xóa mềm — không hiện ở đâu cả, chờ xóa cứng hoặc khôi phục
+  deletedAt   DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isDeleted, isHidden, createdAt])
+  @@index([authorId])
+}
+
+model NewsFile {
+  id          String   @id @default(uuid())
+  fileName    String   // tên hiển thị (vd: "Báo cáo Q3.pdf")
+  fileUrl     String   // link Cloudinary
+  fileType    String   // đuôi/loại file (pdf, docx, xlsx, zip, png, ...)
+  fileSize    Int?     // bytes
+  publicId    String?  // public_id trên Cloudinary — dùng khi xóa file khỏi CDN
+
+  uploaderId  String
+  uploader    User     @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+
+  isHidden    Boolean  @default(false)
+  isDeleted   Boolean  @default(false)
+  deletedAt   DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isDeleted, isHidden, createdAt])
+  @@index([uploaderId])
 }

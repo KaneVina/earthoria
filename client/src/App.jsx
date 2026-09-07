@@ -70,6 +70,7 @@ import ParentDashboard from "./pages/ParentDashboard";
 import KidAccess from "./pages/kid/KidAccess";
 import GardenPage from "./pages/kid/GardenPage";
 import Tickets from "./pages/admin/Tickets";
+import News from "./pages/admin/News"; // MỚI THÊM — trang quản trị News
 import PaymentReturn from "./pages/PaymentReturn";
 import GameManager from "./pages/admin/GameManager";
 import FlyingWishlistHeart from "./components/FlyingWishlistHeart";
@@ -326,6 +327,15 @@ export default function App() {
           element={
             <StaffOrAdminRoute>
               <Tickets />
+            </StaffOrAdminRoute>
+          }
+        />
+        {/* MỚI THÊM — route quản trị News */}
+        <Route
+          path="/dashboard/news"
+          element={
+            <StaffOrAdminRoute>
+              <News />
             </StaffOrAdminRoute>
           }
         />

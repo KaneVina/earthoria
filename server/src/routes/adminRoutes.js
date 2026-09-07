@@ -98,6 +98,7 @@ router.put("/orders/:id", staffOrAdmin, updateOrderStatus);
 router.use("/emails", staffOrAdmin, require("./emailRoutes"));
 router.use("/tickets", staffOrAdmin, require("./adminTicketRoutes"));
 router.use("/reviews", staffOrAdmin, require("./adminReviewRoutes"));
+router.use("/news", staffOrAdmin, require("./adminNewsRoutes")); // MỚI THÊM — quản lý bảng tin & file công khai
 
 router.get("/users", staffOrAdmin, getUsers);
 router.get("/users/export", staffOrAdmin, exportUsersCsv);
