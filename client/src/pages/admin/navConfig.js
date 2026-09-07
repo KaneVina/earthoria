@@ -10,6 +10,7 @@ import {
   BookOpen,
   MessageSquareText,
   Star,
+  Newspaper,
   Settings as SettingsIcon,
 } from "lucide-react";
 
@@ -72,6 +73,18 @@ export const NAV_GROUPS = [
         label: "Tài khoản",
         href: "/dashboard/users",
         icon: Users,
+        roles: ["ADMIN", "STAFF"],
+      },
+    ],
+  },
+  {
+    id: "content",
+    label: "Nội dung",
+    items: [
+      {
+        label: "Bảng tin",
+        href: "/dashboard/news",
+        icon: Newspaper,
         roles: ["ADMIN", "STAFF"],
       },
     ],

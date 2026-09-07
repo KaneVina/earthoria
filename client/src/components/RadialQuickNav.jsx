@@ -2,40 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Compass, X } from "lucide-react";
 import "../components/assets/css/RadialQuickNav.css";
 
-/**
- * RadialQuickNav
- * ─────────────────────────────────────────────────────────────────────────
- * A reusable "half-moon" quick-navigation widget that docks to the left
- * edge of the viewport.
- *
- *   • Idle          → a faint half-circle "tab" peeking from the screen edge.
- *   • Hover (whole) → brightens / lifts slightly to hint that it's interactive.
- *   • Hover (wedge) → immediately reveals that wedge's own name in a small
- *                     flyout label, even while still collapsed — no need to
- *                     open the menu just to know what's there.
- *   • Tap hub       → blooms into a full pie-menu ("nan quạt") where every
- *                     wedge shows its icon + name, laid out along that
- *                     wedge's own radial direction (like spokes on a wheel).
- *   • Scroll wheel  → while the menu is open, spins the whole dial so any
- *                     wedge can be rotated into a comfortable reading angle.
- *                     Purely visual — clicking still selects by wedge, not
- *                     by current on-screen angle.
- *
- * Usage:
- *   <RadialQuickNav
- *     sections={[
- *       { id: "section-hero", label: "Tổng Quan", icon: Sparkles },
- *       { id: "section-stats", label: "Số Liệu", icon: BarChart3 },
- *     ]}
- *   />
- *
- * Props:
- *   sections      Array<{ id, label, icon? }>  (required)
- *                 `id` must match a DOM element id present on the page.
- *   scrollOffset  Number, px to leave above the target section (default 88,
- *                 matches the site's fixed navbar height + breathing room).
- *   ariaLabel     Accessible name for the widget's nav landmark.
- */
 export default function RadialQuickNav({
   sections,
   scrollOffset = 88,
@@ -53,11 +19,6 @@ export default function RadialQuickNav({
   const count = sections.length;
   const step = 180 / count;
 
-  // Pre-compute the geometry for every wedge: the clip-path shape itself,
-  // where its icon/label anchor sits once expanded, where its rim indicator
-  // dot sits, and where its collapsed hover-flyout label sits. All anchor
-  // radii are kept comfortably inside the wedge's own boundary (radius 50)
-  // so nothing is ever accidentally cropped by the clip-path.
   const slices = useMemo(() => {
     return sections.map((section, i) => {
       const startAngle = -90 + i * step;
@@ -66,8 +27,6 @@ export default function RadialQuickNav({
       return {
         ...section,
         midAngle, // 0° = due east, -90° = top, 90° = bottom — same angle
-        // convention used to rotate this wedge's own label so it reads
-        // outward along the wedge's radial direction.
         clipPath: buildWedgeClipPath(startAngle, endAngle),
         content: polarPoint(midAngle, 29), // icon + label anchor, shown when expanded
         dot: polarPoint(midAngle, 41), // small rim indicator, shown when idle/hover
@@ -143,10 +102,6 @@ export default function RadialQuickNav({
     return () => window.removeEventListener("keydown", onKey);
   }, [expanded, close]);
 
-  // Mouse-wheel dial control — only active while the menu is bloomed open.
-  // Attached as a native listener (not React's onWheel) so we can reliably
-  // preventDefault and stop the page itself from scrolling while the user
-  // is spinning the dial.
   useEffect(() => {
     const el = wrapRef.current;
     if (!el || !expanded) return undefined;
