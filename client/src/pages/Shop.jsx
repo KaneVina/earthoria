@@ -17,6 +17,22 @@ import { flyHeartToWishlist } from "../components/FlyingWishlistHeart";
 import toast from "react-hot-toast";
 import { SkeletonProductGrid } from "../components/skeletons/SkeletonShop";
 import RangeSlider from "../components/RangeSlider";
+import RadialQuickNav from "../components/RadialQuickNav";
+import {
+  Sparkles,
+  ShieldCheck,
+  LayoutGrid,
+  ShoppingBag,
+  Mail,
+} from "lucide-react";
+
+const shopSections = [
+  { id: "section-hero", label: "Tổng Quan", icon: Sparkles },
+  { id: "section-trust", label: "Cam Kết", icon: ShieldCheck },
+  { id: "section-categories", label: "Danh Mục", icon: LayoutGrid },
+  { id: "section-products", label: "Sản Phẩm", icon: ShoppingBag },
+  { id: "cta-section", label: "Đăng Ký", icon: Mail },
+];
 
 const PRICE_BOUNDS = [0, 600000];
 const AGE_BOUNDS = [0, 15];
@@ -1077,8 +1093,11 @@ export default function Shop() {
 
   return (
     <>
+      <RadialQuickNav sections={shopSections} />
+
       {/* SHOP HERO */}
       <div
+        id="section-hero"
         style={{
           background: "var(--forest)",
           position: "relative",
@@ -1191,7 +1210,7 @@ export default function Shop() {
       </div>
 
       {/* TRUST STRIP */}
-      <div className="trust-strip">
+      <div className="trust-strip" id="section-trust">
         <div className="trust-strip-inner">
           {TRUST_ITEMS.map((item, i) => (
             <div className="trust-item" key={i}>
@@ -1206,7 +1225,7 @@ export default function Shop() {
       </div>
 
       {/* CATEGORY BANNER */}
-      <div className="cat-banner-section">
+      <div className="cat-banner-section" id="section-categories">
         <div className="section-header" style={{ marginBottom: "40px" }}>
           <div className="section-eyebrow">
             <div className="section-eyebrow-line" />
@@ -1245,7 +1264,7 @@ export default function Shop() {
       </div>
 
       {/* SHOP LAYOUT */}
-      <div className="shop-layout">
+      <div className="shop-layout" id="section-products">
         {/* SIDEBAR */}
         <aside className="shop-sidebar">
           <div className="sidebar-section">
