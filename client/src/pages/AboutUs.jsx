@@ -223,7 +223,6 @@ export default function AboutUs() {
       );
       counterObserver.observe(counterEl);
     });
-    // Logo analysis: mục đang active phát sáng + xương sống tô dần theo scroll
     const logoItems = document.querySelectorAll(".logo-analysis-item");
     const logoContent = document.querySelector(".logo-analysis-content");
     if (logoItems.length && logoContent) {
