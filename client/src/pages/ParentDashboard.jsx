@@ -52,6 +52,15 @@ import CreateChildWizard from "../components/parent/CreateChildWizard";
 import FullScreenLoader from "../components/FullScreenLoader";
 import KidLinkCard from "../components/parent/KidLinkCard";
 import DeleteChildModal from "../components/parent/DeleteChildModal";
+import RadialQuickNav from "../components/RadialQuickNav";
+
+const parentDashboardSections = [
+  { id: "overview", label: "Tổng quan", icon: Clock },
+  { id: "time-rules", label: "Giờ giấc", icon: CalendarClock },
+  { id: "reports", label: "Báo cáo", icon: TrendingUp },
+  { id: "books", label: "Sách của bé", icon: BookOpen },
+  { id: "eye-care", label: "Bảo vệ mắt", icon: Eye },
+];
 
 const WEEK_LABELS = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 // Chủ nhật (0) xuống cuối mảng (index 6).
@@ -1079,6 +1088,8 @@ export default function ParentDashboard() {
 
   return (
     <div className="pkd-page">
+      <RadialQuickNav sections={parentDashboardSections} />
+
       {/*  Header  */}
       <div
         className="pkd-header"
