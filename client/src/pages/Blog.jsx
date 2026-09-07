@@ -137,16 +137,16 @@ const globalCSS = `
   .bp-newsava { width:26px; height:26px; border-radius:50%; background:${T.goldPale}; border:.5px solid ${T.borderGold}; display:flex; align-items:center; justify-content:center; font-family:'Playfair Display',serif; font-size:11px; color:${T.gold}; flex-shrink:0; overflow:hidden; }
   .bp-newsava img { width:100%; height:100%; object-fit:cover; }
 
-  .bp-filecard { position:relative; border:.5px solid ${T.border}; background:${T.white}; aspect-ratio:210/297; width:100%; overflow:hidden; text-decoration:none; transition:box-shadow .3s,transform .3s,border-color .3s; cursor:pointer; display:block; }
-  .bp-filecard:hover { border-color:${T.borderGold}; box-shadow:0 16px 30px rgba(10,46,40,.09); transform:translateY(-3px); }
-  .bp-filecard-face { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:9px; padding:18px 14px; text-align:center; transition:opacity .3s,transform .3s; }
-  .bp-filecard:hover .bp-filecard-face { opacity:0; transform:scale(.94); }
+  .bp-filecard { position:relative; border:.5px solid ${T.border}; background:${T.white}; aspect-ratio:210/297; width:100%; overflow:hidden; text-decoration:none; transition:box-shadow .3s,transform .3s,border-color .3s; cursor:pointer; display:flex; flex-direction:column; }
+  .bp-filecard:hover { border-color:${T.borderGold}; box-shadow:0 14px 26px rgba(10,46,40,.08); transform:translateY(-2px); }
+  .bp-filecard-face { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:9px; padding:18px 14px 12px; text-align:center; transition:opacity .3s; }
+  .bp-filecard:hover .bp-filecard-face { opacity:.32; }
   .bp-filename { font-size:11px; color:${T.forest}; line-height:1.35; word-break:break-word; }
   .bp-filetype { font-size:8.5px; letter-spacing:.14em; text-transform:uppercase; color:${T.gold}; background:${T.goldPale}; border:.5px solid ${T.borderGold}; padding:2px 8px; }
-  .bp-fileinfo { position:absolute; inset:0; background:${T.forest}; color:${T.ivory}; padding:18px 16px; display:flex; flex-direction:column; justify-content:center; gap:9px; text-align:left; font-size:10.5px; line-height:1.7; opacity:0; transform:scale(1.04); pointer-events:none; transition:opacity .3s,transform .3s; }
-  .bp-filecard:hover .bp-fileinfo { opacity:1; transform:none; }
+  .bp-fileinfo { position:absolute; left:0; right:0; bottom:0; background:${T.ivory}; border-top:.5px solid ${T.borderGold}; color:${T.textBody}; padding:14px 16px; display:flex; flex-direction:column; gap:7px; text-align:left; font-size:10px; line-height:1.6; max-height:0; opacity:0; overflow:hidden; pointer-events:none; transition:max-height .35s cubic-bezier(.16,1,.3,1),opacity .3s; }
+  .bp-filecard:hover .bp-fileinfo { max-height:180px; opacity:1; }
   .bp-fileinfo b { color:${T.gold}; font-weight:500; }
-  .bp-fileinfo-name { font-size:12px; font-weight:500; color:${T.ivory}; line-height:1.4; margin-bottom:2px; word-break:break-word; }
+  .bp-fileinfo-name { font-size:11.5px; font-weight:500; color:${T.forest}; line-height:1.4; margin-bottom:2px; word-break:break-word; }
 
   .bp-pagebtn { width:28px; height:28px; display:flex; align-items:center; justify-content:center; border:.5px solid ${T.border}; background:${T.white}; color:${T.textMuted}; font-size:11px; cursor:pointer; transition:all .25s; }
   .bp-pagebtn:hover:not(:disabled) { border-color:${T.gold}; color:${T.gold}; }
@@ -248,7 +248,7 @@ const Ey = ({ children }) => (
       textTransform: "uppercase",
       color: T.gold,
       marginBottom: 13,
-      display: "flex",
+      display: "inline-flex",
       alignItems: "center",
       gap: 11,
     }}
@@ -2065,9 +2065,9 @@ function NewsBoard() {
               letterSpacing: "-.01em",
             }}
           >
-            Thông báo từ{" "}
+            Thông Báo Từ{" "}
             <em style={{ fontStyle: "italic", color: T.gold }}>
-              đội ngũ Earthoria
+              Đội Ngũ Earthoria
             </em>
           </h2>
         </div>
@@ -2241,7 +2241,7 @@ function PublicFiles() {
       style={{ padding: "20px 80px 70px", maxWidth: 1360, margin: "0 auto" }}
     >
       <div style={{ marginBottom: 26 }}>
-        <Ey>Tài liệu công khai</Ey>
+        <Ey>Tài liệu nền tảng</Ey>
         <h2
           style={{
             fontFamily: "'Playfair Display',serif",
@@ -2251,7 +2251,7 @@ function PublicFiles() {
             letterSpacing: "-.01em",
           }}
         >
-          Tệp <em style={{ fontStyle: "italic", color: T.gold }}>tải xuống</em>
+          Văn bản <em style={{ fontStyle: "italic", color: T.gold }}>Công Khai</em>
         </h2>
       </div>
 
