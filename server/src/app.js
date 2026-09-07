@@ -68,8 +68,7 @@ v1.use("/payments", require("./routes/paymentRoutes"));
 v1.use("/coupons", require("./routes/couponRoutes"));
 v1.use("/loyalty", require("./routes/loyaltyRoutes"));
 v1.use("/ai", require("./routes/aiChatRoutes"));
-v1.use("/news", require("./routes/newsRoutes")); // MỚI THÊM — bảng tin + file công khai (trang /blog)
-
+v1.use("/news", require("./routes/newsRoutes"));
 // Public route
 v1.use("/status", require("./routes/statusRoutes"));
 v1.use("/ar", require("./routes/arRoutes"));

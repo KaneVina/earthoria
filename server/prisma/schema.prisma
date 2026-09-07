@@ -66,7 +66,7 @@ model User {
   assignedTickets Ticket[]      @relation("TicketAssignee")
   ticketReplies   TicketReply[]
 
-  // ═══════ MỚI THÊM — Module News (bảng tin nội bộ + tệp công khai) ═══════
+  // Module News (bảng tin nội bộ + tệp công khai
   newsPosts   NewsPost[]
   newsFiles   NewsFile[]
 }

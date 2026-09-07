@@ -79,9 +79,6 @@ function extractPublicId(url) {
   return m ? m[1] : null;
 }
 
-// ═══════ MỚI THÊM — upload/xóa file công khai cho module News ═══════
-// Dùng resource_type "raw" để hỗ trợ mọi loại file (pdf, docx, xlsx, zip, ...),
-// không chỉ ảnh. Giữ tên gốc (đã làm sạch) trong public_id để dễ nhận diện trên Cloudinary.
 function uploadNewsFileBuffer(buffer, originalName) {
   return new Promise((resolve, reject) => {
     const safeName = (originalName || "file")

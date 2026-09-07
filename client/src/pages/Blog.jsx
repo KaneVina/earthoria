@@ -1,6 +1,17 @@
 import { useState, useEffect } from "react";
 import FacebookSection from "./FacebookSection";
-import { newsService } from "../services/newsService"; // MỚI THÊM — gọi API module News thật
+import { newsService } from "../services/newsService";
+import RadialQuickNav from "../components/RadialQuickNav";
+import {
+  TreePine,
+  Newspaper,
+  FolderOpen,
+  Tags,
+  BookOpen,
+  Layers,
+  Quote as QuoteIcon,
+  Mail,
+} from "lucide-react";
 
 /* ─ TOKENS ─ */
 const T = {
@@ -22,9 +33,8 @@ const T = {
   borderGold: "rgba(61,145,50,0.28)",
 };
 
-/* ─ NAV HEIGHT — chỉnh con số này nếu nav project khác ─ */
+/* NAV HEIGHT */
 const NAV_H = 70;
-
 const globalCSS = `
   @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500&display=swap');
 
@@ -129,7 +139,6 @@ const globalCSS = `
     .bp-fb-grid { grid-template-columns:1fr !important; }
   }
 
-  /* ═══════ MỚI THÊM — CSS cho khu Bảng tin (NewsBoard) & Tệp công khai (PublicFiles) ═══════ */
   .bp-newspost { border:.5px solid ${T.border}; background:${T.white}; padding:22px 24px; display:flex; flex-direction:column; gap:10px; transition:box-shadow .35s,transform .35s; }
   .bp-newspost:hover { box-shadow:0 16px 34px rgba(10,46,40,.08); transform:translateY(-3px); }
   .bp-newsmeta { display:flex; align-items:center; gap:9px; flex-wrap:wrap; font-size:10.5px; color:${T.textMuted}; }
@@ -239,6 +248,29 @@ const ShareIco = () => (
     <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
   </svg>
 );
+const FbIcoNav = ({ size = 16, ...p }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    {...p}
+  >
+    <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
+  </svg>
+);
+
+const QUICK_NAV_SECTIONS = [
+  { id: "section-hero", label: "Trang chủ", icon: TreePine },
+  { id: "section-news", label: "Bảng tin", icon: Newspaper },
+  { id: "section-files", label: "Tài liệu", icon: FolderOpen },
+  { id: "section-facebook", label: "Facebook", icon: FbIcoNav },
+  { id: "section-categories", label: "Chủ đề", icon: Tags },
+  { id: "section-articles", label: "Bài viết", icon: BookOpen },
+  { id: "section-series", label: "Series", icon: Layers },
+  { id: "section-quote", label: "Trích dẫn", icon: QuoteIcon },
+  { id: "section-subscribe", label: "Đăng ký", icon: Mail },
+];
 
 const Ey = ({ children }) => (
   <div
@@ -325,6 +357,7 @@ function Hero() {
   ];
   return (
     <section
+      id="section-hero"
       className="bp-hero-grid"
       style={{
         display: "grid",
@@ -740,6 +773,7 @@ function CatStrip() {
   ];
   return (
     <div
+      id="section-categories"
       style={{
         background: T.forest,
         padding: "0 80px",
@@ -1066,6 +1100,7 @@ function Articles() {
 
   return (
     <div
+      id="section-articles"
       style={{ padding: "80px 80px 64px", maxWidth: 1360, margin: "0 auto" }}
     >
       <div
@@ -1500,6 +1535,7 @@ function Editorial() {
   ];
   return (
     <section
+      id="section-series"
       style={{
         background: T.parchment,
         borderTop: `.5px solid ${T.border}`,
@@ -1614,6 +1650,7 @@ function Editorial() {
 function Quote() {
   return (
     <section
+      id="section-quote"
       style={{
         background: T.forest,
         padding: "88px 80px",
@@ -1728,7 +1765,10 @@ function CTA() {
     { ico: <MsgIco />, txt: "Trò chuyện trực tiếp với tác giả mỗi tháng" },
   ];
   return (
-    <section style={{ padding: "80px 80px", background: T.ivory }}>
+    <section
+      id="section-subscribe"
+      style={{ padding: "80px 80px", background: T.ivory }}
+    >
       <div
         className="bp-cta-grid"
         style={{
@@ -1938,13 +1978,6 @@ function CTA() {
   );
 }
 
-/* ══════════════════════════════════════════════════════════════════════════
-   MỚI THÊM — BẢNG TIN THẬT (NewsBoard) + TỆP CÔNG KHAI THẬT (PublicFiles)
-   Lấy dữ liệu từ API /news/posts và /news/files (module News, xem
-   server/src/controllers/newsController.js). Có phân trang, giới hạn vùng
-   hiển thị (chỉ hiện các tin/file mới nhất của trang hiện tại).
-══════════════════════════════════════════════════════════════════════════ */
-
 const ROLE_LABEL_VN = {
   ADMIN: "Admin",
   STAFF: "Nhân viên",
@@ -2012,13 +2045,13 @@ function NewsBoard() {
   const [posts, setPosts] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState({}); // MỚI THÊM — theo dõi card nào đang "Xem thêm"
+  const [expanded, setExpanded] = useState({}); // theo dõi card nào đang "Xem thêm"
   const LIMIT = 4; // giới hạn vùng hiển thị — mới nhất phía trên, kéo phân trang nếu nhiều
 
   useEffect(() => {
     let alive = true;
     setLoading(true);
-    setExpanded({}); // MỚI THÊM — đổi trang thì thu gọn lại hết
+    setExpanded({}); //đổi trang thì thu gọn lại hết
     newsService
       .getPublicPosts({ page, limit: LIMIT })
       .then((res) => {
@@ -2043,6 +2076,7 @@ function NewsBoard() {
 
   return (
     <section
+      id="section-news"
       style={{ padding: "64px 80px 20px", maxWidth: 1360, margin: "0 auto" }}
     >
       <div
@@ -2106,7 +2140,7 @@ function NewsBoard() {
         >
           {posts.map((p) => {
             const isOpen = !!expanded[p.id];
-            const isLong = (p.description || "").length > 200; // MỚI THÊM — chỉ hiện nút khi nội dung dài
+            const isLong = (p.description || "").length > 200; // chỉ hiện nút khi nội dung dài
             return (
               <article key={p.id} className="bp-newspost">
                 <h3
@@ -2126,7 +2160,7 @@ function NewsBoard() {
                     lineHeight: 1.8,
                     color: T.textMuted,
                     fontWeight: 300,
-                    whiteSpace: "pre-line", // MỚI THÊM — giữ xuống dòng người dùng đã gõ
+                    whiteSpace: "pre-line", // giữ xuống dòng người dùng đã gõ
                     margin: 0,
                     ...(isOpen
                       ? null
@@ -2238,6 +2272,7 @@ function PublicFiles() {
 
   return (
     <section
+      id="section-files"
       style={{ padding: "20px 80px 70px", maxWidth: 1360, margin: "0 auto" }}
     >
       <div style={{ marginBottom: 26 }}>
@@ -2251,7 +2286,8 @@ function PublicFiles() {
             letterSpacing: "-.01em",
           }}
         >
-          Văn bản <em style={{ fontStyle: "italic", color: T.gold }}>Công Khai</em>
+          Văn bản{" "}
+          <em style={{ fontStyle: "italic", color: T.gold }}>Công Khai</em>
         </h2>
       </div>
 
@@ -2363,9 +2399,13 @@ export default function Blog() {
         paddingTop: `${NAV_H}px`,
       }}
     >
+      <RadialQuickNav sections={QUICK_NAV_SECTIONS} scrollOffset={NAV_H + 12} />
+
       <NewsBoard />
       <PublicFiles />
-      <FacebookSection />
+      <div id="section-facebook">
+        <FacebookSection />
+      </div>
       <Hero />
       <CatStrip />
       <Articles />
