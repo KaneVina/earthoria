@@ -23,6 +23,7 @@ import {
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../services/api";
 import { useAuthStore } from "../store/authStore";
+import EiraExpandToggle from "./EiraExpandToggle";
 import "./assets/css/EiraChatbox.css";
 
 const MASCOT_HIDE_DURATION = 5 * 60 * 1000; // 5 phút — ẩn tạm, không lưu vĩnh viễn
@@ -667,6 +668,7 @@ function EiraUI() {
   const [showScrollBtn, setShowScrollBtn] = useState(false);
   const [configError, setConfigError] = useState(null);
   const [confirmClear, setConfirmClear] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false); // popup phóng to (không phải fullscreen)
 
   /* Hạng model AI (núi) — Yên Tử -> Bạch Mã -> Bà Nà -> Tam Đảo -> Fansipan */
   const [modelTiers, setModelTiers] = useState([]);
@@ -1308,7 +1310,7 @@ function EiraUI() {
       {/*  Chat Window  */}
       <div
         id="eira-win"
-        className={isOpen ? "win-open" : ""}
+        className={`${isOpen ? "win-open" : ""}${isExpanded ? " win-expanded" : ""}`}
         role="dialog"
         aria-modal="true"
         aria-label="Eira - Trợ lý Earthoria"
@@ -1378,6 +1380,10 @@ function EiraUI() {
             )}
           </div>
           <div className="eira-hdr-actions">
+            <EiraExpandToggle
+              expanded={isExpanded}
+              onToggle={() => setIsExpanded((v) => !v)}
+            />
             {messages.length > 0 && (
               <button
                 type="button"
