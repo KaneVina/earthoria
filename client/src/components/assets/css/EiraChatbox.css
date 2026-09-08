@@ -622,6 +622,20 @@
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+}
+#eira-win.dragging #eira-hdr {
+  cursor: grabbing;
+}
+#eira-win.dragging {
+  transition: none;
+}
+@media (max-width: 480px) {
+  #eira-hdr {
+    cursor: default;
+    touch-action: auto;
+  }
 }
 #eira-hdr::before {
   content: "";

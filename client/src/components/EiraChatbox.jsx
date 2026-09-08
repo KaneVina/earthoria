@@ -783,6 +783,83 @@ function EiraUI() {
     setIsOpen((v) => !v);
   };
 
+  /*  Kéo-thả khung chat khi đã mở (qua header) — dùng chung dragPos với FAB  */
+  const winRef = useRef(null);
+  const winDragRef = useRef({
+    active: false,
+    moved: false,
+    startX: 0,
+    startY: 0,
+    baseX: 0,
+    baseY: 0,
+    rect: null,
+  });
+
+  const isNoDragTarget = (target) =>
+    !!target.closest?.(
+      'button, [role="button"], [role="listbox"], [role="option"], input, textarea, a, .eira-model-picker',
+    );
+
+  const handleWinHeaderPointerDown = (e) => {
+    if (e.button !== undefined && e.button !== 0) return; // chỉ chuột trái / chạm chính
+    if (isNoDragTarget(e.target)) return; // đừng chặn click nút trong header
+    if (window.matchMedia("(max-width: 480px)").matches) return; // mobile: popup full-width, không kéo
+
+    const win = winRef.current;
+    if (!win) return;
+    winDragRef.current = {
+      active: true,
+      moved: false,
+      startX: e.clientX,
+      startY: e.clientY,
+      baseX: dragPos.x,
+      baseY: dragPos.y,
+      rect: win.getBoundingClientRect(),
+    };
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+
+  const handleWinHeaderPointerMove = (e) => {
+    const ds = winDragRef.current;
+    if (!ds.active) return;
+    const dx = e.clientX - ds.startX;
+    const dy = e.clientY - ds.startY;
+
+    if (!ds.moved) {
+      if (Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD)
+        return;
+      ds.moved = true;
+      setIsDragging(true);
+    }
+
+    const margin = 6;
+    const { rect } = ds;
+    const minLeft = margin;
+    const maxLeft = window.innerWidth - rect.width - margin;
+    const minTop = margin;
+    const maxTop = window.innerHeight - rect.height - margin;
+
+    const clampedLeft = Math.min(Math.max(rect.left + dx, minLeft), maxLeft);
+    const clampedTop = Math.min(Math.max(rect.top + dy, minTop), maxTop);
+
+    setDragPos({
+      x: ds.baseX + (clampedLeft - rect.left),
+      y: ds.baseY + (clampedTop - rect.top),
+    });
+  };
+
+  const endWinHeaderDrag = (e) => {
+    const ds = winDragRef.current;
+    if (!ds.active) return;
+    winDragRef.current.active = false;
+    setIsDragging(false);
+    try {
+      e.currentTarget.releasePointerCapture?.(e.pointerId);
+    } catch {
+      /* ignore */
+    }
+  };
+
   /* Show promo lần đầu, và mỗi khi promoDismissed quay lại false (hết 5 phút ẩn) */
   useEffect(() => {
     if (promoDismissed || isOpen) return;
@@ -1310,12 +1387,19 @@ function EiraUI() {
       {/*  Chat Window  */}
       <div
         id="eira-win"
-        className={`${isOpen ? "win-open" : ""}${isExpanded ? " win-expanded" : ""}`}
+        ref={winRef}
+        className={`${isOpen ? "win-open" : ""}${isExpanded ? " win-expanded" : ""}${isdragging ? " dragging" : ""}`}
         role="dialog"
         aria-modal="true"
         aria-label="Eira - Trợ lý Earthoria"
       >
-        <div id="eira-hdr">
+        <div
+          id="eira-hdr"
+          onpointerdown={handlewinheaderpointerdown}
+          onpointermove={handlewinheaderpointermove}
+          onpointerup={endwinheaderdrag}
+          onpointercancel={endwinheaderdrag}
+        >
           <div className="eira-avatar">
             <div className="eira-avatar-inner">
               <img src={avatarSrc} alt="" />
