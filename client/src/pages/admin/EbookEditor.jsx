@@ -145,6 +145,423 @@ function InfoHint({ children }) {
   );
 }
 
+// Bảng màu dựng sẵn — sắp thành các hàng giống kiểu Canva để chọn nhanh.
+const PRESET_COLOR_ROWS = [
+  ["#000000", "#4d4d4d", "#7a7a7a", "#a6a6a6", "#d1d1d1", "#f2f2f2", "#ffffff"],
+  ["#e53935", "#ff7043", "#ff4d94", "#e0a3ff", "#b166ff", "#7c4dff", "#4527a0"],
+  ["#00acc1", "#26c6da", "#4dd0e1", "#42a5f5", "#3f51b5", "#1e3a8a", "#0d1b6e"],
+  ["#2e7d32", "#66bb6a", "#9ccc65", "#ffeb3b", "#ffb74d", "#ff7043", "#ff5722"],
+];
+
+// Chuyển hex 3/4/6/8 ký tự thành hex 6 ký tự chuẩn hoá (#rrggbb), trả về
+// null nếu chuỗi nhập vào không phải mã hex hợp lệ.
+function normalizeHex(input) {
+  if (!input) return null;
+  let v = input.trim();
+  if (!v.startsWith("#")) v = `#${v}`;
+  if (/^#[0-9a-fA-F]{3}$/.test(v)) {
+    const [, r, g, b] = v;
+    return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
+  }
+  if (/^#[0-9a-fA-F]{6}$/.test(v)) return v.toLowerCase();
+  return null;
+}
+
+// Bảng gradient dựng sẵn, giống mục "Màu gradient mặc định" của Canva.
+const PRESET_GRADIENTS = [
+  "linear-gradient(90deg, #232526, #414345)",
+  "linear-gradient(90deg, #56ab2f, #a8e063)",
+  "linear-gradient(90deg, #ff512f, #f09819)",
+  "linear-gradient(90deg, #7f00ff, #e100ff)",
+  "linear-gradient(90deg, #2193b0, #6dd5ed)",
+  "linear-gradient(90deg, #ee0979, #ff6a00)",
+  "linear-gradient(90deg, #11998e, #38ef7d)",
+];
+
+function isGradientColor(v) {
+  return typeof v === "string" && v.trim().startsWith("linear-gradient(");
+}
+
+// Lấy màu đại diện (đơn sắc) từ 1 chuỗi gradient — dùng làm phương án dự
+// phòng ở những nơi CSS/SVG không cho tô gradient trực tiếp (viền, và vài
+// hình khối dạng SVG như đường thẳng/mũi tên/ngôi sao).
+function firstGradientStop(v) {
+  if (!isGradientColor(v)) return v;
+  const m = v.match(/#[0-9a-fA-F]{3,8}/);
+  return m ? m[0] : "#000000";
+}
+
+function parseGradient(v) {
+  const fallback = { angle: 90, from: "#4a9e3f", to: "#2c7be5" };
+  if (!isGradientColor(v)) return fallback;
+  const angleMatch = v.match(/(-?\d+)deg/);
+  const colors = v.match(/#[0-9a-fA-F]{3,8}/g) || [];
+  return {
+    angle: angleMatch ? Number(angleMatch[1]) : fallback.angle,
+    from: colors[0] || fallback.from,
+    to: colors[1] || fallback.to,
+  };
+}
+
+function buildGradient({ angle, from, to }) {
+  return `linear-gradient(${angle}deg, ${from}, ${to})`;
+}
+
+function hexToRgbObj(hex) {
+  const h = normalizeHex(hex) || "#000000";
+  return {
+    r: parseInt(h.slice(1, 3), 16),
+    g: parseInt(h.slice(3, 5), 16),
+    b: parseInt(h.slice(5, 7), 16),
+  };
+}
+
+function rgbObjToHex({ r, g, b }) {
+  const toHex = (n) =>
+    Math.max(0, Math.min(255, Math.round(n)))
+      .toString(16)
+      .padStart(2, "0");
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+function rgbToHsv({ r, g, b }) {
+  r /= 255;
+  g /= 255;
+  b /= 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const d = max - min;
+  let h = 0;
+  if (d !== 0) {
+    if (max === r) h = ((g - b) / d) % 6;
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    h *= 60;
+    if (h < 0) h += 360;
+  }
+  const s = max === 0 ? 0 : d / max;
+  const v = max;
+  return { h, s, v };
+}
+
+function hsvToRgb({ h, s, v }) {
+  const c = v * s;
+  const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+  const m = v - c;
+  let r = 0,
+    g = 0,
+    b = 0;
+  if (h < 60) [r, g, b] = [c, x, 0];
+  else if (h < 120) [r, g, b] = [x, c, 0];
+  else if (h < 180) [r, g, b] = [0, c, x];
+  else if (h < 240) [r, g, b] = [0, x, c];
+  else if (h < 300) [r, g, b] = [x, 0, c];
+  else [r, g, b] = [c, 0, x];
+  return { r: (r + m) * 255, g: (g + m) * 255, b: (b + m) * 255 };
+}
+
+// Ô chọn màu tuỳ chỉnh kiểu Canva: click vào ô tròn hiện màu hiện tại sẽ
+// mở bảng chọn có 2 tab — "Màu đơn" (thanh trích màu + ô nhập mã màu +
+// lưới màu dựng sẵn) và "Gradient" (2 màu hoà + góc nghiêng) — thay cho
+// color-picker mặc định của trình duyệt (khó dùng, không gõ được mã màu,
+// không có gradient).
+function ColorPickerInput({
+  value,
+  onChange,
+  onOpen,
+  onClose,
+  title,
+  style,
+  keepEdit,
+  disableGradient,
+}) {
+  const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState(isGradientColor(value) ? "gradient" : "solid");
+  const [hexDraft, setHexDraft] = useState(
+    isGradientColor(value) ? "#000000" : value || "#000000",
+  );
+  const [hsv, setHsv] = useState(() => rgbToHsv(hexToRgbObj(value)));
+  const [grad, setGrad] = useState(() => parseGradient(value));
+  const wrapRef = useRef(null);
+  const spectrumRef = useRef(null);
+  const hueRef = useRef(null);
+
+  useEffect(() => {
+    if (open) return;
+    if (isGradientColor(value)) {
+      setTab("gradient");
+      setGrad(parseGradient(value));
+    } else {
+      setTab("solid");
+      setHexDraft(value || "#000000");
+      setHsv(rgbToHsv(hexToRgbObj(value)));
+    }
+  }, [value, open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleOutside = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) {
+        setOpen(false);
+        onClose?.();
+      }
+    };
+    const handleKey = (e) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+        onClose?.();
+      }
+    };
+    document.addEventListener("mousedown", handleOutside);
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      document.removeEventListener("mousedown", handleOutside);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [open, onClose]);
+
+  const commitHex = (raw) => {
+    const normalized = normalizeHex(raw);
+    if (normalized) {
+      onChange(normalized);
+      setHsv(rgbToHsv(hexToRgbObj(normalized)));
+    }
+  };
+
+  // Kéo trong ô vuông phổ màu để chọn độ đậm nhạt/độ sáng (saturation/value)
+  // ứng với sắc màu (hue) đang chọn ở thanh trượt bên dưới.
+  const handleSpectrumDrag = (e) => {
+    const rect = spectrumRef.current.getBoundingClientRect();
+    const move = (clientX, clientY) => {
+      const x = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+      const y = Math.min(1, Math.max(0, (clientY - rect.top) / rect.height));
+      const nextHsv = { h: hsv.h, s: x, v: 1 - y };
+      setHsv(nextHsv);
+      const hex = rgbObjToHex(hsvToRgb(nextHsv));
+      setHexDraft(hex);
+      onChange(hex);
+    };
+    move(e.clientX, e.clientY);
+    const onMove = (ev) => move(ev.clientX, ev.clientY);
+    const onUp = () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  };
+
+  // Kéo trên thanh trích màu (dải cầu vồng) để đổi sắc màu (hue 0-360°).
+  const handleHueDrag = (e) => {
+    const rect = hueRef.current.getBoundingClientRect();
+    const move = (clientX) => {
+      const x = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
+      const h = x * 360;
+      const nextHsv = { ...hsv, h };
+      setHsv(nextHsv);
+      const hex = rgbObjToHex(hsvToRgb(nextHsv));
+      setHexDraft(hex);
+      onChange(hex);
+    };
+    move(e.clientX);
+    const onMove = (ev) => move(ev.clientX);
+    const onUp = () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  };
+
+  const pureHue = rgbObjToHex(hsvToRgb({ h: hsv.h, s: 1, v: 1 }));
+  const updateGrad = (patch) => {
+    const next = { ...grad, ...patch };
+    setGrad(next);
+    onChange(buildGradient(next));
+  };
+
+  return (
+    <div
+      className="bb-colorpicker"
+      ref={wrapRef}
+      style={style}
+      {...(keepEdit ? { "data-keep-edit": "true" } : {})}
+    >
+      <button
+        type="button"
+        className="bb-colorpicker-swatch"
+        title={title || "Chọn màu"}
+        style={{ background: value || "#000000" }}
+        onMouseDown={keepEdit ? (e) => e.preventDefault() : undefined}
+        onClick={() => {
+          const next = !open;
+          setOpen(next);
+          if (next) onOpen?.();
+          else onClose?.();
+        }}
+      />
+      {open && (
+        <div className="bb-colorpicker-pop" data-keep-edit="true">
+          {!disableGradient && (
+            <div className="bb-colorpicker-tabs">
+              <button
+                type="button"
+                className={tab === "solid" ? "active" : ""}
+                onClick={() => setTab("solid")}
+              >
+                Màu đơn
+              </button>
+              <button
+                type="button"
+                className={tab === "gradient" ? "active" : ""}
+                onClick={() => {
+                  setTab("gradient");
+                  onChange(buildGradient(grad));
+                }}
+              >
+                Gradient
+              </button>
+            </div>
+          )}
+
+          {tab === "solid" || disableGradient ? (
+            <>
+              <div
+                className="bb-colorpicker-spectrum"
+                ref={spectrumRef}
+                style={{ background: pureHue }}
+                onMouseDown={handleSpectrumDrag}
+              >
+                <div className="bb-colorpicker-spectrum-white" />
+                <div className="bb-colorpicker-spectrum-black" />
+                <div
+                  className="bb-colorpicker-spectrum-thumb"
+                  style={{
+                    left: `${hsv.s * 100}%`,
+                    top: `${(1 - hsv.v) * 100}%`,
+                    background: rgbObjToHex(hsvToRgb(hsv)),
+                  }}
+                />
+              </div>
+              <div
+                className="bb-colorpicker-hue"
+                ref={hueRef}
+                onMouseDown={handleHueDrag}
+              >
+                <div
+                  className="bb-colorpicker-hue-thumb"
+                  style={{ left: `${(hsv.h / 360) * 100}%` }}
+                />
+              </div>
+              <div className="bb-colorpicker-hexrow">
+                <span
+                  className="bb-colorpicker-hexdot"
+                  style={{ background: normalizeHex(hexDraft) || value }}
+                />
+                <input
+                  type="text"
+                  className="bb-colorpicker-hexinput"
+                  placeholder="Nhập mã màu, VD: #00c4cc"
+                  value={hexDraft}
+                  onFocus={onOpen}
+                  onChange={(e) => {
+                    setHexDraft(e.target.value);
+                    commitHex(e.target.value);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      setOpen(false);
+                      onClose?.();
+                    }
+                  }}
+                />
+              </div>
+              <div className="bb-colorpicker-grid">
+                {PRESET_COLOR_ROWS.map((row, i) => (
+                  <div className="bb-colorpicker-row" key={i}>
+                    {row.map((c) => (
+                      <button
+                        type="button"
+                        key={c}
+                        className={`bb-colorpicker-swatch-sm${
+                          (value || "").toLowerCase() === c ? " active" : ""
+                        }`}
+                        style={{ background: c }}
+                        title={c}
+                        onClick={() => {
+                          onChange(c);
+                          setHexDraft(c);
+                          setHsv(rgbToHsv(hexToRgbObj(c)));
+                        }}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <div
+                className="bb-colorpicker-gradpreview"
+                style={{ background: buildGradient(grad) }}
+              />
+              <div className="bb-colorpicker-gradstops">
+                <label>
+                  Màu 1
+                  <input
+                    type="text"
+                    value={grad.from}
+                    onChange={(e) => updateGrad({ from: e.target.value })}
+                  />
+                </label>
+                <label>
+                  Màu 2
+                  <input
+                    type="text"
+                    value={grad.to}
+                    onChange={(e) => updateGrad({ to: e.target.value })}
+                  />
+                </label>
+              </div>
+              <label className="bb-colorpicker-angle">
+                Góc nghiêng ({grad.angle}°)
+                <input
+                  type="range"
+                  min={0}
+                  max={360}
+                  value={grad.angle}
+                  onChange={(e) =>
+                    updateGrad({ angle: Number(e.target.value) })
+                  }
+                />
+              </label>
+              <div className="bb-colorpicker-grid">
+                <div className="bb-colorpicker-row">
+                  {PRESET_GRADIENTS.map((g) => (
+                    <button
+                      type="button"
+                      key={g}
+                      className={`bb-colorpicker-swatch-sm${
+                        value === g ? " active" : ""
+                      }`}
+                      style={{ background: g }}
+                      title={g}
+                      onClick={() => {
+                        setGrad(parseGradient(g));
+                        onChange(g);
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function escapeHtml(str) {
   return (str || "")
     .replace(/&/g, "&amp;")
@@ -566,6 +983,10 @@ function defaultTextLayer(overrides = {}) {
     height: null,
     verticalAlign: "top",
     locked: false,
+    // Giãn cách giữa các chữ (letter-spacing, đơn vị px) và giãn cách
+    // giữa các hàng/dòng (line-height, hệ số nhân theo cỡ chữ).
+    letterSpacing: 0,
+    lineHeight: 1.35,
     ...overrides,
   };
 }
@@ -877,8 +1298,8 @@ function LayerView({
           {isVector ? (
             <ShapeSvg
               shapeType={layer.shapeType}
-              fill={layer.fill}
-              strokeColor={layer.strokeColor}
+              fill={firstGradientStop(layer.fill)}
+              strokeColor={firstGradientStop(layer.strokeColor)}
               strokeWidth={layer.strokeWidth}
             />
           ) : (
@@ -890,7 +1311,7 @@ function LayerView({
                 background: layer.fill,
                 border:
                   layer.strokeWidth > 0
-                    ? `${layer.strokeWidth}px solid ${layer.strokeColor}`
+                    ? `${layer.strokeWidth}px solid ${firstGradientStop(layer.strokeColor)}`
                     : "none",
                 borderRadius:
                   layer.shapeType === "circle" ? "50%" : layer.borderRadius,
@@ -1204,6 +1625,9 @@ function LayerView({
   const showPlaceholder =
     !readOnly && !editingNow && !isRich && !(layer.text || "").trim();
 
+  // Chữ tô gradient: CSS `color` không nhận gradient, phải dùng background
+  // + background-clip:text rồi làm chữ trong suốt để lộ nền gradient ra.
+  const textIsGradient = isGradientColor(layer.color);
   const textInnerStyle = {
     fontFamily: layer.fontFamily,
     fontSize: scaledFontSize,
@@ -1214,13 +1638,18 @@ function LayerView({
       : isTocLink
         ? "underline dotted"
         : "none",
-    color: layer.color,
+    color: textIsGradient ? "transparent" : layer.color,
+    background: textIsGradient ? layer.color : undefined,
+    WebkitBackgroundClip: textIsGradient ? "text" : undefined,
+    backgroundClip: textIsGradient ? "text" : undefined,
     textAlign: layer.align || "left",
     WebkitTextStroke:
       layer.strokeWidth > 0
-        ? `${layer.strokeWidth}px ${layer.strokeColor}`
+        ? `${layer.strokeWidth}px ${firstGradientStop(layer.strokeColor)}`
         : undefined,
-    lineHeight: 1.35,
+    lineHeight: layer.lineHeight != null ? layer.lineHeight : 1.35,
+    letterSpacing:
+      layer.letterSpacing != null ? `${layer.letterSpacing}px` : undefined,
     wordBreak: "break-word",
     outline: "none",
   };
@@ -3129,7 +3558,10 @@ export default function BookBuilder() {
   // mặc định của cả lớp chữ như trước.
   const applyTextColor = (color) => {
     if (!selected) return;
+    // Gradient chỉ tô được cho cả khối chữ (CSS color không nhận gradient
+    // theo từng đoạn), nên bỏ qua nhánh "chỉ tô đoạn đang bôi đen".
     if (
+      !isGradientColor(color) &&
       editingTextId === selected.id &&
       editableRef.current &&
       savedRangeRef.current
@@ -3770,7 +4202,7 @@ export default function BookBuilder() {
         const canvas = await html2canvas(node, {
           scale: 2,
           useCORS: true,
-          backgroundColor: pages[i].background || "#ffffff",
+          background: pages[i].background || "#ffffff",
         });
         const imgData = canvas.toDataURL("image/jpeg", 0.92);
         if (i > 0)
@@ -4621,12 +5053,12 @@ export default function BookBuilder() {
             <div className="bb-field">
               <label>Màu nền trang</label>
               <div className="bb-color-size">
-                <input
-                  type="color"
+                <ColorPickerInput
                   value={currentPage.background}
-                  onFocus={beginEdit}
-                  onBlur={endEdit}
-                  onChange={(e) => setPageBackground(e.target.value)}
+                  onChange={setPageBackground}
+                  onOpen={beginEdit}
+                  onClose={endEdit}
+                  title="Màu nền trang"
                 />
               </div>
             </div>
@@ -4848,12 +5280,13 @@ export default function BookBuilder() {
                 className="bb-color-size"
                 style={{ marginTop: 8, alignItems: "center" }}
               >
-                <input
-                  type="color"
+                <ColorPickerInput
                   value={pageNumberColor}
-                  onFocus={beginEdit}
-                  onBlur={endEdit}
-                  onChange={(e) => setPageNumberColor(e.target.value)}
+                  onChange={setPageNumberColor}
+                  onOpen={beginEdit}
+                  onClose={endEdit}
+                  title="Màu số trang"
+                  disableGradient
                 />
                 <span style={{ fontSize: 12, color: "#6b7a72" }}>
                   Màu số trang
@@ -5280,25 +5713,22 @@ export default function BookBuilder() {
                 <div className="bb-field">
                   <label>Màu nền &amp; viền</label>
                   <div className="bb-color-size">
-                    <input
-                      type="color"
+                    <ColorPickerInput
                       value={selected.fill}
-                      onFocus={beginEdit}
-                      onBlur={endEdit}
-                      onChange={(e) =>
-                        updateLayer(selected.id, { fill: e.target.value })
-                      }
+                      onChange={(v) => updateLayer(selected.id, { fill: v })}
+                      onOpen={beginEdit}
+                      onClose={endEdit}
+                      title="Màu nền"
                     />
-                    <input
-                      type="color"
+                    <ColorPickerInput
                       value={selected.strokeColor}
-                      onFocus={beginEdit}
-                      onBlur={endEdit}
-                      onChange={(e) =>
-                        updateLayer(selected.id, {
-                          strokeColor: e.target.value,
-                        })
+                      onChange={(v) =>
+                        updateLayer(selected.id, { strokeColor: v })
                       }
+                      onOpen={beginEdit}
+                      onClose={endEdit}
+                      title="Màu viền"
+                      disableGradient
                     />
                     <input
                       type="number"
@@ -5510,11 +5940,11 @@ export default function BookBuilder() {
                     </InfoHint>
                   </label>
                   <div className="bb-color-size">
-                    <input
-                      type="color"
+                    <ColorPickerInput
                       value={bgRemoveColor}
-                      onChange={(e) => setBgRemoveColor(e.target.value)}
+                      onChange={setBgRemoveColor}
                       title="Chọn màu nền cần xoá"
+                      disableGradient
                     />
                     <input
                       type="range"
@@ -5619,30 +6049,12 @@ export default function BookBuilder() {
               <>
                 <div className="bb-field">
                   <label>Nội dung</label>
-                  <div
-                    className="bb-text-preview"
-                    onClick={() => startEditText(selected.id)}
-                  >
-                    {(selected.text || "").trim() ? (
-                      <span
-                        dangerouslySetInnerHTML={{
-                          __html:
-                            selected.html || escapeHtml(selected.text || ""),
-                        }}
-                      />
-                    ) : (
-                      <span className="bb-text-preview-placeholder">
-                        Nhập chữ...
-                      </span>
-                    )}
-                  </div>
                   <button
                     type="button"
                     className="bb-btn"
                     style={{
                       width: "100%",
                       justifyContent: "center",
-                      marginTop: 8,
                     }}
                     onClick={() => startEditText(selected.id)}
                   >
@@ -5864,13 +6276,11 @@ export default function BookBuilder() {
                 <div className="bb-field">
                   <label>Màu chữ &amp; cỡ chữ</label>
                   <div className="bb-color-size">
-                    <input
-                      type="color"
-                      data-keep-edit="true"
+                    <ColorPickerInput
                       value={selected.color}
-                      onFocus={beginEdit}
-                      onBlur={endEdit}
-                      onChange={(e) => applyTextColor(e.target.value)}
+                      onChange={applyTextColor}
+                      keepEdit
+                      title="Màu chữ"
                     />
                     <input
                       type="number"
@@ -5888,19 +6298,62 @@ export default function BookBuilder() {
                     <span style={{ fontSize: 12, color: "#6b7a72" }}>px</span>
                   </div>
                 </div>
+                <div className="bb-field-pair">
+                  <div className="bb-field">
+                    <label>Giãn cách chữ</label>
+                    <div className="bb-color-size">
+                      <input
+                        type="number"
+                        min={-2}
+                        max={20}
+                        step={0.5}
+                        title="Giãn cách giữa các chữ (letter-spacing)"
+                        value={selected.letterSpacing ?? 0}
+                        onFocus={beginEdit}
+                        onBlur={endEdit}
+                        onChange={(e) =>
+                          updateLayer(selected.id, {
+                            letterSpacing: Number(e.target.value) || 0,
+                          })
+                        }
+                      />
+                      <span style={{ fontSize: 12, color: "#6b7a72" }}>px</span>
+                    </div>
+                  </div>
+                  <div className="bb-field">
+                    <label>Giãn cách hàng</label>
+                    <div className="bb-color-size">
+                      <input
+                        type="number"
+                        min={0.8}
+                        max={3}
+                        step={0.05}
+                        title="Giãn cách giữa các hàng (line-height)"
+                        value={selected.lineHeight ?? 1.35}
+                        onFocus={beginEdit}
+                        onBlur={endEdit}
+                        onChange={(e) =>
+                          updateLayer(selected.id, {
+                            lineHeight: Number(e.target.value) || 1.35,
+                          })
+                        }
+                      />
+                      <span style={{ fontSize: 12, color: "#6b7a72" }}>x</span>
+                    </div>
+                  </div>
+                </div>
                 <div className="bb-field">
                   <label>Viền chữ (màu &amp; độ dày)</label>
                   <div className="bb-color-size">
-                    <input
-                      type="color"
+                    <ColorPickerInput
                       value={selected.strokeColor}
-                      onFocus={beginEdit}
-                      onBlur={endEdit}
-                      onChange={(e) =>
-                        updateLayer(selected.id, {
-                          strokeColor: e.target.value,
-                        })
+                      onChange={(v) =>
+                        updateLayer(selected.id, { strokeColor: v })
                       }
+                      onOpen={beginEdit}
+                      onClose={endEdit}
+                      title="Màu viền chữ"
+                      disableGradient
                     />
                     <input
                       type="number"

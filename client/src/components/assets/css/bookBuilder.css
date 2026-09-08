@@ -734,33 +734,17 @@
   min-height: 58px;
 }
 
-/* Ô xem trước nội dung chữ — chỉ để xem, bấm vào (hoặc bấm nút bên dưới)
-   sẽ mở đúng chế độ gõ trực tiếp trên trang thay vì gõ trong 1 ô riêng. */
-.bb-text-preview {
-  width: 100%;
-  box-sizing: border-box;
-  min-height: 58px;
-  padding: 8px 10px;
-  border-radius: 9px;
-  border: 1px dashed rgba(20, 51, 42, 0.2);
-  background: #fbfaf7;
-  font-size: 13px;
-  line-height: 1.5;
-  color: #2c3b34;
-  cursor: text;
-  word-break: break-word;
-}
-.bb-text-preview:hover {
-  border-color: #4a9e3f;
-  background: #fff;
-}
-.bb-text-preview-placeholder {
-  color: #9aa79f;
-  font-style: italic;
-}
 .bb-field input[type="range"] {
   width: 100%;
   accent-color: #4a9e3f;
+}
+.bb-field-pair {
+  display: flex;
+  gap: 10px;
+}
+.bb-field-pair .bb-field {
+  flex: 1;
+  min-width: 0;
 }
 .bb-row3 {
   display: flex;
@@ -817,6 +801,224 @@
   border-color: #4a9e3f;
   box-shadow: 0 0 0 3px rgba(74, 158, 63, 0.14);
 }
+
+/* Ô chọn màu kiểu Canva: 1 ô tròn hiện màu hiện tại, bấm vào mở bảng
+   chọn có ô gõ mã màu + lưới màu dựng sẵn — thay cho color-picker mặc
+   định của trình duyệt vốn khó bấm trúng / không gõ được mã màu. */
+.bb-colorpicker {
+  position: relative;
+  display: inline-block;
+}
+.bb-colorpicker-swatch {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(20, 51, 42, 0.22);
+  cursor: pointer;
+  padding: 0;
+  flex: none;
+}
+.bb-colorpicker-swatch:hover {
+  box-shadow: 0 0 0 1px rgba(74, 158, 63, 0.6);
+}
+.bb-colorpicker-pop {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 236px;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid rgba(20, 51, 42, 0.14);
+  box-shadow: 0 10px 30px rgba(20, 51, 42, 0.22);
+  padding: 12px;
+}
+.bb-colorpicker-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 10px;
+  background: #f2f1ec;
+  border-radius: 8px;
+  padding: 3px;
+}
+.bb-colorpicker-tabs button {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 6px 0;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #5c6b62;
+  cursor: pointer;
+}
+.bb-colorpicker-tabs button.active {
+  background: #fff;
+  color: #1f4d3f;
+  box-shadow: 0 1px 3px rgba(20, 51, 42, 0.18);
+}
+
+/* Ô vuông phổ màu (saturation/value) + thanh trích màu (hue) — kéo để
+   chọn màu trực quan, giống các trình chọn màu nâng cao (Canva/Photoshop). */
+.bb-colorpicker-spectrum {
+  position: relative;
+  width: 100%;
+  height: 120px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  cursor: crosshair;
+  overflow: hidden;
+  user-select: none;
+}
+.bb-colorpicker-spectrum-white {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, #fff, rgba(255, 255, 255, 0));
+}
+.bb-colorpicker-spectrum-black {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, #000, rgba(0, 0, 0, 0));
+}
+.bb-colorpicker-spectrum-thumb {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 1px 3px rgba(0, 0, 0, 0.4);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.bb-colorpicker-hue {
+  position: relative;
+  width: 100%;
+  height: 12px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  user-select: none;
+  background: linear-gradient(
+    to right,
+    #f00 0%,
+    #ff0 17%,
+    #0f0 33%,
+    #0ff 50%,
+    #00f 67%,
+    #f0f 83%,
+    #f00 100%
+  );
+}
+.bb-colorpicker-hue-thumb {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.35),
+    0 1px 3px rgba(0, 0, 0, 0.4);
+  background: transparent;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Tab Gradient: xem trước dải màu + 2 ô nhập màu + thanh chỉnh góc. */
+.bb-colorpicker-gradpreview {
+  width: 100%;
+  height: 40px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(20, 51, 42, 0.14);
+}
+.bb-colorpicker-gradstops {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.bb-colorpicker-gradstops label {
+  flex: 1;
+  font-size: 11px;
+  color: #6b7a72;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.bb-colorpicker-gradstops input {
+  border: 1px solid rgba(20, 51, 42, 0.16);
+  border-radius: 7px;
+  padding: 6px 8px;
+  font-size: 12.5px;
+  font-family: inherit;
+}
+.bb-colorpicker-angle {
+  display: block;
+  font-size: 11px;
+  color: #6b7a72;
+  margin-bottom: 10px;
+}
+.bb-colorpicker-angle input {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.bb-colorpicker-hexrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(20, 51, 42, 0.16);
+  border-radius: 9px;
+  padding: 6px 10px;
+  margin-bottom: 12px;
+  background: #fbfaf7;
+}
+.bb-colorpicker-hexdot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex: none;
+  border: 1px solid rgba(20, 51, 42, 0.18);
+}
+.bb-colorpicker-hexinput {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+  width: 100%;
+  font-family: inherit;
+  color: #2c3b34;
+}
+.bb-colorpicker-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.bb-colorpicker-row {
+  display: flex;
+  gap: 6px;
+  justify-content: space-between;
+}
+.bb-colorpicker-swatch-sm {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(20, 51, 42, 0.16);
+  cursor: pointer;
+  padding: 0;
+  flex: none;
+}
+.bb-colorpicker-swatch-sm:hover {
+  transform: scale(1.1);
+}
+.bb-colorpicker-swatch-sm.active {
+  box-shadow: 0 0 0 2px #4a9e3f;
+}
+
 label.bb-checkbox-field {
   display: flex;
   align-items: flex-start;
