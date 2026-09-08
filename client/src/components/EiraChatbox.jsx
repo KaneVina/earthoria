@@ -1388,17 +1388,17 @@ function EiraUI() {
       <div
         id="eira-win"
         ref={winRef}
-        className={`${isOpen ? "win-open" : ""}${isExpanded ? " win-expanded" : ""}${isdragging ? " dragging" : ""}`}
+        className={`${isOpen ? "win-open" : ""}${isExpanded ? " win-expanded" : ""}${isDragging ? " dragging" : ""}`}
         role="dialog"
         aria-modal="true"
         aria-label="Eira - Trợ lý Earthoria"
       >
         <div
           id="eira-hdr"
-          onpointerdown={handlewinheaderpointerdown}
-          onpointermove={handlewinheaderpointermove}
-          onpointerup={endwinheaderdrag}
-          onpointercancel={endwinheaderdrag}
+          onPointerDown={handleWinHeaderPointerDown}
+          onPointerMove={handleWinHeaderPointerDown}
+          onPointerUp={endWinHeaderDrag}
+          onPointerCancel={endWinHeaderDrag}
         >
           <div className="eira-avatar">
             <div className="eira-avatar-inner">
