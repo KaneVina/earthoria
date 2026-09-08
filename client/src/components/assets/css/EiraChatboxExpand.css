@@ -13,6 +13,18 @@
     bottom 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/*
+ * Khi đang kéo (dragging) MÀ cửa sổ cũng đang ở trạng thái phóng to
+ * (win-expanded), rule ở trên có cùng độ ưu tiên với
+ * "#eira-win.dragging { transition: none }" bên EiraChatbox.css nên có thể
+ * ghi đè ngược lại, khiến việc kéo bị "khựng"/giật do vẫn còn transition.
+ * Rule dưới đây có độ ưu tiên cao hơn (2 class) để luôn tắt transition khi
+ * đang kéo, bất kể thứ tự nạp CSS.
+ */
+#eira-win.win-expanded.dragging {
+  transition: none;
+}
+
 /* Nút phóng to / thu nhỏ  */
 .eira-expand-btn.active {
   background: rgba(255, 255, 255, 0.18);

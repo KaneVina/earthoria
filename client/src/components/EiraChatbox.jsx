@@ -775,6 +775,51 @@ function EiraUI() {
     }
   };
 
+  /*
+   * Khi phóng to / thu nhỏ, kích thước cửa sổ đổi đột ngột nhưng offset kéo
+   * (dragPos) vẫn giữ nguyên từ trước → nếu cửa sổ đã bị kéo lệch, kích
+   * thước mới có thể đẩy nó ra ngoài màn hình (không bấm/kéo được nữa).
+   * Hàm này tính lại kích thước dự kiến của trạng thái sắp tới rồi kẹp
+   * (clamp) dragPos để cửa sổ luôn nằm trong viewport.
+   */
+  const clampDragPosForExpand = (nextExpanded) => {
+    const isMobile = window.matchMedia("(max-width: 480px)").matches;
+    if (isMobile) return; // mobile: popup full-width, không áp dụng offset kéo
+
+    const margin = 6;
+    const width = nextExpanded ? Math.min(760, window.innerWidth - 48) : 384;
+    const height = nextExpanded ? Math.min(1020, window.innerHeight - 24) : 596;
+    const bottomAnchor = nextExpanded ? 6 : 88;
+    const rightAnchor = 24;
+
+    const baseLeft = window.innerWidth - rightAnchor - width;
+    const baseTop = window.innerHeight - bottomAnchor - height;
+
+    const minLeft = margin;
+    const maxLeft = window.innerWidth - width - margin;
+    const minTop = margin;
+    const maxTop = window.innerHeight - height - margin;
+
+    setDragPos((prev) => {
+      const finalLeft = baseLeft + prev.x;
+      const finalTop = baseTop + prev.y;
+      const clampedLeft = Math.min(Math.max(finalLeft, minLeft), maxLeft);
+      const clampedTop = Math.min(Math.max(finalTop, minTop), maxTop);
+      return {
+        x: clampedLeft - baseLeft,
+        y: clampedTop - baseTop,
+      };
+    });
+  };
+
+  const handleExpandToggle = () => {
+    setIsExpanded((v) => {
+      const next = !v;
+      clampDragPosForExpand(next);
+      return next;
+    });
+  };
+
   const handleFabClick = () => {
     if (suppressClickRef.current) {
       suppressClickRef.current = false;
@@ -1396,7 +1441,7 @@ function EiraUI() {
         <div
           id="eira-hdr"
           onPointerDown={handleWinHeaderPointerDown}
-          onPointerMove={handleWinHeaderPointerDown}
+          onPointerMove={handleWinHeaderPointerMove}
           onPointerUp={endWinHeaderDrag}
           onPointerCancel={endWinHeaderDrag}
         >
@@ -1466,7 +1511,7 @@ function EiraUI() {
           <div className="eira-hdr-actions">
             <EiraExpandToggle
               expanded={isExpanded}
-              onToggle={() => setIsExpanded((v) => !v)}
+              onToggle={handleExpandToggle}
             />
             {messages.length > 0 && (
               <button
