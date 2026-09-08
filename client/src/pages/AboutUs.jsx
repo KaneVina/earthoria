@@ -1062,7 +1062,7 @@ export default function AboutUs() {
               {
                 type: "Giảng viên hướng dẫn",
                 letter: "D",
-                name: "Lê Vũ Duy",
+                name: "Vũ Lê Duy",
                 title: "Lecturer · FPT University Can Tho",
                 desc: "Giảng viên phụ trách môn Experiential Entrepreneurship, người trực tiếp hướng dẫn nhóm trong toàn bộ hành trình xây dựng Earthoria từ ý tưởng đến sản phẩm hoàn chỉnh.",
                 quote:

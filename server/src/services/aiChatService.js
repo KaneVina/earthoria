@@ -180,7 +180,7 @@ const MODULE_ECOSYSTEM = `HỆ SINH THÁI EARTHORIA (tên chính thức: The Ear
 
 // ĐIỀU KIỆN — chỉ chia sẻ khi khách hỏi trực tiếp về đội ngũ/người sáng lập, không tự đề cập trong các câu trả lời khác.
 const MODULE_TEAM = `ĐỘI NGŨ EARTHORIA (chỉ nêu khi khách hỏi cụ thể về đội ngũ/người sáng lập/giảng viên hướng dẫn):
-- Giảng viên hướng dẫn: Lê Vũ Duy.
+- Giảng viên hướng dẫn: Vũ Lê Duy.
 - Mentor hướng dẫn: Võ Thiên Ân
 - Nguyễn Đoàn Quốc Thái — Trưởng nhóm kiêm CEO (Giám đốc điều hành).
 - Nguyễn Viết Mỹ Hương — COO (Giám đốc vận hành).
