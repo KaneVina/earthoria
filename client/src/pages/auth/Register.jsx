@@ -6,6 +6,7 @@ import { authService } from "../../services/authService";
 import { useAuthStore } from "../../store/authStore";
 import toast from "react-hot-toast";
 import ThreeBookModel from "./ThreeBookModel";
+import LoginFlameEffect from "../../components/LoginFlameEffect";
 
 const maskEmail = (email) => {
   const [local, domain] = email.split("@");
@@ -40,6 +41,8 @@ export default function Register() {
   const [otpError, setOtpError] = useState(null);
   const [otpStatus, setOtpStatus] = useState("idle"); // idle | success | error
   const otpRefs = useRef([]);
+  const [showFlame, setShowFlame] = useState(false);
+  const pendingNav = useRef(null);
 
   //  Resend countdown
   useEffect(() => {
@@ -167,7 +170,11 @@ export default function Register() {
       await new Promise((r) => setTimeout(r, 500));
       setAuth(user, accessToken);
       toast.success(`Chào mừng đến với Earthoria, ${user.name}! 🌿`);
-      navigate("/");
+
+      // Kích hoạt hiệu ứng "viền lửa xanh" bao toàn màn hình trước khi
+      // điều hướng, thay vì navigate ngay.
+      pendingNav.current = "/";
+      setShowFlame(true);
     } catch (err) {
       const msg =
         err.response?.data?.message || "OTP không đúng hoặc đã hết hạn";
@@ -209,6 +216,12 @@ export default function Register() {
       otpRefs.current[0]?.focus();
     } catch (err) {
       toast.error("Không thể gửi lại OTP, thử lại sau.");
+    }
+  };
+
+  const handleFlameComplete = () => {
+    if (pendingNav.current) {
+      navigate(pendingNav.current);
     }
   };
 
@@ -793,6 +806,12 @@ export default function Register() {
           )}
         </div>
       </div>
+
+      <LoginFlameEffect
+        active={showFlame}
+        duration={900}
+        onComplete={handleFlameComplete}
+      />
     </main>
   );
 }

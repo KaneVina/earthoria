@@ -8375,3 +8375,90 @@ body.dark-mode .trust-metric-label {
     display: none;
   }
 }
+/* ============================================================
+   Blue flame border — hiệu ứng full-screen khi login thành công
+   ============================================================ */
+.flame-border-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  animation: flameOverlayFade 0.9s ease forwards;
+}
+
+.flame-border-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.flame-border-rect {
+  animation: flameRectIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  filter: drop-shadow(0 0 18px rgba(10, 240, 255, 0.55))
+    drop-shadow(0 0 42px rgba(43, 140, 255, 0.4));
+}
+
+.flame-border-inner-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 55%,
+    rgba(10, 240, 255, 0.06) 78%,
+    rgba(43, 140, 255, 0.16) 100%
+  );
+  opacity: 0;
+  animation: flameGlowPulse 0.9s ease forwards;
+}
+
+@keyframes flameRectIn {
+  0% {
+    stroke-width: 0;
+    opacity: 0;
+  }
+  35% {
+    stroke-width: 12px;
+    opacity: 1;
+  }
+  70% {
+    stroke-width: 8px;
+    opacity: 1;
+  }
+  100% {
+    stroke-width: 10px;
+    opacity: 0.85;
+  }
+}
+
+@keyframes flameGlowPulse {
+  0% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.75;
+  }
+}
+
+@keyframes flameOverlayFade {
+  0% {
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+body.dark-mode .flame-border-rect {
+  filter: drop-shadow(0 0 22px rgba(10, 240, 255, 0.7))
+    drop-shadow(0 0 54px rgba(91, 75, 255, 0.5));
+}

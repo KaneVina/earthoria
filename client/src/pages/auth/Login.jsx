@@ -6,6 +6,7 @@ import { authService } from "../../services/authService";
 import { useAuthStore } from "../../store/authStore";
 import { useTheme } from "../../hooks/useTheme";
 import toast from "react-hot-toast";
+import LoginFlameEffect from "../../components/LoginFlameEffect";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ export default function Login() {
   const { isDark, toggleTheme } = useTheme();
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showFlame, setShowFlame] = useState(false);
+  const [pendingNav, setPendingNav] = useState(null);
 
   const {
     register,
@@ -38,17 +41,27 @@ export default function Login() {
 
       toast.success(`Chào mừng trở lại, ${user.name}!`);
 
-      if (isSafeRedirect) {
-        navigate(redirect, { replace: true });
-      } else if (user.role === "ADMIN") {
-        navigate("/dashboard", { replace: true });
-      } else {
-        navigate("/", { replace: true });
-      }
+      const target = isSafeRedirect
+        ? redirect
+        : user.role === "ADMIN"
+          ? "/dashboard"
+          : "/";
+
+      // Không navigate ngay — kích hoạt hiệu ứng "viền lửa xanh" bao quanh
+      // màn hình trước, rồi mới chuyển trang khi hiệu ứng kết thúc.
+      setPendingNav(target);
+      setShowFlame(true);
     } catch (err) {
       toast.error(err.response?.data?.message || "Đăng nhập thất bại");
-    } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFlameComplete = () => {
+    setLoading(false);
+    setShowFlame(false);
+    if (pendingNav) {
+      navigate(pendingNav, { replace: true });
     }
   };
 
@@ -310,6 +323,12 @@ export default function Login() {
           </p>
         </div>
       </div>
+
+      <LoginFlameEffect
+        active={showFlame}
+        duration={900}
+        onComplete={handleFlameComplete}
+      />
     </main>
   );
 }
