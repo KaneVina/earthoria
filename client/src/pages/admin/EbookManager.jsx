@@ -420,6 +420,24 @@ export default function EbookManager() {
                           onClick={(e) => e.stopPropagation()}
                         >
                           <button
+                            className="a-btn-icon view"
+                            disabled={!eb.isActive}
+                            onClick={() =>
+                              window.open(
+                                `/ebook/${group.book.slug}`,
+                                "_blank",
+                                "noopener,noreferrer",
+                              )
+                            }
+                            title={
+                              eb.isActive
+                                ? "Xem sách điện tử"
+                                : "Cần bật trạng thái trước khi xem"
+                            }
+                          >
+                            <Eye size={12} />
+                          </button>
+                          <button
                             className="a-btn-icon edit"
                             onClick={() =>
                               navigate(`/dashboard/ebooks/${eb.id}`)

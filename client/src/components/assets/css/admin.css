@@ -1067,6 +1067,18 @@
   color: #eda100;
 }
 
+.a-btn-icon.view {
+  border-color: rgba(42, 120, 214, 0.25);
+  background: rgba(42, 120, 214, 0.08);
+  color: #1a5a9e;
+}
+
+.a-btn-icon:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .a-btn-icon.delete {
   border-color: rgba(192, 80, 80, 0.25);
   background: rgba(192, 80, 80, 0.06);
