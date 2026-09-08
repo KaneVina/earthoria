@@ -347,12 +347,17 @@
 }
 .eira-fab-mascot-close {
   position: absolute;
-  top: -6px;
-  right: -6px;
+  top: 6px;
+  right: 6px;
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: rgba(20, 51, 42, 0.82);
+  background: rgba(
+    20,
+    51,
+    42,
+    0.18
+  ); /* giảm tiếp xuống ~0.18 để trong suốt rõ hơn */
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   border: 1px solid rgba(255, 255, 255, 0.22);
@@ -563,7 +568,8 @@
     opacity 0.22s var(--ease-out),
     width 0.32s var(--ease-spring),
     height 0.32s var(--ease-spring),
-    bottom 0.32s var(--ease-spring);
+    bottom 0.32s var(--ease-spring),
+    right 0.32s var(--ease-spring);
   will-change: transform, opacity;
 }
 #eira-win.win-open {
@@ -1070,6 +1076,11 @@ img.eira-model-opt-emoji {
   align-items: flex-end;
   gap: 5px;
   max-width: 88%;
+}
+
+/* khi popup phóng to, bubble tin nhắn dài hơn một chút so với lúc thu nhỏ */
+#eira-win.win-expanded .em-content-row {
+  max-width: 92%;
 }
 .em.user .em-content-row {
   flex-direction: row-reverse;

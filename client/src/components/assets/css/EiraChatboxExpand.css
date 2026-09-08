@@ -1,8 +1,8 @@
 #eira-win.win-expanded {
   width: min(760px, calc(100vw - 48px));
-  height: min(760px, calc(100vh - 64px));
-  bottom: 6px; /* trước là 88px cố định — hạ xuống để cạnh dưới cũng "phình" ra thay vì đứng yên */
-  max-height: calc(100vh - 24px);
+  height: min(1020px, calc(100vh - 24px));
+  bottom: 6px;
+  max-height: calc(100vh - 12px);
 
   /* easing kiểu "genie/zoom" của macos: kích thước nảy nhẹ quá đà rồi mới ổn định */
   transition:
@@ -13,8 +13,7 @@
     bottom 0.42s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Nút phóng to / thu nhỏ — dùng chung khung với .eira-close-btn,
-   chỉ thêm trạng thái "active" khi popup đang phóng to */
+/* Nút phóng to / thu nhỏ  */
 .eira-expand-btn.active {
   background: rgba(255, 255, 255, 0.18);
   color: #fff;

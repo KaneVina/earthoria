@@ -164,9 +164,7 @@ export default function CustomCursor() {
     let pressing = false;
     let frame = 0;
 
-    /* ══════════════════════════════════════
-       LÁ CÂY RƠI
-    ══════════════════════════════════════ */
+    /* LÁ CÂY RƠI */
     const LEAF_COUNT = isMobile ? 14 : 22; // giảm số lá trên mobile để nhẹ máy hơn
     const leaves = Array.from({ length: LEAF_COUNT }, (_, i) =>
       spawnLeaf(i / LEAF_COUNT),
@@ -216,9 +214,7 @@ export default function CustomCursor() {
       });
     }
 
-    /* ══════════════════════════════════════
-       BONG BÓNG BAY LÊN
-    ══════════════════════════════════════ */
+    /*       BONG BÓNG BAY LÊN */
     const BUBBLE_COUNT = isMobile ? 10 : 16;
     const bubbles = Array.from({ length: BUBBLE_COUNT }, (_, i) =>
       spawnBubble(i / BUBBLE_COUNT),
@@ -257,9 +253,7 @@ export default function CustomCursor() {
       bubbles.forEach((b) => drawBubble(ctx, b.x, b.y, b.r, b.alpha, b.hue));
     }
 
-    /* ══════════════════════════════════════
-       FIREFLIES (xanh)
-    ══════════════════════════════════════ */
+    /*       FIREFLIES (xanh) */
     const N = 10;
     const FADE_STEP = 0.045; // tốc độ mờ dần khi "biến mất" trên mobile
     const flies = Array.from({ length: N }, () => ({

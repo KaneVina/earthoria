@@ -276,7 +276,9 @@ export default function GameManager() {
                     group.games.map((g, idx) => (
                       <tr
                         key={g.id}
-                        onClick={() => navigate(`/dashboard/games/${g.id}`)}
+                        onClick={() =>
+                          setQrTarget({ game: g, book: group.book })
+                        }
                         style={{ cursor: "pointer" }}
                         className={
                           qrTarget?.game.id === g.id ? "a-row-active" : ""
@@ -378,15 +380,6 @@ export default function GameManager() {
                             style={{ display: "flex", gap: 6 }}
                             onClick={(e) => e.stopPropagation()}
                           >
-                            <button
-                              className="a-btn-icon"
-                              onClick={() =>
-                                setQrTarget({ game: g, book: group.book })
-                              }
-                              title="Xem mã QR"
-                            >
-                              <QrCode size={12} />
-                            </button>
                             <button
                               className="a-btn-icon edit"
                               onClick={() =>

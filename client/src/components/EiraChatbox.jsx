@@ -26,7 +26,7 @@ import { useAuthStore } from "../store/authStore";
 import EiraExpandToggle from "./EiraExpandToggle";
 import "./assets/css/EiraChatbox.css";
 
-const MASCOT_HIDE_DURATION = 5 * 60 * 1000; // 5 phút — ẩn tạm, không lưu vĩnh viễn
+const MASCOT_HIDE_DURATION = 10 * 60 * 1000; // 10 phút — ẩn tạm, không lưu vĩnh viễn
 const MASCOT_FIRST_SHOW_DELAY = 3000; // 3 giây sau khi trang sẵn sàng
 const MAX_INPUT_LEN = 500;
 const MAX_HISTORY_TURNS = 22; // số message tối đa giữ trong bộ nhớ hội thoại
