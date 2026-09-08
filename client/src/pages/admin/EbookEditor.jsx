@@ -5358,7 +5358,7 @@ export default function BookBuilder() {
                   <label>Mã AR của sách này</label>
                   {bookLinkables.arCodes.length === 0 ? (
                     <div className="bb-hint">
-                      Sách chưa có mã AR nào. Tạo ở mục "Quản lý mã QR" trước.
+                      Sách chưa có mã AR nào. Tạo ở mục "Quản lý mã AR" trước.
                     </div>
                   ) : (
                     bookLinkables.arCodes.map((ac) => (

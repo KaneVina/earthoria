@@ -109,7 +109,7 @@ export default function ArCodeManager() {
         <div>
           <p className="a-page-eyebrow">AR / QR</p>
           <h1 className="a-page-title">
-            Quản lý mã <em>QR</em>
+            Quản lý <em>mô hình 3D</em>
           </h1>
         </div>
       </div>

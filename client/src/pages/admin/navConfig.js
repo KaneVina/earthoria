@@ -94,7 +94,7 @@ export const NAV_GROUPS = [
     label: "Công cụ",
     items: [
       {
-        label: "Tạo mã QR",
+        label: "Mô hình 3D",
         href: "/dashboard/ar-codes",
         icon: QrCode,
         roles: ["ADMIN"],
