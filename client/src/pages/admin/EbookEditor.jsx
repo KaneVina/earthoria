@@ -1237,6 +1237,7 @@ function LayerView({
   onAskAI,
   isEditingText,
   editableRef,
+  editingHtmlSnapshotRef: editingHtmlSnapshotRefProp,
   onStartEditText,
   onCommitText,
   onSelectionChange,
@@ -1618,7 +1619,13 @@ function LayerView({
   // vào 1 ref, không tính lại theo layer.html nữa - DOM contentEditable tự
   // giữ nguyên trạng thái (kể cả con trỏ) vì React không còn ghi đè nó nữa;
   // nội dung mới nhất được đọc trực tiếp từ DOM (editableRef) khi cần lưu.
-  const editingHtmlSnapshotRef = useRef(null);
+  // Ref này được component CHA truyền xuống (editingHtmlSnapshotRefProp) để
+  // applyTextFormat/applyTextColor có thể đồng bộ lại nó ngay sau khi tự bọc
+  // <b>/<i>/màu bằng tay - nếu không, lần re-render kế (do updateLayer) sẽ
+  // ghi đè DOM bằng snapshot CŨ, xoá mất định dạng vừa tô + đẩy con trỏ ra
+  // đầu đoạn (dời qua trái). Fallback về ref cục bộ khi không có (readOnly).
+  const localSnapshotRef = useRef(null);
+  const editingHtmlSnapshotRef = editingHtmlSnapshotRefProp || localSnapshotRef;
   if (editingNow) {
     if (editingHtmlSnapshotRef.current === null) {
       editingHtmlSnapshotRef.current =
@@ -3247,6 +3254,15 @@ export default function BookBuilder() {
   const [editingTextId, setEditingTextId] = useState(null);
   const editableRef = useRef(null);
   const savedRangeRef = useRef(null);
+  // "Chốt" HTML lúc bắt đầu soạn để dangerouslySetInnerHTML không ghi đè DOM
+  // (và làm mất con trỏ) mỗi lần layer.html đổi trong lúc đang gõ - xem chú
+  // thích ở LayerView. Ref này phải nằm ở component CHA (không phải bên
+  // trong LayerView) để applyTextFormat/applyTextColor có thể cập nhật lại
+  // nó ngay sau khi tự sửa DOM bằng tay (bọc <b>/<i>/màu) - nếu không, lần
+  // re-render kế tiếp React sẽ ghi "snapshot" CŨ (chưa có định dạng vừa tô)
+  // đè lên DOM thật, khiến chữ vừa bôi đậm/tô màu biến mất và con trỏ nhảy
+  // về đầu đoạn (ra ngoài rìa trái).
+  const editingHtmlSnapshotRef = useRef(null);
 
   useEffect(() => setTtsOk(speechAvailable()), []);
   useEffect(() => {
@@ -3502,6 +3518,7 @@ export default function BookBuilder() {
     // vùng bôi đen vừa chọn khỏi savedRangeRef.
     if (editingTextId === id) return;
     savedRangeRef.current = null;
+    editingHtmlSnapshotRef.current = null;
     setEditingTextId(id);
   };
 
@@ -3509,6 +3526,7 @@ export default function BookBuilder() {
     const el = editableRef.current;
     setEditingTextId(null);
     savedRangeRef.current = null;
+    editingHtmlSnapshotRef.current = null;
     if (!el) return;
     const html = sanitizeRichHtml(el.innerHTML);
     const text = el.innerText || el.textContent || "";
@@ -3556,6 +3574,12 @@ export default function BookBuilder() {
           editableRef.current.innerText ||
           editableRef.current.textContent ||
           "";
+        // Đồng bộ lại snapshot "chốt" của LayerView với DOM mới (đã có
+        // <b>/<i>/<u> vừa bọc) - nếu không, updateLayer bên dưới khiến
+        // component re-render và LayerView vẫn dùng snapshot CŨ (lúc mới
+        // bắt đầu soạn) để ghi đè lại innerHTML, xoá mất định dạng vừa tô
+        // và đẩy con trỏ về đầu đoạn.
+        editingHtmlSnapshotRef.current = editableRef.current.innerHTML;
         updateLayer(selected.id, { html, text }, { commit: true });
         return;
       }
@@ -3599,6 +3623,10 @@ export default function BookBuilder() {
           editableRef.current.innerText ||
           editableRef.current.textContent ||
           "";
+        // Xem giải thích ở applyTextFormat - phải đồng bộ snapshot trước
+        // khi updateLayer, nếu không màu vừa tô cho 1 đoạn chữ sẽ bị mất
+        // và con trỏ nhảy về đầu ngay sau khi bấm chọn màu.
+        editingHtmlSnapshotRef.current = editableRef.current.innerHTML;
         updateLayer(selected.id, { html, text }, { commit: true });
         return;
       }
@@ -6508,6 +6536,11 @@ export default function BookBuilder() {
                     isEditingText={editingTextId === layer.id}
                     editableRef={
                       editingTextId === layer.id ? editableRef : undefined
+                    }
+                    editingHtmlSnapshotRef={
+                      editingTextId === layer.id
+                        ? editingHtmlSnapshotRef
+                        : undefined
                     }
                     onStartEditText={startEditText}
                     onCommitText={commitEditText}
