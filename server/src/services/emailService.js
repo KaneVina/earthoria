@@ -21,12 +21,16 @@ function wrapEmailTemplate({
   bodyHtml,
   ctaUrl,
   footerDepartment = "IT",
+  // Cho phép mỗi email chọn logo header riêng theo studio đang gửi (mặc
+  // định là logo chính CCE). Email thuộc Family Studio (giới hạn thời
+  // gian, nghỉ ngơi, xin mua sách...) truyền "lg-m-family-studio.png".
+  headerLogo = "lg-m-cce.png",
 }) {
   const logoUrl = process.env.EMAIL_LOGO_URL || "";
   const clientUrl = ctaUrl || process.env.CLIENT_URL || "#";
   // Logo header dùng ảnh cố định trong client/public thay vì phụ thuộc biến
   // môi trường EMAIL_LOGO_URL (biến này vẫn giữ nguyên cho logo ở footer).
-  const headerLogoUrl = `${(process.env.CLIENT_URL || "").replace(/\/+$/, "")}/logo/logo-trang/logo-head-email.png`;
+  const headerLogoUrl = `${(process.env.CLIENT_URL || "").replace(/\/+$/, "")}/logo/logo-mau/${headerLogo}`;
 
   return `<!DOCTYPE html>
 <html lang="vi">
@@ -1196,6 +1200,7 @@ async function sendChildLimitExceededEmail({
       preheader: `${childName} vừa dùng hết giới hạn ${dailyLimitMinutes} phút/ngày.`,
       bodyHtml,
       ctaUrl: `${(process.env.CLIENT_URL || "").replace(/\/+$/, "")}/family`,
+      headerLogo: "lg-m-family-studio.png",
     }),
   });
 }
@@ -1240,6 +1245,7 @@ async function sendChildSkippedRestEmail({ to, parentName, childName }) {
       preheader: `${childName} đã bỏ qua lời nhắc nghỉ mắt định kỳ.`,
       bodyHtml,
       ctaUrl: `${(process.env.CLIENT_URL || "").replace(/\/+$/, "")}/family`,
+      headerLogo: "lg-m-family-studio.png",
     }),
   });
 }
@@ -1304,6 +1310,7 @@ async function sendChildBookRequestEmail({
       preheader: `${childName} vừa gửi lời nhắn nhờ mua sách "${bookTitle}".`,
       bodyHtml,
       ctaUrl: `${(process.env.CLIENT_URL || "").replace(/\/+$/, "")}/family`,
+      headerLogo: "lg-m-family-studio.png",
     }),
   });
 }

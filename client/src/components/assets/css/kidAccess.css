@@ -2582,6 +2582,11 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  /* Luôn chừa đúng chiều cao của 2 dòng dù tên sách ngắn hay dài, để nút
+     bên dưới (VD "Nhờ ba mẹ mua") thẳng hàng bằng nhau trên toàn hàng
+     thẻ sách — tên quá 2 dòng sẽ tự động bị cắt và hiện dấu "..." nhờ
+     -webkit-line-clamp ở trên. */
+  min-height: calc(14.5px * var(--kid-font-scale) * 1.35 * 2);
   transition: color var(--kid-t-fast);
 }
 .kid-book-card.is-tilting .kid-book-title {
@@ -2883,7 +2888,67 @@
   }
 }
 
+/* Dòng "Được vận hành và phát triển bởi": thương hiệu bên trái, 2 liên
+   kết chính sách bên phải — dàn 2 đầu để tận dụng hết bề ngang footer
+   thay vì co cụm giữa như trước. */
+.kid-footer-devby {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+}
+.kid-footer-devby-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.kid-footer-devby-text {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--kid-ink-soft);
+  opacity: 0.75;
+  white-space: nowrap;
+}
+/* Logo lg-m-cce dùng làm mask thay vì <img> để LUÔN cùng màu với chữ
+   bên cạnh (kể cả khi đổi theme), không phụ thuộc màu gốc trong file
+   PNG của logo. */
+.kid-footer-devby-logo {
+  display: inline-block;
+  width: 58px;
+  height: 15px;
+  flex-shrink: 0;
+  background-color: var(--kid-ink-soft);
+  opacity: 0.75;
+  -webkit-mask: url("/logo/logo-mau/lg-m-cce.png") center / contain no-repeat;
+  mask: url("/logo/logo-mau/lg-m-cce.png") center / contain no-repeat;
+}
+.kid-footer-devby-links {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+.kid-footer-devby-links a {
+  color: var(--kid-blue-dark);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.kid-footer-devby-links a:hover {
+  text-decoration: underline;
+}
+.kid-footer-devby-links span {
+  color: var(--kid-ink-soft);
+  opacity: 0.4;
+}
+
 @media (max-width: 640px) {
+  .kid-footer-devby {
+    justify-content: center;
+    text-align: center;
+  }
   .kid-footer {
     margin-top: 48px;
     padding: 40px 0 20px;
@@ -4983,11 +5048,14 @@
 }
 
 /* Ruy băng "#N bán chạy" — thay cho tem sao ở góc, dùng cho top 3 sách
-   bán chạy nhất để tạo cảm giác thứ hạng, vui mắt cho bé */
+   bán chạy nhất để tạo cảm giác thứ hạng, vui mắt cho bé. Đặt ở góc
+   PHẢI (khác với tem sao gốc) vì góc trái đã dành cho tem độ tuổi
+   .kid-book-age — trước đây cả hai cùng đè lên tọa độ top-left 9px
+   khiến 2 tem chồng lên nhau, giờ tách hẳn sang 2 bên. */
 .kid-discover-rank {
   position: absolute;
   top: 9px;
-  left: 9px;
+  right: 9px;
   z-index: 2;
   display: inline-flex;
   align-items: center;

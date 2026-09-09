@@ -1599,14 +1599,33 @@ export default function KidAccess() {
               <div className="kid-footer-divider-line" aria-hidden="true" />
 
               <div className="kid-footer-devby">
-                <span className="kid-footer-devby-text">
-                  Earthoria &copy; 2026 · Được phát triển và vận hành bởi
-                </span>
-                <span
-                  className="kid-footer-devby-logo"
-                  role="img"
-                  aria-label="Family Studio"
-                />
+                <div className="kid-footer-devby-left">
+                  <span className="kid-footer-devby-text">
+                    Earthoria &copy; 2026 · Được vận hành và phát triển bởi
+                  </span>
+                  <span
+                    className="kid-footer-devby-logo"
+                    role="img"
+                    aria-label="CCE"
+                  />
+                </div>
+                <div className="kid-footer-devby-links">
+                  <a
+                    href="https://www.earthoria.id.vn/legal"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Trung tâm pháp lý
+                  </a>
+                  <span aria-hidden="true">|</span>
+                  <a
+                    href="https://www.earthoria.id.vn/legal/family"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Family Studio
+                  </a>
+                </div>
               </div>
             </div>
           </footer>
