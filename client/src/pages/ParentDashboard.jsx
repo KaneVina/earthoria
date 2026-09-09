@@ -41,6 +41,8 @@ import {
   Users,
   ArrowRight,
   Crown,
+  Heart,
+  ShoppingCart,
 } from "lucide-react";
 
 import "../components/assets/css/profile.css";
@@ -361,7 +363,15 @@ export default function ParentDashboard() {
 
   const [books, setBooks] = useState({ ebooks: [], physicalBooks: [] });
   const [booksLoading, setBooksLoading] = useState(false);
-  const [booksTab, setBooksTab] = useState("ebook"); // 'ebook' | 'physical'
+  const [booksTab, setBooksTab] = useState("ebook"); // 'ebook' | 'physical' | 'wishlist'
+
+  // "Sách con muốn mua" — gộp yêu cầu của MỌI bé (không tách theo
+  // activeChildId) vì cần dùng chung cho băng tóm tắt ở Tổng quan lẫn badge
+  // trên từng bé ở sidebar; lọc theo bé đang chọn khi hiển thị trong tab
+  // "Muốn mua" của mục Sách của bé.
+  const [bookRequests, setBookRequests] = useState([]);
+  const [bookRequestsLoading, setBookRequestsLoading] = useState(true);
+  const [respondingRequestId, setRespondingRequestId] = useState(null);
 
   const childrenReqId = useRef(0);
   const loadChildren = useCallback(async () => {
@@ -386,13 +396,29 @@ export default function ParentDashboard() {
     }
   }, []);
 
+  const bookRequestsReqId = useRef(0);
+  const loadBookRequests = useCallback(async () => {
+    const reqId = ++bookRequestsReqId.current;
+    setBookRequestsLoading(true);
+    try {
+      const res = await childService.getBookRequests();
+      if (reqId !== bookRequestsReqId.current) return;
+      setBookRequests(res.data.data.requests ?? []);
+    } catch {
+      // im lặng: đây là khu bổ sung, không chặn phần còn lại của dashboard
+    } finally {
+      if (reqId === bookRequestsReqId.current) setBookRequestsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadChildren();
+    loadBookRequests();
     parentPinService
       .status()
       .then((res) => setHasPin(!!res.data.data.hasPin))
       .catch(() => {});
-  }, [loadChildren]);
+  }, [loadChildren, loadBookRequests]);
 
   const dashboardReqId = useRef(0);
   const loadDashboard = useCallback(async (childId) => {
@@ -992,6 +1018,67 @@ export default function ParentDashboard() {
     toast.success(`Đang cài đặt cho bé ${child.name}`);
   };
 
+  // Yêu cầu đang chờ của bé đang được chọn / của tất cả các bé — dùng để
+  // hiển thị số đếm ở tab "Muốn mua" và băng tóm tắt ở Tổng quan.
+  const activeChildBookRequests = bookRequests.filter(
+    (r) => r.child.id === activeChildId,
+  );
+  const activeChildPendingRequests = activeChildBookRequests.filter(
+    (r) => r.status === "PENDING",
+  ).length;
+  const pendingBookRequests = bookRequests.filter(
+    (r) => r.status === "PENDING",
+  );
+
+  // Nhảy tới tab "Muốn mua" trong mục Sách của bé — tự chuyển sang đúng bé
+  // gửi yêu cầu nếu đang xem hồ sơ bé khác.
+  const goToBookRequests = (childId) => {
+    if (childId && childId !== activeChildId) {
+      const child = children.find((c) => c.id === childId);
+      if (child) setActiveChildId(child.id);
+    }
+    setBooksTab("wishlist");
+    scrollToSection("books");
+  };
+
+  // Duyệt (tự thêm vào giỏ hàng) hoặc từ chối 1 lời nhắn "nhờ ba mẹ mua".
+  // Cập nhật lạc quan trước, phục hồi lại nếu API lỗi.
+  const respondToBookRequest = async (request, action) => {
+    setRespondingRequestId(request.id);
+    const prevRequests = bookRequests;
+    setBookRequests((prev) =>
+      prev.map((r) =>
+        r.id === request.id
+          ? {
+              ...r,
+              status: action === "approve" ? "APPROVED" : "DECLINED",
+              respondedAt: new Date().toISOString(),
+            }
+          : r,
+      ),
+    );
+    try {
+      const res = await childService.respondBookRequest(request.id, action);
+      const cartAdded = res.data?.data?.cartAdded;
+      toast.success(
+        action === "approve"
+          ? cartAdded
+            ? `Đã duyệt và thêm "${request.book.title}" vào giỏ hàng`
+            : `Đã duyệt yêu cầu của ${request.child.name}`
+          : `Đã từ chối yêu cầu của ${request.child.name}`,
+      );
+      loadChildren(); // cập nhật lại badge số lượng chờ duyệt ở sidebar
+    } catch (err) {
+      setBookRequests(prevRequests);
+      toast.error(
+        err.response?.data?.message ||
+          "Không thể cập nhật yêu cầu, thử lại nhé",
+      );
+    } finally {
+      setRespondingRequestId(null);
+    }
+  };
+
   // Vị trí % của khung giờ được phép trên dải 24h, để vẽ timeline
   const startPct = (timeToMinutes(settings.allowStart) / (24 * 60)) * 100;
   const endPct = (timeToMinutes(settings.allowEnd) / (24 * 60)) * 100;
@@ -1205,6 +1292,16 @@ export default function ParentDashboard() {
                         >
                           {child.avatarEmoji}
                         </span>
+                        {child.pendingBookRequests > 0 && (
+                          <span
+                            className="pkd-child-wishlist-badge"
+                            title={`${child.pendingBookRequests} lời nhắn muốn mua sách`}
+                          >
+                            {child.pendingBookRequests > 9
+                              ? "9+"
+                              : child.pendingBookRequests}
+                          </span>
+                        )}
                       </span>
                       <span className="pkd-child-info">
                         <span className="pkd-child-name">
@@ -1438,6 +1535,75 @@ export default function ParentDashboard() {
                     type="button"
                   >
                     <Unlock size={13} /> Mở khóa
+                  </button>
+                </RevealCard>
+              )}
+
+              {/* Băng tóm tắt "con muốn mua" — chỉ hiện khi có yêu cầu đang
+                  chờ, để phụ huynh biết ngay con muốn gì mà không cần mở
+                  sâu vào mục Sách của bé. */}
+              {pendingBookRequests.length > 0 && (
+                <RevealCard className="pkd-wishlist-banner">
+                  <div className="pkd-wishlist-banner-head">
+                    <span className="pkd-wishlist-banner-icon">
+                      <Heart size={16} />
+                    </span>
+                    <div>
+                      <strong>
+                        {pendingBookRequests.length === 1
+                          ? "Có 1 lời nhắn mới từ con"
+                          : `Có ${pendingBookRequests.length} lời nhắn mới từ các con`}
+                      </strong>
+                      <div>Con đang muốn ba mẹ mua thêm sách đấy!</div>
+                    </div>
+                  </div>
+                  <div className="pkd-wishlist-banner-list">
+                    {pendingBookRequests.slice(0, 3).map((r) => (
+                      <div key={r.id} className="pkd-wishlist-banner-item">
+                        {r.book.coverImage ? (
+                          <img src={r.book.coverImage} alt={r.book.title} />
+                        ) : (
+                          <span className="pkd-wishlist-banner-item-noimg">
+                            <BookMarked size={16} />
+                          </span>
+                        )}
+                        <div className="pkd-wishlist-banner-item-info">
+                          <span className="pkd-wishlist-banner-item-title">
+                            {r.book.title}
+                          </span>
+                          <span className="pkd-wishlist-banner-item-child">
+                            {r.child.avatarEmoji} {r.child.name} muốn cuốn này
+                          </span>
+                        </div>
+                        <div className="pkd-wishlist-banner-item-actions">
+                          <button
+                            type="button"
+                            className="pkd-mini-btn"
+                            disabled={respondingRequestId === r.id}
+                            onClick={() => respondToBookRequest(r, "approve")}
+                            title="Duyệt & thêm vào giỏ hàng"
+                          >
+                            <Check size={13} />
+                          </button>
+                          <button
+                            type="button"
+                            className="pkd-mini-btn is-ghost"
+                            disabled={respondingRequestId === r.id}
+                            onClick={() => respondToBookRequest(r, "decline")}
+                            title="Từ chối"
+                          >
+                            <X size={13} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    className="pkd-text-link"
+                    onClick={() => goToBookRequests()}
+                  >
+                    Xem tất cả trong mục Sách của bé <ArrowRight size={13} />
                   </button>
                 </RevealCard>
               )}
@@ -1874,10 +2040,26 @@ export default function ParentDashboard() {
                     </span>
                   )}
                 </button>
+                <button
+                  type="button"
+                  className={`pkd-book-tab ${booksTab === "wishlist" ? "active" : ""}`}
+                  onClick={() => setBooksTab("wishlist")}
+                >
+                  Muốn mua
+                  {activeChildBookRequests.length > 0 && (
+                    <span
+                      className={`pkd-book-tab-count ${activeChildPendingRequests > 0 ? "is-alert" : ""}`}
+                    >
+                      {activeChildPendingRequests > 0
+                        ? activeChildPendingRequests
+                        : activeChildBookRequests.length}
+                    </span>
+                  )}
+                </button>
               </div>
 
               <RevealCard as="div" className="pkd-card">
-                {booksLoading ? (
+                {booksTab !== "wishlist" && booksLoading ? (
                   <div
                     className="pkd-empty-state"
                     style={{ padding: "32px 0" }}
@@ -1939,39 +2121,123 @@ export default function ParentDashboard() {
                       </div>
                     ))
                   )
-                ) : books.physicalBooks.length === 0 ? (
+                ) : booksTab === "physical" ? (
+                  books.physicalBooks.length === 0 ? (
+                    <div
+                      className="pkd-empty-state"
+                      style={{ padding: "32px 0" }}
+                    >
+                      <BookMarked size={28} strokeWidth={1.2} />
+                      <p>Bạn chưa mua sách giấy nào.</p>
+                    </div>
+                  ) : (
+                    books.physicalBooks.map((book) => (
+                      <div key={book.id} className="pkd-book-visible-row">
+                        <div className="pkd-book-visible-info">
+                          {book.coverImage && (
+                            <img
+                              src={book.coverImage}
+                              alt={book.title}
+                              className="pkd-book-visible-cover"
+                            />
+                          )}
+                          <div>
+                            <div className="pkd-book-visible-title">
+                              {book.title}
+                            </div>
+                            {!!(book.ageMin || book.ageMax) && (
+                              <div className="pkd-child-meta">
+                                {book.ageMin ?? 0}–{book.ageMax ?? "∞"} tuổi
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <span className="pkd-book-physical-badge">
+                          Sách giấy — chỉ để biết
+                        </span>
+                      </div>
+                    ))
+                  )
+                ) : bookRequestsLoading ? (
                   <div
                     className="pkd-empty-state"
                     style={{ padding: "32px 0" }}
                   >
-                    <BookMarked size={28} strokeWidth={1.2} />
-                    <p>Bạn chưa mua sách giấy nào.</p>
+                    <Loader2 size={20} className="pkd-spin" />
+                  </div>
+                ) : activeChildBookRequests.length === 0 ? (
+                  <div
+                    className="pkd-empty-state"
+                    style={{ padding: "32px 0" }}
+                  >
+                    <Heart size={28} strokeWidth={1.2} />
+                    <p>
+                      {activeChild.name} chưa gửi lời nhắn nào. Khi bé bấm "Nhờ
+                      ba mẹ mua" ở trang đọc sách, yêu cầu sẽ hiện ra ở đây để
+                      bạn duyệt.
+                    </p>
                   </div>
                 ) : (
-                  books.physicalBooks.map((book) => (
-                    <div key={book.id} className="pkd-book-visible-row">
+                  activeChildBookRequests.map((r) => (
+                    <div key={r.id} className="pkd-book-visible-row">
                       <div className="pkd-book-visible-info">
-                        {book.coverImage && (
+                        {r.book.coverImage && (
                           <img
-                            src={book.coverImage}
-                            alt={book.title}
+                            src={r.book.coverImage}
+                            alt={r.book.title}
                             className="pkd-book-visible-cover"
                           />
                         )}
                         <div>
                           <div className="pkd-book-visible-title">
-                            {book.title}
+                            {r.book.title}
                           </div>
-                          {!!(book.ageMin || book.ageMax) && (
+                          {!!(r.book.ageMin || r.book.ageMax) && (
                             <div className="pkd-child-meta">
-                              {book.ageMin ?? 0}–{book.ageMax ?? "∞"} tuổi
+                              {r.book.ageMin ?? 0}–{r.book.ageMax ?? "∞"} tuổi
+                            </div>
+                          )}
+                          {r.status === "DECLINED" && r.parentNote && (
+                            <div className="pkd-wishlist-note">
+                              Lý do: {r.parentNote}
                             </div>
                           )}
                         </div>
                       </div>
-                      <span className="pkd-book-physical-badge">
-                        Sách giấy — chỉ để biết
-                      </span>
+                      {r.status === "PENDING" ? (
+                        <div className="pkd-wishlist-row-actions">
+                          <button
+                            type="button"
+                            className="pkd-mini-btn"
+                            disabled={respondingRequestId === r.id}
+                            onClick={() => respondToBookRequest(r, "approve")}
+                          >
+                            <ShoppingCart size={13} /> Duyệt
+                          </button>
+                          <button
+                            type="button"
+                            className="pkd-mini-btn is-ghost"
+                            disabled={respondingRequestId === r.id}
+                            onClick={() => respondToBookRequest(r, "decline")}
+                          >
+                            <X size={13} /> Từ chối
+                          </button>
+                        </div>
+                      ) : (
+                        <span
+                          className={`pkd-wishlist-status is-${r.status.toLowerCase()}`}
+                        >
+                          {r.status === "APPROVED" ? (
+                            <>
+                              <Check size={12} /> Đã duyệt
+                            </>
+                          ) : (
+                            <>
+                              <X size={12} /> Đã từ chối
+                            </>
+                          )}
+                        </span>
+                      )}
                     </div>
                   ))
                 )}

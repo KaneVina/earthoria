@@ -185,6 +185,20 @@ const listChildren = async (req, res) => {
       todayLogs.map((row) => [row.childId, row._sum.minutes || 0]),
     );
 
+    // Số lời nhắn "nhờ ba mẹ mua" đang chờ duyệt của từng bé — hiển thị dạng
+    // badge nhỏ ở danh sách chọn bé, để phụ huynh biết ngay bé nào đang có
+    // yêu cầu mới mà chưa xem.
+    const pendingRequestGroups = childIds.length
+      ? await prisma.childBookRequest.groupBy({
+          by: ["childId"],
+          where: { childId: { in: childIds }, status: "PENDING" },
+          _count: { _all: true },
+        })
+      : [];
+    const pendingRequestsByChild = Object.fromEntries(
+      pendingRequestGroups.map((row) => [row.childId, row._count._all]),
+    );
+
     const loyaltyProfile = await getUserLoyaltyProfile(req.user.id);
     const childLimit = buildChildLimitPayload(loyaltyProfile, children.length);
 
@@ -192,6 +206,7 @@ const listChildren = async (req, res) => {
       children: children.map((c) => ({
         ...serializeChild(c),
         todayMinutes: todayByChild[c.id] || 0,
+        pendingBookRequests: pendingRequestsByChild[c.id] || 0,
       })),
       childLimit,
     });

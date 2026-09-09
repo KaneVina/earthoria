@@ -24,6 +24,9 @@ import {
   Lightbulb,
   PartyPopper,
   Heart,
+  TrendingUp,
+  Check,
+  Loader2,
 } from "lucide-react";
 import { kidAccessService } from "../../services/kidAccessService";
 import { useSkyState, DynamicSky, PhaseIcon } from "../../components/KidSky";
@@ -255,6 +258,86 @@ function buildCloudEdgePath(width = 1200, seed = 7) {
   return d;
 }
 
+// Thẻ sách ở khu "Khám phá thêm" — dùng lại đúng khung ảnh/tem/tuổi của
+// .kid-book-card (kệ sách chính) để đồng nhất giao diện, chỉ khác ở chỗ có
+// nút "Nhờ ba mẹ mua" cố định thay vì CTA "Đọc ngay" hiện khi rê chuột, vì
+// đây là sách bé CHƯA sở hữu nên không thể mở đọc.
+function DiscoverBookCard({
+  book,
+  accent,
+  rank,
+  status,
+  sending,
+  onAsk,
+  onEnter,
+  onMove,
+  onLeave,
+}) {
+  const isPending = status === "PENDING";
+  const isDeclined = status === "DECLINED";
+
+  return (
+    <div
+      className={`kid-book-card kid-discover-card kid-book-card--${accent}`}
+      onMouseEnter={onEnter}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+    >
+      <div className="kid-book-cover">
+        {book.coverImage ? (
+          <img src={book.coverImage} alt={book.title} loading="lazy" />
+        ) : (
+          <div className="kid-discover-cover-placeholder">
+            <BookMarked size={30} />
+          </div>
+        )}
+        <span className="kid-book-shine" aria-hidden="true" />
+        {rank ? (
+          <span className="kid-discover-rank">
+            <TrendingUp size={11} /> #{rank} bán chạy
+          </span>
+        ) : (
+          <span className="kid-book-stamp" aria-hidden="true">
+            <Star size={14} fill="currentColor" />
+          </span>
+        )}
+        {!!(book.ageMin || book.ageMax) && (
+          <span className="kid-book-age">
+            {book.ageMin ?? "0"}–{book.ageMax ?? "17"} tuổi
+          </span>
+        )}
+      </div>
+      <div className="kid-book-info">
+        <div className="kid-book-title">{book.title}</div>
+        <button
+          type="button"
+          className={`kid-discover-ask${isPending ? " is-sent" : ""}${isDeclined ? " is-declined" : ""}`}
+          disabled={isPending || sending}
+          onClick={onAsk}
+        >
+          {sending ? (
+            <>
+              <Loader2 size={13} className="kid-discover-spin" /> Đang gửi
+            </>
+          ) : isPending ? (
+            <>
+              <Check size={13} /> Đã gửi ba mẹ
+            </>
+          ) : isDeclined ? (
+            <>
+              <Heart size={13} /> Gửi lại lần nữa
+            </>
+          ) : (
+            <>
+              <Heart size={13} /> Nhờ ba mẹ mua
+            </>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function KidAccess() {
   const { slug, token } = useParams(); // :slug không dùng để tra cứu, chỉ để đẹp URL
   const navigate = useNavigate();
@@ -264,6 +347,16 @@ export default function KidAccess() {
   const [child, setChild] = useState(null);
   const [books, setBooks] = useState([]);
   const [activeBook, setActiveBook] = useState(null);
+
+  //   khu "Khám phá thêm": sách bán chạy + phù hợp độ tuổi, và trạng thái
+  //   các lời nhắn "nhờ ba mẹ mua" bé đã gửi (để khoá nút tránh gửi trùng)
+  const [discover, setDiscover] = useState({
+    bestsellers: [],
+    ageAppropriate: [],
+  });
+  const [discoverLoading, setDiscoverLoading] = useState(true);
+  const [requestStatusByBook, setRequestStatusByBook] = useState({});
+  const [sendingRequestId, setSendingRequestId] = useState(null);
 
   //   phiên đọc (chỉ hiển thị, không ghi vào server)
   const [sessionSeconds, setSessionSeconds] = useState(0);
@@ -311,6 +404,73 @@ export default function KidAccess() {
       cancelled = true;
     };
   }, [token]);
+
+  //   khu "Khám phá thêm" tải riêng, không chặn phần còn lại của trang nếu
+  //   lỗi/chậm — chỉ chạy sau khi đã xác thực token hợp lệ (status === "ok")
+  useEffect(() => {
+    if (status !== "ok" || !token) return;
+    let cancelled = false;
+    (async () => {
+      setDiscoverLoading(true);
+      try {
+        const [discoverRes, requestsRes] = await Promise.all([
+          kidAccessService.getDiscover(token),
+          kidAccessService.getBookRequests(token),
+        ]);
+        if (cancelled) return;
+        setDiscover({
+          bestsellers: discoverRes.data.data.bestsellers ?? [],
+          ageAppropriate: discoverRes.data.data.ageAppropriate ?? [],
+        });
+        const statusMap = {};
+        for (const r of requestsRes.data.data.requests ?? []) {
+          // requests đã sắp xếp mới nhất trước, chỉ giữ trạng thái mới nhất/sách
+          if (!(r.bookId in statusMap)) statusMap[r.bookId] = r.status;
+        }
+        setRequestStatusByBook(statusMap);
+      } catch {
+        // im lặng: khu khám phá là phần bổ sung, không phải lõi của trang
+      } finally {
+        if (!cancelled) setDiscoverLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [status, token]);
+
+  //   bé bấm "Nhờ ba mẹ mua" trên 1 cuốn sách ở khu Khám phá thêm
+  const handleAskParent = useCallback(
+    (book, e) => {
+      if (sendingRequestId || requestStatusByBook[book.id] === "PENDING")
+        return;
+      if (e) {
+        spawnRipple(e);
+        spawnSparkles(e, 10);
+      }
+      setSendingRequestId(book.id);
+      kidAccessService
+        .sendBookRequest(token, book.id)
+        .then(() => {
+          setRequestStatusByBook((prev) => ({ ...prev, [book.id]: "PENDING" }));
+          toast.success("Đã gửi lời nhắn cho ba mẹ rồi!", { icon: "💌" });
+        })
+        .catch((err) => {
+          if (err.response?.data?.code === "ALREADY_REQUESTED") {
+            setRequestStatusByBook((prev) => ({
+              ...prev,
+              [book.id]: "PENDING",
+            }));
+            return;
+          }
+          toast.error(
+            err.response?.data?.message || "Có lỗi xảy ra, bé thử lại nhé",
+          );
+        })
+        .finally(() => setSendingRequestId(null));
+    },
+    [token, sendingRequestId, requestStatusByBook],
+  );
 
   //   tối đa 5 cuốn sách bé đọc gần đây nhất mà vẫn còn dang dở (đọc từ
   //   localStorage do trang đọc sách ghi lại), dùng để hiển thị dải thẻ
@@ -1294,6 +1454,89 @@ export default function KidAccess() {
                 )}
               </div>
             </section>
+
+            {(discoverLoading ||
+              discover.bestsellers.length > 0 ||
+              discover.ageAppropriate.length > 0) && (
+              <section className="kid-discover">
+                <div className="kid-shelf-heading">
+                  <div className="kid-shelf-title-wrap">
+                    <span
+                      className="kid-shelf-leaf kid-shelf-leaf--pink"
+                      aria-hidden="true"
+                    >
+                      <Heart size={16} />
+                    </span>
+                    <h2 className="kid-shelf-title">Khám phá thêm</h2>
+                  </div>
+                  <span className="kid-shelf-count kid-discover-hint">
+                    Thích cuốn nào thì nhờ ba mẹ mua nhé!
+                  </span>
+                </div>
+
+                {discoverLoading ? (
+                  <div className="kid-discover-loading">
+                    <Loader2 size={22} className="kid-discover-spin" />
+                  </div>
+                ) : (
+                  <>
+                    {discover.bestsellers.length > 0 && (
+                      <div className="kid-discover-row">
+                        <div className="kid-discover-row-head kid-discover-row-head--trend">
+                          <TrendingUp size={15} />
+                          <h3>Được mua nhiều nhất</h3>
+                        </div>
+                        <div className="kid-book-grid">
+                          {discover.bestsellers.map((b, i) => (
+                            <DiscoverBookCard
+                              key={b.id}
+                              book={b}
+                              accent={accentForId(b.id)}
+                              rank={i < 3 ? i + 1 : null}
+                              status={requestStatusByBook[b.id]}
+                              sending={sendingRequestId === b.id}
+                              onAsk={(e) => handleAskParent(b, e)}
+                              onEnter={handleCardEnter}
+                              onMove={handleCardMove}
+                              onLeave={handleCardLeave}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {discover.ageAppropriate.length > 0 && (
+                      <div className="kid-discover-row">
+                        <div className="kid-discover-row-head kid-discover-row-head--age">
+                          <Smile size={15} />
+                          <h3>
+                            Phù hợp với bé
+                            {Number.isFinite(child.age)
+                              ? ` (${child.age} tuổi)`
+                              : ""}
+                          </h3>
+                        </div>
+                        <div className="kid-book-grid">
+                          {discover.ageAppropriate.map((b) => (
+                            <DiscoverBookCard
+                              key={b.id}
+                              book={b}
+                              accent={accentForId(b.id)}
+                              status={requestStatusByBook[b.id]}
+                              sending={sendingRequestId === b.id}
+                              onAsk={(e) => handleAskParent(b, e)}
+                              onEnter={handleCardEnter}
+                              onMove={handleCardMove}
+                              onLeave={handleCardLeave}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </section>
+            )}
           </div>
 
           <footer className="kid-footer">

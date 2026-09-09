@@ -3,6 +3,7 @@ const { vnDateStr } = require("./childPolicy");
 const {
   sendChildLimitExceededEmail,
   sendChildSkippedRestEmail,
+  sendChildBookRequestEmail,
 } = require("../services/emailService");
 
 async function findParentContact(parentId) {
@@ -95,4 +96,27 @@ async function notifySkippedRest(child) {
   }
 }
 
-module.exports = { notifyLimitExceeded, notifySkippedRest };
+/**
+ * Gửi email cho phụ huynh khi bé bấm "Nhờ ba mẹ mua" một cuốn sách. Không có
+ * cờ bật/tắt hay throttle như 2 hàm trên vì đây là sự kiện rời rạc, có ý
+ * nghĩa mua hàng thực sự (giống email xác nhận đơn hàng) — không phải cảnh
+ * báo lặp lại hằng ngày nên phụ huynh luôn cần biết ngay.
+ */
+async function notifyBookRequest(child, book) {
+  try {
+    const parent = await findParentContact(child.parentId);
+    if (!parent?.email) return;
+
+    await sendChildBookRequestEmail({
+      to: parent.email,
+      parentName: parent.name,
+      childName: child.name,
+      bookTitle: book.title,
+      bookCoverUrl: book.coverImage,
+    });
+  } catch (err) {
+    console.error("[notifyBookRequest] failed:", err.message);
+  }
+}
+
+module.exports = { notifyLimitExceeded, notifySkippedRest, notifyBookRequest };

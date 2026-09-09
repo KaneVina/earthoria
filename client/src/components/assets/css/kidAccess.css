@@ -4903,3 +4903,165 @@
     transparent
   );
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   KHÁM PHÁ THÊM — sách bán chạy + phù hợp độ tuổi, nút "Nhờ ba mẹ mua"
+   Dùng lại khung .kid-shelf-heading/.kid-book-grid/.kid-book-card của kệ
+   sách chính bên trên để toàn trang có 1 ngôn ngữ hình ảnh thống nhất.
+   ═══════════════════════════════════════════════════════════════════════ */
+.kid-discover {
+  margin-top: 44px;
+  animation: kidFadeUp 0.8s 0.25s var(--kid-ease) both;
+}
+
+/* icon box màu hồng cho tiêu đề chính (khác màu xanh của "Tủ sách của bé"
+   để bé phân biệt ngay đây là khu vực khác) */
+.kid-shelf-leaf--pink {
+  color: var(--kid-pink-dark);
+  background: var(--kid-pink-light);
+}
+.kid-discover-hint {
+  color: var(--kid-pink-dark);
+  background: var(--kid-pink-light);
+}
+
+.kid-discover-row + .kid-discover-row {
+  margin-top: 34px;
+}
+.kid-discover-row-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: var(--kid-white);
+}
+.kid-discover-row-head h3 {
+  margin: 0;
+  font-family: var(--kid-font-display);
+  font-weight: 600;
+  font-size: calc(16px * var(--kid-font-scale));
+  text-shadow: var(--kid-title-outline);
+}
+.kid-discover-row-head--trend {
+  color: var(--kid-yellow);
+}
+.kid-discover-row-head--age {
+  color: var(--kid-teal);
+}
+
+.kid-discover-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+  color: var(--kid-white);
+  opacity: 0.85;
+}
+.kid-discover-spin {
+  animation: kidDiscoverSpin 0.85s linear infinite;
+}
+@keyframes kidDiscoverSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Thẻ sách khám phá: giống hệt .kid-book-card nhưng là <div> (không phải
+   <button>) vì bên trong có nút riêng "Nhờ ba mẹ mua" — không lồng
+   button trong button được. Vẫn giữ hiệu ứng nghiêng 3D khi rê chuột. */
+.kid-discover-card {
+  cursor: default;
+}
+.kid-discover-cover-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--card-accent);
+  opacity: 0.45;
+}
+
+/* Ruy băng "#N bán chạy" — thay cho tem sao ở góc, dùng cho top 3 sách
+   bán chạy nhất để tạo cảm giác thứ hạng, vui mắt cho bé */
+.kid-discover-rank {
+  position: absolute;
+  top: 9px;
+  left: 9px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--kid-font-body);
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #5a3b06;
+  background: linear-gradient(135deg, var(--kid-yellow), var(--kid-orange));
+  border-radius: var(--kid-radius-pill);
+  padding: 4px 10px 4px 8px;
+  box-shadow: var(--kid-shadow-sm);
+}
+
+/* Nút "Nhờ ba mẹ mua" — LUÔN hiện (không phải overlay chỉ hiện khi rê
+   chuột như .kid-book-cta) vì đây là hành động chính của thẻ, cần bé
+   nhìn thấy và bấm được ngay cả trên máy tính bảng chạm. */
+.kid-discover-ask {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 9px 10px;
+  border-radius: var(--kid-radius-pill);
+  font-family: var(--kid-font-body);
+  font-size: calc(11.5px * var(--kid-font-scale));
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--kid-white);
+  background: linear-gradient(135deg, var(--kid-pink), var(--kid-pink-dark));
+  box-shadow: var(--kid-shadow-sm);
+  cursor: pointer;
+  transition:
+    transform var(--kid-t-fast),
+    box-shadow var(--kid-t-fast),
+    background var(--kid-t-fast),
+    opacity var(--kid-t-fast);
+}
+.kid-discover-ask:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--kid-shadow-md);
+}
+.kid-discover-ask:active {
+  transform: translateY(0) scale(0.97);
+}
+.kid-discover-ask:focus-visible {
+  outline: 3px solid var(--kid-blue);
+  outline-offset: 2px;
+}
+.kid-discover-ask:disabled {
+  cursor: default;
+}
+.kid-discover-ask.is-sent {
+  background: linear-gradient(135deg, var(--kid-green), var(--kid-green-dark));
+  opacity: 0.92;
+}
+.kid-discover-ask.is-sent:hover {
+  transform: none;
+  box-shadow: var(--kid-shadow-sm);
+}
+.kid-discover-ask.is-declined {
+  background: linear-gradient(135deg, #9bb6c4, #7c97a6);
+}
+
+@media (max-width: 640px) {
+  .kid-discover {
+    margin-top: 34px;
+  }
+  .kid-discover-hint {
+    display: none;
+  }
+}

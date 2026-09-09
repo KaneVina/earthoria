@@ -1244,6 +1244,70 @@ async function sendChildSkippedRestEmail({ to, parentName, childName }) {
   });
 }
 
+// ─ Family: Con nhờ ba mẹ mua 1 cuốn sách ─
+async function sendChildBookRequestEmail({
+  to,
+  parentName,
+  childName,
+  bookTitle,
+  bookCoverUrl,
+}) {
+  const coverHtml = bookCoverUrl
+    ? `<img src="${bookCoverUrl}" alt="${bookTitle}" width="72" style="display:block;width:72px;height:96px;object-fit:cover;border-radius:6px;border:1px solid rgba(11,46,43,0.1);">`
+    : `<div style="width:72px;height:96px;border-radius:6px;background:rgba(74,158,63,0.08);border:1px solid rgba(74,158,63,0.18);"></div>`;
+
+  const bodyHtml = `
+    <div style="font-size:10px;letter-spacing:3.5px;text-transform:uppercase;color:#8fb09a;font-weight:500;margin-bottom:12px;text-align:center;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Thông báo từ Family Studio
+    </div>
+    <h1 style="font-size:26px;font-weight:600;color:#0b2e2b;line-height:1.3;margin:0 0 28px;text-align:center;letter-spacing:1px;text-transform:uppercase;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Con Muốn Nhờ Bạn Mua Sách
+    </h1>
+
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(184,134,46,0.08);border:1px solid rgba(184,134,46,0.25);display:inline-block;line-height:52px;font-size:20px;color:#b8862e;text-align:center;">
+        💌
+      </div>
+    </div>
+
+    <p style="font-size:14px;color:#0b2e2b;font-weight:500;margin:0 0 8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Xin chào, ${parentName || "bạn"}.
+    </p>
+    <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 20px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+      Bé <strong style="color:#0b2e2b;font-weight:500;">${childName}</strong> vừa nhờ bạn mua cuốn sách dưới đây trên trang đọc sách của bé.
+    </p>
+
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;background:rgba(74,158,63,0.04);border:1px solid rgba(74,158,63,0.14);border-radius:8px;margin-bottom:20px;">
+      <tr>
+        <td style="padding:16px;width:72px;">${coverHtml}</td>
+        <td style="padding:16px 16px 16px 0;vertical-align:middle;">
+          <div style="font-size:13.5px;color:#0b2e2b;font-weight:500;line-height:1.5;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+            ${bookTitle}
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <div style="background:rgba(74,158,63,0.04);border:1px solid rgba(74,158,63,0.14);border-radius:8px;padding:16px 20px;margin-bottom:8px;">
+      <p style="font-size:12px;color:#5a6b60;line-height:1.85;font-weight:300;margin:0;font-family:'Be Vietnam Pro',Arial,sans-serif;">
+        <strong style="color:#0b2e2b;font-weight:500;">Xem & phản hồi ngay?</strong>
+        Vào mục "Sách của bé" trong trang quản lý dành cho phụ huynh để duyệt hoặc từ chối lời nhắn của ${childName}.
+      </p>
+    </div>
+  `;
+
+  return sendMail({
+    from: `${process.env.EMAIL_FROM_NAME || "Earthoria"} <noreply@earthoria.id.vn>`,
+    to,
+    subject: `${childName} muốn nhờ bạn mua "${bookTitle}"`,
+    html: wrapEmailTemplate({
+      preheader: `${childName} vừa gửi lời nhắn nhờ mua sách "${bookTitle}".`,
+      bodyHtml,
+      ctaUrl: `${(process.env.CLIENT_URL || "").replace(/\/+$/, "")}/family`,
+    }),
+  });
+}
+
 module.exports = {
   verifyEmailTransport,
   sendOtpEmail,
@@ -1261,4 +1325,5 @@ module.exports = {
   sendOrderCancelledEmail,
   sendChildLimitExceededEmail,
   sendChildSkippedRestEmail,
+  sendChildBookRequestEmail,
 };

@@ -214,6 +214,7 @@ model Book {
 
   childAccess     ChildBookAccess[]
   childActivities ChildActivityLog[]
+  childRequests   ChildBookRequest[]
 
   @@index([categoryId])
   @@index([language])
@@ -698,8 +699,36 @@ model ChildProfile {
   auditLogs   ChildAuditLog[]
   gameResults GameResult[]
   garden      ChildGarden?
+  bookRequests ChildBookRequest[]
 
   @@index([parentId])
+}
+
+// ─ CHILD BOOK REQUEST ─
+// "Nhờ ba mẹ mua": bé bấm xin ba mẹ mua 1 cuốn sách ở trang /e-kid,
+// phụ huynh xem & duyệt/từ chối ở Bảng điều khiển phụ huynh (/family).
+enum ChildBookRequestStatus {
+  PENDING
+  APPROVED
+  DECLINED
+}
+
+model ChildBookRequest {
+  id          String                 @id @default(uuid())
+  childId     String
+  bookId      String
+  status      ChildBookRequestStatus @default(PENDING)
+  parentNote  String?                // lý do phụ huynh ghi khi từ chối (tuỳ chọn)
+  respondedAt DateTime?
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+
+  child ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  book  Book         @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([childId, status])
+  @@index([bookId])
+  @@index([status, createdAt])
 }
 
 model ChildBookAccess {
@@ -748,6 +777,8 @@ enum ChildAuditType {
   KID_LINK_REGENERATED
   DAILY_LIMIT_EXCEEDED
   SKIPPED_REST
+  BOOK_REQUEST_CREATED
+  BOOK_REQUEST_RESPONDED
 }
 
 // Nhật ký hành động của phụ huynh
