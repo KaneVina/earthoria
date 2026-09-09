@@ -3,11 +3,21 @@ import { createRoot, hydrateRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 import App from "./App.jsx";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import "./components/assets/css/main.css";
 import "./components/assets/css/main2.css";
 import "./components/assets/css/navbar.css";
 import "./components/assets/css/cookie-consent.css";
 import "./components/assets/js/cookie-consent.js";
+
+const RELOAD_FLAG_KEY = "eo_chunk_reload_attempted";
+window.addEventListener("vite:preloadError", () => {
+  const alreadyTried = sessionStorage.getItem(RELOAD_FLAG_KEY);
+  if (!alreadyTried) {
+    sessionStorage.setItem(RELOAD_FLAG_KEY, "1");
+    window.location.reload();
+  }
+});
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,22 +31,24 @@ const queryClient = new QueryClient({
 const rootEl = document.getElementById("root");
 const app = (
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-      <Toaster
-        position="bottom-center"
-        toastOptions={{
-          style: {
-            fontFamily: "Be Vietnam Pro, sans-serif",
-            fontSize: "13px",
-            background: "#0d3330",
-            color: "#faf8f3",
-            border: "0.5px solid rgba(74,158,63,0.3)",
-            maxWidth: "460px",
-          },
-        }}
-      />
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <App />
+        <Toaster
+          position="bottom-center"
+          toastOptions={{
+            style: {
+              fontFamily: "Be Vietnam Pro, sans-serif",
+              fontSize: "13px",
+              background: "#0d3330",
+              color: "#faf8f3",
+              border: "0.5px solid rgba(74,158,63,0.3)",
+              maxWidth: "460px",
+            },
+          }}
+        />
+      </QueryClientProvider>
+    </ErrorBoundary>
   </StrictMode>
 );
 
