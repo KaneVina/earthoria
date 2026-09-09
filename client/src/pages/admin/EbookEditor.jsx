@@ -407,6 +407,7 @@ function ColorPickerInput({
               <button
                 type="button"
                 className={tab === "solid" ? "active" : ""}
+                onMouseDown={keepEdit ? (e) => e.preventDefault() : undefined}
                 onClick={() => setTab("solid")}
               >
                 Màu đơn
@@ -414,6 +415,7 @@ function ColorPickerInput({
               <button
                 type="button"
                 className={tab === "gradient" ? "active" : ""}
+                onMouseDown={keepEdit ? (e) => e.preventDefault() : undefined}
                 onClick={() => {
                   setTab("gradient");
                   onChange(buildGradient(grad));
@@ -488,6 +490,9 @@ function ColorPickerInput({
                         }`}
                         style={{ background: c }}
                         title={c}
+                        onMouseDown={
+                          keepEdit ? (e) => e.preventDefault() : undefined
+                        }
                         onClick={() => {
                           onChange(c);
                           setHexDraft(c);
@@ -546,6 +551,9 @@ function ColorPickerInput({
                       }`}
                       style={{ background: g }}
                       title={g}
+                      onMouseDown={
+                        keepEdit ? (e) => e.preventDefault() : undefined
+                      }
                       onClick={() => {
                         setGrad(parseGradient(g));
                         onChange(g);
@@ -1674,6 +1682,11 @@ function LayerView({
         !readOnly && !layer.locked && onStartEditText
           ? (e) => {
               e.stopPropagation();
+              // Nếu đang sửa đúng layer này rồi thì để nguyên - nhấp đúp lúc
+              // này chỉ nhằm bôi đen 1 từ (hành vi mặc định của trình duyệt),
+              // không phải để "bắt đầu sửa" lại từ đầu. Gọi lại onStartEditText
+              // ở đây sẽ phá mất vùng bôi đen vừa chọn.
+              if (editingNow) return;
               onStartEditText(layer.id);
             }
           : undefined
@@ -3483,6 +3496,11 @@ export default function BookBuilder() {
   // và chỉ đổi định dạng (đậm/màu) của phần đó, thay vì áp dụng cho cả dòng.
   const startEditText = (id) => {
     if (selectedId !== id) selectLayer(id);
+    // Nếu layer này đã đang ở chế độ sửa rồi thì không reset gì cả - tránh
+    // trường hợp nhấp đúp để bôi đen 1 từ (trong lúc đang gõ) vô tình gọi
+    // lại hàm này (do sự kiện dblclick nổi bọt lên div bọc ngoài) và xoá mất
+    // vùng bôi đen vừa chọn khỏi savedRangeRef.
+    if (editingTextId === id) return;
     savedRangeRef.current = null;
     setEditingTextId(id);
   };
