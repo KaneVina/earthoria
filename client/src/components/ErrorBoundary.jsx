@@ -1,4 +1,5 @@
 import { Component } from "react";
+import { Sentry } from "../lib/sentry.js";
 
 const RELOAD_FLAG_KEY = "eo_chunk_reload_attempted";
 
@@ -24,9 +25,18 @@ class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
+    // Log để dễ debug trên Sentry/console, không làm gì ảnh hưởng người dùng.
     console.error("[ErrorBoundary] Caught render error:", error, info);
+    Sentry.captureException(error, {
+      extra: { componentStack: info?.componentStack },
+    });
 
     if (isChunkLoadError(error)) {
+      // Bản deploy mới đã đổi tên các file chunk (hash thay đổi) khiến
+      // trình duyệt/CDN cache cũ trỏ tới file không còn tồn tại nữa.
+      // Tự động reload MỘT LẦN để lấy index.html + asset mới nhất.
+      // Dùng sessionStorage để tránh vòng lặp reload vô hạn nếu lỗi
+      // thực sự không phải do cache (ví dụ mất mạng thật sự).
       const alreadyTried = sessionStorage.getItem(RELOAD_FLAG_KEY);
       if (!alreadyTried) {
         sessionStorage.setItem(RELOAD_FLAG_KEY, "1");
@@ -42,10 +52,16 @@ class ErrorBoundary extends Component {
 
   render() {
     if (this.state.hasError) {
+      // Nếu đang trong quá trình tự-reload cho lỗi chunk thì không cần
+      // hiện UI, tránh nháy màn hình - trang sẽ reload gần như ngay lập tức.
       const alreadyTried = sessionStorage.getItem(RELOAD_FLAG_KEY);
       if (this.state.isChunkError && alreadyTried) {
         return null;
       }
+
+      // Dùng đúng CSS variables + class .btn-primary sẵn có của project
+      // (định nghĩa trong main.css) để tự động đồng bộ theo light/dark mode
+      // (body.dark-mode) thay vì hardcode màu.
       return (
         <div
           style={{

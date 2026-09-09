@@ -6,8 +6,13 @@ const cookieParser = require("cookie-parser");
 const rateLimit = require("express-rate-limit");
 const passport = require("./config/passport");
 const maintenanceGuard = require("./middlewares/maintenanceGuard");
+const logger = require("./config/logger");
+const { initSentry, setupExpressErrorHandler } = require("./config/sentry");
 
 const app = express();
+
+// Phải init Sentry sớm nhất có thể để bắt được lỗi từ mọi middleware phía sau
+initSentry(app);
 
 // Render / Cloudflare proxy
 app.set("trust proxy", 1);
@@ -99,8 +104,14 @@ app.use((req, res) => {
 
 // ================= Error =================
 
+// Phải đặt SAU mọi route/controller, TRƯỚC error handler cuối cùng bên dưới
+// - đúng theo khuyến nghị chính thức của Sentry cho Express.
+setupExpressErrorHandler(app);
+
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  logger.error(`${req.method} ${req.originalUrl} - ${err.message}`, {
+    stack: err.stack,
+  });
 
   res.status(err.status || 500).json({
     success: false,
