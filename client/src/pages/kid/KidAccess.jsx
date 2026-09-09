@@ -57,7 +57,7 @@ const HOLD_DURATION_MS = 900;
 const BACK_TO_TOP_THRESHOLD = 520;
 
 //   màn mây mù mở đầu trang /e-kid: thời gian che phủ tối thiểu (để không bị
-//   chớp nháy nếu API trả lời quá nhanh) và thời lượng hoạt ảnh mây tản ra —
+//   chớp nháy nếu API trả lời quá nhanh) và thời lượng hoạt ảnh mây tản ra -
 //   giá trị này phải khớp với --kid-curtain-leave trong kidAccess.css
 const INTRO_COVER_MIN_MS = 900;
 const INTRO_LEAVE_MS = 2750;
@@ -139,7 +139,7 @@ function isSensitiveQuery(text) {
   return SENSITIVE_KEYWORDS.some((k) => nq.includes(k));
 }
 
-/** Highlight phần khớp trong tên sách — đổi tên tránh đụng Highlight API của trình duyệt */
+/** Highlight phần khớp trong tên sách - đổi tên tránh đụng Highlight API của trình duyệt */
 function SearchHighlight({ text, query }) {
   if (!query || !query.trim() || !text) return <>{text}</>;
   const norm = normalizeSearch(text);
@@ -166,7 +166,7 @@ function accentForId(id) {
   return SHELF_ACCENTS[hash % SHELF_ACCENTS.length];
 }
 
-// Hiệu ứng gợn sóng khi bấm (ripple) — thuần DOM, không cần re-render.
+// Hiệu ứng gợn sóng khi bấm (ripple) - thuần DOM, không cần re-render.
 function spawnRipple(e) {
   const el = e.currentTarget;
   const rect = el.getBoundingClientRect();
@@ -233,7 +233,7 @@ function mulberry32(seed) {
 
 function buildCloudEdgePath(width = 1200, seed = 7) {
   const rand = mulberry32(seed);
-  const baseline = 28; // đường đáy — chỗ chân các múi mây chạm nhau
+  const baseline = 28; // đường đáy - chỗ chân các múi mây chạm nhau
   const kappa = 0.5523; // hệ số Bezier xấp xỉ 1/4 hình elip → múi mây tròn trịa như mây thật, không nhọn
 
   let d = `M0 ${baseline} `;
@@ -258,7 +258,7 @@ function buildCloudEdgePath(width = 1200, seed = 7) {
   return d;
 }
 
-// Thẻ sách ở khu "Khám phá thêm" — dùng lại đúng khung ảnh/tem/tuổi của
+// Thẻ sách ở khu "Khám phá thêm" - dùng lại đúng khung ảnh/tem/tuổi của
 // .kid-book-card (kệ sách chính) để đồng nhất giao diện, chỉ khác ở chỗ có
 // nút "Nhờ ba mẹ mua" cố định thay vì CTA "Đọc ngay" hiện khi rê chuột, vì
 // đây là sách bé CHƯA sở hữu nên không thể mở đọc.
@@ -342,7 +342,7 @@ export default function KidAccess() {
   const { slug, token } = useParams(); // :slug không dùng để tra cứu, chỉ để đẹp URL
   const navigate = useNavigate();
   const location = useLocation();
-  const skyState = useSkyState(); // bầu trời theo giờ thực — chạy cho mọi trạng thái của trang
+  const skyState = useSkyState(); // bầu trời theo giờ thực - chạy cho mọi trạng thái của trang
   const [status, setStatus] = useState("loading"); // loading | ok | invalid
   const [child, setChild] = useState(null);
   const [books, setBooks] = useState([]);
@@ -406,7 +406,7 @@ export default function KidAccess() {
   }, [token]);
 
   //   khu "Khám phá thêm" tải riêng, không chặn phần còn lại của trang nếu
-  //   lỗi/chậm — chỉ chạy sau khi đã xác thực token hợp lệ (status === "ok")
+  //   lỗi/chậm - chỉ chạy sau khi đã xác thực token hợp lệ (status === "ok")
   useEffect(() => {
     if (status !== "ok" || !token) return;
     let cancelled = false;
@@ -534,7 +534,7 @@ export default function KidAccess() {
 
   const isOk = status === "ok" && child && !child.isLocked;
 
-  //   nhắc nghỉ mắt định kỳ + giải lao bắt buộc — dùng chung với
+  //   nhắc nghỉ mắt định kỳ + giải lao bắt buộc - dùng chung với
   //   EbookReader/ArView/GardenPage để tính năng chạy xuyên suốt cả lúc bé
   //   đang đọc sách/xem AR, không chỉ lúc đứng ở trang kệ sách này.
   const {
@@ -562,7 +562,7 @@ export default function KidAccess() {
       const saved = localStorage.getItem(`kid-font-scale:${token}`);
       if (saved && FONT_SCALES.some((s) => s.key === saved)) setFontKey(saved);
     } catch {
-      /* localStorage có thể bị chặn (chế độ riêng tư) — bỏ qua, dùng mặc định */
+      /* localStorage có thể bị chặn (chế độ riêng tư) - bỏ qua, dùng mặc định */
     }
   }, [token]);
 
@@ -833,7 +833,7 @@ export default function KidAccess() {
     ? withinWindow(child.allowStart, child.allowEnd)
     : true;
   // bé chỉ thực sự đọc được khi CẢ hai điều kiện đều thoả: chưa hết giờ
-  // trong ngày VÀ đang trong khung giờ ba mẹ cho phép — dùng chung 1 biến
+  // trong ngày VÀ đang trong khung giờ ba mẹ cho phép - dùng chung 1 biến
   // để mọi nút "Đọc ngay/Đọc tiếp" (kệ sách, thẻ đang đọc dở, modal) đều
   // khoá đồng nhất, tránh trường hợp bấm được nhưng vào tới nơi lại bị
   // server chặn (trải nghiệm dở, dù không mất an toàn vì server luôn

@@ -124,7 +124,7 @@
   );
 }
 
-/* fine film-grain, drawn once as an SVG noise tile — the detail that
+/* fine film-grain, drawn once as an SVG noise tile - the detail that
    reads as "designed" instead of a plain CSS gradient */
 .em-grain {
   position: fixed;
@@ -435,7 +435,7 @@
   box-shadow: 0 12px 26px rgba(74, 158, 63, 0.25);
 }
 
-/* editorial index numeral — a small, quiet catalogue-style marker
+/* editorial index numeral - a small, quiet catalogue-style marker
    distinguishing the four top-level studios (I–IV) */
 .em-node-index {
   position: absolute;
@@ -448,7 +448,7 @@
   z-index: 3;
 }
 
-/* live "pulse" indicator — quiet, modern touch signalling an active node */
+/* live "pulse" indicator - quiet, modern touch signalling an active node */
 .em-node-status {
   position: absolute;
   top: 16px;
@@ -701,7 +701,7 @@
   color: rgba(250, 248, 243, 0.55);
 }
 
-/*   Lifecycle wheel — the seven journeys arranged in a closed loop   */
+/*   Lifecycle wheel - the seven journeys arranged in a closed loop   */
 .em-cycle-wheel {
   position: relative;
   width: min(92vw, 620px);
@@ -937,7 +937,7 @@
   }
 }
 
-/* below this width a radial layout gets too cramped — fall back to a
+/* below this width a radial layout gets too cramped - fall back to a
    simple, fully accessible stacked list */
 @media (max-width: 480px) {
   .em-cycle-wheel {

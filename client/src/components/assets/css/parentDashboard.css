@@ -396,7 +396,7 @@
   font-weight: 300;
 }
 
-/* Đoạn mô tả nhỏ dùng BÊN TRONG thẻ trắng (.pkd-card) — khác với
+/* Đoạn mô tả nhỏ dùng BÊN TRONG thẻ trắng (.pkd-card) - khác với
    .pkd-section-sub (dùng trên nền xanh của .pkd-section-head) nên cần
    một tông màu tối để vẫn đọc được trên nền trắng của thẻ. */
 .pkd-card-note {
@@ -1901,7 +1901,7 @@
   background: rgba(74, 158, 63, 0.06);
 }
 
-/* ═══════════ SÁCH CỦA BÉ — toggle visibility rows ═══════════ */
+/* ═══════════ SÁCH CỦA BÉ - toggle visibility rows ═══════════ */
 .pkd-book-visible-row {
   display: flex;
   align-items: center;
@@ -1934,7 +1934,7 @@
   line-height: 1.4;
 }
 
-/* ═══════════ SÁCH CỦA BÉ — tab điện tử / giấy ═══════════ */
+/* ═══════════ SÁCH CỦA BÉ - tab điện tử / giấy ═══════════ */
 .pkd-book-tabs {
   display: flex;
   gap: 8px;
@@ -2363,7 +2363,7 @@
   }
 }
 
-/* Link & QR riêng cho bé (KidLinkCard) — dùng trong panel mở rộng của
+/* Link & QR riêng cho bé (KidLinkCard) - dùng trong panel mở rộng của
    danh sách chọn bé (pkd-picker-expand) */
 .kid-link-card {
   display: flex;
@@ -2752,7 +2752,7 @@ body.dark-mode .pkd-switch-row-icon svg {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   "CON MUỐN MUA" — băng tóm tắt ở Tổng quan, badge trên avatar bé, tab
+   "CON MUỐN MUA" - băng tóm tắt ở Tổng quan, badge trên avatar bé, tab
    "Muốn mua" trong mục Sách của bé. Theo đúng tông forest + gold hiện có
    của Bảng điều khiển phụ huynh; chỉ dùng đỏ nhạt #b25450 (màu "cần chú ý"
    đã dùng sẵn cho .pkd-child-lock-tag/.is-danger) để đánh dấu số đang chờ.
@@ -2880,7 +2880,7 @@ body.dark-mode .pkd-switch-row-icon svg {
   box-shadow: 0 2px 6px rgba(178, 84, 80, 0.35);
 }
 
-/* Tab "Muốn mua" trong mục Sách của bé — số đếm đổi màu đỏ nhạt khi có
+/* Tab "Muốn mua" trong mục Sách của bé - số đếm đổi màu đỏ nhạt khi có
    yêu cầu đang chờ, để phân biệt với 2 tab còn lại (chỉ đếm trung tính) */
 .pkd-book-tab-count.is-alert {
   background: #b25450;

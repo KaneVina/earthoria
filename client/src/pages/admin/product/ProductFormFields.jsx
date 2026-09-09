@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 import api from "../../../services/api";
 import ProductVariantsEditor from "./ProductVariantsEditor";
 
-// productId chỉ có khi đang SỬA sách đã tồn tại (ProductDetail) — sách mới
+// productId chỉ có khi đang SỬA sách đã tồn tại (ProductDetail) - sách mới
 // tạo (ProductCreate) chưa có ebook nên nút "AI soạn nháp" sẽ không hiện.
 export default function ProductFormFields({
   form,
@@ -24,7 +24,7 @@ export default function ProductFormFields({
     }));
 
   // Nhờ AI đọc nội dung ebook đã có rồi soạn NHÁP synopsis/themes/suitableFor.
-  // Chỉ điền vào form, KHÔNG tự lưu — admin luôn phải đọc lại & bấm Lưu thay đổi.
+  // Chỉ điền vào form, KHÔNG tự lưu - admin luôn phải đọc lại & bấm Lưu thay đổi.
   const aiDraftMutation = useMutation({
     mutationFn: () =>
       api
@@ -39,7 +39,7 @@ export default function ProductFormFields({
         suitableFor: draft.suitableFor || prev.suitableFor,
       }));
       toast.success(
-        res.message || "AI đã soạn nháp xong — nhớ đọc lại trước khi lưu!",
+        res.message || "AI đã soạn nháp xong - nhớ đọc lại trước khi lưu!",
       );
     },
     onError: (e) =>
@@ -163,7 +163,7 @@ export default function ProductFormFields({
           )}
         </div>
         <span style={{ fontSize: 10, color: "rgba(13,51,48,0.4)" }}>
-          Dùng để Eira trả lời sâu câu hỏi về nội dung/bài học — đây là TÓM TẮT
+          Dùng để Eira trả lời sâu câu hỏi về nội dung/bài học - đây là TÓM TẮT
           do đội biên soạn (có thể nhờ AI soạn nháp từ ebook rồi tự chỉnh lại),
           không phải toàn văn sách.
         </span>

@@ -6,7 +6,7 @@ const { optionalAuth } = require("../middlewares/authMiddleware");
 const { resolveUserMaxTier, DEFAULT_TIER } = require("../utils/aiModelTier");
 
 // Hạng model càng cao thì trần tin nhắn/phút càng cao (đồng bộ với requestsPerMinute
-// khai báo trong aiModelTier.js) — cần đặt optionalAuth TRƯỚC limiter để req.user có sẵn.
+// khai báo trong aiModelTier.js) - cần đặt optionalAuth TRƯỚC limiter để req.user có sẵn.
 const chatLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: async (req) => {

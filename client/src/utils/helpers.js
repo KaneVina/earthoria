@@ -13,7 +13,7 @@ export const formatDate = (date) => {
   }).format(new Date(date));
 };
 
-// Định dạng ngắn gọn dd/mm/yyyy — dùng cho các cột dạng bảng (vd. Ngày đăng ký).
+// Định dạng ngắn gọn dd/mm/yyyy - dùng cho các cột dạng bảng (vd. Ngày đăng ký).
 export const formatDateShort = (date) => {
   const d = new Date(date);
   const dd = String(d.getDate()).padStart(2, "0");

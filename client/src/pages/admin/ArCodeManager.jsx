@@ -422,7 +422,7 @@ export default function ArCodeManager() {
                 <div
                   style={{ fontSize: 12, fontWeight: 500, marginBottom: 10 }}
                 >
-                  {qrTarget.book.title} — {qrTarget.arCode.label}
+                  {qrTarget.book.title} - {qrTarget.arCode.label}
                 </div>
                 <div
                   ref={qrWrapRef}

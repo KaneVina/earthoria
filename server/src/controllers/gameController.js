@@ -81,7 +81,7 @@ exports.completeGame = async (req, res) => {
     let validChildId = null;
     if (childId) {
       // Trước đây chỉ kiểm tra child có tồn tại hay không, KHÔNG kiểm tra child đó
-      // có thuộc về user đang đăng nhập không — bất kỳ ai biết UUID của 1 child
+      // có thuộc về user đang đăng nhập không - bất kỳ ai biết UUID của 1 child
       // (của gia đình khác) đều có thể ghi GameResult vào hồ sơ đó (IDOR). Giờ bắt
       // buộc childId phải thuộc về chính req.user (nếu có đăng nhập) mới được nhận.
       if (!req.user) {

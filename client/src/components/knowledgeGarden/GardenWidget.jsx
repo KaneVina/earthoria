@@ -77,7 +77,7 @@ export default function GardenWidget({ token, slug }) {
       try {
         localStorage.setItem(`${DISMISS_KEY_PREFIX}${token}`, "1");
       } catch {
-        /* localStorage có thể bị chặn — bỏ qua, chỉ ẩn cho phiên hiện tại */
+        /* localStorage có thể bị chặn - bỏ qua, chỉ ẩn cho phiên hiện tại */
       }
     },
     [token],

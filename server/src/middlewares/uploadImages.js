@@ -11,7 +11,7 @@ function fileFilter(req, file, cb) {
 const uploadImages = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 8 * 1024 * 1024 }, // 8MB / ảnh — KHÔNG giới hạn số lượng file (field .array không set max)
+  limits: { fileSize: 8 * 1024 * 1024 }, // 8MB / ảnh - KHÔNG giới hạn số lượng file (field .array không set max)
 });
 
 module.exports = uploadImages;

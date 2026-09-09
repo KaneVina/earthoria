@@ -94,7 +94,7 @@ const sendMessage = async (req, res) => {
   }
 };
 
-// GET /api/v1/ai/models — danh sách 5 hạng model (núi) + trạng thái mở khóa của khách hiện tại.
+// GET /api/v1/ai/models - danh sách 5 hạng model (núi) + trạng thái mở khóa của khách hiện tại.
 const getModels = async (req, res) => {
   try {
     const spend = req.user?.id ? await getUserLifetimeSpend(req.user.id) : 0;

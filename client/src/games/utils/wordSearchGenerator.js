@@ -103,7 +103,7 @@ export function generateWordSearchGrid(words, rows, cols) {
     C += 1;
   }
 
-  // Trường hợp cực hiếm không xếp vừa dù đã nới bảng nhiều lần — trả về
+  // Trường hợp cực hiếm không xếp vừa dù đã nới bảng nhiều lần - trả về
   // bảng trống với chỉ chữ ngẫu nhiên để tránh crash UI, tốt hơn là ném lỗi.
   const grid = Array.from({ length: R }, () =>
     Array.from(

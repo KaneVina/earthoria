@@ -25,7 +25,7 @@ export default function MatchPairsEditor({ config, onChange }) {
   return (
     <div className="g-editor">
       <div className="g-editor-hint">
-        Mỗi hàng là 1 cặp tương ứng — người chơi sẽ chạm 1 mục cột trái rồi chạm
+        Mỗi hàng là 1 cặp tương ứng - người chơi sẽ chạm 1 mục cột trái rồi chạm
         đúng mục cột phải tương ứng để nối. Ví dụ: <em>"Con voi"</em> ↔{" "}
         <em>"Loài động vật to lớn có vòi dài"</em>. Cần tối thiểu 2 cặp, mỗi cột
         không nên có nội dung trùng lặp.
@@ -48,7 +48,7 @@ export default function MatchPairsEditor({ config, onChange }) {
 
       {pairs.length === 0 && (
         <div className="g-editor-empty">
-          Chưa có cặp nào — bấm "Thêm cặp" bên dưới
+          Chưa có cặp nào - bấm "Thêm cặp" bên dưới
         </div>
       )}
 

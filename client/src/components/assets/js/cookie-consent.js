@@ -77,7 +77,7 @@
         if (parsed.version !== CONSENT_VERSION) return;
         onExternalChange(parsed);
       } catch (err) {
-        /* dữ liệu hỏng — bỏ qua, không làm crash tab hiện tại */
+        /* dữ liệu hỏng - bỏ qua, không làm crash tab hiện tại */
       }
     });
   }
@@ -161,7 +161,7 @@
                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                      <rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                    </svg>
-                   Luôn bật — cần thiết để website hoạt động
+                   Luôn bật - cần thiết để website hoạt động
                  </div>`
               : ""
           }
@@ -355,7 +355,7 @@
         openModal();
       });
 
-      // Bấm vào backdrop KHÔNG tự đóng banner — khác với modal tùy chỉnh,
+      // Bấm vào backdrop KHÔNG tự đóng banner - khác với modal tùy chỉnh,
       // banner đầu tiên cần một lựa chọn rõ ràng, không nên tắt được bằng
       // cách click ra ngoài (đây là hành vi chuẩn theo GDPR: không được
       // ngầm coi "lơ banner" là đồng ý).
@@ -375,7 +375,7 @@
     //  Đồng bộ đa tab
     watchCrossTabSync((payload) => {
       if (payload === null) {
-        // Tab khác vừa reset toàn bộ lựa chọn — quay lại trạng thái ban đầu
+        // Tab khác vừa reset toàn bộ lựa chọn - quay lại trạng thái ban đầu
         closeBanner();
         closeModal();
         if (reopenBtn) {

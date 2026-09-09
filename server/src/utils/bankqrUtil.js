@@ -6,7 +6,7 @@ const BANK_CODE = process.env.BANKQR_BANK_CODE || "MB";
 const ACCOUNT_NO = process.env.BANKQR_ACCOUNT_NO || "";
 const ACCOUNT_NAME = process.env.BANKQR_ACCOUNT_NAME || "";
 
-// SePay gửi kèm header Authorization: Apikey <key> trong mỗi lần gọi webhook — dùng để xác thực
+// SePay gửi kèm header Authorization: Apikey <key> trong mỗi lần gọi webhook - dùng để xác thực
 // webhook thực sự đến từ SePay (cấu hình cùng giá trị này trong dashboard SePay khi tạo webhook).
 const SEPAY_WEBHOOK_API_KEY = process.env.SEPAY_WEBHOOK_API_KEY || "";
 

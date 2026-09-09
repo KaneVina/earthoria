@@ -43,21 +43,21 @@ const PILLARS = [
     icon: CreditCard,
     eyebrow: "Cổng thanh toán",
     title: "Thanh toán",
-    desc: "VNPay, Momo, chuyển khoản QR qua webhook SePay và Stripe — mỗi cổng có endpoint xác minh riêng cùng bảng chống trùng giao dịch.",
+    desc: "VNPay, Momo, chuyển khoản QR qua webhook SePay và Stripe - mỗi cổng có endpoint xác minh riêng cùng bảng chống trùng giao dịch.",
     to: "#payments",
   },
   {
     icon: Users,
     eyebrow: "Phân quyền",
     title: "Sáu vai trò rõ ràng",
-    desc: "Khách vãng lai, Khách hàng, Đại lý, Trẻ em, Nhân viên, Quản trị — mỗi vai trò giới hạn đúng phạm vi cần thiết ở tầng middleware.",
+    desc: "Khách vãng lai, Khách hàng, Đại lý, Trẻ em, Nhân viên, Quản trị - mỗi vai trò giới hạn đúng phạm vi cần thiết ở tầng middleware.",
     to: "#roles",
   },
   {
     icon: Eye,
     eyebrow: "Tự công bố",
     title: "Minh bạch chủ động",
-    desc: "Nhóm phát triển tự công bố các hạn chế hiện tại của hệ thống và lộ trình khắc phục — không che giấu.",
+    desc: "Nhóm phát triển tự công bố các hạn chế hiện tại của hệ thống và lộ trình khắc phục - không che giấu.",
     to: "#transparency",
   },
 ];
@@ -118,15 +118,15 @@ const ROLES = [
   },
   {
     role: "Trẻ em (Kid Mode)",
-    inSystem: "ChildProfile — ngoài enum Role",
+    inSystem: "ChildProfile - ngoài enum Role",
     scope:
-      "Đọc, chơi, AR, khu vườn — qua PIN phụ huynh hoặc liên kết token hoá",
+      "Đọc, chơi, AR, khu vườn - qua PIN phụ huynh hoặc liên kết token hoá",
   },
   {
     role: "Nhân viên",
     inSystem: "Role.STAFF",
     scope:
-      "Ticket, đánh giá, ebook, game — một phần khu vực /admin, không thấy tài khoản Admin",
+      "Ticket, đánh giá, ebook, game - một phần khu vực /admin, không thấy tài khoản Admin",
   },
   {
     role: "Quản trị",
@@ -357,7 +357,7 @@ export default function TrustCenter() {
         }
       `}</style>
 
-      {/* Breadcrumb — dùng lại class global giống /legal */}
+      {/* Breadcrumb - dùng lại class global giống /legal */}
       <div className="breadcrumb">
         <Link to="/" className="breadcrumb-item">
           Trang chủ
@@ -383,7 +383,7 @@ export default function TrustCenter() {
           </h1>
           <p className="tc-hero-sub">
             Cách hệ thống, dữ liệu và Kid Mode của Earthoria được xây dựng để
-            bảo vệ gia đình bạn — trình bày minh bạch, kể cả những phần chưa
+            bảo vệ gia đình bạn - trình bày minh bạch, kể cả những phần chưa
             hoàn thiện.
           </p>
         </div>
@@ -410,7 +410,7 @@ export default function TrustCenter() {
       {/* ═══ DISCLAIMER ═══ */}
       <div className="tc-disclaimer">
         <p>
-          <b>Nguồn nội dung:</b> Tổng hợp từ mã nguồn nội bộ của Earthoria —
+          <b>Nguồn nội dung:</b> Tổng hợp từ mã nguồn nội bộ của Earthoria -
           README, schema Prisma và mã ứng dụng. Đây là tài liệu tổng hợp kỹ
           thuật, không phải kết quả kiểm toán bảo mật độc lập.
         </p>
@@ -483,7 +483,7 @@ export default function TrustCenter() {
             <div>
               <b>Lớp thương mại</b>
               <p>
-                Tìm kiếm, mua và quản lý sách giấy lẫn sách số — giỏ hàng, thanh
+                Tìm kiếm, mua và quản lý sách giấy lẫn sách số - giỏ hàng, thanh
                 toán nhiều bước, mã giảm giá, lịch sử đơn hàng.
               </p>
             </div>
@@ -520,7 +520,7 @@ export default function TrustCenter() {
             Nhiều bộ phận, <em>một</em> chủ sở hữu
           </h2>
           <p className="tc-section-sub">
-            Theo Tuyên Bố Bản Quyền của dự án — mỗi bộ phận có tên gọi riêng
+            Theo Tuyên Bố Bản Quyền của dự án - mỗi bộ phận có tên gọi riêng
             nhưng cùng thuộc quyền sở hữu của Earthoria.
           </p>
         </div>
@@ -591,7 +591,7 @@ export default function TrustCenter() {
             <tbody>
               <tr>
                 <td className="mono">1</td>
-                <td>Client — React 19 SPA dựng bằng Vite</td>
+                <td>Client - React 19 SPA dựng bằng Vite</td>
               </tr>
               <tr>
                 <td className="mono">2</td>
@@ -726,7 +726,7 @@ export default function TrustCenter() {
           </h2>
           <p className="tc-section-sub">
             Đối chiếu trực tiếp với <code className="tc-mono">enum Role</code>{" "}
-            trong <code className="tc-mono">schema.prisma</code> — vì README chỉ
+            trong <code className="tc-mono">schema.prisma</code> - vì README chỉ
             liệt kê 4/6 vai trò thực tế.
           </p>
         </div>
@@ -759,7 +759,7 @@ export default function TrustCenter() {
         <div className="tc-section-head reveal">
           <span className="tc-eyebrow">Minh Bạch</span>
           <h2 className="tc-section-title">
-            Hạn chế đã biết — <em>tự công&nbsp;bố</em>
+            Hạn chế đã biết - <em>tự công&nbsp;bố</em>
           </h2>
         </div>
         <div className="tc-notes reveal">
@@ -835,7 +835,7 @@ export default function TrustCenter() {
               Tuyên Bố Bản Quyền{" "}
               <Copyright size={12} style={{ display: "inline" }} />
             </Link>
-            . Mã nguồn phần mềm hiện chưa công bố giấy phép mã nguồn mở — mọi
+            . Mã nguồn phần mềm hiện chưa công bố giấy phép mã nguồn mở - mọi
             quyền được bảo lưu.
           </div>
         </div>

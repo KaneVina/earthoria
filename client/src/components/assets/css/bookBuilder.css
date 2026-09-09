@@ -803,7 +803,7 @@
 }
 
 /* Ô chọn màu kiểu Canva: 1 ô tròn hiện màu hiện tại, bấm vào mở bảng
-   chọn có ô gõ mã màu + lưới màu dựng sẵn — thay cho color-picker mặc
+   chọn có ô gõ mã màu + lưới màu dựng sẵn - thay cho color-picker mặc
    định của trình duyệt vốn khó bấm trúng / không gõ được mã màu. */
 .bb-colorpicker {
   position: relative;
@@ -859,7 +859,7 @@
   box-shadow: 0 1px 3px rgba(20, 51, 42, 0.18);
 }
 
-/* Ô vuông phổ màu (saturation/value) + thanh trích màu (hue) — kéo để
+/* Ô vuông phổ màu (saturation/value) + thanh trích màu (hue) - kéo để
    chọn màu trực quan, giống các trình chọn màu nâng cao (Canva/Photoshop). */
 .bb-colorpicker-spectrum {
   position: relative;
@@ -1046,7 +1046,7 @@ label.bb-checkbox-field input {
   line-height: 1.5;
 }
 
-/* Icon "i" thay cho ghi chú luôn hiện — rê chuột / focus mới hiện tooltip. */
+/* Icon "i" thay cho ghi chú luôn hiện - rê chuột / focus mới hiện tooltip. */
 .bb-info-hint {
   position: relative;
   display: inline-flex;

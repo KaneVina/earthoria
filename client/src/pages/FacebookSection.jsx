@@ -5,7 +5,7 @@ const FB_PAGE_ID = import.meta.env.VITE_FB_PAGE_ID || "1173249219198136";
 const FB_TOKEN =
   import.meta.env.VITE_FB_TOKEN ||
   "EAAdmI3uGZATEBR8YoZBizZCTEqFFHvFXV01xZA6B0WTh5ur3oYNByOuo5pjWe7iERYYEIv6TGzVSSwCmpZCrO5iQDyPNcUxN7C4a4QfnmOdoZCazZC44raFYCwNdf7qaDHIBdrep3XT6UgmeftUnZACCKahklaavZAoMrSg7ZAitB33zkZBxCRYnfIdd425o3Mbgo14VvzOZChxJlqRmIKtagCFee81O";
-const CARD_WIDTH = 276; // px — bao gồm gap
+const CARD_WIDTH = 276; // px - bao gồm gap
 const GAP = 16;
 const AUTO_MS = 3200;
 
@@ -40,7 +40,7 @@ const MOCK_POSTS = [
   {
     id: "1",
     message:
-      "🌿 Đất là mẹ của vạn vật. Mỗi sản phẩm Earthoria là một lời tri ân thiên nhiên — được tạo ra từ những vùng đất nguyên sinh, chắt lọc từ bàn tay thủ công của các nghệ nhân địa phương.",
+      "🌿 Đất là mẹ của vạn vật. Mỗi sản phẩm Earthoria là một lời tri ân thiên nhiên - được tạo ra từ những vùng đất nguyên sinh, chắt lọc từ bàn tay thủ công của các nghệ nhân địa phương.",
     permalink_url: "https://www.facebook.com/Earthoriavn",
     full_picture: null,
     created_time: "2025-06-20T08:00:00Z",
@@ -48,7 +48,7 @@ const MOCK_POSTS = [
   {
     id: "2",
     message:
-      "Khám phá bộ sưu tập mới nhất — lấy cảm hứng từ rừng nhiệt đới và hệ sinh thái đa dạng của Việt Nam. Mỗi sản phẩm kể câu chuyện về sự bền vững và vẻ đẹp tự nhiên 🍃",
+      "Khám phá bộ sưu tập mới nhất - lấy cảm hứng từ rừng nhiệt đới và hệ sinh thái đa dạng của Việt Nam. Mỗi sản phẩm kể câu chuyện về sự bền vững và vẻ đẹp tự nhiên 🍃",
     permalink_url: "https://www.facebook.com/Earthoriavn",
     full_picture: null,
     created_time: "2025-06-18T10:30:00Z",
@@ -56,7 +56,7 @@ const MOCK_POSTS = [
   {
     id: "3",
     message:
-      "Chúng tôi tin rằng sự xa xỉ thực sự không đến từ vật chất, mà từ kết nối sâu sắc với thiên nhiên. Earthoria — nơi đất trời gặp gỡ tinh hoa ✨",
+      "Chúng tôi tin rằng sự xa xỉ thực sự không đến từ vật chất, mà từ kết nối sâu sắc với thiên nhiên. Earthoria - nơi đất trời gặp gỡ tinh hoa ✨",
     permalink_url: "https://www.facebook.com/Earthoriavn",
     full_picture: null,
     created_time: "2025-06-15T14:00:00Z",
@@ -80,7 +80,7 @@ const MOCK_POSTS = [
   {
     id: "6",
     message:
-      "Thiên nhiên là người thầy vĩ đại nhất. Mỗi ngày chúng tôi học từ đất, từ cây, từ con người — để tạo ra những giá trị trường tồn cùng thời gian.",
+      "Thiên nhiên là người thầy vĩ đại nhất. Mỗi ngày chúng tôi học từ đất, từ cây, từ con người - để tạo ra những giá trị trường tồn cùng thời gian.",
     permalink_url: "https://www.facebook.com/Earthoriavn",
     full_picture: null,
     created_time: "2025-06-08T11:00:00Z",

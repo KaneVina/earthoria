@@ -164,13 +164,13 @@ export default function ProductsAccessories() {
                               marginTop: 1,
                             }}
                           >
-                            {it.productCode ?? "—"}
+                            {it.productCode ?? "-"}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td>
-                      <span className="a-badge neutral">{it.type ?? "—"}</span>
+                      <span className="a-badge neutral">{it.type ?? "-"}</span>
                     </td>
                     <td className="a-td-serif">{formatPrice(it.price)}</td>
                     <td>

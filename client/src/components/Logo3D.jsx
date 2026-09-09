@@ -89,7 +89,7 @@ const WORD_ORDER = [
   { def: GREEN_LETTERS[3], color: GREEN_COLOR, offsetKey: "A2" },
 ];
 
-// ─ Đèn "theo con trỏ" — quét một điểm sáng vàng ấm qua bề mặt logo khi
+// ─ Đèn "theo con trỏ" - quét một điểm sáng vàng ấm qua bề mặt logo khi
 // người dùng di chuột, giống ánh phản chiếu trên huy hiệu kim loại thật
 // thay vì ánh sáng tĩnh. Dùng lerp để chuyển động mượt, không giật khung.
 function PointerLight({ pointer }) {
@@ -122,7 +122,7 @@ function LogoGroup({ pointer }) {
     const idleY = Math.sin(state.clock.elapsedTime * 0.25) * 0.16;
     const idleFloat = Math.sin(state.clock.elapsedTime * 0.8) * 0.08;
     // Nghiêng nhẹ thêm theo vị trí con trỏ, cộng dồn lên nhịp xoay tự thân
-    // sẵn có — lerp để cảm giác "nặng tay", sang trọng hơn là bám cứng.
+    // sẵn có - lerp để cảm giác "nặng tay", sang trọng hơn là bám cứng.
     const targetY = idleY + pointer.current.x * 0.32;
     const targetX = pointer.current.y * -0.18;
     groupRef.current.rotation.y = THREE.MathUtils.lerp(
@@ -209,7 +209,7 @@ export default function Logo3D() {
         />
         <PointerLight pointer={pointer} />
 
-        {/* Environment map — yếu tố quan trọng nhất để vật liệu clearcoat
+        {/* Environment map - yếu tố quan trọng nhất để vật liệu clearcoat
             có phản chiếu thật (bầu trời/môi trường xung quanh) thay vì chỉ
             ăn 2 đèn hướng tĩnh, giúp logo trông như kim loại/ngọc thật */}
         <Environment preset="city" blur={1} />

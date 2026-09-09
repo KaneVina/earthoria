@@ -57,7 +57,7 @@ export function flyToCart(sourceEl, imageSrc) {
     const t = Math.min((now - startTime) / DURATION, 1);
     const eased = easeOutCubic(t);
 
-    // Tính lại vị trí đích MỖI FRAME — luôn đúng dù navbar/layout đổi giữa chừng
+    // Tính lại vị trí đích MỖI FRAME - luôn đúng dù navbar/layout đổi giữa chừng
     const endRect = cartIcon.getBoundingClientRect();
     const endX = endRect.left + endRect.width / 2 - endW / 2;
     const endY = endRect.top + endRect.height / 2 - endH / 2;

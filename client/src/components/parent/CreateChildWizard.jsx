@@ -23,7 +23,7 @@ import { parentPinService } from "../../services/parentPinService";
 
 const BASE_STEPS = ["intro", "email", "info", "terms"];
 
-// 10 biểu tượng — khớp với số hồ sơ trẻ em tối đa toàn hệ thống (Hạng V ·
+// 10 biểu tượng - khớp với số hồ sơ trẻ em tối đa toàn hệ thống (Hạng V ·
 // Landmark 81 mở đủ 10). Xem server/src/utils/loyaltyTier.js (maxChildAccounts).
 const AVATAR_CHOICES = [
   { emoji: "🦊", color: "#c9793f" },
@@ -38,7 +38,7 @@ const AVATAR_CHOICES = [
   { emoji: "🦉", color: "#c0525a" },
 ];
 
-// Tính tuổi ngay ở client để hiển thị tức thời khi phụ huynh gõ ngày sinh —
+// Tính tuổi ngay ở client để hiển thị tức thời khi phụ huynh gõ ngày sinh -
 // server vẫn tính lại độc lập, đây chỉ là UX, không phải nguồn sự thật.
 function calcAge(dobStr) {
   if (!dobStr) return null;
@@ -51,7 +51,7 @@ function calcAge(dobStr) {
   return age >= 0 ? age : null;
 }
 
-// Vector minh họa nhỏ, dễ thương, tông xanh lá — dùng cho bước giới thiệu.
+// Vector minh họa nhỏ, dễ thương, tông xanh lá - dùng cho bước giới thiệu.
 // Vẽ thuần bằng shape cơ bản, không phụ thuộc ảnh ngoài.
 function IntroIllustration() {
   return (
@@ -130,11 +130,11 @@ export default function CreateChildWizard({
   childLimit,
 }) {
   const user = useAuthStore((s) => s.user);
-  // Đã đạt giới hạn hồ sơ trẻ em của hạng thành viên hiện tại — chặn wizard
+  // Đã đạt giới hạn hồ sơ trẻ em của hạng thành viên hiện tại - chặn wizard
   // ngay từ bước đầu và hướng phụ huynh sang trang /loyalty thay vì để họ đi
   // hết các bước rồi mới nhận lỗi ở bước cuối.
   const limitReached = !!childLimit && childLimit.current >= childLimit.max;
-  // Chưa có PIN thì chèn bước "pin" ngay sau intro — bắt buộc thiết lập
+  // Chưa có PIN thì chèn bước "pin" ngay sau intro - bắt buộc thiết lập
   // trước khi tạo hồ sơ trẻ, vì PIN là thứ duy nhất bảo vệ các hành động
   // nhạy cảm (mở khoá AR, xoá hồ sơ...) sau này.
   const STEPS = hasPin
@@ -215,7 +215,7 @@ export default function CreateChildWizard({
               <strong>
                 Hạng {childLimit.tierRoman} · {childLimit.tierName}
               </strong>{" "}
-              — hạng này cho phép tối đa <strong>{childLimit.max}</strong> tài
+              - hạng này cho phép tối đa <strong>{childLimit.max}</strong> tài
               khoản trẻ em.
               {childLimit.isMaxTier ? (
                 " Đây đã là hạng cao nhất, đây cũng là số hồ sơ tối đa của hệ thống."
@@ -234,7 +234,7 @@ export default function CreateChildWizard({
             <p className="pkd-wizard-note">
               <Sparkles size={13} />
               Hạng thành viên tăng theo tổng chi tiêu trọn đời tại Earthoria và
-              không bao giờ bị hạ hạng — mỗi đơn hàng đưa bạn tiến gần hơn tới
+              không bao giờ bị hạ hạng - mỗi đơn hàng đưa bạn tiến gần hơn tới
               hạng tiếp theo.
             </p>
             <div className="pf-confirm-actions">
@@ -325,7 +325,7 @@ export default function CreateChildWizard({
       setError(msg);
       toast.error(msg, { duration: 6000 });
       // Trường hợp hiếm: giới hạn hạng vừa bị chạm (vd tạo ở tab khác) đúng
-      // lúc đang submit — đóng wizard lại để tránh phụ huynh bấm thử lại vô
+      // lúc đang submit - đóng wizard lại để tránh phụ huynh bấm thử lại vô
       // ích, danh sách/giới hạn phía ParentDashboard sẽ tự cập nhật.
       if (err.response?.data?.data?.code === "MAX_CHILDREN_REACHED") {
         onClose();
@@ -389,7 +389,7 @@ export default function CreateChildWizard({
                   childLimit.current + 1 === childLimit.max && (
                     <>
                       {" "}
-                      Lên hạng để mở khóa thêm —{" "}
+                      Lên hạng để mở khóa thêm -{" "}
                       <Link to="/loyalty" onClick={onClose}>
                         xem chi tiết
                       </Link>
@@ -418,7 +418,7 @@ export default function CreateChildWizard({
             <p className="pf-confirm-msg">
               Mã PIN gồm 4 số dùng để mở khoá AR và xác nhận các thao tác nhạy
               cảm (ví dụ xoá hồ sơ của bé).{" "}
-              <b>Đây là lớp bảo vệ quan trọng nhất</b> cho tài khoản trẻ em —
+              <b>Đây là lớp bảo vệ quan trọng nhất</b> cho tài khoản trẻ em -
               hãy chọn mã bạn nhớ được nhưng người khác khó đoán, và đừng chia
               sẻ với bé.
             </p>
@@ -484,11 +484,11 @@ export default function CreateChildWizard({
             </p>
             <div className="pkd-wizard-email-box">
               <Mail size={14} />
-              <span>{user?.email || "—"}</span>
+              <span>{user?.email || "-"}</span>
             </div>
             <p className="pkd-wizard-email-note">
-              Mọi thông báo quan trọng — cảnh báo vượt giờ xem, yêu cầu mở khóa,
-              đặt lại mã PIN, và các cập nhật liên quan đến tài khoản của bé —
+              Mọi thông báo quan trọng - cảnh báo vượt giờ xem, yêu cầu mở khóa,
+              đặt lại mã PIN, và các cập nhật liên quan đến tài khoản của bé -
               đều sẽ được gửi về đúng địa chỉ email này. Vui lòng kiểm tra kỹ
               trước khi tiếp tục để không bỏ lỡ thông báo.
             </p>
@@ -513,7 +513,7 @@ export default function CreateChildWizard({
             </div>
             <h3 className="pf-confirm-title">Thông tin của bé</h3>
             <p className="pf-confirm-msg">
-              Nhập tên và ngày sinh — hệ thống sẽ tự tính tuổi cho bé.
+              Nhập tên và ngày sinh - hệ thống sẽ tự tính tuổi cho bé.
             </p>
 
             <div className="pkd-wizard-row">
@@ -594,7 +594,7 @@ export default function CreateChildWizard({
             <h3 className="pf-confirm-title">Điều khoản công bố</h3>
             <p className="pf-confirm-msg">
               Trước khi tạo hồ sơ cho <strong>{name || "bé"}</strong> (
-              {age !== null ? `${age} tuổi` : "—"}), bạn cần xác nhận là phụ
+              {age !== null ? `${age} tuổi` : "-"}), bạn cần xác nhận là phụ
               huynh/người giám hộ hợp pháp và đồng ý để Earthoria tạo hồ sơ, lưu
               tiến trình đọc, cũng như áp dụng các quy tắc bảo vệ mắt và giới
               hạn thời gian do chính bạn thiết lập cho bé.

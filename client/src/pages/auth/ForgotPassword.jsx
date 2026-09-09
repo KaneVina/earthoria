@@ -10,7 +10,7 @@ const STEPS = [
   { id: 3, label: "Mật khẩu mới" },
 ];
 
-// BR mật khẩu — PHẢI giống hệt Register.jsx và Profile.jsx (SecurityTab) để
+// BR mật khẩu - PHẢI giống hệt Register.jsx và Profile.jsx (SecurityTab) để
 // thống nhất quy tắc giữa 3 luồng: đăng ký / quên mật khẩu / đổi mật khẩu.
 const PASSWORD_CHECKS = [
   {
@@ -212,7 +212,7 @@ export default function ForgotPassword() {
 
   return (
     <main style={S.page}>
-      {/* ══ LEFT — Visual panel ══ */}
+      {/* ══ LEFT - Visual panel ══ */}
       <div style={S.visual}>
         <div style={S.visualBg} />
         <div style={S.visualGrid} />
@@ -266,7 +266,7 @@ export default function ForgotPassword() {
           </h2>
           <p style={S.sub}>
             Mật khẩu chỉ là một con số. Hành trình khám phá tri thức của bạn vẫn
-            đang chờ — chỉ vài bước nữa thôi.
+            đang chờ - chỉ vài bước nữa thôi.
           </p>
 
           {/* Steps progress (visual side) */}
@@ -341,14 +341,14 @@ export default function ForgotPassword() {
 
         <div style={S.quote}>
           <p style={S.quoteText}>
-            An toàn thông tin là nền tảng của niềm tin — chúng tôi luôn xác thực
+            An toàn thông tin là nền tảng của niềm tin - chúng tôi luôn xác thực
             cẩn trọng từng bước khôi phục tài khoản.
           </p>
           <p style={S.quoteAuthor}>Đội Ngũ Earthoria</p>
         </div>
       </div>
 
-      {/* ══ RIGHT — Form panel ══ */}
+      {/* ══ RIGHT - Form panel ══ */}
       <div style={S.formPanel}>
         <div style={S.formWrap}>
           {/* Mobile step indicator */}

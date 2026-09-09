@@ -98,7 +98,7 @@ export default function Register() {
       // Lưu tạm thông tin form để dùng lại khi resend
       setPendingData({ email, name, password: data.password });
 
-      // Gửi OTP — user chưa được tạo trong DB
+      // Gửi OTP - user chưa được tạo trong DB
       await authService.sendRegisterOtp({
         name,
         email,
@@ -230,7 +230,7 @@ export default function Register() {
   // ════════════════════════════════════════
   return (
     <main className="auth-page">
-      {/* LEFT — giữ nguyên */}
+      {/* LEFT - giữ nguyên */}
       <div className="auth-visual">
         <div className="auth-visual-bg"></div>
         <div className="auth-visual-grid"></div>
@@ -263,7 +263,7 @@ export default function Register() {
               {
                 text: (
                   <>
-                    <strong>Truy cập toàn bộ thư viện</strong> — hơn 2.400 đầu
+                    <strong>Truy cập toàn bộ thư viện</strong> - hơn 2.400 đầu
                     sách AR tương tác.
                   </>
                 ),
@@ -271,7 +271,7 @@ export default function Register() {
               {
                 text: (
                   <>
-                    <strong>Học không giới hạn thiết bị</strong> — đồng bộ tiến
+                    <strong>Học không giới hạn thiết bị</strong> - đồng bộ tiến
                     độ tự động.
                   </>
                 ),
@@ -279,7 +279,7 @@ export default function Register() {
               {
                 text: (
                   <>
-                    <strong>Cộng đồng 180.000+</strong> — thảo luận và chia sẻ
+                    <strong>Cộng đồng 180.000+</strong> - thảo luận và chia sẻ
                     cùng nhau.
                   </>
                 ),
@@ -287,7 +287,7 @@ export default function Register() {
               {
                 text: (
                   <>
-                    <strong>Miễn phí 30 ngày đầu</strong> — không cần thẻ tín
+                    <strong>Miễn phí 30 ngày đầu</strong> - không cần thẻ tín
                     dụng.
                   </>
                 ),
@@ -320,7 +320,7 @@ export default function Register() {
             Không phải tất cả độc giả đều là lãnh đạo, nhưng tất cả lãnh đạo đều
             là độc giả.
           </p>
-          <span className="auth-quote-author">— Harry Truman</span>
+          <span className="auth-quote-author">- Harry Truman</span>
         </div>
       </div>
 

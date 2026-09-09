@@ -464,7 +464,7 @@ const LogoFireworks = forwardRef(function LogoFireworks(
     }
   };
 
-  // Bắn "tia mồi" tỏa ra từ đúng tâm logo (mọi hướng), bay một đoạn ngắn rồi nổ bùng ra —
+  // Bắn "tia mồi" tỏa ra từ đúng tâm logo (mọi hướng), bay một đoạn ngắn rồi nổ bùng ra -
   // KHÔNG phóng từ đáy canvas bay lên như tên lửa pháo hoa thật nữa.
   const launchRocket = (originX, originY, burstStyle) => {
     const colorSet = [pick(PALETTE), pick(PALETTE), pick(PALETTE), "#ffffff"];
@@ -490,7 +490,7 @@ const LogoFireworks = forwardRef(function LogoFireworks(
   };
 
   //  Bắn thủ công (hover / click / focus / gọi từ ngoài qua ref)
-  //  Xuất phát ngay tại tâm logo, tỏa ra xung quanh — không bắn từ đáy lên.
+  //  Xuất phát ngay tại tâm logo, tỏa ra xung quanh - không bắn từ đáy lên.
   const burst = () => {
     const { w, h } = sizeRef.current;
     if (!w || !h) return;

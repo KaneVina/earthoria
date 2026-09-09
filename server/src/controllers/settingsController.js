@@ -34,7 +34,7 @@ const ALLOWED_FIELDS = [
 
 const DATE_FIELDS = ["maintenanceStart", "maintenanceEnd"];
 
-// GET /api/v1/settings/public — public, không cần đăng nhập
+// GET /api/v1/settings/public - public, không cần đăng nhập
 // Dùng để frontend quyết định có hiển thị trang bảo trì / banner hay không
 const getPublicSettings = async (req, res) => {
   try {
@@ -73,7 +73,7 @@ const getPublicSettings = async (req, res) => {
   }
 };
 
-// GET /api/v1/admin/settings — chỉ ADMIN
+// GET /api/v1/admin/settings - chỉ ADMIN
 const getAdminSettings = async (req, res) => {
   try {
     const s = await getOrCreateSettings();
@@ -86,7 +86,7 @@ const getAdminSettings = async (req, res) => {
   }
 };
 
-// PUT /api/v1/admin/settings — chỉ ADMIN
+// PUT /api/v1/admin/settings - chỉ ADMIN
 const updateAdminSettings = async (req, res) => {
   try {
     const data = {};

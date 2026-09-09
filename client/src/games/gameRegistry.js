@@ -78,7 +78,7 @@ export const GAME_REGISTRY = {
     label: "Trắc nghiệm vui",
     shortLabel: "Trắc nghiệm",
     description:
-      "Trả lời từng câu hỏi bằng cách chọn 1 trong nhiều đáp án — phù hợp để kiểm tra kiến thức bé vừa đọc.",
+      "Trả lời từng câu hỏi bằng cách chọn 1 trong nhiều đáp án - phù hợp để kiểm tra kiến thức bé vừa đọc.",
     icon: HelpCircle,
     defaultConfig: () => ({ questions: [] }),
     Editor: QuizChoiceEditor,
@@ -102,7 +102,7 @@ export function validateGameConfig(type, config) {
     return def.validate(config) || [];
   } catch {
     return [
-      "Không thể kiểm tra nội dung trò chơi — vui lòng kiểm tra lại dữ liệu đã nhập.",
+      "Không thể kiểm tra nội dung trò chơi - vui lòng kiểm tra lại dữ liệu đã nhập.",
     ];
   }
 }

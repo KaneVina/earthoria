@@ -12,7 +12,7 @@ function hashBody(body) {
 
 /**
  * @param {string} endpointName tên định danh endpoint (vd: "vnpay-create", "momo-create")
- *   — dùng để 1 Idempotency-Key không bị đụng giữa 2 endpoint khác nhau.
+ *   - dùng để 1 Idempotency-Key không bị đụng giữa 2 endpoint khác nhau.
  */
 const idempotency = (endpointName) => async (req, res, next) => {
   try {
@@ -23,7 +23,7 @@ const idempotency = (endpointName) => async (req, res, next) => {
         .json({ success: false, message: "Thiếu header Idempotency-Key" });
     }
     if (!req.user?.id) {
-      // Middleware này luôn phải đứng sau `protect` — nếu chưa có user thì có gắn nhầm thứ tự route.
+      // Middleware này luôn phải đứng sau `protect` - nếu chưa có user thì có gắn nhầm thứ tự route.
       return res
         .status(401)
         .json({ success: false, message: "Không có quyền truy cập" });
@@ -44,12 +44,12 @@ const idempotency = (endpointName) => async (req, res, next) => {
 
     if (existing) {
       if (existing.expiresAt < new Date()) {
-        // Hết hạn — dọn rồi coi như key mới, không chặn request hiện tại
+        // Hết hạn - dọn rồi coi như key mới, không chặn request hiện tại
         await prisma.paymentIdempotency
           .delete({ where: { id: existing.id } })
           .catch(() => {});
       } else if (existing.requestHash !== requestHash) {
-        // Cùng key nhưng khác nội dung request — rất có thể là bug client hoặc key bị tái dùng nhầm
+        // Cùng key nhưng khác nội dung request - rất có thể là bug client hoặc key bị tái dùng nhầm
         return res.status(409).json({
           success: false,
           message: "Idempotency-Key đã được dùng cho một yêu cầu khác trước đó",

@@ -55,7 +55,7 @@ export const useWishlistStore = create((set, get) => ({
       }
       return true;
     } catch {
-      // Rollback — chỉ rollback nếu vẫn là thao tác mới nhất, tránh đè lên 1 thao tác
+      // Rollback - chỉ rollback nếu vẫn là thao tác mới nhất, tránh đè lên 1 thao tác
       // mới hơn đã chạy sau đó
       if (get()._seq === mySeq) {
         set({ items, wishlistCount: items.length });

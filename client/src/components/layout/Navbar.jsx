@@ -121,7 +121,7 @@ export default function Navbar() {
   const handleLogout = async () => {
     setShowLogoutModal(false);
     try {
-      await authService.logout(); // gọi POST /auth/logout — clear cookie + revoke token ở DB
+      await authService.logout(); // gọi POST /auth/logout - clear cookie + revoke token ở DB
     } catch (err) {
       console.error("Logout API failed:", err);
       // vẫn tiếp tục clear local state dù API lỗi, tránh kẹt UI

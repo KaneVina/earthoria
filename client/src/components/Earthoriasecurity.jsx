@@ -87,7 +87,7 @@ function isDevToolsOpen() {
 // In cảnh báo màu đỏ ra Console khi phát hiện DevTools mở
 function logDevToolsWarning() {
   console.log(
-    "%c⚠ CẢNH BÁO BẢO MẬT — EARTHORIA",
+    "%c⚠ CẢNH BÁO BẢO MẬT - EARTHORIA",
     "color:#ff2d2d;font-size:22px;font-weight:bold;text-shadow:1px 1px 0 #000;",
   );
   console.log(

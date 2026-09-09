@@ -147,13 +147,13 @@ export default function InvoiceModal({ order, buyerEmail, onClose }) {
   const hasPhysicalAddress = addressParts.length > 0;
 
   const deliveryLabel = order.isDigital
-    ? "Sách điện tử — giao qua tài khoản"
+    ? "Sách điện tử - giao qua tài khoản"
     : hasPhysicalAddress
       ? "Giao hàng tận nơi"
       : "Nhận tại cửa hàng";
 
   const paymentLabel =
-    PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod || "—";
+    PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod || "-";
   const isPaid = order.paymentStatus === "PAID";
   const docTitle = order.requestInvoice ? "HOÁ ĐƠN BÁN HÀNG" : "PHIẾU MUA HÀNG";
 
@@ -228,7 +228,7 @@ export default function InvoiceModal({ order, buyerEmail, onClose }) {
           overflow: "hidden",
         }}
       >
-        {/* Thanh công cụ — không in */}
+        {/* Thanh công cụ - không in */}
         <div
           className="eo-inv-noprint"
           style={{
@@ -283,7 +283,7 @@ export default function InvoiceModal({ order, buyerEmail, onClose }) {
           </div>
         </div>
 
-        {/* Nội dung hoá đơn — vùng in / xuất PDF */}
+        {/* Nội dung hoá đơn - vùng in / xuất PDF */}
         <div
           id="eo-invoice-print"
           ref={printRef}
@@ -371,13 +371,13 @@ export default function InvoiceModal({ order, buyerEmail, onClose }) {
             <div>
               <SectionLabel>Thông tin người mua</SectionLabel>
               <div style={{ fontSize: 13, fontWeight: 600, marginTop: 8 }}>
-                {order.address?.fullName || "—"}
+                {order.address?.fullName || "-"}
               </div>
               <div style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>
-                SĐT: {order.address?.phone || "—"}
+                SĐT: {order.address?.phone || "-"}
               </div>
               <div style={{ fontSize: 12, color: MUTED }}>
-                Email: {buyerEmail || "—"}
+                Email: {buyerEmail || "-"}
               </div>
               {hasPhysicalAddress && (
                 <div style={{ fontSize: 12, color: MUTED, marginTop: 4 }}>
@@ -598,7 +598,7 @@ export default function InvoiceModal({ order, buyerEmail, onClose }) {
               }}
             >
               Chứng từ được hệ thống {seller.name} tạo tự động để đối soát và
-              lưu trữ cá nhân — không phải hoá đơn điện tử phát hành qua cơ quan
+              lưu trữ cá nhân - không phải hoá đơn điện tử phát hành qua cơ quan
               thuế.
             </div>
           </div>

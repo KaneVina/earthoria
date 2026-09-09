@@ -49,7 +49,7 @@ const TIERS_FALLBACK = [
     maxChildAccounts: 2,
     color: "#4a9e3f",
     colorSoft: "rgba(74,158,63,0.12)",
-    tagline: "Khởi hành — mọi hành trình đều bắt đầu từ đây",
+    tagline: "Khởi hành - mọi hành trình đều bắt đầu từ đây",
     aiModel: {
       code: "YEN_TU",
       name: "Yên Tử",
@@ -58,8 +58,8 @@ const TIERS_FALLBACK = [
       tagline: "Đáp ứng trọn vẹn những nhu cầu thường nhật.",
     },
     story: {
-      title: "Diên Hựu Tự — nơi một giấc mơ của vua Lý hóa thành kiến trúc.",
-      desc: "Từ một giấc mơ trên tòa sen, một biểu tượng đã được dựng nên — mở đầu cho hành trình đi qua những dấu ấn của thời gian.",
+      title: "Diên Hựu Tự - nơi một giấc mơ của vua Lý hóa thành kiến trúc.",
+      desc: "Từ một giấc mơ trên tòa sen, một biểu tượng đã được dựng nên - mở đầu cho hành trình đi qua những dấu ấn của thời gian.",
       next: "Và từ giấc mơ ấy, ta bước vào một kinh đô nơi con người từng kiến tạo cả một vũ trụ bằng kiến trúc.",
     },
   },
@@ -92,9 +92,9 @@ const TIERS_FALLBACK = [
     },
     story: {
       title:
-        "Kinh đô triều Nguyễn — nơi Ngũ phương, Ngũ hành, Ngũ sắc hòa thành một trật tự.",
+        "Kinh đô triều Nguyễn - nơi Ngũ phương, Ngũ hành, Ngũ sắc hòa thành một trật tự.",
       desc: "Không chỉ là cung điện, Huế là cách người xưa đưa thiên nhiên, văn hóa và quyền lực vào cùng một không gian.",
-      next: "Rời khỏi vẻ trầm mặc của kinh thành, hành trình bắt đầu chuyển mình — từ những triều đại xưa đến một Việt Nam đang vươn ra phía trước.",
+      next: "Rời khỏi vẻ trầm mặc của kinh thành, hành trình bắt đầu chuyển mình - từ những triều đại xưa đến một Việt Nam đang vươn ra phía trước.",
     },
   },
   {
@@ -126,8 +126,8 @@ const TIERS_FALLBACK = [
     },
     story: {
       title:
-        "666 mét, 6 làn xe — một con rồng thời Lý vươn mình qua sông Hàn, hướng ra biển lớn.",
-      desc: "Hình tượng nghìn năm được tái hiện bằng thép, ánh sáng và chuyển động — nơi quá khứ bắt đầu bước vào hiện tại.",
+        "666 mét, 6 làn xe - một con rồng thời Lý vươn mình qua sông Hàn, hướng ra biển lớn.",
+      desc: "Hình tượng nghìn năm được tái hiện bằng thép, ánh sáng và chuyển động - nơi quá khứ bắt đầu bước vào hiện tại.",
       next: "Nhưng dòng chảy văn hóa không chỉ đi từ quá khứ đến hiện đại; nó còn gặp nhau giữa những nền văn hóa và những niềm tin khác nhau.",
     },
   },
@@ -160,7 +160,7 @@ const TIERS_FALLBACK = [
     },
     story: {
       title:
-        "Pô Nagar — nơi tín ngưỡng Chăm gặp gỡ văn hóa Việt, hòa vào hình tượng Thiên Y A Na Thánh Mẫu.",
+        "Pô Nagar - nơi tín ngưỡng Chăm gặp gỡ văn hóa Việt, hòa vào hình tượng Thiên Y A Na Thánh Mẫu.",
       desc: "Qua hàng thế kỷ, một vị thần bản địa vẫn sống trong đời sống tinh thần của những thế hệ hôm nay.",
       next: "Và khi những giá trị xưa tiếp tục được truyền lại, hành trình cuối cùng đưa ta đến một biểu tượng của Việt Nam trong hiện tại.",
     },
@@ -184,7 +184,7 @@ const TIERS_FALLBACK = [
     maxChildAccounts: 10,
     color: "#c0392b",
     colorSoft: "rgba(192,57,43,0.12)",
-    tagline: "Đỉnh cao — chạm tới nóc nhà của Sài Gòn hoa lệ",
+    tagline: "Đỉnh cao - chạm tới nóc nhà của Sài Gòn hoa lệ",
     aiModel: {
       code: "FANSIPAN",
       name: "Fansipan",
@@ -197,7 +197,7 @@ const TIERS_FALLBACK = [
       title: "Từ hình ảnh bó tre Việt Nam đến tòa nhà cao nhất Việt Nam.",
       desc: "Nếu Chùa Một Cột bắt đầu bằng một giấc mơ, thì Landmark 81 là hình ảnh của một giấc mơ đã chạm tới bầu trời.",
       conclusion:
-        "Kết thúc hành trình từ kiến trúc cổ đến kiến trúc hiện đại, từ tín ngưỡng đến văn hóa, từ ký ức của nghìn năm đến khát vọng của hôm nay — và vẫn còn tiếp tục hướng về tương lai.",
+        "Kết thúc hành trình từ kiến trúc cổ đến kiến trúc hiện đại, từ tín ngưỡng đến văn hóa, từ ký ức của nghìn năm đến khát vọng của hôm nay - và vẫn còn tiếp tục hướng về tương lai.",
     },
   },
 ];
@@ -343,7 +343,7 @@ export default function LoyaltyJourney() {
           </h1>
 
           <p className="lj-hero-sub">
-            Năm hạng — năm vùng đất — một hành trình đi dọc Việt Nam - mỗi đơn
+            Năm hạng - năm vùng đất - một hành trình đi dọc Việt Nam - mỗi đơn
             hàng tiến thêm một bước trên hành trình khám phá Việt Nam.
           </p>
 
@@ -445,7 +445,7 @@ export default function LoyaltyJourney() {
           <p className="lj-journey-note reveal">
             <Sparkles size={13} />
             Chi tiêu được tính trên các đơn hàng đã thanh toán và giao thành
-            công. Hạng thành viên không bao giờ bị hạ — chỉ tăng dần theo tổng
+            công. Hạng thành viên không bao giờ bị hạ - chỉ tăng dần theo tổng
             chi tiêu trọn đời của bạn tại Earthoria.
           </p>
         </div>
@@ -532,7 +532,7 @@ export default function LoyaltyJourney() {
               icon={TrendingUp}
               index="02"
               title="Tự Động Nâng Hạng"
-              desc="Khi tổng chi tiêu chạm ngưỡng của một vùng đất mới, hạng thành viên được nâng ngay — không cần đăng ký hay chờ duyệt."
+              desc="Khi tổng chi tiêu chạm ngưỡng của một vùng đất mới, hạng thành viên được nâng ngay - không cần đăng ký hay chờ duyệt."
               tag="Tự động 100%"
             />
             <StepCard
@@ -709,7 +709,7 @@ const TIER_BAND_Y = {
 };
 
 const PROVINCES_34 = [
-  // Miền Bắc — Hạng I (Chùa Một Cột)
+  // Miền Bắc - Hạng I (Chùa Một Cột)
   { name: "Điện Biên", x: 35.3, y: 63.3, tier: "HANOI" },
   { name: "Lai Châu", x: 45.8, y: 39.1, tier: "HANOI" },
   { name: "Lào Cai", x: 67.4, y: 46.1, tier: "HANOI" },
@@ -725,21 +725,21 @@ const PROVINCES_34 = [
   { name: "Hà Nội", x: 101.1, y: 72.0, tier: "HANOI" },
   { name: "Hưng Yên", x: 109.2, y: 83.6, tier: "HANOI" },
   { name: "Ninh Bình", x: 105.0, y: 87.2, tier: "HANOI" },
-  // Bắc Trung Bộ — Hạng II (Cố Đô Huế)
+  // Bắc Trung Bộ - Hạng II (Cố Đô Huế)
   { name: "Thanh Hóa", x: 99.5, y: 101.5, tier: "HUE" },
   { name: "Nghệ An", x: 97.4, y: 128.8, tier: "HUE" },
   { name: "Hà Tĩnh", x: 102.3, y: 137.0, tier: "HUE" },
   { name: "Quảng Trị", x: 124.3, y: 165.7, tier: "HUE" },
   { name: "TP Huế", x: 141.5, y: 182.4, tier: "HUE" },
-  // Trung Bộ — Hạng III (Cầu Rồng)
+  // Trung Bộ - Hạng III (Cầu Rồng)
   { name: "Đà Nẵng", x: 159.2, y: 198.3, tier: "DANANG" },
   { name: "Quảng Ngãi", x: 160.3, y: 224.9, tier: "DANANG" },
   { name: "Gia Lai", x: 165.0, y: 245.0, tier: "DANANG" },
-  // Nam Trung Bộ — Hạng IV (Tháp Bà Ponagar)
+  // Nam Trung Bộ - Hạng IV (Tháp Bà Ponagar)
   { name: "Đắk Lắk", x: 167.3, y: 268.4, tier: "NHATRANG" },
   { name: "Khánh Hòa", x: 176.6, y: 292.6, tier: "NHATRANG" },
   { name: "Lâm Đồng", x: 151.0, y: 299.8, tier: "NHATRANG" },
-  // Miền Nam — Hạng V (Landmark 81)
+  // Miền Nam - Hạng V (Landmark 81)
   { name: "Tây Ninh", x: 110.4, y: 316.8, tier: "HOCHIMINH" },
   { name: "Đồng Nai", x: 124.6, y: 308.5, tier: "HOCHIMINH" },
   { name: "TP.HCM", x: 123.2, y: 321.6, tier: "HOCHIMINH" },
@@ -862,7 +862,7 @@ function PassportVietnamMap({ tiers }) {
             >
               <title>
                 {p.name}
-                {active ? " — đã mở khóa" : " — chưa mở khóa"}
+                {active ? " - đã mở khóa" : " - chưa mở khóa"}
               </title>
             </circle>
           );
@@ -881,7 +881,7 @@ function PassportVietnamMap({ tiers }) {
               ))}
               <title>
                 {`Quần đảo ${inset.name}`}
-                {active ? " — đã mở khóa" : " — chưa mở khóa"}
+                {active ? " - đã mở khóa" : " - chưa mở khóa"}
               </title>
             </g>
           );
@@ -1015,7 +1015,7 @@ function PassportStrip({ isAuthenticated, loading, loyaltyProfile, onLocate }) {
                         "--stamp-color": t.color,
                         "--stamp-color-soft": t.colorSoft,
                       }}
-                      title={`Hạng ${t.roman} · ${t.name} — ${statusText}`}
+                      title={`Hạng ${t.roman} · ${t.name} - ${statusText}`}
                     >
                       <span className="lj-stamp-ring" aria-hidden="true" />
                       <span className="lj-stamp-imgwrap">
@@ -1080,7 +1080,7 @@ function PassportStrip({ isAuthenticated, loading, loyaltyProfile, onLocate }) {
                 {isMaxTier ? (
                   <p className="lj-passport-caption is-max">
                     <CheckCircle2 size={13} />
-                    Hạng cao nhất — cảm ơn bạn đã đồng hành cùng Earthoria!
+                    Hạng cao nhất - cảm ơn bạn đã đồng hành cùng Earthoria!
                   </p>
                 ) : (
                   <>
@@ -1216,7 +1216,7 @@ function RankStop({
   const isCurrent = loyaltyProfile && loyaltyProfile.tier.code === tier.code;
   const isUnlocked = loyaltyProfile && currentRank >= tier.rank && !isCurrent;
   const isLocked = loyaltyProfile && currentRank < tier.rank;
-  // Hạng liền kề ngay phía trên hạng hiện tại — "sắp mở khóa" (gần trong tầm
+  // Hạng liền kề ngay phía trên hạng hiện tại - "sắp mở khóa" (gần trong tầm
   // tay) thay vì "chưa mở khóa" chung chung như các hạng còn xa phía sau.
   const isNextUp = isLocked && loyaltyProfile?.nextTier?.code === tier.code;
   let travelPercent = relativeSizePercent;
@@ -1312,7 +1312,7 @@ function RankStop({
           {(isUnlocked || (isCurrent && loyaltyProfile?.isMaxTier)) &&
             isLast && (
               <span className="lj-card-badge is-unlocked lj-card-badge-success">
-                <PlaneLanding size={11} /> Thành công — Đã hạ cánh
+                <PlaneLanding size={11} /> Thành công - Đã hạ cánh
               </span>
             )}
           {isLocked && (
@@ -1422,13 +1422,13 @@ function RankStop({
               isLast && (
                 <p className="lj-card-area-caption is-max">
                   <PlaneLanding size={13} />
-                  Thành công — bạn đã chinh phục toàn bộ hành trình Earthoria!
+                  Thành công - bạn đã chinh phục toàn bộ hành trình Earthoria!
                 </p>
               )}
             {isCurrent && loyaltyProfile.isMaxTier && !isLast && (
               <p className="lj-card-area-caption is-max">
                 <CheckCircle2 size={13} />
-                Hạng cao nhất — cảm ơn bạn đã đồng hành cùng Earthoria!
+                Hạng cao nhất - cảm ơn bạn đã đồng hành cùng Earthoria!
               </p>
             )}
             {isCurrent && !loyaltyProfile.isMaxTier && (
@@ -1499,7 +1499,7 @@ function RankStop({
                     </span>
                     {tier.aiModel.name}
                   </strong>
-                  {tier.aiModel.tagline && <> — {tier.aiModel.tagline}</>}
+                  {tier.aiModel.tagline && <> - {tier.aiModel.tagline}</>}
                 </span>
               </li>
             )}
@@ -1544,11 +1544,11 @@ function FinalCta({ isAuthenticated, loyaltyProfile }) {
   if (isAuthenticated && loyaltyProfile) {
     if (loyaltyProfile.isMaxTier) {
       sub =
-        "Bạn đã chinh phục toàn bộ hành trình 5 hạng thành viên — cảm ơn bạn đã đồng hành cùng Earthoria.";
+        "Bạn đã chinh phục toàn bộ hành trình 5 hạng thành viên - cảm ơn bạn đã đồng hành cùng Earthoria.";
       primary = { to: "/shop", label: "Khám Phá Cửa Hàng" };
       secondary = { to: "/profile", label: "Xem Hồ Sơ Của Tôi" };
     } else {
-      sub = `Chi thêm ${formatPrice(loyaltyProfile.amountToNext)} để bước sang ${loyaltyProfile.nextTier?.name} — chặng tiếp theo trên hành trình của bạn.`;
+      sub = `Chi thêm ${formatPrice(loyaltyProfile.amountToNext)} để bước sang ${loyaltyProfile.nextTier?.name} - chặng tiếp theo trên hành trình của bạn.`;
       primary = { to: "/shop", label: "Tiếp Tục Mua Sắm" };
       secondary = { to: "/profile", label: "Xem Hồ Sơ Của Tôi" };
     }

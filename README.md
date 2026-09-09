@@ -46,11 +46,11 @@ The project is deployed as a production-style system: the frontend is hosted on 
 
 Earthoria is designed around three connected layers rather than a single storefront:
 
-1. **Commerce layer** — customers discover, purchase, and manage physical/digital books, much like a conventional e-commerce site.
-2. **Content & engagement layer** — every book can be extended with an ebook version, an AR experience, and an educational mini-game, turning a static purchase into an ongoing interactive activity. A gamified "garden" system rewards children for continued engagement.
-3. **Family safety layer** — Kid Mode isolates the child's experience behind a parent-owned PIN, restricts which content a child can reach, and gives parents dashboards and activity logs, so the platform can be used directly by children rather than only by the purchasing adult.
+1. **Commerce layer** - customers discover, purchase, and manage physical/digital books, much like a conventional e-commerce site.
+2. **Content & engagement layer** - every book can be extended with an ebook version, an AR experience, and an educational mini-game, turning a static purchase into an ongoing interactive activity. A gamified "garden" system rewards children for continued engagement.
+3. **Family safety layer** - Kid Mode isolates the child's experience behind a parent-owned PIN, restricts which content a child can reach, and gives parents dashboards and activity logs, so the platform can be used directly by children rather than only by the purchasing adult.
 
-This combination — commerce + interactive content + parental control — is what distinguishes Earthoria from a typical online bookstore.
+This combination - commerce + interactive content + parental control - is what distinguishes Earthoria from a typical online bookstore.
 
 ---
 
@@ -290,7 +290,7 @@ Earthoria defines three primary roles, enforced through backend authorization mi
 ```bash
 cd server
 npm install
-cp .env.example .env       # fill in real values — see Environment Variables below
+cp .env.example .env       # fill in real values - see Environment Variables below
 npx prisma generate
 npx prisma migrate dev
 npm run dev                 # starts the API with nodemon

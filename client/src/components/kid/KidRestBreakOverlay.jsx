@@ -79,7 +79,7 @@ export function KidRestBreakOverlay({
             </span>
             <h2 className="kid-overlay-title">Giờ giải lao rồi!</h2>
             <p className="kid-overlay-text">
-              Bé đã đọc miệt mài rồi đó — đứng dậy vươn vai, uống nước, rồi quay
+              Bé đã đọc miệt mài rồi đó - đứng dậy vươn vai, uống nước, rồi quay
               lại đọc tiếp nhé!
             </p>
           </div>

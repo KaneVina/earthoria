@@ -1,7 +1,7 @@
 const crypto = require("crypto");
 const defaultPrisma = require("../config/db");
 
-// Chữ + số, viết hoa lẫn thường để tăng không gian mã (62 ký tự) — ví dụ "k5L"
+// Chữ + số, viết hoa lẫn thường để tăng không gian mã (62 ký tự) - ví dụ "k5L"
 const ALNUM = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 function randomAlnum(len) {

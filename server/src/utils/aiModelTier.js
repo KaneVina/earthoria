@@ -7,7 +7,7 @@ const AI_MODEL_TIERS = [
     name: "Yên Tử",
     emoji: "⛰️",
     altitude: 1068,
-    minSpend: LOYALTY_TIERS[0].minSpend, // 0 — luôn mở khóa, kể cả khách vãng lai
+    minSpend: LOYALTY_TIERS[0].minSpend, // 0 - luôn mở khóa, kể cả khách vãng lai
     model: "openai/gpt-oss-20b",
     label: "Yên Tử · Cơ bản",
     icon: "/icon-modal-ai/yen-tu.png",
@@ -23,7 +23,7 @@ const AI_MODEL_TIERS = [
     name: "Bạch Mã",
     emoji: "🌫️",
     altitude: 1450,
-    minSpend: LOYALTY_TIERS[1].minSpend, // 3.000.000đ — cùng ngưỡng hạng "Cố Đô Huế"
+    minSpend: LOYALTY_TIERS[1].minSpend, // 3.000.000đ - cùng ngưỡng hạng "Cố Đô Huế"
     model: "openai/gpt-oss-20b",
     label: "Bạch Mã · Nâng cao",
     icon: "/icon-modal-ai/bach-ma.png",
@@ -39,7 +39,7 @@ const AI_MODEL_TIERS = [
     name: "Bà Nà",
     emoji: "🌉",
     altitude: 1487,
-    minSpend: LOYALTY_TIERS[2].minSpend, // 7.000.000đ — cùng ngưỡng hạng "Cầu Rồng"
+    minSpend: LOYALTY_TIERS[2].minSpend, // 7.000.000đ - cùng ngưỡng hạng "Cầu Rồng"
     model: "qwen/qwen3.6-27b",
     label: "Bà Nà · Chuyên sâu",
     icon: "/icon-modal-ai/ba-na.png",
@@ -55,7 +55,7 @@ const AI_MODEL_TIERS = [
     name: "Tam Đảo",
     emoji: "🏔️",
     altitude: 1591,
-    minSpend: LOYALTY_TIERS[3].minSpend, // 15.000.000đ — cùng ngưỡng hạng "Tháp Bà Ponagar"
+    minSpend: LOYALTY_TIERS[3].minSpend, // 15.000.000đ - cùng ngưỡng hạng "Tháp Bà Ponagar"
     model: "qwen/qwen3.6-27b",
     label: "Tam Đảo · Cao cấp",
     icon: "/icon-modal-ai/tam-dao.png",
@@ -71,7 +71,7 @@ const AI_MODEL_TIERS = [
     name: "Fansipan",
     emoji: "🗻",
     altitude: 3143,
-    minSpend: LOYALTY_TIERS[4].minSpend, // 30.000.000đ — cùng ngưỡng hạng "Landmark 81"
+    minSpend: LOYALTY_TIERS[4].minSpend, // 30.000.000đ - cùng ngưỡng hạng "Landmark 81"
     model: "openai/gpt-oss-120b",
     label: "Fansipan · Đỉnh cao",
     icon: "/icon-modal-ai/fansipan.png",
@@ -99,7 +99,7 @@ const resolveMaxTierBySpend = (spend) => {
   return matched;
 };
 
-// Danh sách đầy đủ 5 hạng kèm trạng thái unlocked — dùng cho API /ai/models.
+// Danh sách đầy đủ 5 hạng kèm trạng thái unlocked - dùng cho API /ai/models.
 const buildModelTierList = (spend) => {
   const safeSpend = Number.isFinite(spend) && spend > 0 ? spend : 0;
   const maxUnlocked = resolveMaxTierBySpend(safeSpend);

@@ -4,7 +4,7 @@ const MEMBERS = [
   {
     id: "ceo",
     isCeo: true,
-    role: "CEO — Chief Executive Officer",
+    role: "CEO - Chief Executive Officer",
     name: "Nguyễn Đoàn Quốc Thái",
     code: "CS191282",
     letter: "T",
@@ -14,7 +14,7 @@ const MEMBERS = [
   },
   {
     id: "coo",
-    role: "COO — Operations",
+    role: "COO - Operations",
     name: "Nguyễn Việt Mỹ Hương",
     code: "CS191212",
     letter: "H",
@@ -24,7 +24,7 @@ const MEMBERS = [
   },
   {
     id: "cpo",
-    role: "CPO — Product",
+    role: "CPO - Product",
     name: "Lê Tuấn",
     code: "CE180824",
     letter: "T",
@@ -34,7 +34,7 @@ const MEMBERS = [
   },
   {
     id: "cmo",
-    role: "CMO — Marketing",
+    role: "CMO - Marketing",
     name: "Lữ Quốc Tài",
     code: "CS191616",
     letter: "T",
@@ -44,7 +44,7 @@ const MEMBERS = [
   },
   {
     id: "cdo",
-    role: "CDO — Design",
+    role: "CDO - Design",
     name: "Lê Anh Song Đường",
     code: "CE190621",
     letter: "D",
@@ -54,7 +54,7 @@ const MEMBERS = [
   },
   {
     id: "cto",
-    role: "CTO — Technology",
+    role: "CTO - Technology",
     name: "Nguyễn Phúc Khang",
     code: "CE181578",
     letter: "K",
@@ -108,7 +108,7 @@ export default function OrgChart() {
     return () => io.disconnect();
   }, []);
 
-  // Connector lines — computed from real DOM positions
+  // Connector lines - computed from real DOM positions
   const drawConnectors = useCallback(() => {
     const svg = svgRef.current;
     const chartEl = chartRef.current;

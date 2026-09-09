@@ -81,7 +81,7 @@ export default function QuizChoiceEditor({ config, onChange }) {
 
       {questions.length === 0 && (
         <div className="g-editor-empty">
-          Chưa có câu hỏi nào — bấm "Thêm câu hỏi" bên dưới
+          Chưa có câu hỏi nào - bấm "Thêm câu hỏi" bên dưới
         </div>
       )}
 

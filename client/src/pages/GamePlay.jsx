@@ -32,7 +32,7 @@ function scoreToStars(score) {
   return 1;
 }
 
-// Một dòng nhận xét ngắn kèm sao — cho màn kết quả có cảm giác "game thật"
+// Một dòng nhận xét ngắn kèm sao - cho màn kết quả có cảm giác "game thật"
 // thay vì chỉ hiện một con số trơ trọi.
 function scoreToGrade(score) {
   const s = Number(score) || 0;
@@ -47,7 +47,7 @@ const DIFFICULTY_META = {
   HARD: { label: "Khó", cls: "hard" },
 };
 
-// Ba chặng của một lượt chơi — dùng cho thanh tiến trình trong HUD.
+// Ba chặng của một lượt chơi - dùng cho thanh tiến trình trong HUD.
 const STEPS = [
   { key: "intro", label: "Giới thiệu" },
   { key: "playing", label: "Đang chơi" },
@@ -93,7 +93,7 @@ function getPlayStats(gameType, config) {
   }
 }
 
-// Thanh tiến trình gọn trong HUD — 1 track + nhãn bước hiện tại,
+// Thanh tiến trình gọn trong HUD - 1 track + nhãn bước hiện tại,
 // thay cho 3 chấm rời rạc trước đây.
 function GpHudProgress({ stage }) {
   const idx = Math.max(
@@ -115,7 +115,7 @@ function GpHudProgress({ stage }) {
 }
 
 // Huy chương xếp hạng (top 3) hiển thị dạng bục nhận giải thay vì
-// danh sách phẳng — trực quan hơn cho phần thi đấu/so tài.
+// danh sách phẳng - trực quan hơn cho phần thi đấu/so tài.
 function PodiumItem({ rank, entry }) {
   return (
     <div className={`gp-podium-item gp-podium-item--${rank}`}>
@@ -187,7 +187,7 @@ export default function GamePlay() {
       const lb = await gameService.getLeaderboard(code);
       setLeaderboard(lb.data?.data || []);
     } catch {
-      // Không chặn trải nghiệm nếu ghi điểm lỗi — người chơi vẫn thấy kết quả của mình
+      // Không chặn trải nghiệm nếu ghi điểm lỗi - người chơi vẫn thấy kết quả của mình
     }
   };
 
@@ -273,7 +273,7 @@ export default function GamePlay() {
       <div className="gp-shell">
         {stage === "intro" && (
           <div className="gp-intro">
-            {/* Dải hero rộng toàn chiều ngang — tiêu đề game nằm ngay trên ảnh minh hoạ */}
+            {/* Dải hero rộng toàn chiều ngang - tiêu đề game nằm ngay trên ảnh minh hoạ */}
             <div className="gp-intro-visual">
               {data.thumbnailUrl ? (
                 <img src={data.thumbnailUrl} alt="" />

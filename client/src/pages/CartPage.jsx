@@ -42,7 +42,7 @@ export default function Cart() {
     fetchCart();
   }, []);
 
-  // Hồ sơ hạng thành viên — quyết định % giảm giá & ngưỡng freeship tự động,
+  // Hồ sơ hạng thành viên - quyết định % giảm giá & ngưỡng freeship tự động,
   // dùng chung công thức computeTierDiscount với Checkout để 2 trang luôn khớp số.
   useEffect(() => {
     if (!isAuthenticated) {
@@ -78,7 +78,7 @@ export default function Cart() {
       return;
     }
 
-    // Update UI ngay, không chờ API — cho phép bấm liên tục
+    // Update UI ngay, không chờ API - cho phép bấm liên tục
     useCartStore.getState().setLocalQuantity(item.id, newQty);
 
     clearTimeout(qtyDebounceRef.current[item.id]);
@@ -111,7 +111,7 @@ export default function Cart() {
     return sum + (item.variant.salePrice ?? item.variant.price) * item.quantity;
   }, 0);
 
-  // Ưu đãi hạng thành viên — tự động áp dụng, KHÔNG cần nhập mã, cùng công thức
+  // Ưu đãi hạng thành viên - tự động áp dụng, KHÔNG cần nhập mã, cùng công thức
   // computeTierDiscount() dùng ở Checkout.jsx và server (loyaltyTier.js) để số tiền
   // hiển thị ở giỏ hàng luôn khớp với số tiền thực tế lúc đặt hàng.
   const tierDiscount = computeTierDiscount(loyaltyProfile?.tier, subtotal);
@@ -201,7 +201,7 @@ export default function Cart() {
             alignItems: "start",
           }}
         >
-          {/* LEFT — skeleton items */}
+          {/* LEFT - skeleton items */}
           <div>
             {/* Promo banner skeleton */}
             <span
@@ -235,7 +235,7 @@ export default function Cart() {
             ))}
           </div>
 
-          {/* RIGHT — skeleton summary */}
+          {/* RIGHT - skeleton summary */}
           <SkeletonCartSummary />
         </div>
       </div>
@@ -381,7 +381,7 @@ export default function Cart() {
       >
         {/* LEFT */}
         <div>
-          {/* Thanh công cụ giỏ hàng — tổng số sản phẩm + nút dọn giỏ hàng */}
+          {/* Thanh công cụ giỏ hàng - tổng số sản phẩm + nút dọn giỏ hàng */}
           <div
             style={{
               display: "flex",
@@ -507,7 +507,7 @@ export default function Cart() {
             ))}
           </div>
 
-          {/* ✅ Cart items — skeleton khi đang refetch, items thật khi xong */}
+          {/* ✅ Cart items - skeleton khi đang refetch, items thật khi xong */}
           {loading
             ? Array.from({ length: items.length || 3 }).map((_, i) => (
                 <SkeletonCartItem key={i} />
@@ -690,7 +690,7 @@ export default function Cart() {
               ))}
         </div>
 
-        {/* RIGHT — Order summary */}
+        {/* RIGHT - Order summary */}
         <div
           style={{
             position: "sticky",

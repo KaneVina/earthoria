@@ -63,9 +63,9 @@ const SECTIONS = [
       "Earthoria giao hàng đến toàn bộ 63 tỉnh thành trên lãnh thổ Việt Nam thông qua mạng lưới đơn vị vận chuyển đối tác. Tùy vào địa chỉ nhận hàng, đơn hàng sẽ được phân bổ cho đơn vị phù hợp nhất tại thời điểm đặt hàng.",
     ],
     list: [
-      "Nội thành TP. Hồ Chí Minh và Hà Nội — 2 đến 3 ngày làm việc",
-      "Các tỉnh thành đồng bằng và đô thị trung tâm — 3 đến 5 ngày làm việc",
-      "Vùng sâu, vùng xa, hải đảo — 5 đến 10 ngày làm việc",
+      "Nội thành TP. Hồ Chí Minh và Hà Nội - 2 đến 3 ngày làm việc",
+      "Các tỉnh thành đồng bằng và đô thị trung tâm - 3 đến 5 ngày làm việc",
+      "Vùng sâu, vùng xa, hải đảo - 5 đến 10 ngày làm việc",
       "Hiện tại Earthoria chưa hỗ trợ giao hàng ra nước ngoài",
     ],
   },
@@ -81,9 +81,9 @@ const SECTIONS = [
       text: "Thứ Bảy, Chủ Nhật và các ngày lễ quốc gia không được tính là ngày làm việc. Đơn đặt sau 17:00 trong ngày làm việc cuối tuần sẽ được xử lý vào buổi sáng ngày làm việc kế tiếp.",
     },
     list: [
-      "Đơn hàng thanh toán trực tuyến thành công trước 15:00 trong ngày làm việc — xử lý và bàn giao vận chuyển trong ngày",
-      "Đơn hàng COD (thanh toán khi nhận hàng) — xử lý trong vòng 1 ngày làm việc kể từ khi đặt hàng",
-      "Đơn hàng có sản phẩm pre-order hoặc tạm hết hàng — được thông báo qua email và điều chỉnh thời gian giao riêng",
+      "Đơn hàng thanh toán trực tuyến thành công trước 15:00 trong ngày làm việc - xử lý và bàn giao vận chuyển trong ngày",
+      "Đơn hàng COD (thanh toán khi nhận hàng) - xử lý trong vòng 1 ngày làm việc kể từ khi đặt hàng",
+      "Đơn hàng có sản phẩm pre-order hoặc tạm hết hàng - được thông báo qua email và điều chỉnh thời gian giao riêng",
     ],
   },
   {
@@ -94,7 +94,7 @@ const SECTIONS = [
       "Phí vận chuyển được tính tự động khi bạn điền địa chỉ nhận hàng tại bước thanh toán, dựa trên khối lượng kiện hàng thực tế và khoảng cách vận chuyển.",
     ],
     list: [
-      "Miễn phí vận chuyển cho đơn hàng từ 500.000đ trở lên — áp dụng toàn quốc, tự động trừ khi kết toán",
+      "Miễn phí vận chuyển cho đơn hàng từ 500.000đ trở lên - áp dụng toàn quốc, tự động trừ khi kết toán",
       "Đơn dưới 500.000đ: phí vận chuyển dao động từ 18.000đ đến 45.000đ tùy khu vực",
       "Giao hỏa tốc nội thành TP.HCM (trong 4 giờ): phụ phí 35.000đ, áp dụng cho đơn đặt trước 14:00 trong ngày làm việc",
       "Vùng sâu, hải đảo và địa bàn đặc biệt: phí vận chuyển sẽ được báo giá riêng qua email trong vòng 2 giờ làm việc sau khi đặt hàng",
@@ -108,9 +108,9 @@ const SECTIONS = [
       "Earthoria hợp tác với các đơn vị vận chuyển uy tín tại Việt Nam. Chúng tôi sẽ chủ động chọn đơn vị phù hợp nhất cho từng đơn hàng dựa trên địa chỉ giao và tình trạng dịch vụ tại thời điểm đặt hàng.",
     ],
     list: [
-      "Giao Hàng Nhanh (GHN) — ưu tiên cho khu vực nội thành và đơn hỏa tốc",
-      "Giao Hàng Tiết Kiệm (GHTK) — phủ rộng khu vực ngoại thành và các tỉnh",
-      "J&T Express — hỗ trợ đơn hàng khối lượng lớn (bộ sách từ 3 cuốn trở lên)",
+      "Giao Hàng Nhanh (GHN) - ưu tiên cho khu vực nội thành và đơn hỏa tốc",
+      "Giao Hàng Tiết Kiệm (GHTK) - phủ rộng khu vực ngoại thành và các tỉnh",
+      "J&T Express - hỗ trợ đơn hàng khối lượng lớn (bộ sách từ 3 cuốn trở lên)",
       "Bạn không thể chọn đơn vị vận chuyển cụ thể khi đặt hàng; hệ thống sẽ tự phân bổ tối ưu",
     ],
   },
@@ -132,7 +132,7 @@ const SECTIONS = [
     num: "06",
     title: "Tiêu Chuẩn Đóng Gói",
     paragraphs: [
-      "Sách Earthoria — đặc biệt là các tập có tích hợp chip NFC và mã QR kích hoạt AR — được đóng gói theo quy trình nhiều lớp để đảm bảo đến tay bạn trong trạng thái hoàn hảo.",
+      "Sách Earthoria - đặc biệt là các tập có tích hợp chip NFC và mã QR kích hoạt AR - được đóng gói theo quy trình nhiều lớp để đảm bảo đến tay bạn trong trạng thái hoàn hảo.",
     ],
     list: [
       "Mỗi cuốn sách được bọc màng co nhiệt trước khi cho vào hộp carton cứng có lót mút xốp bảo vệ gáy sách",
@@ -196,7 +196,7 @@ const FAQS = [
     a: "Earthoria có quy trình đóng gói đặc biệt cho sách tích hợp AR, bao gồm lớp màng bảo vệ chuyên dụng cho vùng mã QR và chip NFC. Nếu bạn nhận sách mà tính năng AR không hoạt động do lỗi từ vận chuyển, chúng tôi sẽ đổi sách mới miễn phí.",
   },
   {
-    q: "Tôi đặt nhiều sản phẩm — có được giao cùng 1 kiện không?",
+    q: "Tôi đặt nhiều sản phẩm - có được giao cùng 1 kiện không?",
     a: "Thông thường các sản phẩm trong cùng một đơn hàng sẽ được giao chung một kiện. Nếu một sản phẩm trong đơn tạm hết hàng, Earthoria sẽ hỏi ý kiến bạn về việc chờ đủ hàng giao 1 lần hay giao riêng các sản phẩm có sẵn trước.",
   },
   {
@@ -745,11 +745,11 @@ export default function ShippingPolicy() {
             <span className="legal-hero-eyebrow-line" />
           </div>
           <h1 className="legal-hero-title">
-            Chính Sách —<br />
+            Chính Sách -<br />
             <em>Vận Chuyển</em>
           </h1>
           <p className="legal-hero-sub">
-            Từ kho đến tay bạn — mọi thứ cần biết về thời gian giao hàng, phí
+            Từ kho đến tay bạn - mọi thứ cần biết về thời gian giao hàng, phí
             vận chuyển và cam kết bảo vệ kiện hàng của Earthoria.
           </p>
           <div className="legal-hero-meta">

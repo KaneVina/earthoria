@@ -26,7 +26,7 @@ export default function RadialQuickNav({
       const midAngle = (startAngle + endAngle) / 2;
       return {
         ...section,
-        midAngle, // 0° = due east, -90° = top, 90° = bottom — same angle
+        midAngle, // 0° = due east, -90° = top, 90° = bottom - same angle
         clipPath: buildWedgeClipPath(startAngle, endAngle),
         content: polarPoint(midAngle, 29), // icon + label anchor, shown when expanded
         dot: polarPoint(midAngle, 41), // small rim indicator, shown when idle/hover
@@ -163,7 +163,7 @@ export default function RadialQuickNav({
           className="rqn-spinner"
           style={{ transform: `rotate(${dialRotation}deg)` }}
         >
-          {/* Clickable wedges — clipped to their pie-slice shape. Kept free
+          {/* Clickable wedges - clipped to their pie-slice shape. Kept free
               of any content that must render past radius 50 so nothing
               crops. */}
           {slices.map((s, i) => {
@@ -184,7 +184,7 @@ export default function RadialQuickNav({
             );
           })}
 
-          {/* Visual overlay — unclipped, so icons/labels/dots always render
+          {/* Visual overlay - unclipped, so icons/labels/dots always render
               fully regardless of anchor radius. Purely decorative (clicks
               pass through to the wedge buttons underneath). */}
           <div className="rqn-overlay" aria-hidden="true">
@@ -202,7 +202,7 @@ export default function RadialQuickNav({
                     style={{ left: `${s.content.x}%`, top: `${s.content.y}%` }}
                   >
                     {/* This is the piece that actually rotates to follow
-                        the wedge's own radial direction — icon and label
+                        the wedge's own radial direction - icon and label
                         move as one rigid unit, so there's nothing to
                         counter-rotate and nothing can overlap. */}
                     <span
@@ -219,7 +219,7 @@ export default function RadialQuickNav({
           </div>
         </div>
 
-        {/* Per-wedge hover flyout — the section's name pops out to the side
+        {/* Per-wedge hover flyout - the section's name pops out to the side
             the instant you hover that wedge, even while still collapsed.
             Lives outside the spinner: the dial only spins while expanded,
             and it's reset to 0 on close, so this stays simple. */}

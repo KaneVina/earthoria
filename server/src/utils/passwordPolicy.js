@@ -25,7 +25,7 @@ function validatePasswordPolicy(password) {
   return null;
 }
 
-// Khoảng cách chỉnh sửa (Levenshtein) giữa 2 chuỗi — số thao tác thêm/xoá/sửa
+// Khoảng cách chỉnh sửa (Levenshtein) giữa 2 chuỗi - số thao tác thêm/xoá/sửa
 // ký tự tối thiểu để biến chuỗi a thành chuỗi b.
 function levenshteinDistance(a, b) {
   const m = a.length;

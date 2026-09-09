@@ -1,4 +1,4 @@
-// ProductCreate.jsx — Trang riêng để thêm sách
+// ProductCreate.jsx - Trang riêng để thêm sách
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -36,7 +36,7 @@ export default function ProductCreate() {
     variants: [emptyVariant("PHYSICAL")],
   }));
 
-  // Ảnh chỉ tồn tại dưới dạng File cục bộ cho tới khi sách được tạo xong —
+  // Ảnh chỉ tồn tại dưới dạng File cục bộ cho tới khi sách được tạo xong -
   // backend yêu cầu book.id đã tồn tại mới nhận upload (POST /admin/products/:id/images).
   const [imageFiles, setImageFiles] = useState([]); // [{ file, previewUrl }]
 
@@ -56,7 +56,7 @@ export default function ProductCreate() {
     e.target.value = "";
     const room = MAX_IMAGES - imageFiles.length;
     if (picked.length > room) {
-      toast.error(`Chỉ còn ${room} chỗ trống — tối đa ${MAX_IMAGES} ảnh`);
+      toast.error(`Chỉ còn ${room} chỗ trống - tối đa ${MAX_IMAGES} ảnh`);
     }
     const accepted = picked.slice(0, room);
     if (!accepted.length) return;
@@ -91,7 +91,7 @@ export default function ProductCreate() {
         } catch (err) {
           toast.error(
             err.response?.data?.message ||
-              "Sách đã tạo nhưng tải ảnh thất bại — vào trang chi tiết để thử lại",
+              "Sách đã tạo nhưng tải ảnh thất bại - vào trang chi tiết để thử lại",
           );
         }
       }
@@ -220,7 +220,7 @@ export default function ProductCreate() {
               </div>
             </div>
 
-            {/* CÁC FIELD CÒN LẠI — không đổi gì bên trong */}
+            {/* CÁC FIELD CÒN LẠI - không đổi gì bên trong */}
             <div className="a-chart-card">
               <ProductFormFields
                 form={form}
@@ -230,7 +230,7 @@ export default function ProductCreate() {
             </div>
           </div>
 
-          {/* CỘT PHẢI — xem trước + hành động */}
+          {/* CỘT PHẢI - xem trước + hành động */}
           <aside className="a-pf-side">
             <div className="a-chart-card">
               <p className="a-chart-title" style={{ marginBottom: 14 }}>

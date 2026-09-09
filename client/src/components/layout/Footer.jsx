@@ -227,7 +227,7 @@ export default function Footer() {
                 marginTop: "4px",
               }}
             >
-              Trải nghiệm AR ngay trên điện thoại — quét sách, khám phá thế giới
+              Trải nghiệm AR ngay trên điện thoại - quét sách, khám phá thế giới
               sống động.
             </p>
             <div
@@ -433,7 +433,7 @@ export default function Footer() {
         </div>
 
         <div className="footer-bottom">
-          {/* Copyright — đồng bộ với footer-links a */}
+          {/* Copyright - đồng bộ với footer-links a */}
           <span
             style={{
               fontFamily: "'Be Vietnam Pro', sans-serif",
@@ -547,7 +547,7 @@ export default function Footer() {
         }
 
         /* ══════════════════════════════════════════════════════════
-           NÂNG CẤP LUXURY — chỉ THÊM MỚI, không xoá / không thay thế
+           NÂNG CẤP LUXURY - chỉ THÊM MỚI, không xoá / không thay thế
            bất kỳ rule nào ở trên. Toàn bộ theo tông xanh var(--gold).
            ══════════════════════════════════════════════════════════ */
 
@@ -670,7 +670,7 @@ export default function Footer() {
           filter: drop-shadow(0 8px 16px rgba(74, 158, 63, 0.22));
         }
 
-        /* Viền phân cách mảnh + chấm sáng giữa các cột — chi tiết luxury mới, không đụng layout gốc */
+        /* Viền phân cách mảnh + chấm sáng giữa các cột - chi tiết luxury mới, không đụng layout gốc */
         .footer-top > div:not(:last-child) {
           position: relative;
         }

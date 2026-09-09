@@ -126,7 +126,7 @@ function LostCompass() {
         Đ
       </text>
 
-      {/* drifting needle — rotates around its own center (fill-box),
+      {/* drifting needle - rotates around its own center (fill-box),
           so it stays pinned to the pivot dot regardless of coordinates */}
       <motion.g
         style={{ transformBox: "fill-box", transformOrigin: "center" }}
@@ -341,7 +341,7 @@ export default function NotFound() {
         }}
       />
 
-      {/* primary actions — cùng chiều cao tuyệt đối, không dùng class global lệch padding */}
+      {/* primary actions - cùng chiều cao tuyệt đối, không dùng class global lệch padding */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}

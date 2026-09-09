@@ -6,7 +6,7 @@ import "./assets/css/EiraChatboxExpand.css";
  *
  * Lưu ý: đây chỉ là phóng to kích thước POPUP (#eira-win), không chuyển
  * sang chế độ toàn màn hình. Toàn bộ logic bật/tắt nằm ở component cha
- * (EiraChatbox.jsx) qua 2 props dưới đây — component này chỉ lo phần hiển thị.
+ * (EiraChatbox.jsx) qua 2 props dưới đây - component này chỉ lo phần hiển thị.
  *
  * @param {boolean} expanded - true nếu popup đang ở trạng thái phóng to
  * @param {() => void} onToggle - callback bấm nút, cha tự đảo state

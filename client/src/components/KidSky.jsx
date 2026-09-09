@@ -2,8 +2,8 @@ import { useEffect, useMemo, useState, useId } from "react";
 import { Moon, Sunrise, Sunset, Star, Sparkles } from "lucide-react";
 
 // Bầu trời sống động theo giờ thực
-const SUNRISE_HOUR = 6; // 06:00 — mặt trời mọc
-const SUNSET_HOUR = 18; // 18:00 — mặt trời lặn
+const SUNRISE_HOUR = 6; // 06:00 - mặt trời mọc
+const SUNSET_HOUR = 18; // 18:00 - mặt trời lặn
 const NIGHT_SKY_STOPS = [
   "#050B1F",
   "#0B1B3A",
@@ -104,12 +104,12 @@ export function useSkyState() {
   return useMemo(() => computeSkyState(date), [date]);
 }
 
-// Cầu vồng thỉnh thoảng bừng lên phía sau mặt trời gần chân trời — chỉ
+// Cầu vồng thỉnh thoảng bừng lên phía sau mặt trời gần chân trời - chỉ
 // hoạt động khi trời đang là ban ngày rõ rệt (mặt trời lên cao đủ),
 // tự tắt hẳn về đêm. Cứ mỗi 1–5 phút "thử" một lần, mỗi lần thử có 25%
 // khả năng thực sự bừng lên; nếu hiện thì giữ 10–25 giây rồi mờ dần
 // biến mất, sau đó lại chờ ngẫu nhiên cho lần thử tiếp theo. Cầu vồng
-// luôn hoạt động bất kể thiết bị có bật "Giảm chuyển động" hay không —
+// luôn hoạt động bất kể thiết bị có bật "Giảm chuyển động" hay không -
 // không có nhánh reduced-motion nào tắt hiệu ứng này.
 function useOccasionalRainbow(active) {
   const [visible, setVisible] = useState(false);

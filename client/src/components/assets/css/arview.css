@@ -440,7 +440,7 @@
 .ar-panel > * {
   pointer-events: auto;
   /* Nhiều phần tử con vừa dùng width:100% (từ luật bên dưới) vừa có
-     padding riêng (VD .ar-specs, .ar-panel__desc, .ar-more-content) —
+     padding riêng (VD .ar-specs, .ar-panel__desc, .ar-more-content) -
      nếu thiếu border-box, padding sẽ bị CỘNG THÊM ra ngoài width:100%
      thay vì ăn vào bên trong, khiến phần tử tràn nhẹ ra ngoài panel.
      Đặt border-box chung ở đây để cả nhánh con không bao giờ dính lỗi
@@ -464,7 +464,7 @@
 }
 
 /* Chế độ immersive: panel thu gọn lại, nhường chỗ cho 2 nút tròn nhỏ
-   (xem .ar-mini-btn) — vẫn ở trong layout flow nhưng vô hình/không
+   (xem .ar-mini-btn) - vẫn ở trong layout flow nhưng vô hình/không
    bắt sự kiện, để animate quay lại mượt khi người dùng bấm "thu nhỏ". */
 .ar-panel.is-collapsed {
   opacity: 0;
@@ -574,7 +574,7 @@
 }
 
 /* Gạch chân xanh mảnh (nhạt sang đậm), "vẽ" dần từ trái sang sau khi tên
-   hiện ra — điểm nhấn tinh tế, chỉ một lần, không lặp lại để tránh rối
+   hiện ra - điểm nhấn tinh tế, chỉ một lần, không lặp lại để tránh rối
    mắt. Chỉ dùng 2 tông xanh sẵn có của thương hiệu. */
 .ar-panel__name::after {
   content: "";
@@ -731,7 +731,7 @@
 }
 
 /* Vệt sáng mảnh quét ngang qua khối specs đúng lúc panel build-in,
-   gợi nhắc hiệu ứng scan ban đầu — chỉ chạy 1 lần rồi biến mất hẳn. */
+   gợi nhắc hiệu ứng scan ban đầu - chỉ chạy 1 lần rồi biến mất hẳn. */
 .ar-specs::before {
   content: "";
   position: absolute;
@@ -773,7 +773,7 @@
   }
 }
 
-/* 4 nét góc mảnh — gợi nhắc khung 4 góc của hiệu ứng quét AR, như dấu
+/* 4 nét góc mảnh - gợi nhắc khung 4 góc của hiệu ứng quét AR, như dấu
    xác nhận: model này đã dựng xong và giờ là một tấm thẻ thông tin đáng
    tin cậy. Dùng đúng tông viền xanh sẵn có, không thêm màu mới. */
 .ar-specs::after {
@@ -901,7 +901,7 @@
   white-space: nowrap;
 }
 
-/* Chấm dẫn mảnh giữa nhãn và giá trị — như thực đơn nhà hàng cao cấp,
+/* Chấm dẫn mảnh giữa nhãn và giá trị - như thực đơn nhà hàng cao cấp,
    giúp mắt "kéo" thẳng từ label sang value dù độ dài chữ khác nhau. */
 .ar-specs__leader {
   flex: 1 1 auto;
@@ -945,7 +945,7 @@
   opacity: 0.75;
 }
 
-/* Nút "Xem thêm thông tin" — mở modal chi tiết. `.ar-panel--right > *`
+/* Nút "Xem thêm thông tin" - mở modal chi tiết. `.ar-panel--right > *`
    ép width:100% cho mọi con trực tiếp, nên phải tự set lại width:auto
    để nút ôm sát nội dung thay vì kéo dài hết chiều ngang panel. */
 .ar-more-btn {
@@ -1074,7 +1074,7 @@
   max-width: 420px;
 }
 
-/* Huy hiệu tròn chứa icon (khoá / la bàn) phía trên nhãn — cùng ngôn ngữ
+/* Huy hiệu tròn chứa icon (khoá / la bàn) phía trên nhãn - cùng ngôn ngữ
    kính mờ + viền xanh mảnh với phần còn lại của trải nghiệm, để 2 màn
    "không có quyền" / "không tìm thấy" vẫn sang trọng chứ không trơ trọi. */
 .ar-view__badge {
@@ -1177,7 +1177,7 @@
   color: #0a0e0c;
 }
 
-/* ─ NÚT PHÓNG TO — nổi giữa đáy màn hình ở stage "preview" ─ */
+/* ─ NÚT PHÓNG TO - nổi giữa đáy màn hình ở stage "preview" ─ */
 .ar-expand-btn {
   position: absolute;
   left: 50%;
@@ -1211,7 +1211,7 @@
     transform 0.25s ease;
 }
 
-/* Vệt sáng xanh lướt qua khi hover — ánh phản chiếu nhẹ, chỉ chạy một
+/* Vệt sáng xanh lướt qua khi hover - ánh phản chiếu nhẹ, chỉ chạy một
    lần mỗi lần hover, không lặp lại liên tục. */
 .ar-expand-btn::before {
   content: "";
@@ -1267,7 +1267,7 @@
   }
 }
 
-/* ─ NÚT TRÒN NHỎ — thay panel khi ở stage "immersive" ─
+/* ─ NÚT TRÒN NHỎ - thay panel khi ở stage "immersive" ─
    Đặt cố định 2 bên, dọc giữa màn hình; bấm để mở rộng lại panel. */
 .ar-mini-btn {
   position: absolute;
@@ -1343,7 +1343,7 @@
 }
 
 /* ═══════════════════════════════════════════
-   PANEL PHẢI "KÉO DÀI" — bấm "Xem thêm thông tin"
+   PANEL PHẢI "KÉO DÀI" - bấm "Xem thêm thông tin"
    không mở modal, mà chính panel phải tự đổi width,
    kéo dài sang trái đè lên vùng model, đổi nội dung
    từ bản rút gọn sang bản đầy đủ (bản đồ thế giới thật
@@ -1372,7 +1372,7 @@
   }
 }
 
-/* Ẩn phần hướng dẫn kéo/zoom ở panel trái khi panel phải đang kéo dài —
+/* Ẩn phần hướng dẫn kéo/zoom ở panel trái khi panel phải đang kéo dài -
    tên sách + tên con vật vẫn luôn hiển thị bình thường. */
 .ar-panel--left.is-info-expanded .ar-hint {
   opacity: 0;
@@ -1387,7 +1387,7 @@
 .ar-more-map__chart:active {
   cursor: grabbing;
 }
-/* Nút thu gọn — ghim cố định góc trên phải của panel (không cuộn theo
+/* Nút thu gọn - ghim cố định góc trên phải của panel (không cuộn theo
    nội dung), cùng ngôn ngữ kính mờ tròn với các nút khác trong app. */
 .ar-more-close {
   position: absolute;
@@ -1429,7 +1429,7 @@
   }
 }
 
-/* Vùng nội dung đầy đủ — vùng CUỘN riêng, tách khỏi nút thu gọn (đứng
+/* Vùng nội dung đầy đủ - vùng CUỘN riêng, tách khỏi nút thu gọn (đứng
    ngoài) để nút luôn cố định kể cả khi cuộn nội dung dài. */
 .ar-more-content {
   box-sizing: border-box;
@@ -1468,7 +1468,7 @@
   margin-top: 22px;
 }
 
-/* ─ Bản đồ vùng sinh sống — bản đồ thế giới thật render bằng ECharts,
+/* ─ Bản đồ vùng sinh sống - bản đồ thế giới thật render bằng ECharts,
    .ar-more-map chỉ đóng vai trò khung/khay chứa (viền, nền, bo góc);
    phần vẽ bản đồ + tô màu theo mật độ nằm trong option của ECharts,
    không cần class .is-active / pin thủ công như bản lưới ô cũ nữa. ─ */
@@ -1480,7 +1480,7 @@
   border-radius: 14px;
   overflow: hidden;
   /* Quầng sáng rất nhẹ phía sau bản đồ, cùng tông với glow nền toàn
-     trang — tạo chiều sâu, tránh khối bản đồ trông "dán phẳng" lên panel. */
+     trang - tạo chiều sâu, tránh khối bản đồ trông "dán phẳng" lên panel. */
   box-shadow: 0 0 0 1px rgba(111, 224, 106, 0.03) inset;
 }
 .ar-more-map--loading {
@@ -1516,7 +1516,7 @@
   }
 }
 
-/* ─ Bảng thông số dạng lưới 2 cột — bản đầy đủ, to hơn bản rút gọn ─ */
+/* ─ Bảng thông số dạng lưới 2 cột - bản đầy đủ, to hơn bản rút gọn ─ */
 .ar-more-specs {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1544,7 +1544,7 @@
   color: var(--av-ivory);
 }
 
-/* ─ Mô tả đầy đủ — kiểu chữ giống .ar-panel__desc nhưng tách class
+/* ─ Mô tả đầy đủ - kiểu chữ giống .ar-panel__desc nhưng tách class
    riêng để KHÔNG bị dính luật line-clamp 3 dòng áp cho panel rút gọn
    trên mobile (đây chính là bản đầy đủ, không giới hạn dòng). ─ */
 .ar-more-desc {
@@ -1599,7 +1599,7 @@
 }
 
 /* ═══════════════════════════════════════════
-   RESPONSIVE — tablet
+   RESPONSIVE - tablet
    ═══════════════════════════════════════════ */
 @media (max-width: 1024px) {
   .ar-panel {
@@ -1609,7 +1609,7 @@
 }
 
 /* ═══════════════════════════════════════════
-   RESPONSIVE — mobile: xếp dọc, panel co lại
+   RESPONSIVE - mobile: xếp dọc, panel co lại
    thành dải overlay trên/dưới thay vì 2 cột
    ═══════════════════════════════════════════ */
 @media (max-width: 720px) {
@@ -1677,7 +1677,7 @@
     overflow: hidden;
   }
 
-  /* Trên mobile không có khái niệm "trái/phải" để kéo dài sang ngang —
+  /* Trên mobile không có khái niệm "trái/phải" để kéo dài sang ngang -
      panel phải kéo dài LÊN TRÊN thay vì sang trái, chừa khoảng trống cố
      định ở đỉnh màn hình đúng bằng chỗ tên sách + tên con vật (panel
      trái) đang chiếm, để 2 thông tin đó luôn còn thấy được. */

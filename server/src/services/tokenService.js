@@ -80,7 +80,7 @@ async function claimAndRotate(record, meta) {
     });
 
     if (claim.count === 0) {
-      // Request khác đã claim record này trước — huỷ token vừa tạo, coi như thua cuộc đua.
+      // Request khác đã claim record này trước - huỷ token vừa tạo, coi như thua cuộc đua.
       await tx.refreshToken.delete({ where: { id: newRecord.id } });
       return null;
     }
@@ -106,7 +106,7 @@ async function verifyAndRotate(rawToken, meta = {}) {
     const result = await claimAndRotate(record, meta);
     if (result) return result;
 
-    // Thua cuộc đua ngay tại claim đầu tiên — đọc lại record (giờ đã bị revoke bởi request thắng) rồi rơi xuống nhánh xử lý "đã revoked" bên dưới.
+    // Thua cuộc đua ngay tại claim đầu tiên - đọc lại record (giờ đã bị revoke bởi request thắng) rồi rơi xuống nhánh xử lý "đã revoked" bên dưới.
     record = await prisma.refreshToken.findUnique({ where: { id: record.id } });
   }
 

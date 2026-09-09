@@ -29,7 +29,7 @@ const buildTierSummary = (spend) => {
   };
 };
 
-// Gửi email không được phép làm hỏng/làm chậm thao tác admin — luôn tự bắt lỗi, chỉ log lại.
+// Gửi email không được phép làm hỏng/làm chậm thao tác admin - luôn tự bắt lỗi, chỉ log lại.
 const sendOrderEmailSafe = (sendFn, payload) => {
   sendFn(payload).catch((err) => {
     console.error(
@@ -221,7 +221,7 @@ exports.getDashboard = async (req, res) => {
       color: CHART_COLORS[g.status] ?? "#999",
     }));
 
-    // Sách bán chạy + doanh thu theo danh mục — cùng dùng 1 query OrderItem
+    // Sách bán chạy + doanh thu theo danh mục - cùng dùng 1 query OrderItem
     // của tháng này (đã sửa: OrderItem không còn bookId trực tiếp, phải lấy
     // qua variant.bookId / variant.book.categoryId)
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -367,7 +367,7 @@ exports.getDashboard = async (req, res) => {
             : o.status === "CANCELLED"
               ? "red"
               : "blue",
-        text: `Đơn hàng #${getOrderCode(o)} — ${STATUS_LABEL[o.status] ?? o.status}`,
+        text: `Đơn hàng #${getOrderCode(o)} - ${STATUS_LABEL[o.status] ?? o.status}`,
       })),
       ...latestUsers.map((u) => ({
         time: u.createdAt,
@@ -409,7 +409,7 @@ exports.getDashboard = async (req, res) => {
   }
 };
 
-/* PRODUCTS (books) — 1 Book có thể có 1-2 BookVariant(PHYSICAL / DIGITAL), mỗi variant có giá/tồn kho/mã riêng. */
+/* PRODUCTS (books) - 1 Book có thể có 1-2 BookVariant(PHYSICAL / DIGITAL), mỗi variant có giá/tồn kho/mã riêng. */
 async function resolveAuthorIds(authorsInput) {
   if (!authorsInput) return [];
   const names = Array.isArray(authorsInput)
@@ -868,7 +868,7 @@ exports.draftBookAiContent = async (req, res) => {
       return res.status(400).json({
         success: false,
         message:
-          "Sách này chưa có sách điện tử (ebook) nào để AI đọc nội dung — hãy tạo ebook trước, hoặc tự nhập tay các trường bên dưới.",
+          "Sách này chưa có sách điện tử (ebook) nào để AI đọc nội dung - hãy tạo ebook trước, hoặc tự nhập tay các trường bên dưới.",
       });
     }
 
@@ -891,14 +891,14 @@ exports.draftBookAiContent = async (req, res) => {
       return res.status(400).json({
         success: false,
         message:
-          "Các trang ebook chưa có nội dung chữ nào để AI đọc — hãy tự nhập tay bên dưới.",
+          "Các trang ebook chưa có nội dung chữ nào để AI đọc - hãy tự nhập tay bên dưới.",
       });
     }
 
     const fullText = pageTexts.join("\n").slice(0, 6000);
 
     const system =
-      "Bạn là biên tập viên nội bộ của Earthoria — thương hiệu sách giáo dục tương tác cho trẻ 5–12 tuổi. Nhiệm vụ: đọc nội dung thô trích từ ebook rồi soạn NHÁP dữ liệu nội bộ để đội tư vấn dùng, KHÔNG phải để đăng nguyên văn công khai. Trả lời bằng tiếng Việt, CHỈ trả về đúng 1 JSON object theo schema được yêu cầu, không thêm chữ nào khác.";
+      "Bạn là biên tập viên nội bộ của Earthoria - thương hiệu sách giáo dục tương tác cho trẻ 5–12 tuổi. Nhiệm vụ: đọc nội dung thô trích từ ebook rồi soạn NHÁP dữ liệu nội bộ để đội tư vấn dùng, KHÔNG phải để đăng nguyên văn công khai. Trả lời bằng tiếng Việt, CHỈ trả về đúng 1 JSON object theo schema được yêu cầu, không thêm chữ nào khác.";
 
     const user = `Tên sách: "${book.title}"
 Mô tả ngắn hiện có: ${book.description || "(chưa có)"}
@@ -910,7 +910,7 @@ ${fullText}
 
 Trả về JSON đúng schema:
 {
-  "synopsis": "Tóm tắt cốt truyện bằng 3-4 câu, giọng thân thiện, diễn đạt lại bằng lời văn riêng — KHÔNG chép nguyên câu chữ trong sách, KHÔNG tiết lộ đoạn kết/twist quan trọng",
+  "synopsis": "Tóm tắt cốt truyện bằng 3-4 câu, giọng thân thiện, diễn đạt lại bằng lời văn riêng - KHÔNG chép nguyên câu chữ trong sách, KHÔNG tiết lộ đoạn kết/twist quan trọng",
   "themes": ["3-5 chủ đề/bài học chính, mỗi mục vài từ, ví dụ: Lòng dũng cảm"],
   "suitableFor": "1-2 câu gợi ý kiểu bé hoặc hoàn cảnh phù hợp đọc cuốn này"
 }`;
@@ -938,7 +938,7 @@ Trả về JSON đúng schema:
           typeof draft.suitableFor === "string" ? draft.suitableFor.trim() : "",
       },
       message:
-        "Đây là bản nháp do AI soạn từ nội dung ebook — vui lòng đọc lại và chỉnh sửa trước khi lưu.",
+        "Đây là bản nháp do AI soạn từ nội dung ebook - vui lòng đọc lại và chỉnh sửa trước khi lưu.",
     });
   } catch (err) {
     if (err.code === "CONFIG_MISSING") {
@@ -955,7 +955,7 @@ Trả về JSON đúng schema:
   }
 };
 
-/* DELETE /admin/products/:id/variants/:variantId — xóa 1 định dạng bán,
+/* DELETE /admin/products/:id/variants/:variantId - xóa 1 định dạng bán,
    không xóa cả sách. Không cho xóa nếu đó là định dạng cuối cùng còn lại. */
 exports.deleteProductVariant = async (req, res) => {
   try {
@@ -1195,7 +1195,7 @@ exports.deleteCategory = async (req, res) => {
 };
 
 /* ORDERS*/
-// Payment status hiển thị ở FE dùng PENDING, nhưng DB lưu UNPAID (xem mapPaymentStatus) —
+// Payment status hiển thị ở FE dùng PENDING, nhưng DB lưu UNPAID (xem mapPaymentStatus) -
 // khi filter theo paymentStatus phải đổi ngược PENDING -> UNPAID trước khi query.
 const reverseMapPaymentStatus = (status) =>
   status === "PENDING" ? "UNPAID" : status;
@@ -1229,7 +1229,7 @@ exports.getOrders = async (req, res) => {
         : null;
     const skip = (page - 1) * limit;
 
-    // Mã đơn KHÔNG phải cột lưu sẵn — sinh động từ createdAt + hash(id) (xem getOrderCode
+    // Mã đơn KHÔNG phải cột lưu sẵn - sinh động từ createdAt + hash(id) (xem getOrderCode
     // trong orderController.js). Nên khi search đúng định dạng ODE-mmddyyXXX, phải:
     // 1) đọc ra mm/dd/yy để khoanh vùng đúng NGÀY tạo đơn, 2) lấy các đơn trong ngày đó,
     // 3) tính lại getOrderCode() cho từng đơn rồi so khớp chính xác trong JS.
@@ -1265,7 +1265,7 @@ exports.getOrders = async (req, res) => {
     }
 
     // Điều kiện search + filter (mã đơn/tên/email, phương thức TT, trạng thái TT, khoảng ngày,
-    // khoảng tổng tiền) — tách riêng khỏi filter status vì statusCounts (đếm cho từng pill)
+    // khoảng tổng tiền) - tách riêng khỏi filter status vì statusCounts (đếm cho từng pill)
     // cần áp các điều kiện này nhưng KHÔNG áp status hiện tại.
     const searchConditions = [];
     if (orderIdsFromCode !== null) {
@@ -1355,7 +1355,7 @@ exports.getOrders = async (req, res) => {
         },
       }),
       prisma.order.count({ where }),
-      // Đếm theo từng trạng thái CHỈ áp search/filter, không áp status hiện tại — để pill nào
+      // Đếm theo từng trạng thái CHỈ áp search/filter, không áp status hiện tại - để pill nào
       // cũng hiện đúng số lượng khớp với các điều kiện đang lọc.
       prisma.order.groupBy({
         by: ["status"],
@@ -1950,7 +1950,7 @@ exports.getUserDetail = async (req, res) => {
       success: true,
       data: {
         ...user,
-        // Mật khẩu được băm một chiều (bcrypt) — không thể và không nên hiển thị
+        // Mật khẩu được băm một chiều (bcrypt) - không thể và không nên hiển thị
         // dưới dạng văn bản gốc. Chỉ trả về trạng thái để FE hiển thị.
         passwordProtected: true,
         totalSpent: totalSpent._sum.total ?? 0,
@@ -2390,7 +2390,7 @@ exports.searchProductsQuick = async (req, res) => {
     const q = req.query.q?.trim() ?? "";
     const code = req.query.code?.trim() ?? "";
 
-    // Tìm chính xác theo mã sách — mã giờ thuộc BookVariant, không thuộc Book
+    // Tìm chính xác theo mã sách - mã giờ thuộc BookVariant, không thuộc Book
     if (code) {
       const variant = await prisma.bookVariant.findUnique({
         where: { productCode: code },
@@ -2562,7 +2562,7 @@ exports.toggleArCode = async (req, res) => {
   }
 };
 
-/*  AR CODES — GỘP THEO SÁCH */
+/*  AR CODES - GỘP THEO SÁCH */
 exports.getArCodesGroupedAll = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);

@@ -33,7 +33,7 @@ const getPinStatus = async (req, res) => {
   }
 };
 
-// POST /api/v1/parent-pin/set — chỉ dùng khi CHƯA có PIN (lần đầu thiết lập)
+// POST /api/v1/parent-pin/set - chỉ dùng khi CHƯA có PIN (lần đầu thiết lập)
 const setPin = async (req, res) => {
   try {
     const { pin } = req.body;
@@ -71,7 +71,7 @@ const setPin = async (req, res) => {
   }
 };
 
-// POST /api/v1/parent-pin/verify — dùng để xác thực trước hành động nhạy cảm
+// POST /api/v1/parent-pin/verify - dùng để xác thực trước hành động nhạy cảm
 const verifyPin = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
@@ -93,7 +93,7 @@ const verifyPin = async (req, res) => {
   }
 };
 
-// POST /api/v1/parent-pin/change — { oldPin, newPin }
+// POST /api/v1/parent-pin/change - { oldPin, newPin }
 const changePin = async (req, res) => {
   try {
     const { oldPin, newPin } = req.body;
@@ -135,7 +135,7 @@ const changePin = async (req, res) => {
   }
 };
 
-// POST /api/v1/parent-pin/forgot/send-otp — gửi OTP về email của chính tài
+// POST /api/v1/parent-pin/forgot/send-otp - gửi OTP về email của chính tài
 // khoản phụ huynh đang đăng nhập (không cần nhập lại email, tránh gửi OTP
 // sang email người khác).
 const sendForgotPinOtp = async (req, res) => {
@@ -176,7 +176,7 @@ const sendForgotPinOtp = async (req, res) => {
   }
 };
 
-// POST /api/v1/parent-pin/forgot/reset — { otp, newPin }
+// POST /api/v1/parent-pin/forgot/reset - { otp, newPin }
 const resetPinWithOtp = async (req, res) => {
   try {
     const { otp, newPin } = req.body;

@@ -51,7 +51,7 @@ export default function WordSearchEditor({ config, onChange }) {
     <div className="g-editor">
       <div className="g-editor-hint">
         Nhập từng từ khoá rồi bấm Enter để thêm. Bảng sẽ đặt các từ theo hàng
-        ngang / dọc / chéo và tự lấp đầy chữ ngẫu nhiên xung quanh — mỗi lượt
+        ngang / dọc / chéo và tự lấp đầy chữ ngẫu nhiên xung quanh - mỗi lượt
         chơi thật sẽ sinh ra 1 bảng mới (khác với bảng xem trước bên dưới) để
         đỡ nhàm khi chơi lại. Mỗi từ tối đa 14 chữ cái và không được trùng nhau.
       </div>
@@ -152,7 +152,7 @@ export default function WordSearchEditor({ config, onChange }) {
           </div>
           {preview.placements.length < words.length && (
             <div className="g-editor-warn">
-              Bảng hiện chưa đủ chỗ cho tất cả các từ ({preview.placements.length}/{words.length}) — thử tăng
+              Bảng hiện chưa đủ chỗ cho tất cả các từ ({preview.placements.length}/{words.length}) - thử tăng
               số hàng/cột hoặc bớt bớt vài từ dài.
             </div>
           )}

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 const PARTICLE_COUNT = 8; // số hạt khi THÊM vào yêu thích
 const UNLIKE_PARTICLE_COUNT = 5; // số hạt khi BỎ yêu thích
-const BURST_DURATION = 620; // ms — khớp với animation CSS wl-particle-fly / wl-particle-poof / wl-pop bên dưới
+const BURST_DURATION = 620; // ms - khớp với animation CSS wl-particle-fly / wl-particle-poof / wl-pop bên dưới
 
-// Nhiều màu cho hiệu ứng "thêm" — cảm giác confetti thay vì 1 màu vàng đơn điệu
+// Nhiều màu cho hiệu ứng "thêm" - cảm giác confetti thay vì 1 màu vàng đơn điệu
 const LIKE_COLORS = ["var(--gold)", "#f2a65a", "#e8734a", "#ff6b9d", "#c9184a"];
 const UNLIKE_COLOR = "#9ba39a"; // màu xám nhạt cho hiệu ứng "bỏ thích"
 

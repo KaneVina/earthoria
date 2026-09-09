@@ -24,15 +24,15 @@ function Mesh({
 
   // Tính cả scale CHUẨN HÓA và TÂM bounding-box cùng lúc, MỘT LẦN, dựa
   // trên scene gốc (chưa xoay). Quan trọng: ta tự trừ offset này vào vị
-  // trí của <primitive>, thay vì dùng <Center> của drei — vì <Center>
+  // trí của <primitive>, thay vì dùng <Center> của drei - vì <Center>
   // chỉ canh giữa lúc mount rồi thôi, không biết group cha sẽ tiếp tục
   // xoay quanh trục Y mỗi frame. Nếu model không đối xứng quanh trục
   // xoay (ví dụ con vật đang cuộn người, nghiêng một bên), việc xoay
   // quanh "tâm bounding-box lúc mount" mà bounding-box đó không trùng
   // tâm hình học thật sẽ khiến model trông như "lắc ra khỏi tâm" theo
-  // từng frame xoay — đúng hiện tượng "con gấu rời trung tâm khi quay".
+  // từng frame xoay - đúng hiện tượng "con gấu rời trung tâm khi quay".
   // Cách khắc phục: dịch mesh sao cho TÂM bounding-box nằm đúng tại gốc
-  // [0,0,0] CỦA GROUP XOAY — để dù group cha xoay góc nào, tâm đó vẫn
+  // [0,0,0] CỦA GROUP XOAY - để dù group cha xoay góc nào, tâm đó vẫn
   // đứng yên tại chính giữa khung hình.
   const { baseScale, centerOffset } = useMemo(() => {
     const box = new THREE.Box3().setFromObject(scene);
@@ -46,7 +46,7 @@ function Mesh({
       baseScale: scale,
       // Offset áp dụng TRƯỚC khi scale (đơn vị gốc của scene), nên nhân
       // ngược lại 1/scale khi gán position của <primitive> bên trong
-      // group đã scale — xem bên dưới.
+      // group đã scale - xem bên dưới.
       centerOffset: center,
     };
   }, [scene, targetSize]);
@@ -99,12 +99,12 @@ function Mesh({
  *  - maxDistance    farthest the camera can zoom out (default: 8)
  *  - background     CSS background for the canvas wrapper (default: transparent)
  *  - scaleMultiplier extra zoom factor on top of the auto-normalized size,
- *                    eased smoothly on change (default: 1) — handy for
+ *                    eased smoothly on change (default: 1) - handy for
  *                    preview/immersive style size transitions
  *  - className       extra classes on the wrapper div
  *  - rimColor        màu của rim light (viền sáng mảnh phía sau model,
  *                    tạo cảm giác "công nghệ" tinh tế qua ánh sáng thay
- *                    vì geometry phụ trợ) — nên khớp với biến CSS
+ *                    vì geometry phụ trợ) - nên khớp với biến CSS
  *                    --av-tech-green (default: "#6fe06a")
  *  - rimIntensity    độ mạnh của rim light (default: 2.2)
  */
@@ -123,7 +123,7 @@ export default function Model3D({
   rimColor = "#6fe06a",
   rimIntensity = 2.2,
 }) {
-  // Trạng thái xoay thực tế, tách khỏi prop `autoRotate` — người dùng có
+  // Trạng thái xoay thực tế, tách khỏi prop `autoRotate` - người dùng có
   // thể tạm dừng/tiếp tục bằng cách chạm/click 3 lần liên tiếp, độc lập
   // với giá trị prop truyền vào từ ngoài.
   const [spinning, setSpinning] = useState(autoRotate);
@@ -133,7 +133,7 @@ export default function Model3D({
 
   // Đếm số lần TAP (nhấn rồi nhả gần như tại chỗ, không kéo) trong một
   // khoảng thời gian ngắn. Phân biệt tap với kéo-xoay bằng cách so
-  // khoảng cách con trỏ giữa lúc pointerdown và pointerup — nếu di
+  // khoảng cách con trỏ giữa lúc pointerdown và pointerup - nếu di
   // chuyển quá một ngưỡng nhỏ, đó là thao tác kéo xoay (OrbitControls),
   // không tính là tap, và bộ đếm không được cộng thêm.
   const tapStateRef = useRef({ count: 0, timer: null, downPos: null });
@@ -216,7 +216,7 @@ export default function Model3D({
             scaleMultiplier={scaleMultiplier}
           />
 
-          {/* Đổ bóng mềm, hơi rộng và mờ hơn bản gốc — neo thị giác model
+          {/* Đổ bóng mềm, hơi rộng và mờ hơn bản gốc - neo thị giác model
               xuống "mặt sàn" mà không tạo viền cứng dưới chân. */}
           <ContactShadows
             position={[0, -1.05, 0]}
@@ -229,7 +229,7 @@ export default function Model3D({
           />
 
           {/* Environment cho phản chiếu bề mặt bóng/kim loại trên model
-              — "city" cho nhiều cạnh phản chiếu rõ hơn "studio" phẳng,
+              - "city" cho nhiều cạnh phản chiếu rõ hơn "studio" phẳng,
               giúp chất liệu trông có chiều sâu thay vì nhựa mờ đều. */}
           <Environment preset="city" environmentIntensity={0.55} />
         </Suspense>

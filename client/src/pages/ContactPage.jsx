@@ -139,7 +139,7 @@ const SUBJECTS = [
   },
 ];
 
-// Enum tương ứng bên backend (Prisma TicketSubject) — theo đúng thứ tự SUBJECTS ở trên
+// Enum tương ứng bên backend (Prisma TicketSubject) - theo đúng thứ tự SUBJECTS ở trên
 const SUBJECT_KEYS = [
   "PRODUCT_ADVICE",
   "BUSINESS",
@@ -566,7 +566,7 @@ export default function ContactPage() {
               </h2>
               <p className="info-desc">
                 Đội ngũ Earthoria luôn sẵn sàng hỗ trợ bạn từ thứ Hai đến Chủ
-                nhật — từ tư vấn sách đến hợp tác kinh doanh.
+                nhật - từ tư vấn sách đến hợp tác kinh doanh.
               </p>
 
               <div className="contact-cards">

@@ -103,7 +103,7 @@ function validateGameConfig(gameType, config) {
 }
 
 /* ══════════════════════════════════════════════
-   DANH SÁCH — GỘP THEO SÁCH (giống getArCodesGroupedAll)
+   DANH SÁCH - GỘP THEO SÁCH (giống getArCodesGroupedAll)
 ══════════════════════════════════════════════ */
 exports.getGamesGroupedAll = async (req, res) => {
   try {

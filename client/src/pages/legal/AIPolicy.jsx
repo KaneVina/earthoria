@@ -42,12 +42,12 @@ const SUMMARY_CARDS = [
   {
     icon: Sparkles,
     title: "Minh bạch tuyệt đối",
-    desc: "Chúng tôi giải thích rõ Eira AI là gì, dữ liệu nào được dùng và AI có thể sai ở đâu — không thuật ngữ mập mờ.",
+    desc: "Chúng tôi giải thích rõ Eira AI là gì, dữ liệu nào được dùng và AI có thể sai ở đâu - không thuật ngữ mập mờ.",
   },
   {
     icon: Database,
     title: "Chỉ dùng dữ liệu thật",
-    desc: "AI chỉ trả lời dựa trên dữ liệu sách, giá, tồn kho và đơn hàng lấy trực tiếp từ hệ thống tại thời điểm hỏi — không tự bịa số liệu.",
+    desc: "AI chỉ trả lời dựa trên dữ liệu sách, giá, tồn kho và đơn hàng lấy trực tiếp từ hệ thống tại thời điểm hỏi - không tự bịa số liệu.",
   },
   {
     icon: Baby,
@@ -57,7 +57,7 @@ const SUMMARY_CARDS = [
   {
     icon: SlidersHorizontal,
     title: "Bạn luôn kiểm soát",
-    desc: "Xóa hội thoại, tắt giọng đọc, hoặc yêu cầu hỗ trợ từ nhân viên thật bất cứ lúc nào — không bắt buộc phải qua AI.",
+    desc: "Xóa hội thoại, tắt giọng đọc, hoặc yêu cầu hỗ trợ từ nhân viên thật bất cứ lúc nào - không bắt buộc phải qua AI.",
   },
 ];
 
@@ -92,7 +92,7 @@ const AI_DATA_TABLE = [
     source: "Tài khoản đã đăng nhập",
     purpose: "Tra cứu trạng thái đơn khi bạn hỏi",
     scope:
-      "Chỉ đơn hàng của chính bạn, tối đa 50 đơn gần nhất — không bao giờ truy cập đơn của người khác",
+      "Chỉ đơn hàng của chính bạn, tối đa 50 đơn gần nhất - không bao giờ truy cập đơn của người khác",
   },
   {
     name: "Tên & email tài khoản",
@@ -108,7 +108,7 @@ const SECTIONS = [
     num: "01",
     title: "Giới Thiệu & Phạm Vi Áp Dụng",
     paragraphs: [
-      'Earthoria sử dụng trí tuệ nhân tạo (AI) tại nhiều điểm chạm trong trải nghiệm sản phẩm — tiêu biểu là trợ lý ảo Eira AI trong khung chat, tính năng hỏi-đáp bằng giọng nói trong trải nghiệm AR, và các gợi ý cá nhân hóa nội dung sách. Chính sách An toàn & Minh bạch AI ("Chính sách") này giải thích rõ ràng các hệ thống AI đó là gì, cách chúng xử lý dữ liệu, giới hạn thực tế của chúng, và quyền kiểm soát mà bạn luôn có.',
+      'Earthoria sử dụng trí tuệ nhân tạo (AI) tại nhiều điểm chạm trong trải nghiệm sản phẩm - tiêu biểu là trợ lý ảo Eira AI trong khung chat, tính năng hỏi-đáp bằng giọng nói trong trải nghiệm AR, và các gợi ý cá nhân hóa nội dung sách. Chính sách An toàn & Minh bạch AI ("Chính sách") này giải thích rõ ràng các hệ thống AI đó là gì, cách chúng xử lý dữ liệu, giới hạn thực tế của chúng, và quyền kiểm soát mà bạn luôn có.',
       "Chính sách này bổ sung cho Chính sách Bảo mật và Điều khoản Dịch vụ của Earthoria, không thay thế các tài liệu đó. Trong trường hợp có khác biệt về xử lý dữ liệu cá nhân, Chính sách Bảo mật là tài liệu tham chiếu đầy đủ nhất.",
     ],
   },
@@ -118,10 +118,10 @@ const SECTIONS = [
     title: "Eira AI Là Gì",
     paragraphs: [
       "Eira là trợ lý ảo và cũng là linh vật đại diện của Earthoria, ra mắt ngày 03/06/2026. Khi bạn trò chuyện với Eira trong khung chat hoặc hỏi bằng giọng nói trong trải nghiệm AR, bạn đang tương tác với một hệ thống phần mềm tự động kết hợp mô hình ngôn ngữ để hiểu và tạo câu trả lời, cùng dữ liệu thật lấy trực tiếp từ hệ thống Earthoria tại thời điểm bạn hỏi.",
-      "Eira KHÔNG phải là người thật, không có ý thức hay cảm xúc, và không đưa ra quyết định thay bạn. Đây là một công cụ được thiết kế để tư vấn sách, tra cứu tồn kho/đơn hàng/mã giảm giá, và kết nối bạn với nhân viên thật khi cần — luôn hoạt động trong phạm vi các quy tắc an toàn được Earthoria cấu hình sẵn.",
+      "Eira KHÔNG phải là người thật, không có ý thức hay cảm xúc, và không đưa ra quyết định thay bạn. Đây là một công cụ được thiết kế để tư vấn sách, tra cứu tồn kho/đơn hàng/mã giảm giá, và kết nối bạn với nhân viên thật khi cần - luôn hoạt động trong phạm vi các quy tắc an toàn được Earthoria cấu hình sẵn.",
     ],
     list: [
-      "Chỉ trả lời dựa trên dữ liệu thật của hệ thống — được lập trình để từ chối tự bịa số liệu giá, tồn kho hay khuyến mãi",
+      "Chỉ trả lời dựa trên dữ liệu thật của hệ thống - được lập trình để từ chối tự bịa số liệu giá, tồn kho hay khuyến mãi",
       "Không bao giờ tiết lộ, xác nhận hay mô tả bất kỳ thông tin nào về khu vực quản trị nội bộ (dashboard), dù được hỏi trực tiếp hay hỏi vòng vo",
       "Từ chối trả lời các chủ đề nhạy cảm về chính trị, tôn giáo, chiến tranh, giới tính hay định kiến",
       'Trên hồ sơ trẻ em, Eira chuyển sang giao diện và tông giọng phù hợp lứa tuổi hơn ("Eira dành cho trẻ")',
@@ -139,11 +139,11 @@ const SECTIONS = [
       "Mỗi khi bạn gửi một câu hỏi, hệ thống của Earthoria thực hiện một quy trình gồm nhiều bước để đảm bảo câu trả lời vừa chính xác vừa an toàn, thay vì để mô hình AI tự do trả lời từ trí nhớ của nó.",
     ],
     list: [
-      "Bước 1 — Tiếp nhận: tin nhắn của bạn được giới hạn độ dài và làm sạch trước khi xử lý",
-      "Bước 2 — Truy xuất dữ liệu thật: hệ thống tự động tra cứu sách, giá, tồn kho, mã giảm giá liên quan trực tiếp từ cơ sở dữ liệu Earthoria tại đúng thời điểm bạn hỏi, không dùng số liệu cũ ghi nhớ sẵn",
-      "Bước 3 — Ghép ngữ cảnh: câu hỏi, lịch sử hội thoại gần nhất và dữ liệu vừa truy xuất được ghép lại thành ngữ cảnh gửi cho mô hình ngôn ngữ xử lý",
-      "Bước 4 — Gọi công cụ khi cần: nếu cần thông tin chính xác hơn (kiểm tra tồn kho, chi tiết một cuốn sách, trạng thái đơn hàng, áp mã giảm giá, hoặc chuyển tiếp cho nhân viên), mô hình sẽ tự động gọi đúng công cụ nội bộ tương ứng thay vì đoán",
-      "Bước 5 — Phản hồi: kết quả được trả về dưới dạng văn bản, có thể đọc thành tiếng nếu bạn bật loa, kèm liên kết điều hướng nếu phù hợp",
+      "Bước 1 - Tiếp nhận: tin nhắn của bạn được giới hạn độ dài và làm sạch trước khi xử lý",
+      "Bước 2 - Truy xuất dữ liệu thật: hệ thống tự động tra cứu sách, giá, tồn kho, mã giảm giá liên quan trực tiếp từ cơ sở dữ liệu Earthoria tại đúng thời điểm bạn hỏi, không dùng số liệu cũ ghi nhớ sẵn",
+      "Bước 3 - Ghép ngữ cảnh: câu hỏi, lịch sử hội thoại gần nhất và dữ liệu vừa truy xuất được ghép lại thành ngữ cảnh gửi cho mô hình ngôn ngữ xử lý",
+      "Bước 4 - Gọi công cụ khi cần: nếu cần thông tin chính xác hơn (kiểm tra tồn kho, chi tiết một cuốn sách, trạng thái đơn hàng, áp mã giảm giá, hoặc chuyển tiếp cho nhân viên), mô hình sẽ tự động gọi đúng công cụ nội bộ tương ứng thay vì đoán",
+      "Bước 5 - Phản hồi: kết quả được trả về dưới dạng văn bản, có thể đọc thành tiếng nếu bạn bật loa, kèm liên kết điều hướng nếu phù hợp",
     ],
     callout: {
       title: "Cơ chế bảo vệ tích hợp sẵn",
@@ -155,7 +155,7 @@ const SECTIONS = [
     num: "04",
     title: "Dữ Liệu Nào Được Dùng Để Tạo Phản Hồi",
     paragraphs: [
-      "Bảng dưới đây liệt kê đầy đủ và chính xác những loại dữ liệu mà Eira AI có thể sử dụng để tạo một câu trả lời — không có nguồn dữ liệu nào khác nằm ngoài danh sách này.",
+      "Bảng dưới đây liệt kê đầy đủ và chính xác những loại dữ liệu mà Eira AI có thể sử dụng để tạo một câu trả lời - không có nguồn dữ liệu nào khác nằm ngoài danh sách này.",
     ],
     showTable: true,
   },
@@ -170,7 +170,7 @@ const SECTIONS = [
       "Dữ liệu, đơn hàng hay thông tin cá nhân của bất kỳ khách hàng nào khác ngoài chính bạn",
       "Bất kỳ đường dẫn, tên trang, cấu trúc dữ liệu hay chi tiết kỹ thuật nào của khu vực quản trị nội bộ (/dashboard)",
       "Mật khẩu, mã xác thực (OTP), hoặc thông tin thanh toán chi tiết như số thẻ ngân hàng",
-      "Toàn văn nội dung sách có bản quyền — AI chỉ dùng tóm tắt/chủ đề do Earthoria biên soạn, không phải nguyên văn tác phẩm",
+      "Toàn văn nội dung sách có bản quyền - AI chỉ dùng tóm tắt/chủ đề do Earthoria biên soạn, không phải nguyên văn tác phẩm",
     ],
   },
   {
@@ -178,13 +178,13 @@ const SECTIONS = [
     num: "06",
     title: "Giọng Nói AI (Voice AI) Được Lưu Trữ Bao Lâu",
     paragraphs: [
-      "Earthoria sử dụng giọng nói AI theo hai chiều khác nhau, mỗi chiều có nguyên tắc lưu trữ riêng — chúng tôi tách bạch rõ ràng để bạn không nhầm lẫn.",
+      "Earthoria sử dụng giọng nói AI theo hai chiều khác nhau, mỗi chiều có nguyên tắc lưu trữ riêng - chúng tôi tách bạch rõ ràng để bạn không nhầm lẫn.",
     ],
     list: [
-      "Đọc phản hồi thành tiếng (AI nói cho bạn nghe) — được xử lý cục bộ ngay trên trình duyệt/thiết bị của bạn, không gửi lên máy chủ và không được lưu trữ dưới bất kỳ hình thức nào; bạn có thể bật/tắt bất cứ lúc nào bằng nút loa trong khung chat",
-      'Ghi âm giọng nói khi bạn hỏi AI ("bạn/con bạn nói cho AI nghe") — chỉ được kích hoạt khi bạn chủ động nhấn giữ nút micro, không bao giờ tự động lắng nghe liên tục',
+      "Đọc phản hồi thành tiếng (AI nói cho bạn nghe) - được xử lý cục bộ ngay trên trình duyệt/thiết bị của bạn, không gửi lên máy chủ và không được lưu trữ dưới bất kỳ hình thức nào; bạn có thể bật/tắt bất cứ lúc nào bằng nút loa trong khung chat",
+      'Ghi âm giọng nói khi bạn hỏi AI ("bạn/con bạn nói cho AI nghe") - chỉ được kích hoạt khi bạn chủ động nhấn giữ nút micro, không bao giờ tự động lắng nghe liên tục',
       "Đoạn ghi âm được xử lý để nhận diện và tạo phản hồi, sau đó tự động xóa trong vòng tối đa 24 giờ",
-      "Ngoại lệ duy nhất: phụ huynh có thể chủ động chọn lưu lại để cá nhân hóa trải nghiệm cho hồ sơ trẻ — việc lưu này luôn cần xác nhận rõ ràng, không mặc định bật",
+      "Ngoại lệ duy nhất: phụ huynh có thể chủ động chọn lưu lại để cá nhân hóa trải nghiệm cho hồ sơ trẻ - việc lưu này luôn cần xác nhận rõ ràng, không mặc định bật",
       "Dữ liệu giọng nói không bao giờ được dùng cho mục đích quảng cáo, và được ẩn danh hóa trước khi xử lý bởi đối tác hạ tầng",
     ],
     showDataGrid: true,
@@ -199,13 +199,13 @@ const SECTIONS = [
     list: [
       "AI có thể hiểu sai ý một câu hỏi phức tạp, mơ hồ hoặc viết tắt, dẫn đến câu trả lời lệch trọng tâm",
       "Tóm tắt nội dung/chủ đề sách là bản biên soạn của Earthoria, có thể chưa phản ánh đầy đủ mọi chi tiết của cuốn sách gốc",
-      "AI có thể từ chối hoặc trả lời không đầy đủ với các câu hỏi nằm ngoài phạm vi được huấn luyện (chính trị, tôn giáo, y tế chuyên sâu...) — đây là giới hạn có chủ đích, không phải lỗi hệ thống",
+      "AI có thể từ chối hoặc trả lời không đầy đủ với các câu hỏi nằm ngoài phạm vi được huấn luyện (chính trị, tôn giáo, y tế chuyên sâu...) - đây là giới hạn có chủ đích, không phải lỗi hệ thống",
       "Trong một số ít trường hợp hiếm gặp, mô hình ngôn ngữ vẫn có thể tạo ra câu trả lời không chính xác (hiện tượng thường gọi là 'ảo giác AI') dù đã có cơ chế chỉ dùng dữ liệu thật",
       "Số liệu về giá, tồn kho hay khuyến mãi hiển thị bởi AI phản ánh đúng thời điểm bạn hỏi và có thể thay đổi sau đó",
     ],
     callout: {
       title: "Luôn xác minh với thông tin quan trọng",
-      text: "Với các quyết định quan trọng — đặt hàng số lượng lớn, tranh chấp thanh toán, hoặc bất kỳ điều gì bạn không chắc chắn — hãy xác nhận lại qua trang chi tiết sản phẩm, email helpdesk.earthoria@gmail.com, hoặc yêu cầu Eira chuyển tiếp cho nhân viên thật.",
+      text: "Với các quyết định quan trọng - đặt hàng số lượng lớn, tranh chấp thanh toán, hoặc bất kỳ điều gì bạn không chắc chắn - hãy xác nhận lại qua trang chi tiết sản phẩm, email helpdesk.earthoria@gmail.com, hoặc yêu cầu Eira chuyển tiếp cho nhân viên thật.",
     },
   },
   {
@@ -213,12 +213,12 @@ const SECTIONS = [
     num: "08",
     title: "Không Dùng AI Thay Thế Chuyên Gia Trong Các Quyết Định Quan Trọng",
     paragraphs: [
-      "Eira AI và các tính năng AI khác của Earthoria được xây dựng để hỗ trợ mua sắm và học tập qua chơi — không được thiết kế, và không nên được sử dụng, để thay thế cho ý kiến của các chuyên gia có chuyên môn trong những quyết định ảnh hưởng thực sự đến sức khỏe, tâm lý hoặc sự phát triển của trẻ.",
+      "Eira AI và các tính năng AI khác của Earthoria được xây dựng để hỗ trợ mua sắm và học tập qua chơi - không được thiết kế, và không nên được sử dụng, để thay thế cho ý kiến của các chuyên gia có chuyên môn trong những quyết định ảnh hưởng thực sự đến sức khỏe, tâm lý hoặc sự phát triển của trẻ.",
     ],
     list: [
-      "Gợi ý sách theo độ tuổi/sở thích của AI chỉ mang tính tham khảo, không thay thế đánh giá chuyên môn về khả năng đọc hiểu hay nhu cầu giáo dục đặc biệt của từng trẻ — hãy tham khảo giáo viên hoặc chuyên viên giáo dục khi cần",
+      "Gợi ý sách theo độ tuổi/sở thích của AI chỉ mang tính tham khảo, không thay thế đánh giá chuyên môn về khả năng đọc hiểu hay nhu cầu giáo dục đặc biệt của từng trẻ - hãy tham khảo giáo viên hoặc chuyên viên giáo dục khi cần",
       "AI không đưa ra và không nên được hỏi để đưa ra lời khuyên y tế, tâm lý, pháp lý hay tài chính; với các dấu hiệu sức khỏe/tâm lý đáng lo ngại của trẻ, vui lòng liên hệ bác sĩ nhi khoa hoặc chuyên viên tâm lý",
-      "Trong tình huống khẩn cấp, luôn liên hệ trực tiếp cơ quan chức năng hoặc dịch vụ cấp cứu — không nhắn tin cho AI để chờ phản hồi",
+      "Trong tình huống khẩn cấp, luôn liên hệ trực tiếp cơ quan chức năng hoặc dịch vụ cấp cứu - không nhắn tin cho AI để chờ phản hồi",
       "Mọi cam kết hợp đồng, chính sách đổi trả hay quyết định tài chính quan trọng cần được xác nhận bởi nhân viên thật hoặc tài liệu chính thức của Earthoria, không chỉ dựa vào một câu trả lời của AI",
     ],
   },
@@ -297,7 +297,7 @@ const FAQS = [
   },
   {
     q: "AI Earthoria có thể tự ý đặt hàng hoặc thay đổi tài khoản của tôi không?",
-    a: "Không. Eira AI chỉ tư vấn, tra cứu thông tin và áp mã giảm giá để bạn xem trước — mọi hành động đặt hàng, thanh toán hay thay đổi tài khoản đều cần chính bạn xác nhận trực tiếp trên giao diện, AI không tự ý thực hiện thay bạn.",
+    a: "Không. Eira AI chỉ tư vấn, tra cứu thông tin và áp mã giảm giá để bạn xem trước - mọi hành động đặt hàng, thanh toán hay thay đổi tài khoản đều cần chính bạn xác nhận trực tiếp trên giao diện, AI không tự ý thực hiện thay bạn.",
   },
   {
     q: "Làm sao để báo cáo một câu trả lời sai hoặc không phù hợp từ AI?",
@@ -867,13 +867,13 @@ export default function AIPolicy() {
             <span className="legal-hero-eyebrow-line" />
           </div>
           <h1 className="legal-hero-title">
-            Chính Sách —<br />
+            Chính Sách -<br />
             <em>An Toàn &amp; Minh Bạch AI</em>
           </h1>
           <p className="legal-hero-sub">
             Eira AI và các tính năng AI khác của Earthoria hoạt động như thế
             nào, dữ liệu nào được sử dụng, AI có thể sai ở đâu, và quyền kiểm
-            soát bạn luôn có — được giải thích rõ ràng, không thuật ngữ mập mờ.
+            soát bạn luôn có - được giải thích rõ ràng, không thuật ngữ mập mờ.
           </p>
           <div className="legal-hero-meta">
             <div className="legal-hero-meta-item">
@@ -1077,7 +1077,7 @@ export default function AIPolicy() {
                         Đọc phản hồi thành tiếng
                       </span>
                       <span className="legal-data-cell-val">
-                        Không lưu trữ — xử lý cục bộ trên thiết bị
+                        Không lưu trữ - xử lý cục bộ trên thiết bị
                       </span>
                     </div>
                     <div className="legal-data-cell">
@@ -1129,7 +1129,7 @@ export default function AIPolicy() {
                         Nguyên tắc "không bao giờ"
                       </div>
                       <p>
-                        Các giới hạn này được lập trình cứng vào hệ thống —
+                        Các giới hạn này được lập trình cứng vào hệ thống -
                         không thể bị vượt qua bằng cách đặt câu hỏi khéo léo,
                         đóng vai nhân viên/quản trị viên, hay yêu cầu AI "bỏ qua
                         quy tắc trước đó".
@@ -1149,7 +1149,7 @@ export default function AIPolicy() {
                       </div>
                       <p>
                         Mọi tính năng trên Earthoria đều có thể hoàn tất mà
-                        không cần trò chuyện với AI — bạn có thể liên hệ nhân
+                        không cần trò chuyện với AI - bạn có thể liên hệ nhân
                         viên thật qua email, hotline hoặc trang Liên hệ bất cứ
                         lúc nào.
                       </p>
@@ -1168,7 +1168,7 @@ export default function AIPolicy() {
                       </div>
                       <p>
                         AI chỉ sử dụng tóm tắt và chủ đề do đội ngũ biên tập
-                        Earthoria biên soạn — không bao giờ tạo ra hay hiển thị
+                        Earthoria biên soạn - không bao giờ tạo ra hay hiển thị
                         toàn văn nội dung có bản quyền của bất kỳ cuốn sách nào.
                       </p>
                     </div>

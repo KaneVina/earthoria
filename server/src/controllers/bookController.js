@@ -517,7 +517,7 @@ const addReview = async (req, res) => {
   }
 };
 
-// Vote hữu ích / không hữu ích cho 1 review — bấm lại lựa chọn cũ = bỏ vote,
+// Vote hữu ích / không hữu ích cho 1 review - bấm lại lựa chọn cũ = bỏ vote,
 // bấm lựa chọn khác = đổi vote. Không cho tự vote review của chính mình.
 const voteReview = async (req, res) => {
   try {
@@ -632,7 +632,7 @@ const getWishlist = async (req, res) => {
     });
 
     // Trước đây chỉ encodeBook() nên FE không có price/salePrice/stock/variants
-    // (những field này không nằm trực tiếp trên Book mà nằm trên BookVariant) —
+    // (những field này không nằm trực tiếp trên Book mà nằm trên BookVariant) -
     // dẫn tới hiển thị giá/tồn kho sai và không biết sách thật sự bán format nào
     // để gửi đúng `format` khi thêm vào giỏ (luôn hardcode PHYSICAL -> 404 nếu
     // sách chỉ có bản DIGITAL). Bổ sung variants + tính lại price/salePrice/stock.

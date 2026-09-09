@@ -9,7 +9,7 @@
   --lj-gold-true: #d4a843;
   --lj-gold-true-soft: rgba(212, 168, 67, 0.16);
   --lj-route-gold: #b8a172;
-  --lj-bg-a: var(--ivory); /* Stats + Steps — cùng một vùng sáng */
+  --lj-bg-a: var(--ivory); /* Stats + Steps - cùng một vùng sáng */
   --lj-bg-b: var(--cream); /* Journey */
   --lj-surface: var(--white); /* card, step-card, passport, divider */
   --lj-surface-border: var(--border);
@@ -123,7 +123,7 @@ body.dark-mode {
 }
 .lj-hero::after {
   /* Mờ dần từ forest sang màu của Journey (giờ là section theo ngay sau
-     Hero/Passport, không còn là Stats nữa) — để mắt "quen" tông màu mới
+     Hero/Passport, không còn là Stats nữa) - để mắt "quen" tông màu mới
      trước khi Journey bắt đầu. Nửa còn lại của mối nối là Passport Strip
      nổi đè lên đúng chỗ này. */
   content: "";
@@ -371,7 +371,7 @@ body.dark-mode {
   box-shadow: var(--lj-shadow-lg);
   padding: 26px 32px;
 }
-/* ảnh 5 địa danh — chỉ là accent trang trí góc phải, tint xanh lá + blur, không phải nền card */
+/* ảnh 5 địa danh - chỉ là accent trang trí góc phải, tint xanh lá + blur, không phải nền card */
 .lj-passport-strip::before {
   content: "";
   position: absolute;
@@ -874,7 +874,7 @@ body.dark-mode {
   background: linear-gradient(to bottom, var(--lj-bg-a), var(--forest));
 }
 
-/*   STATS STRIP — bảng thông số chuyến bay   */
+/*   STATS STRIP - bảng thông số chuyến bay   */
 .lj-stats {
   background: var(--forest);
   padding: 92px 100px;

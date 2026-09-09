@@ -24,7 +24,7 @@ exports.getArCode = async (req, res) => {
     }
 
     if (arCode.accessType !== "PUBLIC") {
-      // Phiên của bé (link/QR riêng, không đăng nhập tài khoản chính) — xác
+      // Phiên của bé (link/QR riêng, không đăng nhập tài khoản chính) - xác
       // thực bằng kidToken thay vì req.user, vẫn tôn trọng khoá AR + ẩn sách
       // mà phụ huynh đã đặt cho bé.
       let child = null;
@@ -43,7 +43,7 @@ exports.getArCode = async (req, res) => {
           });
         }
 
-        // Khung giờ và giới hạn số phút/ngày — trước đây chỉ được hiển thị/tính
+        // Khung giờ và giới hạn số phút/ngày - trước đây chỉ được hiển thị/tính
         // toán ở client (UI guidance), không hề được chặn ở server, nên bé vẫn
         // gọi thẳng API để xem AR ngoài giờ cho phép hoặc sau khi đã hết giờ.
         if (!isWithinAllowedWindow(child)) {
@@ -102,7 +102,7 @@ exports.getArCode = async (req, res) => {
         const owns = await prisma.orderItem.findFirst({
           where: {
             variant: { bookId: arCode.bookId },
-            // DELIVERED = đang chờ khách xác nhận, COMPLETED = đã xác nhận nhận hàng — cả 2 đều coi là đã sở hữu.
+            // DELIVERED = đang chờ khách xác nhận, COMPLETED = đã xác nhận nhận hàng - cả 2 đều coi là đã sở hữu.
             order: {
               userId: req.user.id,
               status: { in: ["DELIVERED", "COMPLETED"] },
@@ -143,7 +143,7 @@ exports.getArCode = async (req, res) => {
 };
 
 /**
- * GET /api/v1/ar/my-books — danh sách toàn bộ ArCode thuộc các sách mà
+ * GET /api/v1/ar/my-books - danh sách toàn bộ ArCode thuộc các sách mà
  * user đã mua và đã được giao, để hiển thị trong "Sách AR của tôi".
  */
 exports.getMyArCodes = async (req, res) => {

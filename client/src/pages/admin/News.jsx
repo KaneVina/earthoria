@@ -30,7 +30,7 @@ function formatDateTime(date) {
 }
 
 function formatBytes(bytes) {
-  if (!bytes && bytes !== 0) return "—";
+  if (!bytes && bytes !== 0) return "-";
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -44,7 +44,7 @@ const ROLE_LABEL = {
 };
 
 /* ══════════════════════════════════════════
-   TAB 1 — BẢNG TIN (NewsPost)
+   TAB 1 - BẢNG TIN (NewsPost)
 ══════════════════════════════════════════ */
 function PostsTab() {
   const qc = useQueryClient();
@@ -106,7 +106,7 @@ function PostsTab() {
   const softDeleteMutation = useMutation({
     mutationFn: (id) => newsService.softDeletePost(id),
     onSuccess: () => {
-      toast.success("Đã xóa mềm tin — có thể khôi phục sau");
+      toast.success("Đã xóa mềm tin - có thể khôi phục sau");
       invalidate();
     },
     onError: (err) =>
@@ -470,7 +470,7 @@ function PostsTab() {
 }
 
 /* ══════════════════════════════════════════
-   TAB 2 — FILE CÔNG KHAI (NewsFile)
+   TAB 2 - FILE CÔNG KHAI (NewsFile)
 ══════════════════════════════════════════ */
 function FilesTab() {
   const qc = useQueryClient();
@@ -837,7 +837,7 @@ function FilesTab() {
                     />
                     {pickedFile && (
                       <div className="a-td-muted" style={{ marginTop: 6 }}>
-                        {pickedFile.name} — {formatBytes(pickedFile.size)}
+                        {pickedFile.name} - {formatBytes(pickedFile.size)}
                       </div>
                     )}
                   </div>
@@ -877,7 +877,7 @@ function FilesTab() {
 }
 
 /* ══════════════════════════════════════════
-   ROOT — News.jsx (2 tab: Bảng tin / File công khai)
+   ROOT - News.jsx (2 tab: Bảng tin / File công khai)
 ══════════════════════════════════════════ */
 export default function News() {
   const [tab, setTab] = useState("posts");

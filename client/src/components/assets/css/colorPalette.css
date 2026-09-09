@@ -467,7 +467,7 @@
   display: inline-block;
 }
 
-/* nút "dùng màu này" — riêng biệt với việc bấm ô để copy, tránh áp màu ngoài ý muốn */
+/* nút "dùng màu này" - riêng biệt với việc bấm ô để copy, tránh áp màu ngoài ý muốn */
 .cp-swatch-apply {
   position: absolute;
   top: 6px;

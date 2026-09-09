@@ -926,7 +926,7 @@ function OrderSummary({
           >
             <Tag size={15} style={{ color: "var(--gold)", flexShrink: 0 }} />
             <span style={{ flex: 1, fontSize: 13, color: "var(--forest)" }}>
-              <strong>{couponApplied.code}</strong> — {couponApplied.label}
+              <strong>{couponApplied.code}</strong> - {couponApplied.label}
             </span>
             <button
               onClick={onOpenVouchers}
@@ -1239,7 +1239,7 @@ function VoucherModal({
 
   const describeCoupon = (c) =>
     c.type === "PERCENTAGE"
-      ? `Giảm ${c.value}%${c.maxDiscount ? ` — tối đa ${formatPrice(c.maxDiscount)}` : ""}`
+      ? `Giảm ${c.value}%${c.maxDiscount ? ` - tối đa ${formatPrice(c.maxDiscount)}` : ""}`
       : `Giảm ${formatPrice(c.value)}`;
 
   const getDiscountAmount = (c) => {
@@ -1259,7 +1259,7 @@ function VoucherModal({
       toast.success(`Đã sao chép mã ${code}`);
       setTimeout(() => setCopiedCode((c) => (c === code ? null : c)), 1600);
     } catch {
-      /* clipboard không khả dụng — bỏ qua, khách vẫn bấm "Dùng mã" được */
+      /* clipboard không khả dụng - bỏ qua, khách vẫn bấm "Dùng mã" được */
     }
   };
 
@@ -1511,7 +1511,7 @@ function VoucherModal({
                           {isCopied ? <Check size={12} /> : <Copy size={12} />}
                         </button>
 
-                        {/* tag "Tốt nhất" — chỉ hiện khi mã này thực sự lợi hơn các mã còn lại */}
+                        {/* tag "Tốt nhất" - chỉ hiện khi mã này thực sự lợi hơn các mã còn lại */}
                         {isBest && (
                           <span
                             style={{
@@ -1588,7 +1588,7 @@ function VoucherModal({
                           : "Không yêu cầu đơn tối thiểu"}
                         {!eligible &&
                           missing > 0 &&
-                          ` — mua thêm ${formatPrice(missing)} để dùng được`}
+                          ` - mua thêm ${formatPrice(missing)} để dùng được`}
                         {c.expiresAt &&
                           ` · HSD: ${new Date(c.expiresAt).toLocaleDateString("vi-VN")}`}
                       </div>
@@ -1799,7 +1799,7 @@ export default function Checkout() {
     wardName: "",
     isDefault: false,
   });
-  // Ward list cho form địa chỉ mới — phải khai báo SAU newAddrForm vì phụ thuộc
+  // Ward list cho form địa chỉ mới - phải khai báo SAU newAddrForm vì phụ thuộc
   // vào newAddrForm.provinceCode (đặt trước sẽ lỗi "Cannot access before initialization").
   const { wards: newAddrWards, loading: newAddrWardsLoading } = useWards(
     newAddrForm.provinceCode,
@@ -1811,7 +1811,7 @@ export default function Checkout() {
   });
   const [loyaltyProfile, setLoyaltyProfile] = useState(null);
   // shipCalc phải khai báo TRƯỚC applyAddress vì applyAddress (và các hàm bên
-  // dưới) đọc/ghi setShipCalc — khai báo sau sẽ gặp lỗi hoisting y hệt lỗi
+  // dưới) đọc/ghi setShipCalc - khai báo sau sẽ gặp lỗi hoisting y hệt lỗi
   // newAddrForm phía trên nếu React Compiler tối ưu hoá thứ tự gọi hàm.
   const [shipCalc, setShipCalc] = useState({
     km: null,
@@ -1829,7 +1829,7 @@ export default function Checkout() {
     fetchCart();
   }, [fetchCart]);
 
-  /*  fetch hồ sơ hạng thành viên — quyết định % giảm giá & ngưỡng freeship tự động  */
+  /*  fetch hồ sơ hạng thành viên - quyết định % giảm giá & ngưỡng freeship tự động  */
   useEffect(() => {
     loyaltyService
       .getMyProfile()
@@ -1996,7 +1996,7 @@ export default function Checkout() {
         street: newAddrForm.street,
         province: newAddrForm.provinceName,
         ward: newAddrForm.wardName,
-        // Chưa có địa chỉ nào thì không cần gửi isDefault — backend tự động
+        // Chưa có địa chỉ nào thì không cần gửi isDefault - backend tự động
         // đặt địa chỉ đầu tiên làm mặc định.
         ...(savedAddresses.length > 0
           ? { isDefault: newAddrForm.isDefault }
@@ -2047,12 +2047,12 @@ export default function Checkout() {
   const isDigitalOrder =
     items.length > 0 && items.every((i) => i.variant?.format === "DIGITAL");
 
-  // Sách điện tử không được COD — nếu giỏ hàng đổi thành toàn ebook trong lúc đang chọn COD, bỏ chọn.
+  // Sách điện tử không được COD - nếu giỏ hàng đổi thành toàn ebook trong lúc đang chọn COD, bỏ chọn.
   useEffect(() => {
     if (isDigitalOrder && method === "cod") setMethod("");
   }, [isDigitalOrder, method]);
 
-  // Đơn TOÀN sách điện tử: ẩn hẳn bước "Thiết lập đơn hàng" — bỏ qua thẳng sang bước Thanh toán.
+  // Đơn TOÀN sách điện tử: ẩn hẳn bước "Thiết lập đơn hàng" - bỏ qua thẳng sang bước Thanh toán.
   useEffect(() => {
     if (isDigitalOrder && step === 1) setStep(2);
   }, [isDigitalOrder, step]);
@@ -2077,7 +2077,7 @@ export default function Checkout() {
   const afterDiscount = subtotal - discount - tierDiscount;
   const freeShipThreshold =
     loyaltyProfile?.tier?.freeShipThreshold ?? FREE_SHIP_THRESHOLD;
-  // Sách điện tử luôn miễn phí ship (không giao hàng) — không phụ thuộc shipCalc/ngưỡng freeship.
+  // Sách điện tử luôn miễn phí ship (không giao hàng) - không phụ thuộc shipCalc/ngưỡng freeship.
   const shippingFee = isDigitalOrder
     ? 0
     : afterDiscount >= freeShipThreshold
@@ -2185,7 +2185,7 @@ export default function Checkout() {
 
   /*  step navigation  */
   const goToStep2 = () => {
-    // Sách điện tử không cần thông tin giao hàng — bỏ qua validate, sang thẳng bước thanh toán.
+    // Sách điện tử không cần thông tin giao hàng - bỏ qua validate, sang thẳng bước thanh toán.
     if (isDigitalOrder) {
       setStep(2);
       scrollTop();
@@ -2219,7 +2219,7 @@ export default function Checkout() {
     try {
       const { data } = await orderService.createOrder({
         // Sách điện tử: không thu thập địa chỉ ở FE, chỉ gửi tên/sđt/email nếu người dùng có nhập ở
-        // bước trước đó (không bắt buộc) — backend tự lấy từ tài khoản nếu thiếu.
+        // bước trước đó (không bắt buộc) - backend tự lấy từ tài khoản nếu thiếu.
         shipping: isDigitalOrder
           ? {
               fullName: ship.fullName || undefined,
@@ -2266,7 +2266,7 @@ export default function Checkout() {
     }
 
     // VNPay / MoMo → đơn đã tạo (giữ trạng thái UNPAID), giờ lấy link cổng thanh toán rồi chuyển hướng.
-    // Tách try/catch riêng: nếu bước này lỗi, đơn hàng VẪN đã tồn tại — báo rõ để người dùng
+    // Tách try/catch riêng: nếu bước này lỗi, đơn hàng VẪN đã tồn tại - báo rõ để người dùng
     // vào lịch sử đơn hàng bấm "Thanh toán lại" thay vì tưởng nhầm là chưa đặt được gì.
     if (method === "bankqr") {
       try {
@@ -2275,14 +2275,14 @@ export default function Checkout() {
         setBankQrData(qrData.data);
         setBankQrStatus("pending");
         setBankQrExpired(false);
-        toast.success("Đã tạo mã QR — quét để chuyển khoản");
+        toast.success("Đã tạo mã QR - quét để chuyển khoản");
         setStep(4);
         scrollTop();
       } catch (err) {
         toast.error(
           (err?.response?.data?.message ||
             "Không tạo được mã QR chuyển khoản") +
-            " — đơn hàng đã được lưu, bạn có thể thanh toán lại trong Đơn hàng của tôi.",
+            " - đơn hàng đã được lưu, bạn có thể thanh toán lại trong Đơn hàng của tôi.",
         );
       } finally {
         setPlacing(false);
@@ -2296,12 +2296,12 @@ export default function Checkout() {
           ? paymentService.createVnpayUrl
           : paymentService.createMomoUrl;
       const { data: payData } = await getUrl(orderId);
-      // Không setPlacing(false) ở đây — giữ nút "Đang xử lý…" cho tới khi trình duyệt rời trang.
+      // Không setPlacing(false) ở đây - giữ nút "Đang xử lý…" cho tới khi trình duyệt rời trang.
       window.location.href = payData.data.paymentUrl;
     } catch (err) {
       toast.error(
         (err?.response?.data?.message || "Không tạo được liên kết thanh toán") +
-          " — đơn hàng đã được lưu, bạn có thể thanh toán lại trong Đơn hàng của tôi.",
+          " - đơn hàng đã được lưu, bạn có thể thanh toán lại trong Đơn hàng của tôi.",
       );
       setPlacing(false);
     }
@@ -2340,7 +2340,7 @@ export default function Checkout() {
           );
         }
       } catch {
-        // Lỗi mạng tạm thời khi polling — chờ lượt sau tự thử lại.
+        // Lỗi mạng tạm thời khi polling - chờ lượt sau tự thử lại.
       }
     };
 
@@ -2493,9 +2493,9 @@ export default function Checkout() {
           alignItems: "start",
         }}
       >
-        {/*LEFT COLUMN — steps         */}
+        {/*LEFT COLUMN - steps         */}
         <div>
-          {/*  STEP 1 — Thông tin giao hàng  */}
+          {/*  STEP 1 - Thông tin giao hàng  */}
           {step === 1 && !isDigitalOrder && (
             <div className="co-step">
               <SectionHead icon={MapPin} title="Thiết lập đơn hàng" />
@@ -2647,7 +2647,7 @@ export default function Checkout() {
                             fontWeight: 400,
                           }}
                         >
-                          Earthoria Store — FPT University Cần Thơ
+                          Earthoria Store - FPT University Cần Thơ
                         </div>
                         <div
                           style={{
@@ -2809,7 +2809,7 @@ export default function Checkout() {
                       gap: 18,
                     }}
                   >
-                    {/* Email — chung cả 2 mode */}
+                    {/* Email - chung cả 2 mode */}
                     <Field
                       label="Email nhận xác nhận đơn hàng"
                       required
@@ -2992,7 +2992,7 @@ export default function Checkout() {
                         </button>
                       )}
 
-                      {/*  Form thêm địa chỉ mới — thay cho bản đồ  */}
+                      {/*  Form thêm địa chỉ mới - thay cho bản đồ  */}
                       {showAddForm && (
                         <div
                           style={{
@@ -3218,7 +3218,7 @@ export default function Checkout() {
                             marginBottom: 6,
                           }}
                         >
-                          Giao đến —{" "}
+                          Giao đến -{" "}
                           <button
                             onClick={() => setSelectedAddressId(null)}
                             style={{
@@ -3412,13 +3412,13 @@ export default function Checkout() {
             </div>
           )}
 
-          {/*  STEP 2 — Phương thức thanh toán
+          {/*  STEP 2 - Phương thức thanh toán
            */}
           {step === 2 && (
             <div className="co-step">
               <SectionHead icon={CreditCard} title="Phương thức thanh toán" />
 
-              {/* payment tiles — sách điện tử không được COD, chỉ VNPay/MoMo */}
+              {/* payment tiles - sách điện tử không được COD, chỉ VNPay/MoMo */}
               <div
                 style={{
                   display: "grid",
@@ -3538,7 +3538,7 @@ export default function Checkout() {
                       gap: 8,
                     }}
                   >
-                    <Lock size={12} /> Thông tin thẻ — mã hoá bảo mật
+                    <Lock size={12} /> Thông tin thẻ - mã hoá bảo mật
                   </div>
                   <div
                     style={{
@@ -3809,12 +3809,12 @@ export default function Checkout() {
             </div>
           )}
 
-          {/*  STEP 3 — Xác nhận đơn hàng      */}
+          {/*  STEP 3 - Xác nhận đơn hàng      */}
           {step === 3 && (
             <div className="co-step">
               <SectionHead icon={ShieldCheck} title="Xác nhận đơn hàng" />
 
-              {/*  Review: shipping — sách điện tử không thu địa chỉ nên không hiện khối này  */}
+              {/*  Review: shipping - sách điện tử không thu địa chỉ nên không hiện khối này  */}
               {!isDigitalOrder && (
                 <ReviewBlock
                   title="Địa chỉ giao hàng"
@@ -4082,7 +4082,7 @@ export default function Checkout() {
             </div>
           )}
 
-          {/*  STEP 4 — Hoàn tất  */}
+          {/*  STEP 4 - Hoàn tất  */}
           {step === 4 && bankQrData && bankQrStatus !== "success" && (
             <div className="co-step" style={{ padding: "20px 20px 40px" }}>
               <SectionHead icon={QrCode} title="Quét mã để chuyển khoản" />
@@ -4258,7 +4258,7 @@ export default function Checkout() {
                         size={13}
                         style={{ animation: "spin 0.8s linear infinite" }}
                       />
-                      Đang chờ chuyển khoản — tự động xác nhận trong ít phút
+                      Đang chờ chuyển khoản - tự động xác nhận trong ít phút
                     </div>
 
                     <div
@@ -4440,7 +4440,7 @@ export default function Checkout() {
         </div>
 
         {/* ══════════════════════════════════════
-            RIGHT COLUMN — Order Summary
+            RIGHT COLUMN - Order Summary
             (luôn hiển thị, sync realtime)
         ══════════════════════════════════════ */}
         {showPriceModal && (

@@ -374,7 +374,7 @@
 .cc-toggle input:checked ~ .cc-toggle-track .cc-toggle-thumb {
   transform: translateX(20px);
 }
-/* Trạng thái khoá — essential luôn bật, không tương tác */
+/* Trạng thái khoá - essential luôn bật, không tương tác */
 .cc-toggle.locked {
   cursor: not-allowed;
 }
@@ -465,7 +465,7 @@ body.dark-mode .cc-toggle-track {
 }
 
 /* ═══════════════════════════════════════════════
-   RESPONSIVE — MOBILE
+   RESPONSIVE - MOBILE
    ═══════════════════════════════════════════════ */
 
 /* Tiện ích: JS có thể gắn class này lên <body> khi banner/modal đang mở
@@ -562,7 +562,7 @@ body.cc-lock-scroll {
     transform: translateY(0);
   }
 
-  /* Tay cầm kéo — gợi ý trực quan đây là sheet có thể vuốt để đóng */
+  /* Tay cầm kéo - gợi ý trực quan đây là sheet có thể vuốt để đóng */
   .cc-modal-header {
     position: sticky;
     top: 0;

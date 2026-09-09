@@ -75,7 +75,7 @@
 }
 
 #eira-root {
-  /* Bảng màu thương hiệu — được /e-kid xoay hue theo giờ trong ngày */
+  /* Bảng màu thương hiệu - được /e-kid xoay hue theo giờ trong ngày */
   --eg: #3f8f4f;
   --egl: #57b168;
   --egd: #1a5c47;
@@ -110,7 +110,7 @@
     --gh4 3.5s ease,
     --time-glow 3.5s ease;
 
-  /* Nền trung tính ấm — đồng bộ với --cp-bg / --cp-surface toàn site */
+  /* Nền trung tính ấm - đồng bộ với --cp-bg / --cp-surface toàn site */
   --c-bg: #f7f4ee;
   --c-surface: #fffdf9;
   --c-surface-2: #f1eee5;
@@ -120,7 +120,7 @@
   --c-text-soft: #55645c;
   --c-hint: #8a978f;
 
-  /* Shadow tinh giản — một lớp, độ mờ thấp */
+  /* Shadow tinh giản - một lớp, độ mờ thấp */
   --sh-1: 0 1px 2px rgba(20, 51, 42, 0.06);
   --sh-2: 0 3px 10px rgba(20, 51, 42, 0.08);
   --sh-3: 0 10px 28px rgba(20, 51, 42, 0.14);
@@ -473,7 +473,7 @@
   }
 }
 
-/* Rung nhẹ nút FAB đúng lúc badge vừa xuất hiện — báo hiệu tin nhắn mới */
+/* Rung nhẹ nút FAB đúng lúc badge vừa xuất hiện - báo hiệu tin nhắn mới */
 #eira-fab.has-badge {
   animation:
     fab-breathe 4.6s ease-in-out infinite,
@@ -1120,7 +1120,7 @@ img.eira-model-opt-emoji {
   box-shadow: var(--sh-1) !important;
 }
 
-/* User: khối màu forest đặc — đồng bộ với accent thương hiệu */
+/* User: khối màu forest đặc - đồng bộ với accent thương hiệu */
 #eira-root .em.user .em-bubble {
   background: linear-gradient(155deg, var(--g3), var(--g1)) !important;
   color: rgba(255, 255, 255, 0.97) !important;
@@ -1245,7 +1245,7 @@ img.eira-model-opt-emoji {
   }
 }
 
-/* "Đang suy nghĩ..." — chữ chạy shimmer (kiểu Claude): 1 dải sáng lướt qua
+/* "Đang suy nghĩ..." - chữ chạy shimmer (kiểu Claude): 1 dải sáng lướt qua
    chữ, nền chữ mờ đục để dải sáng nổi bật lên khi lướt qua. */
 .eira-thinking-text {
   padding: 11px 16px;
@@ -1518,7 +1518,7 @@ img.eira-model-opt-emoji {
   color: #7c3d0f !important;
 }
 
-/* Nút liên kết điều hướng nội bộ — thay cho link chữ thô, bấm để chuyển trang thật (react-router) */
+/* Nút liên kết điều hướng nội bộ - thay cho link chữ thô, bấm để chuyển trang thật (react-router) */
 .em-link-btn {
   display: inline-flex;
   align-items: center;

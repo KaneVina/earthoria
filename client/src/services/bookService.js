@@ -16,7 +16,7 @@ export const bookService = {
   getWishlist: () => api.get("/books/wishlist"),
   getCategories: () => api.get("/categories"),
 
-  // Admin/Staff — quản lý đánh giá
+  // Admin/Staff - quản lý đánh giá
   getAdminReviews: (params) => api.get("/admin/reviews", { params }),
   getAdminReviewById: (id) => api.get(`/admin/reviews/${id}`),
   replyToReview: (id, message) =>

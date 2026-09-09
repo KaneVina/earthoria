@@ -59,7 +59,7 @@ export default function FullScreenLoader({
               </linearGradient>
 
               {/* soft glow used by the traveling "shine" highlight that chases
-                  around the finished outline — blurs the short bright dash into
+                  around the finished outline - blurs the short bright dash into
                   a smooth comet-like streak instead of a hard-edged bar */}
               <filter
                 id="fslShineBlur"
@@ -286,10 +286,10 @@ export default function FullScreenLoader({
         }
 
         /* --- traveling shine: once the outline has finished drawing, a soft glint
-           sweeps one full lap around it and fades — timed to the same 3.6s cycle
+           sweeps one full lap around it and fades - timed to the same 3.6s cycle
            as fsl-draw/fsl-fill-in so it's perfectly in sync on every repeat, never
-           a random mid-sweep jump cut. Two layers share the same geometry — a
-           blurred wide glow underneath, a thin crisp core on top — which is what
+           a random mid-sweep jump cut. Two layers share the same geometry - a
+           blurred wide glow underneath, a thin crisp core on top - which is what
            reads as "glossy" rather than a flat moving bar. --- */
         .fsl-shine-glow,
         .fsl-shine-core {
@@ -310,7 +310,7 @@ export default function FullScreenLoader({
           stroke-opacity: 1;
           stroke-dasharray: 0.022 0.978;
         }
-        /* leaves are shorter, separate paths — a hair of delay keeps their glint
+        /* leaves are shorter, separate paths - a hair of delay keeps their glint
            trailing just behind the main stroke's instead of firing in lockstep */
         .fsl-shine-right { animation-delay: 0.05s; }
         .fsl-shine-left  { animation-delay: 0.1s; }

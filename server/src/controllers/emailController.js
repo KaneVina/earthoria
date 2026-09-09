@@ -42,7 +42,7 @@ function mapEmailItem(item) {
   };
 }
 
-/*   GET /admin/emails — lịch sử email đã gửi*/
+/*   GET /admin/emails - lịch sử email đã gửi*/
 exports.getEmailHistory = async (req, res) => {
   try {
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
@@ -68,7 +68,7 @@ exports.getEmailHistory = async (req, res) => {
   }
 };
 
-/*    GET /admin/emails/:id — chi tiết 1 email */
+/*    GET /admin/emails/:id - chi tiết 1 email */
 exports.getEmailDetail = async (req, res) => {
   try {
     const { id } = req.params;

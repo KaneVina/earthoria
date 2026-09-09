@@ -48,7 +48,7 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
-// Chặn request khi web đang bảo trì (trừ các đường dẫn luôn được phép — xem trong file middleware)
+// Chặn request khi web đang bảo trì (trừ các đường dẫn luôn được phép - xem trong file middleware)
 app.use(maintenanceGuard);
 
 // ================= API v1 =================

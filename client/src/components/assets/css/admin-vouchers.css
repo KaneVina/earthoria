@@ -81,7 +81,7 @@
   opacity: 0.85;
 }
 
-/* Perforation notches — cắt tròn 2 đầu, "ăn" vào nền trang (--a-bg) */
+/* Perforation notches - cắt tròn 2 đầu, "ăn" vào nền trang (--a-bg) */
 .a-voucher-card::before,
 .a-voucher-card::after {
   content: "";
@@ -112,7 +112,7 @@
   z-index: 2;
 }
 
-/* Stub — phần giá trị bên trái, gradient forest sang trọng */
+/* Stub - phần giá trị bên trái, gradient forest sang trọng */
 .a-voucher-stub {
   width: 104px;
   flex-shrink: 0;
@@ -153,7 +153,7 @@
   margin-top: 2px;
 }
 
-/* Body — phần chi tiết bên phải */
+/* Body - phần chi tiết bên phải */
 .a-voucher-body {
   flex: 1;
   min-width: 0;
@@ -310,7 +310,7 @@
   flex-shrink: 0;
 }
 
-/* Corner ribbon — sắp hết hạn */
+/* Corner ribbon - sắp hết hạn */
 .a-voucher-ribbon {
   position: absolute;
   top: 10px;

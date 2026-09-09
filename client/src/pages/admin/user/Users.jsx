@@ -37,7 +37,7 @@ const AVATAR_COLORS = [
 const avatarColor = (name = "") =>
   AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length];
 
-/* ─ Role badge config — mỗi vai trò một màu, đều bo tròn (đồng bộ .a-badge) ─ */
+/* ─ Role badge config - mỗi vai trò một màu, đều bo tròn (đồng bộ .a-badge) ─ */
 const ROLE_CONFIG = {
   ADMIN: { label: "Admin", cls: "dark" },
   STAFF: { label: "Staff", cls: "blue" },
@@ -91,7 +91,7 @@ function UserCodeBadge({ code }) {
   if (!code) {
     return (
       <span className="a-td-muted" style={{ fontSize: 11 }}>
-        —
+        -
       </span>
     );
   }
@@ -117,7 +117,7 @@ function UserCodeBadge({ code }) {
   );
 }
 
-/* ─ TierBadge — hạng thành viên, dùng chung với UserDetailDrawer (xem ./UserBadges.jsx) ─ */
+/* ─ TierBadge - hạng thành viên, dùng chung với UserDetailDrawer (xem ./UserBadges.jsx) ─ */
 
 /* ─ FilterSelect ─ */
 function FilterSelect({ value, onChange, options, placeholder }) {
@@ -220,7 +220,7 @@ export default function Users() {
   const [bulkAction, setBulkAction] = useState(null); // { action: 'lock'|'unlock' }
   const [exporting, setExporting] = useState(false);
 
-  // State cho form xác nhận khóa (email + lý do) — dùng chung cho cả modal 1 user & bulk
+  // State cho form xác nhận khóa (email + lý do) - dùng chung cho cả modal 1 user & bulk
   const [lockEmailInput, setLockEmailInput] = useState("");
   const [lockReason, setLockReason] = useState("");
 
@@ -286,7 +286,7 @@ export default function Users() {
   });
 
   // ⚠️ Lớp phòng vệ phía client: Staff không được thấy tài khoản ADMIN trong danh sách.
-  // Đây KHÔNG thay thế việc backend phải tự lọc theo role người gọi — nếu API
+  // Đây KHÔNG thay thế việc backend phải tự lọc theo role người gọi - nếu API
   // /admin/users chưa lọc, Staff vẫn có thể gọi thẳng API và thấy dữ liệu Admin.
   // Cần kiểm tra & vá phía server song song với thay đổi này.
   const users = useMemo(() => {
@@ -362,7 +362,7 @@ export default function Users() {
     return false;
   };
 
-  // Staff không được tạo tài khoản nào cả (chỉ xem danh sách) — chỉ Admin mới tạo được Dealer/Staff
+  // Staff không được tạo tài khoản nào cả (chỉ xem danh sách) - chỉ Admin mới tạo được Dealer/Staff
   const canCreateRoles = viewerRole === "ADMIN" ? ["DEALER", "STAFF"] : [];
 
   const roleFilterOptions = [
@@ -497,7 +497,7 @@ export default function Users() {
         </div>
       </div>
 
-      {/*  Search & Filters — full width, canh chung lề trái/phải với bảng phía dưới  */}
+      {/*  Search & Filters - full width, canh chung lề trái/phải với bảng phía dưới  */}
       <div
         style={{
           display: "flex",
@@ -508,7 +508,7 @@ export default function Users() {
           alignItems: "center",
         }}
       >
-        {/* Search box — kéo dài chiếm hết phần còn lại */}
+        {/* Search box - kéo dài chiếm hết phần còn lại */}
         <div
           className="a-search-wrap"
           style={{ flex: "1 1 260px", minWidth: 200, marginBottom: 0 }}
@@ -543,7 +543,7 @@ export default function Users() {
           )}
         </div>
 
-        {/* Cụm bộ lọc — luôn neo sát lề phải, khớp với mép phải của bảng bên dưới */}
+        {/* Cụm bộ lọc - luôn neo sát lề phải, khớp với mép phải của bảng bên dưới */}
         <div
           style={{
             display: "flex",
@@ -930,7 +930,7 @@ export default function Users() {
                               style={{ fontSize: 10.5 }}
                               title="Không thể tự khóa tài khoản của chính mình"
                             >
-                              —
+                              -
                             </span>
                           )}
                         </div>
@@ -943,7 +943,7 @@ export default function Users() {
           </table>
         </div>
 
-        {/* Pagination — dùng component dùng chung */}
+        {/* Pagination - dùng component dùng chung */}
         <Pagination
           page={page}
           totalPages={totalPages}
@@ -1036,7 +1036,7 @@ export default function Users() {
                     }}
                   >
                     Tài khoản này sẽ bị khóa. Để xác nhận, vui lòng nhập đúng
-                    email của tài khoản và lý do khóa — hệ thống sẽ tự động gửi
+                    email của tài khoản và lý do khóa - hệ thống sẽ tự động gửi
                     email thông báo kèm lý do cho người dùng.
                   </p>
 
@@ -1200,7 +1200,7 @@ export default function Users() {
                       marginBottom: 16,
                     }}
                   >
-                    Các tài khoản trên sẽ bị khóa cùng lúc. Nhập lý do chung —
+                    Các tài khoản trên sẽ bị khóa cùng lúc. Nhập lý do chung -
                     hệ thống sẽ gửi email thông báo kèm lý do cho từng người
                     dùng.
                   </p>

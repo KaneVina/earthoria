@@ -77,7 +77,7 @@ const createTicket = async (req, res) => {
       },
     });
 
-    // ─ Gửi email xác nhận tự động — không chặn phản hồi API nếu gửi mail lỗi ─
+    // ─ Gửi email xác nhận tự động - không chặn phản hồi API nếu gửi mail lỗi ─
     sendTicketCreatedEmail({
       to: ticket.email,
       name: ticket.name,

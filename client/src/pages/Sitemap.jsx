@@ -71,7 +71,7 @@ const SECTIONS = [
       },
       {
         label: "Đăng Ký",
-        sub: "Tạo tài khoản mới — miễn phí",
+        sub: "Tạo tài khoản mới - miễn phí",
         to: "/register",
       },
       {
@@ -316,7 +316,7 @@ export default function Sitemap() {
               fontFamily: "'Be Vietnam Pro', sans-serif",
             }}
           >
-            Toàn bộ các trang của Earthoria — nhấn vào bất kỳ liên kết nào để
+            Toàn bộ các trang của Earthoria - nhấn vào bất kỳ liên kết nào để
             đến ngay trang đó.
           </p>
         </div>

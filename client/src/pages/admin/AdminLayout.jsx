@@ -29,7 +29,7 @@ export default function AdminLayout({ children, crumbs }) {
 
   const handleLogout = async () => {
     try {
-      await authService.logout(); // gọi POST /auth/logout — clear cookie + revoke token ở DB
+      await authService.logout(); // gọi POST /auth/logout - clear cookie + revoke token ở DB
     } catch (err) {
       console.error("Logout API failed:", err);
     }

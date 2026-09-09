@@ -248,7 +248,7 @@ model BookVariant {
   orderItems           OrderItem[]
   inventoryImportItems InventoryImportItem[]
 
-  // 1 Book chỉ có 1 variant PHYSICAL và 1 variant DIGITAL — không cho tạo trùng format
+  // 1 Book chỉ có 1 variant PHYSICAL và 1 variant DIGITAL - không cho tạo trùng format
   @@unique([bookId, format])
   @@index([bookId])
   @@index([productCode])
@@ -460,7 +460,7 @@ model Order {
   requestInvoice  Boolean       @default(false)
 
   // ─ Hạng thành viên (hệ thống "Vùng Đất") áp dụng tại thời điểm đặt đơn ─
-  loyaltyTier     String?       // code hạng lúc đặt đơn, vd "DAK_LAK" — lưu vết để không đổi ngược khi hạng user thay đổi sau này
+  loyaltyTier     String?       // code hạng lúc đặt đơn, vd "DAK_LAK" - lưu vết để không đổi ngược khi hạng user thay đổi sau này
   loyaltyDiscount Float         @default(0) // số tiền được giảm nhờ hạng thành viên, tách riêng khỏi discount coupon
 
   user                User                 @relation(fields: [userId], references: [id])
@@ -527,7 +527,7 @@ enum PaymentTxnType {
   EXPIRE
 }
 
-// Lịch sử toàn bộ giao dịch/callback thanh toán — phục vụ đối soát, audit, và điều tra khi có tranh chấp.
+// Lịch sử toàn bộ giao dịch/callback thanh toán - phục vụ đối soát, audit, và điều tra khi có tranh chấp.
 model PaymentTransaction {
   id               String              @id @default(uuid())
   orderId          String?
@@ -578,7 +578,7 @@ model Review {
 
   purchasedFormats BookFormat[] @default([])
 
-  // Phản hồi công khai từ shop (staff/admin) — 1 review chỉ có 1 phản hồi mới nhất
+  // Phản hồi công khai từ shop (staff/admin) - 1 review chỉ có 1 phản hồi mới nhất
   reply       String?
   repliedAt   DateTime?
   repliedById String?
@@ -589,7 +589,7 @@ model Review {
   votes     ReviewVote[]
 }
 
-// Vote "hữu ích / không hữu ích" cho 1 review — mỗi user chỉ vote 1 lần / review,
+// Vote "hữu ích / không hữu ích" cho 1 review - mỗi user chỉ vote 1 lần / review,
 // vote sau ghi đè vote trước (đổi ý), bấm lại lựa chọn cũ = bỏ vote.
 model ReviewVote {
   id        String   @id @default(uuid())
@@ -747,7 +747,7 @@ model ChildBookAccess {
   @@index([bookId])
 }
 
-// Nhật ký phiên đọc/xem AR của trẻ — nguồn dữ liệu thật cho biểu đồ
+// Nhật ký phiên đọc/xem AR của trẻ - nguồn dữ liệu thật cho biểu đồ
 model ChildActivityLog {
   id         String   @id @default(uuid())
   childId    String
@@ -934,7 +934,7 @@ model Ticket {
   @@index([createdAt])
 }
 
-// Lịch sử phản hồi của staff/admin cho 1 ticket — mỗi bản ghi tương ứng 1 email tự động gửi cho khách
+// Lịch sử phản hồi của staff/admin cho 1 ticket - mỗi bản ghi tương ứng 1 email tự động gửi cho khách
 model TicketReply {
   id        String   @id @default(uuid())
   ticketId  String
@@ -957,8 +957,8 @@ model NewsPost {
   authorId    String
   author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
-  isHidden    Boolean  @default(false) // Ẩn — vẫn còn trong DB nhưng không hiện công khai
-  isDeleted   Boolean  @default(false) // Xóa mềm — không hiện ở đâu cả, chờ xóa cứng hoặc khôi phục
+  isHidden    Boolean  @default(false) // Ẩn - vẫn còn trong DB nhưng không hiện công khai
+  isDeleted   Boolean  @default(false) // Xóa mềm - không hiện ở đâu cả, chờ xóa cứng hoặc khôi phục
   deletedAt   DateTime?
 
   createdAt   DateTime @default(now())
@@ -974,7 +974,7 @@ model NewsFile {
   fileUrl     String   // link Cloudinary
   fileType    String   // đuôi/loại file (pdf, docx, xlsx, zip, png, ...)
   fileSize    Int?     // bytes
-  publicId    String?  // public_id trên Cloudinary — dùng khi xóa file khỏi CDN
+  publicId    String?  // public_id trên Cloudinary - dùng khi xóa file khỏi CDN
 
   uploaderId  String
   uploader    User     @relation(fields: [uploaderId], references: [id], onDelete: Cascade)

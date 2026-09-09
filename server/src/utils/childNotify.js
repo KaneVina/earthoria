@@ -99,7 +99,7 @@ async function notifySkippedRest(child) {
 /**
  * Gửi email cho phụ huynh khi bé bấm "Nhờ ba mẹ mua" một cuốn sách. Không có
  * cờ bật/tắt hay throttle như 2 hàm trên vì đây là sự kiện rời rạc, có ý
- * nghĩa mua hàng thực sự (giống email xác nhận đơn hàng) — không phải cảnh
+ * nghĩa mua hàng thực sự (giống email xác nhận đơn hàng) - không phải cảnh
  * báo lặp lại hằng ngày nên phụ huynh luôn cần biết ngay.
  */
 async function notifyBookRequest(child, book) {

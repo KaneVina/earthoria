@@ -2,7 +2,7 @@ export function TierBadge({ tier, size = "sm", showImage = true }) {
   if (!tier)
     return (
       <span className="a-td-muted" style={{ fontSize: 11 }}>
-        —
+        -
       </span>
     );
   const dims = size === "sm" ? 18 : 34;

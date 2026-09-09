@@ -127,7 +127,7 @@ export default function Products() {
   );
 }
 
-/* Nút "Nhập kho" / "Thêm sách mới" ở góc phải header — chỉ hiện khi đang ở tab Sách */
+/* Nút "Nhập kho" / "Thêm sách mới" ở góc phải header - chỉ hiện khi đang ở tab Sách */
 function BooksImportButtons() {
   const navigate = useNavigate();
   return (
@@ -151,7 +151,7 @@ function BooksImportButtons() {
 }
 
 /* ══════════════════════════════════════════════════════════
-   TAB: SÁCH — danh sách, tìm kiếm, lọc, xóa (logic gốc giữ nguyên)
+   TAB: SÁCH - danh sách, tìm kiếm, lọc, xóa (logic gốc giữ nguyên)
    ══════════════════════════════════════════════════════════ */
 function BooksTab() {
   const qc = useQueryClient();
@@ -173,7 +173,7 @@ function BooksTab() {
   const hasActiveFilters = Object.values(filters).some((v) => v !== "");
 
   /*  Queries
-     `search` khớp theo tên sách, nhà xuất bản, VÀ mã sách (productCode) — xử lý ở backend. */
+     `search` khớp theo tên sách, nhà xuất bản, VÀ mã sách (productCode) - xử lý ở backend. */
   const { data, isLoading } = useQuery({
     queryKey: ["admin-products", page, search, filters],
     queryFn: () =>
@@ -396,7 +396,7 @@ function BooksTab() {
                               {p.title}
                             </div>
                             <div className="a-td-muted">
-                              {(p.authors ?? []).join(", ") || "—"}
+                              {(p.authors ?? []).join(", ") || "-"}
                             </div>
                             <div
                               style={{ display: "flex", gap: 6, marginTop: 2 }}
@@ -410,7 +410,7 @@ function BooksTab() {
                                     color: "rgba(13,51,48,0.4)",
                                   }}
                                 >
-                                  {v.productCode ?? "—"}
+                                  {v.productCode ?? "-"}
                                 </span>
                               ))}
                             </div>
@@ -420,7 +420,7 @@ function BooksTab() {
 
                       <td>
                         <span className="a-badge neutral">
-                          {p.category?.name ?? "—"}
+                          {p.category?.name ?? "-"}
                         </span>
                       </td>
 

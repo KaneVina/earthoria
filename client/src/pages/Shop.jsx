@@ -195,7 +195,7 @@ const STATIC_PRODUCTS = [
     slug: "co-the-con-nguoi",
     hashId: "co-the-con-nguoi",
     title: "Cơ Thể Con Người",
-    desc: "Bóc tách từng lớp của cơ thể người — xương, cơ, nội tạng — với mô hình AR tương tác độ nét cao.",
+    desc: "Bóc tách từng lớp của cơ thể người - xương, cơ, nội tạng - với mô hình AR tương tác độ nét cao.",
     price: "390.000đ",
     oldPrice: "450.000đ",
     discount: "-13%",
@@ -526,7 +526,7 @@ const displayPrice = (val) => {
   if (val === undefined || val === null || val === "") return "";
   return typeof val === "number" ? formatPrice(val) : val;
 };
-// Đếm số chạy giảm dần từ giá gốc xuống giá sale — chỉ bắt đầu khi lướt tới,
+// Đếm số chạy giảm dần từ giá gốc xuống giá sale - chỉ bắt đầu khi lướt tới,
 // đứng yên ở giá gốc lúc chưa lướt tới, giống hiệu ứng countdown
 function CountdownPrice({ from, to, duration = 1200 }) {
   const [display, setDisplay] = useState(from);
@@ -673,7 +673,7 @@ function ProductCard({ book, onAddToCart, delay, isAdding }) {
         {/* Rating */}
         <StarRating rating={book.rating} count={book.reviewCount} />
 
-        {/* Title — cố định 2 dòng */}
+        {/* Title - cố định 2 dòng */}
         <div
           className="product-title"
           style={{
@@ -689,7 +689,7 @@ function ProductCard({ book, onAddToCart, delay, isAdding }) {
           {book.title}
         </div>
 
-        {/* Desc — cố định 2 dòng */}
+        {/* Desc - cố định 2 dòng */}
         <p
           className="product-desc"
           style={{
@@ -773,7 +773,7 @@ function ProductCard({ book, onAddToCart, delay, isAdding }) {
           </span>
         </div>
 
-        {/* Tags — tối đa 2 hàng, overflow "..." */}
+        {/* Tags - tối đa 2 hàng, overflow "..." */}
         <div
           style={{
             display: "-webkit-box",
@@ -811,7 +811,7 @@ function ProductCard({ book, onAddToCart, delay, isAdding }) {
         {/* Spacer */}
         <div style={{ flex: 1 }} />
 
-        {/* Footer — giá + giỏ hàng */}
+        {/* Footer - giá + giỏ hàng */}
         <div className="product-footer" style={{ alignItems: "center" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
             {book.salePrice && book.salePrice < book.price ? (
@@ -1104,7 +1104,7 @@ export default function Shop() {
           overflow: "hidden",
         }}
       >
-        {/* Video background — full opacity */}
+        {/* Video background - full opacity */}
         <video
           autoPlay
           muted
@@ -1665,7 +1665,7 @@ export default function Shop() {
               <div className="promo-left">
                 <div className="promo-eyebrow">Ưu đãi tháng 6</div>
                 <div className="promo-title">
-                  Mua 2 cuốn —<br />
+                  Mua 2 cuốn -<br />
                   <em>Giảm ngay 15%</em>
                 </div>
               </div>
@@ -1772,7 +1772,7 @@ export default function Shop() {
         id="cta-section"
         style={{ padding: "100px", position: "relative", overflow: "hidden" }}
       >
-        {/* Video background cho CTA — lazy load, phát chậm */}
+        {/* Video background cho CTA - lazy load, phát chậm */}
         <video
           ref={ctaVideoRef}
           muted
@@ -1832,7 +1832,7 @@ export default function Shop() {
             Chưa tìm thấy sản phẩm ưng ý?
           </span>
           <h2 className="cta-headline reveal">
-            Tham gia cộng đồng —<br />
+            Tham gia cộng đồng -<br />
             <em>Nhận thông báo sản phẩm mới</em>
           </h2>
           <p className="cta-sub reveal">

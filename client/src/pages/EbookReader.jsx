@@ -21,11 +21,11 @@ export default function EbookReader() {
   const [state, setState] = useState({ status: "loading", data: null });
   const book = state.data?.book;
 
-  // Giờ đọc còn lại hôm nay (do ba mẹ thiết lập) — chỉ có ở chế độ đọc
+  // Giờ đọc còn lại hôm nay (do ba mẹ thiết lập) - chỉ có ở chế độ đọc
   // riêng của bé. Lấy 1 lần từ hồ sơ bé, rồi cập nhật số phút đã đọc theo
   // mỗi lần ping phiên hoạt động bên dưới.
   const [kidTimeInfo, setKidTimeInfo] = useState(null);
-  // Hồ sơ đầy đủ của bé (bao gồm cấu hình nhắc nghỉ mắt/giải lao bắt buộc) —
+  // Hồ sơ đầy đủ của bé (bao gồm cấu hình nhắc nghỉ mắt/giải lao bắt buộc) -
   // để nhắc nghỉ mắt vẫn chạy được ngay trong lúc bé đang đọc sách, đồng bộ
   // với trang kệ sách (/e-kid/:slug/:token) thay vì chỉ chạy ở đó.
   const [kidChild, setKidChild] = useState(null);
@@ -46,7 +46,7 @@ export default function EbookReader() {
         };
         localStorage.setItem(storageKey, JSON.stringify(map));
       } catch {
-        // localStorage không khả dụng — bỏ qua, không chặn trải nghiệm đọc
+        // localStorage không khả dụng - bỏ qua, không chặn trải nghiệm đọc
       }
     },
     [isKidMode, token, book],
@@ -78,7 +78,7 @@ export default function EbookReader() {
     };
   }, [isKidMode, token]);
 
-  // Nhắc nghỉ mắt định kỳ + giải lao bắt buộc — chạy ngay trong lúc đọc,
+  // Nhắc nghỉ mắt định kỳ + giải lao bắt buộc - chạy ngay trong lúc đọc,
   // dùng chung hook/overlay với trang kệ sách (KidAccess) và trang AR.
   const restBreak = useKidRestBreak(
     kidChild,
@@ -104,7 +104,7 @@ export default function EbookReader() {
         const httpStatus = err.response?.status;
 
         if (httpStatus === 401) {
-          // Phiên của bé không có tài khoản để đăng nhập lại — hiện màn
+          // Phiên của bé không có tài khoản để đăng nhập lại - hiện màn
           // hình "không tìm thấy" thân thiện thay vì đá về /login.
           if (isKidMode) {
             setState({ status: "not-found", data: null });
@@ -165,7 +165,7 @@ export default function EbookReader() {
   }, [effectiveSlug, token, isKidMode, navigate]);
 
   // Kid mode: ghi nhận phiên đọc thật lên server (server tự tính phút bằng
-  // đồng hồ server, không dùng số phút đếm ở client) — để Parent Dashboard có
+  // đồng hồ server, không dùng số phút đếm ở client) - để Parent Dashboard có
   // dữ liệu thật và daily limit/khung giờ được áp dụng đúng trong lúc đọc.
   useEffect(() => {
     if (!isKidMode || state.status !== "ready") return;
@@ -212,7 +212,7 @@ export default function EbookReader() {
               navigate(`/e-kid/${slug}/${token}`, { replace: true });
             }
           } catch {
-            // Bỏ qua lỗi 1 lần ping (vd mất mạng tạm thời) — thử lại ở lần kế tiếp
+            // Bỏ qua lỗi 1 lần ping (vd mất mạng tạm thời) - thử lại ở lần kế tiếp
           }
         }, 45000);
       } catch {

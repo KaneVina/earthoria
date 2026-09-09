@@ -86,7 +86,7 @@ export default function Maintenance({ until, message }) {
     <div style={styles.page}>
       <style>{GLOBAL_CSS}</style>
 
-      {/* ══ LEFT — Atmosphere panel (hidden < 980px) ══ */}
+      {/* ══ LEFT - Atmosphere panel (hidden < 980px) ══ */}
       <div className="em-visual-hide" style={styles.visual}>
         <div style={styles.vVignette} />
         <div style={styles.vWatermark}>
@@ -168,23 +168,23 @@ export default function Maintenance({ until, message }) {
         <div className="em-rise-5" style={styles.vQuote}>
           <span style={styles.vQuoteMark}>"</span>
           <p style={styles.vQuoteText}>
-            Một thư viện không bao giờ thực sự đóng cửa — nó chỉ đang lật sang
+            Một thư viện không bao giờ thực sự đóng cửa - nó chỉ đang lật sang
             trang mới.
           </p>
         </div>
       </div>
 
-      {/* Spine — the crease between the two "pages" of the book */}
+      {/* Spine - the crease between the two "pages" of the book */}
       <div className="em-visual-hide" style={styles.spine}>
         <span style={styles.spineHighlight} />
       </div>
 
-      {/* ══ RIGHT — Announcement panel (reads like an open page) ══ */}
+      {/* ══ RIGHT - Announcement panel (reads like an open page) ══ */}
       <div className="em-panel" style={styles.panel}>
         <div style={styles.panelRing} />
 
         <div className="em-rise-1 em-panel-wrap" style={styles.panelWrap}>
-          {/* Header row — eyebrow left, logo right, same line, no boxes */}
+          {/* Header row - eyebrow left, logo right, same line, no boxes */}
           <div style={styles.headerRow}>
             <div style={styles.badge}>
               <span style={styles.badgeDot} />
@@ -199,7 +199,7 @@ export default function Maintenance({ until, message }) {
             </div>
           </div>
 
-          {/* Title — level with the Eira mascot image */}
+          {/* Title - level with the Eira mascot image */}
           <div className="em-title-row" style={styles.titleRow}>
             <h1 className="em-title" style={styles.title}>
               Chúng tôi đang <em style={styles.titleEm}>nâng cấp</em>
@@ -234,10 +234,10 @@ export default function Maintenance({ until, message }) {
             <span style={styles.plannedNote}>
               "Đây là hành động đã được lên kế hoạch trước, không phải sự cố."
             </span>
-            <span style={styles.signOff}>— Đội ngũ Quản lý Earthoria</span>
+            <span style={styles.signOff}>- Đội ngũ Quản lý Earthoria</span>
           </div>
 
-          {/* Countdown — the ONE bold element: a dark plaque that echoes
+          {/* Countdown - the ONE bold element: a dark plaque that echoes
               the left page, so the whole spread reads as one book */}
           <div className="em-countdown-card" style={styles.countdownCard}>
             <span style={styles.countdownGlow} />
@@ -249,7 +249,7 @@ export default function Maintenance({ until, message }) {
             {done ? (
               <div style={styles.doneBox}>
                 <span className="em-spinner" style={styles.spinner} />
-                <span>Đã hoàn tất — đang tự động tải lại trang…</span>
+                <span>Đã hoàn tất - đang tự động tải lại trang…</span>
               </div>
             ) : (
               <div className="em-units" style={styles.units}>
@@ -279,7 +279,7 @@ export default function Maintenance({ until, message }) {
               </div>
             )}
 
-            {/* Thanh tiến độ bảo trì — fill mượt tới 78%, có hiệu ứng
+            {/* Thanh tiến độ bảo trì - fill mượt tới 78%, có hiệu ứng
                 shimmer ánh sáng lướt qua liên tục để trông sống động. */}
             <div className="em-progress" style={styles.progressWrap}>
               <div style={styles.progressHead}>
@@ -325,7 +325,7 @@ export default function Maintenance({ until, message }) {
             </div>
           </div>
 
-          {/* Contact — plain rows, hairline rhythm, no boxes */}
+          {/* Contact - plain rows, hairline rhythm, no boxes */}
           <div style={styles.sectionLabel}>Liên hệ hỗ trợ</div>
           <div className="em-contact-grid" style={styles.contactGrid}>
             <a
@@ -380,7 +380,7 @@ export default function Maintenance({ until, message }) {
             </a>
           </div>
 
-          {/* Reasons — read like a table of contents / colophon, no scroll box */}
+          {/* Reasons - read like a table of contents / colophon, no scroll box */}
           <div style={{ ...styles.sectionLabel, marginTop: 34 }}>
             Nội dung nâng cấp lần này
           </div>
@@ -408,7 +408,7 @@ export default function Maintenance({ until, message }) {
 }
 
 /*
-   PALETTE — unchanged, copied 1:1 from main.css :root
+   PALETTE - unchanged, copied 1:1 from main.css :root
 */
 const INK = "#0a0e0c";
 const FOREST = "#0d3330";
@@ -898,7 +898,7 @@ const styles = {
     letterSpacing: "0.02em",
   },
 
-  /* Countdown — the ONE bold, dark element on the page. It echoes the
+  /* Countdown - the ONE bold, dark element on the page. It echoes the
      left panel's palette so the whole spread reads as a single book. */
   countdownCard: {
     position: "relative",

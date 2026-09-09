@@ -45,7 +45,7 @@ async function fetchMonitorFromUptimeRobot() {
   return data.monitors[0];
 }
 
-// GET /api/v1/status — public
+// GET /api/v1/status - public
 const getPublicStatus = async (req, res) => {
   const now = Date.now();
   if (cache.data && cache.expiresAt > now) {

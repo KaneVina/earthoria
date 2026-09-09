@@ -72,7 +72,7 @@ nav.is-scrolled .nav-logo {
   }
 }
 
-/* Logo nhỏ — MẶC ĐỊNH */
+/* Logo nhỏ - MẶC ĐỊNH */
 .nav-logo-compact {
   position: absolute;
   left: 0;
@@ -88,7 +88,7 @@ nav.is-scrolled .nav-logo {
     visibility 0.45s;
 }
 
-/* Logo ngang — ẨN ban đầu */
+/* Logo ngang - ẨN ban đầu */
 .nav-logo-full {
   position: absolute;
   left: 0;
@@ -273,7 +273,7 @@ nav.is-scrolled .nav-logo-shine-compact {
   pointer-events: none !important;
 }
 
-/* ACTIVE dark mode — đẩy sáng hơn để đọc được trên nền tối */
+/* ACTIVE dark mode - đẩy sáng hơn để đọc được trên nền tối */
 body.dark-mode .nav-links a.active {
   background: linear-gradient(
     135deg,
@@ -550,7 +550,7 @@ body.dark-mode .nav-icon[data-tooltip]::after {
   overflow: visible;
 }
 
-/* CART DROPDOWN — xem nhanh giỏ hàng khi rê chuột vào icon giỏ*/
+/* CART DROPDOWN - xem nhanh giỏ hàng khi rê chuột vào icon giỏ*/
 .nav-cart-wrapper {
   position: relative;
 }

@@ -1,4 +1,4 @@
-// Sidebar.jsx — Sidebar admin, menu chia nhóm, mỗi nhóm bấm vào tiêu đề để thu gọn/mở rộng
+// Sidebar.jsx - Sidebar admin, menu chia nhóm, mỗi nhóm bấm vào tiêu đề để thu gọn/mở rộng
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -63,7 +63,7 @@ export default function Sidebar({
     user?.name ||
     `${user?.firstName || ""} ${user?.lastName || ""}`.trim() ||
     "Chưa đăng nhập";
-  const displayEmail = user?.email || "—";
+  const displayEmail = user?.email || "-";
   const initials = getInitials(user);
   const sidebarLogo = getSidebarLogo(currentPath);
 
@@ -82,7 +82,7 @@ export default function Sidebar({
   // (giữ lại như một lớp phòng vệ thêm, không bắt buộc nhưng vô hại)
   const stopBubble = (e) => e.stopPropagation();
 
-  // Tooltip cho icon khi sidebar thu gọn — định vị bằng toạ độ thật của icon
+  // Tooltip cho icon khi sidebar thu gọn - định vị bằng toạ độ thật của icon
   // (position: fixed) nên không bao giờ bị viền/scroll của sidebar cắt mất.
   const [tooltip, setTooltip] = useState(null); // { label, top, left } | null
 
@@ -162,7 +162,7 @@ export default function Sidebar({
           )}
         </div>
 
-        {/* Nav groups — lọc item theo role trước khi render; nhóm không còn item nào thì ẩn cả nhóm */}
+        {/* Nav groups - lọc item theo role trước khi render; nhóm không còn item nào thì ẩn cả nhóm */}
         <nav className="a-nav" aria-label="Admin menu">
           {NAV_GROUPS.map((group) => {
             const visibleItems = group.items.filter(
@@ -173,7 +173,7 @@ export default function Sidebar({
             const isGroupCollapsed = !!collapsedGroups[group.id];
             return (
               <div key={group.id} className="a-nav-group">
-                {/* Tiêu đề nhóm — ẩn khi sidebar đang ở dạng icon-only */}
+                {/* Tiêu đề nhóm - ẩn khi sidebar đang ở dạng icon-only */}
                 {!collapsed && (
                   <button
                     type="button"
@@ -192,7 +192,7 @@ export default function Sidebar({
                   </button>
                 )}
 
-                {/* Danh sách item trong nhóm — luôn hiện nếu sidebar collapsed (icon-only),
+                {/* Danh sách item trong nhóm - luôn hiện nếu sidebar collapsed (icon-only),
                   ngược lại chỉ hiện khi nhóm đang mở */}
                 {(collapsed || !isGroupCollapsed) &&
                   visibleItems.map((item) => {

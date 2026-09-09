@@ -182,7 +182,7 @@ export default function ProductsCategories() {
                       </div>
                     </td>
                     <td>
-                      <span className="a-code-badge">{c.slug ?? "—"}</span>
+                      <span className="a-code-badge">{c.slug ?? "-"}</span>
                     </td>
                     <td className="a-td-muted">{c._count?.products ?? 0}</td>
                     <td>

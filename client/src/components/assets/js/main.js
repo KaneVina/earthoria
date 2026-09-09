@@ -22,7 +22,7 @@ const observer = new IntersectionObserver(
 );
 document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
 
-// Counter — chỉ chạy khi scroll tới, chạy 1 lần
+// Counter - chỉ chạy khi scroll tới, chạy 1 lần
 function animateStat(item) {
   if (item.classList.contains("counted")) return;
   item.classList.add("counted");
@@ -35,7 +35,7 @@ function animateStat(item) {
   function update(now) {
     const elapsed = now - start;
     const progress = Math.min(elapsed / duration, 1);
-    // ease out quart — nhanh lúc đầu, chậm dần cuối
+    // ease out quart - nhanh lúc đầu, chậm dần cuối
     const ease = 1 - Math.pow(1 - progress, 4);
     const value = Math.round(ease * target);
     countEl.textContent = target >= 100 ? value.toLocaleString("vi-VN") : value;
@@ -59,7 +59,7 @@ const statsObserver = new IntersectionObserver(
               setTimeout(() => {
                 animateStat(item);
                 item.classList.add("counted"); // kích hoạt bar
-              }, i * 180); // mỗi stat cách nhau 180ms — lần lượt từng cái
+              }, i * 180); // mỗi stat cách nhau 180ms - lần lượt từng cái
             });
         }, 300);
         statsObserver.unobserve(e.target); // chỉ chạy 1 lần

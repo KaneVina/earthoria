@@ -458,7 +458,7 @@ export default function GameManager() {
                 <div
                   style={{ fontSize: 12, fontWeight: 500, marginBottom: 10 }}
                 >
-                  {qrTarget.book.title} — {qrTarget.game.title}
+                  {qrTarget.book.title} - {qrTarget.game.title}
                 </div>
                 <div
                   ref={qrWrapRef}

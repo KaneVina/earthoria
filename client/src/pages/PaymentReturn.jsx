@@ -197,7 +197,7 @@ export default function PaymentReturn({ method }) {
               {state.success
                 ? `Đơn hàng của bạn đã được xác nhận qua ${methodLabel}.`
                 : showPending
-                  ? "Giao dịch đã được gateway ghi nhận, hệ thống đang xác nhận lại — thường chỉ mất vài giây."
+                  ? "Giao dịch đã được gateway ghi nhận, hệ thống đang xác nhận lại - thường chỉ mất vài giây."
                   : state.message ||
                     `Giao dịch ${methodLabel} không thành công hoặc đã bị huỷ.`}
             </p>

@@ -261,12 +261,12 @@
   position: absolute;
   inset: 0;
   display: flex;
-  /* KHÔNG dùng align-items/justify-content: center ở đây — khi nội dung
+  /* KHÔNG dùng align-items/justify-content: center ở đây - khi nội dung
      to hơn khung (ví dụ sau khi zoom), flexbox center + overflow:auto có
      lỗi kinh điển: phần tràn ra phía TRÊN/TRÁI bị kẹt, không cách nào
      cuộn tới được (trình duyệt chỉ cho cuộn về phía cuối). Thay vào đó
      canh giữa phần tử con bằng margin:auto (xem .er-stage > div bên
-     dưới) — cách này luôn cuộn được đủ 4 hướng dù nội dung to cỡ nào. */
+     dưới) - cách này luôn cuộn được đủ 4 hướng dù nội dung to cỡ nào. */
   overflow: auto;
   padding: 62px 10px 108px;
   scrollbar-width: thin;
@@ -305,7 +305,7 @@
 
 /* ─ Nút điều hướng 2 bên (thay thế phải kéo xuống thanh số trang) ─
    Ẩn/mờ mặc định, chỉ hiện khi rê chuột vào vùng đó (desktop) hoặc chạm
-   (di động) — cùng kiểu hành vi với thanh số trang phía dưới. */
+   (di động) - cùng kiểu hành vi với thanh số trang phía dưới. */
 .er-side-hotspot {
   position: absolute;
   top: 64px;
@@ -672,7 +672,7 @@
 
 /* ─ Drawer công cụ đọc sách (trượt từ bên phải, mở bằng nút Hamburger) ─
    Kính mờ tối đồng bộ màu thương hiệu, bố cục dạng danh sách theo nhóm
-   thay vì các nút tròn xếp sát nhau — dễ đọc và "đẹp" hơn trên di động. */
+   thay vì các nút tròn xếp sát nhau - dễ đọc và "đẹp" hơn trên di động. */
 .er-tools-drawer {
   width: min(360px, 100vw);
   height: 100%;
@@ -1042,7 +1042,7 @@
 /* ─ Hiệu ứng lật trang: xoay 3D thật quanh trục gáy sách (tận dụng
    perspective đã đặt sẵn ở phần tử cha). Chỉ animate transform + opacity
    (2 thuộc tính rẻ nhất cho GPU, không phải vẽ lại/tổng hợp lớp tốn kém
-   như filter) để chạy mượt kể cả trên máy yếu — phần đổ bóng lúc lật
+   như filter) để chạy mượt kể cả trên máy yếu - phần đổ bóng lúc lật
    dùng 1 lớp phủ gradient riêng, cũng chỉ animate opacity. ─ */
 .er-flip {
   position: relative;
@@ -1141,7 +1141,7 @@
 
 /* Xem 2 trang (spread): khối lật rộng gấp đôi nên nếu vẫn xoay quanh mép
    ngoài như 1 trang sẽ tạo cảm giác vặn/méo rất kỳ. Đổi sang co giãn nhẹ
-   theo chiều ngang quanh tâm (gáy sách ở giữa) — cũng đi rồi về (co nhỏ
+   theo chiều ngang quanh tâm (gáy sách ở giữa) - cũng đi rồi về (co nhỏ
    lại rồi mở ra) đúng lúc JS tráo nội dung, kèm mờ đi ở giữa để che mối
    nối, giống cảm giác gấp cả 2 trang lại rồi mở ra hơn là 1 cánh cửa
    xoay lớn. */

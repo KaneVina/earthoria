@@ -54,7 +54,7 @@ async function sendRegisterOtp(req, res) {
     const otpHash = hashOtp(otp);
     const otpExpires = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
-    // Upsert PendingUser — nếu user gửi lại OTP thì cập nhật, không tạo trùng
+    // Upsert PendingUser - nếu user gửi lại OTP thì cập nhật, không tạo trùng
     await prisma.pendingUser.upsert({
       where: { email: normalizedEmail },
       update: {

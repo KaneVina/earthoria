@@ -38,10 +38,10 @@ function StatusBadge({ status, label }) {
 
 /* ══════════════════════════════════════════════
    COMPOSE MODAL
-   — "to" có autocomplete gợi ý khách hàng (role CUSTOMER) trong DB, gõ từ 1 ký tự là gợi ý
-   — Chữ ký tự điền theo tài khoản admin/staff đang đăng nhập:
+   - "to" có autocomplete gợi ý khách hàng (role CUSTOMER) trong DB, gõ từ 1 ký tự là gợi ý
+   - Chữ ký tự điền theo tài khoản admin/staff đang đăng nhập:
      field nào có sẵn dữ liệu -> khoá mặc định (readOnly), nhưng có nút mở khoá để sửa tay
-   — Bên phải hiển thị xem trước email theo đúng template thật, cập nhật tự động khi gõ
+   - Bên phải hiển thị xem trước email theo đúng template thật, cập nhật tự động khi gõ
 ══════════════════════════════════════════════ */
 function ComposeModal({ onClose, onSent }) {
   const [form, setForm] = useState({
@@ -295,7 +295,7 @@ function ComposeModal({ onClose, onSent }) {
               borderTop: "1px solid var(--a-ink-08)",
             }}
           >
-            {/* CỘT TRÁI — FORM */}
+            {/* CỘT TRÁI - FORM */}
             <div
               className="a-modal-body"
               style={{
@@ -428,7 +428,7 @@ function ComposeModal({ onClose, onSent }) {
                     marginTop: 5,
                   }}
                 >
-                  Chỉ cần gõ chữ thường — hệ thống tự canh chỉnh theo mẫu email
+                  Chỉ cần gõ chữ thường - hệ thống tự canh chỉnh theo mẫu email
                   của Earthoria. Dòng chào "Xin chào, ..." sẽ tự lấy tên từ
                   email người nhận đầu tiên.
                 </p>
@@ -495,7 +495,7 @@ function ComposeModal({ onClose, onSent }) {
               </div>
             </div>
 
-            {/* CỘT PHẢI — XEM TRƯỚC EMAIL */}
+            {/* CỘT PHẢI - XEM TRƯỚC EMAIL */}
             <div
               style={{
                 flex: 1,

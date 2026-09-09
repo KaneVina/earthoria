@@ -81,7 +81,7 @@ async function main() {
     `Giờ đăng nhập bằng "${email}" và mở lại URL AR là sẽ xem được model.`,
   );
   console.log(
-    `(Muốn xoá đơn test này sau khi xong: xoá Order id "${order.id}" trong DB — OrderItem sẽ tự xoá theo do onDelete: Cascade)`,
+    `(Muốn xoá đơn test này sau khi xong: xoá Order id "${order.id}" trong DB - OrderItem sẽ tự xoá theo do onDelete: Cascade)`,
   );
 
   await prisma.$disconnect();

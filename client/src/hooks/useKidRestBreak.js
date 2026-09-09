@@ -120,7 +120,7 @@ export function useKidRestBreak(child, active, token) {
     showRestTip,
     dismissRest: () => {
       // restLeft > 0 nghĩa là bé chủ động bấm "Đọc tiếp" trước khi đếm
-      // ngược tự kết thúc — đây mới thực sự là "bỏ qua".
+      // ngược tự kết thúc - đây mới thực sự là "bỏ qua".
       if (restLeft > 0 && token) {
         kidAccessService.reportSkippedRest(token).catch(() => {
           // không chặn trải nghiệm của bé nếu báo cho ba mẹ thất bại

@@ -438,7 +438,7 @@ function BookCard({
         </div>
       </div>
 
-      {/* Body — flex grow để đẩy footer xuống đáy */}
+      {/* Body - flex grow để đẩy footer xuống đáy */}
       <div
         className="product-body"
         style={{ display: "flex", flexDirection: "column", flex: 1 }}
@@ -446,7 +446,7 @@ function BookCard({
         {/* Rating */}
         <StarRating rating={book.rating} count={book.reviewCount} />
 
-        {/* Title — fixed height 2 lines */}
+        {/* Title - fixed height 2 lines */}
         <div
           className="product-title"
           style={{
@@ -462,7 +462,7 @@ function BookCard({
           {book.title}
         </div>
 
-        {/* Desc — cố định 2 dòng */}
+        {/* Desc - cố định 2 dòng */}
         <p
           className="product-desc"
           style={{
@@ -546,7 +546,7 @@ function BookCard({
           </span>
         </div>
 
-        {/* Tags — max 2 hàng, overflow dấu ... */}
+        {/* Tags - max 2 hàng, overflow dấu ... */}
         <div
           style={{
             display: "-webkit-box",
@@ -584,7 +584,7 @@ function BookCard({
         {/* Spacer đẩy footer xuống */}
         <div style={{ flex: 1 }} />
 
-        {/* Footer — giá + giỏ hàng */}
+        {/* Footer - giá + giỏ hàng */}
         <div className="product-footer" style={{ alignItems: "center" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
             {book.price && book.salePrice && book.price > book.salePrice ? (
@@ -1065,7 +1065,7 @@ function AppShowcase() {
             [
               "01",
               "Quét Mã Thông Minh",
-              "Chỉ cần mở app, hướng camera vào trang sách — 3D sẽ xuất hiện tức thì.",
+              "Chỉ cần mở app, hướng camera vào trang sách - 3D sẽ xuất hiện tức thì.",
             ],
             [
               "02",
@@ -1228,7 +1228,7 @@ const REVIEWS = [
   },
 ];
 
-/*   FLASH DEAL — TRI ÂM NGƯỜI DÙNG (countdown + single book)*/
+/*   FLASH DEAL - TRI ÂM NGƯỜI DÙNG (countdown + single book)*/
 function FlashDealSection({ books, onAddCart }) {
   const book = books[0];
   const [timeLeft, setTimeLeft] = useState({ h: 5, m: 59, s: 47 });
@@ -1360,7 +1360,7 @@ function FlashDealSection({ books, onAddCart }) {
               letterSpacing: "-0.01em",
             }}
           >
-            Ưu Đãi Đặc Biệt —{" "}
+            Ưu Đãi Đặc Biệt -{" "}
             <em style={{ fontStyle: "italic", color: "var(--gold)" }}>
               Có Giới Hạn
             </em>
@@ -1389,7 +1389,7 @@ function FlashDealSection({ books, onAddCart }) {
             boxShadow: "0 40px 80px rgba(0,0,0,0.4)",
           }}
         >
-          {/* left — book visual */}
+          {/* left - book visual */}
           <div
             style={{
               position: "relative",
@@ -1496,7 +1496,7 @@ function FlashDealSection({ books, onAddCart }) {
             </div>
           </div>
 
-          {/* right — info */}
+          {/* right - info */}
           <div
             style={{
               background: "rgba(13,43,30,0.7)",
@@ -1556,7 +1556,7 @@ function FlashDealSection({ books, onAddCart }) {
               }}
             >
               {book.description?.slice(0, 120) ||
-                "Hành trình khám phá thiên nhiên qua lăng kính AR & AI — trải nghiệm hoàn toàn mới."}
+                "Hành trình khám phá thiên nhiên qua lăng kính AR & AI - trải nghiệm hoàn toàn mới."}
               ...
             </p>
 
@@ -1785,7 +1785,7 @@ function FlashDealSection({ books, onAddCart }) {
 }
 
 /*
-   TOP RATED — sách được vote / đánh giá cao nhất
+   TOP RATED - sách được vote / đánh giá cao nhất
 */
 function TopRatedSection({ books, onAddCart }) {
   const TOP_RATINGS = [4.9, 4.8, 4.8, 4.7, 4.7, 4.6];
@@ -2445,7 +2445,7 @@ export default function Home() {
 
   return (
     <>
-      {/*   QUICK NAV — nửa hình tròn bên trái, phóng to khi bấm vào tâm   */}
+      {/*   QUICK NAV - nửa hình tròn bên trái, phóng to khi bấm vào tâm   */}
       <RadialQuickNav sections={HOME_QUICK_SECTIONS} />
 
       {/*   HERO BANNER SLIDER   */}
@@ -2453,7 +2453,7 @@ export default function Home() {
         <HeroBanner />
       </div>
 
-      {/*   MARQUEE — flush below hero gradient   */}
+      {/*   MARQUEE - flush below hero gradient   */}
       <div
         className="marquee-section"
         style={{ marginTop: "-2px", position: "relative", zIndex: 10 }}
@@ -2582,7 +2582,7 @@ export default function Home() {
             ].map((step, i) => (
               <div className={`how-step reveal reveal-delay-${i + 1}`} key={i}>
                 <span className="step-num">
-                  {step.num} — Bước {i + 1}
+                  {step.num} - Bước {i + 1}
                 </span>
                 <div className="step-icon">
                   <svg
@@ -2653,7 +2653,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/*   MỚI NHẤT — Horizontal Scroll   */}
+      {/*   MỚI NHẤT - Horizontal Scroll   */}
       <section
         className="new-arrivals-section"
         style={{
@@ -2690,7 +2690,7 @@ export default function Home() {
                   fontWeight: 300,
                 }}
               >
-                Những đầu sách vừa ra lò — tươi mới, sinh động và đầy ắp khám
+                Những đầu sách vừa ra lò - tươi mới, sinh động và đầy ắp khám
                 phá.
               </p>
             </div>
@@ -2819,7 +2819,7 @@ export default function Home() {
                 letterSpacing: "-0.01em",
               }}
             >
-              Mua Bộ 3 Cuốn —<br />
+              Mua Bộ 3 Cuốn -<br />
               <em style={{ fontStyle: "italic", color: "var(--gold)" }}>
                 Tiết Kiệm 30%
               </em>
@@ -2878,7 +2878,7 @@ export default function Home() {
             <Link to="/shop" style={{ display: "block", lineHeight: 0 }}>
               <img
                 src="homepage/product1.png"
-                alt="Combo 3 cuốn — Tiết kiệm 30%"
+                alt="Combo 3 cuốn - Tiết kiệm 30%"
                 draggable={false}
                 onContextMenu={(e) => e.preventDefault()}
                 style={{
@@ -2899,7 +2899,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/*   BÁN CHẠY — Horizontal Scroll   */}
+      {/*   BÁN CHẠY - Horizontal Scroll   */}
       <section
         className="bestseller-section"
         style={{ background: "var(--cream)" }}
@@ -2954,7 +2954,7 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Bestseller rank podium — fixed */}
+          {/* Bestseller rank podium - fixed */}
           {isBestsellerLoading ? (
             <div
               className="reveal"
@@ -3142,7 +3142,7 @@ export default function Home() {
 
       <StickyScrollTransition />
 
-      {/*   TOP RATED — sách được vote cao nhất   */}
+      {/*   TOP RATED - sách được vote cao nhất   */}
       <TopRatedSection books={displayBest} onAddCart={handleAddToCart} />
 
       {/*   VALUES   */}
@@ -3227,7 +3227,7 @@ export default function Home() {
                 img: "homepage/tuong-tac.png",
                 desc: "Trò chuyện với 3D, hỏi đáp cùng AI thông minh.",
                 detail:
-                  "Đặt câu hỏi cho bất kỳ sinh vật nào — AI sẽ trả lời bằng giọng nói tự nhiên, thân thiện với trẻ em.",
+                  "Đặt câu hỏi cho bất kỳ sinh vật nào - AI sẽ trả lời bằng giọng nói tự nhiên, thân thiện với trẻ em.",
               },
               {
                 num: "03",
@@ -3391,7 +3391,7 @@ export default function Home() {
         <div className="cta-bg-text">Earthoria</div>
         <span className="cta-eyebrow reveal">Bắt Đầu Hành Trình</span>
         <h2 className="cta-headline reveal">
-          Mỗi trang sách là một cánh cửa —<br />
+          Mỗi trang sách là một cánh cửa -<br />
           <em>Mở ra thế giới mới</em>
         </h2>
         <p className="cta-sub reveal">

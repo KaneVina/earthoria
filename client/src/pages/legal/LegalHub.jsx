@@ -27,7 +27,7 @@ const POLICIES = [
     icon: Scale,
     eyebrow: "Quyền & Nghĩa Vụ",
     title: "Điều Khoản Dịch Vụ",
-    desc: "Những quy định rõ ràng, công bằng điều chỉnh mối quan hệ giữa Earthoria và bạn — từ đặt hàng, thanh toán đến quy tắc sử dụng ứng dụng AR/AI và cơ chế giải quyết tranh chấp.",
+    desc: "Những quy định rõ ràng, công bằng điều chỉnh mối quan hệ giữa Earthoria và bạn - từ đặt hàng, thanh toán đến quy tắc sử dụng ứng dụng AR/AI và cơ chế giải quyết tranh chấp.",
     version: "v3.2",
     updated: "15/06/2026",
     highlights: [
@@ -42,7 +42,7 @@ const POLICIES = [
     icon: ShieldCheck,
     eyebrow: "Quyền Riêng Tư",
     title: "Chính Sách Bảo Mật",
-    desc: "Cách Earthoria thu thập, sử dụng và bảo vệ thông tin cá nhân của bạn và gia đình — được giải thích rõ ràng, không thuật ngữ rối rắm, với cam kết đặc biệt về quyền riêng tư của trẻ em.",
+    desc: "Cách Earthoria thu thập, sử dụng và bảo vệ thông tin cá nhân của bạn và gia đình - được giải thích rõ ràng, không thuật ngữ rối rắm, với cam kết đặc biệt về quyền riêng tư của trẻ em.",
     version: "v2.4",
     updated: "15/06/2026",
     highlights: [
@@ -57,7 +57,7 @@ const POLICIES = [
     icon: Cookie,
     eyebrow: "Theo Dõi & Cá Nhân Hóa",
     title: "Chính Sách Cookie",
-    desc: "Cách chúng tôi sử dụng cookie để vận hành website, ghi nhớ giỏ hàng và cá nhân hóa trải nghiệm đọc sách — cùng cam kết không quảng cáo theo dõi trên hồ sơ trẻ em.",
+    desc: "Cách chúng tôi sử dụng cookie để vận hành website, ghi nhớ giỏ hàng và cá nhân hóa trải nghiệm đọc sách - cùng cam kết không quảng cáo theo dõi trên hồ sơ trẻ em.",
     version: "v1.6",
     updated: "15/06/2026",
     highlights: [
@@ -117,7 +117,7 @@ const POLICIES = [
     icon: Copyright,
     eyebrow: "Sở Hữu Trí Tuệ",
     title: "Tuyên Bố Bản Quyền",
-    desc: "Quyền sở hữu của Earthoria đối với tên thương hiệu, logo, hệ sinh thái sản phẩm — Family Studio, Game Studio, Immersive Studio, Eira — và toàn bộ nội dung số trên nền tảng.",
+    desc: "Quyền sở hữu của Earthoria đối với tên thương hiệu, logo, hệ sinh thái sản phẩm - Family Studio, Game Studio, Immersive Studio, Eira - và toàn bộ nội dung số trên nền tảng.",
     version: "v1.0",
     updated: "04/09/2026",
     highlights: [
@@ -132,7 +132,7 @@ const POLICIES = [
     icon: Bot,
     eyebrow: "Trí Tuệ Nhân Tạo",
     title: "Chính Sách An Toàn & Minh Bạch AI",
-    desc: "Eira AI là gì, dữ liệu nào được dùng để trả lời bạn, AI có thể sai ở đâu, giọng nói AI được lưu bao lâu — và quyền kiểm soát bạn luôn có.",
+    desc: "Eira AI là gì, dữ liệu nào được dùng để trả lời bạn, AI có thể sai ở đâu, giọng nói AI được lưu bao lâu - và quyền kiểm soát bạn luôn có.",
     version: "v1.0",
     updated: "04/09/2026",
     highlights: [
@@ -147,7 +147,7 @@ const POLICIES = [
     icon: Users,
     eyebrow: "Gia Đình & Trẻ Em",
     title: "Chính Sách Trang Gia Đình & Trang Trại Tri Thức",
-    desc: "Cách phụ huynh quản lý hồ sơ trẻ em, mã PIN, giờ giấc, bảo vệ mắt và nội dung tại /family — và cách Trang Trại Tri Thức biến mỗi phút đọc sách thành một cây tri thức lớn lên mỗi ngày.",
+    desc: "Cách phụ huynh quản lý hồ sơ trẻ em, mã PIN, giờ giấc, bảo vệ mắt và nội dung tại /family - và cách Trang Trại Tri Thức biến mỗi phút đọc sách thành một cây tri thức lớn lên mỗi ngày.",
     version: "v1.0",
     updated: "05/09/2026",
     highlights: [
@@ -223,7 +223,7 @@ export default function LegalHub() {
     return sorted;
   }, [query, sortBy]);
 
-  /* reveal-on-scroll — re-observe whenever the filtered/sorted list changes */
+  /* reveal-on-scroll - re-observe whenever the filtered/sorted list changes */
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) =>
@@ -609,7 +609,7 @@ export default function LegalHub() {
             Là <em>Nền Tảng</em> Tin Tưởng
           </h1>
           <p className="lh-hero-sub">
-            Tất cả các chính sách điều chỉnh dịch vụ của Earthoria — được viết
+            Tất cả các chính sách điều chỉnh dịch vụ của Earthoria - được viết
             rõ ràng, cập nhật thường xuyên và luôn đặt quyền lợi của gia đình
             bạn lên trước.
           </p>
@@ -751,7 +751,7 @@ export default function LegalHub() {
           </h2>
           <p className="lh-contact-sub reveal">
             Đội ngũ Earthoria sẵn sàng giải đáp mọi thắc mắc liên quan đến điều
-            khoản, bảo mật, cookie hoặc vận chuyển — từ thứ Hai đến Chủ Nhật.
+            khoản, bảo mật, cookie hoặc vận chuyển - từ thứ Hai đến Chủ Nhật.
           </p>
           <div className="lh-contact-grid reveal">
             <a href="mailto:legal@earthoria.vn" className="lh-contact-item">

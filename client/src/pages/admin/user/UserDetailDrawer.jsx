@@ -14,7 +14,7 @@ import api from "../../../services/api";
 import { formatDate, formatPrice } from "../../../utils/helpers";
 import { TierBadge } from "./UserBadges";
 
-/* ─ Avatar color pool (deterministic by first char) — đồng bộ với Users.jsx ─ */
+/* ─ Avatar color pool (deterministic by first char) - đồng bộ với Users.jsx ─ */
 const AVATAR_COLORS = [
   "#0D3330",
   "#2a78d6",
@@ -194,7 +194,7 @@ export default function UserDetailDrawer({
           </div>
         ) : (
           <div style={{ padding: 24, flex: 1 }}>
-            {/* Identity — avatar thật nếu có, badges hạng luôn hiển thị */}
+            {/* Identity - avatar thật nếu có, badges hạng luôn hiển thị */}
             <div
               style={{
                 display: "flex",
@@ -278,7 +278,7 @@ export default function UserDetailDrawer({
               </div>
             </div>
 
-            {/* Action buttons — nâng cấp role & khóa/mở khóa tài khoản */}
+            {/* Action buttons - nâng cấp role & khóa/mở khóa tài khoản */}
             {(showPromote || showToggle || isSelf) && (
               <div
                 style={{
@@ -379,7 +379,7 @@ export default function UserDetailDrawer({
               </div>
             )}
 
-            {/* Hạng thành viên — luôn hiển thị đầy đủ hạng + hình + tiến độ */}
+            {/* Hạng thành viên - luôn hiển thị đầy đủ hạng + hình + tiến độ */}
             {loyalty?.tier && (
               <div style={{ marginBottom: 22 }}>
                 <SectionTitle icon={Award}>Hạng thành viên</SectionTitle>
@@ -492,16 +492,16 @@ export default function UserDetailDrawer({
             {/* Account info */}
             <div style={{ marginBottom: 22 }}>
               <SectionTitle>Thông tin tài khoản</SectionTitle>
-              <InfoRow label="Số điện thoại" value={data.phone || "—"} />
+              <InfoRow label="Số điện thoại" value={data.phone || "-"} />
               <InfoRow
                 label="Giới tính"
                 value={
-                  data.gender ? (GENDER_LABEL[data.gender] ?? data.gender) : "—"
+                  data.gender ? (GENDER_LABEL[data.gender] ?? data.gender) : "-"
                 }
               />
               <InfoRow
                 label="Ngày sinh"
-                value={data.dob ? formatDate(data.dob) : "—"}
+                value={data.dob ? formatDate(data.dob) : "-"}
               />
               <InfoRow
                 label="Ngày đăng ký"

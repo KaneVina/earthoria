@@ -92,7 +92,7 @@ const ECOSYSTEM_BRANDS = [
   {
     name: "Family Studio",
     role: "Bộ phận nội dung gia đình",
-    desc: "Tên gọi, biểu tượng và các cụm nội dung giáo dục — bao gồm Knowledge Farm — hướng đến sự gắn kết giữa cha mẹ và trẻ nhỏ.",
+    desc: "Tên gọi, biểu tượng và các cụm nội dung giáo dục - bao gồm Knowledge Farm - hướng đến sự gắn kết giữa cha mẹ và trẻ nhỏ.",
   },
   {
     name: "Knowledge Farm",
@@ -196,7 +196,7 @@ const SECTIONS = [
       "Earthoria tôn trọng quyền sở hữu trí tuệ của bên thứ ba và minh bạch về các thành phần không thuộc quyền sở hữu độc quyền của mình.",
     ],
     list: [
-      "Tên các hạng trong hệ thống Hạng Thành Viên (Chùa Một Cột, Cố Đô Huế, Cầu Rồng, Tháp Bà Ponagar, Landmark 81) lấy cảm hứng từ các danh lam thắng cảnh của Việt Nam — bản thân địa danh không thuộc quyền sở hữu riêng của Earthoria, tuy nhiên cách đặt tên, thứ tự, biểu tượng và màu sắc gắn với từng hạng là cách trình bày sáng tạo thuộc về Earthoria",
+      "Tên các hạng trong hệ thống Hạng Thành Viên (Chùa Một Cột, Cố Đô Huế, Cầu Rồng, Tháp Bà Ponagar, Landmark 81) lấy cảm hứng từ các danh lam thắng cảnh của Việt Nam - bản thân địa danh không thuộc quyền sở hữu riêng của Earthoria, tuy nhiên cách đặt tên, thứ tự, biểu tượng và màu sắc gắn với từng hạng là cách trình bày sáng tạo thuộc về Earthoria",
       "Nội dung sách, minh họa hoặc học liệu do các nhà xuất bản, tác giả hoặc đối tác sáng tạo cung cấp được sử dụng theo thỏa thuận cấp phép riêng và vẫn thuộc quyền sở hữu của bên cấp phép, trừ khi có thỏa thuận chuyển nhượng khác",
       "Nền tảng có sử dụng các thư viện, khung phần mềm mã nguồn mở của bên thứ ba; các thành phần này được sử dụng theo đúng giấy phép phát hành tương ứng và không thuộc phạm vi Tuyên bố này",
       "Nội dung do người dùng tạo ra (đánh giá sản phẩm, bình luận) thuộc quyền của người đăng, đồng thời người đăng cấp cho Earthoria quyền sử dụng phi độc quyền để vận hành và quảng bá Nền tảng",
@@ -221,7 +221,7 @@ const SECTIONS = [
     num: "08",
     title: "Hành Vi Xâm Phạm Bị Nghiêm Cấm",
     paragraphs: [
-      "Các hành vi dưới đây, dù thực hiện trực tiếp hay gián tiếp, toàn bộ hay một phần, đều bị coi là xâm phạm quyền sở hữu trí tuệ của Earthoria và có thể bị xử lý theo quy định của pháp luật sở hữu trí tuệ hiện hành. Danh sách được phân theo từng nhóm tài sản để thuận tiện tra cứu, nhưng không mang tính giới hạn — Earthoria có quyền đánh giá các hành vi tương tự chưa được liệt kê theo cùng nguyên tắc.",
+      "Các hành vi dưới đây, dù thực hiện trực tiếp hay gián tiếp, toàn bộ hay một phần, đều bị coi là xâm phạm quyền sở hữu trí tuệ của Earthoria và có thể bị xử lý theo quy định của pháp luật sở hữu trí tuệ hiện hành. Danh sách được phân theo từng nhóm tài sản để thuận tiện tra cứu, nhưng không mang tính giới hạn - Earthoria có quyền đánh giá các hành vi tương tự chưa được liệt kê theo cùng nguyên tắc.",
     ],
     groupedList: [
       {
@@ -901,12 +901,12 @@ export default function CopyrightNotice() {
             <span className="legal-hero-eyebrow-line" />
           </div>
           <h1 className="legal-hero-title">
-            Tuyên Bố —<br />
+            Tuyên Bố -<br />
             <em>Bản Quyền &amp; Thương Hiệu</em>
           </h1>
           <p className="legal-hero-sub">
             Quyền sở hữu của Earthoria đối với tên thương hiệu, logo, hệ sinh
-            thái sản phẩm và toàn bộ nội dung số — được công bố minh bạch, đầy
+            thái sản phẩm và toàn bộ nội dung số - được công bố minh bạch, đầy
             đủ và dễ tra cứu.
           </p>
           <div className="legal-hero-meta">
@@ -1058,7 +1058,7 @@ export default function CopyrightNotice() {
                         <div className="legal-logo-frame">
                           <img
                             src={logo.src}
-                            alt={`Logo ${logo.name} — Earthoria`}
+                            alt={`Logo ${logo.name} - Earthoria`}
                             draggable="false"
                             onDragStart={(e) => e.preventDefault()}
                             onContextMenu={(e) => e.preventDefault()}

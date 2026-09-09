@@ -1,7 +1,7 @@
 const prisma = require("../config/db");
 const { formatResponse } = require("../utils/helpers");
 
-// GET /addresses — lấy tất cả địa chỉ của user
+// GET /addresses - lấy tất cả địa chỉ của user
 const getAddresses = async (req, res) => {
   try {
     const addresses = await prisma.address.findMany({
@@ -15,7 +15,7 @@ const getAddresses = async (req, res) => {
   }
 };
 
-// POST /addresses — thêm địa chỉ mới
+// POST /addresses - thêm địa chỉ mới
 const createAddress = async (req, res) => {
   try {
     const { fullName, phone, province, ward, street, isDefault, lat, lng } =
@@ -59,7 +59,7 @@ const createAddress = async (req, res) => {
   }
 };
 
-// PUT /addresses/:id — cập nhật địa chỉ
+// PUT /addresses/:id - cập nhật địa chỉ
 const updateAddress = async (req, res) => {
   try {
     const { id } = req.params;
@@ -98,7 +98,7 @@ const updateAddress = async (req, res) => {
   }
 };
 
-// DELETE /addresses/:id — xóa địa chỉ
+// DELETE /addresses/:id - xóa địa chỉ
 const deleteAddress = async (req, res) => {
   try {
     const { id } = req.params;
@@ -142,7 +142,7 @@ const deleteAddress = async (req, res) => {
   }
 };
 
-// PATCH /addresses/:id/default — set địa chỉ mặc định
+// PATCH /addresses/:id/default - set địa chỉ mặc định
 const setDefault = async (req, res) => {
   try {
     const { id } = req.params;

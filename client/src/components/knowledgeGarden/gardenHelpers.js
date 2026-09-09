@@ -22,7 +22,7 @@ export function fmtDateVi(dateLike) {
   });
 }
 
-// Nhãn trạng thái cây — dùng chung giữa thẻ "Cây của hôm nay" và modal
+// Nhãn trạng thái cây - dùng chung giữa thẻ "Cây của hôm nay" và modal
 // chi tiết từng cây, để hiển thị nhất quán ở mọi nơi.
 export const TREE_STATUS_LABEL = {
   ALIVE: "Đang lớn",

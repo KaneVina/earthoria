@@ -46,7 +46,7 @@ const SUMMARY_CARDS = [
   {
     icon: BookOpen,
     title: "Nội dung minh bạch",
-    desc: "Bản quyền sách thuộc Earthoria — được dùng tự do cho mục đích cá nhân & giáo dục phi thương mại.",
+    desc: "Bản quyền sách thuộc Earthoria - được dùng tự do cho mục đích cá nhân & giáo dục phi thương mại.",
   },
   {
     icon: XCircle,
@@ -61,7 +61,7 @@ const SECTIONS = [
     num: "01",
     title: "Giới Thiệu & Phạm Vi Áp Dụng",
     paragraphs: [
-      'Chào mừng bạn đến với Earthoria — nền tảng sách giáo dục kết hợp công nghệ Thực tế tăng cường (AR) và Trí tuệ nhân tạo (AI), được vận hành bởi Công ty TNHH Earthoria Việt Nam ("Earthoria", "chúng tôi", "chúng ta"). Bằng việc truy cập website, ứng dụng di động, hoặc đặt mua bất kỳ sản phẩm nào của Earthoria, bạn — hoặc phụ huynh/người giám hộ hợp pháp của bạn nếu bạn dưới 18 tuổi — xác nhận đã đọc, hiểu rõ và đồng ý bị ràng buộc bởi toàn bộ Điều khoản Dịch vụ này (sau đây gọi là "Điều khoản"), cùng với Chính sách Bảo mật, Chính sách Cookie và mọi phụ lục, hướng dẫn sử dụng được đăng tải kèm theo.',
+      'Chào mừng bạn đến với Earthoria - nền tảng sách giáo dục kết hợp công nghệ Thực tế tăng cường (AR) và Trí tuệ nhân tạo (AI), được vận hành bởi Công ty TNHH Earthoria Việt Nam ("Earthoria", "chúng tôi", "chúng ta"). Bằng việc truy cập website, ứng dụng di động, hoặc đặt mua bất kỳ sản phẩm nào của Earthoria, bạn - hoặc phụ huynh/người giám hộ hợp pháp của bạn nếu bạn dưới 18 tuổi - xác nhận đã đọc, hiểu rõ và đồng ý bị ràng buộc bởi toàn bộ Điều khoản Dịch vụ này (sau đây gọi là "Điều khoản"), cùng với Chính sách Bảo mật, Chính sách Cookie và mọi phụ lục, hướng dẫn sử dụng được đăng tải kèm theo.',
       "Điều khoản này cấu thành một thỏa thuận có giá trị pháp lý giữa bạn và Earthoria. Nếu bạn không đồng ý với bất kỳ điều khoản nào dưới đây, vui lòng ngừng truy cập và sử dụng dịch vụ của chúng tôi. Việc bạn tiếp tục sử dụng Dịch vụ sau khi Điều khoản được cập nhật đồng nghĩa với việc bạn đã chấp nhận các thay đổi đó, theo trình tự được quy định tại Điều 23 dưới đây.",
       "Trường hợp có bất kỳ điều khoản riêng nào được ký kết trực tiếp giữa bạn và Earthoria (ví dụ: hợp đồng cung cấp sách cho trường học), điều khoản riêng đó sẽ được ưu tiên áp dụng đối với những nội dung có sự khác biệt, còn lại các nội dung không được quy định trong hợp đồng riêng vẫn tuân theo Điều khoản này.",
     ],
@@ -80,18 +80,18 @@ const SECTIONS = [
       "Để thuận tiện cho việc đọc hiểu, các thuật ngữ viết hoa sau đây được sử dụng xuyên suốt văn bản với ý nghĩa thống nhất như dưới đây, trừ khi ngữ cảnh yêu cầu một cách hiểu khác.",
     ],
     list: [
-      '"Dịch vụ" — toàn bộ website, ứng dụng di động, Nội dung AR, Trợ lý AI và các dịch vụ hỗ trợ khách hàng do Earthoria cung cấp',
-      '"Sản phẩm" — sách in, học cụ đi kèm và các vật phẩm hữu hình khác được Earthoria bán ra thị trường',
-      '"Người dùng" — bất kỳ cá nhân nào truy cập hoặc sử dụng Dịch vụ của Earthoria, bao gồm cả người mua hàng và người sử dụng ứng dụng không phát sinh giao dịch',
-      '"Nội dung AR" — mô hình 3D, hoạt ảnh, video và âm thanh được kích hoạt khi quét trang sách hợp lệ bằng camera của ứng dụng',
-      '"Trợ lý AI" — hệ thống hội thoại bằng giọng nói được tích hợp trong ứng dụng Earthoria, sử dụng công nghệ xử lý ngôn ngữ tự nhiên',
-      '"Nội dung do người dùng tạo" (UGC) — đánh giá, bình luận, câu hỏi, hình ảnh hoặc bất kỳ nội dung nào khác do Người dùng chủ động gửi qua Dịch vụ',
-      '"Phụ huynh/Người giám hộ" — người chịu trách nhiệm pháp lý đối với Người dùng chưa đủ 18 tuổi theo quy định của pháp luật Việt Nam',
-      '"Tài khoản gia đình" — tài khoản do Phụ huynh khởi tạo, trong đó có thể liên kết nhiều hồ sơ trẻ em để quản lý tập trung',
-      '"Đối tác vận chuyển" — đơn vị cung cấp dịch vụ logistics độc lập được Earthoria ủy quyền thực hiện giao nhận hàng hóa',
-      '"Ngày làm việc" — các ngày từ Thứ Hai đến Thứ Sáu, không bao gồm ngày lễ, Tết theo lịch nghỉ chính thức của Nhà nước Việt Nam',
-      '"Sự kiện Bất khả kháng" — sự kiện xảy ra khách quan, không thể lường trước và không thể khắc phục được dù đã áp dụng mọi biện pháp cần thiết trong khả năng cho phép',
-      '"Dữ liệu cá nhân" — thông tin dưới dạng ký hiệu, chữ viết, chữ số, hình ảnh, âm thanh gắn liền với một con người cụ thể hoặc giúp xác định một con người cụ thể, theo định nghĩa tại Nghị định 13/2023/NĐ-CP',
+      '"Dịch vụ" - toàn bộ website, ứng dụng di động, Nội dung AR, Trợ lý AI và các dịch vụ hỗ trợ khách hàng do Earthoria cung cấp',
+      '"Sản phẩm" - sách in, học cụ đi kèm và các vật phẩm hữu hình khác được Earthoria bán ra thị trường',
+      '"Người dùng" - bất kỳ cá nhân nào truy cập hoặc sử dụng Dịch vụ của Earthoria, bao gồm cả người mua hàng và người sử dụng ứng dụng không phát sinh giao dịch',
+      '"Nội dung AR" - mô hình 3D, hoạt ảnh, video và âm thanh được kích hoạt khi quét trang sách hợp lệ bằng camera của ứng dụng',
+      '"Trợ lý AI" - hệ thống hội thoại bằng giọng nói được tích hợp trong ứng dụng Earthoria, sử dụng công nghệ xử lý ngôn ngữ tự nhiên',
+      '"Nội dung do người dùng tạo" (UGC) - đánh giá, bình luận, câu hỏi, hình ảnh hoặc bất kỳ nội dung nào khác do Người dùng chủ động gửi qua Dịch vụ',
+      '"Phụ huynh/Người giám hộ" - người chịu trách nhiệm pháp lý đối với Người dùng chưa đủ 18 tuổi theo quy định của pháp luật Việt Nam',
+      '"Tài khoản gia đình" - tài khoản do Phụ huynh khởi tạo, trong đó có thể liên kết nhiều hồ sơ trẻ em để quản lý tập trung',
+      '"Đối tác vận chuyển" - đơn vị cung cấp dịch vụ logistics độc lập được Earthoria ủy quyền thực hiện giao nhận hàng hóa',
+      '"Ngày làm việc" - các ngày từ Thứ Hai đến Thứ Sáu, không bao gồm ngày lễ, Tết theo lịch nghỉ chính thức của Nhà nước Việt Nam',
+      '"Sự kiện Bất khả kháng" - sự kiện xảy ra khách quan, không thể lường trước và không thể khắc phục được dù đã áp dụng mọi biện pháp cần thiết trong khả năng cho phép',
+      '"Dữ liệu cá nhân" - thông tin dưới dạng ký hiệu, chữ viết, chữ số, hình ảnh, âm thanh gắn liền với một con người cụ thể hoặc giúp xác định một con người cụ thể, theo định nghĩa tại Nghị định 13/2023/NĐ-CP',
     ],
   },
   {
@@ -212,7 +212,7 @@ const SECTIONS = [
   {
     id: "ung-dung-ar",
     num: "10",
-    title: "Ứng Dụng AR/AI Earthoria — Quy Tắc Sử Dụng",
+    title: "Ứng Dụng AR/AI Earthoria - Quy Tắc Sử Dụng",
     paragraphs: [
       "Ứng dụng Earthoria yêu cầu quyền truy cập camera và micro của thiết bị để kích hoạt Nội dung AR và Trợ lý AI. Các quyền này chỉ được sử dụng cho đúng mục đích giáo dục đã công bố và không được sử dụng để theo dõi người dùng ngoài phạm vi phiên sử dụng ứng dụng.",
     ],
@@ -227,7 +227,7 @@ const SECTIONS = [
   {
     id: "tro-ly-ai",
     num: "11",
-    title: "Trợ Lý AI — Xử Lý Dữ Liệu & Giới Hạn Trách Nhiệm",
+    title: "Trợ Lý AI - Xử Lý Dữ Liệu & Giới Hạn Trách Nhiệm",
     paragraphs: [
       "Trợ lý AI được xây dựng nhằm hỗ trợ trẻ em học tập thông qua hội thoại bằng giọng nói. Do bản chất của công nghệ trí tuệ nhân tạo tạo sinh, phản hồi của Trợ lý AI có thể đôi khi không hoàn toàn chính xác hoặc phù hợp với ngữ cảnh mong muốn.",
     ],
@@ -248,7 +248,7 @@ const SECTIONS = [
     num: "12",
     title: "Quyền Sở Hữu Trí Tuệ",
     paragraphs: [
-      "Toàn bộ nội dung trên website, ứng dụng và trong các ấn phẩm sách — bao gồm văn bản, hình minh họa, mô hình 3D, âm thanh, mã nguồn và thiết kế giao diện — là tài sản trí tuệ của Earthoria hoặc được cấp phép sử dụng hợp pháp từ các đối tác sáng tạo, được bảo hộ theo Luật Sở hữu trí tuệ Việt Nam và các điều ước quốc tế liên quan.",
+      "Toàn bộ nội dung trên website, ứng dụng và trong các ấn phẩm sách - bao gồm văn bản, hình minh họa, mô hình 3D, âm thanh, mã nguồn và thiết kế giao diện - là tài sản trí tuệ của Earthoria hoặc được cấp phép sử dụng hợp pháp từ các đối tác sáng tạo, được bảo hộ theo Luật Sở hữu trí tuệ Việt Nam và các điều ước quốc tế liên quan.",
     ],
     list: [
       "Bạn được phép sử dụng nội dung cho mục đích cá nhân, gia đình và giáo dục phi thương mại, ví dụ như trình chiếu trong lớp học hoặc chia sẻ trong phạm vi gia đình",
@@ -1021,12 +1021,12 @@ export default function TermsOfService() {
             <span className="legal-hero-eyebrow-line" />
           </div>
           <h1 className="legal-hero-title">
-            Điều Khoản —<br />
+            Điều Khoản -<br />
             <em>Dịch Vụ</em>
           </h1>
           <p className="legal-hero-sub">
             Những quy định rõ ràng, công bằng để bạn và gia đình yên tâm khám
-            phá thế giới Earthoria — từ trang sách đầu tiên đến trải nghiệm AR
+            phá thế giới Earthoria - từ trang sách đầu tiên đến trải nghiệm AR
             sống động.
           </p>
           <div className="legal-hero-meta">

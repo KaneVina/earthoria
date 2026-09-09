@@ -232,19 +232,19 @@ export default function Coupons() {
         <div className="a-mini-stat">
           <div className="a-mini-stat-label">Tổng mã</div>
           <div className="a-mini-stat-value">
-            {isLoading ? "—" : coupons.length}
+            {isLoading ? "-" : coupons.length}
           </div>
         </div>
         <div className="a-mini-stat">
           <div className="a-mini-stat-label">Đang hoạt động</div>
           <div className="a-mini-stat-value accent">
-            {isLoading ? "—" : activeCount}
+            {isLoading ? "-" : activeCount}
           </div>
         </div>
         <div className="a-mini-stat">
           <div className="a-mini-stat-label">Đã tắt</div>
           <div className="a-mini-stat-value">
-            {isLoading ? "—" : coupons.length - activeCount}
+            {isLoading ? "-" : coupons.length - activeCount}
           </div>
         </div>
         <div className="a-mini-stat">
@@ -255,7 +255,7 @@ export default function Coupons() {
               expiringSoonCount ? { color: "var(--a-warning-text)" } : undefined
             }
           >
-            {isLoading ? "—" : expiringSoonCount}
+            {isLoading ? "-" : expiringSoonCount}
           </div>
         </div>
       </div>
@@ -597,7 +597,7 @@ export default function Coupons() {
                     />
                   </div>
 
-                  {/* Max discount — only for PERCENTAGE */}
+                  {/* Max discount - only for PERCENTAGE */}
                   <div className="a-form-group">
                     <label className="a-form-label">Giảm tối đa</label>
                     <input

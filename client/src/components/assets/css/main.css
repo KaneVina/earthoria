@@ -2076,7 +2076,7 @@ body.dark-mode .trusted-logo {
   color: #4a6a55;
 }
 
-/* Footer — fix chính */
+/* Footer - fix chính */
 body.dark-mode footer {
   background: #0a0f0c;
   border-top-color: rgba(255, 255, 255, 0.06);
@@ -2723,7 +2723,7 @@ body.dark-mode #back-top {
   transform: translate(4px, -4px);
 }
 
-/* ─ DARK MODE — about us ─ */
+/* ─ DARK MODE - about us ─ */
 body.dark-mode .mission-section {
   background: #121a16;
 }
@@ -2791,7 +2791,7 @@ body.dark-mode .community-section {
   background: #0a0f0c;
 }
 
-/* ─ RESPONSIVE — about us ─ */
+/* ─ RESPONSIVE - about us ─ */
 @media (max-width: 1100px) {
   .about-hero-left {
     padding: 140px 60px 80px 60px;
@@ -2892,7 +2892,7 @@ body.dark-mode .community-section {
   grid-template-columns: 1fr 1fr;
 }
 
-/*  Left panel — visual  */
+/*  Left panel - visual  */
 .auth-visual {
   background: var(--forest);
   position: relative;
@@ -3095,7 +3095,7 @@ body.dark-mode .community-section {
   }
 }
 
-/*  Right panel — form  */
+/*  Right panel - form  */
 .auth-form-panel {
   background: var(--ivory);
   display: flex;
@@ -3215,7 +3215,7 @@ body.dark-mode .community-section {
   white-space: nowrap;
 }
 
-/* Form fields — reuse .form-group from main.css, thêm phần này */
+/* Form fields - reuse .form-group from main.css, thêm phần này */
 .auth-field-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -3635,7 +3635,7 @@ body.dark-mode .trusted-label {
   color: rgba(180, 200, 188, 0.35);
 }
 
-/* ─ DARK MODE — About Us bổ sung ─ */
+/* ─ DARK MODE - About Us bổ sung ─ */
 
 /* Mission */
 body.dark-mode .mission-desc {
@@ -4499,7 +4499,7 @@ body.dark-mode .social-card-handle {
       translateX(var(--wl-distance)) scale(0.3);
   }
 }
-/* Hạt xám khi BỎ yêu thích — rơi xuống + tan biến, khác hẳn hiệu ứng "thêm" */
+/* Hạt xám khi BỎ yêu thích - rơi xuống + tan biến, khác hẳn hiệu ứng "thêm" */
 .wl-particle.wl-particle-unlike {
   animation: wl-particle-poof 0.5s ease-in forwards;
 }
@@ -4818,7 +4818,7 @@ body.dark-mode .social-card-handle {
   font-size: 14px;
 }
 
-/*  Dark mode — Shop  */
+/*  Dark mode - Shop  */
 body.dark-mode .shop-hero-title,
 body.dark-mode .featured-title {
   color: #c8d4cc;
@@ -4907,7 +4907,7 @@ body.dark-mode .promo-strip {
   border-color: rgba(74, 158, 63, 0.15);
 }
 
-/*  Responsive — Shop  */
+/*  Responsive - Shop  */
 @media (max-width: 1100px) {
   .shop-hero,
   .cat-banner-section,
@@ -5502,7 +5502,7 @@ body.dark-mode .promo-strip {
   color: var(--gold);
 }
 
-/* Đã sở hữu sách điện tử — nút "Đọc sách điện tử" nổi bật hơn nút thường */
+/* Đã sở hữu sách điện tử - nút "Đọc sách điện tử" nổi bật hơn nút thường */
 .btn-secondary--owned {
   position: relative;
   border-color: var(--forest);
@@ -5540,7 +5540,7 @@ body.dark-mode .promo-strip {
   }
 }
 
-/* Format select (Ebook / Bản in) — đồng nhất UI với các khối khác trong trang:
+/* Format select (Ebook / Bản in) - đồng nhất UI với các khối khác trong trang:
    góc vuông, viền mảnh, tông forest/gold, không dùng radius/màu tuỳ tiện nữa. */
 .format-select-row {
   display: flex;
@@ -6573,7 +6573,7 @@ body.dark-mode .chapter-title {
   transform: rotate(180deg);
 }
 
-/* Dropdown — xuất hiện khi rê chuột vào .user-menu */
+/* Dropdown - xuất hiện khi rê chuột vào .user-menu */
 .user-dropdown {
   position: absolute;
   top: calc(100% + 14px);
@@ -7468,7 +7468,7 @@ body.dark-mode .search-result-age {
   transform: scale(1.05);
   filter: drop-shadow(0 0 20px rgba(74, 158, 63, 0.4));
 }
-/* footer-bottom links — đồng bộ với footer-links a */
+/* footer-bottom links - đồng bộ với footer-links a */
 .footer-bottom-link {
   font-family: "Be Vietnam Pro", sans-serif;
   font-size: 13px;
@@ -7916,7 +7916,7 @@ body.dark-mode .skeleton {
 }
 
 /* ═══════════════════════════════════════════
-   OTP — Register flow
+   OTP - Register flow
    ═══════════════════════════════════════════ */
 
 .auth-otp-step {
@@ -8175,7 +8175,7 @@ body.dark-mode .trust-num-value {
   border-right: none;
 }
 
-/* lớp gradient forest phủ dần khi hover — tách riêng để mượt tuyệt đối */
+/* lớp gradient forest phủ dần khi hover - tách riêng để mượt tuyệt đối */
 .trust-metric-bg {
   position: absolute;
   inset: 0;
@@ -8376,7 +8376,7 @@ body.dark-mode .trust-metric-label {
   }
 }
 /* ============================================================
-   Blue flame border — hiệu ứng full-screen khi login thành công
+   Blue flame border - hiệu ứng full-screen khi login thành công
    ============================================================ */
 .flame-border-overlay {
   position: fixed;

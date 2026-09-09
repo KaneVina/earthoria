@@ -56,7 +56,7 @@ function escapeXml(str) {
   );
 }
 
-/* Slider dùng chung — nền gradient truyền vào qua CSS variable để luôn khớp màu hiện tại */
+/* Slider dùng chung - nền gradient truyền vào qua CSS variable để luôn khớp màu hiện tại */
 function GradientSlider({
   value,
   min,
@@ -83,7 +83,7 @@ function GradientSlider({
 
 export default function ColorPaletteStudio({ onApplyColor } = {}) {
   const [palettes, setPalettes] = useState([{ id: uid(), hex: "#3b5bdb" }]);
-  const [format, setFormat] = useState("rgb"); // 'rgb' | 'hsl' — chỉ đổi cách hiển thị số liệu
+  const [format, setFormat] = useState("rgb"); // 'rgb' | 'hsl' - chỉ đổi cách hiển thị số liệu
   const [algorithm, setAlgorithm] = useState("tailwind");
   const [contrastShift, setContrastShift] = useState(0);
   const [namingPatternId, setNamingPatternId] = useState("tailwind");
@@ -104,7 +104,7 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
     setPalettes((prev) => prev.map((p) => (p.id === id ? { ...p, hex } : p)));
   }, []);
 
-  // Hit Spacebar để random màu gốc — bỏ qua khi người dùng đang gõ trong 1 input/select khác
+  // Hit Spacebar để random màu gốc - bỏ qua khi người dùng đang gõ trong 1 input/select khác
   useEffect(() => {
     function onKeyDown(e) {
       if (e.code !== "Space") return;
@@ -132,7 +132,7 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
       // hexDraft sẽ tự đồng bộ lại theo primary.hex mới ở lần render kế tiếp
       setHexFor(primary.id, normalized);
     } else {
-      // Mã không hợp lệ — trả ô nhập về đúng màu hiện tại
+      // Mã không hợp lệ - trả ô nhập về đúng màu hiện tại
       setHexDraft(primary.hex.slice(1).toUpperCase());
     }
   };
@@ -287,7 +287,7 @@ export default function ColorPaletteStudio({ onApplyColor } = {}) {
   };
 
   const copySvg = () =>
-    copyText(buildSvgMarkup(), "Đã copy mã SVG — dán trực tiếp vào Figma");
+    copyText(buildSvgMarkup(), "Đã copy mã SVG - dán trực tiếp vào Figma");
 
   const hueGradient =
     "linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)";

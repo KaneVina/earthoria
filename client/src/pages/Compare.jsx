@@ -235,11 +235,11 @@ export default function Compare() {
         );
       }
       case "category":
-        return item.category?.name || item.category || "—";
+        return item.category?.name || item.category || "-";
       case "age":
         return item.ageMin || item.ageMax
           ? `${item.ageMin ?? "?"}–${item.ageMax ?? "?"} tuổi`
-          : "—";
+          : "-";
       case "rating":
         return item.avgRating ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
@@ -271,14 +271,14 @@ export default function Compare() {
             )}
           </div>
         ) : (
-          "—"
+          "-"
         );
       case "bool":
         return val ? <IconCheck /> : <IconDash />;
       case "text":
-        return val ? `${val}${row.suffix || ""}` : "—";
+        return val ? `${val}${row.suffix || ""}` : "-";
       default:
-        return val || "—";
+        return val || "-";
     }
   };
 

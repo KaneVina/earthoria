@@ -5,13 +5,13 @@ const momo = require("../utils/momoUtil");
 const bankqr = require("../utils/bankqrUtil");
 const { genPaymentRef, getOrderCode } = require("./orderController");
 
-// Đơn vị tiền tệ duy nhất của hệ thống hiện tại — dùng để đối chiếu với field currency mà vnpayUtil/momoUtil trả về (2 cổng đều chỉ hỗ trợ VND, không có field currency thật trong callback).
+// Đơn vị tiền tệ duy nhất của hệ thống hiện tại - dùng để đối chiếu với field currency mà vnpayUtil/momoUtil trả về (2 cổng đều chỉ hỗ trợ VND, không có field currency thật trong callback).
 const ORDER_CURRENCY = "VND";
 
 // Thời hạn hiệu lực của 1 phiên thanh toán (paymentRef) kể từ lúc tạo payment URL. Sau mốc này, kể cả callback có chữ ký hợp lệ cũng KHÔNG được dùng để đánh dấu đơn đã thanh toán.
 const PAYMENT_SESSION_TTL_MS = 15 * 60 * 1000; // 15 phút
 
-// Khi FE gọi verify ngay sau khi được gateway redirect về mà gateway báo "thành công", IPN (nguồn xác nhận chính thức) có thể chưa kịp tới do độ trễ mạng — đợi ngắn, đọc lại DB vài lần trước khi trả "pending".
+// Khi FE gọi verify ngay sau khi được gateway redirect về mà gateway báo "thành công", IPN (nguồn xác nhận chính thức) có thể chưa kịp tới do độ trễ mạng - đợi ngắn, đọc lại DB vài lần trước khi trả "pending".
 const WAIT_FOR_IPN_TRIES = 6;
 const WAIT_FOR_IPN_INTERVAL_MS = 500;
 
@@ -45,7 +45,7 @@ async function findPayableOrder({ orderId, userId, method }) {
   return { order };
 }
 
-// Ghi lại MỌI callback/lần tạo phiên thanh toán — kể cả những lần không hợp lệ (sai chữ ký, sai
+// Ghi lại MỌI callback/lần tạo phiên thanh toán - kể cả những lần không hợp lệ (sai chữ ký, sai
 // TmnCode/partnerCode, sai số tiền...) để phục vụ đối soát và điều tra khi có tranh chấp/nghi giả mạo.
 // Lỗi ghi log KHÔNG được làm hỏng luồng thanh toán chính nên luôn tự bắt lỗi ở đây.
 async function logTransaction(data) {
@@ -58,7 +58,7 @@ async function logTransaction(data) {
 
 // Chuyển trạng thái đơn UNPAID -> PAID một cách NGUYÊN TỬ bằng update có điều kiện
 // (UPDATE ... WHERE paymentStatus != 'PAID'), chống race condition khi IPN và request verify của FE
-// (hoặc 2 lần gọi IPN trùng lặp từ gateway) đến gần như đồng thời — chỉ đúng 1 request thắng cuộc đua,
+// (hoặc 2 lần gọi IPN trùng lặp từ gateway) đến gần như đồng thời - chỉ đúng 1 request thắng cuộc đua,
 // các request còn lại tự nhận biết qua { alreadyPaid: true } mà không update chồng lên nhau.
 async function markOrderPaidAtomic(orderId, gatewayTxnId) {
   return prisma.$transaction(async (tx) => {
@@ -76,7 +76,7 @@ async function markOrderPaidAtomic(orderId, gatewayTxnId) {
     }
 
     // Bước riêng vì updateMany ở trên không lọc theo status cũ (PENDING) để không bỏ sót đơn CONFIRMED.
-    // Đơn toàn sách điện tử (isDigital) không có bước giao hàng — thanh toán xong là chuyển thẳng
+    // Đơn toàn sách điện tử (isDigital) không có bước giao hàng - thanh toán xong là chuyển thẳng
     // COMPLETED; đơn sách giấy vẫn đi CONFIRMED -> ... -> DELIVERED như cũ.
     const current = await tx.order.findUnique({
       where: { id: orderId },
@@ -113,7 +113,7 @@ function isSessionExpired(expiresAt) {
 // IPN) mang paymentRef CŨ sẽ không còn khớp Order.paymentRef hiện tại nữa → tra thẳng theo cột sẽ ra
 // null, đơn không bao giờ được xác nhận dù tiền đã bị trừ thật.
 // PaymentTransaction thì KHÔNG bị ghi đè (mỗi lần tạo phiên là 1 dòng CREATE riêng, lưu orderId) nên
-// fallback qua đây để tìm lại đúng đơn. Đồng thời trả về đúng hạn (TTL) của PHIÊN đó — không dùng
+// fallback qua đây để tìm lại đúng đơn. Đồng thời trả về đúng hạn (TTL) của PHIÊN đó - không dùng
 // order.paymentSessionExpiresAt hiện tại vì cột đó lúc này đang phản ánh phiên MỚI hơn, không phải
 // phiên mà callback này thuộc về.
 async function findOrderByPaymentRef(paymentRef, gateway) {
@@ -209,9 +209,9 @@ const createVnpayPaymentUrl = async (req, res) => {
 
 // GET /payments/vnpay/verify?<toàn bộ query VNPay trả về>
 // Frontend gọi endpoint này (có kèm Bearer token) ngay khi người dùng được VNPay redirect về trang
-// /payment/vnpay/return. Endpoint này CHỈ ĐỌC & HIỂN THỊ kết quả — trạng thái PAID của đơn chỉ được
+// /payment/vnpay/return. Endpoint này CHỈ ĐỌC & HIỂN THỊ kết quả - trạng thái PAID của đơn chỉ được
 // ghi nhận chính thức bởi `vnpayIpn` (server-to-server). Lý do: callback qua trình duyệt người dùng
-// kém tin cậy hơn IPN (có thể bị đóng tab giữa chừng, replay, hoặc — dù ký đúng — không đảm bảo gateway
+// kém tin cậy hơn IPN (có thể bị đóng tab giữa chừng, replay, hoặc - dù ký đúng - không đảm bảo gateway
 // đã thực sự đối soát xong ở phía họ), nên không dùng nó để tự ý set PAID.
 const verifyVnpayReturn = async (req, res) => {
   const query = req.query;
@@ -223,7 +223,7 @@ const verifyVnpayReturn = async (req, res) => {
       query.vnp_TxnRef,
       "VNPAY",
     );
-    // Chặn user A xem/verify được đơn của user B qua paymentRef — coi như không tìm thấy.
+    // Chặn user A xem/verify được đơn của user B qua paymentRef - coi như không tìm thấy.
     if (order && order.userId !== req.user.id) {
       order = null;
       sessionExpiresAt = null;
@@ -244,7 +244,7 @@ const verifyVnpayReturn = async (req, res) => {
       message: !signatureValid
         ? "Chữ ký không hợp lệ"
         : !tmnCodeValid
-          ? "TmnCode không khớp — nghi callback giả mạo"
+          ? "TmnCode không khớp - nghi callback giả mạo"
           : "FE gọi verify sau khi được redirect về",
     });
 
@@ -285,7 +285,7 @@ const verifyVnpayReturn = async (req, res) => {
     }
 
     if (isSuccess) {
-      // Gateway báo thành công nhưng IPN có thể chưa kịp tới — đợi ngắn rồi đọc lại trạng thái thật.
+      // Gateway báo thành công nhưng IPN có thể chưa kịp tới - đợi ngắn rồi đọc lại trạng thái thật.
       const finalOrder = await waitForOrderPaid(order.id);
       if (finalOrder?.paymentStatus === "PAID") {
         return formatResponse(res, 200, "Thanh toán thành công", {
@@ -313,7 +313,7 @@ const verifyVnpayReturn = async (req, res) => {
   }
 };
 
-// GET /payments/vnpay/ipn — VNPay gọi server-to-server (không qua trình duyệt người dùng).
+// GET /payments/vnpay/ipn - VNPay gọi server-to-server (không qua trình duyệt người dùng).
 // Đây là NGUỒN XÁC NHẬN CHÍNH THỨC DUY NHẤT để chuyển đơn sang PAID.
 // Không dùng middleware `protect` vì đây là gateway gọi thẳng, không có access token của user.
 // Phải trả JSON đúng format VNPay yêu cầu ({RspCode, Message}), không dùng formatResponse ở đây.
@@ -349,7 +349,7 @@ const vnpayIpn = async (req, res) => {
     if (!tmnCodeValid) {
       await logTransaction({
         ...baseLog,
-        message: "TmnCode không khớp — nghi callback giả mạo",
+        message: "TmnCode không khớp - nghi callback giả mạo",
       });
       return res.json({ RspCode: "97", Message: "Invalid signature" });
     }
@@ -413,7 +413,7 @@ const vnpayIpn = async (req, res) => {
       ...baseLog,
       message: "Gateway báo giao dịch không thành công",
     });
-    // RspCode 00 = đã NHẬN và xử lý callback hợp lệ (dù kết quả giao dịch là fail) — đúng theo tài liệu VNPay.
+    // RspCode 00 = đã NHẬN và xử lý callback hợp lệ (dù kết quả giao dịch là fail) - đúng theo tài liệu VNPay.
     return res.json({ RspCode: "00", Message: "Confirm Success" });
   } catch (error) {
     console.error("[vnpayIpn]", error);
@@ -501,8 +501,8 @@ const createMomoPaymentUrl = async (req, res) => {
   }
 };
 
-// GET /payments/momo/verify?<toàn bộ query MoMo trả về> — frontend gọi khi user được redirect về
-// /payment/momo/return. CHỈ ĐỌC & HIỂN THỊ, không tự set PAID — xem giải thích ở verifyVnpayReturn.
+// GET /payments/momo/verify?<toàn bộ query MoMo trả về> - frontend gọi khi user được redirect về
+// /payment/momo/return. CHỈ ĐỌC & HIỂN THỊ, không tự set PAID - xem giải thích ở verifyVnpayReturn.
 const verifyMomoReturn = async (req, res) => {
   const query = req.query;
   try {
@@ -533,7 +533,7 @@ const verifyMomoReturn = async (req, res) => {
       message: !signatureValid
         ? "Chữ ký không hợp lệ"
         : !partnerCodeValid
-          ? "partnerCode không khớp — nghi callback giả mạo"
+          ? "partnerCode không khớp - nghi callback giả mạo"
           : "FE gọi verify sau khi được redirect về",
     });
 
@@ -601,7 +601,7 @@ const verifyMomoReturn = async (req, res) => {
   }
 };
 
-// POST /payments/momo/ipn — MoMo gọi server-to-server. Không dùng `protect`.
+// POST /payments/momo/ipn - MoMo gọi server-to-server. Không dùng `protect`.
 // NGUỒN XÁC NHẬN CHÍNH THỨC DUY NHẤT để chuyển đơn sang PAID.
 // MoMo yêu cầu HTTP 204 hoặc 200 khi nhận thành công, không cần trả body đặc biệt như VNPay.
 const momoIpn = async (req, res) => {
@@ -636,7 +636,7 @@ const momoIpn = async (req, res) => {
     if (!partnerCodeValid) {
       await logTransaction({
         ...baseLog,
-        message: "partnerCode không khớp — nghi callback giả mạo",
+        message: "partnerCode không khớp - nghi callback giả mạo",
       });
       return res.status(400).json({ message: "Invalid signature" });
     }
@@ -709,7 +709,7 @@ const momoIpn = async (req, res) => {
 /* ══════════════════════════ BANKQR (chuyển khoản ngân hàng qua SePay) ══════════════════════════ */
 
 // POST /payments/bankqr/create  { orderId }
-// Khác VNPay/MoMo: không có "payment URL" để redirect — trả về ảnh QR + thông tin chuyển khoản để
+// Khác VNPay/MoMo: không có "payment URL" để redirect - trả về ảnh QR + thông tin chuyển khoản để
 // FE hiển thị ngay tại trang Checkout, người dùng quét bằng app ngân hàng bất kỳ (không cần app cụ thể).
 const createBankQrPayment = async (req, res) => {
   try {
@@ -774,8 +774,8 @@ const createBankQrPayment = async (req, res) => {
   }
 };
 
-// GET /payments/bankqr/status/:orderId — FE polling định kỳ trong lúc hiển thị QR chờ chuyển khoản.
-// CHỈ ĐỌC — nguồn xác nhận chính thức duy nhất vẫn là bankqrWebhook.
+// GET /payments/bankqr/status/:orderId - FE polling định kỳ trong lúc hiển thị QR chờ chuyển khoản.
+// CHỈ ĐỌC - nguồn xác nhận chính thức duy nhất vẫn là bankqrWebhook.
 const getBankQrStatus = async (req, res) => {
   try {
     const { orderId } = req.params;
@@ -841,7 +841,7 @@ const getBankQrStatus = async (req, res) => {
   }
 };
 
-// POST /payments/bankqr/webhook — SePay gọi server-to-server khi tài khoản ngân hàng nhận tiền.
+// POST /payments/bankqr/webhook - SePay gọi server-to-server khi tài khoản ngân hàng nhận tiền.
 // Không dùng `protect`, xác thực bằng API Key trong header Authorization.
 // NGUỒN XÁC NHẬN CHÍNH THỨC DUY NHẤT để chuyển đơn BANKQR sang PAID.
 const bankqrWebhook = async (req, res) => {
@@ -874,7 +874,7 @@ const bankqrWebhook = async (req, res) => {
     if (!authValid) {
       await logTransaction({
         ...baseLog,
-        message: "Sai/thiếu API Key xác thực webhook — nghi giả mạo",
+        message: "Sai/thiếu API Key xác thực webhook - nghi giả mạo",
       });
       return res
         .status(401)
@@ -925,7 +925,7 @@ const bankqrWebhook = async (req, res) => {
       await logTransaction({
         ...baseLog,
         message:
-          "Phiên chuyển khoản đã hết hạn khi tiền về — cần admin đối soát thủ công",
+          "Phiên chuyển khoản đã hết hạn khi tiền về - cần admin đối soát thủ công",
       });
       return res.status(200).json({
         success: true,
@@ -936,7 +936,7 @@ const bankqrWebhook = async (req, res) => {
     if (!bankqrAmountMatches(order, parsed.amount)) {
       await logTransaction({
         ...baseLog,
-        message: `Sai số tiền: chuyển khoản=${parsed.amount}, cần=${order.total} — cần admin đối soát thủ công`,
+        message: `Sai số tiền: chuyển khoản=${parsed.amount}, cần=${order.total} - cần admin đối soát thủ công`,
       });
       return res.status(200).json({
         success: true,

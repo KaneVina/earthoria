@@ -31,7 +31,7 @@ function drawLeaf(ctx, x, y, size, angle, alpha, colorStr) {
   ctx.restore();
 }
 
-/* Palette lá — xanh rừng nhiều sắc (mặc định) */
+/* Palette lá - xanh rừng nhiều sắc (mặc định) */
 const LEAF_COLORS = [
   "rgba(34,90,44,{a})",
   "rgba(56,120,54,{a})",
@@ -100,7 +100,7 @@ function drawStar(ctx, x, y, size, angle, alpha, color) {
   ctx.restore();
 }
 
-/* Bảng màu tươi vui dành cho trẻ nhỏ — hồng, cam, vàng, xanh dương, tím, xanh lá */
+/* Bảng màu tươi vui dành cho trẻ nhỏ - hồng, cam, vàng, xanh dương, tím, xanh lá */
 const KID_HUES = [335, 25, 48, 195, 265, 145];
 
 let _setEnabled = null;
@@ -182,7 +182,7 @@ export default function CustomCursor() {
         sway: Math.random() * Math.PI * 2,
         swayS: 0.006 + Math.random() * 0.01,
         swayA: 0.4 + Math.random() * 0.7,
-        alpha: 0.1 + Math.random() * 0.18 /* nhạt — chỉ là lớp phủ */,
+        alpha: 0.1 + Math.random() * 0.18 /* nhạt - chỉ là lớp phủ */,
         colorIdx: Math.floor(Math.random() * LEAF_COLORS.length),
       };
     }
@@ -386,7 +386,7 @@ export default function CustomCursor() {
       }
 
       /* mặc định & /dashboard: đốm sáng xanh khi bấm/chạm.
-         Chỉ chế độ mặc định mới cho đom đóm bay tán loạn — /dashboard không có đom đóm. */
+         Chỉ chế độ mặc định mới cho đom đóm bay tán loạn - /dashboard không có đom đóm. */
       if (mode === "default") {
         flies.forEach((f) => {
           const a = Math.random() * Math.PI * 2;
@@ -442,10 +442,10 @@ export default function CustomCursor() {
     let gatherTimer = null;
     function scheduleGather() {
       /* Trên mobile không có "gathering" quanh con trỏ (không có vị trí chuột
-         cố định để tụ về) — hạt tự fadeOut ngay sau khi scatter xong.
+         cố định để tụ về) - hạt tự fadeOut ngay sau khi scatter xong.
          Nếu vẫn hẹn giờ ở đây, trên máy yếu/tụt fps, timer 420ms có thể bắn
          ra TRƯỚC KHI scatter (tính theo frame) kết thúc, ép hạt sang trạng
-         thái gathering — trạng thái này lại không được xử lý trên mobile,
+         thái gathering - trạng thái này lại không được xử lý trên mobile,
          khiến hạt bị kẹt đứng yên mãi mãi. Bỏ qua hẳn trên mobile để tránh. */
       if (isMobile) return;
       clearTimeout(gatherTimer);
@@ -501,7 +501,7 @@ export default function CustomCursor() {
     } else {
       document.addEventListener("touchstart", onTouchStart, { passive: true });
       document.addEventListener("touchend", onTouchEnd, { passive: true });
-      /* không đụng tới document.body.style.cursor trên mobile — không cần thiết */
+      /* không đụng tới document.body.style.cursor trên mobile - không cần thiết */
     }
 
     /* ══════════════════════════════════════
@@ -514,7 +514,7 @@ export default function CustomCursor() {
       const mode = modeRef.current;
 
       /* 1. Lớp phủ nền: lá cây (mặc định) hoặc bong bóng nhiều màu (/e-kid).
-         /dashboard tối giản — không có lớp phủ nền nào cả. */
+         /dashboard tối giản - không có lớp phủ nền nào cả. */
       if (enabledRef.current) {
         if (mode === "default") {
           updateLeaves();
@@ -535,10 +535,10 @@ export default function CustomCursor() {
 
       const visible = !isMobile && enabledRef.current && tx > -200;
 
-      /* 3. Cursor ring + dot — chỉ desktop, giao diện khác nhau theo mode */
+      /* 3. Cursor ring + dot - chỉ desktop, giao diện khác nhau theo mode */
       if (visible) {
         if (mode === "kid") {
-          /* /e-kid: vòng tròn đổi màu cầu vồng, to và lung linh hơn — vui mắt cho trẻ nhỏ */
+          /* /e-kid: vòng tròn đổi màu cầu vồng, to và lung linh hơn - vui mắt cho trẻ nhỏ */
           const hue = (frame * 1.1) % 360;
           const hue2 = (hue + 140) % 360;
           const r1 = ringR * 1.15;
@@ -643,7 +643,7 @@ export default function CustomCursor() {
       }
 
       /* 4. Đom đóm xanh (mặc định) hoặc ngôi sao cầu vồng (/e-kid).
-         /dashboard: không vẽ gì ở đây — đúng yêu cầu "không có hiệu ứng đom đóm". */
+         /dashboard: không vẽ gì ở đây - đúng yêu cầu "không có hiệu ứng đom đóm". */
       if (mode === "default") {
         flies.forEach((f) => {
           if (f.scatter) {
@@ -674,7 +674,7 @@ export default function CustomCursor() {
               f.y = -300;
             }
           } else if (f.gathering && isMobile) {
-            /* Dự phòng: mobile không có logic "tụ lại" — nếu lỡ rơi vào đây
+            /* Dự phòng: mobile không có logic "tụ lại" - nếu lỡ rơi vào đây
                thì chuyển thẳng sang fadeOut để hạt biến mất thay vì đứng yên. */
             f.gathering = false;
             f.fadeOut = true;
@@ -741,7 +741,7 @@ export default function CustomCursor() {
               s.y = -300;
             }
           } else if (s.gathering && isMobile) {
-            /* Dự phòng: mobile không có logic "tụ lại" — nếu lỡ rơi vào đây
+            /* Dự phòng: mobile không có logic "tụ lại" - nếu lỡ rơi vào đây
                thì chuyển thẳng sang fadeOut để hạt biến mất thay vì đứng yên. */
             s.gathering = false;
             s.fadeOut = true;
@@ -789,7 +789,7 @@ export default function CustomCursor() {
         });
       }
 
-      /* 5. Hạt hiệu ứng khi bấm/chạm — hoạt động ở mọi chế độ (đổi màu theo mode) */
+      /* 5. Hạt hiệu ứng khi bấm/chạm - hoạt động ở mọi chế độ (đổi màu theo mode) */
       for (let i = bursts.length - 1; i >= 0; i--) {
         const b = bursts[i];
         if (b.delay > 0) {

@@ -29,7 +29,7 @@ import { formatPrice, formatDate, getOrderCode } from "../../utils/helpers";
 import AdminLayout from "./AdminLayout";
 import ServerStatus from "./ServerStatus";
 
-// Lazy load Analytics — tách bundle riêng, chỉ tải khi cần
+// Lazy load Analytics - tách bundle riêng, chỉ tải khi cần
 const Analytics = lazy(() => import("./Analytics"));
 
 /*  Design tokens (mirror admin.css vars)  */
@@ -182,7 +182,7 @@ export default function Dashboard() {
   const kpiCards = [
     {
       label: "Người dùng",
-      value: stats?.totalUsers ?? "—",
+      value: stats?.totalUsers ?? "-",
       icon: Users,
       accent: "blue",
       delta: null,
@@ -190,7 +190,7 @@ export default function Dashboard() {
     },
     {
       label: "Đầu sách",
-      value: stats?.totalBooks ?? "—",
+      value: stats?.totalBooks ?? "-",
       icon: BookOpen,
       accent: "green",
       delta: null,
@@ -198,7 +198,7 @@ export default function Dashboard() {
     },
     {
       label: "Đơn hàng",
-      value: stats?.totalOrders ?? "—",
+      value: stats?.totalOrders ?? "-",
       icon: ShoppingBag,
       accent: "amber",
       delta: null,
@@ -206,7 +206,7 @@ export default function Dashboard() {
     },
     {
       label: "Doanh thu",
-      value: isLoading ? "—" : formatPrice(stats?.revenue ?? 0),
+      value: isLoading ? "-" : formatPrice(stats?.revenue ?? 0),
       icon: TrendingUp,
       accent: "purple",
       delta: null,
@@ -815,8 +815,8 @@ export default function Dashboard() {
                           className={`a-badge ${order.isDigital ? "blue" : "dark"}`}
                           title={
                             order.isDigital
-                              ? "Sách điện tử — không giao hàng"
-                              : "Sách giấy — có giao hàng"
+                              ? "Sách điện tử - không giao hàng"
+                              : "Sách giấy - có giao hàng"
                           }
                         >
                           {order.isDigital ? "Ebook" : "Sách giấy"}
@@ -849,7 +849,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/*  Analytics section (gộp từ trang Analytics) — lazy load khi cuộn tới  */}
+      {/*  Analytics section (gộp từ trang Analytics) - lazy load khi cuộn tới  */}
       <div ref={analyticsRef} style={{ marginTop: 32, minHeight: 200 }}>
         {showAnalytics ? (
           <Suspense

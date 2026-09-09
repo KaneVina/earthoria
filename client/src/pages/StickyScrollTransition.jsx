@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 
 export default function StickyScrollTransition() {
-  const wrapRef = useRef(null); // outer wrapper — tạo scroll height
+  const wrapRef = useRef(null); // outer wrapper - tạo scroll height
   const sceneRef = useRef(null); // panel ghim sticky
   const canvasRef = useRef(null);
   const rafRef = useRef(null);
@@ -137,7 +137,7 @@ export default function StickyScrollTransition() {
       n: "01",
       tag: "AR Technology",
       name: "Thực Tế Tăng Cường",
-      desc: "Quét trang sách — sinh vật 3D hiện ra sống động trong không gian thực ngay trước mắt bạn.",
+      desc: "Quét trang sách - sinh vật 3D hiện ra sống động trong không gian thực ngay trước mắt bạn.",
       w: "88%",
       icon: (
         <svg
@@ -156,7 +156,7 @@ export default function StickyScrollTransition() {
       n: "02",
       tag: "AI Dialogue",
       name: "Trò Chuyện Với AI",
-      desc: "Hỏi bất kỳ sinh vật nào, nhận câu trả lời bằng giọng nói tự nhiên — như người bạn đồng hành.",
+      desc: "Hỏi bất kỳ sinh vật nào, nhận câu trả lời bằng giọng nói tự nhiên - như người bạn đồng hành.",
       w: "75%",
       icon: (
         <svg
@@ -175,7 +175,7 @@ export default function StickyScrollTransition() {
       n: "03",
       tag: "3D Visualization",
       name: "Mô Hình 3D Sống Động",
-      desc: "80+ loài sinh vật dựng hình 3D chân thực — xoay, phóng to, khám phá từng chi tiết.",
+      desc: "80+ loài sinh vật dựng hình 3D chân thực - xoay, phóng to, khám phá từng chi tiết.",
       w: "92%",
       icon: (
         <svg
@@ -194,7 +194,7 @@ export default function StickyScrollTransition() {
       n: "04",
       tag: "Adaptive Learning",
       name: "Học Cùng Bạn Lớn",
-      desc: "AI theo dõi tiến trình, điều chỉnh nội dung phù hợp với từng người — học đúng tốc độ của bạn.",
+      desc: "AI theo dõi tiến trình, điều chỉnh nội dung phù hợp với từng người - học đúng tốc độ của bạn.",
       w: "68%",
       icon: (
         <svg
@@ -231,7 +231,7 @@ export default function StickyScrollTransition() {
           border-bottom: 0.5px solid rgba(74,158,63,0.2);
         }
 
-        /*  Panel nội dung — thu/phóng bằng scale+opacity  */
+        /*  Panel nội dung - thu/phóng bằng scale+opacity  */
         .eb-panel {
           position: absolute;
           inset: 0;
@@ -253,7 +253,7 @@ export default function StickyScrollTransition() {
           transform: scale(1);
         }
 
-        /* compact bar — hiện khi đóng */
+        /* compact bar - hiện khi đóng */
         .eb-compact {
           position: absolute;
           inset: 0;
@@ -264,7 +264,7 @@ export default function StickyScrollTransition() {
         }
         .open .eb-compact { opacity: 0; transform: translateY(-20px); pointer-events: none; }
 
-        /* expanded content — hiện khi mở */
+        /* expanded content - hiện khi mở */
         .eb-expanded {
           position: absolute;
           inset: 0;

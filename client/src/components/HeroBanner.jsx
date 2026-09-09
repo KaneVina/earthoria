@@ -6,7 +6,7 @@ const HERO_SLIDES = [
     id: 1,
     eyebrow: "Sách Giáo Dục Tương Tác AR × AI",
     headline: [
-      "Mở Sách —",
+      "Mở Sách -",
       <em key="em1">Mở Ra</em>,
       <br key="br1" />,
       "Thế Giới",
@@ -22,7 +22,7 @@ const HERO_SLIDES = [
     id: 2,
     eyebrow: "Bộ Sưu Tập Mới 2025",
     headline: [
-      "Khám Phá —",
+      "Khám Phá -",
       <br key="br2" />,
       <em key="em2">Kiến Thức</em>,
       <br key="br2b" />,
@@ -39,13 +39,13 @@ const HERO_SLIDES = [
     id: 3,
     eyebrow: "Mở Khóa Tiềm Năng",
     headline: [
-      "Tiềm Năng —",
+      "Tiềm Năng -",
       <br key="br3" />,
       <em key="em3">Vô Hạn</em>,
       <br key="br3b" />,
       "Trong Tay Bé",
     ],
-    sub: "Mở khóa tiềm năng vô hạn — hơn 80 loài động vật bước ra từ trang sách, kể chuyện bằng giọng AI thân thiện.",
+    sub: "Mở khóa tiềm năng vô hạn - hơn 80 loài động vật bước ra từ trang sách, kể chuyện bằng giọng AI thân thiện.",
     video:
       "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260314_131748_f2ca2a28-fed7-44c8-b9a9-bd9acdd5ec31.mp4",
     badge: "Yêu Thích",
@@ -132,7 +132,7 @@ export default function HeroBanner() {
     return () => clearInterval(timerRef.current);
   }, [next, paused, inView]);
 
-  /* Play / pause video on slide change — chỉ phát khi banner đang hiển thị */
+  /* Play / pause video on slide change - chỉ phát khi banner đang hiển thị */
   useEffect(() => {
     videoRefs.current.forEach((v, i) => {
       if (!v) return;
@@ -475,7 +475,7 @@ export default function HeroBanner() {
           />
         </div>
 
-        {/* VIDEO backgrounds — chỉ mount video thật cho slide đang chạy / vừa rời đi / sắp tới, tránh tải+giải mã đồng thời cả 3 */}
+        {/* VIDEO backgrounds - chỉ mount video thật cho slide đang chạy / vừa rời đi / sắp tới, tránh tải+giải mã đồng thời cả 3 */}
         {HERO_SLIDES.map((s, i) => {
           const isCurrent = i === current;
           const isPrev = i === prev;
@@ -627,7 +627,7 @@ export default function HeroBanner() {
         {/* Vertical slide label */}
         <div className="hb-slide-label">{HERO_SLIDES[current].eyebrow}</div>
 
-        {/* Thumbnails (right side) — hiển thị poster frame đầu video */}
+        {/* Thumbnails (right side) - hiển thị poster frame đầu video */}
         <div className="hb-thumbs" ref={thumbsRef}>
           {HERO_SLIDES.map((s, i) => (
             <div

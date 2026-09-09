@@ -109,7 +109,7 @@ export default function ProductDetail() {
   const handleDeleteVariant = (variant) =>
     deleteVariantMutation.mutateAsync(variant.id);
 
-  // ── Ảnh sách — thao tác lưu ngay qua API, không phụ thuộc nút "Lưu thay đổi" ──
+  // ── Ảnh sách - thao tác lưu ngay qua API, không phụ thuộc nút "Lưu thay đổi" ──
   const imageInputRef = useRef(null);
   const [pendingImageUrl, setPendingImageUrl] = useState(null);
 
@@ -166,7 +166,7 @@ export default function ProductDetail() {
     if (!picked.length) return;
     if (picked.length > roomForImages) {
       toast.error(
-        `Chỉ còn ${roomForImages} chỗ trống — tối đa ${MAX_IMAGES} ảnh`,
+        `Chỉ còn ${roomForImages} chỗ trống - tối đa ${MAX_IMAGES} ảnh`,
       );
     }
     const accepted = picked.slice(0, roomForImages);
@@ -262,11 +262,11 @@ export default function ProductDetail() {
                         v.format === "DIGITAL" ? "Sách điện tử" : "Sách giấy"
                       }
                     >
-                      {v.productCode ?? "—"}
+                      {v.productCode ?? "-"}
                     </span>
                   ))}
                   <span style={{ fontSize: 12, color: "rgba(13,51,48,0.5)" }}>
-                    {(book.authors ?? []).join(", ") || "—"}
+                    {(book.authors ?? []).join(", ") || "-"}
                   </span>
                 </div>
                 <div
@@ -354,7 +354,7 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          {/* ẢNH SÁCH — mỗi thao tác gọi API ngay lập tức, tách khỏi nút "Lưu thay đổi" bên dưới */}
+          {/* ẢNH SÁCH - mỗi thao tác gọi API ngay lập tức, tách khỏi nút "Lưu thay đổi" bên dưới */}
           <div className="a-chart-card" style={{ marginBottom: 20 }}>
             <div className="a-chart-card-header">
               <h3 className="a-chart-title">

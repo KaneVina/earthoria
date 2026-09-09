@@ -79,11 +79,11 @@ const RELATED_FALLBACK = [
 const FAQS = [
   {
     q: "Ứng dụng AR có miễn phí không?",
-    a: "Hoàn toàn miễn phí. Ứng dụng Earthoria AR có sẵn trên App Store và Google Play — bạn chỉ cần sở hữu sách và tải app về là bắt đầu trải nghiệm ngay, không phát sinh chi phí ẩn nào.",
+    a: "Hoàn toàn miễn phí. Ứng dụng Earthoria AR có sẵn trên App Store và Google Play - bạn chỉ cần sở hữu sách và tải app về là bắt đầu trải nghiệm ngay, không phát sinh chi phí ẩn nào.",
   },
   {
     q: "Cần kết nối internet để dùng AR không?",
-    a: "Không. Sau lần tải nội dung đầu tiên (khoảng 2.4GB), toàn bộ trải nghiệm AR hoạt động 100% offline — lý tưởng cho các chuyến đi hoặc khu vực không có Wi-Fi. Riêng tính năng AI Tutor cần kết nối internet để phản hồi theo thời gian thực.",
+    a: "Không. Sau lần tải nội dung đầu tiên (khoảng 2.4GB), toàn bộ trải nghiệm AR hoạt động 100% offline - lý tưởng cho các chuyến đi hoặc khu vực không có Wi-Fi. Riêng tính năng AI Tutor cần kết nối internet để phản hồi theo thời gian thực.",
   },
   {
     q: "Thiết bị nào tương thích với sách?",
@@ -91,7 +91,7 @@ const FAQS = [
   },
   {
     q: 'Chính sách "Cập nhật nội dung miễn phí 24 tháng" hoạt động ra sao?',
-    a: "Trong vòng 24 tháng kể từ ngày mua, mọi bản cập nhật nội dung mới — loài mới, câu chuyện mới, thử thách khám phá mới — sẽ tự động có sẵn trong ứng dụng của bạn mà không tốn thêm chi phí.",
+    a: "Trong vòng 24 tháng kể từ ngày mua, mọi bản cập nhật nội dung mới - loài mới, câu chuyện mới, thử thách khám phá mới - sẽ tự động có sẵn trong ứng dụng của bạn mà không tốn thêm chi phí.",
   },
   {
     q: "Tôi có thể đổi trả sách nếu không hài lòng không?",
@@ -103,7 +103,7 @@ const FAQS = [
   },
 ];
 
-//  Stars component — dùng lucide Star, tô đầy theo rating thực tế
+//  Stars component - dùng lucide Star, tô đầy theo rating thực tế
 function Stars({ rating = 0, max = 5, size = 13 }) {
   return (
     <div className="stars">
@@ -272,7 +272,7 @@ export default function BookDetail() {
   const currentImg = images[activeThumb] || FALLBACK_IMGS[0];
   const thumbImages = images.length > 1 ? images : FALLBACK_IMGS;
   //  Không dùng `|| fallback` ở đây vì sách chưa có đánh giá nào thì avgRating
-  //  trả về từ server là số 0 (falsy) — dùng `|| 4.9` sẽ vô tình hiện điểm giả.
+  //  trả về từ server là số 0 (falsy) - dùng `|| 4.9` sẽ vô tình hiện điểm giả.
   const avgRating = book?.avgRating != null ? parseFloat(book.avgRating) : 0;
   const reviewCount = book?.reviewCount || 0;
 
@@ -348,7 +348,7 @@ export default function BookDetail() {
       return;
     }
     if (addedToCart) return;
-    // Khách đã sở hữu bản điện tử của sách này rồi — hỏi lại trước khi cho
+    // Khách đã sở hữu bản điện tử của sách này rồi - hỏi lại trước khi cho
     // mua thêm 1 lần nữa, tránh mua nhầm/mua trùng.
     if (selectedFormat === "DIGITAL" && book?.ownsEbook) {
       setRebuyModalOpen(true);
@@ -399,7 +399,7 @@ export default function BookDetail() {
 
   const toggleFaq = (i) => setOpenFaq(openFaq === i ? null : i);
 
-  //  Loading state — skeleton khớp bố cục thật của trang (breadcrumb + hero split)
+  //  Loading state - skeleton khớp bố cục thật của trang (breadcrumb + hero split)
   if (isLoading)
     return (
       <>
@@ -849,7 +849,7 @@ export default function BookDetail() {
           {/* Description */}
           <p className="product-desc-main">
             {book.description ||
-              "Mở trang sách — thế giới hiện ra. Công nghệ AR thế hệ mới biến từng trang sách thành một cổng thông tin sống động với độ trung thực cao nhất."}
+              "Mở trang sách - thế giới hiện ra. Công nghệ AR thế hệ mới biến từng trang sách thành một cổng thông tin sống động với độ trung thực cao nhất."}
           </p>
 
           {/* Quick specs */}
@@ -1018,7 +1018,7 @@ export default function BookDetail() {
                   <circle cx="5.5" cy="18.5" r="2.5" />
                   <circle cx="18.5" cy="18.5" r="2.5" />
                 </svg>,
-                "Giao hàng toàn quốc — miễn phí từ 300k",
+                "Giao hàng toàn quốc - miễn phí từ 300k",
               ],
               [
                 <svg
@@ -1202,35 +1202,35 @@ export default function BookDetail() {
                   ? book.chapters
                   : [
                       {
-                        title: "Tán Rừng — Nơi Ánh Sáng Sinh Sống",
+                        title: "Tán Rừng - Nơi Ánh Sáng Sinh Sống",
                         info: "18 loài · 14 trang",
                       },
                       {
-                        title: "Lớp Tán Giữa — Vương Quốc Của Linh Trưởng",
+                        title: "Lớp Tán Giữa - Vương Quốc Của Linh Trưởng",
                         info: "22 loài · 18 trang",
                       },
                       {
-                        title: "Tầng Bụi Rậm — Nơi Kẻ Săn Mồi Rình Rập",
+                        title: "Tầng Bụi Rậm - Nơi Kẻ Săn Mồi Rình Rập",
                         info: "19 loài · 16 trang",
                       },
                       {
-                        title: "Lòng Suối — Hệ Sinh Thái Nước Ngọt",
+                        title: "Lòng Suối - Hệ Sinh Thái Nước Ngọt",
                         info: "16 loài · 14 trang",
                       },
                       {
-                        title: "Thế Giới Côn Trùng — Những Kỹ Sư Vô Hình",
+                        title: "Thế Giới Côn Trùng - Những Kỹ Sư Vô Hình",
                         info: "24 loài · 20 trang",
                       },
                       {
-                        title: "Hoa Và Thụ Phấn — Giao Ước Cổ Xưa",
+                        title: "Hoa Và Thụ Phấn - Giao Ước Cổ Xưa",
                         info: "15 loài · 12 trang",
                       },
                       {
-                        title: "Nấm Và Rễ — Mạng Lưới Ngầm Của Rừng",
+                        title: "Nấm Và Rễ - Mạng Lưới Ngầm Của Rừng",
                         info: "10 loài · 10 trang",
                       },
                       {
-                        title: "Rừng Và Con Người — Bảo Tồn Hay Mất Mát",
+                        title: "Rừng Và Con Người - Bảo Tồn Hay Mất Mát",
                         info: "Đặc biệt · 8 trang",
                       },
                     ]

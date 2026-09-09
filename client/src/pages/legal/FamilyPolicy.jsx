@@ -33,17 +33,17 @@ const SUMMARY_CARDS = [
   {
     icon: ShieldCheck,
     title: "Kiểm soát toàn diện",
-    desc: "Mã PIN riêng, khoá thiết bị tức thời, khung giờ sử dụng và giới hạn thời lượng — mọi quy tắc được xử lý ở máy chủ, không thể lách bằng cách đổi giờ máy hay gỡ cài ứng dụng.",
+    desc: "Mã PIN riêng, khoá thiết bị tức thời, khung giờ sử dụng và giới hạn thời lượng - mọi quy tắc được xử lý ở máy chủ, không thể lách bằng cách đổi giờ máy hay gỡ cài ứng dụng.",
   },
   {
     icon: TreeDeciduous,
     title: "Trang Trại Tri Thức",
-    desc: "Mỗi phút đọc sách và mỗi lượt chơi mini-game của bé hoá thành điểm tri thức, nuôi lớn một cái cây ảo qua 9 cấp độ — cho đến khi trở thành cả một khu rừng.",
+    desc: "Mỗi phút đọc sách và mỗi lượt chơi mini-game của bé hoá thành điểm tri thức, nuôi lớn một cái cây ảo qua 9 cấp độ - cho đến khi trở thành cả một khu rừng.",
   },
   {
     icon: KeyRound,
     title: "Bé không cần tài khoản riêng",
-    desc: "Bé truy cập bằng một liên kết riêng gắn với mã token ngẫu nhiên — không mật khẩu, không email — và phụ huynh có thể thu hồi liên kết đó bất cứ lúc nào.",
+    desc: "Bé truy cập bằng một liên kết riêng gắn với mã token ngẫu nhiên - không mật khẩu, không email - và phụ huynh có thể thu hồi liên kết đó bất cứ lúc nào.",
   },
   {
     icon: Baby,
@@ -52,7 +52,7 @@ const SUMMARY_CARDS = [
   },
 ];
 
-/* Bảng giới hạn hồ sơ trẻ em theo hạng thành viên — khớp maxChildAccounts trong loyaltyTier.js */
+/* Bảng giới hạn hồ sơ trẻ em theo hạng thành viên - khớp maxChildAccounts trong loyaltyTier.js */
 const CHILD_TIER_LIMITS = [
   { roman: "I", name: "Chùa Một Cột", limit: 2, color: "#4a9e3f" },
   { roman: "II", name: "Cố Đô Huế", limit: 4, color: "#2a78d6" },
@@ -61,7 +61,7 @@ const CHILD_TIER_LIMITS = [
   { roman: "V", name: "Landmark 81", limit: 10, color: "#c0392b" },
 ];
 
-/* Bảng 9 cấp độ Cây Tri Thức — khớp LEVEL_CONFIG trong gardenConfig.js */
+/* Bảng 9 cấp độ Cây Tri Thức - khớp LEVEL_CONFIG trong gardenConfig.js */
 const GARDEN_LEVELS = [
   { level: 1, name: "Hạt Mầm Tri Thức", minXP: 0 },
   { level: 2, name: "Mầm Non Tri Thức", minXP: 150 },
@@ -74,7 +74,7 @@ const GARDEN_LEVELS = [
   { level: 9, name: "Khu Rừng Tri Thức", minXP: 13000 },
 ];
 
-/* Bảng dải sức khoẻ cây — khớp HEALTH_BANDS trong gardenConfig.js */
+/* Bảng dải sức khoẻ cây - khớp HEALTH_BANDS trong gardenConfig.js */
 const HEALTH_BANDS = [
   { key: "healthy", range: "90 – 100", label: "Khoẻ mạnh", color: "#4a9e3f" },
   {
@@ -99,7 +99,7 @@ const HEALTH_BANDS = [
   },
 ];
 
-/* Bảng khoảng giá trị các thông số phụ huynh có thể tuỳ chỉnh — khớp validateSettingsPatch trong childController.js */
+/* Bảng khoảng giá trị các thông số phụ huynh có thể tuỳ chỉnh - khớp validateSettingsPatch trong childController.js */
 const SETTINGS_RANGES = [
   {
     field: "Giới hạn thời lượng sử dụng mỗi ngày",
@@ -133,7 +133,7 @@ const SETTINGS_RANGES = [
   },
 ];
 
-/* Bảng công thức quy đổi điểm tri thức — khớp XP_CONFIG & gardenEngine.js */
+/* Bảng công thức quy đổi điểm tri thức - khớp XP_CONFIG & gardenEngine.js */
 const XP_FORMULA = [
   {
     activity: "Đọc sách điện tử",
@@ -143,11 +143,11 @@ const XP_FORMULA = [
   {
     activity: "Hoàn thành 1 lượt mini-game",
     formula: "40 điểm cố định + tối đa 100 điểm thưởng theo điểm số",
-    note: "Điểm thưởng = 0,5 × điểm số đạt được, tính tối đa đến mốc 200 điểm số — tối đa 140 điểm tri thức mỗi lượt chơi",
+    note: "Điểm thưởng = 0,5 × điểm số đạt được, tính tối đa đến mốc 200 điểm số - tối đa 140 điểm tri thức mỗi lượt chơi",
   },
 ];
 
-/* Bảng nhật ký hành động phụ huynh — khớp enum ChildAuditType trong schema.prisma */
+/* Bảng nhật ký hành động phụ huynh - khớp enum ChildAuditType trong schema.prisma */
 const AUDIT_TYPES = [
   { type: "CHILD_CREATED", desc: "Tạo hồ sơ trẻ em mới" },
   {
@@ -185,10 +185,10 @@ const SECTIONS = [
     num: "01",
     title: "Giới Thiệu Trang Gia Đình & Trang Trại Tri Thức",
     paragraphs: [
-      "Trang Gia Đình (đường dẫn /family) là bảng điều khiển dành riêng cho phụ huynh trên Earthoria, cho phép bạn tạo và quản lý hồ sơ cho từng bé trong gia đình, thiết lập giờ giấc sử dụng, bật quy tắc bảo vệ mắt, kiểm soát sách nào bé được đọc, và theo dõi toàn bộ hoạt động của bé qua báo cáo trực quan — tất cả trong một giao diện duy nhất, không cần cài thêm ứng dụng giám sát của bên thứ ba.",
+      "Trang Gia Đình (đường dẫn /family) là bảng điều khiển dành riêng cho phụ huynh trên Earthoria, cho phép bạn tạo và quản lý hồ sơ cho từng bé trong gia đình, thiết lập giờ giấc sử dụng, bật quy tắc bảo vệ mắt, kiểm soát sách nào bé được đọc, và theo dõi toàn bộ hoạt động của bé qua báo cáo trực quan - tất cả trong một giao diện duy nhất, không cần cài thêm ứng dụng giám sát của bên thứ ba.",
       'Trang Trại Tri Thức (còn gọi là "Vườn Tri Thức" khi bé chỉ có một cây, và "Rừng Tri Thức" khi có nhiều cây) là tính năng học-mà-chơi (gamification) gắn liền với Trang Gia Đình: mỗi phút bé đọc sách điện tử hoặc hoàn thành một mini-game trên Earthoria đều được quy đổi thành điểm tri thức, nuôi lớn một cái cây ảo theo thời gian thực. Bé xem và tương tác với khu vườn của mình tại màn hình riêng khi truy cập bằng liên kết được phụ huynh cấp.',
-      'Hai tính năng này được thiết kế để bổ trợ cho nhau: mọi giới hạn và quy tắc mà phụ huynh thiết lập trên Trang Gia Đình (giờ giấc, khoá thiết bị, bảo vệ mắt) đều áp dụng xuyên suốt cho toàn bộ trải nghiệm của bé, bao gồm cả lúc bé đang ở trong Trang Trại Tri Thức — không có "vùng ngoại lệ" nào mà các quy tắc của phụ huynh không chạm tới.',
-      "Chính sách này giải thích chi tiết và chính xác cách hai tính năng trên vận hành, dữ liệu nào được thu thập, cơ chế bảo mật cho tài khoản trẻ em, và các quyền kiểm soát mà phụ huynh luôn nắm giữ. Chính sách này là một phần bổ sung, cụ thể hoá cho Chính Sách Bảo Mật và Điều Khoản Dịch Vụ chung của Earthoria — trong trường hợp có mâu thuẫn về nguyên tắc bảo vệ dữ liệu trẻ em, nội dung có lợi hơn cho trẻ em sẽ được ưu tiên áp dụng.",
+      'Hai tính năng này được thiết kế để bổ trợ cho nhau: mọi giới hạn và quy tắc mà phụ huynh thiết lập trên Trang Gia Đình (giờ giấc, khoá thiết bị, bảo vệ mắt) đều áp dụng xuyên suốt cho toàn bộ trải nghiệm của bé, bao gồm cả lúc bé đang ở trong Trang Trại Tri Thức - không có "vùng ngoại lệ" nào mà các quy tắc của phụ huynh không chạm tới.',
+      "Chính sách này giải thích chi tiết và chính xác cách hai tính năng trên vận hành, dữ liệu nào được thu thập, cơ chế bảo mật cho tài khoản trẻ em, và các quyền kiểm soát mà phụ huynh luôn nắm giữ. Chính sách này là một phần bổ sung, cụ thể hoá cho Chính Sách Bảo Mật và Điều Khoản Dịch Vụ chung của Earthoria - trong trường hợp có mâu thuẫn về nguyên tắc bảo vệ dữ liệu trẻ em, nội dung có lợi hơn cho trẻ em sẽ được ưu tiên áp dụng.",
     ],
   },
   {
@@ -196,8 +196,8 @@ const SECTIONS = [
     num: "02",
     title: "Vị Trí Của Hai Tính Năng Trong Hệ Sinh Thái Earthoria",
     paragraphs: [
-      "Trang Gia Đình và Trang Trại Tri Thức không phải là hai sản phẩm rời rạc mà thuộc về Family Studio — bộ phận nội dung dành cho gia đình trong hệ sinh thái sản phẩm của Earthoria, cùng với các bộ phận khác như Game Studio (sản xuất mini-game giáo dục) và Immersive Studio (trải nghiệm AR/AI tương tác). Nội dung mà bé tiếp cận thông qua liên kết riêng — sách điện tử, mini-game, AR — đều là sản phẩm do các bộ phận này cung cấp và đã được đưa vào một trải nghiệm hợp nhất, có kiểm soát của phụ huynh.",
-      'Tên gọi "Trang Trại Tri Thức", biểu tượng cây tri thức, cách trình bày khu vườn/khu rừng và toàn bộ giao diện liên quan là tài sản trí tuệ thuộc quyền sở hữu của Earthoria. Việc sao chép cơ chế tính điểm, giao diện hoặc tên gọi của tính năng này cho mục đích khác ngoài phạm vi sử dụng cá nhân, phi thương mại đều không được phép — chi tiết đầy đủ về quyền sở hữu trí tuệ của toàn bộ hệ sinh thái được quy định tại Tuyên Bố Bản Quyền.',
+      "Trang Gia Đình và Trang Trại Tri Thức không phải là hai sản phẩm rời rạc mà thuộc về Family Studio - bộ phận nội dung dành cho gia đình trong hệ sinh thái sản phẩm của Earthoria, cùng với các bộ phận khác như Game Studio (sản xuất mini-game giáo dục) và Immersive Studio (trải nghiệm AR/AI tương tác). Nội dung mà bé tiếp cận thông qua liên kết riêng - sách điện tử, mini-game, AR - đều là sản phẩm do các bộ phận này cung cấp và đã được đưa vào một trải nghiệm hợp nhất, có kiểm soát của phụ huynh.",
+      'Tên gọi "Trang Trại Tri Thức", biểu tượng cây tri thức, cách trình bày khu vườn/khu rừng và toàn bộ giao diện liên quan là tài sản trí tuệ thuộc quyền sở hữu của Earthoria. Việc sao chép cơ chế tính điểm, giao diện hoặc tên gọi của tính năng này cho mục đích khác ngoài phạm vi sử dụng cá nhân, phi thương mại đều không được phép - chi tiết đầy đủ về quyền sở hữu trí tuệ của toàn bộ hệ sinh thái được quy định tại Tuyên Bố Bản Quyền.',
     ],
   },
   {
@@ -206,8 +206,8 @@ const SECTIONS = [
     title: "Phạm Vi Áp Dụng & Đối Tượng Điều Chỉnh",
     paragraphs: [
       "Chính sách này áp dụng cho: (a) mọi tài khoản khách hàng cá nhân của Earthoria khi sử dụng Trang Gia Đình tại đường dẫn /family; và (b) mọi lượt truy cập vào không gian riêng của trẻ em tại đường dẫn /e-kid/... (bao gồm cả Trang Trại Tri Thức), bất kể người thao tác tại thời điểm đó là chính bé hay phụ huynh đang xem hộ.",
-      "Trang Gia Đình chỉ hiển thị cho tài khoản khách hàng cá nhân đã đăng nhập trên Earthoria — đường dẫn /family yêu cầu xác thực và sẽ tự động chuyển hướng về trang đăng nhập nếu chưa đăng nhập. Tính năng này không áp dụng cho hình thức đặt hàng khách vãng lai (guest checkout) và không dành cho tài khoản doanh nghiệp/đối tác bán hàng.",
-      "Mỗi tài khoản phụ huynh có thể tạo nhiều hồ sơ trẻ em, nhưng mỗi hồ sơ trẻ em chỉ thuộc về đúng một tài khoản phụ huynh duy nhất tại một thời điểm — hệ thống hiện chưa hỗ trợ chia sẻ quyền quản lý một hồ sơ trẻ em cho nhiều tài khoản phụ huynh khác nhau (ví dụ cha và mẹ dùng hai tài khoản Earthoria riêng biệt).",
+      "Trang Gia Đình chỉ hiển thị cho tài khoản khách hàng cá nhân đã đăng nhập trên Earthoria - đường dẫn /family yêu cầu xác thực và sẽ tự động chuyển hướng về trang đăng nhập nếu chưa đăng nhập. Tính năng này không áp dụng cho hình thức đặt hàng khách vãng lai (guest checkout) và không dành cho tài khoản doanh nghiệp/đối tác bán hàng.",
+      "Mỗi tài khoản phụ huynh có thể tạo nhiều hồ sơ trẻ em, nhưng mỗi hồ sơ trẻ em chỉ thuộc về đúng một tài khoản phụ huynh duy nhất tại một thời điểm - hệ thống hiện chưa hỗ trợ chia sẻ quyền quản lý một hồ sơ trẻ em cho nhiều tài khoản phụ huynh khác nhau (ví dụ cha và mẹ dùng hai tài khoản Earthoria riêng biệt).",
     ],
   },
   {
@@ -215,13 +215,13 @@ const SECTIONS = [
     num: "04",
     title: "Điều Kiện & Quy Trình Tạo Hồ Sơ Trẻ Em",
     paragraphs: [
-      "Để tạo một hồ sơ trẻ em, phụ huynh thực hiện qua trình hướng dẫn từng bước (wizard) ngay trên /family. Trình hướng dẫn gồm các bước tuần tự: giới thiệu tổng quan về tính năng; thiết lập mã PIN Phụ Huynh (bước này chỉ xuất hiện nếu tài khoản CHƯA từng đặt mã PIN — hệ thống bắt buộc thiết lập PIN trước khi hoàn tất tạo hồ sơ đầu tiên, vì PIN là lớp bảo vệ duy nhất cho các hành động nhạy cảm về sau); xác nhận email tài khoản phụ huynh (nơi mọi thông báo quan trọng như cảnh báo vượt giờ, yêu cầu mở khoá hay đặt lại mã PIN sẽ được gửi đến); nhập thông tin của bé; và cuối cùng là đồng ý điều khoản sử dụng dành riêng cho hồ sơ trẻ em.",
+      "Để tạo một hồ sơ trẻ em, phụ huynh thực hiện qua trình hướng dẫn từng bước (wizard) ngay trên /family. Trình hướng dẫn gồm các bước tuần tự: giới thiệu tổng quan về tính năng; thiết lập mã PIN Phụ Huynh (bước này chỉ xuất hiện nếu tài khoản CHƯA từng đặt mã PIN - hệ thống bắt buộc thiết lập PIN trước khi hoàn tất tạo hồ sơ đầu tiên, vì PIN là lớp bảo vệ duy nhất cho các hành động nhạy cảm về sau); xác nhận email tài khoản phụ huynh (nơi mọi thông báo quan trọng như cảnh báo vượt giờ, yêu cầu mở khoá hay đặt lại mã PIN sẽ được gửi đến); nhập thông tin của bé; và cuối cùng là đồng ý điều khoản sử dụng dành riêng cho hồ sơ trẻ em.",
       "Thông tin bắt buộc khi tạo hồ sơ gồm: tên của bé (tối đa 50 ký tự), ngày sinh hợp lệ trong khoảng 0–17 tuổi tại thời điểm tạo hồ sơ, và một biểu tượng đại diện (emoji + màu nền) chọn từ bộ biểu tượng có sẵn. Hệ thống từ chối tạo hồ sơ nếu ngày sinh cho thấy độ tuổi trên 17, hoặc ngày sinh nằm trong tương lai.",
     ],
     list: [
-      "Hồ sơ trẻ em không phải là một tài khoản độc lập — bé không có mật khẩu, không có email riêng và không thể tự đăng nhập vào hệ thống bằng bất kỳ hình thức nào",
+      "Hồ sơ trẻ em không phải là một tài khoản độc lập - bé không có mật khẩu, không có email riêng và không thể tự đăng nhập vào hệ thống bằng bất kỳ hình thức nào",
       "Ngày sinh chỉ được dùng để tính tuổi hiển thị cho phụ huynh và xác định nội dung phù hợp độ tuổi (ví dụ giới hạn độ tuổi khuyến nghị của từng cuốn sách), không được dùng cho mục đích quảng cáo hay chia sẻ ra bên ngoài",
-      "Ảnh đại diện của bé trên hồ sơ chỉ là biểu tượng cảm xúc (emoji) và một màu nền do phụ huynh chọn — Earthoria không yêu cầu và không lưu trữ ảnh chụp thật của trẻ em cho tính năng này",
+      "Ảnh đại diện của bé trên hồ sơ chỉ là biểu tượng cảm xúc (emoji) và một màu nền do phụ huynh chọn - Earthoria không yêu cầu và không lưu trữ ảnh chụp thật của trẻ em cho tính năng này",
       "Phụ huynh là chủ thể duy nhất chịu trách nhiệm xác nhận thông tin của bé là chính xác khi khai báo, và có thể tạo hồ sơ cho nhiều bé khác nhau trong cùng một gia đình từ cùng một tài khoản",
     ],
   },
@@ -230,7 +230,7 @@ const SECTIONS = [
     num: "05",
     title: "Giới Hạn Số Hồ Sơ Trẻ Em Theo Hạng Thành Viên",
     paragraphs: [
-      "Để đảm bảo công bằng tài nguyên hệ thống, số lượng hồ sơ trẻ em (đang hoạt động) mà một tài khoản phụ huynh có thể tạo được giới hạn theo Hạng Thành Viên hiện tại của tài khoản đó — hạng thành viên càng cao, số hồ sơ tối đa càng nhiều. Giới hạn được kiểm tra tại thời điểm tạo hồ sơ mới; hồ sơ đã xoá mềm (lưu trữ) không được tính vào số lượng đang hoạt động.",
+      "Để đảm bảo công bằng tài nguyên hệ thống, số lượng hồ sơ trẻ em (đang hoạt động) mà một tài khoản phụ huynh có thể tạo được giới hạn theo Hạng Thành Viên hiện tại của tài khoản đó - hạng thành viên càng cao, số hồ sơ tối đa càng nhiều. Giới hạn được kiểm tra tại thời điểm tạo hồ sơ mới; hồ sơ đã xoá mềm (lưu trữ) không được tính vào số lượng đang hoạt động.",
       "Việc kiểm tra giới hạn được thực hiện trong cùng một giao dịch cơ sở dữ liệu (transaction) với thao tác tạo hồ sơ, nhằm đảm bảo tính chính xác tuyệt đối ngay cả khi phụ huynh thao tác tạo nhiều hồ sơ gần như đồng thời trên nhiều thiết bị.",
     ],
     childLimitTable: true,
@@ -244,15 +244,15 @@ const SECTIONS = [
     num: "06",
     title: "Mã PIN Phụ Huynh: Thiết Lập, Đổi Mã & Xác Thực",
     paragraphs: [
-      "Mã PIN Phụ Huynh là một mã số gồm đúng 4 chữ số, được mã hoá một chiều bằng thuật toán bcrypt trước khi lưu trữ — Earthoria không lưu trữ mã PIN dưới dạng văn bản thô và không có cách nào để nhân viên Earthoria xem lại mã PIN đã đặt của bạn, kể cả khi hỗ trợ kỹ thuật.",
+      "Mã PIN Phụ Huynh là một mã số gồm đúng 4 chữ số, được mã hoá một chiều bằng thuật toán bcrypt trước khi lưu trữ - Earthoria không lưu trữ mã PIN dưới dạng văn bản thô và không có cách nào để nhân viên Earthoria xem lại mã PIN đã đặt của bạn, kể cả khi hỗ trợ kỹ thuật.",
       "Mã PIN được yêu cầu tại các thao tác nhạy cảm nhất trên Trang Gia Đình: mở khoá thiết bị đã bị khoá, tạo lại liên kết riêng của bé, và xoá vĩnh viễn một hồ sơ trẻ em. Các thao tác khác (cập nhật giờ giấc, ẩn/hiện sách, khoá thiết bị) không yêu cầu PIN vì đã được bảo vệ bởi chính phiên đăng nhập của phụ huynh trên tài khoản Earthoria.",
-      "Lần đầu thiết lập PIN chỉ khả dụng khi tài khoản chưa có PIN nào; sau đó, mọi thay đổi phải đi qua chức năng đổi PIN — yêu cầu xác thực đúng mã PIN cũ trước khi mã mới được lưu lại, nhằm đảm bảo chỉ người đang nắm mã hiện tại mới có quyền thay đổi nó.",
+      "Lần đầu thiết lập PIN chỉ khả dụng khi tài khoản chưa có PIN nào; sau đó, mọi thay đổi phải đi qua chức năng đổi PIN - yêu cầu xác thực đúng mã PIN cũ trước khi mã mới được lưu lại, nhằm đảm bảo chỉ người đang nắm mã hiện tại mới có quyền thay đổi nó.",
     ],
     list: [
       "Hệ thống giới hạn tối đa 5 lần nhập sai mã PIN liên tiếp; sau lần thứ 5, tài khoản bị tạm khoá chức năng xác thực PIN trong 15 phút để chống dò mã theo kiểu brute-force",
       "Mỗi lần nhập sai, hệ thống báo rõ số lượt thử còn lại trước khi bị khoá tạm thời",
       "Nhập đúng mã PIN sẽ tự động đặt lại bộ đếm số lần nhập sai về 0",
-      "Ngoài cơ chế khoá 5 lần sai nói trên, các thao tác liên quan đến PIN (mở khoá, tạo lại liên kết, xoá vĩnh viễn) còn được giới hạn tần suất ở tầng máy chủ — tối đa 15 yêu cầu trong mỗi 10 phút cho mỗi tài khoản — như một lớp phòng thủ độc lập bổ sung chống lạm dụng hệ thống",
+      "Ngoài cơ chế khoá 5 lần sai nói trên, các thao tác liên quan đến PIN (mở khoá, tạo lại liên kết, xoá vĩnh viễn) còn được giới hạn tần suất ở tầng máy chủ - tối đa 15 yêu cầu trong mỗi 10 phút cho mỗi tài khoản - như một lớp phòng thủ độc lập bổ sung chống lạm dụng hệ thống",
     ],
   },
   {
@@ -260,7 +260,7 @@ const SECTIONS = [
     num: "07",
     title: "Khôi Phục Mã PIN Khi Quên",
     paragraphs: [
-      'Nếu quên mã PIN, phụ huynh có thể dùng chức năng "Quên mã PIN?" ngay trên Trang Gia Đình để đặt lại mã mới, hoàn toàn không cần liên hệ đội ngũ hỗ trợ. Quy trình được xác thực bằng mã OTP gồm 6 chữ số, gửi tự động về đúng địa chỉ email đã đăng ký của tài khoản đang đăng nhập — Earthoria không cho phép nhập một email khác để nhận OTP, nhằm ngăn chặn việc chiếm quyền thiết lập PIN của người không phải chủ tài khoản.',
+      'Nếu quên mã PIN, phụ huynh có thể dùng chức năng "Quên mã PIN?" ngay trên Trang Gia Đình để đặt lại mã mới, hoàn toàn không cần liên hệ đội ngũ hỗ trợ. Quy trình được xác thực bằng mã OTP gồm 6 chữ số, gửi tự động về đúng địa chỉ email đã đăng ký của tài khoản đang đăng nhập - Earthoria không cho phép nhập một email khác để nhận OTP, nhằm ngăn chặn việc chiếm quyền thiết lập PIN của người không phải chủ tài khoản.',
       "Mã OTP có hiệu lực trong 10 phút kể từ lúc gửi và tối đa 5 lần nhập sai trước khi phải yêu cầu gửi lại mã mới. Việc so khớp mã OTP được thực hiện bằng thuật toán so sánh an toàn theo thời gian không đổi (timing-safe comparison), giúp hạn chế tối đa nguy cơ bị dò mã qua kênh phụ (side-channel).",
     ],
     list: [
@@ -273,15 +273,15 @@ const SECTIONS = [
     num: "08",
     title: "Liên Kết Riêng Của Bé (Kid Link) & Mã QR",
     paragraphs: [
-      'Vì trẻ em không có tài khoản đăng nhập riêng, Earthoria dùng một liên kết riêng ("Kid Link") có dạng /e-kid/ten-be/[mã-token] để bé truy cập không gian đọc sách, AR, mini-game và Trang Trại Tri Thức của chính mình. Mã token là một chuỗi ký tự ngẫu nhiên 48 ký tự (24 byte), được sinh bằng bộ tạo số ngẫu nhiên mật mã học — không thể đoán được và không gắn với bất kỳ thông tin cá nhân nào của bé.',
+      'Vì trẻ em không có tài khoản đăng nhập riêng, Earthoria dùng một liên kết riêng ("Kid Link") có dạng /e-kid/ten-be/[mã-token] để bé truy cập không gian đọc sách, AR, mini-game và Trang Trại Tri Thức của chính mình. Mã token là một chuỗi ký tự ngẫu nhiên 48 ký tự (24 byte), được sinh bằng bộ tạo số ngẫu nhiên mật mã học - không thể đoán được và không gắn với bất kỳ thông tin cá nhân nào của bé.',
       "Liên kết này hoạt động giống như một tấm vé vào cổng: bất kỳ ai có liên kết đều có thể truy cập không gian của bé mà không cần mật khẩu. Vì vậy, phụ huynh nên xem liên kết này nhạy cảm tương đương một mật khẩu và chỉ chia sẻ trong phạm vi thiết bị của gia đình (máy tính bảng, điện thoại, máy tính dùng chung tại nhà).",
       "Bên cạnh đường dẫn dạng văn bản, Trang Gia Đình còn cung cấp một mã QR tương ứng với liên kết riêng của từng bé, giúp phụ huynh thiết lập nhanh trên thiết bị của con (ví dụ máy tính bảng dùng riêng cho bé) mà không cần gõ tay đường dẫn dài.",
     ],
     list: [
       "Phụ huynh có thể xem liên kết đầy đủ kèm mã QR tại mục quản lý từng hồ sơ trẻ em trên /family",
-      'Nếu nghi ngờ liên kết đã bị lộ ra ngoài, phụ huynh có thể bấm "Tạo lại liên kết" bất kỳ lúc nào (yêu cầu xác thực mã PIN) — liên kết cũ sẽ NGAY LẬP TỨC mất hiệu lực và không thể dùng để truy cập được nữa',
+      'Nếu nghi ngờ liên kết đã bị lộ ra ngoài, phụ huynh có thể bấm "Tạo lại liên kết" bất kỳ lúc nào (yêu cầu xác thực mã PIN) - liên kết cũ sẽ NGAY LẬP TỨC mất hiệu lực và không thể dùng để truy cập được nữa',
       "Mỗi lần tạo lại liên kết đều được ghi vào nhật ký hành động của phụ huynh (audit log) kèm thời điểm thực hiện",
-      "Liên kết riêng của bé chỉ cấp quyền xem và tương tác trong phạm vi được phụ huynh cho phép (sách đã bật hiển thị, game, AR, Trang Trại Tri Thức) — không cấp bất kỳ quyền truy cập nào vào tài khoản, đơn hàng hay thông tin thanh toán của phụ huynh",
+      "Liên kết riêng của bé chỉ cấp quyền xem và tương tác trong phạm vi được phụ huynh cho phép (sách đã bật hiển thị, game, AR, Trang Trại Tri Thức) - không cấp bất kỳ quyền truy cập nào vào tài khoản, đơn hàng hay thông tin thanh toán của phụ huynh",
     ],
   },
   {
@@ -289,8 +289,8 @@ const SECTIONS = [
     num: "09",
     title: "Khoá Thiết Bị Tức Thời & Mở Khoá Bằng PIN",
     paragraphs: [
-      'Tại bất kỳ thời điểm nào, phụ huynh có thể bấm "Khoá thiết bị" trên /family để ngay lập tức chặn quyền truy cập của bé vào sách, AR, mini-game và Trang Trại Tri Thức — không cần nhập mã PIN cho thao tác khoá. Đây là công cụ phản ứng nhanh cho các tình huống cần dừng ngay việc sử dụng của bé, ví dụ đến giờ ăn cơm hoặc đi ngủ đột xuất.',
-      "Khi thiết bị đang bị khoá, bé sẽ thấy màn hình thông báo thân thiện thay vì nội dung, và mọi yêu cầu tải sách/mở AR/vào Trang Trại Tri Thức từ liên kết riêng của bé đều bị máy chủ từ chối với mã lỗi CHILD_LOCKED — việc chặn được thực thi ở phía máy chủ nên không thể vượt qua bằng cách tải lại trang, xoá bộ nhớ đệm hay đổi thiết bị khác.",
+      'Tại bất kỳ thời điểm nào, phụ huynh có thể bấm "Khoá thiết bị" trên /family để ngay lập tức chặn quyền truy cập của bé vào sách, AR, mini-game và Trang Trại Tri Thức - không cần nhập mã PIN cho thao tác khoá. Đây là công cụ phản ứng nhanh cho các tình huống cần dừng ngay việc sử dụng của bé, ví dụ đến giờ ăn cơm hoặc đi ngủ đột xuất.',
+      "Khi thiết bị đang bị khoá, bé sẽ thấy màn hình thông báo thân thiện thay vì nội dung, và mọi yêu cầu tải sách/mở AR/vào Trang Trại Tri Thức từ liên kết riêng của bé đều bị máy chủ từ chối với mã lỗi CHILD_LOCKED - việc chặn được thực thi ở phía máy chủ nên không thể vượt qua bằng cách tải lại trang, xoá bộ nhớ đệm hay đổi thiết bị khác.",
     ],
     list: [
       "Chỉ có mở khoá mới yêu cầu xác thực mã PIN Phụ Huynh, nhằm đảm bảo chỉ chính phụ huynh (hoặc người được chia sẻ mã PIN) mới có thể gỡ lệnh khoá",
@@ -304,7 +304,7 @@ const SECTIONS = [
       "Giờ Giấc Sử Dụng: Khung Giờ Cho Phép & Giới Hạn Thời Lượng Mỗi Ngày",
     paragraphs: [
       "Với mỗi hồ sơ trẻ em, phụ huynh có thể thiết lập hai lớp kiểm soát thời gian độc lập: khung giờ trong ngày được phép sử dụng (mặc định 07:00–20:30, hỗ trợ cả khung giờ qua đêm, ví dụ 20:00 đến 06:00 hôm sau) và tổng thời lượng sử dụng tối đa mỗi ngày (mặc định 60 phút, có thể chỉnh trong khoảng 5–240 phút). Mỗi lớp có thể được bật/tắt độc lập với nhau.",
-      "Toàn bộ quy tắc giờ giấc được tính toán và thực thi ở máy chủ theo múi giờ Việt Nam (UTC+7), dựa trên nhật ký phiên hoạt động thực tế lưu trong cơ sở dữ liệu — không dựa vào đồng hồ của thiết bị bé đang dùng. Điều này có nghĩa là bé không thể lách giới hạn bằng cách chỉnh giờ máy, xoá bộ nhớ đệm hoặc gỡ cài lại ứng dụng.",
+      "Toàn bộ quy tắc giờ giấc được tính toán và thực thi ở máy chủ theo múi giờ Việt Nam (UTC+7), dựa trên nhật ký phiên hoạt động thực tế lưu trong cơ sở dữ liệu - không dựa vào đồng hồ của thiết bị bé đang dùng. Điều này có nghĩa là bé không thể lách giới hạn bằng cách chỉnh giờ máy, xoá bộ nhớ đệm hoặc gỡ cài lại ứng dụng.",
       "Thời gian sử dụng thực tế được đo bằng các lượt kiểm tra định kỳ (ping) gửi lên máy chủ trong lúc bé đang đọc sách hoặc chơi, chứ không dựa trên thời lượng bé tự khai báo hay ước lượng phía trình duyệt.",
     ],
     list: [
@@ -332,7 +332,7 @@ const SECTIONS = [
     ],
     list: [
       'Nhắc nghỉ mắt định kỳ: sau mỗi khoảng thời gian tuỳ chỉnh (mặc định 20 phút, có thể đặt 1–180 phút), một lớp phủ toàn màn hình xuất hiện, hướng dẫn bé nhìn ra xa và hít thở trong một khoảng thời gian ngắn (mặc định 20 giây, có thể đặt 5–600 giây), kèm hiệu ứng hình tròn "hít vào – thở ra" để bé dễ làm theo; bé có thể bấm "Đã nghỉ xong, đọc tiếp nào" để quay lại ngay khi hoàn tất',
-      "Giải lao bắt buộc: sau một khoảng thời gian sử dụng liên tục (mặc định 45 phút, có thể đặt 5–240 phút), một lớp phủ giải lao xuất hiện và đếm ngược (mặc định 10 phút, có thể đặt 1–60 phút) — khác với lời nhắc nghỉ mắt, lớp phủ giải lao bắt buộc KHÔNG có nút bỏ qua, bé bắt buộc phải đợi hết thời gian đếm ngược mới được tiếp tục sử dụng",
+      "Giải lao bắt buộc: sau một khoảng thời gian sử dụng liên tục (mặc định 45 phút, có thể đặt 5–240 phút), một lớp phủ giải lao xuất hiện và đếm ngược (mặc định 10 phút, có thể đặt 1–60 phút) - khác với lời nhắc nghỉ mắt, lớp phủ giải lao bắt buộc KHÔNG có nút bỏ qua, bé bắt buộc phải đợi hết thời gian đếm ngược mới được tiếp tục sử dụng",
       "Mẹo bảo vệ mắt ngẫu nhiên (ví dụ nhắc giữ khoảng cách với màn hình, nhắc bật đèn phòng, nhắc chớp mắt và uống nước) có thể hiển thị kèm theo lời nhắc nghỉ mắt, tần suất hiển thị tuỳ theo lựa chọn của phụ huynh: mỗi lần mở ứng dụng, theo chu kỳ cố định, hoặc mỗi lần nghỉ mắt",
     ],
   },
@@ -344,8 +344,8 @@ const SECTIONS = [
       "Phụ huynh có thể bật/tắt độc lập hai kênh thông báo (thông báo đẩy trong ứng dụng và email) cùng hai loại sự kiện đáng chú ý: khi bé đã sử dụng vượt quá giới hạn thời lượng trong ngày, và khi bé liên tục bỏ qua các lời nhắc nghỉ mắt. Việc tách riêng kênh và loại sự kiện giúp phụ huynh chỉ nhận đúng những cảnh báo mình thực sự quan tâm, tránh gây phiền nhiễu.",
     ],
     list: [
-      "Thông báo đẩy (push) mặc định được bật, còn thông báo qua email mặc định tắt — phụ huynh có thể bật thêm nếu muốn có bản ghi lâu dài trong hộp thư",
-      "Địa chỉ email nhận thông báo luôn là email đăng ký của tài khoản phụ huynh — chính là email đã được xác nhận ngay trong bước tạo hồ sơ trẻ em ban đầu",
+      "Thông báo đẩy (push) mặc định được bật, còn thông báo qua email mặc định tắt - phụ huynh có thể bật thêm nếu muốn có bản ghi lâu dài trong hộp thư",
+      "Địa chỉ email nhận thông báo luôn là email đăng ký của tài khoản phụ huynh - chính là email đã được xác nhận ngay trong bước tạo hồ sơ trẻ em ban đầu",
     ],
   },
   {
@@ -354,7 +354,7 @@ const SECTIONS = [
     title: "Kiểm Soát Nội Dung: Hiển Thị/Ẩn Sách Điện Tử Cho Bé",
     paragraphs: [
       "Trên mỗi hồ sơ trẻ em, phụ huynh có toàn quyền bật hoặc tắt hiển thị từng cuốn sách điện tử cụ thể trong tủ sách của bé. Danh sách sách hiển thị trong mục này chỉ bao gồm những đầu sách điện tử mà phụ huynh đã mua thành công (đơn hàng đã thanh toán và ở trạng thái đã giao/hoàn tất) và đã có bản sách điện tử tương tác đang hoạt động trên hệ thống.",
-      "Cơ chế kiểm tra quyền sở hữu sách được đồng bộ tuyệt đối giữa Trang Gia Đình và không gian riêng của bé: một cuốn sách chỉ có thể được bật hiển thị nếu phụ huynh thực sự sở hữu nó, đảm bảo bé không bao giờ nhìn thấy hoặc đọc được nội dung nằm ngoài các đơn hàng đã mua — kể cả khi có người cố tình chỉnh sửa yêu cầu gửi lên máy chủ.",
+      "Cơ chế kiểm tra quyền sở hữu sách được đồng bộ tuyệt đối giữa Trang Gia Đình và không gian riêng của bé: một cuốn sách chỉ có thể được bật hiển thị nếu phụ huynh thực sự sở hữu nó, đảm bảo bé không bao giờ nhìn thấy hoặc đọc được nội dung nằm ngoài các đơn hàng đã mua - kể cả khi có người cố tình chỉnh sửa yêu cầu gửi lên máy chủ.",
     ],
     list: [
       "Mặc định, mọi sách điện tử đã mua đều được hiển thị cho bé; phụ huynh chủ động ẩn những đầu sách chưa phù hợp nếu muốn",
@@ -372,7 +372,7 @@ const SECTIONS = [
     xpTable: true,
     callout: {
       title: 'Vì sao có "ngày hoạt động" và "ngày bỏ lỡ"?',
-      text: 'Một ngày (tính theo giờ Việt Nam) được xem là "ngày hoạt động" nếu bé đọc sách tối thiểu 10 phút HOẶC hoàn thành tối thiểu 1 mini-game trong ngày đó. Mục tiêu tối thiểu này chỉ ảnh hưởng đến chuỗi ngày và sức khoẻ của cây (xem mục 17) — bé vẫn nhận điểm tri thức cho mọi phút đọc và mọi lượt chơi, dù có đạt mục tiêu tối thiểu hay không.',
+      text: 'Một ngày (tính theo giờ Việt Nam) được xem là "ngày hoạt động" nếu bé đọc sách tối thiểu 10 phút HOẶC hoàn thành tối thiểu 1 mini-game trong ngày đó. Mục tiêu tối thiểu này chỉ ảnh hưởng đến chuỗi ngày và sức khoẻ của cây (xem mục 17) - bé vẫn nhận điểm tri thức cho mọi phút đọc và mọi lượt chơi, dù có đạt mục tiêu tối thiểu hay không.',
     },
   },
   {
@@ -380,8 +380,8 @@ const SECTIONS = [
     num: "16",
     title: "9 Cấp Độ Cây Tri Thức",
     paragraphs: [
-      "Khi bé lần đầu mở Trang Trại Tri Thức, hệ thống tự động gieo một cây tri thức đầu tiên ở trạng thái sơ khai. Tổng điểm tri thức tích luỹ (đọc sách cộng mini-game) của cây quyết định cấp độ hiện tại, theo đúng 9 cấp độ trong bảng dưới đây — mỗi cấp độ có tên gọi và mô tả hình ảnh riêng, phản ánh quá trình một hạt mầm lớn dần thành cây trưởng thành.",
-      "Khi cây đạt cấp độ cao nhất (Khu Rừng Tri Thức, từ 13.000 điểm), cây được xem là đã trưởng thành hoàn toàn (trạng thái MATURE), sức khoẻ được đặt lại về 100% vĩnh viễn và không còn bị suy giảm dù bé có bỏ lỡ hoạt động, đồng thời hệ thống tự động gieo thêm một cây mới bên cạnh để bé tiếp tục hành trình — đây chính là thời điểm khu vườn của bé chính thức trở thành một khu rừng.",
+      "Khi bé lần đầu mở Trang Trại Tri Thức, hệ thống tự động gieo một cây tri thức đầu tiên ở trạng thái sơ khai. Tổng điểm tri thức tích luỹ (đọc sách cộng mini-game) của cây quyết định cấp độ hiện tại, theo đúng 9 cấp độ trong bảng dưới đây - mỗi cấp độ có tên gọi và mô tả hình ảnh riêng, phản ánh quá trình một hạt mầm lớn dần thành cây trưởng thành.",
+      "Khi cây đạt cấp độ cao nhất (Khu Rừng Tri Thức, từ 13.000 điểm), cây được xem là đã trưởng thành hoàn toàn (trạng thái MATURE), sức khoẻ được đặt lại về 100% vĩnh viễn và không còn bị suy giảm dù bé có bỏ lỡ hoạt động, đồng thời hệ thống tự động gieo thêm một cây mới bên cạnh để bé tiếp tục hành trình - đây chính là thời điểm khu vườn của bé chính thức trở thành một khu rừng.",
     ],
     levelTable: true,
   },
@@ -390,9 +390,9 @@ const SECTIONS = [
     num: "17",
     title: "Sức Khoẻ Cây, Cơ Chế Hồi Sinh & Mốc Chuỗi Ngày",
     paragraphs: [
-      "Sức khoẻ của cây (thang điểm 0–100) phản ánh mức độ đều đặn trong thói quen đọc sách và học tập của bé, tách biệt hoàn toàn với cấp độ/điểm tri thức đã đạt được — một cây có thể ở cấp độ cao nhưng sức khoẻ thấp nếu bé gần đây ít hoạt động, và ngược lại.",
+      "Sức khoẻ của cây (thang điểm 0–100) phản ánh mức độ đều đặn trong thói quen đọc sách và học tập của bé, tách biệt hoàn toàn với cấp độ/điểm tri thức đã đạt được - một cây có thể ở cấp độ cao nhưng sức khoẻ thấp nếu bé gần đây ít hoạt động, và ngược lại.",
       "Vào mỗi ngày hoạt động, sức khoẻ cây tăng thêm 18 điểm (cộng thêm 10 điểm thưởng nếu đúng vào ngày bé đạt một mốc chuỗi ngày), tối đa 100 điểm. Vào mỗi ngày bỏ lỡ (không đạt mục tiêu tối thiểu), chuỗi ngày hiện tại được đặt lại về 0, và sức khoẻ giảm dần theo số ngày bỏ lỡ liên tiếp: giảm 5 điểm ở ngày bỏ lỡ đầu tiên, 8 điểm ở ngày thứ hai, 12 điểm ở ngày thứ ba, và 15 điểm mỗi ngày kể từ ngày thứ tư trở đi.",
-      'Nếu sức khoẻ chạm 0, cây chuyển sang trạng thái "đã chết" — nhưng đây không phải là mất mát vĩnh viễn: toàn bộ điểm tri thức và cấp độ đã đạt được của cây vẫn được giữ nguyên. Ngay khi bé quay lại có một ngày hoạt động, cây sẽ hồi sinh về trạng thái sống bình thường và tiếp tục tích luỹ sức khoẻ như trên. Cơ chế này được thiết kế để khuyến khích thói quen đọc đều đặn một cách nhẹ nhàng, không tạo áp lực hay trừng phạt bé bằng cách xoá tiến trình đã đạt được.',
+      'Nếu sức khoẻ chạm 0, cây chuyển sang trạng thái "đã chết" - nhưng đây không phải là mất mát vĩnh viễn: toàn bộ điểm tri thức và cấp độ đã đạt được của cây vẫn được giữ nguyên. Ngay khi bé quay lại có một ngày hoạt động, cây sẽ hồi sinh về trạng thái sống bình thường và tiếp tục tích luỹ sức khoẻ như trên. Cơ chế này được thiết kế để khuyến khích thói quen đọc đều đặn một cách nhẹ nhàng, không tạo áp lực hay trừng phạt bé bằng cách xoá tiến trình đã đạt được.',
     ],
     healthTable: true,
     list: [
@@ -405,8 +405,8 @@ const SECTIONS = [
     num: "18",
     title: "Từ Vườn Đến Rừng Tri Thức",
     paragraphs: [
-      'Khi khu vườn chỉ có một cây, giao diện gọi đây là "Vườn Tri Thức". Ngay khi cây đầu tiên trưởng thành hoàn toàn và một cây mới được gieo thêm, giao diện chuyển sang gọi là "Rừng Tri Thức" và hiển thị toàn bộ các cây — cả cây đang lớn lẫn những cây đã trưởng thành — cùng lúc trong một khung cảnh chung, tạo cảm giác thành tựu tích luỹ theo thời gian.',
-      "Không có giới hạn cố định về số lượng cây tối đa mà một khu rừng có thể có — mỗi lần một cây đạt cấp độ cao nhất, một cây mới lại được gieo, và quá trình này lặp lại vô thời hạn theo đúng nhịp độ đọc sách và chơi game thực tế của bé.",
+      'Khi khu vườn chỉ có một cây, giao diện gọi đây là "Vườn Tri Thức". Ngay khi cây đầu tiên trưởng thành hoàn toàn và một cây mới được gieo thêm, giao diện chuyển sang gọi là "Rừng Tri Thức" và hiển thị toàn bộ các cây - cả cây đang lớn lẫn những cây đã trưởng thành - cùng lúc trong một khung cảnh chung, tạo cảm giác thành tựu tích luỹ theo thời gian.',
+      "Không có giới hạn cố định về số lượng cây tối đa mà một khu rừng có thể có - mỗi lần một cây đạt cấp độ cao nhất, một cây mới lại được gieo, và quá trình này lặp lại vô thời hạn theo đúng nhịp độ đọc sách và chơi game thực tế của bé.",
     ],
   },
   {
@@ -414,7 +414,7 @@ const SECTIONS = [
     num: "19",
     title: "Trợ Lý AI Eira Trong Không Gian Của Bé",
     paragraphs: [
-      "Trợ lý AI Eira của Earthoria cũng xuất hiện trong không gian riêng của bé (bao gồm cả trang Trang Trại Tri Thức) với hình ảnh đại diện và giọng điệu được điều chỉnh thân thiện hơn cho trẻ em so với giao diện dành cho người lớn. Việc thu thập, sử dụng, lưu trữ và xoá dữ liệu hội thoại/giọng nói khi bé tương tác với Eira được quy định chi tiết và đầy đủ tại Chính Sách An Toàn & Minh Bạch AI — bao gồm cam kết không dùng hội thoại của trẻ em cho mục đích quảng cáo và tự động xoá bản ghi âm giọng nói sau 24 giờ.",
+      "Trợ lý AI Eira của Earthoria cũng xuất hiện trong không gian riêng của bé (bao gồm cả trang Trang Trại Tri Thức) với hình ảnh đại diện và giọng điệu được điều chỉnh thân thiện hơn cho trẻ em so với giao diện dành cho người lớn. Việc thu thập, sử dụng, lưu trữ và xoá dữ liệu hội thoại/giọng nói khi bé tương tác với Eira được quy định chi tiết và đầy đủ tại Chính Sách An Toàn & Minh Bạch AI - bao gồm cam kết không dùng hội thoại của trẻ em cho mục đích quảng cáo và tự động xoá bản ghi âm giọng nói sau 24 giờ.",
     ],
     list: [
       "Việc hiển thị hay ẩn trợ lý AI trong không gian của bé hiện được vận hành mặc định cùng trải nghiệm chung của Earthoria và không có công tắc bật/tắt riêng trên /family tại thời điểm ban hành chính sách này",
@@ -427,7 +427,7 @@ const SECTIONS = [
     title: "Báo Cáo & Nhật Ký Cho Phụ Huynh",
     paragraphs: [
       "Mục Báo Cáo trên /family cung cấp cho phụ huynh một bức tranh đầy đủ về hoạt động của bé: tổng thời lượng sử dụng hôm nay, biểu đồ thời lượng theo từng ngày trong tuần (Thứ 2 đến Chủ nhật theo giờ Việt Nam), và danh sách tối đa 8 phiên đọc gần nhất kèm tên sách và thời lượng cụ thể.",
-      "Song song đó, mọi hành động quản trị mà phụ huynh thực hiện trên hồ sơ của bé đều được ghi lại trong một nhật ký hành động (audit log) riêng biệt, hiển thị tối đa 10 mục gần nhất ngay trên bảng điều khiển — mỗi mục đều có thời gian thực hiện chính xác đến từng phút. Bảng dưới đây liệt kê đầy đủ các loại hành động được ghi nhận.",
+      "Song song đó, mọi hành động quản trị mà phụ huynh thực hiện trên hồ sơ của bé đều được ghi lại trong một nhật ký hành động (audit log) riêng biệt, hiển thị tối đa 10 mục gần nhất ngay trên bảng điều khiển - mỗi mục đều có thời gian thực hiện chính xác đến từng phút. Bảng dưới đây liệt kê đầy đủ các loại hành động được ghi nhận.",
     ],
     auditTable: true,
     list: [
@@ -441,11 +441,11 @@ const SECTIONS = [
     title: "Quyền Riêng Tư & Bảo Mật Dữ Liệu Trẻ Em",
     paragraphs: [
       "Dữ liệu được thu thập phục vụ Trang Gia Đình và Trang Trại Tri Thức chỉ giới hạn ở: tên và ngày sinh của bé (do phụ huynh khai báo), biểu tượng đại diện và màu sắc tự chọn, nhật ký thời lượng đọc/chơi gắn với dấu thời gian, tên sách đã đọc, kết quả và điểm số mini-game, các cài đặt giờ giấc/bảo vệ mắt do phụ huynh thiết lập, và mã token của liên kết riêng. Earthoria không yêu cầu và không lưu trữ ảnh chụp thật, số điện thoại, địa chỉ hay bất kỳ giấy tờ tuỳ thân nào của trẻ em cho các tính năng này.",
-      "Toàn bộ dữ liệu nêu trên được gắn với tài khoản phụ huynh sở hữu hồ sơ, không được chia sẻ cho bất kỳ bên thứ ba nào ngoài phạm vi vận hành kỹ thuật của Earthoria, không được dùng để hiển thị quảng cáo nhắm mục tiêu, và không được bán dưới bất kỳ hình thức nào — nhất quán với cam kết bảo vệ trẻ em tại Chính Sách Bảo Mật.",
-      "Dữ liệu được truyền tải giữa thiết bị và máy chủ Earthoria qua kết nối mã hoá, và mọi thông tin xác thực nhạy cảm (mã PIN, mã OTP) đều được băm/mã hoá một chiều trước khi lưu trữ — chi tiết đầy đủ về hạ tầng bảo mật chung của nền tảng được mô tả tại Chính Sách Bảo Mật.",
+      "Toàn bộ dữ liệu nêu trên được gắn với tài khoản phụ huynh sở hữu hồ sơ, không được chia sẻ cho bất kỳ bên thứ ba nào ngoài phạm vi vận hành kỹ thuật của Earthoria, không được dùng để hiển thị quảng cáo nhắm mục tiêu, và không được bán dưới bất kỳ hình thức nào - nhất quán với cam kết bảo vệ trẻ em tại Chính Sách Bảo Mật.",
+      "Dữ liệu được truyền tải giữa thiết bị và máy chủ Earthoria qua kết nối mã hoá, và mọi thông tin xác thực nhạy cảm (mã PIN, mã OTP) đều được băm/mã hoá một chiều trước khi lưu trữ - chi tiết đầy đủ về hạ tầng bảo mật chung của nền tảng được mô tả tại Chính Sách Bảo Mật.",
     ],
     list: [
-      "Mọi yêu cầu truy vấn, chỉnh sửa hoặc xoá dữ liệu của một hồ sơ trẻ em phải được thực hiện bởi chính tài khoản phụ huynh sở hữu hồ sơ đó — hệ thống kiểm tra quyền sở hữu ở mọi thao tác trên máy chủ",
+      "Mọi yêu cầu truy vấn, chỉnh sửa hoặc xoá dữ liệu của một hồ sơ trẻ em phải được thực hiện bởi chính tài khoản phụ huynh sở hữu hồ sơ đó - hệ thống kiểm tra quyền sở hữu ở mọi thao tác trên máy chủ",
       "Trường hợp phát hiện thông tin trẻ em bị thu thập ngoài quy trình khai báo hợp lệ của phụ huynh, Earthoria sẽ xoá dữ liệu đó ngay khi nhận được thông báo",
       "Để biết đầy đủ các quyền của bạn đối với dữ liệu cá nhân (truy cập, chỉnh sửa, xoá, phản đối xử lý), vui lòng tham khảo mục quyền của người dùng trong Chính Sách Bảo Mật",
     ],
@@ -455,16 +455,16 @@ const SECTIONS = [
     num: "22",
     title: "Xoá Hồ Sơ: Xoá Tạm Thời & Xoá Vĩnh Viễn",
     paragraphs: [
-      "Earthoria cung cấp hai mức độ xoá hồ sơ trẻ em, khác nhau hoàn toàn về hậu quả dữ liệu — phụ huynh cần lựa chọn đúng mức độ phù hợp với nhu cầu của mình.",
+      "Earthoria cung cấp hai mức độ xoá hồ sơ trẻ em, khác nhau hoàn toàn về hậu quả dữ liệu - phụ huynh cần lựa chọn đúng mức độ phù hợp với nhu cầu của mình.",
     ],
     list: [
-      '"Xoá hồ sơ" (xoá mềm/lưu trữ): ẩn hồ sơ khỏi danh sách hiển thị và ngừng mọi quyền truy cập, nhưng KHÔNG xoá dữ liệu — lịch sử đọc, điểm tri thức, cây và nhật ký vẫn được lưu giữ. Thao tác này không yêu cầu mã PIN và có thể được xem lại/khôi phục bởi đội ngũ hỗ trợ nếu phụ huynh có nhu cầu',
-      '"Xoá vĩnh viễn": xoá hoàn toàn và không thể khôi phục toàn bộ hồ sơ cùng mọi dữ liệu liên quan — quyền hiển thị sách, nhật ký hoạt động, nhật ký hành động, kết quả mini-game, và toàn bộ Trang Trại Tri Thức (mọi cây, cấp độ, chuỗi ngày đã đạt được). Thao tác này bắt buộc phải xác thực đúng mã PIN Phụ Huynh VÀ nhập chính xác tên của bé để xác nhận, nhằm tránh xoá nhầm, đồng thời chịu cùng giới hạn tần suất 15 yêu cầu/10 phút áp dụng cho các thao tác liên quan đến PIN',
+      '"Xoá hồ sơ" (xoá mềm/lưu trữ): ẩn hồ sơ khỏi danh sách hiển thị và ngừng mọi quyền truy cập, nhưng KHÔNG xoá dữ liệu - lịch sử đọc, điểm tri thức, cây và nhật ký vẫn được lưu giữ. Thao tác này không yêu cầu mã PIN và có thể được xem lại/khôi phục bởi đội ngũ hỗ trợ nếu phụ huynh có nhu cầu',
+      '"Xoá vĩnh viễn": xoá hoàn toàn và không thể khôi phục toàn bộ hồ sơ cùng mọi dữ liệu liên quan - quyền hiển thị sách, nhật ký hoạt động, nhật ký hành động, kết quả mini-game, và toàn bộ Trang Trại Tri Thức (mọi cây, cấp độ, chuỗi ngày đã đạt được). Thao tác này bắt buộc phải xác thực đúng mã PIN Phụ Huynh VÀ nhập chính xác tên của bé để xác nhận, nhằm tránh xoá nhầm, đồng thời chịu cùng giới hạn tần suất 15 yêu cầu/10 phút áp dụng cho các thao tác liên quan đến PIN',
       "Một bản ghi xác nhận việc xoá vĩnh viễn được lưu lại trong hệ thống trước khi dữ liệu bị xoá, phục vụ mục đích đối soát nội bộ nếu phát sinh tranh chấp",
     ],
     callout: {
       title: "Cân nhắc trước khi xoá vĩnh viễn",
-      text: "Vì tính chất không thể hoàn tác, Earthoria khuyến nghị phụ huynh chỉ chọn xoá vĩnh viễn khi thực sự chắc chắn không còn nhu cầu lưu giữ tiến trình học tập của bé — ví dụ khi ngừng hẳn sử dụng dịch vụ. Với nhu cầu tạm ngừng theo dõi hoặc bé không dùng trong một thời gian, xoá tạm thời (lưu trữ) là lựa chọn an toàn hơn.",
+      text: "Vì tính chất không thể hoàn tác, Earthoria khuyến nghị phụ huynh chỉ chọn xoá vĩnh viễn khi thực sự chắc chắn không còn nhu cầu lưu giữ tiến trình học tập của bé - ví dụ khi ngừng hẳn sử dụng dịch vụ. Với nhu cầu tạm ngừng theo dõi hoặc bé không dùng trong một thời gian, xoá tạm thời (lưu trữ) là lựa chọn an toàn hơn.",
     },
   },
   {
@@ -505,11 +505,11 @@ const SECTIONS = [
 const FAQS = [
   {
     q: "Bé có cần đăng ký tài khoản hay ghi nhớ mật khẩu để vào Trang Trại Tri Thức không?",
-    a: 'Không. Bé truy cập hoàn toàn thông qua liên kết riêng ("Kid Link") do phụ huynh cấp trên /family — liên kết này đã bao gồm mã xác thực nên bé không cần nhập mật khẩu hay bất kỳ thông tin đăng nhập nào.',
+    a: 'Không. Bé truy cập hoàn toàn thông qua liên kết riêng ("Kid Link") do phụ huynh cấp trên /family - liên kết này đã bao gồm mã xác thực nên bé không cần nhập mật khẩu hay bất kỳ thông tin đăng nhập nào.',
   },
   {
     q: "Nếu bé làm lộ liên kết riêng cho bạn bè, tôi phải làm sao?",
-    a: 'Vào /family, mở hồ sơ của bé và bấm "Tạo lại liên kết" (yêu cầu xác thực mã PIN). Liên kết cũ sẽ mất hiệu lực ngay lập tức, và một liên kết mới kèm mã QR sẽ được cấp — mọi tiến trình, điểm tri thức và cây trong Trang Trại Tri Thức của bé không bị ảnh hưởng.',
+    a: 'Vào /family, mở hồ sơ của bé và bấm "Tạo lại liên kết" (yêu cầu xác thực mã PIN). Liên kết cũ sẽ mất hiệu lực ngay lập tức, và một liên kết mới kèm mã QR sẽ được cấp - mọi tiến trình, điểm tri thức và cây trong Trang Trại Tri Thức của bé không bị ảnh hưởng.',
   },
   {
     q: "Cây trong Trang Trại Tri Thức bị chết thì có mất hết điểm và cấp độ đã đạt được không?",
@@ -529,7 +529,7 @@ const FAQS = [
   },
   {
     q: "Số hồ sơ trẻ em tôi được tạo có tăng lên khi tôi mua sắm nhiều hơn không?",
-    a: "Có. Số hồ sơ trẻ em tối đa được gắn với Hạng Thành Viên hiện tại của tài khoản — hạng càng cao (theo tổng chi tiêu tích luỹ), số hồ sơ tối đa càng nhiều, từ 2 hồ sơ ở Hạng I đến 10 hồ sơ ở Hạng V. Xem chi tiết tại Chính Sách Hạng Thành Viên.",
+    a: "Có. Số hồ sơ trẻ em tối đa được gắn với Hạng Thành Viên hiện tại của tài khoản - hạng càng cao (theo tổng chi tiêu tích luỹ), số hồ sơ tối đa càng nhiều, từ 2 hồ sơ ở Hạng I đến 10 hồ sơ ở Hạng V. Xem chi tiết tại Chính Sách Hạng Thành Viên.",
   },
   {
     q: "Tôi quên mã PIN thì phải làm sao, có cần liên hệ hỗ trợ không?",
@@ -537,7 +537,7 @@ const FAQS = [
   },
   {
     q: "Bé có thể tự thiết lập lại giờ giấc hoặc tự mở khoá thiết bị khi bị khoá không?",
-    a: "Không. Mọi thay đổi thiết lập giờ giấc, bảo vệ mắt và mọi thao tác mở khoá đều chỉ thực hiện được từ Trang Gia Đình trên tài khoản phụ huynh đã đăng nhập — liên kết riêng của bé không có bất kỳ quyền chỉnh sửa cài đặt nào.",
+    a: "Không. Mọi thay đổi thiết lập giờ giấc, bảo vệ mắt và mọi thao tác mở khoá đều chỉ thực hiện được từ Trang Gia Đình trên tài khoản phụ huynh đã đăng nhập - liên kết riêng của bé không có bất kỳ quyền chỉnh sửa cài đặt nào.",
   },
   {
     q: 'Vì sao có lúc bảng điều khiển gọi là "Vườn Tri Thức", có lúc lại gọi là "Rừng Tri Thức"?',
@@ -1092,7 +1092,7 @@ export default function FamilyPolicy() {
             <span className="legal-hero-eyebrow-line" />
           </div>
           <h1 className="legal-hero-title">
-            Chính Sách —<br />
+            Chính Sách -<br />
             <em>Trang Gia Đình &amp; Trang Trại Tri Thức</em>
           </h1>
           <p className="legal-hero-sub">

@@ -225,7 +225,7 @@ function SwitchRow({ icon, title, desc, checked, onChange }) {
   );
 }
 
-// Băng thông báo giới hạn hồ sơ trẻ em theo hạng thành viên — hiển thị
+// Băng thông báo giới hạn hồ sơ trẻ em theo hạng thành viên - hiển thị
 // "X/Y tài khoản trẻ" + gợi ý lên hạng tiếp theo ("sắp mở khóa"), kèm nút
 // "Xem thêm" dẫn sang trang /loyalty. Dùng chung dữ liệu trả về từ
 // GET /children (field childLimit) nên không cần gọi thêm API nào.
@@ -251,7 +251,7 @@ function ChildLimitBanner({ childLimit }) {
       <p className="pkd-child-limit-sub">
         {isMaxTier ? (
           <>
-            <Crown size={12} /> Hạng cao nhất — đã mở khóa toàn bộ {max} tài
+            <Crown size={12} /> Hạng cao nhất - đã mở khóa toàn bộ {max} tài
             khoản trẻ.
           </>
         ) : isFull ? (
@@ -353,7 +353,7 @@ export default function ParentDashboard() {
   const [pillsStuck, setPillsStuck] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [hasPin, setHasPin] = useState(true); // mặc định true để tránh nháy UI trước khi biết chắc
-  // Giới hạn số hồ sơ trẻ em theo hạng thành viên hiện tại — { current, max,
+  // Giới hạn số hồ sơ trẻ em theo hạng thành viên hiện tại - { current, max,
   // isMaxTier, tierRoman, tierName, nextTierRoman, nextTierName, nextMax }.
   // Trả về cùng payload với GET /children, tránh phải gọi thêm API /loyalty/me.
   const [childLimit, setChildLimit] = useState(null);
@@ -365,7 +365,7 @@ export default function ParentDashboard() {
   const [booksLoading, setBooksLoading] = useState(false);
   const [booksTab, setBooksTab] = useState("ebook"); // 'ebook' | 'physical' | 'wishlist'
 
-  // "Sách con muốn mua" — gộp yêu cầu của MỌI bé (không tách theo
+  // "Sách con muốn mua" - gộp yêu cầu của MỌI bé (không tách theo
   // activeChildId) vì cần dùng chung cho băng tóm tắt ở Tổng quan lẫn badge
   // trên từng bé ở sidebar; lọc theo bé đang chọn khi hiển thị trong tab
   // "Muốn mua" của mục Sách của bé.
@@ -479,13 +479,13 @@ export default function ParentDashboard() {
   }, [activeChildId, loadDashboard, loadBooks]);
 
   const handleChildCreated = (child) => {
-    // Vô hiệu hóa loadChildren() cũ đang bay ngầm (vd: từ lúc mount trang) —
+    // Vô hiệu hóa loadChildren() cũ đang bay ngầm (vd: từ lúc mount trang) -
     // nếu nó resolve trễ hơn, dữ liệu cũ (chưa có bé mới) sẽ đè mất bé vừa
     // tạo khỏi UI dù bé đã được tạo thành công trên server.
     childrenReqId.current += 1;
     setChildren((prev) => [...prev, { ...child, todayMinutes: 0 }]);
     setActiveChildId(child.id);
-    // Cập nhật lạc quan số hồ sơ hiện có ngay lập tức — tránh banner giới
+    // Cập nhật lạc quan số hồ sơ hiện có ngay lập tức - tránh banner giới
     // hạn hiển thị số liệu cũ trong lúc chờ lần load tiếp theo.
     setChildLimit((prev) =>
       prev ? { ...prev, current: prev.current + 1 } : prev,
@@ -494,7 +494,7 @@ export default function ParentDashboard() {
 
   const toggleBookVisibility = async (bookId, visible) => {
     // Vô hiệu hóa mọi loadBooks() cũ đang bay ngầm (vd: gọi lúc mount/đổi bé)
-    // — nếu không, response cũ resolve trễ hơn sẽ đè mất optimistic update này
+    // - nếu không, response cũ resolve trễ hơn sẽ đè mất optimistic update này
     // và state sai sẽ ở lại luôn (không có ai fetch lại để tự sửa).
     booksReqId.current += 1;
     setBooks((prev) => ({
@@ -554,14 +554,14 @@ export default function ParentDashboard() {
     trendDeltaPct <= -5 ? "down" : trendDeltaPct >= 5 ? "up" : "flat";
 
   /*  Autosave  */
-  // Không có nút "Lưu" nào cả — mọi thay đổi tự lưu ngầm. Gộp các thay đổi
+  // Không có nút "Lưu" nào cả - mọi thay đổi tự lưu ngầm. Gộp các thay đổi
   // liên tiếp lại (bấm +/- vài lần, kéo giờ "Từ" rồi "Đến"...) và chỉ thực sự
   // gửi lên server sau khi ngừng chỉnh được SETTINGS_AUTOSAVE_DEBOUNCE_MS,
-  // tránh spam API — báo kết quả bằng toast cho gọn, không cần badge riêng.
+  // tránh spam API - báo kết quả bằng toast cho gọn, không cần badge riêng.
   const SETTINGS_AUTOSAVE_DEBOUNCE_MS = 2000;
 
   const saveTimers = useRef({ debounce: null });
-  const pendingSettingsRef = useRef(null); // { childId, patch } — gộp các thay đổi chưa gửi lên server
+  const pendingSettingsRef = useRef(null); // { childId, patch } - gộp các thay đổi chưa gửi lên server
   // Bản sao "luôn mới" của activeChildId để đọc trong setTimeout/closure cũ,
   // tránh trường hợp phụ huynh đổi sang xem bé khác trong lúc đang chờ lưu.
   const activeChildIdRef = useRef(activeChildId);
@@ -594,7 +594,7 @@ export default function ParentDashboard() {
         err.response?.data?.message ||
           "Không thể lưu thay đổi, đang tải lại...",
       );
-      // Chỉ tải lại dashboard nếu vẫn đang xem đúng bé đó — nếu phụ huynh đã
+      // Chỉ tải lại dashboard nếu vẫn đang xem đúng bé đó - nếu phụ huynh đã
       // chuyển sang bé khác thì đừng lấy dữ liệu bé cũ đè lên màn hình hiện tại.
       if (childId === activeChildIdRef.current) {
         loadDashboard(childId);
@@ -606,12 +606,12 @@ export default function ParentDashboard() {
     if (!activeChildId) return;
     const targetChildId = activeChildId;
     // Vô hiệu hóa mọi loadDashboard() cũ đang bay ngầm (vd: gọi lúc mount hoặc
-    // lúc đổi bé) TRƯỚC khi ghi optimistic — nếu không, response cũ (chứa dữ
+    // lúc đổi bé) TRƯỚC khi ghi optimistic - nếu không, response cũ (chứa dữ
     // liệu trước khi đổi setting) có thể resolve trễ hơn và đè mất giá trị vừa
     // đổi. Không có bước nào tự fetch lại sau khi lưu thành công, nên nếu bị
     // đè thì UI sẽ SAI VĨNH VIỄN cho tới khi người dùng tự F5.
     dashboardReqId.current += 1;
-    // Optimistic update để UI mượt ngay khi bấm — không cần chờ debounce
+    // Optimistic update để UI mượt ngay khi bấm - không cần chờ debounce
     setDashboard((prev) =>
       prev ? { ...prev, child: { ...prev.child, ...patch } } : prev,
     );
@@ -690,7 +690,7 @@ export default function ParentDashboard() {
     try {
       const res = await childService.lock(lockTarget.id);
       if (lockTarget.id === activeChildId) {
-        // Vô hiệu hóa loadDashboard() cũ đang bay ngầm — tránh trường hợp nó
+        // Vô hiệu hóa loadDashboard() cũ đang bay ngầm - tránh trường hợp nó
         // resolve trễ hơn với isLocked=false (dữ liệu trước khi khóa) rồi đè
         // lại đúng lúc mình vừa set isLocked=true.
         dashboardReqId.current += 1;
@@ -723,7 +723,7 @@ export default function ParentDashboard() {
     );
     setUnlockPinOpen(true);
   };
-  // Gọi API thật, xác thực PIN ở server (bcrypt + chống brute-force) —
+  // Gọi API thật, xác thực PIN ở server (bcrypt + chống brute-force) -
   // trả về lỗi cụ thể (sai PIN/còn mấy lần thử/đã bị khóa tạm) để hiển thị.
   const confirmUnlock = async (pin) => {
     if (!lockTarget) return;
@@ -1018,7 +1018,7 @@ export default function ParentDashboard() {
     toast.success(`Đang cài đặt cho bé ${child.name}`);
   };
 
-  // Yêu cầu đang chờ của bé đang được chọn / của tất cả các bé — dùng để
+  // Yêu cầu đang chờ của bé đang được chọn / của tất cả các bé - dùng để
   // hiển thị số đếm ở tab "Muốn mua" và băng tóm tắt ở Tổng quan.
   const activeChildBookRequests = bookRequests.filter(
     (r) => r.child.id === activeChildId,
@@ -1030,7 +1030,7 @@ export default function ParentDashboard() {
     (r) => r.status === "PENDING",
   );
 
-  // Nhảy tới tab "Muốn mua" trong mục Sách của bé — tự chuyển sang đúng bé
+  // Nhảy tới tab "Muốn mua" trong mục Sách của bé - tự chuyển sang đúng bé
   // gửi yêu cầu nếu đang xem hồ sơ bé khác.
   const goToBookRequests = (childId) => {
     if (childId && childId !== activeChildId) {
@@ -1372,7 +1372,7 @@ export default function ParentDashboard() {
               </div>
             </RevealCard>
 
-            {/* Quản lý link & QR riêng, khóa AR, xoá hồ sơ — hiện ngay cho bé
+            {/* Quản lý link & QR riêng, khóa AR, xoá hồ sơ - hiện ngay cho bé
                 đang chọn, không cần bấm thêm thao tác nào */}
             <RevealCard as="div" className="pkd-card pkd-manage-card">
               <div className="pkd-card-title-row">
@@ -1539,7 +1539,7 @@ export default function ParentDashboard() {
                 </RevealCard>
               )}
 
-              {/* Băng tóm tắt "con muốn mua" — chỉ hiện khi có yêu cầu đang
+              {/* Băng tóm tắt "con muốn mua" - chỉ hiện khi có yêu cầu đang
                   chờ, để phụ huynh biết ngay con muốn gì mà không cần mở
                   sâu vào mục Sách của bé. */}
               {pendingBookRequests.length > 0 && (
@@ -2153,7 +2153,7 @@ export default function ParentDashboard() {
                           </div>
                         </div>
                         <span className="pkd-book-physical-badge">
-                          Sách giấy — chỉ để biết
+                          Sách giấy - chỉ để biết
                         </span>
                       </div>
                     ))
@@ -2315,7 +2315,7 @@ export default function ParentDashboard() {
         </div>
       </div>
 
-      {/*  Powered by — canh giữa theo trang (không tách trái/phải như header),
+      {/*  Powered by - canh giữa theo trang (không tách trái/phải như header),
           tông màu mờ giống các logo trong dải "Hệ Sinh Thái Earthoria" khi
           chưa hover: đen/xám nhạt, opacity thấp, sáng rõ hẳn lên khi hover.  */}
       <div className="pkd-poweredby">

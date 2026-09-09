@@ -34,7 +34,7 @@ const SITE_ID = import.meta.env.VITE_UMAMI_SITE_ID || "";
 const UMAMI_USER = import.meta.env.VITE_UMAMI_USER || "admin";
 const UMAMI_PASS = import.meta.env.VITE_UMAMI_PASS || "";
 
-// Danh sách bộ lọc thời gian — nhóm giống hệt menu của Umami trong ảnh mẫu.
+// Danh sách bộ lọc thời gian - nhóm giống hệt menu của Umami trong ảnh mẫu.
 const PERIOD_OPTIONS = [
   { label: "Hôm nay", value: "today", unit: "hour", group: 1 },
   { label: "24 giờ gần nhất", value: "24h", unit: "hour", group: 1 },
@@ -105,7 +105,7 @@ function getRange(period, customRange) {
   }
 }
 
-// unit hợp lý cho biểu đồ theo khoảng đã chọn — tránh vẽ hàng trăm cột nếu chọn "Toàn thời gian"
+// unit hợp lý cho biểu đồ theo khoảng đã chọn - tránh vẽ hàng trăm cột nếu chọn "Toàn thời gian"
 function getUnit(period, customRange) {
   const found = PERIOD_OPTIONS.find((p) => p.value === period);
   if (period !== "custom") return found?.unit || "day";
@@ -117,13 +117,13 @@ function getUnit(period, customRange) {
 }
 
 function fmtNum(n) {
-  if (n == null || isNaN(n)) return "—";
+  if (n == null || isNaN(n)) return "-";
   if (n >= 1000) return (n / 1000).toFixed(1) + "k";
   return String(n);
 }
 
 function fmtDur(ms) {
-  if (!ms) return "—";
+  if (!ms) return "-";
   const s = Math.round(ms / 1000);
   const m = Math.floor(s / 60);
   return m > 0 ? `${m}p ${s % 60}s` : `${s}s`;
@@ -234,7 +234,7 @@ function StatCard({ icon: Icon, label, value, sub, accent }) {
             lineHeight: 1,
           }}
         >
-          {value ?? "—"}
+          {value ?? "-"}
         </div>
         {sub && (
           <div
@@ -805,7 +805,7 @@ function NotConfigured() {
         =mật_khẩu_của_bạn
       </div>
       <p style={{ fontSize: 12, color: "rgba(13,51,48,0.35)", marginTop: 20 }}>
-        Token sẽ được tự động lấy qua API — không cần tạo API Key thủ công.
+        Token sẽ được tự động lấy qua API - không cần tạo API Key thủ công.
       </p>
     </div>
   );
@@ -873,7 +873,7 @@ export default function Analytics() {
       // /stats trả cấu trúc phẳng: { pageviews, visitors, visits, bounces, totaltime, comparison: {...} }
       setSummary(sumData);
 
-      // /pageviews trả { pageviews: [{x,y}...], sessions: [{x,y}...] } — mảng trực tiếp, không có .data
+      // /pageviews trả { pageviews: [{x,y}...], sessions: [{x,y}...] } - mảng trực tiếp, không có .data
       const pvArr = pvData?.pageviews || [];
       const ssArr = pvData?.sessions || [];
       const merged = pvArr.map((pv, i) => ({
@@ -934,7 +934,7 @@ export default function Analytics() {
           </h1>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          {/* Period dropdown — đầy đủ các mốc thời gian giống Umami */}
+          {/* Period dropdown - đầy đủ các mốc thời gian giống Umami */}
           <PeriodDropdown
             period={period}
             customRange={customRange}
@@ -1068,7 +1068,7 @@ export default function Analytics() {
               value={
                 summary?.bounces != null && summary?.visits
                   ? `${Math.round((summary.bounces / summary.visits) * 100)}%`
-                  : "—"
+                  : "-"
               }
             />
           </div>

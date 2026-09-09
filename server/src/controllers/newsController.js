@@ -12,7 +12,7 @@ const authorSelect = {
   role: true,
 };
 
-// GET /news/posts — bảng tin công khai (chỉ những bài không ẩn, không xóa)
+// GET /news/posts - bảng tin công khai (chỉ những bài không ẩn, không xóa)
 exports.getPublicPosts = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -46,7 +46,7 @@ exports.getPublicPosts = async (req, res) => {
   }
 };
 
-// GET /news/files — file công khai (chỉ những file không ẩn, không xóa)
+// GET /news/files - file công khai (chỉ những file không ẩn, không xóa)
 exports.getPublicFiles = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);

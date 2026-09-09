@@ -439,7 +439,7 @@
   outline: 2px solid var(--kid-blue);
   outline-offset: 2px;
 }
-/* Một viền sáng duy nhất, cùng hình khối bo góc với nút — không còn 2 vòng
+/* Một viền sáng duy nhất, cùng hình khối bo góc với nút - không còn 2 vòng
    lệch hình (vuông + tròn) chồng lên nhau. Hiệu ứng "thở" nhẹ nhàng thay vì
    xoay tròn để trông mượt và tinh tế hơn. */
 .kg-garden-tree-btn.is-active {
@@ -473,7 +473,7 @@
   }
 }
 
-/* Nhãn nhỏ báo đây là cây đang được chăm — thay cho vòng xoay rối mắt */
+/* Nhãn nhỏ báo đây là cây đang được chăm - thay cho vòng xoay rối mắt */
 .kg-garden-tree-tag {
   position: absolute;
   top: -9px;

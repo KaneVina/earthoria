@@ -26,13 +26,13 @@ import { useAuthStore } from "../store/authStore";
 import EiraExpandToggle from "./EiraExpandToggle";
 import "./assets/css/EiraChatbox.css";
 
-const MASCOT_HIDE_DURATION = 10 * 60 * 1000; // 10 phút — ẩn tạm, không lưu vĩnh viễn
+const MASCOT_HIDE_DURATION = 10 * 60 * 1000; // 10 phút - ẩn tạm, không lưu vĩnh viễn
 const MASCOT_FIRST_SHOW_DELAY = 3000; // 3 giây sau khi trang sẵn sàng
 const MAX_INPUT_LEN = 500;
 const MAX_HISTORY_TURNS = 22; // số message tối đa giữ trong bộ nhớ hội thoại
 const TRIM_HISTORY_TO = 18;
 const REQUEST_TIMEOUT_MS = 25000; // timeout gọi API
-const SCROLL_BOTTOM_THRESHOLD = 120; // px — dưới mức này coi như đang ở cuối khung chat
+const SCROLL_BOTTOM_THRESHOLD = 120; // px - dưới mức này coi như đang ở cuối khung chat
 
 function hexToRgb(hex) {
   const n = parseInt(hex.slice(1), 16);
@@ -56,7 +56,7 @@ const BRAND_PALETTE_HEX = {
   "--gh4": "#1f5948",
 };
 
-// Khung giờ ban ngày (nền sáng) — ngoài khoảng này coi là chiều/tối (nền có sao)
+// Khung giờ ban ngày (nền sáng) - ngoài khoảng này coi là chiều/tối (nền có sao)
 const DAY_START_HOUR = 6;
 const DAY_END_HOUR = 18;
 const DAY_HUE = 200;
@@ -111,7 +111,7 @@ function hslToHex(h, s, l) {
   return `#${toHex(r1)}${toHex(g1)}${toHex(b1)}`;
 }
 
-// Giữ nguyên S/L gốc của mỗi biến — chỉ thay Hue theo khung giờ
+// Giữ nguyên S/L gốc của mỗi biến - chỉ thay Hue theo khung giờ
 function rotateHue(hex, hue) {
   const [, s, l] = hexToHsl(hex);
   return hslToHex(hue, s, l);
@@ -670,7 +670,7 @@ function EiraUI() {
   const [confirmClear, setConfirmClear] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false); // popup phóng to (không phải fullscreen)
 
-  /* Hạng model AI (núi) — Yên Tử -> Bạch Mã -> Bà Nà -> Tam Đảo -> Fansipan */
+  /* Hạng model AI (núi) - Yên Tử -> Bạch Mã -> Bà Nà -> Tam Đảo -> Fansipan */
   const [modelTiers, setModelTiers] = useState([]);
   const [selectedModel, setSelectedModel] = useState(
     () => localStorage.getItem("eira_model") || null,
@@ -828,7 +828,7 @@ function EiraUI() {
     setIsOpen((v) => !v);
   };
 
-  /*  Kéo-thả khung chat khi đã mở (qua header) — dùng chung dragPos với FAB  */
+  /*  Kéo-thả khung chat khi đã mở (qua header) - dùng chung dragPos với FAB  */
   const winRef = useRef(null);
   const winDragRef = useRef({
     active: false,
@@ -978,7 +978,7 @@ function EiraUI() {
       const win = document.getElementById("eira-win");
       const fab = document.getElementById("eira-fab");
       // Menu chọn hạng model được portal ra document.body (thoát overflow của
-      // #eira-win) nên không nằm trong win/fab — phải loại trừ riêng, không
+      // #eira-win) nên không nằm trong win/fab - phải loại trừ riêng, không
       // thì bấm chọn model sẽ bị tưởng nhầm là "bấm ra ngoài" và đóng cả khung chat.
       if (e.target.closest(".eira-model-menu")) return;
       if (!win?.contains(e.target) && !fab?.contains(e.target))
@@ -1015,7 +1015,7 @@ function EiraUI() {
         setSelectedModel(toUse.code);
         setActiveModel(toUse);
       } catch {
-        // Không tải được danh sách hạng cũng không sao — server tự chọn hạng mặc định khi chat.
+        // Không tải được danh sách hạng cũng không sao - server tự chọn hạng mặc định khi chat.
       }
     })();
     return () => {
@@ -1062,7 +1062,7 @@ function EiraUI() {
     [isBusy],
   );
 
-  /* Đóng menu chọn hạng model khi bấm ra ngoài — menu được portal ra
+  /* Đóng menu chọn hạng model khi bấm ra ngoài - menu được portal ra
      document.body nên không còn là con DOM thật của .eira-model-picker,
      phải check thêm .eira-model-menu để không tự đóng khi bấm chọn 1 hạng */
   useEffect(() => {
@@ -1164,7 +1164,7 @@ function EiraUI() {
             appendToken(data.text);
           } else if (event === "model") {
             // Server luôn tự xác thực quyền, đây là hạng THẬT SỰ được dùng cho lượt này
-            // (có thể bị hạ xuống nếu client gửi hạng chưa mở khóa) — đồng bộ lại UI.
+            // (có thể bị hạ xuống nếu client gửi hạng chưa mở khóa) - đồng bộ lại UI.
             // Ưu tiên lấy nguyên object từ modelTiers đã tải (có icon/emoji đầy đủ),
             // chỉ dựng object tối giản nếu vì lý do gì đó chưa có trong danh sách.
             setSelectedModel(data.code);
@@ -1222,7 +1222,7 @@ function EiraUI() {
           // khi có sự kiện "token". Nếu vì lý do gì đó server không stream
           // token nào (vd model phát vài mẩu tool-call rồi rút lại giữa
           // chừng) nhưng "done" vẫn trả về nội dung thật, phải tự tạo bubble
-          // ở đây — nếu không khách sẽ thấy im lặng hoàn toàn dù AI đã trả
+          // ở đây - nếu không khách sẽ thấy im lặng hoàn toàn dù AI đã trả
           // lời xong, rất khó phát hiện vì không có lỗi nào được ném ra.
           if (botMsgId == null) {
             setMessages((prev) => [...prev, makeMsg("bot", reply)]);
@@ -1366,7 +1366,7 @@ function EiraUI() {
         className={`${isOpen ? "fab-open" : ""} ${isDragging ? "dragging" : ""} ${unreadCount > 0 && !isOpen ? "has-badge" : ""} ${showMascot ? "mascot" : ""}`.trim()}
         aria-label={
           showMascot
-            ? "Eira đang vẫy chào — bấm để mở chat"
+            ? "Eira đang vẫy chào - bấm để mở chat"
             : unreadCount > 0 && !isOpen
               ? `Chat với Eira, ${unreadCount} tin nhắn mới chưa đọc`
               : "Chat với Eira (giữ và kéo để di chuyển)"
@@ -1619,7 +1619,7 @@ function EiraUI() {
           <div ref={msgsEndRef} />
         </div>
 
-        {/* Nút cuộn xuống cuối — hiện khi người dùng cuộn lên xem lại lịch sử */}
+        {/* Nút cuộn xuống cuối - hiện khi người dùng cuộn lên xem lại lịch sử */}
         {showScrollBtn && (
           <button
             type="button"

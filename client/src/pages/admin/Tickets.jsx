@@ -109,11 +109,11 @@ function TicketDrawer({ ticket, onClose, currentUser }) {
       const emailSent = res.data?.data?.reply?.emailSent;
       if (emailSent) {
         toast.success(
-          "Đã gửi phản hồi — email thông báo đã được gửi tới khách hàng",
+          "Đã gửi phản hồi - email thông báo đã được gửi tới khách hàng",
         );
       } else {
         toast.error(
-          "Đã lưu phản hồi nhưng gửi email thất bại — kiểm tra lại cấu hình gửi mail",
+          "Đã lưu phản hồi nhưng gửi email thất bại - kiểm tra lại cấu hình gửi mail",
         );
       }
       setReplyText("");
@@ -766,7 +766,7 @@ export default function Tickets() {
                         {TICKET_STATUS[t.status]}
                       </span>
                     </td>
-                    <td className="a-td-muted">{t.assignedTo?.name || "—"}</td>
+                    <td className="a-td-muted">{t.assignedTo?.name || "-"}</td>
                     <td className="a-td-muted">
                       {formatDateTime(t.createdAt)}
                     </td>

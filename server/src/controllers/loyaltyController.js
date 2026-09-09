@@ -14,7 +14,7 @@ const getMyLoyaltyProfile = async (req, res) => {
   }
 };
 
-// Danh sách công khai 5 hạng — dùng cho trang giới thiệu ưu đãi, không cần đăng nhập.
+// Danh sách công khai 5 hạng - dùng cho trang giới thiệu ưu đãi, không cần đăng nhập.
 const getLoyaltyTiers = async (req, res) => {
   return formatResponse(res, 200, "OK", LOYALTY_TIERS);
 };

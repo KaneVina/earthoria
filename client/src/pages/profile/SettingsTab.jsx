@@ -45,7 +45,7 @@ const SYSTEM_STATUS_META = {
   },
 };
 
-// Chỉ tô màu con số thời gian phản hồi THẬT theo ngưỡng — không bịa dữ liệu
+// Chỉ tô màu con số thời gian phản hồi THẬT theo ngưỡng - không bịa dữ liệu
 function getResponseColor(ms) {
   if (ms === null || ms === undefined) return undefined;
   if (ms <= 200) return "#4a9e3f";
@@ -182,7 +182,7 @@ export default function SettingsTab() {
     statusData?.uptimeRatio30d !== undefined
       ? Number(statusData.uptimeRatio30d)
       : null;
-  const uptimeDisplay = uptimeValue !== null ? `${uptimeValue}%` : "—";
+  const uptimeDisplay = uptimeValue !== null ? `${uptimeValue}%` : "-";
 
   const avgMs = statusData?.avgResponseMs ?? null;
   const responseColor = getResponseColor(avgMs);
@@ -193,14 +193,14 @@ export default function SettingsTab() {
         minute: "2-digit",
         second: "2-digit",
       })
-    : "—";
+    : "-";
 
   const openCookieSettings = () => {
     if (window.EarthoriaCookies) {
       window.EarthoriaCookies.openSettings();
       return;
     }
-    // Script có thể vẫn đang tải — thử lại vài lần trước khi báo lỗi hẳn
+    // Script có thể vẫn đang tải - thử lại vài lần trước khi báo lỗi hẳn
     let attempts = 0;
     const timer = setInterval(() => {
       attempts += 1;
@@ -301,13 +301,13 @@ export default function SettingsTab() {
           <div className="pf-settings-info-item">
             <span className="pf-settings-info-label">Thời gian cập nhật</span>
             <span className="pf-settings-info-val pf-mono">
-              {statusLoading ? "—" : checkedAtDisplay}
+              {statusLoading ? "-" : checkedAtDisplay}
             </span>
           </div>
           <div className="pf-settings-info-item">
             <span className="pf-settings-info-label">Uptime</span>
             <span className="pf-settings-info-val pf-mono">
-              {statusLoading ? "—" : uptimeDisplay}
+              {statusLoading ? "-" : uptimeDisplay}
             </span>
           </div>
           <div className="pf-settings-info-item">
@@ -316,7 +316,7 @@ export default function SettingsTab() {
               className="pf-settings-info-val pf-mono"
               style={{ color: statusLoading ? undefined : responseColor }}
             >
-              {statusLoading || avgMs === null ? "—" : `${avgMs}ms`}
+              {statusLoading || avgMs === null ? "-" : `${avgMs}ms`}
             </span>
           </div>
         </div>

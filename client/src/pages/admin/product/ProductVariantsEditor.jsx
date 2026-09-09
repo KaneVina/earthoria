@@ -87,7 +87,7 @@ export default function ProductVariantsEditor({
             marginBottom: 10,
           }}
         >
-          Chưa có định dạng bán nào — thêm ít nhất 1 định dạng bên dưới.
+          Chưa có định dạng bán nào - thêm ít nhất 1 định dạng bên dưới.
         </div>
       )}
 
@@ -328,7 +328,7 @@ function VariantCodePreview({ variant }) {
           color: "#0D3330",
         }}
       >
-        {variant.productCode ?? "—"}
+        {variant.productCode ?? "-"}
       </span>
     );
   }
@@ -339,7 +339,7 @@ function VariantCodePreview({ variant }) {
         fontSize: 11,
         color: "rgba(13,51,48,0.4)",
       }}
-      title="Mã minh họa — mã thật sẽ do hệ thống cấp khi lưu"
+      title="Mã minh họa - mã thật sẽ do hệ thống cấp khi lưu"
     >
       {generateProductCode()} (preview)
     </span>

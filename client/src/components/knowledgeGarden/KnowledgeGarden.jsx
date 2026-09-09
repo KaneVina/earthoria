@@ -331,7 +331,7 @@ export default function KnowledgeGarden({ token }) {
                 </>
               ) : (
                 <span className="kg-current-hint">
-                  Đã đạt cấp cao nhất — tuyệt vời! 🏆
+                  Đã đạt cấp cao nhất - tuyệt vời! 🏆
                 </span>
               )}
 
@@ -370,7 +370,7 @@ export default function KnowledgeGarden({ token }) {
                   key={t.id}
                   className={`kg-garden-tree-btn${t.id === activeTree.id ? " is-active" : ""}`}
                   onClick={() => setSelectedTreeId(t.id)}
-                  aria-label={`Xem chi tiết ${t.level.name}${t.id === activeTree.id ? " — cây đang trồng" : ""}`}
+                  aria-label={`Xem chi tiết ${t.level.name}${t.id === activeTree.id ? " - cây đang trồng" : ""}`}
                 >
                   {t.id === activeTree.id && (
                     <span className="kg-garden-tree-tag">Đang trồng</span>
@@ -390,7 +390,7 @@ export default function KnowledgeGarden({ token }) {
 
           {garden.forestUnlocked && (
             <p className="kg-forest-note">
-              🌲 Rừng Tri Thức đã mở — mỗi lần có cây trưởng thành, một cây mới
+              🌲 Rừng Tri Thức đã mở - mỗi lần có cây trưởng thành, một cây mới
               lại được trồng thêm!
             </p>
           )}

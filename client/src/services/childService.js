@@ -22,7 +22,7 @@ export const childService = {
       data: { pin, confirmName },
     }),
 
-  // "Sách con muốn mua" — gộp mọi bé, dùng cho tab "Muốn mua" + băng tóm tắt ở Tổng quan
+  // "Sách con muốn mua" - gộp mọi bé, dùng cho tab "Muốn mua" + băng tóm tắt ở Tổng quan
   getBookRequests: (params) => api.get("/children/book-requests", { params }),
   respondBookRequest: (requestId, action, opts = {}) =>
     api.patch(`/children/book-requests/${requestId}`, { action, ...opts }),

@@ -41,12 +41,12 @@ async function expireOneOrder(order, reason) {
     }
 
     // PaymentTransaction chỉ phục vụ audit cổng thanh toán online (gateway/paymentRef bắt buộc,
-    // COD không có cả 2) — COD auto-cancel nên chỉ log ra console, không ghi được vào bảng này.
+    // COD không có cả 2) - COD auto-cancel nên chỉ log ra console, không ghi được vào bảng này.
     if (!isCod) {
       await tx.paymentTransaction.create({
         data: {
           orderId: order.id,
-          gateway: order.paymentMethod, // 'VNPAY' | 'MOMO' | 'BANKQR' — trùng giá trị PaymentGateway
+          gateway: order.paymentMethod, // 'VNPAY' | 'MOMO' | 'BANKQR' - trùng giá trị PaymentGateway
           type: "EXPIRE",
           paymentRef: order.paymentRef || "",
           amount: order.total,
@@ -57,8 +57,8 @@ async function expireOneOrder(order, reason) {
             reason === "orphan"
               ? `Đơn chưa từng tạo phiên gateway (paymentSessionExpiresAt null), tự huỷ sau ${
                   ORPHAN_SESSION_TTL_MS / 60000
-                } phút kể từ khi tạo — hoàn kho/coupon`
-              : `Phiên thanh toán hết hạn lúc ${order.paymentSessionExpiresAt.toISOString()} — hoàn kho/coupon`,
+                } phút kể từ khi tạo - hoàn kho/coupon`
+              : `Phiên thanh toán hết hạn lúc ${order.paymentSessionExpiresAt.toISOString()} - hoàn kho/coupon`,
         },
       });
     }
@@ -129,7 +129,7 @@ function startPaymentExpiryJob({ intervalMs = 60 * 1000 } = {}) {
       const { scanned, expired, failed } = await expireStalePaymentSessions();
       if (scanned > 0) {
         console.log(
-          `[paymentExpiryService] Quét ${scanned} đơn — huỷ ${expired}, lỗi ${failed}`,
+          `[paymentExpiryService] Quét ${scanned} đơn - huỷ ${expired}, lỗi ${failed}`,
         );
       }
     } catch (err) {

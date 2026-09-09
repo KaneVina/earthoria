@@ -26,7 +26,7 @@ const LOYALTY_TIERS = [
     maxChildAccounts: 2,
     color: "#4a9e3f",
     colorSoft: "rgba(74,158,63,0.12)",
-    tagline: "Khởi hành — mọi hành trình đều bắt đầu từ đây",
+    tagline: "Khởi hành - mọi hành trình đều bắt đầu từ đây",
     // Mỗi hạng thành viên mở khóa 1 hạng trợ lý AI Eira tương ứng (đồng bộ rank/minSpend với AI_MODEL_TIERS trong aiModelTier.js).
     aiModel: {
       code: "YEN_TU",
@@ -36,8 +36,8 @@ const LOYALTY_TIERS = [
       tagline: "Đáp ứng trọn vẹn những nhu cầu thường nhật.",
     },
     story: {
-      title: "Diên Hựu Tự — nơi một giấc mơ của vua Lý hóa thành kiến trúc.",
-      desc: "Từ một giấc mơ trên tòa sen, một biểu tượng đã được dựng nên — mở đầu cho hành trình đi qua những dấu ấn của thời gian.",
+      title: "Diên Hựu Tự - nơi một giấc mơ của vua Lý hóa thành kiến trúc.",
+      desc: "Từ một giấc mơ trên tòa sen, một biểu tượng đã được dựng nên - mở đầu cho hành trình đi qua những dấu ấn của thời gian.",
       next: "Và từ giấc mơ ấy, ta bước vào một kinh đô nơi con người từng kiến tạo cả một vũ trụ bằng kiến trúc.",
     },
   },
@@ -70,9 +70,9 @@ const LOYALTY_TIERS = [
     },
     story: {
       title:
-        "Kinh đô triều Nguyễn — nơi Ngũ phương, Ngũ hành, Ngũ sắc hòa thành một trật tự.",
+        "Kinh đô triều Nguyễn - nơi Ngũ phương, Ngũ hành, Ngũ sắc hòa thành một trật tự.",
       desc: "Không chỉ là cung điện, Huế là cách người xưa đưa thiên nhiên, văn hóa và quyền lực vào cùng một không gian.",
-      next: "Rời khỏi vẻ trầm mặc của kinh thành, hành trình bắt đầu chuyển mình — từ những triều đại xưa đến một Việt Nam đang vươn ra phía trước.",
+      next: "Rời khỏi vẻ trầm mặc của kinh thành, hành trình bắt đầu chuyển mình - từ những triều đại xưa đến một Việt Nam đang vươn ra phía trước.",
     },
   },
   {
@@ -104,8 +104,8 @@ const LOYALTY_TIERS = [
     },
     story: {
       title:
-        "666 mét, 6 làn xe — một con rồng thời Lý vươn mình qua sông Hàn, hướng ra biển lớn.",
-      desc: "Hình tượng nghìn năm được tái hiện bằng thép, ánh sáng và chuyển động — nơi quá khứ bắt đầu bước vào hiện tại.",
+        "666 mét, 6 làn xe - một con rồng thời Lý vươn mình qua sông Hàn, hướng ra biển lớn.",
+      desc: "Hình tượng nghìn năm được tái hiện bằng thép, ánh sáng và chuyển động - nơi quá khứ bắt đầu bước vào hiện tại.",
       next: "Nhưng dòng chảy văn hóa không chỉ đi từ quá khứ đến hiện đại; nó còn gặp nhau giữa những nền văn hóa và những niềm tin khác nhau.",
     },
   },
@@ -138,7 +138,7 @@ const LOYALTY_TIERS = [
     },
     story: {
       title:
-        "Pô Nagar — nơi tín ngưỡng Chăm gặp gỡ văn hóa Việt, hòa vào hình tượng Thiên Y A Na Thánh Mẫu.",
+        "Pô Nagar - nơi tín ngưỡng Chăm gặp gỡ văn hóa Việt, hòa vào hình tượng Thiên Y A Na Thánh Mẫu.",
       desc: "Qua hàng thế kỷ, một vị thần bản địa vẫn sống trong đời sống tinh thần của những thế hệ hôm nay.",
       next: "Và khi những giá trị xưa tiếp tục được truyền lại, hành trình cuối cùng đưa ta đến một biểu tượng của Việt Nam trong hiện tại.",
     },
@@ -162,7 +162,7 @@ const LOYALTY_TIERS = [
     maxChildAccounts: 10,
     color: "#c0392b",
     colorSoft: "rgba(192,57,43,0.12)",
-    tagline: "Đỉnh cao — chạm tới nóc nhà của Sài Gòn hoa lệ",
+    tagline: "Đỉnh cao - chạm tới nóc nhà của Sài Gòn hoa lệ",
     aiModel: {
       code: "FANSIPAN",
       name: "Fansipan",
@@ -175,7 +175,7 @@ const LOYALTY_TIERS = [
       title: "Từ hình ảnh bó tre Việt Nam đến tòa nhà cao nhất Việt Nam.",
       desc: "Nếu Chùa Một Cột bắt đầu bằng một giấc mơ, thì Landmark 81 là hình ảnh của một giấc mơ đã chạm tới bầu trời.",
       conclusion:
-        "Kết thúc hành trình từ kiến trúc cổ đến kiến trúc hiện đại, từ tín ngưỡng đến văn hóa, từ ký ức của nghìn năm đến khát vọng của hôm nay — và vẫn còn tiếp tục hướng về tương lai.",
+        "Kết thúc hành trình từ kiến trúc cổ đến kiến trúc hiện đại, từ tín ngưỡng đến văn hóa, từ ký ức của nghìn năm đến khát vọng của hôm nay - và vẫn còn tiếp tục hướng về tương lai.",
     },
   },
 ];
@@ -210,7 +210,7 @@ const getUserLifetimeSpend = async (userId, txClient = prisma) => {
   return result._sum.total || 0;
 };
 
-// Dựng hồ sơ hạng đầy đủ từ 1 mức chi tiêu — dùng chung cho API /loyalty/me và lúc tạo đơn.
+// Dựng hồ sơ hạng đầy đủ từ 1 mức chi tiêu - dùng chung cho API /loyalty/me và lúc tạo đơn.
 const buildLoyaltyProfile = (spend) => {
   const safeSpend = Number.isFinite(spend) && spend > 0 ? spend : 0;
   const tier = resolveTierBySpend(safeSpend);
@@ -256,7 +256,7 @@ const getUserLoyaltyProfile = async (userId, txClient = prisma) => {
   return buildLoyaltyProfile(spend);
 };
 
-// Số tiền được giảm nhờ hạng thành viên trên 1 đơn — theo % của subtotal, chặn trần maxDiscountPerOrder và không bao giờ vượt quá subtotal.
+// Số tiền được giảm nhờ hạng thành viên trên 1 đơn - theo % của subtotal, chặn trần maxDiscountPerOrder và không bao giờ vượt quá subtotal.
 const computeTierDiscount = (tier, subtotal) => {
   if (!tier || !subtotal || subtotal <= 0 || tier.discountPercent <= 0)
     return 0;
@@ -266,7 +266,7 @@ const computeTierDiscount = (tier, subtotal) => {
   return Math.min(discount, subtotal);
 };
 
-// Ngưỡng miễn phí ship áp dụng — lấy theo hạng (đã bao gồm mặc định hệ thống ở Hạng I).
+// Ngưỡng miễn phí ship áp dụng - lấy theo hạng (đã bao gồm mặc định hệ thống ở Hạng I).
 const getFreeShipThreshold = (tier) =>
   tier ? tier.freeShipThreshold : DEFAULT_FREE_SHIP_THRESHOLD;
 

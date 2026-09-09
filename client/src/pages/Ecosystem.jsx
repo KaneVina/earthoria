@@ -25,7 +25,7 @@ const ROOT = {
   cta: "Về trang chủ",
 };
 
-/* Level 1 — the three studios reporting directly to Earthoria.
+/* Level 1 - the three studios reporting directly to Earthoria.
    Family Studio manages Knowledge Farm; Immersive Studio manages
    AR / AI / E-book, which have no dedicated logo of their own. */
 const LEVEL1 = [
@@ -34,7 +34,7 @@ const LEVEL1 = [
     name: "Family Studio",
     tagline: "Nội dung & trải nghiệm gia đình",
     logo: "/logo/logo-mau/lg-m-family-studio.png",
-    desc: "Gắn kết cha mẹ và con qua từng trang sách — theo dõi hành trình học tập, nhận quà tặng và cùng nhau tham gia các hoạt động chung của cả nhà.",
+    desc: "Gắn kết cha mẹ và con qua từng trang sách - theo dõi hành trình học tập, nhận quà tặng và cùng nhau tham gia các hoạt động chung của cả nhà.",
     to: "/family",
     cta: "Không gian gia đình",
     children: [
@@ -43,7 +43,7 @@ const LEVEL1 = [
         name: "Knowledge Farm",
         tagline: "Nông trại tri thức",
         logo: "/logo/logo-mau/lg-kf-big.png",
-        desc: "Trực thuộc Family Studio — nơi ươm mầm kiến thức mở rộng với bài viết, thư viện chủ đề và nội dung giáo dục đồng hành cùng mỗi cuốn sách.",
+        desc: "Trực thuộc Family Studio - nơi ươm mầm kiến thức mở rộng với bài viết, thư viện chủ đề và nội dung giáo dục đồng hành cùng mỗi cuốn sách.",
         to: "/blog",
         cta: "Đọc tin tức & tri thức",
       },
@@ -54,7 +54,7 @@ const LEVEL1 = [
     name: "Commerce & Customer Experience",
     tagline: "Thương mại & trải nghiệm khách hàng",
     logo: "/logo/logo-mau/lg-m-cce.png",
-    desc: "Vận hành toàn bộ hành trình mua sắm — từ đặt sách, thanh toán đến hậu mãi — đảm bảo mỗi gia đình đều nhận được trải nghiệm mượt mà và tận tâm nhất.",
+    desc: "Vận hành toàn bộ hành trình mua sắm - từ đặt sách, thanh toán đến hậu mãi - đảm bảo mỗi gia đình đều nhận được trải nghiệm mượt mà và tận tâm nhất.",
     to: "/shop",
     cta: "Trải nghiệm mua sắm",
     children: [],
@@ -92,7 +92,7 @@ const LEVEL1 = [
         name: "Trợ Lý AI · Eira",
         tagline: "AI",
         icon: Sparkles,
-        desc: "Eira — trợ lý AI đồng hành cùng bé, trả lời câu hỏi, gợi ý nội dung và cá nhân hoá hành trình học tập theo từng trẻ.",
+        desc: "Eira - trợ lý AI đồng hành cùng bé, trả lời câu hỏi, gợi ý nội dung và cá nhân hoá hành trình học tập theo từng trẻ.",
         to: "/technology",
         cta: "Tìm hiểu về Eira",
       },
@@ -126,7 +126,7 @@ const REVEAL_ORDER = [
   ...LEVEL1.flatMap((b) => [b.id, ...b.children.map((c) => c.id)]),
 ];
 
-/* circular layout for the lifecycle wheel — positions in percent of a
+/* circular layout for the lifecycle wheel - positions in percent of a
    square container, plus tangential arrow rotation for a clockwise
    "flow" reading around the ring */
 const CYCLE_RADIUS = 40;
@@ -339,7 +339,7 @@ export default function Ecosystem() {
           Sơ Đồ Hệ Sinh Thái <em>Earthoria</em>
         </h1>
         <p className="em-subtitle">
-          Từ một trang sách giấy đến một thế giới học tập sống động — mỗi studio
+          Từ một trang sách giấy đến một thế giới học tập sống động - mỗi studio
           trong hệ sinh thái Earthoria đảm nhận một vai trò, cùng nhau tạo nên
           trải nghiệm giáo dục liền mạch cho trẻ em và gia đình Việt.
         </p>
@@ -392,9 +392,9 @@ export default function Ecosystem() {
         </div>
       </div>
 
-      {/*   Brand divider — plain dark backdrop + wordmark, pinned
+      {/*   Brand divider - plain dark backdrop + wordmark, pinned
            in place as the bottom-most layer while sections scroll
-           over it. No photo — CSS gradient + text only.    ─ */}
+           over it. No photo - CSS gradient + text only.    ─ */}
       <div className="em-divider" aria-hidden="true">
         <span className="em-divider-word">Earthoria</span>
       </div>
@@ -412,7 +412,7 @@ export default function Ecosystem() {
             Một cuốn sách, <em>bảy hành trình</em>
           </h2>
           <p className="em-cycle-subtitle">
-            Nội dung không dừng lại ở trang giấy — nó luân chuyển qua từng
+            Nội dung không dừng lại ở trang giấy - nó luân chuyển qua từng
             studio rồi quay về, khép thành một vòng lặp học tập không ngừng.
           </p>
 

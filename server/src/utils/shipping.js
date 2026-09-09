@@ -1,7 +1,7 @@
 // Tọa độ kho: FPT University Cần Thơ
 const WAREHOUSE = { lat: 10.0124518, lng: 105.7324316 };
 
-// Bán kính nội ô Cần Thơ (km) — dựa theo ranh giới TP. Cần Thơ
+// Bán kính nội ô Cần Thơ (km) - dựa theo ranh giới TP. Cần Thơ
 const NOI_O_RADIUS_KM = 15;
 
 // Bảng phí
@@ -19,7 +19,7 @@ const SHIPPING_TABLE = {
 };
 
 /**
- * Tính khoảng cách đường chim bay (Haversine) — dùng khi OSRM lỗi
+ * Tính khoảng cách đường chim bay (Haversine) - dùng khi OSRM lỗi
  */
 function haversine(lat1, lng1, lat2, lng2) {
   const R = 6371;

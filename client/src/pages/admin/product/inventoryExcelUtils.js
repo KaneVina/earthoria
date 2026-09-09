@@ -1,4 +1,4 @@
-// inventoryExcelUtils.js — Tải file mẫu (link cố định từ Google Sheets của
+// inventoryExcelUtils.js - Tải file mẫu (link cố định từ Google Sheets của
 // admin) & đọc file Excel khi import lại.
 //
 // Cấu trúc file mẫu (cố định, không được đổi nếu không sửa lại code này):
@@ -11,10 +11,10 @@
 //       E = SL theo chứng từ
 //       F = SL thực nhập
 //       G = Đơn giá
-//       H = Thành tiền (công thức, không cần đọc — FE tự tính lại)
+//       H = Thành tiền (công thức, không cần đọc - FE tự tính lại)
 import * as XLSX from "xlsx";
 
-// Link tải file mẫu — file .xlsx thật đã được admin chuẩn bị sẵn trên
+// Link tải file mẫu - file .xlsx thật đã được admin chuẩn bị sẵn trên
 // Google Sheets, export thẳng về dạng .xlsx khi tải.
 const TEMPLATE_URL =
   "https://docs.google.com/spreadsheets/d/1SZZqTk3nyRtuXUQxbWoqxo-qLJeiDJ2e/export?format=xlsx";
@@ -22,7 +22,7 @@ const TEMPLATE_URL =
 // Dữ liệu bắt đầu từ hàng 8 (1-based) => index 7 khi đọc dạng mảng 0-based
 const DATA_START_ROW_INDEX = 7;
 
-/** Tải file mẫu nhập kho — mở link Google Sheets export, trình duyệt tự tải .xlsx */
+/** Tải file mẫu nhập kho - mở link Google Sheets export, trình duyệt tự tải .xlsx */
 export function downloadImportTemplate() {
   const link = document.createElement("a");
   link.href = TEMPLATE_URL;
@@ -36,7 +36,7 @@ export function downloadImportTemplate() {
 /**
  * Đọc file Excel do admin upload theo đúng layout mẫu cố định
  * (header hàng 1–7, dữ liệu từ hàng 8, cột A→H).
- * Trả về mảng row thô — việc khớp mã sách với hệ thống xử lý riêng ở component.
+ * Trả về mảng row thô - việc khớp mã sách với hệ thống xử lý riêng ở component.
  */
 export function parseImportFile(file) {
   return new Promise((resolve, reject) => {

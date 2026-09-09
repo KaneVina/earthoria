@@ -13,7 +13,7 @@ const {
   sendOrderCancelledEmail,
 } = require("../services/emailService");
 
-// Gửi email không được phép làm hỏng/làm chậm luồng chính (tạo đơn, huỷ đơn...) — luôn tự bắt lỗi,
+// Gửi email không được phép làm hỏng/làm chậm luồng chính (tạo đơn, huỷ đơn...) - luôn tự bắt lỗi,
 // chỉ log lại để không ném unhandled rejection và không trì hoãn response trả về cho client.
 const sendOrderEmailSafe = (sendFn, payload) => {
   sendFn(payload).catch((err) => {
@@ -37,7 +37,7 @@ const ORDER_CODE_CHARS =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 // Mã đơn hiển thị dạng ODE-aabbccdef: aa = tháng, bb = ngày, cc = 2 số cuối năm đặt đơn,
-// def = 3 ký tự chữ/số sinh ổn định từ id đơn — PHẢI khớp 100% với hàm getOrderCode() bên FE
+// def = 3 ký tự chữ/số sinh ổn định từ id đơn - PHẢI khớp 100% với hàm getOrderCode() bên FE
 // (client/src/pages/Profile.jsx) vì dùng để xác nhận huỷ đơn.
 const getOrderCode = (order) => {
   if (!order) return "";
@@ -60,7 +60,7 @@ const getOrderCode = (order) => {
 };
 
 // Ném ra TRONG transaction tạo đơn khi 1 request khác đã "thắng cuộc đua" giành mất stock/lượt
-// coupon ngay giữa lúc request này xử lý — bước kiểm tra sơ bộ ở trên (đọc stock/coupon TRƯỚC khi
+// coupon ngay giữa lúc request này xử lý - bước kiểm tra sơ bộ ở trên (đọc stock/coupon TRƯỚC khi
 // vào transaction) chỉ là fast-fail, không đủ để chống race giữa 2 request đến gần như đồng thời.
 class StockRaceError extends Error {
   constructor(bookTitle) {
@@ -92,7 +92,7 @@ const ORDER_ITEMS_INCLUDE = {
 };
 
 // Trả về order theo format cũ mà FE đang đọc (item.book.title / item.book.coverImage)
-// để không phải sửa lại toàn bộ Profile.jsx / admin — chỉ "duỗi" variant.book ra ngoài item.
+// để không phải sửa lại toàn bộ Profile.jsx / admin - chỉ "duỗi" variant.book ra ngoài item.
 // hashId được sinh thêm để FE dựng link `/books/:slug/:hashId` khi bấm vào sản phẩm.
 const flattenOrderItems = (order) => {
   if (!order) return order;
@@ -165,7 +165,7 @@ const createOrder = async (req, res) => {
       return sum + price * item.quantity;
     }, 0);
 
-    // 3b. Hạng thành viên (hệ thống "Vùng Đất") — tính từ lịch sử chi tiêu đã thanh toán
+    // 3b. Hạng thành viên (hệ thống "Vùng Đất") - tính từ lịch sử chi tiêu đã thanh toán
     // thành công TRƯỚC đơn này, luôn tự động áp dụng, không cần user tự nhập mã.
     const loyaltyProfile = await getUserLoyaltyProfile(userId);
     const tierDiscount = computeTierDiscount(loyaltyProfile.tier, subtotal);
@@ -195,7 +195,7 @@ const createOrder = async (req, res) => {
 
     // 5. Tính phí ship theo km (dùng cùng hàm calcFee với endpoint xem trước /orders/shipping-fee)
     // Sách điện tử không giao hàng nên luôn miễn phí ship. Ngưỡng miễn phí ship co giãn theo hạng
-    // thành viên — hạng càng cao ngưỡng càng thấp (Nha Trang/TP.HCM luôn miễn phí).
+    // thành viên - hạng càng cao ngưỡng càng thấp (Nha Trang/TP.HCM luôn miễn phí).
     const freeShipThreshold = getFreeShipThreshold(loyaltyProfile.tier);
     let shippingFee;
     if (isDigitalOrder) {
@@ -328,7 +328,7 @@ const createOrder = async (req, res) => {
         include: { items: true },
       });
 
-      // Tăng lượt dùng coupon (nếu có) — update CÓ ĐIỀU KIỆN (usedCount < usageLimit) để 2 request
+      // Tăng lượt dùng coupon (nếu có) - update CÓ ĐIỀU KIỆN (usedCount < usageLimit) để 2 request
       // cùng dùng 1 coupon còn đúng 1 lượt, đến gần như đồng thời, chỉ đúng 1 request được tăng;
       // request thua cuộc đua ném lỗi → cả transaction (kể cả order vừa tạo) tự rollback sạch.
       if (appliedCoupon) {
@@ -345,9 +345,9 @@ const createOrder = async (req, res) => {
         }
       }
 
-      // Giảm stock theo variant (bỏ qua hàng không giới hạn) — update CÓ ĐIỀU KIỆN (stock >= quantity)
+      // Giảm stock theo variant (bỏ qua hàng không giới hạn) - update CÓ ĐIỀU KIỆN (stock >= quantity)
       // cùng lý do: check ở bước 2 phía trên đọc TRƯỚC transaction nên không chống được race, đây mới
-      // là chỗ đảm bảo thật — nếu không sẽ có thể trừ thành stock âm khi 2 đơn cùng giành 1 cuốn cuối.
+      // là chỗ đảm bảo thật - nếu không sẽ có thể trừ thành stock âm khi 2 đơn cùng giành 1 cuốn cuối.
       for (const item of cart.items) {
         if (item.variant.isUnlimitedStock) continue;
         const stockResult = await tx.bookVariant.updateMany({
@@ -368,7 +368,7 @@ const createOrder = async (req, res) => {
       return newOrder;
     });
 
-    // Gửi email xác nhận đơn hàng (không chặn response) — dùng luôn dữ liệu cart/address đã có
+    // Gửi email xác nhận đơn hàng (không chặn response) - dùng luôn dữ liệu cart/address đã có
     // trong tay thay vì query lại DB, vì đúng những gì vừa được lưu vào Order/OrderItem.
     sendOrderEmailSafe(sendOrderConfirmedEmail, {
       to: req.user.email,
@@ -510,13 +510,13 @@ const cancelOrder = async (req, res) => {
     if (!order) return formatResponse(res, 404, "Không tìm thấy đơn hàng");
     if (order.userId !== req.user.id)
       return formatResponse(res, 403, "Không có quyền huỷ đơn hàng này");
-    // Đơn đã thanh toán online (VNPay/MoMo) rồi thì KHÔNG cho tự huỷ ở đây — huỷ ở bước này chỉ hoàn
+    // Đơn đã thanh toán online (VNPay/MoMo) rồi thì KHÔNG cho tự huỷ ở đây - huỷ ở bước này chỉ hoàn
     // kho/coupon chứ không hề động đến tiền đã thu, nên phải qua quy trình yêu cầu hoàn tiền có kiểm soát.
     if (order.paymentStatus === "PAID") {
       return formatResponse(
         res,
         400,
-        "Đơn hàng đã được thanh toán — vui lòng liên hệ để được hỗ trợ hoàn tiền thay vì tự huỷ",
+        "Đơn hàng đã được thanh toán - vui lòng liên hệ để được hỗ trợ hoàn tiền thay vì tự huỷ",
       );
     }
     if (!CANCELLABLE_STATUSES.includes(order.status)) {
@@ -528,7 +528,7 @@ const cancelOrder = async (req, res) => {
     }
 
     // Bắt buộc gõ đúng mã đơn hàng hiển thị trên FE (dạng ODE-aabbccdef, xem getOrderCode()) trước khi
-    // cho huỷ — tránh thao tác nhầm, và bắt buộc phải có lý do để lưu vết + đưa vào email báo huỷ cho khách.
+    // cho huỷ - tránh thao tác nhầm, và bắt buộc phải có lý do để lưu vết + đưa vào email báo huỷ cho khách.
     const expectedCode = getOrderCode(order).toLowerCase();
     if (
       !confirmCode ||

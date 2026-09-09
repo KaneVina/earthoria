@@ -82,7 +82,7 @@ export function hslToHex(hsl) {
   return rgbToHex(hslToRgb(hsl));
 }
 
-/* Độ sáng tương đối (WCAG) — dùng để tự chọn màu chữ đen/trắng dễ đọc trên từng ô màu */
+/* Độ sáng tương đối (WCAG) - dùng để tự chọn màu chữ đen/trắng dễ đọc trên từng ô màu */
 export function relativeLuminance({ r, g, b }) {
   const lin = (v) => {
     const c = v / 255;
@@ -235,7 +235,7 @@ export const NAMED_COLORS = [
 ];
 
 function rgbDistance(a, b) {
-  // Công thức "redmean" — xấp xỉ khoảng cách cảm nhận màu tốt hơn Euclidean thuần
+  // Công thức "redmean" - xấp xỉ khoảng cách cảm nhận màu tốt hơn Euclidean thuần
   const rMean = (a.r + b.r) / 2;
   const dr = a.r - b.r,
     dg = a.g - b.g,

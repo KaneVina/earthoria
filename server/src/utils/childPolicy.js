@@ -18,7 +18,7 @@ function getVnParts(date = new Date()) {
     year: Number(parts.year),
     month: Number(parts.month),
     day: Number(parts.day),
-    // Intl có thể trả "24" cho nửa đêm tuỳ runtime — chuẩn hoá về 0.
+    // Intl có thể trả "24" cho nửa đêm tuỳ runtime - chuẩn hoá về 0.
     hour: Number(parts.hour) % 24,
     minute: Number(parts.minute),
   };

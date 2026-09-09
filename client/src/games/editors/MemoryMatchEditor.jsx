@@ -152,7 +152,7 @@ export default function MemoryMatchEditor({ config, onChange, gameId }) {
   return (
     <div className="g-editor">
       <div className="g-editor-hint">
-        Mỗi cặp gồm 2 mặt thẻ — người chơi lật để tìm 2 thẻ khớp nhau. Có thể
+        Mỗi cặp gồm 2 mặt thẻ - người chơi lật để tìm 2 thẻ khớp nhau. Có thể
         ghép <strong>ảnh với chữ</strong> (vd: ảnh con voi ↔ chữ "Con voi") hoặc
         chữ với chữ. Cần tối thiểu 2 cặp, và không có 2 mặt thẻ nào trùng nội
         dung với nhau ở 2 cặp khác nhau.
@@ -175,7 +175,7 @@ export default function MemoryMatchEditor({ config, onChange, gameId }) {
 
       {pairs.length === 0 && (
         <div className="g-editor-empty">
-          Chưa có cặp thẻ nào — bấm "Thêm cặp thẻ" bên dưới
+          Chưa có cặp thẻ nào - bấm "Thêm cặp thẻ" bên dưới
         </div>
       )}
 

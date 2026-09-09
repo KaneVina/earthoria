@@ -13,7 +13,7 @@ const authorSelect = { id: true, name: true, avatar: true, role: true };
 
 /* ═══════════════════════════ BẢNG TIN (NewsPost) ═══════════════════════════ */
 
-// GET /admin/news/posts — danh sách đầy đủ cho dashboard (kể cả ẩn, trừ đã xóa mềm — có filter riêng)
+// GET /admin/news/posts - danh sách đầy đủ cho dashboard (kể cả ẩn, trừ đã xóa mềm - có filter riêng)
 exports.getPosts = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -54,7 +54,7 @@ exports.getPosts = async (req, res) => {
   }
 };
 
-// POST /admin/news/posts — đăng tin mới (admin hoặc staff)
+// POST /admin/news/posts - đăng tin mới (admin hoặc staff)
 exports.createPost = async (req, res) => {
   try {
     const { title, description } = req.body;
@@ -81,7 +81,7 @@ exports.createPost = async (req, res) => {
   }
 };
 
-// PUT /admin/news/posts/:id — sửa tiêu đề/mô tả
+// PUT /admin/news/posts/:id - sửa tiêu đề/mô tả
 exports.updatePost = async (req, res) => {
   try {
     const { title, description } = req.body;
@@ -108,7 +108,7 @@ exports.updatePost = async (req, res) => {
   }
 };
 
-// PATCH /admin/news/posts/:id/hide — ẩn / hiện lại tin
+// PATCH /admin/news/posts/:id/hide - ẩn / hiện lại tin
 exports.toggleHidePost = async (req, res) => {
   try {
     const existing = await prisma.newsPost.findUnique({
@@ -134,7 +134,7 @@ exports.toggleHidePost = async (req, res) => {
   }
 };
 
-// DELETE /admin/news/posts/:id/soft — xóa mềm (giữ trong DB, ẩn khỏi mọi nơi)
+// DELETE /admin/news/posts/:id/soft - xóa mềm (giữ trong DB, ẩn khỏi mọi nơi)
 exports.softDeletePost = async (req, res) => {
   try {
     const post = await prisma.newsPost.update({
@@ -152,7 +152,7 @@ exports.softDeletePost = async (req, res) => {
   }
 };
 
-// PATCH /admin/news/posts/:id/restore — khôi phục tin đã xóa mềm
+// PATCH /admin/news/posts/:id/restore - khôi phục tin đã xóa mềm
 exports.restorePost = async (req, res) => {
   try {
     const post = await prisma.newsPost.update({
@@ -171,7 +171,7 @@ exports.restorePost = async (req, res) => {
   }
 };
 
-// DELETE /admin/news/posts/:id/hard — xóa cứng (xóa hẳn khỏi DB, chỉ ADMIN)
+// DELETE /admin/news/posts/:id/hard - xóa cứng (xóa hẳn khỏi DB, chỉ ADMIN)
 exports.hardDeletePost = async (req, res) => {
   try {
     if (req.user.role !== "ADMIN") {
@@ -193,7 +193,7 @@ exports.hardDeletePost = async (req, res) => {
 
 /* ═══════════════════════════ FILE CÔNG KHAI (NewsFile) ═══════════════════════════ */
 
-// GET /admin/news/files — danh sách file cho dashboard
+// GET /admin/news/files - danh sách file cho dashboard
 exports.getFiles = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -229,7 +229,7 @@ exports.getFiles = async (req, res) => {
   }
 };
 
-// POST /admin/news/files — thêm file mới (multipart/form-data, field "file")
+// POST /admin/news/files - thêm file mới (multipart/form-data, field "file")
 exports.createFile = async (req, res) => {
   try {
     if (!req.file) {
@@ -264,7 +264,7 @@ exports.createFile = async (req, res) => {
   }
 };
 
-// PATCH /admin/news/files/:id/hide — ẩn / hiện lại file
+// PATCH /admin/news/files/:id/hide - ẩn / hiện lại file
 exports.toggleHideFile = async (req, res) => {
   try {
     const existing = await prisma.newsFile.findUnique({
@@ -290,7 +290,7 @@ exports.toggleHideFile = async (req, res) => {
   }
 };
 
-// DELETE /admin/news/files/:id/soft — xóa mềm
+// DELETE /admin/news/files/:id/soft - xóa mềm
 exports.softDeleteFile = async (req, res) => {
   try {
     const file = await prisma.newsFile.update({
@@ -331,7 +331,7 @@ exports.restoreFile = async (req, res) => {
   }
 };
 
-// DELETE /admin/news/files/:id/hard — xóa cứng, xóa cả trên Cloudinary (chỉ ADMIN)
+// DELETE /admin/news/files/:id/hard - xóa cứng, xóa cả trên Cloudinary (chỉ ADMIN)
 exports.hardDeleteFile = async (req, res) => {
   try {
     if (req.user.role !== "ADMIN") {

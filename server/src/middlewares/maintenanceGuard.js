@@ -23,7 +23,7 @@ const maintenanceGuard = async (req, res, next) => {
     const settings = await getOrCreateSettings();
     if (!isMaintenanceActive(settings)) return next();
 
-    // Bảo trì đang bật — chỉ ADMIN đã đăng nhập mới được đi tiếp
+    // Bảo trì đang bật - chỉ ADMIN đã đăng nhập mới được đi tiếp
     let isAdmin = false;
     const token = req.headers.authorization?.startsWith("Bearer")
       ? req.headers.authorization.split(" ")[1]
@@ -38,7 +38,7 @@ const maintenanceGuard = async (req, res, next) => {
         });
         isAdmin = !!user?.isActive && user.role === "ADMIN";
       } catch (_err) {
-        // Token không hợp lệ/hết hạn — coi như khách, để route protect() tự trả 401 nếu cần
+        // Token không hợp lệ/hết hạn - coi như khách, để route protect() tự trả 401 nếu cần
       }
     }
 

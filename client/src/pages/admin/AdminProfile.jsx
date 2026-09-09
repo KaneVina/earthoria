@@ -143,8 +143,8 @@ export default function AdminProfile() {
             <div className="a-theme-row-title">Chế độ tối</div>
             <div className="a-theme-row-desc">
               {isDark
-                ? "Đang bật — dịu mắt hơn khi làm việc ban đêm"
-                : "Đang tắt — giao diện sáng mặc định"}
+                ? "Đang bật - dịu mắt hơn khi làm việc ban đêm"
+                : "Đang tắt - giao diện sáng mặc định"}
             </div>
           </div>
           <label className="a-switch">

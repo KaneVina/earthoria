@@ -17,7 +17,7 @@ const prisma = new PrismaClient();
 const SITE_URL = process.env.SITE_URL || "https://earthoria.id.vn";
 const OUTPUT_PATH = path.join(__dirname, "../../../client/public/sitemap.xml");
 
-// Các trang tĩnh công khai — thêm route mới vào đây khi ra trang mới.
+// Các trang tĩnh công khai - thêm route mới vào đây khi ra trang mới.
 const STATIC_ROUTES = [
   { path: "/", changefreq: "daily", priority: "1.0" },
   { path: "/shop", changefreq: "daily", priority: "0.9" },

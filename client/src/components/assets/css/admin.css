@@ -126,7 +126,7 @@
   width: var(--a-sidebar-w-col);
 }
 
-/* Sidebar — Logo row */
+/* Sidebar - Logo row */
 .a-logo {
   display: flex;
   align-items: center;
@@ -157,7 +157,7 @@
   flex-shrink: 0;
 }
 
-/* Sidebar — Nav section label */
+/* Sidebar - Nav section label */
 .a-nav-section {
   font-size: 9px;
   letter-spacing: 0.22em;
@@ -172,7 +172,7 @@
   display: none;
 }
 
-/* Sidebar — Nav */
+/* Sidebar - Nav */
 .a-nav {
   flex: 1;
   min-height: 0; /* cho phép flex item co lại thay vì đẩy tràn footer */
@@ -265,7 +265,7 @@
   flex-shrink: 0;
 }
 
-/* Tooltip riêng cho icon khi sidebar đang thu gọn — định vị bằng JS (position: fixed)
+/* Tooltip riêng cho icon khi sidebar đang thu gọn - định vị bằng JS (position: fixed)
    nên không bị viền/scroll của sidebar cắt mất */
 .a-sidebar-tooltip {
   position: fixed;
@@ -294,7 +294,7 @@
   display: none;
 }
 
-/* Sidebar — Footer */
+/* Sidebar - Footer */
 .a-sidebar-footer {
   border-top: 1px solid rgba(255, 255, 255, 0.07);
   padding: 12px 10px;
@@ -361,7 +361,7 @@
   text-overflow: ellipsis;
 }
 
-/* Sidebar — collapse toggle */
+/* Sidebar - collapse toggle */
 .a-collapse-btn {
   width: 26px;
   height: 26px;
@@ -832,7 +832,7 @@
   animation: a-skeleton-pulse 1.3s ease-in-out infinite;
 }
 
-/* Table — cell variants */
+/* Table - cell variants */
 .a-td-mono {
   font-family: monospace;
   font-size: 10px;
@@ -1527,7 +1527,7 @@
 /*DARK MODE  */
 
 .admin-root.dark {
-  /* Brand — giữ nguyên tông forest/green nhưng làm sáng hơn để nổi trên nền tối */
+  /* Brand - giữ nguyên tông forest/green nhưng làm sáng hơn để nổi trên nền tối */
   --a-forest: #0f3d38;
   --a-forest-mid: #1e6358;
   --a-forest-light: #2f8a7a;
@@ -1535,7 +1535,7 @@
   --a-green-light: #8fd684;
   --a-green-pale: #1c3320;
 
-  /* Neutrals — đảo ngược thang màu */
+  /* Neutrals - đảo ngược thang màu */
   --a-bg: #0f1512;
   --a-surface: #171d19;
   --a-white: #1c2320;
@@ -1546,7 +1546,7 @@
   --a-ink-08: rgba(237, 232, 220, 0.08);
   --a-ink-05: rgba(237, 232, 220, 0.05);
 
-  /* Semantic — tăng nhẹ độ sáng để dễ đọc trên nền tối */
+  /* Semantic - tăng nhẹ độ sáng để dễ đọc trên nền tối */
   --a-success-bg: rgba(92, 184, 79, 0.14);
   --a-success-text: #7ed072;
   --a-warning-bg: rgba(237, 161, 0, 0.14);
@@ -1556,7 +1556,7 @@
   --a-info-bg: rgba(74, 150, 230, 0.14);
   --a-info-text: #6fa8ea;
 
-  /* Chart colors — sáng hơn để nổi trên nền tối */
+  /* Chart colors - sáng hơn để nổi trên nền tối */
   --a-chart-primary: #7ed0c0;
   --a-chart-accent: #5cb84f;
   --a-chart-blue: #4a96e6;
@@ -1820,7 +1820,7 @@
   background: var(--a-forest-mid) !important;
   color: #ede8dc !important;
 }
-/* DARK MODE — Mobile overrides*/
+/* DARK MODE - Mobile overrides*/
 @media (max-width: 768px) {
   .admin-root.dark .a-mobile-overlay.open {
     background: rgba(0, 0, 0, 0.65);
@@ -2417,7 +2417,7 @@
   border-collapse: collapse;
 }
 
-/* Ô "Sách" gộp dòng bằng rowSpan — trình duyệt tự tính đúng chiều cao,
+/* Ô "Sách" gộp dòng bằng rowSpan - trình duyệt tự tính đúng chiều cao,
    không cần JS đo đạc hay đồng bộ cuộn thủ công. */
 .a-ar-book-cell {
   width: 200px;
@@ -2541,7 +2541,7 @@
   transition: var(--a-trans-fast);
 }
 
-/* Trạng thái "sáng" — vai trò được xem */
+/* Trạng thái "sáng" - vai trò được xem */
 .a-role-chip.lit {
   background: var(--a-success-bg);
   border-color: rgba(74, 158, 63, 0.25);
@@ -2557,7 +2557,7 @@
   color: var(--a-success-text);
 }
 
-/* Trạng thái "mờ" — vai trò không được xem */
+/* Trạng thái "mờ" - vai trò không được xem */
 .a-role-chip.dim {
   opacity: 0.45;
 }

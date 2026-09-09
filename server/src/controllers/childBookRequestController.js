@@ -25,8 +25,8 @@ function withSold(book) {
   return { ...rest, totalSold };
 }
 
-// Sách gia đình (phụ huynh) đã sở hữu — cả sách giấy lẫn điện tử, mọi đơn đã
-// thanh toán — dùng để loại khỏi khu "Khám phá thêm" vì gợi ý lại sách đã có
+// Sách gia đình (phụ huynh) đã sở hữu - cả sách giấy lẫn điện tử, mọi đơn đã
+// thanh toán - dùng để loại khỏi khu "Khám phá thêm" vì gợi ý lại sách đã có
 // thì không có ý nghĩa với bé. Cùng bộ điều kiện trạng thái đơn hàng như
 // getChildBooks() ở childController.js (digital: DELIVERED/COMPLETED,
 // physical: CONFIRMED/SHIPPING/DELIVERED/COMPLETED).
@@ -125,7 +125,7 @@ const getKidDiscoverBooks = async (req, res) => {
 };
 
 // [PUBLIC] GET /api/v1/kid-access/:token/book-requests
-// Trạng thái các lời nhắn "nhờ ba mẹ mua" mà bé đã gửi — để FE biết sách nào
+// Trạng thái các lời nhắn "nhờ ba mẹ mua" mà bé đã gửi - để FE biết sách nào
 // đã gửi rồi (khoá nút, tránh gửi trùng) và sách nào bị từ chối (cho gửi lại).
 const getKidBookRequests = async (req, res) => {
   try {
@@ -147,7 +147,7 @@ const getKidBookRequests = async (req, res) => {
   }
 };
 
-// [PUBLIC] POST /api/v1/kid-access/:token/book-requests — bé bấm "Nhờ ba mẹ mua"
+// [PUBLIC] POST /api/v1/kid-access/:token/book-requests - bé bấm "Nhờ ba mẹ mua"
 const createKidBookRequest = async (req, res) => {
   try {
     const { token } = req.params;
@@ -239,7 +239,7 @@ const REQUEST_STATUS_VALUES = ["PENDING", "APPROVED", "DECLINED"];
 
 // GET /api/v1/children/book-requests?status=&childId=
 // Danh sách yêu cầu mua sách của TẤT CẢ các bé thuộc phụ huynh đang đăng
-// nhập — dùng cho cả băng tóm tắt ở "Tổng quan" lẫn tab "Muốn mua" đầy đủ.
+// nhập - dùng cho cả băng tóm tắt ở "Tổng quan" lẫn tab "Muốn mua" đầy đủ.
 const listBookRequests = async (req, res) => {
   try {
     const { status, childId } = req.query;
@@ -263,7 +263,7 @@ const listBookRequests = async (req, res) => {
   }
 };
 
-// PATCH /api/v1/children/book-requests/:requestId — duyệt hoặc từ chối 1 yêu cầu.
+// PATCH /api/v1/children/book-requests/:requestId - duyệt hoặc từ chối 1 yêu cầu.
 // Duyệt mặc định sẽ thêm luôn sách vào giỏ hàng của phụ huynh (ưu tiên bản
 // giấy, không có thì lấy bản điện tử) để phụ huynh chỉ cần ra thanh toán.
 const respondBookRequest = async (req, res) => {

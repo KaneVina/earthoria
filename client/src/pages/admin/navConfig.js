@@ -14,7 +14,7 @@ import {
   Settings as SettingsIcon,
 } from "lucide-react";
 
-// Mỗi item có field `roles` — vai trò nào được thấy item này trong sidebar.
+// Mỗi item có field `roles` - vai trò nào được thấy item này trong sidebar.
 // Phải khớp với guard tương ứng trong App.jsx (StaffOrAdminRoute / AdminRoute).
 export const NAV_GROUPS = [
   {

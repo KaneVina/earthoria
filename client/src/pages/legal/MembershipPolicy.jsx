@@ -91,7 +91,7 @@ const TIERS = [
   },
 ];
 
-/* Bảng minh hoạ công thức tính tổng thanh toán một đơn hàng — khớp createOrder trong orderController.js */
+/* Bảng minh hoạ công thức tính tổng thanh toán một đơn hàng - khớp createOrder trong orderController.js */
 const ORDER_FORMULA = [
   {
     step: "1. Giá trị sản phẩm (subtotal)",
@@ -107,12 +107,12 @@ const ORDER_FORMULA = [
   {
     step: "3. Giảm giá theo mã khuyến mãi (nếu có)",
     formula: "Theo cấu hình của từng mã (giảm theo % hoặc số tiền cố định)",
-    note: "Cộng dồn với ưu đãi hạng — tổng hai khoản giảm không vượt quá subtotal",
+    note: "Cộng dồn với ưu đãi hạng - tổng hai khoản giảm không vượt quá subtotal",
   },
   {
     step: "4. Phí vận chuyển",
     formula:
-      "0đ nếu đơn toàn sách điện tử, nhận tại cửa hàng, hoặc giá trị sau giảm ≥ ngưỡng miễn phí ship của hạng — ngược lại tính theo khoảng cách giao hàng",
+      "0đ nếu đơn toàn sách điện tử, nhận tại cửa hàng, hoặc giá trị sau giảm ≥ ngưỡng miễn phí ship của hạng - ngược lại tính theo khoảng cách giao hàng",
     note: "Không có toạ độ giao hàng hợp lệ → áp phí mặc định 30.000đ",
   },
   {
@@ -130,7 +130,7 @@ const SUMMARY_CARDS = [
   {
     icon: TrendingUp,
     title: "5 hạng tích lũy",
-    desc: "Từ Chùa Một Cột đến Landmark 81 — hạng của bạn tăng dần theo tổng chi tiêu trọn đời, tính lại theo thời gian thực từ đúng các đơn hàng đã hoàn tất.",
+    desc: "Từ Chùa Một Cột đến Landmark 81 - hạng của bạn tăng dần theo tổng chi tiêu trọn đời, tính lại theo thời gian thực từ đúng các đơn hàng đã hoàn tất.",
   },
   {
     icon: Percent,
@@ -140,12 +140,12 @@ const SUMMARY_CARDS = [
   {
     icon: Truck,
     title: "Miễn phí vận chuyển",
-    desc: "Ngưỡng miễn phí ship giảm dần theo hạng — từ Hạng IV trở lên, mọi đơn hàng giao tận nơi đều được miễn phí ship.",
+    desc: "Ngưỡng miễn phí ship giảm dần theo hạng - từ Hạng IV trở lên, mọi đơn hàng giao tận nơi đều được miễn phí ship.",
   },
   {
     icon: Lock,
     title: "Không có hạn dùng",
-    desc: "Hạng thành viên không hết hạn theo chu kỳ và không bị đánh giá lại định kỳ — chỉ phản ánh đúng lịch sử các đơn hàng hợp lệ tại mọi thời điểm.",
+    desc: "Hạng thành viên không hết hạn theo chu kỳ và không bị đánh giá lại định kỳ - chỉ phản ánh đúng lịch sử các đơn hàng hợp lệ tại mọi thời điểm.",
   },
 ];
 
@@ -155,7 +155,7 @@ const SECTIONS = [
     num: "01",
     title: "Tổng Quan Hệ Thống Hạng Thành Viên",
     paragraphs: [
-      "Hệ thống Hạng Thành Viên Earthoria ghi nhận hành trình mua sắm của bạn qua 5 hạng, được thể hiện như một chuyến bay đi qua những công trình biểu tượng của Việt Nam — khởi hành từ Hạng I (Chùa Một Cột, Hà Nội), qua Cố Đô Huế, Cầu Rồng Đà Nẵng, Tháp Bà Ponagar Nha Trang, và đích đến là Hạng V (Landmark 81, TP.HCM), tổng hành trình biểu trưng khoảng 1.710km. Hạng của bạn được xác định hoàn toàn tự động dựa trên tổng giá trị các đơn hàng đã mua thành công, không yêu cầu đăng ký, không thu phí thành viên và không cần thao tác thủ công nào.",
+      "Hệ thống Hạng Thành Viên Earthoria ghi nhận hành trình mua sắm của bạn qua 5 hạng, được thể hiện như một chuyến bay đi qua những công trình biểu tượng của Việt Nam - khởi hành từ Hạng I (Chùa Một Cột, Hà Nội), qua Cố Đô Huế, Cầu Rồng Đà Nẵng, Tháp Bà Ponagar Nha Trang, và đích đến là Hạng V (Landmark 81, TP.HCM), tổng hành trình biểu trưng khoảng 1.710km. Hạng của bạn được xác định hoàn toàn tự động dựa trên tổng giá trị các đơn hàng đã mua thành công, không yêu cầu đăng ký, không thu phí thành viên và không cần thao tác thủ công nào.",
       "Khác với thẻ thành viên vật lý hay chương trình tính điểm cần đổi thưởng, hạng thành viên Earthoria hoạt động âm thầm phía sau mỗi đơn hàng: ưu đãi giảm giá và ngưỡng miễn phí vận chuyển tự động áp dụng ngay khi bạn đủ điều kiện, không cần nhập mã hay yêu cầu kích hoạt.",
       "Chính sách này áp dụng cho mọi tài khoản khách hàng cá nhân trên website và ứng dụng Earthoria, và có thể được cập nhật định kỳ để phản ánh chương trình ưu đãi mới nhất.",
     ],
@@ -174,15 +174,15 @@ const SECTIONS = [
     num: "03",
     title: "Cách Tính Hạng & Chi Tiêu Tích Luỹ Trọn Đời",
     paragraphs: [
-      'Hạng thành viên được tính dựa trên tổng chi tiêu tích luỹ trọn đời (lifetime spend) của tài khoản. Đây là tổng số tiền thực tế đã thanh toán (trường "tổng thanh toán" của đơn hàng) — nghĩa là ĐÃ bao gồm phí vận chuyển và ĐÃ được trừ mọi khoản giảm giá (ưu đãi hạng cộng mã khuyến mãi, nếu có) áp dụng cho đơn đó — của tất cả đơn hàng thoả đồng thời hai điều kiện: trạng thái thanh toán là Đã Thanh Toán, và trạng thái đơn hàng là Hoàn Tất.',
+      'Hạng thành viên được tính dựa trên tổng chi tiêu tích luỹ trọn đời (lifetime spend) của tài khoản. Đây là tổng số tiền thực tế đã thanh toán (trường "tổng thanh toán" của đơn hàng) - nghĩa là ĐÃ bao gồm phí vận chuyển và ĐÃ được trừ mọi khoản giảm giá (ưu đãi hạng cộng mã khuyến mãi, nếu có) áp dụng cho đơn đó - của tất cả đơn hàng thoả đồng thời hai điều kiện: trạng thái thanh toán là Đã Thanh Toán, và trạng thái đơn hàng là Hoàn Tất.',
       "Việc tính hạng không dựa trên một bộ đếm được lưu sẵn, mà được truy vấn và cộng lại theo thời gian thực mỗi khi hệ thống cần biết hạng của bạn (khi bạn mở trang Hành Trình Hạng Thành Viên, hoặc khi bạn tạo một đơn hàng mới). Nhờ vậy, hạng của bạn luôn phản ánh đúng và tức thời trạng thái mới nhất của toàn bộ lịch sử đơn hàng.",
     ],
     callout: {
       title: "Vì sao giá trị tích luỹ khác giá trị hiển thị trong giỏ hàng?",
-      text: "Giá trị được cộng vào chi tiêu tích luỹ là số tiền cuối cùng bạn thực trả — đã trừ giảm giá và cộng phí vận chuyển — chứ không phải giá trị sản phẩm gốc (subtotal) trước khi tính khuyến mãi. Điều này đảm bảo hạng thành viên phản ánh đúng giá trị bạn thực sự đóng góp cho Earthoria, không bị thổi phồng bởi giá gốc trước giảm giá.",
+      text: "Giá trị được cộng vào chi tiêu tích luỹ là số tiền cuối cùng bạn thực trả - đã trừ giảm giá và cộng phí vận chuyển - chứ không phải giá trị sản phẩm gốc (subtotal) trước khi tính khuyến mãi. Điều này đảm bảo hạng thành viên phản ánh đúng giá trị bạn thực sự đóng góp cho Earthoria, không bị thổi phồng bởi giá gốc trước giảm giá.",
     },
     list: [
-      'Đơn hàng bị huỷ, đơn chưa thanh toán, hoặc đơn đang ở các trạng thái trung gian (Đã xác nhận, Đang giao, Đã giao nhưng chưa xác nhận nhận hàng) chưa được cộng vào chi tiêu tích luỹ — xem chi tiết điều kiện "Hoàn Tất" tại mục 04',
+      'Đơn hàng bị huỷ, đơn chưa thanh toán, hoặc đơn đang ở các trạng thái trung gian (Đã xác nhận, Đang giao, Đã giao nhưng chưa xác nhận nhận hàng) chưa được cộng vào chi tiêu tích luỹ - xem chi tiết điều kiện "Hoàn Tất" tại mục 04',
       'Bạn có thể xem chính xác tổng chi tiêu hiện tại, hạng đang giữ và tiến trình lên hạng tiếp theo tại trang "Hành Trình Hạng Thành Viên" trong hồ sơ cá nhân',
     ],
   },
@@ -194,13 +194,13 @@ const SECTIONS = [
       "Vì hạng thành viên chỉ cộng dồn từ các đơn hàng đã ở trạng thái Hoàn Tất, thời điểm một đơn hàng thực sự được tính vào chi tiêu tích luỹ khác nhau tuỳ loại sản phẩm bạn mua.",
     ],
     list: [
-      "Đơn hàng chỉ gồm sách điện tử: tự động chuyển thẳng sang trạng thái Hoàn Tất ngay khi thanh toán thành công, vì không có bước giao hàng vật lý nào cần chờ đợi — chi tiêu được cộng vào hạng của bạn gần như tức thời",
-      "Đơn hàng có sách giấy (bản in): trải qua các bước Đã xác nhận → Đang giao → Đã giao, và CHỈ chuyển sang Hoàn Tất sau khi chính bạn bấm xác nhận đã nhận hàng trên trang chi tiết đơn hàng — đây là bước chủ động, Earthoria không tự động đánh dấu hoàn tất chỉ vì đơn vị vận chuyển báo đã giao",
+      "Đơn hàng chỉ gồm sách điện tử: tự động chuyển thẳng sang trạng thái Hoàn Tất ngay khi thanh toán thành công, vì không có bước giao hàng vật lý nào cần chờ đợi - chi tiêu được cộng vào hạng của bạn gần như tức thời",
+      "Đơn hàng có sách giấy (bản in): trải qua các bước Đã xác nhận → Đang giao → Đã giao, và CHỈ chuyển sang Hoàn Tất sau khi chính bạn bấm xác nhận đã nhận hàng trên trang chi tiết đơn hàng - đây là bước chủ động, Earthoria không tự động đánh dấu hoàn tất chỉ vì đơn vị vận chuyển báo đã giao",
       "Nếu một đơn hàng bị huỷ hoặc được hoàn tiền sau khi đã từng ở trạng thái Hoàn Tất, đơn đó sẽ không còn thoả điều kiện tính chi tiêu và sẽ tự động không còn được cộng vào hạng ở lần tính lại tiếp theo",
     ],
     callout: {
       title: "Mẹo nhỏ",
-      text: 'Nếu bạn vừa nhận được một đơn hàng sách giấy nhưng chưa thấy chi tiêu tích luỹ tăng lên, hãy kiểm tra xem bạn đã bấm "Xác nhận đã nhận hàng" trên đơn đó chưa — đây là bước cuối cùng để đơn hàng được tính vào hạng thành viên của bạn.',
+      text: 'Nếu bạn vừa nhận được một đơn hàng sách giấy nhưng chưa thấy chi tiêu tích luỹ tăng lên, hãy kiểm tra xem bạn đã bấm "Xác nhận đã nhận hàng" trên đơn đó chưa - đây là bước cuối cùng để đơn hàng được tính vào hạng thành viên của bạn.',
     },
   },
   {
@@ -208,7 +208,7 @@ const SECTIONS = [
     num: "05",
     title: "Bảng 5 Hạng Thành Viên & Quyền Lợi",
     paragraphs: [
-      "Dưới đây là toàn bộ 5 hạng thành viên hiện hành cùng ngưỡng chi tiêu mở khoá và quyền lợi tương ứng. Giảm giá được áp dụng tự động trên mỗi đơn hàng và không thể quy đổi thành tiền mặt. Cột cuối cùng thể hiện số hồ sơ trẻ em tối đa mà tài khoản có thể tạo trên Trang Gia Đình ở mỗi hạng — xem chi tiết đầy đủ về tính năng này tại Chính Sách Trang Gia Đình & Trang Trại Tri Thức.",
+      "Dưới đây là toàn bộ 5 hạng thành viên hiện hành cùng ngưỡng chi tiêu mở khoá và quyền lợi tương ứng. Giảm giá được áp dụng tự động trên mỗi đơn hàng và không thể quy đổi thành tiền mặt. Cột cuối cùng thể hiện số hồ sơ trẻ em tối đa mà tài khoản có thể tạo trên Trang Gia Đình ở mỗi hạng - xem chi tiết đầy đủ về tính năng này tại Chính Sách Trang Gia Đình & Trang Trại Tri Thức.",
     ],
     tiersTable: true,
   },
@@ -217,10 +217,10 @@ const SECTIONS = [
     num: "06",
     title: "Ưu Đãi Giảm Giá Theo Đơn Hàng",
     paragraphs: [
-      "Từ Hạng II trở lên, mỗi đơn hàng của bạn được tự động giảm giá theo phần trăm quy định của hạng hiện tại, tính trên giá trị sản phẩm (subtotal) trước phí vận chuyển. Hạng của bạn dùng để tính ưu đãi là hạng tại đúng thời điểm bạn tạo đơn hàng đó — tức là được tính dựa trên toàn bộ lịch sử chi tiêu trước đơn hàng này, không bao gồm chính đơn hàng đang đặt.",
+      "Từ Hạng II trở lên, mỗi đơn hàng của bạn được tự động giảm giá theo phần trăm quy định của hạng hiện tại, tính trên giá trị sản phẩm (subtotal) trước phí vận chuyển. Hạng của bạn dùng để tính ưu đãi là hạng tại đúng thời điểm bạn tạo đơn hàng đó - tức là được tính dựa trên toàn bộ lịch sử chi tiêu trước đơn hàng này, không bao gồm chính đơn hàng đang đặt.",
     ],
     list: [
-      "Mức giảm được áp dụng tự động ngay tại bước thanh toán — bạn không cần nhập mã hay yêu cầu thủ công",
+      "Mức giảm được áp dụng tự động ngay tại bước thanh toán - bạn không cần nhập mã hay yêu cầu thủ công",
       "Mỗi hạng có mức giảm tối đa cho một đơn hàng (ví dụ Hạng III giảm 5% nhưng không quá 200.000đ/đơn) nhằm đảm bảo công bằng giữa các đơn hàng giá trị khác nhau",
       "Ưu đãi chỉ áp dụng cho đơn hàng thanh toán thành công, không áp dụng hồi tố cho các đơn đã đặt trước khi lên hạng",
     ],
@@ -230,11 +230,11 @@ const SECTIONS = [
     num: "07",
     title: "Kết Hợp Ưu Đãi Hạng Với Mã Giảm Giá",
     paragraphs: [
-      "Ưu đãi giảm giá theo hạng thành viên và mã giảm giá khuyến mãi (coupon) được CỘNG DỒN với nhau trên cùng một đơn hàng — đây không phải hai ưu đãi loại trừ lẫn nhau. Tổng số tiền được giảm (ưu đãi hạng cộng giá trị mã giảm giá) sẽ không bao giờ vượt quá giá trị sản phẩm (subtotal) của đơn hàng, kể cả khi tổng hai khoản giảm trên lý thuyết lớn hơn giá trị đơn.",
+      "Ưu đãi giảm giá theo hạng thành viên và mã giảm giá khuyến mãi (coupon) được CỘNG DỒN với nhau trên cùng một đơn hàng - đây không phải hai ưu đãi loại trừ lẫn nhau. Tổng số tiền được giảm (ưu đãi hạng cộng giá trị mã giảm giá) sẽ không bao giờ vượt quá giá trị sản phẩm (subtotal) của đơn hàng, kể cả khi tổng hai khoản giảm trên lý thuyết lớn hơn giá trị đơn.",
     ],
     list: [
-      "Ví dụ: đơn hàng 1.000.000đ, Hạng III giảm 5% (50.000đ) và mã giảm giá giảm thêm 100.000đ — tổng cộng bạn được giảm 150.000đ, còn phải thanh toán 850.000đ cộng phí vận chuyển (nếu có)",
-      'Không có cơ chế "chọn ưu đãi có lợi hơn" giữa hạng thành viên và mã giảm giá — cả hai luôn được áp dụng cùng lúc nếu mã giảm giá hợp lệ (còn hiệu lực, chưa hết lượt dùng, đơn hàng đạt giá trị tối thiểu theo yêu cầu của mã)',
+      "Ví dụ: đơn hàng 1.000.000đ, Hạng III giảm 5% (50.000đ) và mã giảm giá giảm thêm 100.000đ - tổng cộng bạn được giảm 150.000đ, còn phải thanh toán 850.000đ cộng phí vận chuyển (nếu có)",
+      'Không có cơ chế "chọn ưu đãi có lợi hơn" giữa hạng thành viên và mã giảm giá - cả hai luôn được áp dụng cùng lúc nếu mã giảm giá hợp lệ (còn hiệu lực, chưa hết lượt dùng, đơn hàng đạt giá trị tối thiểu theo yêu cầu của mã)',
     ],
   },
   {
@@ -242,10 +242,10 @@ const SECTIONS = [
     num: "08",
     title: "Ngưỡng Miễn Phí Vận Chuyển Theo Hạng",
     paragraphs: [
-      "Ngưỡng giá trị đơn hàng tối thiểu để được miễn phí vận chuyển giảm dần khi hạng của bạn tăng lên, và được miễn phí hoàn toàn từ Hạng IV. Ngưỡng này được so sánh với giá trị đơn hàng SAU KHI đã trừ toàn bộ giảm giá (cả ưu đãi hạng lẫn mã giảm giá, nếu có) — không phải giá trị sản phẩm gốc.",
+      "Ngưỡng giá trị đơn hàng tối thiểu để được miễn phí vận chuyển giảm dần khi hạng của bạn tăng lên, và được miễn phí hoàn toàn từ Hạng IV. Ngưỡng này được so sánh với giá trị đơn hàng SAU KHI đã trừ toàn bộ giảm giá (cả ưu đãi hạng lẫn mã giảm giá, nếu có) - không phải giá trị sản phẩm gốc.",
     ],
     list: [
-      "Hạng I: miễn phí ship cho đơn từ 300.000đ (sau giảm giá) — áp dụng mặc định cho mọi tài khoản mới",
+      "Hạng I: miễn phí ship cho đơn từ 300.000đ (sau giảm giá) - áp dụng mặc định cho mọi tài khoản mới",
       "Hạng II: miễn phí ship cho đơn từ 200.000đ (sau giảm giá)",
       "Hạng III: miễn phí ship cho đơn từ 100.000đ (sau giảm giá)",
       "Hạng IV & Hạng V: miễn phí vận chuyển cho mọi đơn hàng giao tận nơi, không giới hạn giá trị",
@@ -257,7 +257,7 @@ const SECTIONS = [
     num: "09",
     title: "Công Thức Tính Tổng Thanh Toán Của Một Đơn Hàng",
     paragraphs: [
-      "Để bạn dễ đối chiếu số tiền hiển thị lúc thanh toán, dưới đây là trình tự đầy đủ mà hệ thống dùng để tính tổng thanh toán cuối cùng của một đơn hàng — đây cũng chính là số tiền được cộng vào chi tiêu tích luỹ của bạn khi đơn đạt trạng thái Hoàn Tất.",
+      "Để bạn dễ đối chiếu số tiền hiển thị lúc thanh toán, dưới đây là trình tự đầy đủ mà hệ thống dùng để tính tổng thanh toán cuối cùng của một đơn hàng - đây cũng chính là số tiền được cộng vào chi tiêu tích luỹ của bạn khi đơn đạt trạng thái Hoàn Tất.",
     ],
     orderFormulaTable: true,
   },
@@ -269,7 +269,7 @@ const SECTIONS = [
       'Ngay khi một đơn hàng được tạo, hệ thống lưu lại chính xác mã hạng thành viên và số tiền giảm giá theo hạng đã áp dụng cho đơn đó, tách biệt hoàn toàn khỏi hạng hiện tại của tài khoản. Nhờ cơ chế "khoá" này, đơn hàng cũ của bạn sẽ không tự thay đổi số tiền đã giảm dù sau này hạng của bạn tăng lên hay (trong trường hợp hiếm) giảm xuống.',
     ],
     list: [
-      "Nếu bạn vừa lên hạng mới nhưng có đơn hàng đang xử lý được tạo trước đó, đơn đó vẫn giữ nguyên mức giảm của hạng cũ tại thời điểm đặt — ưu đãi mới chỉ áp dụng cho các đơn được tạo sau khi lên hạng",
+      "Nếu bạn vừa lên hạng mới nhưng có đơn hàng đang xử lý được tạo trước đó, đơn đó vẫn giữ nguyên mức giảm của hạng cũ tại thời điểm đặt - ưu đãi mới chỉ áp dụng cho các đơn được tạo sau khi lên hạng",
       "Việc lưu vết này cũng giúp đội ngũ Earthoria tra soát chính xác lịch sử ưu đãi của từng đơn hàng khi cần hỗ trợ khiếu nại",
     ],
   },
@@ -278,7 +278,7 @@ const SECTIONS = [
     num: "11",
     title: "Số Hồ Sơ Trẻ Em Tối Đa Theo Hạng",
     paragraphs: [
-      "Ngoài ưu đãi mua sắm, hạng thành viên còn quyết định số lượng hồ sơ trẻ em (đang hoạt động) mà tài khoản có thể tạo trên Trang Gia Đình — từ 2 hồ sơ ở Hạng I đến 10 hồ sơ ở Hạng V, đúng như trong bảng tại mục 05. Đây là quyền lợi duy nhất trong hệ thống hạng thành viên không liên quan trực tiếp đến giá trị đơn hàng, mà liên quan đến tính năng quản lý gia đình của nền tảng.",
+      "Ngoài ưu đãi mua sắm, hạng thành viên còn quyết định số lượng hồ sơ trẻ em (đang hoạt động) mà tài khoản có thể tạo trên Trang Gia Đình - từ 2 hồ sơ ở Hạng I đến 10 hồ sơ ở Hạng V, đúng như trong bảng tại mục 05. Đây là quyền lợi duy nhất trong hệ thống hạng thành viên không liên quan trực tiếp đến giá trị đơn hàng, mà liên quan đến tính năng quản lý gia đình của nền tảng.",
       "Toàn bộ chi tiết về cách tạo, quản lý và giới hạn hồ sơ trẻ em được quy định đầy đủ tại Chính Sách Trang Gia Đình & Trang Trại Tri Thức.",
     ],
   },
@@ -303,7 +303,7 @@ const SECTIONS = [
       "Một số nguyên tắc chung được áp dụng để đảm bảo tính công bằng của hệ thống hạng thành viên cho toàn bộ khách hàng.",
     ],
     list: [
-      "Hệ thống hạng thành viên chỉ áp dụng cho tài khoản khách hàng cá nhân đã đăng nhập — không áp dụng cho đơn hàng đặt dưới hình thức khách vãng lai (guest checkout, nếu có)",
+      "Hệ thống hạng thành viên chỉ áp dụng cho tài khoản khách hàng cá nhân đã đăng nhập - không áp dụng cho đơn hàng đặt dưới hình thức khách vãng lai (guest checkout, nếu có)",
       "Mỗi khách hàng nên chỉ sở hữu một tài khoản duy nhất để chi tiêu được cộng dồn chính xác; Earthoria bảo lưu quyền xem xét các tài khoản có dấu hiệu được tạo trùng lặp nhằm mục đích trục lợi ưu đãi",
       "Earthoria bảo lưu quyền tạm ngưng quyền lợi hạng thành viên đối với tài khoản có dấu hiệu gian lận, lạm dụng hệ thống hoặc vi phạm Điều Khoản Dịch Vụ",
     ],
@@ -342,15 +342,15 @@ const SECTIONS = [
 const FAQS = [
   {
     q: "Tổng chi tiêu để lên hạng được tính từ khi nào?",
-    a: "Tổng chi tiêu được tính từ đơn hàng thành công đầu tiên trên tài khoản của bạn — không giới hạn theo năm hay theo chu kỳ. Toàn bộ lịch sử đơn hàng đã ở trạng thái Hoàn Tất và Đã thanh toán đều được cộng dồn.",
+    a: "Tổng chi tiêu được tính từ đơn hàng thành công đầu tiên trên tài khoản của bạn - không giới hạn theo năm hay theo chu kỳ. Toàn bộ lịch sử đơn hàng đã ở trạng thái Hoàn Tất và Đã thanh toán đều được cộng dồn.",
   },
   {
     q: "Chi tiêu tích luỹ tính trên giá trị sản phẩm hay số tiền tôi thực trả?",
-    a: "Tính trên số tiền bạn thực trả cho đơn hàng đó — đã bao gồm phí vận chuyển và đã trừ mọi giảm giá (ưu đãi hạng cộng mã khuyến mãi, nếu có). Đây không phải giá trị sản phẩm gốc trước khi giảm giá.",
+    a: "Tính trên số tiền bạn thực trả cho đơn hàng đó - đã bao gồm phí vận chuyển và đã trừ mọi giảm giá (ưu đãi hạng cộng mã khuyến mãi, nếu có). Đây không phải giá trị sản phẩm gốc trước khi giảm giá.",
   },
   {
     q: "Tôi vừa thanh toán đơn hàng sách giấy nhưng chưa thấy chi tiêu tăng lên, vì sao?",
-    a: 'Đơn hàng sách giấy chỉ được tính vào chi tiêu tích luỹ sau khi đạt trạng thái Hoàn Tất — tức là sau khi bạn đã nhận hàng và chủ động bấm "Xác nhận đã nhận hàng" trên trang chi tiết đơn. Trước bước này (kể cả khi đơn vị vận chuyển đã báo giao thành công), đơn vẫn chưa được cộng vào hạng.',
+    a: 'Đơn hàng sách giấy chỉ được tính vào chi tiêu tích luỹ sau khi đạt trạng thái Hoàn Tất - tức là sau khi bạn đã nhận hàng và chủ động bấm "Xác nhận đã nhận hàng" trên trang chi tiết đơn. Trước bước này (kể cả khi đơn vị vận chuyển đã báo giao thành công), đơn vẫn chưa được cộng vào hạng.',
   },
   {
     q: "Vậy còn sách điện tử thì sao?",
@@ -361,7 +361,7 @@ const FAQS = [
     a: "Có. Hai ưu đãi này luôn cộng dồn với nhau trên cùng một đơn hàng (không phải chọn cái có lợi hơn), chỉ bị giới hạn ở mức tổng số tiền giảm không vượt quá giá trị sản phẩm của đơn hàng đó.",
   },
   {
-    q: "Tôi vừa lên hạng mới — đơn hàng đang xử lý có được áp dụng ưu đãi mới không?",
+    q: "Tôi vừa lên hạng mới - đơn hàng đang xử lý có được áp dụng ưu đãi mới không?",
     a: "Không. Ưu đãi theo hạng được lưu cố định (khoá) tại đúng thời điểm bạn tạo đơn hàng, không áp dụng hồi tố cho đơn đã đặt trước đó. Chỉ đơn hàng mới tạo sau khi lên hạng mới nhận ưu đãi của hạng mới.",
   },
   {
@@ -373,7 +373,7 @@ const FAQS = [
     a: "Có. Đơn hàng chỉ gồm sách điện tử luôn được miễn phí vận chuyển ở mọi hạng thành viên, vì không phát sinh chi phí giao hàng vật lý. Tương tự, chọn nhận hàng tại cửa hàng (pickup) cũng luôn miễn phí ship.",
   },
   {
-    q: "Tôi mua hàng nhiều nhưng đơn bị hủy — có ảnh hưởng đến hạng không?",
+    q: "Tôi mua hàng nhiều nhưng đơn bị hủy - có ảnh hưởng đến hạng không?",
     a: "Đơn hàng bị huỷ hoặc chưa thanh toán thành công không được tính vào chi tiêu tích luỹ ngay từ đầu, nên không ảnh hưởng đến hạng. Trường hợp một đơn đã từng được tính (đã Hoàn Tất) sau đó được hoàn tiền, giá trị đơn đó sẽ không còn được tính ở lần cập nhật tiếp theo và hạng có thể được điều chỉnh cho khớp với dữ liệu mới nhất.",
   },
   {
@@ -919,12 +919,12 @@ export default function MembershipPolicy() {
             <span className="legal-hero-eyebrow-line" />
           </div>
           <h1 className="legal-hero-title">
-            Chính Sách —<br />
+            Chính Sách -<br />
             <em>Hạng Thành Viên</em>
           </h1>
           <p className="legal-hero-sub">
             Cách hạng thành viên của bạn được xác định, quyền lợi đi kèm mỗi
-            hạng, và cam kết cộng dồn vĩnh viễn — không bao giờ hạ hạng.
+            hạng, và cam kết cộng dồn vĩnh viễn - không bao giờ hạ hạng.
           </p>
           <div className="legal-hero-meta">
             <div className="legal-hero-meta-item">

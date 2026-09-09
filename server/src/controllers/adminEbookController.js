@@ -36,7 +36,7 @@ function validatePages(pages) {
 }
 
 /* ══════════════════════════════════════════════
-   DANH SÁCH — GỘP THEO SÁCH (giống getGamesGroupedAll)
+   DANH SÁCH - GỘP THEO SÁCH (giống getGamesGroupedAll)
 ══════════════════════════════════════════════ */
 exports.getEbooksGroupedAll = async (req, res) => {
   try {

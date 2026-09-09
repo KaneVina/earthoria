@@ -75,11 +75,11 @@ const SECTIONS = [
       "Chúng tôi chỉ thu thập những thông tin thực sự cần thiết để vận hành dịch vụ và mang lại trải nghiệm tốt nhất cho gia đình bạn.",
     ],
     list: [
-      "Thông tin tài khoản — họ tên, email, số điện thoại và địa chỉ giao hàng của phụ huynh hoặc người mua",
-      "Thông tin giao dịch — lịch sử đơn hàng và phương thức thanh toán; Earthoria không lưu trữ số thẻ đầy đủ của bạn",
-      "Dữ liệu thiết bị & AR — loại thiết bị, hệ điều hành; hình ảnh camera được xử lý ngay trên thiết bị (on-device) để nhận diện trang sách và không được tải lên máy chủ",
-      "Dữ liệu giọng nói AI — đoạn ghi âm tạm thời để Trợ lý AI phản hồi, được tự động xóa trong vòng 24 giờ trừ khi phụ huynh chủ động chọn lưu lại để cá nhân hóa trải nghiệm",
-      "Dữ liệu sử dụng — trang đã xem, thời gian tương tác và cookie (xem chi tiết tại Mục 07)",
+      "Thông tin tài khoản - họ tên, email, số điện thoại và địa chỉ giao hàng của phụ huynh hoặc người mua",
+      "Thông tin giao dịch - lịch sử đơn hàng và phương thức thanh toán; Earthoria không lưu trữ số thẻ đầy đủ của bạn",
+      "Dữ liệu thiết bị & AR - loại thiết bị, hệ điều hành; hình ảnh camera được xử lý ngay trên thiết bị (on-device) để nhận diện trang sách và không được tải lên máy chủ",
+      "Dữ liệu giọng nói AI - đoạn ghi âm tạm thời để Trợ lý AI phản hồi, được tự động xóa trong vòng 24 giờ trừ khi phụ huynh chủ động chọn lưu lại để cá nhân hóa trải nghiệm",
+      "Dữ liệu sử dụng - trang đã xem, thời gian tương tác và cookie (xem chi tiết tại Mục 07)",
     ],
   },
   {
@@ -87,13 +87,13 @@ const SECTIONS = [
     num: "03",
     title: "Cách Chúng Tôi Sử Dụng Thông Tin",
     paragraphs: [
-      "Thông tin được thu thập chỉ phục vụ cho các mục đích cụ thể, minh bạch sau đây — không có mục đích nào nằm ngoài những gì được liệt kê dưới đây.",
+      "Thông tin được thu thập chỉ phục vụ cho các mục đích cụ thể, minh bạch sau đây - không có mục đích nào nằm ngoài những gì được liệt kê dưới đây.",
     ],
     list: [
       "Xử lý đơn hàng, thanh toán và giao hàng đến đúng địa chỉ của bạn",
       "Cá nhân hóa nội dung học tập theo độ tuổi và sở thích của trẻ, chỉ khi phụ huynh chủ động bật tính năng này",
       "Cải thiện độ chính xác của Trợ lý AI và mô hình nhận diện AR theo thời gian",
-      "Gửi thông báo về đơn hàng và các ưu đãi — bạn có thể hủy đăng ký nhận thông báo bất cứ lúc nào",
+      "Gửi thông báo về đơn hàng và các ưu đãi - bạn có thể hủy đăng ký nhận thông báo bất cứ lúc nào",
       "Tuân thủ nghĩa vụ pháp lý và thực hiện các biện pháp phòng chống gian lận",
     ],
   },
@@ -123,10 +123,10 @@ const SECTIONS = [
       "Earthoria không bán thông tin cá nhân của bạn dưới bất kỳ hình thức nào. Chúng tôi chỉ chia sẻ dữ liệu trong những trường hợp cần thiết, có kiểm soát chặt chẽ sau đây.",
     ],
     list: [
-      "Đối tác vận chuyển — chỉ nhận thông tin tối thiểu cần thiết để giao hàng đến đúng địa chỉ",
-      "Cổng thanh toán đạt chuẩn PCI-DSS — không bao giờ bao gồm dữ liệu liên quan đến trẻ em",
-      "Nhà cung cấp hạ tầng xử lý giọng nói AI — theo hợp đồng bảo mật nghiêm ngặt, dữ liệu luôn được ẩn danh hóa trước khi xử lý",
-      "Cơ quan nhà nước có thẩm quyền — chỉ khi có yêu cầu hợp pháp theo đúng quy định của pháp luật hiện hành",
+      "Đối tác vận chuyển - chỉ nhận thông tin tối thiểu cần thiết để giao hàng đến đúng địa chỉ",
+      "Cổng thanh toán đạt chuẩn PCI-DSS - không bao giờ bao gồm dữ liệu liên quan đến trẻ em",
+      "Nhà cung cấp hạ tầng xử lý giọng nói AI - theo hợp đồng bảo mật nghiêm ngặt, dữ liệu luôn được ẩn danh hóa trước khi xử lý",
+      "Cơ quan nhà nước có thẩm quyền - chỉ khi có yêu cầu hợp pháp theo đúng quy định của pháp luật hiện hành",
     ],
   },
   {
@@ -151,9 +151,9 @@ const SECTIONS = [
       "Chúng tôi sử dụng cookie và các công nghệ tương tự để website và ứng dụng hoạt động trơn tru, đồng thời giúp bạn có toàn quyền kiểm soát những gì được theo dõi.",
     ],
     list: [
-      "Cookie cần thiết — phục vụ giỏ hàng, đăng nhập; luôn được bật để đảm bảo dịch vụ hoạt động bình thường",
-      "Cookie phân tích — giúp chúng tôi hiểu cách cải thiện trải nghiệm; có thể tắt trong phần Cài đặt quyền riêng tư",
-      "Cookie cá nhân hóa nội dung — đề xuất sách phù hợp; có thể tắt bất cứ lúc nào mà không ảnh hưởng đến chức năng mua hàng",
+      "Cookie cần thiết - phục vụ giỏ hàng, đăng nhập; luôn được bật để đảm bảo dịch vụ hoạt động bình thường",
+      "Cookie phân tích - giúp chúng tôi hiểu cách cải thiện trải nghiệm; có thể tắt trong phần Cài đặt quyền riêng tư",
+      "Cookie cá nhân hóa nội dung - đề xuất sách phù hợp; có thể tắt bất cứ lúc nào mà không ảnh hưởng đến chức năng mua hàng",
     ],
   },
   {
@@ -164,10 +164,10 @@ const SECTIONS = [
       "Chúng tôi chỉ lưu trữ dữ liệu trong khoảng thời gian thực sự cần thiết cho từng mục đích cụ thể, sau đó dữ liệu sẽ được xóa hoặc ẩn danh hóa hoàn toàn.",
     ],
     list: [
-      "Dữ liệu tài khoản — được lưu trữ cho đến khi bạn chủ động yêu cầu xóa",
-      "Dữ liệu giao dịch — lưu trữ 10 năm theo quy định pháp luật về kế toán và thuế",
-      "Dữ liệu giọng nói AI tạm thời — tối đa 24 giờ, trừ khi được phụ huynh chủ động lưu lại",
-      "Cookie phân tích — tối đa 13 tháng kể từ lần thu thập gần nhất",
+      "Dữ liệu tài khoản - được lưu trữ cho đến khi bạn chủ động yêu cầu xóa",
+      "Dữ liệu giao dịch - lưu trữ 10 năm theo quy định pháp luật về kế toán và thuế",
+      "Dữ liệu giọng nói AI tạm thời - tối đa 24 giờ, trừ khi được phụ huynh chủ động lưu lại",
+      "Cookie phân tích - tối đa 13 tháng kể từ lần thu thập gần nhất",
     ],
   },
   {
@@ -186,11 +186,11 @@ const SECTIONS = [
       "Bạn luôn có toàn quyền kiểm soát thông tin cá nhân của mình. Dưới đây là các quyền cụ thể mà bạn có thể thực hiện bất cứ lúc nào.",
     ],
     list: [
-      "Quyền truy cập — yêu cầu một bản sao đầy đủ dữ liệu mà chúng tôi đang lưu trữ về bạn",
-      "Quyền chỉnh sửa — cập nhật mọi thông tin không chính xác hoặc đã lỗi thời",
-      "Quyền xóa — yêu cầu xóa toàn bộ dữ liệu tài khoản khỏi hệ thống của chúng tôi",
-      "Quyền phản đối — từ chối việc xử lý dữ liệu cho mục đích tiếp thị bất cứ lúc nào",
-      "Quyền khiếu nại — gửi khiếu nại đến cơ quan bảo vệ dữ liệu có thẩm quyền nếu bạn cho rằng quyền của mình bị vi phạm",
+      "Quyền truy cập - yêu cầu một bản sao đầy đủ dữ liệu mà chúng tôi đang lưu trữ về bạn",
+      "Quyền chỉnh sửa - cập nhật mọi thông tin không chính xác hoặc đã lỗi thời",
+      "Quyền xóa - yêu cầu xóa toàn bộ dữ liệu tài khoản khỏi hệ thống của chúng tôi",
+      "Quyền phản đối - từ chối việc xử lý dữ liệu cho mục đích tiếp thị bất cứ lúc nào",
+      "Quyền khiếu nại - gửi khiếu nại đến cơ quan bảo vệ dữ liệu có thẩm quyền nếu bạn cho rằng quyền của mình bị vi phạm",
     ],
   },
   {
@@ -810,11 +810,11 @@ export default function PrivacyPolicy() {
             <span className="legal-hero-eyebrow-line" />
           </div>
           <h1 className="legal-hero-title">
-            Chính Sách —<br />
+            Chính Sách -<br />
             <em>Bảo Mật</em>
           </h1>
           <p className="legal-hero-sub">
-            Sự tin tưởng của gia đình bạn là nền tảng của Earthoria — đây là
+            Sự tin tưởng của gia đình bạn là nền tảng của Earthoria - đây là
             cách chúng tôi thu thập, sử dụng và bảo vệ thông tin của bạn, giải
             thích rõ ràng, không thuật ngữ rối rắm.
           </p>

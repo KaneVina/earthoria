@@ -97,7 +97,7 @@ export default function InventoryImport() {
       }
 
       // Cố khớp từng mã sách với hệ thống để tự lấy Số lượng cũ.
-      // Chạy song song — với file lớn nên chuyển sang endpoint khớp hàng loạt ở backend.
+      // Chạy song song - với file lớn nên chuyển sang endpoint khớp hàng loạt ở backend.
       const matched = await Promise.all(
         parsedRows.map(async (r) => {
           if (!r.productCode) return { ...r, matchedProduct: null };
@@ -145,7 +145,7 @@ export default function InventoryImport() {
       setRows(newRows);
       const matchedCount = matched.filter((r) => r.matchedProduct).length;
       toast.success(
-        `Đã đọc ${newRows.length} dòng — khớp được ${matchedCount} sách có sẵn trong hệ thống`
+        `Đã đọc ${newRows.length} dòng - khớp được ${matchedCount} sách có sẵn trong hệ thống`
       );
     } catch (err) {
       toast.error("Đọc file thất bại, kiểm tra lại định dạng file mẫu");
@@ -294,7 +294,7 @@ export default function InventoryImport() {
           }}
         >
           <AlertTriangle size={14} />
-          Có {mismatchCount} dòng lệch số lượng giữa "chứng từ" và "thực nhập" — khi lưu, hệ
+          Có {mismatchCount} dòng lệch số lượng giữa "chứng từ" và "thực nhập" - khi lưu, hệ
           thống chỉ cộng vào kho theo số <strong>thực nhập</strong>.
         </div>
       )}
@@ -562,7 +562,7 @@ function BookSuggestList({ query, onPick }) {
           >
             <div style={{ fontWeight: 500 }}>{b.title}</div>
             <div style={{ fontSize: 10, color: "rgba(13,51,48,0.4)", fontFamily: "monospace" }}>
-              {b.productCode ?? "—"}
+              {b.productCode ?? "-"}
             </div>
           </div>
         ))

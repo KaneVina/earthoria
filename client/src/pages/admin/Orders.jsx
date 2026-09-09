@@ -54,7 +54,7 @@ const PAY_BADGE = {
   EXPIRED: "danger",
 };
 
-/* ─ Luồng trạng thái theo bước — sách giấy có vận chuyển, sách điện tử thì không ─
+/* ─ Luồng trạng thái theo bước - sách giấy có vận chuyển, sách điện tử thì không ─
    Đơn sách giấy:    Chờ xử lý → Đã xác nhận → Vận chuyển → Đã giao → Hoàn thành
    Đơn sách điện tử: Chờ xử lý → Đã xác nhận → Hoàn thành (bỏ qua bước giao hàng) */
 const PHYSICAL_STEPS = [
@@ -65,9 +65,9 @@ const PHYSICAL_STEPS = [
   "COMPLETED",
 ];
 const DIGITAL_STEPS = ["PENDING", "CONFIRMED", "COMPLETED"];
-// Trạng thái "nhánh phụ" — không nằm trong luồng bước chính, xử lý riêng qua nút hủy/hoàn tiền
+// Trạng thái "nhánh phụ" - không nằm trong luồng bước chính, xử lý riêng qua nút hủy/hoàn tiền
 const TERMINAL_STATUSES = ["CANCELLED", "REFUNDED"];
-/* ─ OrderStepper — cập nhật trạng thái theo từng bước, luồng khác nhau giữa sách giấy/điện tử ─
+/* ─ OrderStepper - cập nhật trạng thái theo từng bước, luồng khác nhau giữa sách giấy/điện tử ─
    Chỉ cho phép lùi 1 bước hoặc tiến 1 bước (không nhảy cóc). Hủy/hoàn tiền là nhánh riêng. */
 function OrderStepper({ order, onUpdate, isUpdating }) {
   const steps = order.isDigital ? DIGITAL_STEPS : PHYSICAL_STEPS;
@@ -94,7 +94,7 @@ function OrderStepper({ order, onUpdate, isUpdating }) {
             lineHeight: 1.5,
           }}
         >
-          Đơn đã {order.status === "CANCELLED" ? "bị hủy" : "được hoàn tiền"} —
+          Đơn đã {order.status === "CANCELLED" ? "bị hủy" : "được hoàn tiền"} -
           quy trình xử lý đã kết thúc.
         </div>
       </div>
@@ -180,7 +180,7 @@ function OrderStepper({ order, onUpdate, isUpdating }) {
         ))}
       </div>
 
-      {/* Nhánh phụ — hủy đơn / hoàn tiền, tách riêng khỏi luồng bước chính */}
+      {/* Nhánh phụ - hủy đơn / hoàn tiền, tách riêng khỏi luồng bước chính */}
       <div
         style={{
           display: "flex",
@@ -218,7 +218,7 @@ function OrderStepper({ order, onUpdate, isUpdating }) {
     </div>
   );
 }
-/*  Order detail drawer — tự fetch chi tiết theo id (kèm Hạng khách), cập nhật trạng thái theo bước  */
+/*  Order detail drawer - tự fetch chi tiết theo id (kèm Hạng khách), cập nhật trạng thái theo bước  */
 function OrderDrawer({ orderId, onClose, onUpdateStatus, isUpdating }) {
   const { data: order, isLoading } = useQuery({
     queryKey: ["admin-order-detail", orderId],
@@ -314,7 +314,7 @@ function OrderDrawer({ orderId, onClose, onUpdateStatus, isUpdating }) {
           </div>
         ) : (
           <div style={{ padding: 24, flex: 1 }}>
-            {/* Customer — kèm Hạng thành viên hiện tại */}
+            {/* Customer - kèm Hạng thành viên hiện tại */}
             <div style={{ marginBottom: 20 }}>
               <div
                 style={{
@@ -389,8 +389,8 @@ function OrderDrawer({ orderId, onClose, onUpdateStatus, isUpdating }) {
                 className={`a-badge ${order.isDigital ? "info" : "neutral"}`}
               >
                 {order.isDigital
-                  ? "Sách điện tử — không giao hàng"
-                  : "Sách giấy — có giao hàng"}
+                  ? "Sách điện tử - không giao hàng"
+                  : "Sách giấy - có giao hàng"}
               </span>
             </div>
             {order.paymentMismatch && (
@@ -411,7 +411,7 @@ function OrderDrawer({ orderId, onClose, onUpdateStatus, isUpdating }) {
                     marginBottom: 4,
                   }}
                 >
-                  ⚠ Sai số tiền — cần đối soát thủ công
+                  ⚠ Sai số tiền - cần đối soát thủ công
                 </div>
                 <div style={{ fontSize: 12, color: "rgba(13,51,48,0.6)" }}>
                   Khách đã chuyển{" "}
@@ -428,7 +428,7 @@ function OrderDrawer({ orderId, onClose, onUpdateStatus, isUpdating }) {
               </div>
             )}
 
-            {/* Cập nhật trạng thái — theo từng bước, luồng riêng cho sách giấy/điện tử */}
+            {/* Cập nhật trạng thái - theo từng bước, luồng riêng cho sách giấy/điện tử */}
             <div
               style={{
                 marginBottom: 20,
@@ -456,7 +456,7 @@ function OrderDrawer({ orderId, onClose, onUpdateStatus, isUpdating }) {
               />
             </div>
 
-            {/* Shipping address — chỉ đơn sách giấy mới có */}
+            {/* Shipping address - chỉ đơn sách giấy mới có */}
             {order.shippingAddress && (
               <div
                 style={{
@@ -654,7 +654,7 @@ export default function Orders() {
 
     if (looksLikeOrderCode && !ORDER_CODE_REGEX.test(trimmed.toUpperCase())) {
       setSearchError(
-        "Mã đơn không hợp lệ — đúng định dạng: ODE-XXXXXXYYY (6 số + 3 ký tự)",
+        "Mã đơn không hợp lệ - đúng định dạng: ODE-XXXXXXYYY (6 số + 3 ký tự)",
       );
       return;
     }
@@ -753,7 +753,7 @@ export default function Orders() {
             marginBottom: 14,
           }}
         >
-          {/* Ô search — mã đơn / tên / email */}
+          {/* Ô search - mã đơn / tên / email */}
           <FilterField label="Tìm kiếm">
             <div style={{ position: "relative" }}>
               <Search
@@ -1055,7 +1055,7 @@ export default function Orders() {
                           style={{ marginTop: 4, display: "inline-block" }}
                           title={`Khách đã chuyển ${formatPrice(order.paymentMismatch.transferredAmount)}, cần ${formatPrice(order.paymentMismatch.expectedAmount)}`}
                         >
-                          ⚠ Sai số tiền — cần đối soát
+                          ⚠ Sai số tiền - cần đối soát
                         </span>
                       )}
                     </td>
@@ -1081,7 +1081,7 @@ export default function Orders() {
                         }
                       >
                         {Object.entries(ORDER_STATUS)
-                          // Đơn sách điện tử không có bước vận chuyển — thanh toán xong tự chuyển COMPLETED.
+                          // Đơn sách điện tử không có bước vận chuyển - thanh toán xong tự chuyển COMPLETED.
                           .filter(
                             ([key]) =>
                               !(

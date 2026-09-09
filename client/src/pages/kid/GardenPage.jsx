@@ -30,7 +30,7 @@ import "../../components/assets/css/gardenPage.css";
 
 const POLL_MS = 90_000;
 
-// Thông điệp thân thiện cho từng mã lỗi 403 — dùng chung nội dung với
+// Thông điệp thân thiện cho từng mã lỗi 403 - dùng chung nội dung với
 // EbookReader/ArView để bé thấy đồng nhất dù đang ở màn nào.
 const RESTRICTED_COPY = {
   CHILD_LOCKED: {
@@ -57,9 +57,9 @@ export default function GardenPage() {
   const [selectedTreeId, setSelectedTreeId] = useState(null);
   const [celebrate, setCelebrate] = useState(null);
   const prevSnapshotRef = useRef(null);
-  const skyState = useSkyState(); // bầu trời theo giờ thực — đồng bộ với KidAccess
+  const skyState = useSkyState(); // bầu trời theo giờ thực - đồng bộ với KidAccess
 
-  // Hồ sơ đầy đủ của bé (bao gồm cấu hình nhắc nghỉ mắt/giải lao bắt buộc) —
+  // Hồ sơ đầy đủ của bé (bao gồm cấu hình nhắc nghỉ mắt/giải lao bắt buộc) -
   // getGarden() ở dưới chỉ trả dữ liệu khu vườn, không có các trường này,
   // nên cần gọi riêng để nhắc nghỉ mắt cũng chạy được ở trang Vườn Tri Thức.
   const [kidChild, setKidChild] = useState(null);
@@ -525,7 +525,7 @@ export default function GardenPage() {
                                 </>
                               ) : (
                                 <span className="kg-current-hint">
-                                  Đã đạt cấp cao nhất — tuyệt vời! 🏆
+                                  Đã đạt cấp cao nhất - tuyệt vời! 🏆
                                 </span>
                               )}
 
@@ -588,7 +588,7 @@ export default function GardenPage() {
                                   key={t.id}
                                   className={`kg-garden-tree-btn${t.id === activeTree.id ? " is-active" : ""}`}
                                   onClick={() => setSelectedTreeId(t.id)}
-                                  aria-label={`Xem chi tiết ${t.level.name}${t.id === activeTree.id ? " — cây đang trồng" : ""}`}
+                                  aria-label={`Xem chi tiết ${t.level.name}${t.id === activeTree.id ? " - cây đang trồng" : ""}`}
                                 >
                                   {t.id === activeTree.id && (
                                     <span className="kg-garden-tree-tag">
@@ -624,7 +624,7 @@ export default function GardenPage() {
 
                           {garden.forestUnlocked && (
                             <p className="kg-forest-note">
-                              🌲 Rừng Tri Thức đã mở — mỗi lần có cây trưởng
+                              🌲 Rừng Tri Thức đã mở - mỗi lần có cây trưởng
                               thành, một cây mới lại được trồng thêm!
                             </p>
                           )}

@@ -50,7 +50,7 @@ const SUMMARY_CARDS = [
   {
     icon: XCircle,
     title: "Không câu hỏi",
-    desc: "Trong 7 ngày đầu, bạn có thể trả hàng không cần nêu lý do — chỉ cần hàng còn nguyên seal.",
+    desc: "Trong 7 ngày đầu, bạn có thể trả hàng không cần nêu lý do - chỉ cần hàng còn nguyên seal.",
   },
 ];
 
@@ -64,7 +64,7 @@ const SECTIONS = [
     ],
     list: [
       "Yêu cầu được gửi trong vòng 30 ngày kể từ ngày ký nhận hàng từ đơn vị vận chuyển",
-      "Sản phẩm còn nguyên vẹn, chưa qua sử dụng — bìa sách không bị xước, gáy không bị gãy, trang sách không có dấu viết",
+      "Sản phẩm còn nguyên vẹn, chưa qua sử dụng - bìa sách không bị xước, gáy không bị gãy, trang sách không có dấu viết",
       "Còn đầy đủ phụ kiện đi kèm: thẻ kích hoạt AR, hộp đựng và hóa đơn mua hàng gốc",
       "Mã QR và chip NFC trên bìa sách chưa được kích hoạt trên bất kỳ tài khoản nào",
       "Sản phẩm không thuộc danh mục ngoại lệ được liệt kê tại Mục 06",
@@ -73,16 +73,16 @@ const SECTIONS = [
   {
     id: "trong-7-ngay",
     num: "02",
-    title: "Đổi Trả Không Cần Lý Do — Trong 7 Ngày",
+    title: "Đổi Trả Không Cần Lý Do - Trong 7 Ngày",
     paragraphs: [
       "Trong vòng 7 ngày đầu kể từ khi nhận hàng, bạn có thể yêu cầu trả hàng và hoàn tiền 100% mà không cần nêu lý do, miễn là sản phẩm còn nguyên seal và chưa kích hoạt mã AR.",
     ],
     callout: {
       title: "Chính sách 7 ngày an tâm",
-      text: "Đây là cam kết mạnh nhất của Earthoria với người mua lần đầu. Nếu vì bất kỳ lý do gì bạn không hài lòng trong 7 ngày đầu — dù chỉ là thay đổi ý định — chúng tôi sẽ hoàn tiền đầy đủ, kể cả phí vận chuyển chiều đi ban đầu.",
+      text: "Đây là cam kết mạnh nhất của Earthoria với người mua lần đầu. Nếu vì bất kỳ lý do gì bạn không hài lòng trong 7 ngày đầu - dù chỉ là thay đổi ý định - chúng tôi sẽ hoàn tiền đầy đủ, kể cả phí vận chuyển chiều đi ban đầu.",
     },
     list: [
-      "Earthoria chịu toàn bộ phí vận chuyển trả hàng — bạn không mất thêm bất kỳ khoản nào",
+      "Earthoria chịu toàn bộ phí vận chuyển trả hàng - bạn không mất thêm bất kỳ khoản nào",
       "Tiền hoàn trả được xử lý trong 3–5 ngày làm việc sau khi chúng tôi nhận và kiểm tra hàng",
       "Áp dụng cho tối đa 2 lần trong vòng 12 tháng trên cùng một tài khoản",
     ],
@@ -97,7 +97,7 @@ const SECTIONS = [
     list: [
       "Lý do hợp lệ bao gồm: sách bị lỗi in, nội dung không đúng với mô tả trên website, hoặc nhận sai sản phẩm",
       "Với lý do cá nhân (ví dụ đổi ý, mua nhầm): bạn chịu phí vận chuyển trả hàng chiều về; Earthoria hoàn tiền 100% giá trị sản phẩm",
-      "Hàng trả về phải được đóng gói cẩn thận để tránh hư hỏng trong quá trình vận chuyển ngược — thiệt hại phát sinh do đóng gói không đúng sẽ được trừ vào số tiền hoàn trả",
+      "Hàng trả về phải được đóng gói cẩn thận để tránh hư hỏng trong quá trình vận chuyển ngược - thiệt hại phát sinh do đóng gói không đúng sẽ được trừ vào số tiền hoàn trả",
     ],
   },
   {
@@ -109,7 +109,7 @@ const SECTIONS = [
     ],
     callout: {
       title: "Lỗi nhà sản xuất được bảo hành",
-      text: "Bao gồm: trang sách bị in sai, thiếu trang, chip NFC không hoạt động ngay khi nhận hàng, mã QR không đọc được trên sách mới chưa qua sử dụng, hoặc hộp sách bị biến dạng do lỗi vật liệu — không phải do tác động bên ngoài.",
+      text: "Bao gồm: trang sách bị in sai, thiếu trang, chip NFC không hoạt động ngay khi nhận hàng, mã QR không đọc được trên sách mới chưa qua sử dụng, hoặc hộp sách bị biến dạng do lỗi vật liệu - không phải do tác động bên ngoài.",
     },
     list: [
       "Đổi sách mới hoàn toàn miễn phí trong vòng 5 ngày làm việc kể từ khi Earthoria xác nhận lỗi",
@@ -127,7 +127,7 @@ const SECTIONS = [
     ],
     list: [
       "Mã AR chưa kích hoạt: sách có thể đổi trả bình thường theo điều kiện tại Mục 01",
-      "Mã AR đã kích hoạt: sách không thể đổi trả vì lý do cá nhân — chỉ được đổi nếu có lỗi nhà sản xuất được xác nhận",
+      "Mã AR đã kích hoạt: sách không thể đổi trả vì lý do cá nhân - chỉ được đổi nếu có lỗi nhà sản xuất được xác nhận",
       "Nếu mã AR trên sách lỗi kỹ thuật (không kích hoạt được dù chưa từng sử dụng), Earthoria sẽ cấp lại mã mới trong vòng 24 giờ làm việc mà không cần trả lại sách vật lý",
       "Tài khoản AR đã kích hoạt sẽ được chuyển sang sách thay thế nếu đổi hàng theo bảo hành",
     ],
@@ -152,14 +152,14 @@ const SECTIONS = [
     num: "07",
     title: "Quy Trình Thực Hiện Đổi Trả",
     paragraphs: [
-      "Toàn bộ quy trình được thiết kế để giải quyết nhanh nhất có thể — thông thường hoàn tất trong vòng 5 đến 10 ngày làm việc kể từ khi bạn gửi yêu cầu.",
+      "Toàn bộ quy trình được thiết kế để giải quyết nhanh nhất có thể - thông thường hoàn tất trong vòng 5 đến 10 ngày làm việc kể từ khi bạn gửi yêu cầu.",
     ],
     list: [
-      'Bước 1 — Gửi yêu cầu: điền form đổi trả trong mục "Đơn hàng của tôi" hoặc email đến support@earthoria.vn kèm ảnh sản phẩm và lý do',
-      "Bước 2 — Xác nhận: Earthoria phản hồi trong vòng 1 ngày làm việc, xác nhận hợp lệ và cung cấp mã vận đơn trả hàng miễn phí (nếu áp dụng)",
-      "Bước 3 — Gửi hàng: đóng gói cẩn thận và gửi hàng trong vòng 3 ngày kể từ khi nhận mã vận đơn",
-      "Bước 4 — Kiểm tra: Earthoria kiểm tra hàng trong vòng 1–2 ngày làm việc sau khi nhận",
-      "Bước 5 — Xử lý: hoàn tiền hoặc giao sản phẩm thay thế trong vòng 3–5 ngày làm việc sau kiểm tra",
+      'Bước 1 - Gửi yêu cầu: điền form đổi trả trong mục "Đơn hàng của tôi" hoặc email đến support@earthoria.vn kèm ảnh sản phẩm và lý do',
+      "Bước 2 - Xác nhận: Earthoria phản hồi trong vòng 1 ngày làm việc, xác nhận hợp lệ và cung cấp mã vận đơn trả hàng miễn phí (nếu áp dụng)",
+      "Bước 3 - Gửi hàng: đóng gói cẩn thận và gửi hàng trong vòng 3 ngày kể từ khi nhận mã vận đơn",
+      "Bước 4 - Kiểm tra: Earthoria kiểm tra hàng trong vòng 1–2 ngày làm việc sau khi nhận",
+      "Bước 5 - Xử lý: hoàn tiền hoặc giao sản phẩm thay thế trong vòng 3–5 ngày làm việc sau kiểm tra",
     ],
   },
   {
@@ -193,16 +193,16 @@ const FAQS = [
     a: 'Có. Khi gửi yêu cầu đổi trả, bạn có thể chọn "Đổi sang sản phẩm khác" thay vì hoàn tiền. Nếu sản phẩm thay thế có giá cao hơn, bạn chỉ cần thanh toán phần chênh lệch. Nếu thấp hơn, Earthoria hoàn lại phần còn lại.',
   },
   {
-    q: "Mã AR của tôi đã kích hoạt rồi — sách có lỗi in thì làm sao?",
+    q: "Mã AR của tôi đã kích hoạt rồi - sách có lỗi in thì làm sao?",
     a: "Lỗi in là lỗi nhà sản xuất và được bảo hành đầy đủ dù mã AR đã kích hoạt. Earthoria sẽ gửi sách mới và chuyển quyền truy cập AR sang sách mới trong vòng 24 giờ kể từ khi nhận được sách cũ.",
   },
   {
-    q: "Tôi mua hàng từ đại lý ủy quyền — có được đổi trả qua Earthoria không?",
+    q: "Tôi mua hàng từ đại lý ủy quyền - có được đổi trả qua Earthoria không?",
     a: "Hàng mua từ đại lý ủy quyền được đổi trả theo chính sách của đại lý đó. Tuy nhiên, với lỗi nhà sản xuất trong vòng bảo hành 12 tháng, bạn có thể liên hệ trực tiếp Earthoria để được xử lý theo kênh bảo hành chính hãng.",
   },
   {
-    q: "Tôi quên giữ hóa đơn — có đổi trả được không?",
-    a: "Hóa đơn điện tử từ email xác nhận đơn hàng có giá trị tương đương hóa đơn vật lý. Nếu không còn email, cung cấp mã đơn hàng hoặc số điện thoại đăng ký tài khoản — đội hỗ trợ sẽ tra cứu lịch sử mua hàng của bạn.",
+    q: "Tôi quên giữ hóa đơn - có đổi trả được không?",
+    a: "Hóa đơn điện tử từ email xác nhận đơn hàng có giá trị tương đương hóa đơn vật lý. Nếu không còn email, cung cấp mã đơn hàng hoặc số điện thoại đăng ký tài khoản - đội hỗ trợ sẽ tra cứu lịch sử mua hàng của bạn.",
   },
   {
     q: "Sau 30 ngày sách bị lỗi nhà sản xuất thì có được bảo hành không?",
@@ -717,12 +717,12 @@ export default function ReturnPolicy() {
             <span className="legal-hero-eyebrow-line" />
           </div>
           <h1 className="legal-hero-title">
-            Chính Sách —<br />
+            Chính Sách -<br />
             <em>Trả Hàng & Hoàn Tiền</em>
           </h1>
           <p className="legal-hero-sub">
             Mua sắm an tâm với chính sách đổi trả 30 ngày, bảo hành 12 tháng và
-            cam kết hoàn tiền minh bạch — không điều kiện ẩn.
+            cam kết hoàn tiền minh bạch - không điều kiện ẩn.
           </p>
           <div className="legal-hero-meta">
             <div className="legal-hero-meta-item">
@@ -821,7 +821,7 @@ export default function ReturnPolicy() {
                 Gửi yêu cầu đổi trả
               </div>
               <p>
-                Liên hệ trực tiếp để được hỗ trợ nhanh nhất — chúng tôi phản hồi
+                Liên hệ trực tiếp để được hỗ trợ nhanh nhất - chúng tôi phản hồi
                 trong 1 ngày làm việc.
               </p>
               <a

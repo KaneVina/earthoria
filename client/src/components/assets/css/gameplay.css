@@ -1,37 +1,37 @@
 @import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;0,9..144,900;1,9..144,500;1,9..144,600;1,9..144,700&family=Baloo+2:wght@500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap");
 
 /* ═══════════════════════════════════════════════════════════
-   GIAO DIỆN "VƯỜN PHIÊU LƯU" — bảng màu trái cây tươi sáng,
+   GIAO DIỆN "VƯỜN PHIÊU LƯU" - bảng màu trái cây tươi sáng,
    chữ tròn trịa thân thiện, bố cục rộng rãi như một sân chơi
    ngoài trời chứ không phải bảng điều khiển phần mềm.
    ═══════════════════════════════════════════════════════════ */
 .gp-view {
-  /* — nền & mực: kem nắng ấm, mực lá cây đậm — */
+  /* - nền & mực: kem nắng ấm, mực lá cây đậm - */
   --gp-ink: #1b3a2c;
   --gp-ink-soft: #3f6152;
   --gp-ivory: #fffdf7;
   --gp-cream: #fef6e4;
   --gp-sand: #fbead0;
 
-  /* — xanh lá: màu "chính" của thương hiệu vườn — */
+  /* - xanh lá: màu "chính" của thương hiệu vườn - */
   --gp-leaf: #2fa84f;
   --gp-leaf-deep: #1e7a3c;
   --gp-leaf-light: #6fce5a;
   --gp-leaf-pale: #e3f6df;
 
-  /* — cam đào: CTA & năng lượng chính — */
+  /* - cam đào: CTA & năng lượng chính - */
   --gp-peach: #ff8a4c;
   --gp-peach-deep: #ee6a2f;
   --gp-peach-light: #ffb37a;
   --gp-peach-pale: #ffead9;
 
-  /* — vàng nắng: thành tích, sao, huy chương — */
+  /* - vàng nắng: thành tích, sao, huy chương - */
   --gp-sun: #ffc93c;
   --gp-sun-deep: #e6a412;
   --gp-sun-light: #ffe17a;
   --gp-sun-pale: #fff5d6;
 
-  /* — hồng dâu & xanh biển: điểm nhấn phụ, badge, trạng thái — */
+  /* - hồng dâu & xanh biển: điểm nhấn phụ, badge, trạng thái - */
   --gp-berry: #ff6b8b;
   --gp-berry-light: #ff9bb0;
   --gp-berry-pale: #ffe6ec;
@@ -43,7 +43,7 @@
   --gp-silver: #d8ddd3;
   --gp-bronze: #d99a5c;
 
-  /* — đổ bóng: mềm, ấm, ngả về sắc lá thay vì xám lạnh — */
+  /* - đổ bóng: mềm, ấm, ngả về sắc lá thay vì xám lạnh - */
   --gp-shadow-sm:
     0 2px 6px rgba(30, 70, 45, 0.08), 0 1px 2px rgba(30, 70, 45, 0.06);
   --gp-shadow-md:
@@ -218,7 +218,7 @@
 }
 
 /* ═══════════════════════════════════════════
-   HUD — thanh trên cùng dạng kính mờ, dính top
+   HUD - thanh trên cùng dạng kính mờ, dính top
    ═══════════════════════════════════════════ */
 .gp-hud {
   position: sticky;
@@ -350,7 +350,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════
-   INTRO — sân khấu rộng mở: dải hero toàn chiều ngang phía
+   INTRO - sân khấu rộng mở: dải hero toàn chiều ngang phía
    trên, bên dưới là các "phiến đá vườn" xếp so le mang từng
    nhóm thông tin, thay vì nhồi hết vào một thẻ hẹp.
    ═══════════════════════════════════════════════════════ */
@@ -365,7 +365,7 @@
   animation: gp-rise 0.5s var(--gp-ease) both;
 }
 
-/* — dải hero: ảnh nền trải rộng toàn bộ chiều ngang, chữ đặt trực tiếp lên trên — */
+/* - dải hero: ảnh nền trải rộng toàn bộ chiều ngang, chữ đặt trực tiếp lên trên - */
 .gp-intro-visual {
   position: relative;
   width: 100%;
@@ -510,7 +510,7 @@
   text-shadow: 0 2px 16px rgba(15, 40, 25, 0.35);
 }
 
-/* — hàng phiến đá: thông tin phụ, mỗi khối một "hòn đảo" độc lập, cao thấp so le — */
+/* - hàng phiến đá: thông tin phụ, mỗi khối một "hòn đảo" độc lập, cao thấp so le - */
 .gp-intro-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -586,7 +586,7 @@
   white-space: nowrap;
 }
 
-/* ═══ khung "Cách chơi" — thẻ riêng biệt, có "mái" nhô lên như biển chỉ dẫn ═══ */
+/* ═══ khung "Cách chơi" - thẻ riêng biệt, có "mái" nhô lên như biển chỉ dẫn ═══ */
 .gp-howto {
   display: flex;
   gap: 14px;
@@ -698,7 +698,7 @@
   opacity: 0.85;
 }
 
-/* ═══ Nút hành động chính — kiểu "nút kẹo" nổi khối 3D, bấm lún xuống ═══ */
+/* ═══ Nút hành động chính - kiểu "nút kẹo" nổi khối 3D, bấm lún xuống ═══ */
 .gp-cta,
 .gp-view .a-btn-primary {
   position: relative;
@@ -831,7 +831,7 @@
 }
 
 /* ═══════════════════════════════════════════════════
-   ARENA — sân khấu chơi rộng thênh thang: dây cờ đuôi
+   ARENA - sân khấu chơi rộng thênh thang: dây cờ đuôi
    nheo trang trí phía trên, khung viền như lều xiếc.
    ═══════════════════════════════════════════════════ */
 .gp-arena {
@@ -1008,7 +1008,7 @@
   border-radius: 0 0 10px 0;
 }
 
-/* ═══ Finished — hero ăn mừng + bảng xếp hạng cạnh nhau khi đủ chỗ ═══ */
+/* ═══ Finished - hero ăn mừng + bảng xếp hạng cạnh nhau khi đủ chỗ ═══ */
 .gp-finished {
   width: 100%;
   max-width: var(--gp-max);
@@ -1167,7 +1167,7 @@
   margin-top: 10px;
 }
 
-/* ═══ Bảng xếp hạng — bục top-3 ═══ */
+/* ═══ Bảng xếp hạng - bục top-3 ═══ */
 .gp-leaderboard {
   background: linear-gradient(180deg, #fff 0%, var(--gp-ivory) 100%);
   border: 2px solid rgba(30, 122, 60, 0.08);
@@ -1439,7 +1439,7 @@
     var(--gp-shadow-sm);
 }
 
-/* ─ MEMORY MATCH — lật thẻ ghép đôi ─ */
+/* ─ MEMORY MATCH - lật thẻ ghép đôi ─ */
 .g-mm-grid {
   display: grid;
   gap: 14px;
@@ -1555,7 +1555,7 @@
   animation: gp-pop 0.3s var(--gp-ease-spring) both;
 }
 
-/* ─ MATCH PAIRS — nối các cặp tương ứng ─ */
+/* ─ MATCH PAIRS - nối các cặp tương ứng ─ */
 .g-mp-play-cols {
   display: flex;
   gap: 22px;
@@ -1653,7 +1653,7 @@
   }
 }
 
-/* ─ WORD SEARCH — tìm từ ẩn trong bảng chữ cái ─ */
+/* ─ WORD SEARCH - tìm từ ẩn trong bảng chữ cái ─ */
 .g-ws-play-layout {
   display: flex;
   flex-direction: column;
@@ -1779,7 +1779,7 @@
   }
 }
 
-/* ─ LETTER HUNT — săn chữ cái ghép từ khoá ─ */
+/* ─ LETTER HUNT - săn chữ cái ghép từ khoá ─ */
 .g-lh-progress {
   display: flex;
   flex-wrap: wrap;
@@ -1898,7 +1898,7 @@
   box-shadow: var(--gp-shadow-md);
 }
 
-/* ─ QUIZ CHOICE — nhãn chữ cái A/B/C/D bằng CSS counter ─ */
+/* ─ QUIZ CHOICE - nhãn chữ cái A/B/C/D bằng CSS counter ─ */
 .g-quiz-question {
   width: 100%;
   max-width: 680px;

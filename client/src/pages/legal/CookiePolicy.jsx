@@ -50,7 +50,7 @@ const SUMMARY_CARDS = [
   {
     icon: Clock,
     title: "Vòng đời rõ ràng",
-    desc: 'Mỗi loại cookie có thời hạn lưu trữ cụ thể, được liệt kê minh bạch bên dưới — không có cookie "vĩnh viễn" ẩn.',
+    desc: 'Mỗi loại cookie có thời hạn lưu trữ cụ thể, được liệt kê minh bạch bên dưới - không có cookie "vĩnh viễn" ẩn.',
   },
   {
     icon: Eye,
@@ -100,7 +100,7 @@ const COOKIE_TABLE = [
     name: "fb_pixel, ttq_*",
     provider: "Đối tác quảng cáo",
     purpose:
-      "Đo lường hiệu quả chiến dịch tiếp thị — chỉ đặt khi bạn đồng ý và không dành cho hồ sơ trẻ em",
+      "Đo lường hiệu quả chiến dịch tiếp thị - chỉ đặt khi bạn đồng ý và không dành cho hồ sơ trẻ em",
     duration: "Tối đa 3 tháng",
     type: "Quảng cáo",
   },
@@ -112,7 +112,7 @@ const SECTIONS = [
     num: "01",
     title: "Cookie Là Gì & Hoạt Động Như Thế Nào",
     paragraphs: [
-      'Cookie là các tệp văn bản nhỏ được lưu trên trình duyệt hoặc thiết bị của bạn khi truy cập website hoặc sử dụng ứng dụng Earthoria. Cookie giúp hệ thống "ghi nhớ" bạn giữa các lượt truy cập — ví dụ như giữ sản phẩm trong giỏ hàng hoặc ghi nhớ trạng thái đăng nhập.',
+      'Cookie là các tệp văn bản nhỏ được lưu trên trình duyệt hoặc thiết bị của bạn khi truy cập website hoặc sử dụng ứng dụng Earthoria. Cookie giúp hệ thống "ghi nhớ" bạn giữa các lượt truy cập - ví dụ như giữ sản phẩm trong giỏ hàng hoặc ghi nhớ trạng thái đăng nhập.',
       "Chính sách này áp dụng cho cookie trình duyệt web, cũng như các công nghệ tương tự trên ứng dụng di động như local storage, SDK phân tích và mã định danh thiết bị, được mô tả chi tiết tại Mục 07.",
     ],
   },
@@ -124,10 +124,10 @@ const SECTIONS = [
       "Chúng tôi phân loại cookie theo mục đích sử dụng để bạn dễ dàng hiểu và kiểm soát. Bảng chi tiết dưới đây liệt kê các cookie cụ thể đang hoạt động trên hệ thống Earthoria.",
     ],
     list: [
-      "Cookie cần thiết — bắt buộc để website và ứng dụng hoạt động cơ bản (giỏ hàng, đăng nhập, bảo mật); không thể tắt vì thiếu chúng dịch vụ sẽ không vận hành được",
-      "Cookie phân tích — đo lường lượng truy cập và hành vi sử dụng ở dạng tổng hợp, ẩn danh, giúp chúng tôi cải thiện trải nghiệm sản phẩm",
-      "Cookie cá nhân hóa — ghi nhớ tùy chọn của bạn như thể loại sách yêu thích, ngôn ngữ hiển thị, hoặc độ tuổi phù hợp để gợi ý nội dung",
-      "Cookie quảng cáo/tiếp thị — đo lường hiệu quả chiến dịch quảng cáo; chỉ hoạt động khi bạn chủ động đồng ý và không bao giờ áp dụng cho tài khoản trẻ em",
+      "Cookie cần thiết - bắt buộc để website và ứng dụng hoạt động cơ bản (giỏ hàng, đăng nhập, bảo mật); không thể tắt vì thiếu chúng dịch vụ sẽ không vận hành được",
+      "Cookie phân tích - đo lường lượng truy cập và hành vi sử dụng ở dạng tổng hợp, ẩn danh, giúp chúng tôi cải thiện trải nghiệm sản phẩm",
+      "Cookie cá nhân hóa - ghi nhớ tùy chọn của bạn như thể loại sách yêu thích, ngôn ngữ hiển thị, hoặc độ tuổi phù hợp để gợi ý nội dung",
+      "Cookie quảng cáo/tiếp thị - đo lường hiệu quả chiến dịch quảng cáo; chỉ hoạt động khi bạn chủ động đồng ý và không bao giờ áp dụng cho tài khoản trẻ em",
     ],
     showTable: true,
   },
@@ -139,9 +139,9 @@ const SECTIONS = [
       "Một số cookie trên website và ứng dụng của chúng tôi được đặt bởi các nhà cung cấp dịch vụ bên thứ ba mà Earthoria hợp tác. Chúng tôi lựa chọn các đối tác này dựa trên cam kết bảo mật dữ liệu tương đương với tiêu chuẩn của Earthoria.",
     ],
     list: [
-      "Google Analytics — phân tích lưu lượng truy cập website ở dạng ẩn danh, đã bật tính năng ẩn địa chỉ IP (IP anonymization)",
-      "Cổng thanh toán (VNPay, MoMo, ZaloPay) — cookie phiên giao dịch để xử lý thanh toán an toàn, không dùng cho mục đích tiếp thị",
-      "Đối tác quảng cáo (Meta, TikTok, Google Ads) — chỉ được kích hoạt sau khi bạn đồng ý ở nhóm Cookie quảng cáo, và bị chặn hoàn toàn trên các phiên được xác định là trẻ em",
+      "Google Analytics - phân tích lưu lượng truy cập website ở dạng ẩn danh, đã bật tính năng ẩn địa chỉ IP (IP anonymization)",
+      "Cổng thanh toán (VNPay, MoMo, ZaloPay) - cookie phiên giao dịch để xử lý thanh toán an toàn, không dùng cho mục đích tiếp thị",
+      "Đối tác quảng cáo (Meta, TikTok, Google Ads) - chỉ được kích hoạt sau khi bạn đồng ý ở nhóm Cookie quảng cáo, và bị chặn hoàn toàn trên các phiên được xác định là trẻ em",
       "Earthoria không kiểm soát chính sách cookie riêng của các bên thứ ba này; bạn có thể tham khảo chính sách bảo mật của từng đối tác để biết thêm chi tiết",
     ],
   },
@@ -150,7 +150,7 @@ const SECTIONS = [
     num: "04",
     title: "Mục Đích Sử Dụng Cookie",
     paragraphs: [
-      "Chúng tôi chỉ sử dụng cookie cho các mục đích cụ thể sau — không có mục đích thu thập dữ liệu nào nằm ngoài phạm vi được liệt kê trong Chính sách này.",
+      "Chúng tôi chỉ sử dụng cookie cho các mục đích cụ thể sau - không có mục đích thu thập dữ liệu nào nằm ngoài phạm vi được liệt kê trong Chính sách này.",
     ],
     list: [
       "Đảm bảo website và ứng dụng hoạt động ổn định, an toàn, chống gian lận và tấn công mạng",
@@ -194,10 +194,10 @@ const SECTIONS = [
       "Ngoài cookie trình duyệt truyền thống, Earthoria còn sử dụng một số công nghệ tương tự trên website và ứng dụng di động để đảm bảo trải nghiệm nhất quán.",
     ],
     list: [
-      "Local Storage & Session Storage — lưu trữ tạm thời trên trình duyệt cho trạng thái ứng dụng, không đồng bộ giữa các thiết bị",
-      "SDK phân tích trong ứng dụng di động — thu thập số liệu sử dụng ẩn danh (như tần suất mở ứng dụng, thời gian phiên) tương tự cookie phân tích trên web",
-      "Mã định danh quảng cáo thiết bị (Advertising ID) — chỉ được truy cập khi bạn bật quyền quảng cáo cá nhân hóa trong cài đặt hệ điều hành; luôn bị vô hiệu hóa trên hồ sơ trẻ em",
-      "Web beacon / pixel theo dõi trong email — dùng để biết email có được mở hay không; có thể tắt bằng cách chặn tải hình ảnh trong email hoặc hủy đăng ký nhận thư",
+      "Local Storage & Session Storage - lưu trữ tạm thời trên trình duyệt cho trạng thái ứng dụng, không đồng bộ giữa các thiết bị",
+      "SDK phân tích trong ứng dụng di động - thu thập số liệu sử dụng ẩn danh (như tần suất mở ứng dụng, thời gian phiên) tương tự cookie phân tích trên web",
+      "Mã định danh quảng cáo thiết bị (Advertising ID) - chỉ được truy cập khi bạn bật quyền quảng cáo cá nhân hóa trong cài đặt hệ điều hành; luôn bị vô hiệu hóa trên hồ sơ trẻ em",
+      "Web beacon / pixel theo dõi trong email - dùng để biết email có được mở hay không; có thể tắt bằng cách chặn tải hình ảnh trong email hoặc hủy đăng ký nhận thư",
     ],
   },
   {
@@ -208,10 +208,10 @@ const SECTIONS = [
       "Bạn có nhiều cách để kiểm soát cookie, tùy theo mức độ chi tiết bạn mong muốn. Lưu ý rằng việc tắt cookie cần thiết có thể khiến một số chức năng của website hoặc ứng dụng không hoạt động đúng.",
     ],
     list: [
-      "Bảng điều khiển cookie của Earthoria — vào Cài đặt → Quyền riêng tư → Tùy chọn Cookie để bật/tắt từng nhóm (trừ nhóm Cần thiết)",
-      "Cài đặt trình duyệt — hầu hết trình duyệt (Chrome, Safari, Firefox, Edge) cho phép chặn hoặc xóa cookie theo từng trang web trong phần Cài đặt quyền riêng tư",
-      'Cài đặt quảng cáo cá nhân hóa trên thiết bị di động — tắt "Cho phép theo dõi" (iOS) hoặc "Tắt cá nhân hóa quảng cáo" (Android) trong cài đặt hệ điều hành',
-      "Tín hiệu Do Not Track / Global Privacy Control — Earthoria tôn trọng các tín hiệu này khi trình duyệt của bạn gửi kèm yêu cầu truy cập",
+      "Bảng điều khiển cookie của Earthoria - vào Cài đặt → Quyền riêng tư → Tùy chọn Cookie để bật/tắt từng nhóm (trừ nhóm Cần thiết)",
+      "Cài đặt trình duyệt - hầu hết trình duyệt (Chrome, Safari, Firefox, Edge) cho phép chặn hoặc xóa cookie theo từng trang web trong phần Cài đặt quyền riêng tư",
+      'Cài đặt quảng cáo cá nhân hóa trên thiết bị di động - tắt "Cho phép theo dõi" (iOS) hoặc "Tắt cá nhân hóa quảng cáo" (Android) trong cài đặt hệ điều hành',
+      "Tín hiệu Do Not Track / Global Privacy Control - Earthoria tôn trọng các tín hiệu này khi trình duyệt của bạn gửi kèm yêu cầu truy cập",
     ],
   },
   {
@@ -267,7 +267,7 @@ const FAQS = [
     a: "Không. Cookie phân tích chỉ ghi nhận hành vi sử dụng ở dạng số liệu tổng hợp và ẩn danh (như số trang đã xem), không gắn với tên, email hay thông tin định danh cá nhân khác.",
   },
   {
-    q: "Tôi dùng nhiều thiết bị — tùy chọn cookie có đồng bộ không?",
+    q: "Tôi dùng nhiều thiết bị - tùy chọn cookie có đồng bộ không?",
     a: "Tùy chọn cookie được lưu theo từng trình duyệt và thiết bị riêng biệt. Nếu bạn đăng nhập tài khoản trên thiết bị mới, bạn sẽ được hỏi lại về tùy chọn cookie cho thiết bị đó.",
   },
 ];
@@ -854,12 +854,12 @@ export default function CookiePolicy() {
             <span className="legal-hero-eyebrow-line" />
           </div>
           <h1 className="legal-hero-title">
-            Chính Sách —<br />
+            Chính Sách -<br />
             <em>Cookie</em>
           </h1>
           <p className="legal-hero-sub">
             Cookie giúp Earthoria vận hành mượt mà và cá nhân hóa trải nghiệm
-            đọc sách của gia đình bạn — đây là toàn bộ những gì chúng tôi sử
+            đọc sách của gia đình bạn - đây là toàn bộ những gì chúng tôi sử
             dụng, vì sao, trong bao lâu, và cách bạn kiểm soát chúng.
           </p>
           <div className="legal-hero-meta">

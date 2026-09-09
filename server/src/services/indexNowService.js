@@ -1,5 +1,5 @@
 /**
- * IndexNow — API miễn phí, không cần đăng ký tài khoản, để báo cho
+ * IndexNow - API miễn phí, không cần đăng ký tài khoản, để báo cho
  * Bing/Yandex (và qua đó là ChatGPT Search, dùng hạ tầng crawl của Bing)
  * biết có URL mới/thay đổi cần crawl lại ngay, thay vì chờ crawl tự nhiên
  * (có thể mất vài ngày).

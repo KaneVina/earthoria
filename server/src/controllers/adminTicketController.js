@@ -16,7 +16,7 @@ const staffSelect = {
   avatar: true,
 };
 
-//  GET /admin/tickets — danh sách đầy đủ, staff/admin đều xem được
+//  GET /admin/tickets - danh sách đầy đủ, staff/admin đều xem được
 exports.getTickets = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -79,7 +79,7 @@ exports.getTickets = async (req, res) => {
   }
 };
 
-//  GET /admin/tickets/:id — chi tiết ticket + toàn bộ lịch sử phản hồi
+//  GET /admin/tickets/:id - chi tiết ticket + toàn bộ lịch sử phản hồi
 exports.getTicketById = async (req, res) => {
   try {
     const ticket = await prisma.ticket.findUnique({
@@ -106,7 +106,7 @@ exports.getTicketById = async (req, res) => {
   }
 };
 
-//  PATCH /admin/tickets/:id/status — cập nhật trạng thái xử lý
+//  PATCH /admin/tickets/:id/status - cập nhật trạng thái xử lý
 exports.updateTicketStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -137,7 +137,7 @@ exports.updateTicketStatus = async (req, res) => {
   }
 };
 
-//  PATCH /admin/tickets/:id/assign — phân công staff/admin phụ trách
+//  PATCH /admin/tickets/:id/assign - phân công staff/admin phụ trách
 exports.assignTicket = async (req, res) => {
   try {
     const { assignedToId } = req.body;
@@ -187,7 +187,7 @@ exports.assignTicket = async (req, res) => {
   }
 };
 
-//  POST /admin/tickets/:id/reply — staff/admin phản hồi
+//  POST /admin/tickets/:id/reply - staff/admin phản hồi
 exports.replyToTicket = async (req, res) => {
   try {
     const { message, nextStatus } = req.body;
@@ -263,7 +263,7 @@ exports.replyToTicket = async (req, res) => {
       success: true,
       message: emailSent
         ? "Đã gửi phản hồi và thông báo email cho khách hàng"
-        : "Đã lưu phản hồi nhưng gửi email thất bại — vui lòng kiểm tra lại cấu hình gửi mail",
+        : "Đã lưu phản hồi nhưng gửi email thất bại - vui lòng kiểm tra lại cấu hình gửi mail",
       data: { reply, ticket: updatedTicket },
     });
   } catch (err) {

@@ -4,7 +4,7 @@ import { formatPrice } from "../utils/helpers";
 import "./assets/css/loyaltyBadge.css";
 
 const formatArea = (km) => {
-  if (!Number.isFinite(km)) return "—";
+  if (!Number.isFinite(km)) return "-";
   return `${new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(km)} km`;
 };
 
@@ -91,7 +91,7 @@ export default function LoyaltyBadge({
             <div className="lb-panel-divider" />
             {progress.isMaxTier ? (
               <p className="lb-panel-max">
-                Hạng cao nhất — cảm ơn bạn đã đồng hành cùng Earthoria!
+                Hạng cao nhất - cảm ơn bạn đã đồng hành cùng Earthoria!
               </p>
             ) : (
               <div className="lb-panel-progress">

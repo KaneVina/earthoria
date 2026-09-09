@@ -1,4 +1,4 @@
-/*  TRANG VƯỜN TRI THỨC — dùng chung "bầu trời sống" (kid-sky) với trang
+/*  TRANG VƯỜN TRI THỨC - dùng chung "bầu trời sống" (kid-sky) với trang
     KidAccess để cả app cảm giác là một thế giới liền mạch, chỉ đổi "khung
     cảnh" bên dưới bầu trời từ "kệ sách" sang "khu vườn". */
 
@@ -13,7 +13,7 @@
   animation: kidPageIn 0.6s var(--kid-ease-soft) both;
 }
 
-/* thảm cỏ mềm mại trải dưới chân trời — cùng lớp với kid-sky (z-index 0)
+/* thảm cỏ mềm mại trải dưới chân trời - cùng lớp với kid-sky (z-index 0)
    nhưng vẽ SAU nên nổi lên trên bầu trời, tạo cảm giác đang đứng trong
    một khu vườn dưới bầu trời thật */
 .kgp-ground {
@@ -51,7 +51,7 @@
   padding: 0 28px 56px;
 }
 
-/*  HEADER — một khối DUY NHẤT: dòng nhãn "Vườn Tri Thức" gọn ở trên,
+/*  HEADER - một khối DUY NHẤT: dòng nhãn "Vườn Tri Thức" gọn ở trên,
     rồi tới MỘT hàng dài duy nhất gồm nút quay lại + hồ sơ bé + số liệu,
     thay vì tách rời thành nhiều khối nhỏ như trước. */
 .kgp-header {
@@ -165,7 +165,7 @@
   border-radius: 999px;
 }
 
-/* số liệu — nằm cuối hàng, đẩy sát lề phải khi còn dư chỗ */
+/* số liệu - nằm cuối hàng, đẩy sát lề phải khi còn dư chỗ */
 .kgp-header-stats {
   display: flex;
   align-items: center;
@@ -280,9 +280,9 @@
   min-width: 0;
 }
 
-/* Thẻ "Cây của hôm nay" kiểu đầy đủ — 3 phần ngang hàng: cây (trái),
+/* Thẻ "Cây của hôm nay" kiểu đầy đủ - 3 phần ngang hàng: cây (trái),
    tên/mô tả/nút (giữa, nội dung ngắn hơn nên gánh luôn nút CTA), số liệu
-   sức khoẻ + tiến độ + thống kê (phải, nội dung dài hơn) — chia đều để
+   sức khoẻ + tiến độ + thống kê (phải, nội dung dài hơn) - chia đều để
    lấp hết chiều ngang, không còn khoảng trống thừa bên phải. */
 .kgp-current-card--rich {
   display: flex;
@@ -428,7 +428,7 @@
   }
 }
 
-/* Khu vườn — chiếm trọn chiều ngang thẻ, cây to, giãn đều, canh giữa */
+/* Khu vườn - chiếm trọn chiều ngang thẻ, cây to, giãn đều, canh giữa */
 .kgp-root .kg-garden-scene {
   padding: 30px 26px 26px;
 }
@@ -442,7 +442,7 @@
   margin-top: 16px;
 }
 
-/* Ô đất trống — mời gọi trồng thêm cây thay vì để trống trơn */
+/* Ô đất trống - mời gọi trồng thêm cây thay vì để trống trơn */
 .kg-garden-tree-slot {
   width: 108px;
   height: 108px;

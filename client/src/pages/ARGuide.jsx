@@ -38,7 +38,7 @@ const STEPS = [
     step: "01",
     title: "Tải Ứng Dụng",
     subtitle: "Hoặc Không Cần Cài Gì Cả",
-    desc: "Có 2 cách để bắt đầu: tải app Earthoria AR để có đầy đủ tính năng (AI Tutor, âm thanh vòm…), hoặc quét thẳng bằng Camera điện thoại — không cần cài đặt gì.",
+    desc: "Có 2 cách để bắt đầu: tải app Earthoria AR để có đầy đủ tính năng (AI Tutor, âm thanh vòm…), hoặc quét thẳng bằng Camera điện thoại - không cần cài đặt gì.",
     detail:
       "Không có app? Quét bằng Camera/trình duyệt vẫn xem AR ngay trên web.",
     icon: "download",
@@ -50,7 +50,7 @@ const STEPS = [
     step: "02",
     title: "Mở Sách",
     subtitle: "Tìm Biểu Tượng AR",
-    desc: "Mở cuốn sách Earthoria. Các trang có biểu tượng tròn màu xanh là trang AR — nơi thế giới 3D sẽ hiện ra.",
+    desc: "Mở cuốn sách Earthoria. Các trang có biểu tượng tròn màu xanh là trang AR - nơi thế giới 3D sẽ hiện ra.",
     detail: "Mỗi cuốn có 40–80 trang AR tùy theo bộ sưu tập.",
     icon: "book",
     color: "#5cb84f",
@@ -153,7 +153,7 @@ function loadThreeJS() {
   return threeLoadPromise;
 }
 
-// Builds a small low-poly, stylized lion entirely out of primitives — no external
+// Builds a small low-poly, stylized lion entirely out of primitives - no external
 // model files, so it's fast, lightweight and license-free, but reads as a real 3D
 // object rather than an emoji glyph.
 function buildLionModel(THREE, accentColor) {
@@ -438,7 +438,7 @@ export default function ARGuide() {
   const AI_RESPONSES = [
     "Sư tử châu Phi (Panthera leo) là loài mèo lớn nhất châu Phi. Con đực trưởng thành có thể nặng tới 250kg!",
     "Bờm của sư tử đực giúp bảo vệ cổ trong các cuộc đấu tranh và thu hút con cái.",
-    'Sư tử là loài mèo duy nhất sống thành đàn — gọi là "pride" — với 10–40 con.',
+    'Sư tử là loài mèo duy nhất sống thành đàn - gọi là "pride" - với 10–40 con.',
   ];
   const [aiIdx, setAiIdx] = useState(0);
 
@@ -871,7 +871,7 @@ export default function ARGuide() {
                 maxWidth: "700px",
               }}
             >
-              Mở Sách —<br />
+              Mở Sách -<br />
               <span style={{ fontStyle: "italic", color: "#4a9e3f" }}>
                 Thế Giới
               </span>
@@ -892,7 +892,7 @@ export default function ARGuide() {
               }}
             >
               5 bước đơn giản để khởi động trải nghiệm AR đầu tiên của bé. Từ
-              tải app đến nghe AI kể chuyện — tất cả trong 3 phút.
+              tải app đến nghe AI kể chuyện - tất cả trong 3 phút.
             </p>
           </Reveal>
 
@@ -1530,7 +1530,7 @@ export default function ARGuide() {
             ],
             [
               "Có thể dùng trên máy tính bảng không?",
-              "iPad và Android tablet đều hỗ trợ — và trải nghiệm còn tốt hơn nhờ màn hình lớn. Màn hình 8 inch trở lên là lý tưởng nhất.",
+              "iPad và Android tablet đều hỗ trợ - và trải nghiệm còn tốt hơn nhờ màn hình lớn. Màn hình 8 inch trở lên là lý tưởng nhất.",
             ],
           ].map(([q, a], i) => (
             <Reveal key={i} delay={i * 0.06}>
@@ -2091,7 +2091,7 @@ function LiveDemoModal({ open, onClose }) {
             lineHeight: 1.6,
           }}
         >
-          Quét sách, xem mô hình 3D nổi lên, rồi hỏi AI bất cứ điều gì — vòng
+          Quét sách, xem mô hình 3D nổi lên, rồi hỏi AI bất cứ điều gì - vòng
           lặp tự động.
         </p>
       </div>
@@ -2305,7 +2305,7 @@ function DownloadDemo({ color }) {
               marginBottom: "20px",
             }}
           >
-            Web AR mở ngay trên trình duyệt — không cần tải hay cài đặt gì cả.
+            Web AR mở ngay trên trình duyệt - không cần tải hay cài đặt gì cả.
           </p>
           <div
             style={{

@@ -47,7 +47,7 @@
   box-shadow: var(--pf-shadow-gold);
 }
 
-/* Ánh sáng lướt nhẹ qua các nút CTA chính khi hover — tinh tế, không gây rối mắt */
+/* Ánh sáng lướt nhẹ qua các nút CTA chính khi hover - tinh tế, không gây rối mắt */
 .pf-btn-shine {
   position: relative;
   overflow: hidden;
@@ -274,7 +274,7 @@
   padding-bottom: 0;
 }
 
-/* Floating gold dust — a few slow-drifting motes to give the strip a sense
+/* Floating gold dust - a few slow-drifting motes to give the strip a sense
    of depth and quiet luxury, without becoming a distraction. */
 .pf-dust {
   position: absolute;
@@ -663,11 +663,11 @@
   padding: 0 100px;
 }
 
-/*   SIDEBAR — "Danh Mục" nav, redesigned
+/*   SIDEBAR - "Danh Mục" nav, redesigned
    A quiet ivory-line card floating on the forest background: rounded
    container, breathing room per item, and a soft pill indicator that
    glides beneath the active label (already computed in JS via
-   offsetTop/offsetHeight — CSS just needs to paint it well). */
+   offsetTop/offsetHeight - CSS just needs to paint it well). */
 .pf-sidebar {
   width: 252px;
   flex-shrink: 0;
@@ -676,7 +676,7 @@
   max-height: calc(100vh - 112px);
   overflow-y: auto;
   /* Nền forest đặc (không phải trong suốt) vì sidebar nằm trên nền cream
-     sáng của trang, không phải đè lên hero tối — trong suốt sẽ làm chữ
+     sáng của trang, không phải đè lên hero tối - trong suốt sẽ làm chữ
      ivory gần như biến mất. Gradient chỉ là lớp phủ tạo chiều sâu. */
   background:
     linear-gradient(
@@ -3110,7 +3110,7 @@
   background: rgba(212, 168, 67, 0.14);
 }
 
-/* Danh sách SÁCH AR — mỗi cuốn sách 1 thẻ (ảnh bìa + tên), các mã AR bên
+/* Danh sách SÁCH AR - mỗi cuốn sách 1 thẻ (ảnh bìa + tên), các mã AR bên
    trong chỉ là chip phụ để chọn mô hình cụ thể */
 .pf-ar-book-grid {
   display: flex;
@@ -3319,7 +3319,7 @@
 }
 
 /*      ════════
-   RESPONSIVE — tablet, mobile, small mobile
+   RESPONSIVE - tablet, mobile, small mobile
         ════════ */
 @media (max-width: 1100px) {
   .pf-passport-zone {
@@ -3822,7 +3822,7 @@
   color: var(--text-muted);
 }
 
-/* ─ Trạng Thái Hệ Thống — dải điện tâm đồ dưới lưới chỉ số ─
+/* ─ Trạng Thái Hệ Thống - dải điện tâm đồ dưới lưới chỉ số ─
    Cùng kỹ thuật cuộn vô hạn với statuspage.css (2 bản sao SVG, dịch đúng
    1 bản sao rộng 400px) nhưng đặt trong khung "well" var(--cream) giống
    hệt .pf-settings-info-item phía trên để trông liền một khối, không lạc
@@ -4116,7 +4116,7 @@ body.dark-mode .pf-switch-track {
 
 /*   LUXURY UPGRADE: NHẬN DIỆN THƯƠNG HIỆU   */
 
-/* Quầng sáng lớn bám nhẹ theo con trỏ trên toàn section — tạo chiều sâu
+/* Quầng sáng lớn bám nhẹ theo con trỏ trên toàn section - tạo chiều sâu
    cho nền forest phẳng, biến --lp-x/--lp-y do JS set khi di chuột */
 .logo-section {
   --lp-x: 50%;
@@ -4140,7 +4140,7 @@ body.dark-mode .pf-switch-track {
   z-index: 1;
 }
 
-/* Wrapper tilt 3D quanh khối logo ảnh tĩnh — nghiêng theo con trỏ như
+/* Wrapper tilt 3D quanh khối logo ảnh tĩnh - nghiêng theo con trỏ như
    đang cầm một huy hiệu kim loại dưới ánh đèn */
 .logo-display-tilt {
   --rx: 0deg;
@@ -4155,7 +4155,7 @@ body.dark-mode .pf-switch-track {
   transform-style: preserve-3d;
 }
 
-/* Ring thứ 3: viền vàng nét đứt xoay chậm — khác nhịp với 2 ring pulse có
+/* Ring thứ 3: viền vàng nét đứt xoay chậm - khác nhịp với 2 ring pulse có
    sẵn, giống một con dấu/huy hiệu chính thức bao quanh logo */
 .logo-ring-3 {
   position: absolute;

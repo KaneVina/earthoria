@@ -94,7 +94,7 @@ const speechAvailable = () =>
 function resizeImageFileIfNeeded(file, maxDim = 1600, quality = 0.86) {
   return new Promise((resolve) => {
     if (!file.type?.startsWith("image/") || file.type === "image/gif") {
-      // GIF (có thể animated) resize qua canvas sẽ làm mất animation — bỏ qua, upload nguyên bản.
+      // GIF (có thể animated) resize qua canvas sẽ làm mất animation - bỏ qua, upload nguyên bản.
       resolve(file);
       return;
     }
@@ -103,7 +103,7 @@ function resizeImageFileIfNeeded(file, maxDim = 1600, quality = 0.86) {
       const img = new Image();
       img.onload = () => {
         if (img.width <= maxDim && img.height <= maxDim) {
-          resolve(file); // Ảnh đã đủ nhỏ, không cần resize — giữ nguyên chất lượng gốc.
+          resolve(file); // Ảnh đã đủ nhỏ, không cần resize - giữ nguyên chất lượng gốc.
           return;
         }
         const ratio = Math.min(maxDim / img.width, maxDim / img.height);
@@ -116,7 +116,7 @@ function resizeImageFileIfNeeded(file, maxDim = 1600, quality = 0.86) {
         canvas.toBlob(
           (blob) => {
             if (!blob) {
-              resolve(file); // Resize thất bại vì lý do nào đó — vẫn upload file gốc thay vì chặn hẳn.
+              resolve(file); // Resize thất bại vì lý do nào đó - vẫn upload file gốc thay vì chặn hẳn.
               return;
             }
             resolve(new File([blob], file.name, { type: "image/jpeg" }));
@@ -133,7 +133,7 @@ function resizeImageFileIfNeeded(file, maxDim = 1600, quality = 0.86) {
   });
 }
 
-// Icon "i" nhỏ đặt cạnh tiêu đề — rê chuột (hoặc focus bằng bàn phím) vào
+// Icon "i" nhỏ đặt cạnh tiêu đề - rê chuột (hoặc focus bằng bàn phím) vào
 // mới hiện phần ghi chú/hướng dẫn, thay vì hiện chữ giải thích cố định
 // chiếm chỗ ngay dưới mỗi mục.
 function InfoHint({ children }) {
@@ -145,7 +145,7 @@ function InfoHint({ children }) {
   );
 }
 
-// Bảng màu dựng sẵn — sắp thành các hàng giống kiểu Canva để chọn nhanh.
+// Bảng màu dựng sẵn - sắp thành các hàng giống kiểu Canva để chọn nhanh.
 const PRESET_COLOR_ROWS = [
   ["#000000", "#4d4d4d", "#7a7a7a", "#a6a6a6", "#d1d1d1", "#f2f2f2", "#ffffff"],
   ["#e53935", "#ff7043", "#ff4d94", "#e0a3ff", "#b166ff", "#7c4dff", "#4527a0"],
@@ -182,7 +182,7 @@ function isGradientColor(v) {
   return typeof v === "string" && v.trim().startsWith("linear-gradient(");
 }
 
-// Lấy màu đại diện (đơn sắc) từ 1 chuỗi gradient — dùng làm phương án dự
+// Lấy màu đại diện (đơn sắc) từ 1 chuỗi gradient - dùng làm phương án dự
 // phòng ở những nơi CSS/SVG không cho tô gradient trực tiếp (viền, và vài
 // hình khối dạng SVG như đường thẳng/mũi tên/ngôi sao).
 function firstGradientStop(v) {
@@ -261,8 +261,8 @@ function hsvToRgb({ h, s, v }) {
 }
 
 // Ô chọn màu tuỳ chỉnh kiểu Canva: click vào ô tròn hiện màu hiện tại sẽ
-// mở bảng chọn có 2 tab — "Màu đơn" (thanh trích màu + ô nhập mã màu +
-// lưới màu dựng sẵn) và "Gradient" (2 màu hoà + góc nghiêng) — thay cho
+// mở bảng chọn có 2 tab - "Màu đơn" (thanh trích màu + ô nhập mã màu +
+// lưới màu dựng sẵn) và "Gradient" (2 màu hoà + góc nghiêng) - thay cho
 // color-picker mặc định của trình duyệt (khó dùng, không gõ được mã màu,
 // không có gradient).
 function ColorPickerInput({
@@ -614,8 +614,8 @@ function sanitizeRichHtml(html) {
   return container.innerHTML;
 }
 
-// document.execCommand thường tự đặt lại vị trí con trỏ sau khi chạy — có
-// khi nhảy hẳn về đầu đoạn văn — bất kể vùng vừa bôi đen nằm ở đâu. Để tránh
+// document.execCommand thường tự đặt lại vị trí con trỏ sau khi chạy - có
+// khi nhảy hẳn về đầu đoạn văn - bất kể vùng vừa bôi đen nằm ở đâu. Để tránh
 // phụ thuộc vào hành vi không ổn định đó: chèn tạm 2 "cột mốc" (span rỗng)
 // ngay 2 đầu vùng đang bôi đen, chạy lệnh định dạng, rồi dựa vào 2 cột mốc
 // đó dựng lại ĐÚNG vùng chọn ban đầu (giờ đã được định dạng) thay vì tin vào
@@ -663,7 +663,7 @@ function runFormatCommandKeepingSelection(range, runCommand) {
   return finalRange;
 }
 
-// Tự bọc/gỡ thẻ <b>/<i>/<u> bằng tay, KHÔNG dùng document.execCommand — vì
+// Tự bọc/gỡ thẻ <b>/<i>/<u> bằng tay, KHÔNG dùng document.execCommand - vì
 // execCommand chạy trong vùng chọn bị thu hẹp giữa 2 cột mốc tạm (hàm ở
 // trên) đôi khi không nhận đúng ngữ cảnh và không bôi đậm/nghiêng gì cả.
 // Tự làm để chắc chắn 100% có hiệu lực, đồng thời tự xử lý bật/tắt (bấm lại
@@ -732,7 +732,7 @@ function applyColorInRange(range, color) {
 }
 
 // Chế độ Xem trước / Đọc sách luôn tách chữ theo từng TỪ (để rê chuột tô
-// sáng/đọc theo từ hoạt động) — trước đây việc tách từ đó lấy thẳng từ
+// sáng/đọc theo từ hoạt động) - trước đây việc tách từ đó lấy thẳng từ
 // layer.text (chữ thô) nên định dạng riêng phần (đậm/nghiêng/màu 1 vài chữ)
 // bị mất hoàn toàn khi xem trước, dù đã lưu đúng trong layer.html. Hàm này
 // đọc layer.html, gán lại định dạng cho ĐÚNG từng từ tương ứng, để tách từ
@@ -795,7 +795,7 @@ function hexToRgb(hex) {
 }
 
 // Lấy màu nền thực tế của ảnh bằng cách lấy mẫu 4 góc (mỗi góc 1 vùng nhỏ)
-// rồi tính trung bình — dùng làm màu gợi ý mặc định cho công cụ "xoá nền
+// rồi tính trung bình - dùng làm màu gợi ý mặc định cho công cụ "xoá nền
 // theo màu", thay vì luôn mặc định màu trắng (khiến ảnh nền đen/tối không
 // bao giờ xoá được gì nếu người dùng không tự đổi màu trước).
 function sampleImageCornerColor(srcUrl) {
@@ -872,7 +872,7 @@ function removeBackgroundByColor(srcUrl, hexColor, tolerancePercent) {
       }
       const [tr, tg, tb] = hexToRgb(hexColor);
       // Thang đo trải trên TOÀN BỘ khoảng cách màu có thể có (0-765, ví dụ
-      // đen tuyệt đối cách trắng tuyệt đối 765) thay vì chỉ tới 450 — trước
+      // đen tuyệt đối cách trắng tuyệt đối 765) thay vì chỉ tới 450 - trước
       // đây dù kéo tolerance lên mức tối đa vẫn không đủ để bắt các màu ở
       // xa target, khiến việc "xoá nền" gần như luôn không ăn thua.
       const tol = (tolerancePercent / 100) * 765;
@@ -912,7 +912,7 @@ function wordIndexForCharIndex(words, charIndex) {
 
 // Tách 1 đoạn văn thành từng "câu" theo dấu chấm/chấm than/chấm hỏi/phẩy/
 // chấm phẩy/hai chấm, trả về từng câu kèm khoảng chỉ số từ (word index)
-// mà nó chiếm — dùng để khi rê chuột vào 1 từ, biết cần đọc to đúng câu
+// mà nó chiếm - dùng để khi rê chuột vào 1 từ, biết cần đọc to đúng câu
 // chứa từ đó, thay vì đọc lại toàn bộ đoạn văn (gây trùng với chế độ
 // Tự động đọc).
 function splitSentenceWordRanges(text) {
@@ -961,7 +961,7 @@ function defaultTextLayer(overrides = {}) {
   return {
     id: uid(),
     type: "text",
-    // Để trống — hiển thị bằng placeholder mờ (xem LayerView) chứ không
+    // Để trống - hiển thị bằng placeholder mờ (xem LayerView) chứ không
     // nhúng sẵn chữ mẫu vào nội dung thật, để người dùng gõ ngay không cần
     // xoá chữ mẫu trước.
     text: "",
@@ -1254,7 +1254,7 @@ function LayerView({
       }
       return;
     }
-    // Đang gõ/bôi đen chữ trên chính lớp này thì bỏ qua — gọi lại onSelect
+    // Đang gõ/bôi đen chữ trên chính lớp này thì bỏ qua - gọi lại onSelect
     // (chọn lại layer) không cần thiết, còn re-render nó gây ra khiến vùng
     // soạn thảo mất selection/con trỏ giữa chừng khi đang kéo bôi đen.
     if (isEditingText) return;
@@ -1587,14 +1587,14 @@ function LayerView({
   const askable = readOnly && !!layer.text?.trim() && !layer.tocTargetPageId;
   const isRich = !!layer.html;
   // Tách theo từ nhưng vẫn giữ định dạng riêng phần (đậm/nghiêng/màu 1 vài
-  // chữ) đã lưu trong layer.html — nếu không có html (chưa từng định dạng
+  // chữ) đã lưu trong layer.html - nếu không có html (chưa từng định dạng
   // riêng phần) thì tách thô từ layer.text như cũ.
   const words = isRich
     ? htmlToStyledWords(layer.html)
     : (layer.text || "").split(" ").map((t) => ({ text: t }));
   // Trong trải nghiệm ĐỌC (reader) luôn tách văn bản theo từng từ (dù là
   // rich-text) để tính năng "rê chuột đọc theo câu" + tô sáng từ đang đọc
-  // hoạt động đúng cho mọi đoạn văn — dữ liệu thật hầu như đoạn nào cũng
+  // hoạt động đúng cho mọi đoạn văn - dữ liệu thật hầu như đoạn nào cũng
   // có sẵn `html` (do trình soạn thảo luôn lưu html khi gõ) nên nếu vẫn ưu
   // tiên hiển thị rich-html thì coi như không có đoạn nào tách được từ,
   // khiến chế độ rê chuột buộc phải đọc nguyên khối. Chỗ khác (đang biên
@@ -1605,9 +1605,9 @@ function LayerView({
   // (state React) MỖI lần render. Mỗi khi bấm Đậm/Nghiêng/Màu chữ, code commit
   // state ngay lập tức để lưu, khiến React nạp lại DOM của vùng đang gõ với
   // 1 object mới (dangerouslySetInnerHTML luôn coi là "thay đổi" vì object mới
-  // mỗi lần) — trình duyệt reset toàn bộ nội dung, con trỏ bị đẩy về đầu chữ.
+  // mỗi lần) - trình duyệt reset toàn bộ nội dung, con trỏ bị đẩy về đầu chữ.
   // Fix: trong lúc đang soạn (editingNow), "chốt" nội dung HTML lúc bắt đầu
-  // vào 1 ref, không tính lại theo layer.html nữa — DOM contentEditable tự
+  // vào 1 ref, không tính lại theo layer.html nữa - DOM contentEditable tự
   // giữ nguyên trạng thái (kể cả con trỏ) vì React không còn ghi đè nó nữa;
   // nội dung mới nhất được đọc trực tiếp từ DOM (editableRef) khi cần lưu.
   const editingHtmlSnapshotRef = useRef(null);
@@ -1619,7 +1619,7 @@ function LayerView({
   } else {
     editingHtmlSnapshotRef.current = null;
   }
-  // Chưa có nội dung thật (chỉ áp dụng cho lớp chữ MỚI, trong lúc soạn) —
+  // Chưa có nội dung thật (chỉ áp dụng cho lớp chữ MỚI, trong lúc soạn) -
   // hiển thị chữ mờ "Nhập chữ..." kiểu placeholder, không phải nội dung
   // thật, để không phải xoá tay trước khi gõ.
   const showPlaceholder =
@@ -1740,8 +1740,8 @@ function LayerView({
             onKeyUp={onSelectionChange}
             onBlur={(e) => {
               // Không kết thúc soạn thảo nếu người dùng đang chuyển focus
-              // sang thanh định dạng (nút Đậm/Nghiêng/Màu chữ...) — các
-              // control đó được đánh dấu data-keep-edit — để không làm mất
+              // sang thanh định dạng (nút Đậm/Nghiêng/Màu chữ...) - các
+              // control đó được đánh dấu data-keep-edit - để không làm mất
               // vùng bôi đen đang chọn (xem applyTextFormat/applyTextColor).
               const rt = e.relatedTarget;
               if (rt && rt.closest && rt.closest("[data-keep-edit]")) return;
@@ -1844,7 +1844,7 @@ export function PreviewOverlay({
   storageKey,
   resumeFromStorage,
   onProgress,
-  // { dailyLimitMinutes, todayMinutes } — chỉ truyền khi đang ở link đọc
+  // { dailyLimitMinutes, todayMinutes } - chỉ truyền khi đang ở link đọc
   // riêng của bé, dùng để hiện "giờ đọc còn lại" do ba mẹ thiết lập.
   kidTimeInfo,
 }) {
@@ -1874,7 +1874,7 @@ export function PreviewOverlay({
         const n = saved != null ? parseInt(saved, 10) : NaN;
         if (!Number.isNaN(n)) return Math.max(0, Math.min(pages.length - 1, n));
       } catch {
-        // localStorage không khả dụng — bỏ qua, dùng startIndex mặc định
+        // localStorage không khả dụng - bỏ qua, dùng startIndex mặc định
       }
     }
     return Math.max(0, Math.min(pages.length - 1, startIndex));
@@ -1885,7 +1885,7 @@ export function PreviewOverlay({
   // animation chỉ áp cho trang mới, tạo cảm giác "cắt cụt" giữa chừng.
   // Giờ animation vẫn chạy liên tục 1 lần duy nhất (không remount giữa
   // chừng), còn nội dung chỉ được tráo đúng lúc trang gần như úp cạnh
-  // (nhìn gần như biến mất) — y hệt cảm giác lật trang giấy thật, không
+  // (nhìn gần như biến mất) - y hệt cảm giác lật trang giấy thật, không
   // còn chỗ ráp nối lộ liễu. Mọi phần khác (số trang, đánh dấu, mục lục…)
   // vẫn dùng `idx` như cũ để phản hồi ngay khi bấm.
   const [displayIdx, setDisplayIdx] = useState(idx);
@@ -1897,7 +1897,7 @@ export function PreviewOverlay({
     if (flipContentTimer.current) clearTimeout(flipContentTimer.current);
     flipContentTimer.current = setTimeout(() => {
       setDisplayIdx(idx);
-    }, 200); // đúng nửa thời lượng animation (0.4s) — khớp mốc 48–52% trong CSS, lúc trang gần như úp cạnh/vô hình
+    }, 200); // đúng nửa thời lượng animation (0.4s) - khớp mốc 48–52% trong CSS, lúc trang gần như úp cạnh/vô hình
     return () => {
       if (flipContentTimer.current) clearTimeout(flipContentTimer.current);
     };
@@ -1997,7 +1997,7 @@ export function PreviewOverlay({
       ? [pages[idx], pages[idx + 1]].filter(Boolean)
       : [pages[idx]].filter(Boolean);
 
-  // Trang thực tế được vẽ bên trong hiệu ứng lật — xem giải thích ở chỗ
+  // Trang thực tế được vẽ bên trong hiệu ứng lật - xem giải thích ở chỗ
   // khai báo displayIdx phía trên.
   const displayVisiblePages =
     pageView === "double"
@@ -2191,7 +2191,7 @@ export function PreviewOverlay({
       }
 
       // Không phải vuốt trang: nếu gần như không di chuyển thì đây là 1
-      // cái chạm — kiểm tra có phải chạm đúp (double-tap) để zoom không.
+      // cái chạm - kiểm tra có phải chạm đúp (double-tap) để zoom không.
       if (Math.abs(dx) < 12 && Math.abs(dy) < 12) {
         const now = Date.now();
         const last = lastTapRef.current;
@@ -2226,7 +2226,7 @@ export function PreviewOverlay({
     try {
       localStorage.setItem(`${STORAGE_PREFIX}:lastPage`, String(idx));
     } catch {
-      // localStorage không khả dụng — bỏ qua
+      // localStorage không khả dụng - bỏ qua
     }
     onProgress?.(idx, pages.length);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -2243,7 +2243,7 @@ export function PreviewOverlay({
           JSON.stringify(next),
         );
       } catch {
-        // localStorage không khả dụng — bỏ qua
+        // localStorage không khả dụng - bỏ qua
       }
       return next;
     });
@@ -2323,7 +2323,7 @@ export function PreviewOverlay({
 
   // Rê chuột vào 1 từ trong văn bản: xác định câu (ngăn theo dấu chấm/
   // phẩy/chấm than/chấm hỏi/hai chấm...) chứa từ đó và CHỈ đọc to đúng
-  // câu này — không đọc nguyên cả đoạn (tránh trùng với Tự động đọc).
+  // câu này - không đọc nguyên cả đoạn (tránh trùng với Tự động đọc).
   // Đồng thời tô sáng đúng từ đang được đọc, khớp với giọng đọc.
   const onSentenceHover = (layer, wordIndex) => {
     if (readMode !== "hover" || !speechAvailable() || !layer.text?.trim())
@@ -3096,7 +3096,7 @@ export default function BookBuilder() {
     v: "bottom",
     h: "center",
   });
-  // Màu số trang — trước đây bị hard-code cứng "rgba(31,42,36,0.45)" nên
+  // Màu số trang - trước đây bị hard-code cứng "rgba(31,42,36,0.45)" nên
   // khi nền trang trùng tông màu đó (vd nền tối), số trang gần như vô hình
   // và không có cách nào chỉnh được. Giờ cho phép người dùng tự chọn màu
   // (dùng input color nên lưu dạng mã hex thay vì rgba).
@@ -3145,7 +3145,7 @@ export default function BookBuilder() {
   const [bgRemoveTolerance, setBgRemoveTolerance] = useState(30);
   const [bgRemoving, setBgRemoving] = useState(false);
 
-  // Set các layer ảnh đang trong quá trình upload lên Cloudinary — không lưu vào
+  // Set các layer ảnh đang trong quá trình upload lên Cloudinary - không lưu vào
   // `pages` (tránh polluting payload autosave), chỉ là state UI thuần tuý.
   const [uploadingLayerIds, setUploadingLayerIds] = useState(() => new Set());
   const [imageDropActive, setImageDropActive] = useState(false);
@@ -3497,7 +3497,7 @@ export default function BookBuilder() {
     updateLayer(id, { html, text }, { commit: true });
   };
 
-  // Ghi nhớ vùng bôi đen hiện tại trong lúc soạn thảo — cần thiết vì khi người dùng
+  // Ghi nhớ vùng bôi đen hiện tại trong lúc soạn thảo - cần thiết vì khi người dùng
   // bấm nút Đậm/Nghiêng/Màu chữ ở bảng bên, ô soạn thảo có thể tạm mất focus.
   const handleTextSelectionChange = () => {
     const sel = window.getSelection();
@@ -3517,7 +3517,7 @@ export default function BookBuilder() {
   };
 
   // Áp dụng đậm / nghiêng / gạch chân: nếu đang bôi đen 1 đoạn chữ thì chỉ đổi đoạn đó,
-  // ngược lại (không có vùng chọn) thì giữ hành vi cũ — đổi định dạng mặc định cả lớp chữ.
+  // ngược lại (không có vùng chọn) thì giữ hành vi cũ - đổi định dạng mặc định cả lớp chữ.
   const applyTextFormat = (command) => {
     if (!selected) return;
     if (editingTextId === selected.id && editableRef.current) {
@@ -3608,7 +3608,7 @@ export default function BookBuilder() {
         i === pageIndex ? { ...p, layers: [...p.layers, layer] } : p,
       ),
     );
-    // Mở sẵn chế độ gõ chữ ngay khi vừa thêm lớp chữ mới — vì lớp chữ mới
+    // Mở sẵn chế độ gõ chữ ngay khi vừa thêm lớp chữ mới - vì lớp chữ mới
     // không còn chứa sẵn nội dung mẫu (xem defaultTextLayer), người dùng có
     // thể gõ luôn mà không cần nhấp đúp + xoá chữ mẫu trước.
     startEditText(layer.id);
@@ -3677,7 +3677,7 @@ export default function BookBuilder() {
   const MAX_IMAGE_MB = 15;
 
   // Upload 1 ảnh lên Cloudinary và gán vào layer đã tồn tại (thêm mới hoặc thay ảnh cũ).
-  // Khác bản cũ (nhúng base64 trực tiếp vào `pages`): giờ chỉ lưu URL Cloudinary — payload
+  // Khác bản cũ (nhúng base64 trực tiếp vào `pages`): giờ chỉ lưu URL Cloudinary - payload
   // autosave nhẹ hơn nhiều, ảnh có CDN + cache trình duyệt, và có thể xoá khỏi Cloudinary
   // khi không còn dùng (tránh rác lưu trữ tích luỹ qua nhiều lần chỉnh sửa).
   const applyImageFile = async (file, layerId) => {
@@ -3697,7 +3697,7 @@ export default function BookBuilder() {
     const prevSrc = currentPage.layers.find((l) => l.id === layerId)?.src || "";
     setUploadingLayerIds((prev) => new Set(prev).add(layerId));
     try {
-      // Resize trước khi upload — giảm dung lượng thật sự (không chỉ chặn cứng theo MB), ảnh
+      // Resize trước khi upload - giảm dung lượng thật sự (không chỉ chặn cứng theo MB), ảnh
       // chụp điện thoại/máy ảnh hiện đại thường 3000-4000px trong khi khung hiển thị ebook nhỏ hơn nhiều.
       const optimized = await resizeImageFileIfNeeded(file);
       const res = await ebookService.uploadImage(optimized, ebookIdRef.current);
@@ -3706,7 +3706,7 @@ export default function BookBuilder() {
       beginEdit();
       updateLayer(layerId, { src: url });
       endEdit();
-      // Xoá ảnh cũ trên Cloudinary sau khi đã gán ảnh mới thành công (thay ảnh) — không
+      // Xoá ảnh cũ trên Cloudinary sau khi đã gán ảnh mới thành công (thay ảnh) - không
       // chặn UI chờ việc này, và không báo lỗi nếu xoá thất bại (ảnh cũ mồ côi chấp nhận được,
       // còn hơn để lỗi xoá làm gián đoạn luồng chính là "đổi ảnh mới").
       if (prevSrc && prevSrc.includes("cloudinary")) {
@@ -3727,7 +3727,7 @@ export default function BookBuilder() {
     }
   };
 
-  // Đặt ảnh nền cho trang hiện tại (khác với ảnh dạng layer — ảnh nền luôn nằm dưới cùng và
+  // Đặt ảnh nền cho trang hiện tại (khác với ảnh dạng layer - ảnh nền luôn nằm dưới cùng và
   // có thể canh vị trí / kiểu hiển thị riêng).
   const applyPageBackgroundImage = async (file) => {
     if (!file || !file.type?.startsWith("image/")) {
@@ -3790,7 +3790,7 @@ export default function BookBuilder() {
       prev.map((p, i) => (i === pageIndex ? { ...p, bgImageSize: size } : p)),
     );
 
-  // Dùng luôn ảnh của layer ảnh đang chọn để làm nền cho trang — không cần tải lên lại,
+  // Dùng luôn ảnh của layer ảnh đang chọn để làm nền cho trang - không cần tải lên lại,
   // chỉ gán URL ảnh (đã có sẵn trên Cloudinary) vào ảnh nền của trang.
   const setLayerImageAsPageBackground = (src) => {
     if (!src) return;
@@ -3804,7 +3804,7 @@ export default function BookBuilder() {
     );
   };
 
-  // Nhiều ảnh cùng lúc (chọn nhiều file, kéo-thả nhiều file, hoặc dán nhiều ảnh) — mỗi ảnh
+  // Nhiều ảnh cùng lúc (chọn nhiều file, kéo-thả nhiều file, hoặc dán nhiều ảnh) - mỗi ảnh
   // tạo 1 layer mới, xếp lệch nhau 1 chút để không đè hoàn toàn lên nhau, và tự chọn ảnh cuối.
   const applyMultipleImageFiles = (files) => {
     const list = Array.from(files || []).filter((f) =>
@@ -3855,7 +3855,7 @@ export default function BookBuilder() {
     const file = e.dataTransfer.files && e.dataTransfer.files[0];
     if (file) applyImageFile(file, layerId);
   };
-  // Thả ảnh vào vùng trống của canvas (không trúng layer nào) — tự tạo layer mới tại đúng
+  // Thả ảnh vào vùng trống của canvas (không trúng layer nào) - tự tạo layer mới tại đúng
   // vị trí con trỏ thả xuống, quy đổi từ toạ độ màn hình sang toạ độ trang theo `scale` hiện tại.
   const handleImageDropOnCanvas = (e) => {
     e.preventDefault();
@@ -4046,7 +4046,7 @@ export default function BookBuilder() {
       prev.map((p, i) => (i === pageIndex ? { ...p, title } : p)),
     );
 
-  // Đổi khổ giấy (rộng × cao, tính bằng px) cho TOÀN BỘ sách — co giãn lại vị trí & kích
+  // Đổi khổ giấy (rộng × cao, tính bằng px) cho TOÀN BỘ sách - co giãn lại vị trí & kích
   // thước mọi lớp nội dung theo đúng tỉ lệ mới, để bố cục không bị vỡ khi đổi khổ.
   const resizeAllPagesTo = (newW, newH) => {
     const oldW = PAGE_W,
@@ -4586,7 +4586,7 @@ export default function BookBuilder() {
   const layersFrontFirst = [...currentPage.layers].reverse();
 
   // Khi chọn 1 ảnh khác, tự dò màu nền thật của ảnh đó (lấy mẫu 4 góc) để
-  // làm màu gợi ý mặc định cho công cụ "Xoá nền theo màu" — trước đây luôn
+  // làm màu gợi ý mặc định cho công cụ "Xoá nền theo màu" - trước đây luôn
   // mặc định màu trắng nên với ảnh có nền đen/màu khác, xoá nền không có
   // tác dụng gì nếu người dùng không tự đổi màu trước.
   const bgSampleSrcRef = useRef(null);
@@ -4802,13 +4802,13 @@ export default function BookBuilder() {
       <div className="bb-current-page-label">
         <Sparkles size={13} color="#4a9e3f" />
         Đang chỉnh: <strong>Trang {pageIndex + 1}</strong>
-        {currentPage.title ? ` — ${currentPage.title}` : ""} · {pages.length}{" "}
+        {currentPage.title ? ` - ${currentPage.title}` : ""} · {pages.length}{" "}
         trang
       </div>
 
       {!ttsOk && (
         <div className="bb-hint" style={{ marginBottom: 12 }}>
-          Trình duyệt này không hỗ trợ đọc thành tiếng (Web Speech API) — phần
+          Trình duyệt này không hỗ trợ đọc thành tiếng (Web Speech API) - phần
           soạn nội dung vẫn hoạt động bình thường, chỉ không có âm thanh.
         </div>
       )}
@@ -5233,7 +5233,7 @@ export default function BookBuilder() {
               <label>
                 Vị trí số trang (áp dụng cho toàn bộ sách)
                 <InfoHint>
-                  Số trang được đánh tự động theo thứ tự — không cần chỉnh tay.
+                  Số trang được đánh tự động theo thứ tự - không cần chỉnh tay.
                 </InfoHint>
               </label>
               <div className="bb-row3">
@@ -5933,7 +5933,7 @@ export default function BookBuilder() {
                   <label>
                     Xoá nền theo màu ({bgRemoveTolerance}%)
                     <InfoHint>
-                      Màu đã tự dò theo góc ảnh — nếu ảnh có nền đen/trắng
+                      Màu đã tự dò theo góc ảnh - nếu ảnh có nền đen/trắng
                       thuần, dùng nút chọn nhanh bên dưới. Kéo thanh trượt lên
                       cao hơn nếu ảnh nén JPEG bị nhiễu màu ở viền, xoá chưa hết
                       nền.
@@ -6198,7 +6198,7 @@ export default function BookBuilder() {
                   {editingTextId === selected.id && (
                     <div className="bb-hint">
                       Đang sửa trực tiếp trên trang: bôi đen phần chữ muốn đổi
-                      rồi bấm nút ở trên — chỉ phần được bôi đen sẽ thay đổi.
+                      rồi bấm nút ở trên - chỉ phần được bôi đen sẽ thay đổi.
                     </div>
                   )}
                 </div>

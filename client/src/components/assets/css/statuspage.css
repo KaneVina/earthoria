@@ -166,7 +166,7 @@
     background 0.4s ease;
 }
 
-/* dải sáng quét chéo, cảm giác "radar" — lặp lại nhẹ nhàng, không chói */
+/* dải sáng quét chéo, cảm giác "radar" - lặp lại nhẹ nhàng, không chói */
 .status-banner__scan {
   position: absolute;
   inset: 0;
@@ -288,7 +288,7 @@
   animation: statusPulseRing 1.8s ease-out infinite;
 }
 
-/* sóng nhịp tim cuộn vô hạn ở đáy banner — thuần trang trí, không đại diện dữ liệu */
+/* sóng nhịp tim cuộn vô hạn ở đáy banner - thuần trang trí, không đại diện dữ liệu */
 .status-banner__pulse-wrap {
   position: relative;
   z-index: 1;
@@ -330,7 +330,7 @@
   opacity: 0.55;
 }
 
-/* ─ METRICS GRID — 3 ô, viền hairline dùng chung tạo cảm giác "bảng dữ liệu" ─ */
+/* ─ METRICS GRID - 3 ô, viền hairline dùng chung tạo cảm giác "bảng dữ liệu" ─ */
 .status-metrics {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -456,7 +456,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ─ TERMINAL FOOTER — thay cho footnote cũ ─ */
+/* ─ TERMINAL FOOTER - thay cho footnote cũ ─ */
 .status-terminal {
   position: relative;
   overflow: hidden;
@@ -466,7 +466,7 @@
   animation: statusFadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.24s both;
 }
 
-/* Nền sao lấp lánh cho terminal — tạo cảm giác "công nghệ" bằng 3 lớp
+/* Nền sao lấp lánh cho terminal - tạo cảm giác "công nghệ" bằng 3 lớp
    radial-gradient lặp lại (thay vì liệt kê hàng chục box-shadow), mỗi lớp
    có kích thước ô lặp khác nhau để các đốm sao không thẳng hàng, cộng thêm
    một chuyển động trôi rất chậm + nhấp nháy độ mờ. */

@@ -47,7 +47,7 @@ export default function Login() {
           ? "/dashboard"
           : "/";
 
-      // Không navigate ngay — kích hoạt hiệu ứng "viền lửa xanh" bao quanh
+      // Không navigate ngay - kích hoạt hiệu ứng "viền lửa xanh" bao quanh
       // màn hình trước, rồi mới chuyển trang khi hiệu ứng kết thúc.
       setPendingNav(target);
       setShowFlame(true);
@@ -96,7 +96,7 @@ export default function Login() {
               {
                 text: (
                   <>
-                    <strong>Thư viện sách AR</strong> — hơn 2.400 đầu sách tương
+                    <strong>Thư viện sách AR</strong> - hơn 2.400 đầu sách tương
                     tác.
                   </>
                 ),
@@ -104,7 +104,7 @@ export default function Login() {
               {
                 text: (
                   <>
-                    <strong>Học không giới hạn</strong> — đồng bộ trên mọi thiết
+                    <strong>Học không giới hạn</strong> - đồng bộ trên mọi thiết
                     bị.
                   </>
                 ),
@@ -112,7 +112,7 @@ export default function Login() {
               {
                 text: (
                   <>
-                    <strong>Cộng đồng 180.000+</strong> — chia sẻ và khám phá
+                    <strong>Cộng đồng 180.000+</strong> - chia sẻ và khám phá
                     cùng nhau.
                   </>
                 ),
@@ -142,7 +142,7 @@ export default function Login() {
             Lời khuyên của tôi là hãy đọc mọi thứ trong tầm mắt và hãy bắt đầu
             từ khi còn rất trẻ.
           </p>
-          <span className="auth-quote-author">— Warren Buffett</span>
+          <span className="auth-quote-author">- Warren Buffett</span>
         </div>
       </div>
 

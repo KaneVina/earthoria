@@ -59,7 +59,7 @@ const LEVEL_CONFIG = [
     name: "Khu Rừng Tri Thức",
     minXP: 13000,
     description:
-      "Không chỉ một cây nữa — cả một khu rừng đang chờ được gieo trồng.",
+      "Không chỉ một cây nữa - cả một khu rừng đang chờ được gieo trồng.",
   },
 ];
 const MAX_LEVEL = LEVEL_CONFIG[LEVEL_CONFIG.length - 1].level;

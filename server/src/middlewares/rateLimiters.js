@@ -4,7 +4,7 @@ const { ipKeyGenerator } = require("express-rate-limit");
 const emailIpKeyGenerator = (req) =>
   `${ipKeyGenerator(req.ip)}-${req.body?.email?.toLowerCase() || "unknown"}`;
 
-// Dùng cho các route đã đăng nhập (protect) — định danh theo user id thay vì email nhập tay
+// Dùng cho các route đã đăng nhập (protect) - định danh theo user id thay vì email nhập tay
 const userIdKeyGenerator = (req) =>
   req.user?.id ? `user-${req.user.id}` : ipKeyGenerator(req.ip);
 

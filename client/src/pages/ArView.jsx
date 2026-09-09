@@ -102,7 +102,7 @@ const REGION_TO_COUNTRIES = {
 
 function normalizeHabitatCountries({ habitatCountries, habitatRegion }) {
   if (habitatCountries && Object.keys(habitatCountries).length) {
-    return habitatCountries; // { "Greenland": 0.9, "Canada": 0.7, ... } — dữ liệu thật
+    return habitatCountries; // { "Greenland": 0.9, "Canada": 0.7, ... } - dữ liệu thật
   }
   const regions = Array.isArray(habitatRegion)
     ? habitatRegion
@@ -279,7 +279,7 @@ function WorldMapCard({ habitatCountries, habitatRegion }) {
   );
 }
 
-// ─ DỮ LIỆU MẪU (HARDCODE) — thay bằng dữ liệu thật từ API khi sẵn sàng ─
+// ─ DỮ LIỆU MẪU (HARDCODE) - thay bằng dữ liệu thật từ API khi sẵn sàng ─
 const FALLBACK_DATA = {
   label: "Cây Đại Thụ Rừng Nhiệt Đới",
   modelUrl: "/models/Untitled.glb",
@@ -295,10 +295,10 @@ const FALLBACK_DATA = {
     { label: "Tầng phân bố", value: "Tầng tán & tầng vượt tán" },
   ],
   description:
-    "Cây đại thụ rừng nhiệt đới là trụ cột của hệ sinh thái rừng — cung cấp oxy, hấp thụ carbon và là ngôi nhà cho hàng nghìn loài sinh vật. Bộ rễ khổng lồ giúp chống xói mòn đất, tán lá rộng điều hòa nhiệt độ và độ ẩm cho cả vùng rừng xung quanh. Chính những cây khổng lồ này tạo nên 'mái vòm xanh' bảo vệ toàn bộ tầng rừng bên dưới.",
+    "Cây đại thụ rừng nhiệt đới là trụ cột của hệ sinh thái rừng - cung cấp oxy, hấp thụ carbon và là ngôi nhà cho hàng nghìn loài sinh vật. Bộ rễ khổng lồ giúp chống xói mòn đất, tán lá rộng điều hòa nhiệt độ và độ ẩm cho cả vùng rừng xung quanh. Chính những cây khổng lồ này tạo nên 'mái vòm xanh' bảo vệ toàn bộ tầng rừng bên dưới.",
   funFacts: [
     "Một cây đại thụ trưởng thành có thể hấp thụ tới 22 kg CO₂ mỗi năm và giải phóng đủ oxy cho 2 người thở trong một ngày.",
-    "Hệ rễ của cây rừng nhiệt đới kết nối với nhau qua mạng lưới nấm rễ — được gọi là 'Wood Wide Web' — để chia sẻ chất dinh dưỡng và tín hiệu cảnh báo.",
+    "Hệ rễ của cây rừng nhiệt đới kết nối với nhau qua mạng lưới nấm rễ - được gọi là 'Wood Wide Web' - để chia sẻ chất dinh dưỡng và tín hiệu cảnh báo.",
     "Tán của một cây đại thụ có thể che phủ diện tích bằng nửa sân bóng đá, tạo vi khí hậu riêng bên dưới với nhiệt độ thấp hơn 5–8°C so với bên ngoài.",
   ],
   habitatRegion: "southAmerica",
@@ -348,7 +348,7 @@ const SON_DOONG_DATA = {
     "Sơn Đoòng đủ rộng để chứa trọn một tòa nhà chọc trời 40 tầng ngay trong lòng hang mà vẫn còn khoảng trống.",
     "Bên trong hang có một khu rừng nguyên sinh thực thụ mọc lên từ hai hố sụt 'giếng trời', được các nhà thám hiểm đặt tên là 'Vườn Địa Đàng' (Garden of Edam).",
     "Hang có khí hậu riêng biệt: mây và sương mù có thể hình thành ngay bên trong lòng hang do sự chênh lệch nhiệt độ giữa không khí trong và ngoài hang.",
-    "Sơn Đoòng sở hữu một dòng sông ngầm chảy xuyên suốt chiều dài hang, cùng những cột thạch nhũ cao tới 70 mét — được xem là cao nhất thế giới trong các hang động đã biết.",
+    "Sơn Đoòng sở hữu một dòng sông ngầm chảy xuyên suốt chiều dài hang, cùng những cột thạch nhũ cao tới 70 mét - được xem là cao nhất thế giới trong các hang động đã biết.",
     "Hang được đặt tên theo bản Đoòng, ngôi làng nhỏ gần đó nơi những người dân địa phương sinh sống, và tên gọi 'Sơn Đoòng' nghĩa là 'núi của bản Đoòng'.",
   ],
   habitatRegion: "asia",
@@ -375,7 +375,7 @@ export default function ArView() {
     data: null,
   });
 
-  // Hồ sơ đầy đủ của bé (bao gồm cấu hình nhắc nghỉ mắt/giải lao bắt buộc) —
+  // Hồ sơ đầy đủ của bé (bao gồm cấu hình nhắc nghỉ mắt/giải lao bắt buộc) -
   // để nhắc nghỉ mắt vẫn chạy được ngay trong lúc bé đang xem AR, đồng bộ
   // với trang kệ sách (/e-kid/:slug/:token) và trang đọc ebook.
   const [kidChild, setKidChild] = useState(null);
@@ -463,7 +463,7 @@ export default function ArView() {
         const httpStatus = err.response?.status;
 
         if (httpStatus === 401) {
-          // Phiên của bé không có tài khoản để đăng nhập lại — hiện màn hình
+          // Phiên của bé không có tài khoản để đăng nhập lại - hiện màn hình
           // "không tìm thấy" thân thiện thay vì đá về /login.
           if (isKidMode) {
             setState({ status: "not-found", data: null });
@@ -525,7 +525,7 @@ export default function ArView() {
   }, [code, slug, token, isKidMode, navigate]);
 
   // Kid mode: ghi nhận phiên xem AR thật lên server (server tự tính phút bằng
-  // đồng hồ server, không dùng số phút đếm ở client) — để Parent Dashboard có
+  // đồng hồ server, không dùng số phút đếm ở client) - để Parent Dashboard có
   // dữ liệu thật và daily limit/khung giờ được áp dụng đúng trong lúc xem.
   useEffect(() => {
     if (!isKidMode || state.status !== "ready") return;
@@ -566,7 +566,7 @@ export default function ArView() {
               navigate(`/e-kid/${slug}/${token}`, { replace: true });
             }
           } catch {
-            // Bỏ qua lỗi 1 lần ping (vd mất mạng tạm thời) — thử lại ở lần kế tiếp
+            // Bỏ qua lỗi 1 lần ping (vd mất mạng tạm thời) - thử lại ở lần kế tiếp
           }
         }, 45000);
       } catch {
@@ -776,7 +776,7 @@ export default function ArView() {
         />
       </div>
 
-      {/*  Hiệu ứng quét công nghệ — chỉ hiện ở stage "scanning"  */}
+      {/*  Hiệu ứng quét công nghệ - chỉ hiện ở stage "scanning"  */}
       <div
         className={`ar-scan${isScanning ? " is-active" : ""}`}
         aria-hidden="true"
@@ -990,7 +990,7 @@ export default function ArView() {
         )}
       </section>
 
-      {/*  Nút điều khiển preview <-> immersive — ẩn khi panel phải
+      {/*  Nút điều khiển preview <-> immersive - ẩn khi panel phải
           đang kéo dài để khỏi đè lên phần thông tin  */}
       {isPreview && !isExpanded && (
         <button

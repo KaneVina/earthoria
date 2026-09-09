@@ -20,7 +20,7 @@ import "../components/assets/css/statuspage.css";
 
 const REFRESH_MS = 60 * 1000; // khớp với thời gian cache 60s ở server
 
-// Chuỗi điểm cho sóng nhịp tim trang trí ở banner — 1 chu kỳ dài 200 đơn vị,
+// Chuỗi điểm cho sóng nhịp tim trang trí ở banner - 1 chu kỳ dài 200 đơn vị,
 // lặp lại 4 lần (=800) để cuộn vô hạn không giật khi dịch đúng 1 chu kỳ.
 const PULSE_POINTS =
   "0,30 20,30 34,30 40,18 46,30 54,30 60,6 66,54 72,26 78,34 82,30 100,30 120,30 134,30 140,18 146,30 154,30 160,6 166,54 172,26 178,34 182,30 200,30 220,30 234,30 240,18 246,30 254,30 260,6 266,54 272,26 278,34 282,30 300,30 320,30 334,30 340,18 346,30 354,30 360,6 366,54 372,26 378,34 382,30 400,30 420,30 434,30 440,18 446,30 454,30 460,6 466,54 472,26 478,34 482,30 500,30 520,30 534,30 540,18 546,30 554,30 560,6 566,54 572,26 578,34 582,30 600,30 620,30 634,30 640,18 646,30 654,30 660,6 666,54 672,26 678,34 682,30 700,30 720,30 734,30 740,18 746,30 754,30 760,6 766,54 772,26 778,34 782,30 800,30";
@@ -83,7 +83,7 @@ const STATUS_META = {
   },
 };
 
-// Ngưỡng đánh giá tốc độ phản hồi — chỉ dùng để tô màu/định vị con trỏ
+// Ngưỡng đánh giá tốc độ phản hồi - chỉ dùng để tô màu/định vị con trỏ
 // trên thanh gauge, không làm thay đổi số liệu thật nhận từ server.
 function getResponseBand(ms) {
   if (ms === null || ms === undefined) return null;
@@ -106,7 +106,7 @@ export default function StatusPage() {
   });
 
   // Trạng thái bảo trì (bật/tắt + mốc thời gian dự kiến trở lại) lấy từ
-  // cấu hình admin — độc lập với dữ liệu UptimeRobot ở trên, vì server có
+  // cấu hình admin - độc lập với dữ liệu UptimeRobot ở trên, vì server có
   // thể vẫn "up" trong khi Earthoria chủ động đóng site để bảo trì.
   const { data: siteSettings } = useQuery({
     queryKey: ["public-site-settings"],
@@ -153,7 +153,7 @@ export default function StatusPage() {
     data?.uptimeRatio30d !== null && data?.uptimeRatio30d !== undefined
       ? Number(data.uptimeRatio30d)
       : null;
-  const uptime = uptimeValue !== null ? `${uptimeValue}%` : "—";
+  const uptime = uptimeValue !== null ? `${uptimeValue}%` : "-";
   const uptimeFillPct =
     uptimeValue !== null ? Math.min(100, Math.max(0, uptimeValue)) : 0;
 
@@ -169,7 +169,7 @@ export default function StatusPage() {
         minute: "2-digit",
         second: "2-digit",
       })
-    : "—";
+    : "-";
 
   const elapsedMs = dataUpdatedAt ? now - dataUpdatedAt : null;
   const elapsedSec =
@@ -273,7 +273,7 @@ export default function StatusPage() {
               <Gauge size={14} />
               <span>Uptime 30 ngày</span>
             </div>
-            <p className="metric-card__value">{isLoading ? "—" : uptime}</p>
+            <p className="metric-card__value">{isLoading ? "-" : uptime}</p>
             <div className="metric-card__bar">
               <div
                 className="metric-card__bar-fill"
@@ -291,7 +291,7 @@ export default function StatusPage() {
               className="metric-card__value"
               style={{ color: !isLoading && band ? band.color : undefined }}
             >
-              {isLoading || avgMs === null ? "—" : `${avgMs}ms`}
+              {isLoading || avgMs === null ? "-" : `${avgMs}ms`}
             </p>
             <div className="metric-card__speed-track">
               {!isLoading && band && (
@@ -309,7 +309,7 @@ export default function StatusPage() {
               className="metric-card__speed-label"
               style={{ color: band?.color || "var(--text-muted)" }}
             >
-              {isLoading || !band ? "—" : band.label}
+              {isLoading || !band ? "-" : band.label}
             </span>
           </div>
 
@@ -319,10 +319,10 @@ export default function StatusPage() {
               <span>Kiểm tra lúc</span>
             </div>
             <p className="metric-card__value metric-card__value--sm">
-              {isLoading ? "—" : checkedAt}
+              {isLoading ? "-" : checkedAt}
             </p>
             <p className="metric-card__hint">
-              {elapsedSec !== null ? `${elapsedSec}s trước` : "—"}
+              {elapsedSec !== null ? `${elapsedSec}s trước` : "-"}
               {nextInSec !== null ? ` · làm mới sau ${nextInSec}s` : ""}
             </p>
           </div>
@@ -346,7 +346,7 @@ export default function StatusPage() {
             />
             <span className="status-terminal__path">
               <Terminal size={11} />
-              earthoria — status.sh
+              earthoria - status.sh
             </span>
           </div>
           <div className="status-terminal__body">

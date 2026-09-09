@@ -52,7 +52,7 @@ api.interceptors.response.use(
 
     const isArRequest = originalRequest?.url?.includes("/ar/");
     // Chỉ bỏ qua auto-refresh cho endpoint CÔNG KHAI /games/:code (trang
-    // GamePlay tự xử lý 401 bằng cách điều hướng sang /login) — các gọi
+    // GamePlay tự xử lý 401 bằng cách điều hướng sang /login) - các gọi
     // /admin/games/* vẫn cần auto-refresh-retry như mọi endpoint admin khác.
     const isPublicGameRequest =
       originalRequest?.url?.includes("/games/") &&

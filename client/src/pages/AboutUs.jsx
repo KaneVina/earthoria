@@ -99,7 +99,7 @@ export default function AboutUs() {
         "Một người bạn nhỏ luôn lắng nghe những điều trẻ thắc mắc, khơi mở tư duy để mỗi câu hỏi là một cánh cửa mở ra điều kỳ diệu. ",
 
       fullDesc:
-        "Eira là người bạn tri thức của Earthoria — một trợ lý AI luôn ở bên trẻ trên hành trình đọc, học và khám phá thế giới. Eira không chỉ trả lời câu hỏi, mà thích cùng trẻ đi tìm câu trả lời theo cách riêng của mình. Với sự ấm áp, kiên nhẫn và một chút tinh nghịch, cô thường đặt lại những câu hỏi thật bất ngờ để khơi mở suy nghĩ và giúp trẻ tự mình phát hiện ra điều thú vị phía sau mỗi trang sách. Eira đặc biệt say mê những hiện tượng thiên nhiên kỳ lạ, những bí ẩn của vũ trụ và tất nhiên, luôn thủ sẵn vài câu đố vui dành cho những nhà thám hiểm nhí.",
+        "Eira là người bạn tri thức của Earthoria - một trợ lý AI luôn ở bên trẻ trên hành trình đọc, học và khám phá thế giới. Eira không chỉ trả lời câu hỏi, mà thích cùng trẻ đi tìm câu trả lời theo cách riêng của mình. Với sự ấm áp, kiên nhẫn và một chút tinh nghịch, cô thường đặt lại những câu hỏi thật bất ngờ để khơi mở suy nghĩ và giúp trẻ tự mình phát hiện ra điều thú vị phía sau mỗi trang sách. Eira đặc biệt say mê những hiện tượng thiên nhiên kỳ lạ, những bí ẩn của vũ trụ và tất nhiên, luôn thủ sẵn vài câu đố vui dành cho những nhà thám hiểm nhí.",
 
       quote:
         "Câu hỏi này thú vị lắm! Mình cùng khám phá xem điều gì đang ẩn sau nó nhé?",
@@ -126,10 +126,10 @@ export default function AboutUs() {
         "Người bạn đồng hành luôn dẫn lối, khơi mở hành trình để mỗi bước chân là một câu chuyện đang chờ được khám phá.",
 
       fullDesc:
-        "Rori là người dẫn đường của Earthoria — người bạn đồng hành xuất hiện xuyên suốt những hành trình khám phá, đưa trẻ đi qua từng trang sách như bước vào một chuyến phiêu lưu thực sự. Cậu không thích đứng yên chờ đợi; Rori luôn là người khởi hành trước, mở ra những con đường mới, đặt ra thử thách và rủ trẻ cùng tiến về phía trước. Với tinh thần táo bạo, vui vẻ và đầy quyết đoán, Rori luôn biết cách biến một khoảnh khắc khó khăn thành động lực để tiếp tục. Bởi với Rori, mỗi hành trình không chỉ là nơi để đi đến — mà còn là nơi để trở nên can đảm hơn, tò mò hơn và khám phá thêm một điều mới mẻ.",
+        "Rori là người dẫn đường của Earthoria - người bạn đồng hành xuất hiện xuyên suốt những hành trình khám phá, đưa trẻ đi qua từng trang sách như bước vào một chuyến phiêu lưu thực sự. Cậu không thích đứng yên chờ đợi; Rori luôn là người khởi hành trước, mở ra những con đường mới, đặt ra thử thách và rủ trẻ cùng tiến về phía trước. Với tinh thần táo bạo, vui vẻ và đầy quyết đoán, Rori luôn biết cách biến một khoảnh khắc khó khăn thành động lực để tiếp tục. Bởi với Rori, mỗi hành trình không chỉ là nơi để đi đến - mà còn là nơi để trở nên can đảm hơn, tò mò hơn và khám phá thêm một điều mới mẻ.",
 
       quote:
-        "Ba lô sẵn sàng chưa? Đi thôi — phía trước còn cả một thế giới đang chờ chúng ta!",
+        "Ba lô sẵn sàng chưa? Đi thôi - phía trước còn cả một thế giới đang chờ chúng ta!",
     },
   ];
 
@@ -190,7 +190,7 @@ export default function AboutUs() {
       );
       rows.forEach((r) => valObserver.observe(r));
     }
-    // Tech stats — line of code counter + file counter (đếm số lên khi cuộn tới)
+    // Tech stats - line of code counter + file counter (đếm số lên khi cuộn tới)
     const counterEls = document.querySelectorAll(
       "#tech-loc-counter, #tech-file-counter",
     );
@@ -311,7 +311,7 @@ export default function AboutUs() {
           <h1 className="about-hero-headline reveal">
             Chúng Tôi Là
             <br />
-            <em className="hero-gradient-text">Earthoria</em> —<br />
+            <em className="hero-gradient-text">Earthoria</em> -<br />
             Nơi Sách Gặp
             <br />
             Công Nghệ
@@ -356,7 +356,7 @@ export default function AboutUs() {
           <div className="about-hero-right-overlay"></div>
 
           <span className="about-hero-vertical-text">
-            EARTHORIA — EARTH &amp; STORY
+            EARTHORIA - EARTH &amp; STORY
           </span>
         </div>
       </section>
@@ -374,14 +374,14 @@ export default function AboutUs() {
                 <span className="section-eyebrow-text">Sứ Mệnh</span>
               </div>
               <blockquote className="mission-quote">
-                "Chúng tôi không chỉ tạo ra một cuốn sách —<br />
+                "Chúng tôi không chỉ tạo ra một cuốn sách -<br />
                 chúng tôi kiến tạo một <em>cánh cửa</em> kết nối trẻ em với thế
                 giới tri thức."
               </blockquote>
               <p className="mission-desc">
                 Trong bối cảnh công nghệ số phát triển vũ bão, trẻ em ngày càng
                 bị thu hút bởi các thiết bị điện tử và nội dung giải trí ngắn
-                thay vì đọc sách. Earthoria ra đời từ trăn trở đó — để tái kết
+                thay vì đọc sách. Earthoria ra đời từ trăn trở đó - để tái kết
                 nối tình yêu đọc sách với sức mạnh của AI và Thực tế Tăng cường.
               </p>
               <p className="mission-desc">
@@ -392,7 +392,7 @@ export default function AboutUs() {
               <div className="mission-signature">
                 <div className="mission-sig-line"></div>
                 <span className="mission-sig-text">
-                  Nguyễn Đoàn Quốc Thái — Leader & CEO, Earthoria
+                  Nguyễn Đoàn Quốc Thái - Leader & CEO, Earthoria
                 </span>
               </div>
             </div>
@@ -409,14 +409,14 @@ export default function AboutUs() {
                 },
                 {
                   title: "Sứ Mệnh",
-                  desc: "Trao cho trẻ em Việt Nam công cụ học tập tiên tiến nhất — kết hợp giữa trang sách truyền thống và công nghệ số hiện đại — để nuôi dưỡng trí tò mò, sáng tạo và tình yêu thiên nhiên.",
+                  desc: "Trao cho trẻ em Việt Nam công cụ học tập tiên tiến nhất - kết hợp giữa trang sách truyền thống và công nghệ số hiện đại - để nuôi dưỡng trí tò mò, sáng tạo và tình yêu thiên nhiên.",
                   icon: (
                     <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                   ),
                 },
                 {
                   title: "Giá Trị",
-                  desc: 'Đặt trải nghiệm trẻ em lên trên hết. Mọi quyết định sản phẩm — từ độ khó của câu đố, màu sắc minh họa đến cách AI trả lời câu hỏi — đều được thiết kế với tiêu chí "phù hợp với trẻ nhất có thể".',
+                  desc: 'Đặt trải nghiệm trẻ em lên trên hết. Mọi quyết định sản phẩm - từ độ khó của câu đố, màu sắc minh họa đến cách AI trả lời câu hỏi - đều được thiết kế với tiêu chí "phù hợp với trẻ nhất có thể".',
                   icon: (
                     <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   ),
@@ -513,11 +513,11 @@ export default function AboutUs() {
                 {
                   num: "01",
                   title: "Hình Lá Cây Tích Hợp Chữ E",
-                  desc: "Logo lấy cảm hứng từ chiếc lá xanh — biểu tượng của sự sống, thiên nhiên và tăng trưởng. Bên trong lá được cách điệu thành chữ E đầu tiên của Earthoria, tạo sự nhất quán giữa tên thương hiệu và hình ảnh đại diện.",
+                  desc: "Logo lấy cảm hứng từ chiếc lá xanh - biểu tượng của sự sống, thiên nhiên và tăng trưởng. Bên trong lá được cách điệu thành chữ E đầu tiên của Earthoria, tạo sự nhất quán giữa tên thương hiệu và hình ảnh đại diện.",
                 },
                 {
                   num: "02",
-                  title: "Màu Xanh Lá — Forest Green",
+                  title: "Màu Xanh Lá - Forest Green",
                   desc: "Forest Green là màu sắc chủ đạo trong hệ thống nhận diện, thể hiện sự bền vững, tin cậy và gần gũi với thiên nhiên. Màu xanh đậm truyền tải thông điệp giáo dục nghiêm túc, trong khi các sắc độ sáng hơn mang lại cảm giác tươi mới, phù hợp với đối tượng trẻ em.",
                 },
                 {
@@ -604,42 +604,42 @@ export default function AboutUs() {
           <div className="tm-grid reveal">
             {[
               {
-                role: "CEO — Chief Executive Officer",
+                role: "CEO - Chief Executive Officer",
                 name: "Nguyễn Đoàn Quốc Thái",
                 code: "CS191282",
                 img: "members/quoc-thai",
                 desc: "Người đề xuất ý tưởng, định hướng chiến lược và là linh hồn của Earthoria. Phụ trách toàn bộ quản lý dự án, phân công nhiệm vụ, giám sát tiến độ và đại diện nhóm trong mọi buổi báo cáo.",
               },
               {
-                role: "COO — Operations",
+                role: "COO - Operations",
                 name: "Nguyễn Việt Mỹ Hương",
                 code: "CS191212",
                 img: "members/my-huong",
                 desc: "Lập kế hoạch dự án, điều phối hoạt động giữa các bộ phận và đảm bảo tiến độ thực thi hiệu quả. Đóng vai trò kết nối và quản lý workflow toàn nhóm.",
               },
               {
-                role: "CDO — Design",
+                role: "CDO - Design",
                 name: "Lê Anh Song Đường",
                 code: "CE190621",
                 img: "members/song-duong",
                 desc: "Định hướng visual toàn bộ dự án: thiết kế logo, layout sách, minh họa và slide thuyết trình. Đảm bảo tính nhất quán thẩm mỹ trên mọi ấn phẩm.",
               },
               {
-                role: "CTO — Technology",
+                role: "CTO - Technology",
                 name: "Nguyễn Phúc Khang",
                 code: "CE181578",
                 img: "members/phuc-khangv2",
                 desc: "Phát triển và quản lý công nghệ AI, AR tích hợp vào sách. Xây dựng mô hình 3D, hệ thống AI tương tác và đảm bảo trải nghiệm người dùng liền mạch.",
               },
               {
-                role: "CMO — Marketing",
+                role: "CMO - Marketing",
                 name: "Lữ Quốc Tài",
                 code: "CS191616",
                 img: "members/quoc-tai",
                 desc: "Nghiên cứu thị trường, phân tích khách hàng mục tiêu và xây dựng chiến lược marketing. Quản lý fanpage và các chiến dịch truyền thông cho Earthoria.",
               },
               {
-                role: "CPO — Product",
+                role: "CPO - Product",
                 name: "Lê Tuấn",
                 code: "CE180824",
                 img: "members/le-tuan",
@@ -836,7 +836,7 @@ export default function AboutUs() {
                 {
                   num: "02",
                   title: "Học Qua Trải Nghiệm",
-                  desc: "Chúng tôi không tin vào học thuộc lòng. Mỗi bài học được thiết kế để trẻ tự khám phá — qua câu đố, qua AR 3D, qua cuộc trò chuyện với AI — để kiến thức thấm sâu và bền vững hơn.",
+                  desc: "Chúng tôi không tin vào học thuộc lòng. Mỗi bài học được thiết kế để trẻ tự khám phá - qua câu đố, qua AR 3D, qua cuộc trò chuyện với AI - để kiến thức thấm sâu và bền vững hơn.",
                   icon: (
                     <>
                       <circle cx="12" cy="12" r="10" />
@@ -847,7 +847,7 @@ export default function AboutUs() {
                 {
                   num: "03",
                   title: "Công Nghệ Phục Vụ Giáo Dục",
-                  desc: 'AI và AR không phải là mục đích, chúng là phương tiện. Chúng tôi không thêm công nghệ để "trông hiện đại" — mỗi tính năng kỹ thuật phải chứng minh được giá trị giáo dục cụ thể trước khi được tích hợp.',
+                  desc: 'AI và AR không phải là mục đích, chúng là phương tiện. Chúng tôi không thêm công nghệ để "trông hiện đại" - mỗi tính năng kỹ thuật phải chứng minh được giá trị giáo dục cụ thể trước khi được tích hợp.',
                   icon: (
                     <>
                       <circle cx="12" cy="12" r="10" />
@@ -859,7 +859,7 @@ export default function AboutUs() {
                 {
                   num: "04",
                   title: "Lắng Nghe Liên Tục",
-                  desc: "Người dùng cuối của chúng tôi là trẻ em — nhóm không thể tự phản ánh đầy đủ bằng lời. Chúng tôi quan sát hành vi, lắng nghe phụ huynh và giáo viên, và liên tục cải tiến dựa trên dữ liệu thực tế.",
+                  desc: "Người dùng cuối của chúng tôi là trẻ em - nhóm không thể tự phản ánh đầy đủ bằng lời. Chúng tôi quan sát hành vi, lắng nghe phụ huynh và giáo viên, và liên tục cải tiến dựa trên dữ liệu thực tế.",
                   icon: (
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                   ),
@@ -879,7 +879,7 @@ export default function AboutUs() {
                 {
                   num: "06",
                   title: "Bền Vững & Có Trách Nhiệm",
-                  desc: "Earthoria không chỉ dạy trẻ em về thiên nhiên — chúng tôi cũng thực hành điều đó. Chất liệu in thân thiện môi trường, nội dung số hóa giảm thiểu in ấn và 1% doanh thu sẽ đóng góp cho các dự án bảo tồn thiên nhiên.",
+                  desc: "Earthoria không chỉ dạy trẻ em về thiên nhiên - chúng tôi cũng thực hành điều đó. Chất liệu in thân thiện môi trường, nội dung số hóa giảm thiểu in ấn và 1% doanh thu sẽ đóng góp cho các dự án bảo tồn thiên nhiên.",
                   icon: (
                     <>
                       <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
@@ -961,7 +961,7 @@ export default function AboutUs() {
                     Earthoria Ra Đời &amp; Định Hình <em>Thương Hiệu</em>
                   </>
                 ),
-                desc: 'Nhóm chính thức đặt tên "Earthoria" — kết hợp Earth (Trái Đất) và Story (Câu Chuyện). Logo mang hình lá cây tích hợp chữ E được thiết kế, thể hiện ba giá trị cốt lõi: Education, Environment và Exploration. Website earthoria.id.vn và fanpage Facebook được khai trương.',
+                desc: 'Nhóm chính thức đặt tên "Earthoria" - kết hợp Earth (Trái Đất) và Story (Câu Chuyện). Logo mang hình lá cây tích hợp chữ E được thiết kế, thể hiện ba giá trị cốt lõi: Education, Environment và Exploration. Website earthoria.id.vn và fanpage Facebook được khai trương.',
                 tag: "Brand Identity hoàn thiện",
                 delay: "reveal-delay-1",
               },
@@ -978,7 +978,7 @@ export default function AboutUs() {
                 dateSub: "Phát triển kỹ thuật",
                 title: (
                   <>
-                    Tích Hợp <em>AI &amp; AR</em> — Trái Tim Sản Phẩm
+                    Tích Hợp <em>AI &amp; AR</em> - Trái Tim Sản Phẩm
                   </>
                 ),
                 desc: "CTO Nguyễn Phúc Khang và team bắt đầu phát triển hai công nghệ cốt lõi: Trợ lý AI đóng vai nhà tự nhiên học ảo, giải đáp câu hỏi bằng ngôn ngữ phù hợp lứa tuổi. Song song đó, 5–10 mô hình AR 3D đầu tiên về động vật và môi trường tự nhiên được hoàn thiện.",
@@ -988,7 +988,7 @@ export default function AboutUs() {
               {
                 date: "Tuần 5–6",
                 dateSub: "MVP hoàn thiện",
-                title: "MVP Ra Mắt — Kiểm Nghiệm Thực Tế",
+                title: "MVP Ra Mắt - Kiểm Nghiệm Thực Tế",
                 desc: "Sản phẩm MVP hoàn chỉnh được đưa vào kiểm thử với 10–20 người dùng thực tế gồm học sinh tiểu học, phụ huynh và sinh viên FPT. Nhóm thu thập phản hồi về độ rõ ràng nội dung, mức độ tương tác AR, hiệu quả AI và ý định mua hàng để cải tiến sản phẩm.",
                 tag: "User testing report",
                 delay: "reveal-delay-1",
@@ -998,7 +998,7 @@ export default function AboutUs() {
                 dateSub: "Hiện tại",
                 title: (
                   <>
-                    Bước Tiếp Theo — <em>Hướng Tới Tương Lai</em>
+                    Bước Tiếp Theo - <em>Hướng Tới Tương Lai</em>
                   </>
                 ),
                 desc: "Sau giai đoạn MVP, Earthoria hướng tới mở rộng nội dung sang các chủ đề đại dương, văn hóa và di sản. Nền tảng AI được nâng cấp cá nhân hóa hành trình học theo từng trẻ. Mục tiêu dài hạn: xây dựng hệ sinh thái giáo dục số tích hợp toàn diện nhất dành cho trẻ em Việt Nam.",
@@ -1076,7 +1076,7 @@ export default function AboutUs() {
                 title: "Mentor · EXE101_G03_SU26",
                 desc: "Mentor trực tiếp của nhóm, cung cấp phản hồi chuyên sâu về chiến lược sản phẩm, khả năng thương mại hóa và định hướng phát triển dài hạn cho Earthoria trong môi trường startup giáo dục Việt Nam.",
                 quote:
-                  '"Nhóm Earthoria thể hiện sự kết hợp hiếm có giữa tư duy kỹ thuật và nhạy cảm giáo dục — đúng những gì EdTech cần."',
+                  '"Nhóm Earthoria thể hiện sự kết hợp hiếm có giữa tư duy kỹ thuật và nhạy cảm giáo dục - đúng những gì EdTech cần."',
                 delay: "reveal-delay-2",
               },
             ].map((a, i) => (

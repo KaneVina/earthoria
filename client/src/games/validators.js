@@ -39,7 +39,7 @@ export function analyzeMemoryMatch(config) {
       if (firstAt !== undefined && firstAt !== n) {
         issue.duplicate = true;
         errors.push(
-          `Cặp ${n}: có mặt thẻ trùng nội dung với cặp ${firstAt} — 2 thẻ giống hệt nhau nhưng thuộc 2 cặp khác nhau sẽ khiến người chơi lật đúng cũng bị báo sai.`,
+          `Cặp ${n}: có mặt thẻ trùng nội dung với cặp ${firstAt} - 2 thẻ giống hệt nhau nhưng thuộc 2 cặp khác nhau sẽ khiến người chơi lật đúng cũng bị báo sai.`,
         );
       } else if (firstAt === undefined) {
         seen.set(key, n);
@@ -109,7 +109,7 @@ export function analyzeMatchPairs(config) {
 }
 
 //   WORD SEARCH
-// Kiểm tra nhanh (độ dài / trùng lặp) — dùng để tô đỏ tag khi đang gõ.
+// Kiểm tra nhanh (độ dài / trùng lặp) - dùng để tô đỏ tag khi đang gõ.
 export function analyzeWordSearch(config) {
   const words = config?.words || [];
   const errors = [];
@@ -120,7 +120,7 @@ export function analyzeWordSearch(config) {
     const clean = normText(w).toUpperCase().replace(/\s+/g, "");
     if (clean.length > 14) {
       wordIssues[i].tooLong = true;
-      errors.push(`Từ "${w}" dài quá 14 chữ cái — hãy rút ngắn lại.`);
+      errors.push(`Từ "${w}" dài quá 14 chữ cái - hãy rút ngắn lại.`);
     }
     if (clean) {
       const firstAt = seen.get(clean);
@@ -152,7 +152,7 @@ export function validateWordSearchFull(config) {
     ).size;
     if (placements.length < uniqueCount) {
       errors.push(
-        `Bảng hiện chưa đủ chỗ cho tất cả các từ (${placements.length}/${uniqueCount}) — hãy tăng số hàng/cột hoặc bớt bớt vài từ dài.`,
+        `Bảng hiện chưa đủ chỗ cho tất cả các từ (${placements.length}/${uniqueCount}) - hãy tăng số hàng/cột hoặc bớt bớt vài từ dài.`,
       );
     }
   }
@@ -172,7 +172,7 @@ export function analyzeLetterHunt(config) {
   if (letterCount === 0) errors.push("Cần nhập từ khoá bí mật.");
   if (letterCount > capacity) {
     errors.push(
-      `Bảng ${rows}×${cols} (${capacity} ô) không đủ chỗ cho ${letterCount} chữ cái — hãy tăng số hàng/cột.`,
+      `Bảng ${rows}×${cols} (${capacity} ô) không đủ chỗ cho ${letterCount} chữ cái - hãy tăng số hàng/cột.`,
     );
   }
   if (timeLimitSeconds < 15)

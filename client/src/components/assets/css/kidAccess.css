@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css?family=Baloo+2:400,500,600,700&subset=vietnamese,latin&display=swap");
 @import url("https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800,900,400italic,700italic&subset=vietnamese,latin&display=swap");
 :root {
-  /*   Xanh dương — chủ đạo                  */
+  /*   Xanh dương - chủ đạo                  */
   --kid-blue: #12a8e0;
   --kid-blue-2: #22c0e8;
   --kid-blue-dark: #0a6fa0;
@@ -12,7 +12,7 @@
   --kid-sky-top: #1aaee8;
   --kid-sky-mid: #6fd3f2;
 
-  /*   Màu phụ — lấy từ quả địa cầu trong logo        */
+  /*   Màu phụ - lấy từ quả địa cầu trong logo        */
   --kid-pink: #ff6e93;
   --kid-pink-light: #ffe1ea;
   --kid-pink-dark: #e14f76;
@@ -41,12 +41,12 @@
   --kid-border: rgba(18, 100, 150, 0.14);
   --kid-border-strong: rgba(18, 100, 150, 0.26);
 
-  /* điểm nhấn riêng theo màu avatar của từng bé — mặc định
+  /* điểm nhấn riêng theo màu avatar của từng bé - mặc định
      xanh dương thương hiệu, dùng cho vòng sáng quanh avatar */
   --kid-accent: var(--kid-blue);
   --kid-font-scale: 1;
 
-  /* bo góc — bo tròn rộng rãi, mềm mại, đúng chất "app cho bé" */
+  /* bo góc - bo tròn rộng rãi, mềm mại, đúng chất "app cho bé" */
   --kid-radius-sm: 12px;
   --kid-radius-md: 18px;
   --kid-radius-lg: 26px;
@@ -65,7 +65,7 @@
   --kid-font-display: "Baloo 2", "Nunito", ui-rounded, system-ui, sans-serif;
   --kid-font-body: "Nunito", system-ui, sans-serif;
 
-  /* chuyển động — nảy vui tươi kiểu "bóng bay", không "đứng đắn" */
+  /* chuyển động - nảy vui tươi kiểu "bóng bay", không "đứng đắn" */
   --kid-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --kid-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --kid-ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
@@ -189,7 +189,7 @@
     );
 }
 /* Vầng sáng ấm áp sát chân trời, đúng phía mặt trời/mặt trăng đang
-   ở — rực lên vào rạng đông và hoàng hôn rồi tự mờ dần. */
+   ở - rực lên vào rạng đông và hoàng hôn rồi tự mờ dần. */
 .kid-sky-warm {
   position: absolute;
   left: 0;
@@ -212,7 +212,7 @@
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
 }
 
-/* cầu vồng — dựng bằng các dải viền rỗng (border) lồng nhau, không
+/* cầu vồng - dựng bằng các dải viền rỗng (border) lồng nhau, không
    phải khối tô đặc, nên bụng cầu vồng luôn trong suốt */
 .kid-sky-rainbow-wrap {
   position: absolute;
@@ -238,7 +238,7 @@
   inset: 0;
   filter: saturate(1.05) drop-shadow(0 0 22px rgba(255, 255, 255, 0.28));
 }
-/* mỗi dải là một vòng viền rỗng (border), không tô nền — nên phần bụng
+/* mỗi dải là một vòng viền rỗng (border), không tô nền - nên phần bụng
    cầu vồng luôn trong suốt, không thể xuất hiện mảng màu đặc ở giữa.
    cạnh trái/phải của mỗi span là cạnh thẳng của hộp (không phải cung
    tròn) nên 2 chân cầu vồng luôn thẳng đứng, không cong vào trong. */
@@ -294,7 +294,7 @@
     top 3.5s ease,
     opacity 2.5s ease;
 }
-/* đốm sáng nhỏ lấm tấm trên bề mặt — gợi cảm giác có kết cấu thay vì
+/* đốm sáng nhỏ lấm tấm trên bề mặt - gợi cảm giác có kết cấu thay vì
    một mảng màu phẳng tuyệt đối */
 .kid-sun::after {
   content: "";
@@ -409,7 +409,7 @@
   left: 30%;
 }
 
-/* mây bồng bềnh — hình khối CSS thuần, ba tầng độ sâu khác nhau */
+/* mây bồng bềnh - hình khối CSS thuần, ba tầng độ sâu khác nhau */
 .kid-cloud {
   position: absolute;
   background: var(--kid-white);
@@ -511,7 +511,7 @@
   }
 }
 
-/* lớp bọc các ngôi sao — độ mờ tổng thể do JS gán theo giờ thực,
+/* lớp bọc các ngôi sao - độ mờ tổng thể do JS gán theo giờ thực,
    nhân với hiệu ứng lấp lánh riêng của từng sao bên trong */
 .kid-stars-layer {
   position: absolute;
@@ -602,7 +602,7 @@
   }
 }
 
-/* sao băng thỉnh thoảng lướt qua — chỉ được thêm vào DOM lúc trời
+/* sao băng thỉnh thoảng lướt qua - chỉ được thêm vào DOM lúc trời
    đủ tối, tự lặp lại sau mỗi vòng với một khoảng nghỉ dài */
 .kid-shooting-star {
   position: absolute;
@@ -645,7 +645,7 @@
   }
 }
 
-/* icon trôi nổi trang trí — rất tiết chế, chỉ 2 điểm nhấn */
+/* icon trôi nổi trang trí - rất tiết chế, chỉ 2 điểm nhấn */
 .kid-float-icon {
   position: absolute;
   opacity: 0.55;
@@ -746,7 +746,7 @@
   gap: 14px;
 }
 
-/* huy hiệu tròn — cổng dịch chuyển cầu vồng, tín hiệu thương
+/* huy hiệu tròn - cổng dịch chuyển cầu vồng, tín hiệu thương
    hiệu nhất quán của toàn bộ trang */
 .kid-crest-wrap {
   position: relative;
@@ -831,7 +831,7 @@
   transform: scale(1.08) rotate(6deg);
 }
 
-/* viền đếm ngược quanh huy hiệu — chỉ hiện khi phụ huynh có đặt
+/* viền đếm ngược quanh huy hiệu - chỉ hiện khi phụ huynh có đặt
    giới hạn thời gian đọc/ngày, dải gradient xanh→lam→hồng */
 .kid-crest-countdown {
   position: absolute;
@@ -2074,7 +2074,7 @@
   animation: kidSparkleTwinkle 2.4s ease-in-out infinite;
 }
 
-/*   LIMIT BANNER — trấn an, khen ngợi, không đáng sợ     */
+/*   LIMIT BANNER - trấn an, khen ngợi, không đáng sợ     */
 .kid-limit-banner {
   display: flex;
   align-items: center;
@@ -2106,7 +2106,7 @@
   background: var(--kid-white);
 }
 
-/* Biến thể "ngoài giờ cho phép" — tông xanh đêm thay vì xanh lá "hoàn thành",
+/* Biến thể "ngoài giờ cho phép" - tông xanh đêm thay vì xanh lá "hoàn thành",
    vì đây là thông tin trung tính (chưa tới giờ) chứ không phải lời khen. */
 .kid-limit-banner--night {
   background: linear-gradient(
@@ -2132,7 +2132,7 @@
 }
 /* tiêu đề "Đang đọc dở" dùng chung CSS với tiêu đề "Tủ sách của bé"
    (.kid-shelf-title-wrap / .kid-shelf-leaf / .kid-shelf-title /
-   .kid-shelf-count) để không bị mờ trên nền — chỉ đổi icon cho khác
+   .kid-shelf-count) để không bị mờ trên nền - chỉ đổi icon cho khác
    với tiêu đề kệ sách bên dưới */
 .kid-continue:hover .kid-shelf-title::after {
   width: 72px;
@@ -2251,7 +2251,7 @@
   padding: 9px 14px;
   white-space: nowrap;
 }
-/* hết giờ đọc hôm nay — khoá lại, khớp với trạng thái is-locked
+/* hết giờ đọc hôm nay - khoá lại, khớp với trạng thái is-locked
    của thẻ sách ngoài kệ bên dưới */
 .kid-continue-card.is-locked {
   cursor: not-allowed;
@@ -2342,7 +2342,7 @@
   gap: 22px;
 }
 
-/* mỗi "tem màu" gắn một bộ biến CSS riêng — dùng chung cho thẻ
+/* mỗi "tem màu" gắn một bộ biến CSS riêng - dùng chung cho thẻ
    sách ngoài lưới, modal chi tiết, và thẻ "Đang đọc dở" để cùng
    một cuốn sách luôn hiện cùng một màu ở mọi nơi trên trang */
 .kid-book-card--leaf,
@@ -2492,7 +2492,7 @@
   opacity: 1;
 }
 
-/* tem sticker góc — chữ ký thị giác của tủ sách */
+/* tem sticker góc - chữ ký thị giác của tủ sách */
 .kid-book-stamp {
   position: absolute;
   top: -10px;
@@ -2584,7 +2584,7 @@
   overflow: hidden;
   /* Luôn chừa đúng chiều cao của 2 dòng dù tên sách ngắn hay dài, để nút
      bên dưới (VD "Nhờ ba mẹ mua") thẳng hàng bằng nhau trên toàn hàng
-     thẻ sách — tên quá 2 dòng sẽ tự động bị cắt và hiện dấu "..." nhờ
+     thẻ sách - tên quá 2 dòng sẽ tự động bị cắt và hiện dấu "..." nhờ
      -webkit-line-clamp ở trên. */
   min-height: calc(14.5px * var(--kid-font-scale) * 1.35 * 2);
   transition: color var(--kid-t-fast);
@@ -2740,7 +2740,7 @@
   color: var(--kid-ink-soft);
   animation: kidFadeUp 0.8s var(--kid-ease) both;
 }
-/* viền trên dạng mép mây — MỘT đường path duy nhất, bụng gợn to nhỏ
+/* viền trên dạng mép mây - MỘT đường path duy nhất, bụng gợn to nhỏ
    lệch nhau (không lặp lại một khuôn tròn đều đặn), nên trông như một
    mép mây thật đang trôi tựa vào footer, thay vì dải bánh răng cơ khí */
 .kid-footer-cloud-edge {
@@ -2758,7 +2758,7 @@
   height: 100%;
 }
 
-/* dải nội dung — chia 3 vùng dàn đều hết chiều ngang footer: thương
+/* dải nội dung - chia 3 vùng dàn đều hết chiều ngang footer: thương
    hiệu bên trái, hành động ở giữa, thông tin bản quyền bên phải. Đây
    mới là thứ khiến footer thực sự "full màn hình" chứ không chỉ có
    cái nền trắng kéo dài còn nội dung co cụm ở giữa để trống hai bên. */
@@ -2889,7 +2889,7 @@
 }
 
 /* Dòng "Được vận hành và phát triển bởi": thương hiệu bên trái, 2 liên
-   kết chính sách bên phải — dàn 2 đầu để tận dụng hết bề ngang footer
+   kết chính sách bên phải - dàn 2 đầu để tận dụng hết bề ngang footer
    thay vì co cụm giữa như trước. */
 .kid-footer-devby {
   width: 100%;
@@ -4234,13 +4234,13 @@
 }
 
 /* ==========================================================================
-   MÀN MÂY MÙ MỞ ĐẦU — /e-kid  (v2 — mượt hơn, mây "thật" hơn, không còn
+   MÀN MÂY MÙ MỞ ĐẦU - /e-kid  (v2 - mượt hơn, mây "thật" hơn, không còn
    lỗi chữ chồng chữ)
    ==========================================================================
    Cấu trúc lại hoàn toàn so với bản cũ:
    - Toàn bộ khối chữ + logo được gói trong MỘT flex-column duy nhất
      (.kid-curtain-center), mỗi phần tử chỉ chiếm không gian riêng của nó
-     theo flow bình thường — không còn phần tử position:absolute nào đặt
+     theo flow bình thường - không còn phần tử position:absolute nào đặt
      chồng lên vùng chữ, nên không thể xảy ra hiện tượng "chữ đè chữ".
    - Mây được dựng bằng nhiều lớp blob bo góc bất đối xứng (border-radius
      khác nhau từng góc + xoay nhẹ) thay vì hình tròn đều, trông mềm và tự
@@ -4248,7 +4248,7 @@
      giữa mây không bị rỗng loang màu khi blur lớn.
    - Lúc "cover" mây trôi bồng bềnh rất nhẹ (không đứng yên chết cứng).
      Lúc "leave" mây tản ra 6 hướng với độ trễ so le, vừa dịch chuyển vừa
-     phóng to vừa tăng blur — cảm giác như sương tan chứ không phải object
+     phóng to vừa tăng blur - cảm giác như sương tan chứ không phải object
      bay biến mất khô khốc. Có thêm một vệt sáng "flare" bừng lên đúng thời
      điểm mây bắt đầu tách, và một gợn sáng (shimmer sweep) quét ngang nền.
    ========================================================================== */
@@ -4262,13 +4262,13 @@
   pointer-events: auto;
   /* QUAN TRỌNG: không fade-in opacity lúc mount. Đây từng là nguyên nhân
      lộ nền trần ~1s giữa lúc màn "khôi phục phiên làm việc" unmount và
-     màn mây này mount — vì trong lúc chờ transition opacity 0→1 chạy,
+     màn mây này mount - vì trong lúc chờ transition opacity 0→1 chạy,
      nền phía sau (bị fixed z-index:999 này che) vẫn xuyên qua được. Che
      kín 100% ngay từ khung hình đầu tiên là an toàn nhất. */
   opacity: 1;
 }
 
-/* nền đặc, khớp đúng màu bầu trời hiện tại phía sau — đảm bảo che kín
+/* nền đặc, khớp đúng màu bầu trời hiện tại phía sau - đảm bảo che kín
    hoàn toàn nội dung trong lúc tải. Vignette nhẹ ở rìa để bố cục có chiều
    sâu thay vì một dải gradient phẳng, cộng thêm gợn sáng quét ngang tạo
    cảm giác "đang xử lý" chuyên nghiệp hơn là một mảng màu tĩnh. */
@@ -4325,7 +4325,7 @@
 }
 
 /* bầu trời mây thật: dựng bằng NHIỀU lớp gradient tròn mềm chồng lên
-   nhau (kỹ thuật "painterly clouds") — trắng sáng chủ đạo ở trên, một
+   nhau (kỹ thuật "painterly clouds") - trắng sáng chủ đạo ở trên, một
    lớp bóng đổ xanh xám rất nhẹ bên dưới mỗi cụm để tạo khối 3D bồng
    bềnh như mây thật, không dùng noise/nhiễu hạt nên luôn mịn màng.
    3 lớp xa/giữa/gần trôi lệch tốc độ tạo chiều sâu, cộng một quầng tia
@@ -4341,11 +4341,11 @@
    mây/sương), không phải từng cục rời rạc. Cách dựng: 4 mảng mây khổng
    lồ (to hơn nhiều lần màn hình) đặt chồng lấp sâu vào nhau ở 4 góc,
    mỗi mảng mờ dần rất êm ra rìa + blur mạnh nên ranh giới giữa các
-   mảng hoàn toàn vô hình — mắt chỉ thấy MỘT tấm mây trắng đồng nhất.
+   mảng hoàn toàn vô hình - mắt chỉ thấy MỘT tấm mây trắng đồng nhất.
    Cộng thêm 2 quầng sáng-tối rất nhạt, rất to, trôi cực chậm để có vài
    chỗ "trôi nhè nhẹ" tự nhiên mà không lộ ra là hình dạng gì cả.
    Lúc rời đi, 4 mảng này tách ra và bay toả về đúng 4 phía (trên-trái,
-   trên-phải, dưới-trái, dưới-phải) — đây mới là hiệu ứng chính khi lộ
+   trên-phải, dưới-trái, dưới-phải) - đây mới là hiệu ứng chính khi lộ
    diện, ánh sáng chỉ là điểm nhấn phụ rất nhẹ. */
 
 .kid-curtain-mist {
@@ -4363,7 +4363,7 @@
   margin-left: -77.5vmax;
   margin-top: -77.5vmax;
   border-radius: 50%;
-  /* nhiều "thuỳ" tròn chồng lệch quanh tâm — khi 4 mảng còn phủ kín
+  /* nhiều "thuỳ" tròn chồng lệch quanh tâm - khi 4 mảng còn phủ kín
      nhau (lúc chờ) mắt chỉ thấy 1 lớp trắng liền mạch như trước, nhưng
      ngay khi từng mảng tách ra bay đi thì viền lởm chởm nhiều thuỳ này
      mới lộ ra, trông đúng là một áng mây bồng bềnh chứ không phải hình
@@ -4467,7 +4467,7 @@
   }
 }
 
-/* 2 quầng sáng/tối cực nhạt, cực to, trôi rất chậm — tạo cảm giác "có
+/* 2 quầng sáng/tối cực nhạt, cực to, trôi rất chậm - tạo cảm giác "có
    vài chỗ trôi nhè nhẹ" trong lớp màn trắng mà không lộ hình dạng cụ
    thể nào (đối lập màu chỉ ~6-8%, gần như không nhận ra là một khối) */
 .kid-curtain-haze {
@@ -4525,7 +4525,7 @@
   opacity: 0;
 }
 
-/* quầng sáng ấm rất nhạt phía sau logo — điểm nhấn phụ, không phải
+/* quầng sáng ấm rất nhạt phía sau logo - điểm nhấn phụ, không phải
    hiệu ứng chính lúc lộ diện */
 .kid-curtain-sunglow {
   position: absolute;
@@ -4553,13 +4553,13 @@
 
 /* ================= CẦU VỒNG =================
    Kỹ thuật: 1 hình tròn khổng lồ có tâm đặt hẳn phía dưới màn hình, chỉ
-   phần cung phía trên của nó lọt vào khung hình — đúng cách cầu vồng
+   phần cung phía trên của nó lọt vào khung hình - đúng cách cầu vồng
    thật xuất hiện trên bầu trời (một cung tròn, không phải đường cong tự
    do). Bên trong dùng radial-gradient nhiều dải màu đúng thứ tự cầu
    vồng thật (đỏ-cam-vàng-lục-lam-chàm-tím từ ngoài vào trong), mỗi dải
    mờ dần rất nhẹ vào dải kế tiếp cho cảm giác trong trẻo như ánh sáng
    thật chứ không phải viền cứng. Cộng thêm 1 cầu vồng phụ lớn hơn, mờ
-   hơn, màu đảo ngược ở ngoài — đúng hiện tượng cầu vồng đôi ngoài đời. */
+   hơn, màu đảo ngược ở ngoài - đúng hiện tượng cầu vồng đôi ngoài đời. */
 .kid-curtain-rainbow {
   position: absolute;
   left: 50%;
@@ -4569,7 +4569,7 @@
   transform: translate(-50%, 0);
   border-radius: 50%;
   pointer-events: none;
-  /* KHÔNG dùng mix-blend-mode nữa — hoà trộn kiểu soft-light gần như vô
+  /* KHÔNG dùng mix-blend-mode nữa - hoà trộn kiểu soft-light gần như vô
      hình khi nền phía sau nhạt màu (các dải màu trên cao của bầu trời).
      Dùng alpha trong suốt thông thường để màu cầu vồng luôn hiện rõ ràng
      bất kể đang đứng trước nền màu gì. */
@@ -4643,11 +4643,11 @@
 /* ============ BAY TẢN RA 4 PHÍA khi lộ diện ============
    Đây là hiệu ứng CHÍNH của khoảnh khắc load xong: 4 mảng mây tách hẳn
    ra khỏi nhau và bay toả về đúng 4 góc màn hình. QUAN TRỌNG: phải tắt
-   hẳn animation "trôi nhẹ" (animation: none) ở đây — nếu không animation
+   hẳn animation "trôi nhẹ" (animation: none) ở đây - nếu không animation
    vô hạn đó sẽ liên tục ghi đè lên transition mỗi khung hình, khiến mảng
    mây không bao giờ thực sự di chuyển mà chỉ mờ dần tại chỗ.
    QUAN TRỌNG THỨ HAI: mây phải CO NHỎ LẠI khi bay xa (scale < 1), đúng
-   phối cảnh thật (càng xa càng nhỏ) — trước đây phóng to (scale > 1)
+   phối cảnh thật (càng xa càng nhỏ) - trước đây phóng to (scale > 1)
    khiến mảng mây luôn to hơn cả màn hình, không bao giờ thực sự "biến
    mất" mà chỉ nhoè liệt tại chỗ, nhìn như tan chứ không như bay. Blur
    cũng giảm xuống mức vừa phải để vẫn giữ được hình khối mây lúc di
@@ -4681,7 +4681,7 @@
   transition-delay: 0.22s, 0.34s, 0.22s;
 }
 
-/* tia sáng bừng lên đúng lúc mây bắt đầu tản — điểm nhấn cho khoảnh khắc
+/* tia sáng bừng lên đúng lúc mây bắt đầu tản - điểm nhấn cho khoảnh khắc
    "lộ diện", cộng thêm 2 vệt sáng mỏng quét chéo cho cảm giác lấp lánh */
 .kid-curtain-flare {
   position: absolute;
@@ -4714,7 +4714,7 @@
   }
 }
 
-/* nội dung giữa màn mây — MỘT flex-column duy nhất, mọi thứ theo flow
+/* nội dung giữa màn mây - MỘT flex-column duy nhất, mọi thứ theo flow
    bình thường, không phần tử nào absolute đè lên chữ */
 .kid-curtain-center {
   position: absolute;
@@ -4737,7 +4737,7 @@
   transform: translate(-50%, -50%) scale(0.85) translateY(-12px);
 }
 
-/* huy hiệu logo — một vòng gradient xoay duy nhất (không lồng 2 vòng
+/* huy hiệu logo - một vòng gradient xoay duy nhất (không lồng 2 vòng
    chồng nhau như bản cũ) + quầng sáng thở đều phía sau */
 .kid-curtain-badge {
   position: relative;
@@ -4815,7 +4815,7 @@
   }
 }
 
-/* chữ chờ — một dòng gradient mượt, không tách span-theo-màu như bản cũ
+/* chữ chờ - một dòng gradient mượt, không tách span-theo-màu như bản cũ
    (nguồn gốc gây rối mắt); dùng background-clip để chữ óng ánh nhẹ mà vẫn
    luôn là MỘT khối văn bản duy nhất, không thể bị chồng lên nhau. */
 .kid-curtain-pill {
@@ -4956,7 +4956,7 @@
     display: none;
   }
 }
-/* line phân chia mảnh, mờ dần hai đầu — thay cho .kid-footer-meta cũ */
+/* line phân chia mảnh, mờ dần hai đầu - thay cho .kid-footer-meta cũ */
 .kid-footer-divider-line {
   width: 100%;
   max-width: 320px;
@@ -4970,7 +4970,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   KHÁM PHÁ THÊM — sách bán chạy + phù hợp độ tuổi, nút "Nhờ ba mẹ mua"
+   KHÁM PHÁ THÊM - sách bán chạy + phù hợp độ tuổi, nút "Nhờ ba mẹ mua"
    Dùng lại khung .kid-shelf-heading/.kid-book-grid/.kid-book-card của kệ
    sách chính bên trên để toàn trang có 1 ngôn ngữ hình ảnh thống nhất.
    ═══════════════════════════════════════════════════════════════════════ */
@@ -5032,7 +5032,7 @@
 }
 
 /* Thẻ sách khám phá: giống hệt .kid-book-card nhưng là <div> (không phải
-   <button>) vì bên trong có nút riêng "Nhờ ba mẹ mua" — không lồng
+   <button>) vì bên trong có nút riêng "Nhờ ba mẹ mua" - không lồng
    button trong button được. Vẫn giữ hiệu ứng nghiêng 3D khi rê chuột. */
 .kid-discover-card {
   cursor: default;
@@ -5047,10 +5047,10 @@
   opacity: 0.45;
 }
 
-/* Ruy băng "#N bán chạy" — thay cho tem sao ở góc, dùng cho top 3 sách
+/* Ruy băng "#N bán chạy" - thay cho tem sao ở góc, dùng cho top 3 sách
    bán chạy nhất để tạo cảm giác thứ hạng, vui mắt cho bé. Đặt ở góc
    PHẢI (khác với tem sao gốc) vì góc trái đã dành cho tem độ tuổi
-   .kid-book-age — trước đây cả hai cùng đè lên tọa độ top-left 9px
+   .kid-book-age - trước đây cả hai cùng đè lên tọa độ top-left 9px
    khiến 2 tem chồng lên nhau, giờ tách hẳn sang 2 bên. */
 .kid-discover-rank {
   position: absolute;
@@ -5071,7 +5071,7 @@
   box-shadow: var(--kid-shadow-sm);
 }
 
-/* Nút "Nhờ ba mẹ mua" — LUÔN hiện (không phải overlay chỉ hiện khi rê
+/* Nút "Nhờ ba mẹ mua" - LUÔN hiện (không phải overlay chỉ hiện khi rê
    chuột như .kid-book-cta) vì đây là hành động chính của thẻ, cần bé
    nhìn thấy và bấm được ngay cả trên máy tính bảng chạm. */
 .kid-discover-ask {

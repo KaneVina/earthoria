@@ -333,7 +333,7 @@ function Hero() {
     {
       img: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=300&q=80&auto=format&fit=crop",
       cat: "Sống Bền Vững",
-      title: "Nhà không rác — Cuộc sống gia đình 5 người với 1 lọ rác mỗi năm",
+      title: "Nhà không rác - Cuộc sống gia đình 5 người với 1 lọ rác mỗi năm",
       author: "Lê Quang Vinh",
       time: "6 phút",
       date: "10/6",
@@ -341,7 +341,7 @@ function Hero() {
     {
       img: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300&q=80&auto=format&fit=crop",
       cat: "Khoa học & Đất",
-      title: "Vi sinh vật đất — Những anh hùng vô hình dưới lòng đất",
+      title: "Vi sinh vật đất - Những anh hùng vô hình dưới lòng đất",
       author: "Phạm Thị Lan",
       time: "10 phút",
       date: "7/6",
@@ -349,7 +349,7 @@ function Hero() {
     {
       img: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&q=80&auto=format&fit=crop",
       cat: "Cộng đồng",
-      title: "Vườn cộng đồng đô thị — Mô hình xanh bùng nổ tại thành phố lớn",
+      title: "Vườn cộng đồng đô thị - Mô hình xanh bùng nổ tại thành phố lớn",
       author: "Ngô Bảo Châu",
       time: "5 phút",
       date: "3/6",
@@ -471,7 +471,7 @@ function Hero() {
             }}
           >
             Sâu trong dải Trường Sơn, nơi ánh mặt trời chưa từng chạm tới những
-            tán lá cổ thụ, một thế giới hoàn toàn khác đang tồn tại — và đang
+            tán lá cổ thụ, một thế giới hoàn toàn khác đang tồn tại - và đang
             dần biến mất trong im lặng.
           </p>
           <div
@@ -869,7 +869,7 @@ function Articles() {
       cat: "Nông nghiệp Xanh",
       title:
         "Lúa gạo hữu cơ và giấc mơ về một nền nông nghiệp không hóa chất trên đất Việt",
-      exc: "Khi những ruộng lúa dần chuyển sang phương thức canh tác tự nhiên, người nông dân bắt đầu nhận ra rằng đất không chỉ là nơi gieo hạt — đó là một hệ sinh thái sống động cần được nuôi dưỡng.",
+      exc: "Khi những ruộng lúa dần chuyển sang phương thức canh tác tự nhiên, người nông dân bắt đầu nhận ra rằng đất không chỉ là nơi gieo hạt - đó là một hệ sinh thái sống động cần được nuôi dưỡng.",
       av: "T",
       name: "Trần Hà Linh",
       date: "15 tháng 6, 2026",
@@ -881,8 +881,8 @@ function Articles() {
       bGold: false,
       cat: "Khoa học & Đất",
       title:
-        "Mycorrhizal — Mạng lưới bí ẩn kết nối cả khu rừng trong một tư duy tập thể",
-      exc: 'Dưới mỗi khu rừng là một mạng lưới nấm rễ phức tạp đến mức các nhà khoa học gọi nó là "Wood Wide Web" — mạng xã hội của thực vật.',
+        "Mycorrhizal - Mạng lưới bí ẩn kết nối cả khu rừng trong một tư duy tập thể",
+      exc: 'Dưới mỗi khu rừng là một mạng lưới nấm rễ phức tạp đến mức các nhà khoa học gọi nó là "Wood Wide Web" - mạng xã hội của thực vật.',
       av: "P",
       name: "Phạm Thị Lan",
       date: "11 tháng 6, 2026",
@@ -894,7 +894,7 @@ function Articles() {
       bGold: false,
       cat: "Cộng đồng",
       title:
-        "Làng sinh thái đầu tiên tại Đà Lạt — nơi con người sống cùng thiên nhiên, không chống lại nó",
+        "Làng sinh thái đầu tiên tại Đà Lạt - nơi con người sống cùng thiên nhiên, không chống lại nó",
       exc: "48 gia đình đã rời bỏ cuộc sống thành thị để xây dựng một cộng đồng nơi mỗi quyết định đều được cân nhắc dựa trên tác động đến hệ sinh thái xung quanh.",
       av: "L",
       name: "Lê Quang Vinh",
@@ -906,7 +906,7 @@ function Articles() {
     {
       img: "https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?w=500&q=80&auto=format&fit=crop",
       cat: "Sống Bền Vững",
-      title: "Thiết kế nhà thu gom nước mưa — tiết kiệm 70% hóa đơn nước",
+      title: "Thiết kế nhà thu gom nước mưa - tiết kiệm 70% hóa đơn nước",
       exc: "Kiến trúc thích nghi với khí hậu nhiệt đới đang trở thành xu hướng mới.",
       meta: "Vũ Đức Anh · 7 phút",
       date: "5/6",
@@ -914,7 +914,7 @@ function Articles() {
     {
       img: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500&q=80&auto=format&fit=crop",
       cat: "Thiên nhiên",
-      title: "Bảo tồn loài lan rừng Việt Nam — cuộc chiến không hồi kết",
+      title: "Bảo tồn loài lan rừng Việt Nam - cuộc chiến không hồi kết",
       exc: "Hơn 800 loài lan bản địa đang đứng trước nguy cơ tuyệt chủng.",
       meta: "Bùi Thị Mai · 9 phút",
       date: "2/6",
@@ -926,15 +926,15 @@ function Articles() {
       meta: "Ngô Bảo Châu · 8 phút",
     },
     {
-      title: "Tại sao cây cần im lặng — khoa học về âm thanh và thực vật",
+      title: "Tại sao cây cần im lặng - khoa học về âm thanh và thực vật",
       meta: "Phạm Thị Lan · 6 phút",
     },
     {
-      title: "Mưa axit tại miền Bắc — bức tranh ô nhiễm chưa được kể",
+      title: "Mưa axit tại miền Bắc - bức tranh ô nhiễm chưa được kể",
       meta: "Trần Hà Linh · 12 phút",
     },
     {
-      title: "Hợp tác xã cà phê tự nhiên Đắk Lắk — câu chuyện 10 năm",
+      title: "Hợp tác xã cà phê tự nhiên Đắk Lắk - câu chuyện 10 năm",
       meta: "Vũ Đức Anh · 9 phút",
     },
   ];
@@ -955,13 +955,13 @@ function Articles() {
     {
       img: "https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=200&q=80&auto=format&fit=crop",
       cat: "Thiên nhiên",
-      title: "Bướm đêm — những thụ phấn bị lãng quên",
+      title: "Bướm đêm - những thụ phấn bị lãng quên",
       date: "29/5 · 5 phút",
     },
     {
       img: "https://images.unsplash.com/photo-1598514982901-2f2d3800c4dc?w=200&q=80&auto=format&fit=crop",
       cat: "Sống Xanh",
-      title: "Tái chế bã cà phê — 7 cách dùng thông minh",
+      title: "Tái chế bã cà phê - 7 cách dùng thông minh",
       date: "26/5 · 4 phút",
     },
     {
@@ -1254,7 +1254,7 @@ function Articles() {
                 marginBottom: 18,
               }}
             >
-              Câu chuyện từ thế giới tự nhiên — ngay hộp thư bạn.
+              Câu chuyện từ thế giới tự nhiên - ngay hộp thư bạn.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
               <input
@@ -1510,25 +1510,25 @@ function Editorial() {
   const series = [
     {
       n: "8 bài",
-      title: "Bí mật của đất — Hành trình xuống lòng đất",
+      title: "Bí mật của đất - Hành trình xuống lòng đất",
       desc: "Từ địa tầng đến vi sinh vật, khám phá thế giới kỳ diệu dưới chân bạn.",
       author: "Phạm Thị Lan",
     },
     {
       n: "6 bài",
-      title: "Cây thuốc Việt — Kho báu đang dần mất đi",
+      title: "Cây thuốc Việt - Kho báu đang dần mất đi",
       desc: "Hơn 3,000 loài cây thuốc bản địa và những người cuối cùng còn nhớ.",
       author: "Bùi Thị Mai",
     },
     {
       n: "10 bài",
-      title: "Nông dân thế hệ mới — Làm giàu không cần hóa chất",
+      title: "Nông dân thế hệ mới - Làm giàu không cần hóa chất",
       desc: "Gặp gỡ những người trẻ đang viết lại câu chuyện nông nghiệp Việt Nam.",
       author: "Trần Hà Linh",
     },
     {
       n: "5 bài",
-      title: "Biển Đông & Rạn San Hô — Báo cáo từ dưới nước",
+      title: "Biển Đông & Rạn San Hô - Báo cáo từ dưới nước",
       desc: "Những gì đang xảy ra với hệ sinh thái biển Việt Nam và chúng ta có thể làm gì.",
       author: "Nguyễn Minh Thư",
     },
@@ -1704,7 +1704,7 @@ function Quote() {
           zIndex: 1,
         }}
       >
-        Đất không phải là thứ chúng ta thừa kế từ cha ông — đó là thứ chúng ta{" "}
+        Đất không phải là thứ chúng ta thừa kế từ cha ông - đó là thứ chúng ta{" "}
         <em style={{ fontStyle: "normal", color: T.gold }}>mượn</em> từ con cháu
         của mình.
       </p>
@@ -1760,7 +1760,7 @@ function CTA() {
     { ico: <StarIco />, txt: "Bài viết độc quyền chỉ dành cho người đăng ký" },
     {
       ico: <ClkIco />,
-      txt: "Tóm tắt tuần — những điều quan trọng nhất trong 5 phút",
+      txt: "Tóm tắt tuần - những điều quan trọng nhất trong 5 phút",
     },
     { ico: <MsgIco />, txt: "Trò chuyện trực tiếp với tác giả mỗi tháng" },
   ];
@@ -2046,7 +2046,7 @@ function NewsBoard() {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState({}); // theo dõi card nào đang "Xem thêm"
-  const LIMIT = 4; // giới hạn vùng hiển thị — mới nhất phía trên, kéo phân trang nếu nhiều
+  const LIMIT = 4; // giới hạn vùng hiển thị - mới nhất phía trên, kéo phân trang nếu nhiều
 
   useEffect(() => {
     let alive = true;
@@ -2243,7 +2243,7 @@ function PublicFiles() {
   const [files, setFiles] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
-  const LIMIT = 6; // giới hạn vùng hiển thị — mới nhất phía trên, kéo phân trang nếu nhiều
+  const LIMIT = 6; // giới hạn vùng hiển thị - mới nhất phía trên, kéo phân trang nếu nhiều
 
   useEffect(() => {
     let alive = true;

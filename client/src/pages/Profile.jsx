@@ -130,7 +130,7 @@ const ORDER_STEPS = [
   "DELIVERED",
 ];
 
-// Đơn toàn sách điện tử không có bước giao hàng — chỉ đi thẳng Chờ thanh toán -> Hoàn tất
+// Đơn toàn sách điện tử không có bước giao hàng - chỉ đi thẳng Chờ thanh toán -> Hoàn tất
 const DIGITAL_ORDER_STEPS = ["PENDING", "COMPLETED"];
 const DIGITAL_STEP_LABELS = {
   PENDING: "Chờ thanh toán",
@@ -699,7 +699,7 @@ function usePassportInteraction(maxTilt = 5, parallax = 16) {
 
   return { zoneRef, cardRef, onMouseMove, onMouseLeave };
 }
-// ─ Pointer-reactive "sheen" — tracks the cursor over a card and exposes
+// ─ Pointer-reactive "sheen" - tracks the cursor over a card and exposes
 function useSheen() {
   const ref = useRef(null);
   const onMouseMove = useCallback((e) => {
@@ -1081,7 +1081,7 @@ export default function Profile() {
   const doLogout = async () => {
     setShowLogoutModal(false);
     try {
-      await authService.logout(); // gọi POST /auth/logout — clear cookie + revoke token ở DB
+      await authService.logout(); // gọi POST /auth/logout - clear cookie + revoke token ở DB
     } catch (err) {
       console.error("Logout API failed:", err);
     }
@@ -1097,7 +1097,7 @@ export default function Profile() {
     `${profile.firstName?.[0] || ""}${profile.lastName?.[0] || ""}`.toUpperCase() ||
     "U";
   // const accountCode = (profile.memberCode || profile.id || "").toString();
-  const formattedCode = profile.userCode || "—";
+  const formattedCode = profile.userCode || "-";
   // const formattedCode = formatAccountCode(accountCode);
   const recentOrders = orders.slice(0, 3);
 
@@ -1135,8 +1135,8 @@ export default function Profile() {
         initials={initials}
         loyaltyProfile={loyaltyProfile}
         formattedCode={formattedCode}
-        animatedOrderCount={ordersLoading ? "—" : animatedOrderCount}
-        animatedSpent={ordersLoading ? "—" : formatPrice(animatedSpent)}
+        animatedOrderCount={ordersLoading ? "-" : animatedOrderCount}
+        animatedSpent={ordersLoading ? "-" : formatPrice(animatedSpent)}
         onLogout={handleLogout}
       />
 
@@ -1243,7 +1243,7 @@ function maskEmail(email) {
 }
 
 function formatAccountCode(raw) {
-  if (!raw) return "—";
+  if (!raw) return "-";
   // Build a stable, passport-style code: EARTH- + 8 hex chars from id, grouped.
   const clean = raw.replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
   const base = (clean || "00000000").slice(0, 8).padEnd(8, "0");
@@ -1307,7 +1307,7 @@ function PassportHero({
 
       <div className="pf-passport-inner">
         <div className="pf-passport-card pf-card-enter">
-          {/* Lớp tilt 3D + holographic sheen — tách riêng khỏi entrance
+          {/* Lớp tilt 3D + holographic sheen - tách riêng khỏi entrance
               animation của .pf-passport-card để tránh 2 transform xung đột */}
           <div className="pf-passport-tilt-surface" ref={cardRef}>
             <span className="pf-passport-sheen" aria-hidden="true" />
@@ -1424,7 +1424,7 @@ function PassportHero({
                   style={{ "--d": "0.46s" }}
                 >
                   <div className="pf-passport-stat-val">
-                    {profile.createdAt ? formatDate(profile.createdAt) : "—"}
+                    {profile.createdAt ? formatDate(profile.createdAt) : "-"}
                   </div>
                   <div className="pf-passport-stat-label">Thành viên từ</div>
                 </div>
@@ -1441,7 +1441,7 @@ function PassportHero({
 // Chỉ chứa 5 nút chuyển chương (thay cho thanh tab ngang cũ). Đứng dọc bên
 // trái, dưới PassportHero, sticky khi cuộn để menu luôn trong tầm tay.
 // Điểm nhấn: một "viên thuốc" nền trượt mượt theo vị trí mục đang chọn,
-// thay vì chỉ đổi màu tĩnh — đo vị trí thật của nút bằng ref rồi dịch
+// thay vì chỉ đổi màu tĩnh - đo vị trí thật của nút bằng ref rồi dịch
 // chuyển bằng transform để tận dụng GPU, không giật.
 function SidebarNav({ activeTab, onSelectTab, isOpen, onClose }) {
   const navRef = useRef(null);
@@ -1669,7 +1669,7 @@ function OverviewTab({
           </div>
           <div className="pf-field-display" style={{ cursor: "default" }}>
             <span className="pf-field-value pf-mono">
-              {profile.userCode || "—"}
+              {profile.userCode || "-"}
             </span>
           </div>
         </div>
@@ -1726,7 +1726,7 @@ function OverviewTab({
             {loyaltyProfile.isMaxTier ? (
               <p className="pf-loyalty-progress-caption is-max">
                 {Icon.checkSm}
-                Bạn đang ở hạng cao nhất — cảm ơn đã đồng hành cùng Earthoria!
+                Bạn đang ở hạng cao nhất - cảm ơn đã đồng hành cùng Earthoria!
               </p>
             ) : (
               <div className="pf-loyalty-progress">
@@ -2250,7 +2250,7 @@ function OrderDetailSkeleton({ onBack }) {
 }
 
 // Đếm ngược tới order.paymentSessionExpiresAt. Không tự đổi trạng thái đơn (đó là việc của
-// paymentExpiryService bên server, chạy mỗi 60s) — hết giờ ở đây chỉ để UI phản hồi ngay, rồi
+// paymentExpiryService bên server, chạy mỗi 60s) - hết giờ ở đây chỉ để UI phản hồi ngay, rồi
 // gọi onSessionExpire để refetch, tránh trường hợp job server chưa kịp chạy mà FE đã báo sai.
 function PaymentSessionCountdown({ expiresAt, onExpire }) {
   const target = new Date(expiresAt).getTime();
@@ -2334,7 +2334,7 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
           setBankQrData(null);
         }
       } catch {
-        // Lỗi mạng tạm thời khi polling — chờ lượt sau tự thử lại.
+        // Lỗi mạng tạm thời khi polling - chờ lượt sau tự thử lại.
       }
     };
 
@@ -2403,7 +2403,7 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
         const { data } = await paymentService.createBankQrPayment(order.id);
         setBankQrData(data.data);
         setBankQrMismatch(null);
-        toast.success("Đã tạo mã QR — quét để chuyển khoản");
+        toast.success("Đã tạo mã QR - quét để chuyển khoản");
       } catch (err) {
         toast.error(
           err?.response?.data?.message || "Không tạo được mã QR chuyển khoản",
@@ -2575,7 +2575,7 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
             <div className="pf-shipping-card">
               <div className="pf-shipping-head">{Icon.truck} Sách điện tử</div>
               <div className="pf-shipping-detail">
-                Đơn hàng chỉ gồm sách điện tử — không cần giao hàng. Sau khi
+                Đơn hàng chỉ gồm sách điện tử - không cần giao hàng. Sau khi
                 thanh toán, bạn có thể đọc ngay trong mục Sách điện tử của tôi.
               </div>
             </div>
@@ -2643,7 +2643,7 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
               <span>
                 Thanh toán: {order.paymentMethod || "COD"}
                 {order.paymentMethod !== "COD" &&
-                  ` — ${order.paymentStatus === "PAID" ? "Đã thanh toán" : "Chưa thanh toán"}`}
+                  ` - ${order.paymentStatus === "PAID" ? "Đã thanh toán" : "Chưa thanh toán"}`}
               </span>
             </div>
             {canRetryPayment && order.paymentSessionExpiresAt && (
@@ -2754,7 +2754,7 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
                   }}
                 >
                   <span className="pf-spinner-sm" />
-                  Đang chờ chuyển khoản — tự động xác nhận trong ít phút
+                  Đang chờ chuyển khoản - tự động xác nhận trong ít phút
                 </div>
                 <div
                   style={{
@@ -2869,7 +2869,7 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
   );
 }
 
-// ════ HUỶ ĐƠN HÀNG — MODAL XÁC NHẬN ════
+// ════ HUỶ ĐƠN HÀNG - MODAL XÁC NHẬN ════
 function CancelOrderModal({ order, onClose, onConfirm, submitting }) {
   const expectedCode = (getOrderCode(order) || "").toLowerCase();
   const [codeInput, setCodeInput] = useState("");
@@ -3051,7 +3051,7 @@ function SecurityTab({ hasPassword, email }) {
   return <ChangePasswordFlow />;
 }
 
-// ─ Google "G" glyph — dùng làm icon minh hoạ cho tài khoản đăng nhập Google ─
+// ─ Google "G" glyph - dùng làm icon minh hoạ cho tài khoản đăng nhập Google ─
 function GoogleGlyph() {
   return (
     <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
@@ -3762,7 +3762,7 @@ const EMPTY_ADDR_FORM = {
 
 // ─ Autocomplete combobox for Province / Ward (step-by-step) ─
 // Type to filter, click or arrow+Enter to select. `disabled` locks the field
-// until its prerequisite (province) is chosen — enforces the step order.
+// until its prerequisite (province) is chosen - enforces the step order.
 function LocationCombobox({
   label,
   placeholder,
@@ -4096,7 +4096,7 @@ function AddressesTab({ confirm }) {
         eyebrow="Quản Lý Giao Hàng"
         title="Sổ Địa Chỉ"
         emphasis="Giao Hàng"
-        sub="Quản lý các địa chỉ nhận hàng của bạn — theo đơn vị hành chính 2 cấp mới nhất"
+        sub="Quản lý các địa chỉ nhận hàng của bạn - theo đơn vị hành chính 2 cấp mới nhất"
       />
 
       <button

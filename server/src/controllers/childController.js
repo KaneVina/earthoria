@@ -159,7 +159,7 @@ function pushAudit({ parentId, childId, type, message, metadata }) {
     );
 }
 
-// GET /api/v1/children — danh sách hồ sơ con của phụ huynh đang đăng nhập
+// GET /api/v1/children - danh sách hồ sơ con của phụ huynh đang đăng nhập
 const listChildren = async (req, res) => {
   try {
     const children = await prisma.childProfile.findMany({
@@ -185,7 +185,7 @@ const listChildren = async (req, res) => {
       todayLogs.map((row) => [row.childId, row._sum.minutes || 0]),
     );
 
-    // Số lời nhắn "nhờ ba mẹ mua" đang chờ duyệt của từng bé — hiển thị dạng
+    // Số lời nhắn "nhờ ba mẹ mua" đang chờ duyệt của từng bé - hiển thị dạng
     // badge nhỏ ở danh sách chọn bé, để phụ huynh biết ngay bé nào đang có
     // yêu cầu mới mà chưa xem.
     const pendingRequestGroups = childIds.length
@@ -216,7 +216,7 @@ const listChildren = async (req, res) => {
   }
 };
 
-// POST /api/v1/children — bước cuối của wizard tạo hồ sơ trẻ
+// POST /api/v1/children - bước cuối của wizard tạo hồ sơ trẻ
 const createChild = async (req, res) => {
   try {
     const { name, dob, avatarEmoji, avatarColor, agreeTerms } = req.body;
@@ -303,7 +303,7 @@ const createChild = async (req, res) => {
         nextMax,
       } = limitErrorPayload;
       const message = isMaxTier
-        ? `Bạn đã đạt giới hạn tối đa ${max} hồ sơ trẻ em (Hạng ${tierRoman} · ${tierName} — hạng cao nhất).`
+        ? `Bạn đã đạt giới hạn tối đa ${max} hồ sơ trẻ em (Hạng ${tierRoman} · ${tierName} - hạng cao nhất).`
         : `Bạn đã đạt giới hạn ${max} hồ sơ trẻ em của Hạng ${tierRoman} · ${tierName}. Lên Hạng ${nextTierRoman} · ${nextTierName} để mở khóa thêm, tối đa ${nextMax} hồ sơ.`;
       return formatResponse(res, 400, message, {
         code: "MAX_CHILDREN_REACHED",
@@ -328,7 +328,7 @@ const createChild = async (req, res) => {
   }
 };
 
-// DELETE /api/v1/children/:childId — xoá mềm (ẩn hồ sơ, không xoá dữ liệu)
+// DELETE /api/v1/children/:childId - xoá mềm (ẩn hồ sơ, không xoá dữ liệu)
 const archiveChild = async (req, res) => {
   try {
     const child = await findOwnChild(req.user.id, req.params.childId);
@@ -421,7 +421,7 @@ const getChildDashboard = async (req, res) => {
   }
 };
 
-// PATCH /api/v1/children/:childId/settings — cập nhật giờ giấc / quy tắc mắt
+// PATCH /api/v1/children/:childId/settings - cập nhật giờ giấc / quy tắc mắt
 // Lưu server-side để chống lách bằng cách đổi giờ máy/gỡ cài app.
 const updateChildSettings = async (req, res) => {
   try {
@@ -458,7 +458,7 @@ const updateChildSettings = async (req, res) => {
   }
 };
 
-// POST /api/v1/children/:childId/lock — khoá AR ngay lập tức (không cần PIN)
+// POST /api/v1/children/:childId/lock - khoá AR ngay lập tức (không cần PIN)
 const lockChild = async (req, res) => {
   try {
     const child = await findOwnChild(req.user.id, req.params.childId);
@@ -486,7 +486,7 @@ const lockChild = async (req, res) => {
   }
 };
 
-// POST /api/v1/children/:childId/unlock — mở khoá, bắt buộc xác thực PIN
+// POST /api/v1/children/:childId/unlock - mở khoá, bắt buộc xác thực PIN
 const unlockChild = async (req, res) => {
   try {
     const child = await findOwnChild(req.user.id, req.params.childId);
@@ -614,7 +614,7 @@ const getChildBooks = async (req, res) => {
   }
 };
 
-// PATCH /api/v1/children/:childId/books/:bookId — bật/tắt hiển thị 1 sách
+// PATCH /api/v1/children/:childId/books/:bookId - bật/tắt hiển thị 1 sách
 const toggleChildBookVisibility = async (req, res) => {
   try {
     const child = await findOwnChild(req.user.id, req.params.childId);
@@ -627,7 +627,7 @@ const toggleChildBookVisibility = async (req, res) => {
     }
 
     // Điều kiện y hệt getChildBooks/getKidPublicBooks: variant DIGITAL,
-    // đơn đã DELIVERED/COMPLETED, và sách có bản Ebook đang active — để
+    // đơn đã DELIVERED/COMPLETED, và sách có bản Ebook đang active - để
     // không thể bật hiển thị 1 cuốn mà /family và kidaccess không cùng thấy.
     const owned = await prisma.orderItem.findFirst({
       where: {
@@ -685,7 +685,7 @@ const toggleChildBookVisibility = async (req, res) => {
   }
 };
 
-// GET /api/v1/children/:childId/kid-link — lấy link + QR riêng cho bé
+// GET /api/v1/children/:childId/kid-link - lấy link + QR riêng cho bé
 const getKidLink = async (req, res) => {
   try {
     const child = await prisma.childProfile.findFirst({
@@ -746,7 +746,7 @@ const regenerateKidLink = async (req, res) => {
   }
 };
 
-// DELETE /api/v1/children/:childId/permanent — XOÁ VĨNH VIỄN
+// DELETE /api/v1/children/:childId/permanent - XOÁ VĨNH VIỄN
 const deleteChildPermanently = async (req, res) => {
   try {
     const child = await prisma.childProfile.findFirst({
@@ -795,7 +795,7 @@ const deleteChildPermanently = async (req, res) => {
   }
 };
 
-// [PUBLIC — không cần đăng nhập] GET dữ liệu đọc-only cho trang Kiosk
+// [PUBLIC - không cần đăng nhập] GET dữ liệu đọc-only cho trang Kiosk
 const getKidPublicProfile = async (req, res) => {
   try {
     const { token } = req.params;
@@ -835,7 +835,7 @@ const getKidPublicProfile = async (req, res) => {
   }
 };
 
-// [PUBLIC] GET /api/v1/kid-access/:token/books — danh sách sách bé được
+// [PUBLIC] GET /api/v1/kid-access/:token/books - danh sách sách bé được
 const getKidPublicBooks = async (req, res) => {
   try {
     const { token } = req.params;
@@ -940,7 +940,7 @@ const startKidActivity = async (req, res) => {
     }
     if (await isDailyLimitReached(prisma, child)) {
       // fire-and-forget: không await để không làm chậm phản hồi cho bé nếu
-      // gửi email chậm/lỗi — notifyLimitExceeded tự throttle 1 lần/ngày
+      // gửi email chậm/lỗi - notifyLimitExceeded tự throttle 1 lần/ngày
       notifyLimitExceeded(child);
       return formatResponse(
         res,
@@ -1024,7 +1024,7 @@ const pingKidActivity = async (req, res) => {
   }
 };
 
-// [PUBLIC] POST /api/v1/kid-access/:token/skipped-rest — bé bấm "Đọc tiếp"
+// [PUBLIC] POST /api/v1/kid-access/:token/skipped-rest - bé bấm "Đọc tiếp"
 // để bỏ qua lời nhắc nghỉ mắt định kỳ trước khi đếm ngược kết thúc
 const reportSkippedRest = async (req, res) => {
   try {

@@ -1240,7 +1240,7 @@ export default function Wishlist() {
             <h1 className="wl-title">
               Sách <em>Yêu Thích</em>
               {!loading && wishlistCount > 0 && (
-                <span className="wl-count-badge">— {wishlistCount} cuốn</span>
+                <span className="wl-count-badge">- {wishlistCount} cuốn</span>
               )}
             </h1>
           </div>

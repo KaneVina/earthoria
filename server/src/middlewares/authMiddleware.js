@@ -35,7 +35,7 @@ const protect = async (req, res, next) => {
   }
 };
 
-// Không bắt buộc đăng nhập — có token hợp lệ thì gắn req.user để controller trả thêm dữ liệu cá nhân hoá
+// Không bắt buộc đăng nhập - có token hợp lệ thì gắn req.user để controller trả thêm dữ liệu cá nhân hoá
 const optionalAuth = async (req, res, next) => {
   try {
     let token;

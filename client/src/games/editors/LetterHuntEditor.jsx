@@ -127,8 +127,8 @@ export default function LetterHuntEditor({ config, onChange }) {
             }
           >
             {overCapacity
-              ? `Bảng ${rows}×${cols} (${capacity} ô) không đủ chỗ cho ${letterCount} chữ cái — hãy tăng số hàng/cột.`
-              : `Từ khoá có ${letterCount} chữ cái, bảng ${rows}×${cols} có ${capacity} ô — đủ chỗ.`}
+              ? `Bảng ${rows}×${cols} (${capacity} ô) không đủ chỗ cho ${letterCount} chữ cái - hãy tăng số hàng/cột.`
+              : `Từ khoá có ${letterCount} chữ cái, bảng ${rows}×${cols} có ${capacity} ô - đủ chỗ.`}
           </span>
         </div>
       )}

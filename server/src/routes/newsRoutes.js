@@ -5,7 +5,7 @@ const {
   getPublicFiles,
 } = require("../controllers/newsController");
 
-// Public — không cần đăng nhập
+// Public - không cần đăng nhập
 router.get("/posts", getPublicPosts);
 router.get("/files", getPublicFiles);
 

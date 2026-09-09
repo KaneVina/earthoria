@@ -1,5 +1,5 @@
 /*
-   1. DARK MODE — BỔ SUNG
+   1. DARK MODE - BỔ SUNG
       */
 
 /*  Nav chung  */
@@ -713,7 +713,7 @@ body.dark-mode .search-highlight {
 }
 
 /*
-   2. MOBILE RESPONSIVE — BỔ SUNG
+   2. MOBILE RESPONSIVE - BỔ SUNG
       */
 
 /* ─ Tablet: ≤ 768px ─ */
@@ -1277,12 +1277,12 @@ body.dark-mode .search-highlight {
 }
 
 /*
-   PATCH 3 — Navbar / Footer / ForgotPassword / BookDetail /
+   PATCH 3 - Navbar / Footer / ForgotPassword / BookDetail /
              Cart / Checkout / Wishlist / GoogleAuthSuccess
       */
 
 /*
-   NAVBAR — mobile panel + user dropdown dark mode
+   NAVBAR - mobile panel + user dropdown dark mode
    (Navbar.jsx dùng className từ main.css + navbar.css)
      */
 body.dark-mode .nav-mobile-panel {
@@ -1399,7 +1399,7 @@ body.dark-mode .nav-hamburger:hover {
 }
 
 /*
-   FOOTER — dark mode
+   FOOTER - dark mode
    Footer.jsx dùng className + injected <style>.
    Background footer là var(--forest) → OK cả 2 mode.
    Bổ sung các class chưa có dark override.
@@ -1453,7 +1453,7 @@ body.dark-mode .footer-bottom {
 }
 
 /*
-   FORGOTPASSWORD — dark mode
+   FORGOTPASSWORD - dark mode
    Dùng JS style object S. Panel trái (visual)   var(--forest) → OK.
    Panel phải (formPanel)   var(--ivory) → cần override.
      */
@@ -1463,7 +1463,7 @@ body.dark-mode .fp-visual {
   background: var(--forest);
 }
 
-/* Form panel phải — override background qua JS không được,
+/* Form panel phải - override background qua JS không được,
    dùng trick: target container chứa form */
 body.dark-mode [class*="fp-form"],
 body.dark-mode .fp-form-panel {
@@ -1492,8 +1492,8 @@ body.dark-mode input[style*="var(--ivory)"] {
 }
 
 /*
-   BOOKDETAIL — dark mode bổ sung
-   Dùng className từ main.css — phần lớn đã được patch.
+   BOOKDETAIL - dark mode bổ sung
+   Dùng className từ main.css - phần lớn đã được patch.
    Bổ sung các class riêng của BookDetail chưa có.
      */
 body.dark-mode .add-cart-mini {
@@ -1585,10 +1585,10 @@ body.dark-mode .sticky-btn:hover {
 }
 
 /*
-   CART — dark mode
+   CART - dark mode
    Cart.jsx dùng 100% inline style với var(--*).
    var(--forest), var(--ivory), var(--gold), var(--border),
-   var(--text-muted) — tất cả tự thích nghi nếu ta override
+   var(--text-muted) - tất cả tự thích nghi nếu ta override
    CSS vars trong dark mode.
    Bổ sung override CSS vars cho dark mode:
      */
@@ -1605,8 +1605,8 @@ body.dark-mode {
 }
 
 /* Cart inline: promo banner nền forest → đã OK
-   Summary panel — dùng var(--white) → tự thích nghi
-   Coupon applied — dùng var(--gold-pale), var(--border-gold) → OK */
+   Summary panel - dùng var(--white) → tự thích nghi
+   Coupon applied - dùng var(--gold-pale), var(--border-gold) → OK */
 
 /* Cart responsive */
 @media (max-width: 900px) {
@@ -1628,7 +1628,7 @@ body.dark-mode {
 }
 
 /*
-   CHECKOUT — dark mode
+   CHECKOUT - dark mode
    Checkout.jsx dùng inline style var(--*) + injected <style>
    cho .co-input, .pay-tile.
    CSS vars override ở trên đã cover phần lớn.
@@ -1691,7 +1691,7 @@ body.dark-mode .co-step select {
 }
 
 /*
-   WISHLIST — dark mode bổ sung
+   WISHLIST - dark mode bổ sung
    (Wishlist.jsx đã có injected dark mode khá đủ)
    Bổ sung các selector còn thiếu:
      */

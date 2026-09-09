@@ -47,7 +47,7 @@ router.get("/me", protect, getMe);
 router.put("/update-profile", protect, updateProfile);
 router.put("/change-password", protect, changePassword);
 
-// Tạo mật khẩu lần đầu cho tài khoản đăng nhập bằng Google (chưa có mật khẩu) — có xác thực OTP
+// Tạo mật khẩu lần đầu cho tài khoản đăng nhập bằng Google (chưa có mật khẩu) - có xác thực OTP
 router.post(
   "/send-create-password-otp",
   protect,

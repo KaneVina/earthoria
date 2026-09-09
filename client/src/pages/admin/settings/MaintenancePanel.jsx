@@ -88,8 +88,8 @@ export default function MaintenancePanel({ settings, onSave, saving }) {
           <div className="a-theme-row-title">Bật bảo trì ngay (thủ công)</div>
           <div className="a-theme-row-desc">
             {enabled
-              ? "Đang bật — toàn bộ trang web (trừ dashboard admin) hiển thị trang bảo trì"
-              : "Đang tắt — chỉ áp dụng theo lịch tự động bên dưới (nếu có đặt)"}
+              ? "Đang bật - toàn bộ trang web (trừ dashboard admin) hiển thị trang bảo trì"
+              : "Đang tắt - chỉ áp dụng theo lịch tự động bên dưới (nếu có đặt)"}
           </div>
         </div>
         <label className="a-switch">
@@ -135,7 +135,7 @@ export default function MaintenancePanel({ settings, onSave, saving }) {
 
       {scheduleCurrentlyActive && (
         <div className="a-field-error" style={{ marginTop: 10 }}>
-          Lịch trên đang trong khung giờ hiệu lực — trang bảo trì đang tự động
+          Lịch trên đang trong khung giờ hiệu lực - trang bảo trì đang tự động
           hiển thị cho khách.
         </div>
       )}

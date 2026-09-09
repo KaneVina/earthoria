@@ -9,7 +9,7 @@ const bookSelect = { id: true, title: true, slug: true, coverImage: true };
 const userSelect = { id: true, name: true, email: true, avatar: true };
 const staffSelect = { id: true, name: true, avatar: true };
 
-//    GET /admin/reviews — danh sách đánh giá, staff/admin đều xem được
+//    GET /admin/reviews - danh sách đánh giá, staff/admin đều xem được
 exports.getReviews = async (req, res) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -75,7 +75,7 @@ exports.getReviews = async (req, res) => {
   }
 };
 
-//    GET /admin/reviews/:id — chi tiết 1 đánh giá
+//    GET /admin/reviews/:id - chi tiết 1 đánh giá
 exports.getReviewById = async (req, res) => {
   try {
     const review = await prisma.review.findUnique({
@@ -144,7 +144,7 @@ exports.replyToReview = async (req, res) => {
   }
 };
 
-//    PATCH /admin/reviews/:id/visibility — ẩn/hiện đánh giá vi phạm, spam
+//    PATCH /admin/reviews/:id/visibility - ẩn/hiện đánh giá vi phạm, spam
 exports.toggleReviewVisibility = async (req, res) => {
   try {
     const review = await prisma.review.findUnique({

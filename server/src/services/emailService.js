@@ -169,7 +169,7 @@ async function sendOtpEmail({ to, name, otp }) {
   return sendMail({
     from: `${process.env.EMAIL_FROM_NAME || "Earthoria"} <noreply@earthoria.id.vn>`,
     to,
-    subject: `${otp} — Mã xác thực Earthoria của bạn`,
+    subject: `${otp} - Mã xác thực Earthoria của bạn`,
     html: wrapEmailTemplate({
       preheader: `Mã xác thực của bạn: ${otp}. Hiệu lực trong 10 phút.`,
       bodyHtml,
@@ -268,7 +268,7 @@ function buildSignatureBlock({ name, department, phone, email } = {}) {
             department
               ? `
           <div style="font-size:12px;font-weight:500;color:#4a9e3f;margin-bottom:8px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
-            Phòng ${department} — Earthoria
+            Phòng ${department} - Earthoria
           </div>`
               : ""
           }
@@ -368,7 +368,7 @@ function buildCustomEmailBody({ heading, greetingName, bodyText, sender }) {
 }
 
 /**
- * Dựng HTML hoàn chỉnh cho email thủ công — dùng chung cho cả gửi thật (sendCustomEmail)
+ * Dựng HTML hoàn chỉnh cho email thủ công - dùng chung cho cả gửi thật (sendCustomEmail)
  * và xem trước (preview), để đảm bảo preview luôn khớp 100% với email thật sự được gửi.
  * @param {string|string[]} to - người nhận đầu tiên dùng để suy ra tên chào (nếu không truyền greetingName)
  */
@@ -581,8 +581,8 @@ async function sendAccountProvisionedEmail({
       : `Tài khoản ${roleLabel} của bạn đã sẵn sàng`,
     html: wrapEmailTemplate({
       preheader: isUpgrade
-        ? "Tài khoản của bạn vừa được nâng cấp — xem thông tin đăng nhập mới."
-        : "Tài khoản mới của bạn đã được khởi tạo — xem thông tin đăng nhập.",
+        ? "Tài khoản của bạn vừa được nâng cấp - xem thông tin đăng nhập mới."
+        : "Tài khoản mới của bạn đã được khởi tạo - xem thông tin đăng nhập.",
       bodyHtml,
       ctaUrl: "https://www.earthoria.id.vn",
       footerDepartment: "ITD",
@@ -650,7 +650,7 @@ async function sendAccountLockedEmail({ to, name, reason, dateLocked }) {
     to,
     subject: "Tài khoản Earthoria của bạn đã bị khóa",
     html: wrapEmailTemplate({
-      preheader: "Tài khoản của bạn vừa bị khóa — xem lý do chi tiết.",
+      preheader: "Tài khoản của bạn vừa bị khóa - xem lý do chi tiết.",
       bodyHtml,
       footerDepartment: "ITD",
     }),
@@ -837,7 +837,7 @@ function formatVnd(amount) {
   return `${Math.round(Number(amount) || 0).toLocaleString("vi-VN")}₫`;
 }
 
-// Mã đơn hàng hiển thị cho khách trong email — dạng ODE-aabbccdef, PHẢI khớp 100% với
+// Mã đơn hàng hiển thị cho khách trong email - dạng ODE-aabbccdef, PHẢI khớp 100% với
 // getOrderCode() ở orderController.js/helpers.js (FE) để khách đối chiếu đúng 1 mã duy nhất
 // xuyên suốt web + email.
 const ORDER_CODE_CHARS =
@@ -1013,8 +1013,8 @@ async function sendOrderConfirmedEmail({ to, name, order }) {
         <strong style="font-weight:600;">Sách điện tử:</strong>
         ${
           isOnlinePayment
-            ? `Các tựa sách điện tử trong đơn sẽ được <strong style="font-weight:500;">tự động kích hoạt ngay khi thanh toán thành công</strong> — bạn có thể đọc trong mục "Sách điện tử của tôi" mà không cần chờ giao hàng.`
-            : `Các tựa sách điện tử trong đơn sẽ được <strong style="font-weight:500;">tự động kích hoạt ngay khi đơn hàng được xác nhận thanh toán</strong> — bạn có thể đọc trong mục "Sách điện tử của tôi" mà không cần chờ giao hàng.`
+            ? `Các tựa sách điện tử trong đơn sẽ được <strong style="font-weight:500;">tự động kích hoạt ngay khi thanh toán thành công</strong> - bạn có thể đọc trong mục "Sách điện tử của tôi" mà không cần chờ giao hàng.`
+            : `Các tựa sách điện tử trong đơn sẽ được <strong style="font-weight:500;">tự động kích hoạt ngay khi đơn hàng được xác nhận thanh toán</strong> - bạn có thể đọc trong mục "Sách điện tử của tôi" mà không cần chờ giao hàng.`
         }
       </p>
     </div>`
@@ -1226,7 +1226,7 @@ async function sendChildSkippedRestEmail({ to, parentName, childName }) {
     </p>
     <p style="font-size:13.5px;color:#5a6b60;line-height:1.9;font-weight:300;margin:0 0 24px;font-family:'Be Vietnam Pro',Arial,sans-serif;">
       Bé <strong style="color:#0b2e2b;font-weight:500;">${childName}</strong> vừa bấm "Đọc tiếp" để bỏ qua lời nhắc nghỉ mắt
-      định kỳ thay vì nghỉ đủ thời gian. Đây chỉ là thông báo nhẹ để bạn nắm được — không ảnh hưởng gì đến việc đọc sách của bé.
+      định kỳ thay vì nghỉ đủ thời gian. Đây chỉ là thông báo nhẹ để bạn nắm được - không ảnh hưởng gì đến việc đọc sách của bé.
     </p>
 
     <div style="background:rgba(74,158,63,0.04);border:1px solid rgba(74,158,63,0.14);border-radius:8px;padding:16px 20px;margin-bottom:8px;">

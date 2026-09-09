@@ -367,7 +367,7 @@ const LOGOUT_PAGE = {
   keywords: ["dang xuat", "logout", "thoat"],
 };
 
-/* LỊCH SỬ TÌM KIẾM — TTL 7 NGÀY */
+/* LỊCH SỬ TÌM KIẾM - TTL 7 NGÀY */
 const HISTORY_KEY = "earthoria_search_history";
 const MAX_HISTORY = 8;
 const TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -490,7 +490,7 @@ function nvn(str) {
     .join("");
 }
 
-/* TỪ KHOÁ NHẠY CẢM / TỰ HẠI — CHẶN & HIỂN THỊ HỖ TRỢ */
+/* TỪ KHOÁ NHẠY CẢM / TỰ HẠI - CHẶN & HIỂN THỊ HỖ TRỢ */
 const SENSITIVE_KEYWORDS = [
   //    TỰ TỬ / TỰ SÁT
   "tu tu",
@@ -732,7 +732,7 @@ function buildAgeRange(book) {
   return null;
 }
 
-/** Highlight phần khớp trong text — hỗ trợ tiếng Việt có dấu */
+/** Highlight phần khớp trong text - hỗ trợ tiếng Việt có dấu */
 function Highlight({ text, query }) {
   if (!query.trim() || !text) return <>{text}</>;
   const norm = nvn(text);
@@ -845,7 +845,7 @@ export default function SearchOverlay({
     }
   }, [isOpen]);
 
-  /* ─ Tìm kiếm sản phẩm qua API thật — debounce 280ms ─ */
+  /* ─ Tìm kiếm sản phẩm qua API thật - debounce 280ms ─ */
   useEffect(() => {
     if (!hasQuery || sensitive) {
       setResults([]);
@@ -1203,7 +1203,7 @@ export default function SearchOverlay({
                 </div>
               </div>
             ) : sensitive ? (
-              /* ══ MÀN HÌNH HỖ TRỢ — TỪ KHOÁ NHẠY CẢM ══ */
+              /* ══ MÀN HÌNH HỖ TRỢ - TỪ KHOÁ NHẠY CẢM ══ */
               <div className="so-help-block">
                 <img src="/e-help.png" alt="" className="so-help-img" />
                 <p className="so-help-text">
@@ -1214,7 +1214,7 @@ export default function SearchOverlay({
             ) : (
               /* ══ MÀN HÌNH KẾT QUẢ ══ */
               <>
-                {/* Kết quả trang — hiện ngay, không loading */}
+                {/* Kết quả trang - hiện ngay, không loading */}
                 {matchedPages.length > 0 && (
                   <div className="so-section">
                     <div className="so-section-title">
@@ -1406,7 +1406,7 @@ export default function SearchOverlay({
 }
 
 /* ════════════════════════════════════════════════
-   CSS — EARTHORIA SEARCH OVERLAY
+   CSS - EARTHORIA SEARCH OVERLAY
    Design: dark glass panel, green accent (#3ecf4d),
    Inter font, micro-animations, accessible focus rings
    ════════════════════════════════════════════════ */
@@ -1919,7 +1919,7 @@ const CSS = `
   50% { opacity: 0.45; }
 }
 
-/*  Help block — từ khoá nhạy cảm  */
+/*  Help block - từ khoá nhạy cảm  */
 .so-help-block {
   display: flex;
   flex-direction: column;

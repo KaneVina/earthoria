@@ -19,7 +19,7 @@ export default function ServerStatus() {
 
   const isUp = data?.status === 2;
   const isDown = data?.status === 9;
-  const uptime = data?.custom_uptime_ratio ?? "—";
+  const uptime = data?.custom_uptime_ratio ?? "-";
   const avgMs = data?.response_times?.length
     ? Math.round(
         data.response_times.reduce((s, r) => s + r.value, 0) /
@@ -111,7 +111,7 @@ export default function ServerStatus() {
             Uptime 30 ngày
           </div>
           <div style={{ fontSize: 15, fontWeight: 700, color: "#0D3330" }}>
-            {isLoading ? "—" : `${uptime}%`}
+            {isLoading ? "-" : `${uptime}%`}
           </div>
         </div>
 
@@ -120,7 +120,7 @@ export default function ServerStatus() {
             Thời gian phản hồi
           </div>
           <div style={{ fontSize: 15, fontWeight: 700, color: "#0D3330" }}>
-            {isLoading ? "—" : avgMs ? `${avgMs}ms` : "—"}
+            {isLoading ? "-" : avgMs ? `${avgMs}ms` : "-"}
           </div>
         </div>
 

@@ -6,7 +6,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA extensions;
 CREATE EXTENSION IF NOT EXISTS unaccent WITH SCHEMA extensions;
 
 -- Bọc lại các hàm/operator của pg_trgm + unaccent, tự gắn cứng search_path
--- ngay trong định nghĩa hàm — nhờ vậy code Node gọi qua connection pooler
+-- ngay trong định nghĩa hàm - nhờ vậy code Node gọi qua connection pooler
 -- (search_path mặc định có thể không có "extensions") vẫn luôn chạy đúng,
 -- không phụ thuộc session đang search_path gì.
 CREATE OR REPLACE FUNCTION earthoria_unaccent(text)
