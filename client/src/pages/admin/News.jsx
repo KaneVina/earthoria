@@ -43,9 +43,7 @@ const ROLE_LABEL = {
   DEALER: "Đại lý",
 };
 
-/* ══════════════════════════════════════════
-   TAB 1 - BẢNG TIN (NewsPost)
-══════════════════════════════════════════ */
+/* TAB 1 - BẢNG TIN (NewsPost) */
 function PostsTab() {
   const qc = useQueryClient();
   const currentUser = useAuthStore((s) => s.user);
@@ -469,9 +467,7 @@ function PostsTab() {
   );
 }
 
-/* ══════════════════════════════════════════
-   TAB 2 - FILE CÔNG KHAI (NewsFile)
-══════════════════════════════════════════ */
+/* TAB 2 - FILE CÔNG KHAI (NewsFile) */
 function FilesTab() {
   const qc = useQueryClient();
   const currentUser = useAuthStore((s) => s.user);
@@ -876,9 +872,7 @@ function FilesTab() {
   );
 }
 
-/* ══════════════════════════════════════════
-   ROOT - News.jsx (2 tab: Bảng tin / File công khai)
-══════════════════════════════════════════ */
+/* ROOT - News.jsx (2 tab: Bảng tin / File công khai) */
 export default function News() {
   const [tab, setTab] = useState("posts");
 

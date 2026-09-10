@@ -10,7 +10,6 @@ export default function Settings() {
   const queryClient = useQueryClient();
 
   // Cài đặt hệ thống (bảo trì + cấu hình chung) - chỉ ADMIN mới thấy trang này
-  // (route /dashboard/settings đã được bọc AdminRoute, STAFF không vào được)
   const { data: siteSettings } = useQuery({
     queryKey: ["admin-site-settings"],
     queryFn: () => settingsService.getAdmin().then((r) => r.data.data),

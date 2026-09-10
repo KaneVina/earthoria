@@ -67,7 +67,6 @@ import {
   Globe,
   Building2,
   Users,
-  Loader2,
   Gamepad2,
 } from "lucide-react";
 import ColorPaletteStudio from "../../pages/admin/colorPalette/ColorPaletteStudio";
@@ -1103,7 +1102,6 @@ function computeQrEmbedBox(layer, pageWidth, pageHeight) {
 // một dải chân trang bên dưới hiển thị mã QR thu nhỏ + tên liên kết - để bản
 // in giấy (vốn không chạy được iframe) vẫn có mã quét được kèm chú thích.
 function QrLiveEmbed({ layer, qrUrl, pageWidth, pageHeight }) {
-  const [loaded, setLoaded] = useState(false);
   const iframeRef = useRef(null);
   const isGame = layer.linkType === "GAME";
   const FOOTER_H = 84;
@@ -1147,32 +1145,6 @@ function QrLiveEmbed({ layer, qrUrl, pageWidth, pageHeight }) {
       >
         {/* Vùng iframe - chiếm hết chỗ còn lại phía trên chân trang */}
         <div style={{ position: "relative", flex: 1, minHeight: 0 }}>
-          {!loaded && (
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-                color: "#cfe8d4",
-                background: "linear-gradient(135deg, #123c33, #0d2620)",
-                fontSize: 13,
-                fontFamily: "'Be Vietnam Pro', sans-serif",
-                zIndex: 1,
-              }}
-            >
-              <Loader2
-                size={24}
-                style={{ animation: "bb-spin 0.9s linear infinite" }}
-              />
-              <span>
-                {isGame ? "Đang tải trò chơi…" : "Đang tải trải nghiệm AR…"}
-              </span>
-            </div>
-          )}
           <iframe
             ref={iframeRef}
             src={qrUrl}
@@ -1181,8 +1153,12 @@ function QrLiveEmbed({ layer, qrUrl, pageWidth, pageHeight }) {
             }
             allow="fullscreen; autoplay; microphone; camera"
             allowFullScreen
-            loading="lazy"
-            onLoad={() => setLoaded(true)}
+            // Component này chỉ mount đúng lúc cần hiện trải nghiệm (readOnly
+            // && interactiveEmbed && qrUrl) - nghĩa là luôn cần tải NGAY, nên
+            // bỏ loading="lazy" (làm trình duyệt trì hoãn tải tới khi tính
+            // toán xong intersection) và đánh dấu fetchPriority="high" để
+            // trình duyệt ưu tiên băng thông cho việc tải AR/Game này trước.
+            fetchPriority="high"
             style={{
               width: "100%",
               height: "100%",
@@ -1282,7 +1258,8 @@ function QrLiveEmbed({ layer, qrUrl, pageWidth, pageHeight }) {
                 textOverflow: "ellipsis",
               }}
             >
-              {layer.label || (isGame ? "Trò chơi tương tác" : "Trải nghiệm AR")}
+              {layer.label ||
+                (isGame ? "Trò chơi tương tác" : "Trải nghiệm AR")}
             </div>
             <div
               style={{
@@ -2151,6 +2128,45 @@ export function PreviewOverlay({
   const PAGE_RADIUS = firstPage?.borderRadius ?? 10;
 
   const STORAGE_PREFIX = `earthoria:reader:${storageKey || "preview"}`;
+
+  // "Hâm nóng" (prefetch) sẵn gói JS của trang AR/Game ngay khi mở sách,
+  // thay vì đợi tới lúc người đọc thật sự lật tới trang có gắn QR AR/Game
+  // rồi mới bắt đầu tải. `import()` ở đây chỉ tải và cache file JS (dùng
+  // chung URL với lần <iframe> thật sự điều hướng tới /ar/... hoặc
+  // /game/... sau này) - không render gì cả, nên an toàn, không tốn công
+  // sức hiển thị. Nhờ vậy khi người đọc lật tới đúng trang và QrLiveEmbed
+  // nhúng iframe, phần lớn (hoặc toàn bộ) mã nguồn cần thiết đã có sẵn
+  // trong cache của trình duyệt, mở lên nhanh hơn hẳn thay vì phải tải mới
+  // hoàn toàn từ đầu (bao gồm cả các thư viện nặng như mô hình 3D, biểu đồ).
+  useEffect(() => {
+    if (!pages || !pages.length) return;
+    let hasAr = false;
+    let hasGame = false;
+    for (const p of pages) {
+      for (const l of p.layers || []) {
+        if (l.type !== "qr" || !l.code) continue;
+        if (l.linkType === "GAME") hasGame = true;
+        else hasAr = true;
+      }
+      if (hasAr && hasGame) break;
+    }
+    if (!hasAr && !hasGame) return;
+    const warmUp = () => {
+      if (hasAr) import("../ArView").catch(() => {});
+      if (hasGame) import("../GamePlay").catch(() => {});
+    };
+    const idleFn =
+      typeof window.requestIdleCallback === "function"
+        ? window.requestIdleCallback
+        : (fn) => setTimeout(fn, 300);
+    const cancelIdleFn =
+      typeof window.cancelIdleCallback === "function"
+        ? window.cancelIdleCallback
+        : clearTimeout;
+    const handle = idleFn(warmUp);
+    return () => cancelIdleFn(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [idx, setIdx] = useState(() => {
     if (resumeFromStorage) {
