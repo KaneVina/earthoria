@@ -8375,9 +8375,7 @@ body.dark-mode .trust-metric-label {
     display: none;
   }
 }
-/* ============================================================
-   Blue flame border - hiệu ứng full-screen khi login thành công
-   ============================================================ */
+/* Blue flame border - hiệu ứng full-screen khi login thành công */
 .flame-border-overlay {
   position: fixed;
   inset: 0;

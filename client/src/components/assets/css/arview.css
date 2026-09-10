@@ -1598,9 +1598,7 @@
   background: var(--av-gold);
 }
 
-/* ═══════════════════════════════════════════
-   RESPONSIVE - tablet
-   ═══════════════════════════════════════════ */
+/*   RESPONSIVE - tablet */
 @media (max-width: 1024px) {
   .ar-panel {
     width: min(320px, 80vw);
@@ -1608,10 +1606,7 @@
   }
 }
 
-/* ═══════════════════════════════════════════
-   RESPONSIVE - mobile: xếp dọc, panel co lại
-   thành dải overlay trên/dưới thay vì 2 cột
-   ═══════════════════════════════════════════ */
+/*    RESPONSIVE - mobile */
 @media (max-width: 720px) {
   .ar-panel {
     position: absolute;
@@ -1677,10 +1672,6 @@
     overflow: hidden;
   }
 
-  /* Trên mobile không có khái niệm "trái/phải" để kéo dài sang ngang -
-     panel phải kéo dài LÊN TRÊN thay vì sang trái, chừa khoảng trống cố
-     định ở đỉnh màn hình đúng bằng chỗ tên sách + tên con vật (panel
-     trái) đang chiếm, để 2 thông tin đó luôn còn thấy được. */
   .ar-panel--right.is-expanded {
     top: 128px;
     bottom: 0;

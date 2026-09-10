@@ -17,23 +17,7 @@ function Mesh({
 }) {
   const { scene } = useGLTF(url);
   const group = useRef();
-  // Tracks the scale we've actually rendered so far, so changes to
-  // scaleMultiplier (e.g. preview <-> immersive) animate smoothly instead
-  // of snapping instantly.
   const currentScale = useRef(null);
-
-  // Tính cả scale CHUẨN HÓA và TÂM bounding-box cùng lúc, MỘT LẦN, dựa
-  // trên scene gốc (chưa xoay). Quan trọng: ta tự trừ offset này vào vị
-  // trí của <primitive>, thay vì dùng <Center> của drei - vì <Center>
-  // chỉ canh giữa lúc mount rồi thôi, không biết group cha sẽ tiếp tục
-  // xoay quanh trục Y mỗi frame. Nếu model không đối xứng quanh trục
-  // xoay (ví dụ con vật đang cuộn người, nghiêng một bên), việc xoay
-  // quanh "tâm bounding-box lúc mount" mà bounding-box đó không trùng
-  // tâm hình học thật sẽ khiến model trông như "lắc ra khỏi tâm" theo
-  // từng frame xoay - đúng hiện tượng "con gấu rời trung tâm khi quay".
-  // Cách khắc phục: dịch mesh sao cho TÂM bounding-box nằm đúng tại gốc
-  // [0,0,0] CỦA GROUP XOAY - để dù group cha xoay góc nào, tâm đó vẫn
-  // đứng yên tại chính giữa khung hình.
   const { baseScale, centerOffset } = useMemo(() => {
     const box = new THREE.Box3().setFromObject(scene);
     const size = new THREE.Vector3();
@@ -44,9 +28,6 @@ function Mesh({
     const scale = targetSize / maxDim;
     return {
       baseScale: scale,
-      // Offset áp dụng TRƯỚC khi scale (đơn vị gốc của scene), nên nhân
-      // ngược lại 1/scale khi gán position của <primitive> bên trong
-      // group đã scale - xem bên dưới.
       centerOffset: center,
     };
   }, [scene, targetSize]);
@@ -59,12 +40,8 @@ function Mesh({
     if (group.current) {
       const target = baseScale * scaleMultiplier;
       if (currentScale.current === null) {
-        // First frame after (re)mount: snap straight to target, nothing to
-        // animate from yet.
         currentScale.current = target;
       } else {
-        // Critically-damped-feeling ease toward the target scale. The
-        // 1 - exp(-k*delta) form keeps the speed frame-rate independent.
         const k = 6.5;
         currentScale.current +=
           (target - currentScale.current) * (1 - Math.exp(-k * delta));
@@ -83,31 +60,6 @@ function Mesh({
   );
 }
 
-/**
- * A drop-in, reusable 3D viewer.
- *
- * <Model3D url="/models/Untitled.glb" />
- *
- * Props:
- *  - url            path to the .glb file (default: /models/Untitled.glb)
- *  - height         CSS height of the canvas wrapper (default: "420px")
- *  - autoRotate     spins the model when idle (default: true)
- *  - autoRotateSpeed radians/sec (default: 0.35)
- *  - enableZoom     allow scroll/pinch-to-zoom (default: true)
- *  - enablePan      allow right-click pan (default: false)
- *  - minDistance    closest the camera can zoom in (default: 0.8)
- *  - maxDistance    farthest the camera can zoom out (default: 8)
- *  - background     CSS background for the canvas wrapper (default: transparent)
- *  - scaleMultiplier extra zoom factor on top of the auto-normalized size,
- *                    eased smoothly on change (default: 1) - handy for
- *                    preview/immersive style size transitions
- *  - className       extra classes on the wrapper div
- *  - rimColor        màu của rim light (viền sáng mảnh phía sau model,
- *                    tạo cảm giác "công nghệ" tinh tế qua ánh sáng thay
- *                    vì geometry phụ trợ) - nên khớp với biến CSS
- *                    --av-tech-green (default: "#6fe06a")
- *  - rimIntensity    độ mạnh của rim light (default: 2.2)
- */
 export default function Model3D({
   url = "/models/Untitled.glb",
   height = "420px",
@@ -123,19 +75,11 @@ export default function Model3D({
   rimColor = "#6fe06a",
   rimIntensity = 2.2,
 }) {
-  // Trạng thái xoay thực tế, tách khỏi prop `autoRotate` - người dùng có
-  // thể tạm dừng/tiếp tục bằng cách chạm/click 3 lần liên tiếp, độc lập
-  // với giá trị prop truyền vào từ ngoài.
   const [spinning, setSpinning] = useState(autoRotate);
   useEffect(() => {
     setSpinning(autoRotate);
   }, [autoRotate]);
 
-  // Đếm số lần TAP (nhấn rồi nhả gần như tại chỗ, không kéo) trong một
-  // khoảng thời gian ngắn. Phân biệt tap với kéo-xoay bằng cách so
-  // khoảng cách con trỏ giữa lúc pointerdown và pointerup - nếu di
-  // chuyển quá một ngưỡng nhỏ, đó là thao tác kéo xoay (OrbitControls),
-  // không tính là tap, và bộ đếm không được cộng thêm.
   const tapStateRef = useRef({ count: 0, timer: null, downPos: null });
 
   const handlePointerDown = (e) => {
@@ -228,9 +172,6 @@ export default function Model3D({
             color="#02110d"
           />
 
-          {/* Environment cho phản chiếu bề mặt bóng/kim loại trên model
-              - "city" cho nhiều cạnh phản chiếu rõ hơn "studio" phẳng,
-              giúp chất liệu trông có chiều sâu thay vì nhựa mờ đều. */}
           <Environment preset="city" environmentIntensity={0.55} />
         </Suspense>
         <OrbitControls

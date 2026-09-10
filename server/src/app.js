@@ -56,7 +56,7 @@ if (process.env.NODE_ENV === "development") {
 // Chặn request khi web đang bảo trì (trừ các đường dẫn luôn được phép - xem trong file middleware)
 app.use(maintenanceGuard);
 
-// ================= API v1 =================
+//   API v1
 const v1 = express.Router();
 v1.use("/auth", require("./routes/authRoutes"));
 v1.use("/settings", require("./routes/settingsRoutes"));
@@ -83,7 +83,7 @@ v1.use("/kid-access", require("./routes/kidAccessRoutes"));
 
 app.use("/api/v1", v1);
 
-// ================= Health =================
+// Health
 
 app.get("/api/health", (req, res) => {
   res.json({
@@ -93,7 +93,7 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// ================= 404 =================
+//   404
 
 app.use((req, res) => {
   res.status(404).json({
@@ -102,7 +102,7 @@ app.use((req, res) => {
   });
 });
 
-// ================= Error =================
+//   Error
 
 // Phải đặt SAU mọi route/controller, TRƯỚC error handler cuối cùng bên dưới
 // - đúng theo khuyến nghị chính thức của Sentry cho Express.

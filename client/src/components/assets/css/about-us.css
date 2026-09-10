@@ -643,16 +643,34 @@ body.dark-mode .team-avatar {
 
 @media (max-width: 768px) {
   .tm-grid {
-    grid-template-columns: repeat(2, 1fr);
+    flex-direction: column;
+    height: auto;
   }
   .tm-card {
-    height: 280px;
+    flex: none !important;
+    width: 100%;
+    height: 220px;
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .tm-card:last-child {
+    border-bottom: none;
+  }
+  .tm-grid:hover .tm-card {
+    flex: none !important;
+  }
+  .tm-grid .tm-card:hover {
+    flex: none !important;
+    height: 320px;
   }
 }
 
 @media (max-width: 480px) {
-  .tm-grid {
-    grid-template-columns: 1fr;
+  .tm-card {
+    height: 190px;
+  }
+  .tm-grid .tm-card:hover {
+    height: 280px;
   }
 }
 .about-hero {
@@ -1001,8 +1019,6 @@ body.dark-mode .team-avatar {
 @media (max-width: 768px) {
   .mission-parallax-banner {
     height: clamp(280px, 70vw, 420px);
-    /* background-attachment: fixed gây giật/lỗi render trên nhiều
-       trình duyệt mobile (đặc biệt iOS Safari) nên chuyển về scroll */
     background-attachment: scroll;
   }
   .mission-parallax-glass {
@@ -1765,6 +1781,14 @@ body.dark-mode .advisor-card::after {
   }
   .advisor-grid {
     grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 480px) {
+  .advisor-card {
+    padding: 32px 24px;
+  }
+  .advisor-name {
+    font-size: 22px;
   }
 }
 /* ─ STORY TIMELINE - LUXURY UPGRADE ─ */
@@ -2823,5 +2847,190 @@ body.dark-mode .guide-full-media {
   .guide-full,
   .guide-card {
     transition: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   MOBILE FIXES — bổ sung / sửa lại các phần thiếu responsive
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── Team grid (.team-grid / .team-card / .team-row-2) không hề có
+   media query trước đó → vỡ layout 3 cột trên mobile ── */
+@media (max-width: 900px) {
+  .team-grid,
+  .team-row-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .team-card:not(:last-child) {
+    border-right: 0.5px solid var(--border);
+  }
+  .team-card:nth-child(2n) {
+    border-right: none;
+  }
+  .team-card:nth-child(n + 3) {
+    border-top: none;
+  }
+  .team-card-ceo {
+    grid-column: span 2;
+  }
+}
+@media (max-width: 768px) {
+  .team-section {
+    padding: 80px 24px !important;
+    margin-top: 40px;
+  }
+  .team-intro {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  .team-intro-right {
+    align-items: flex-start;
+  }
+  .team-intro-stat {
+    text-align: left;
+  }
+}
+@media (max-width: 640px) {
+  .team-grid,
+  .team-row-2 {
+    grid-template-columns: 1fr;
+  }
+  .team-card,
+  .team-card:not(:last-child),
+  .team-card:nth-child(2n),
+  .team-card:nth-child(n + 3) {
+    border-right: none;
+    border-top: 0.5px solid var(--border);
+  }
+  .team-card:first-child {
+    border-top: none;
+  }
+  .team-card-ceo {
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
+    text-align: center;
+    justify-items: center;
+    padding: 40px 28px;
+  }
+  .team-card-ceo .team-card-skills {
+    justify-content: center;
+  }
+  .team-card {
+    padding: 36px 28px;
+  }
+}
+
+/* ── .tm-grid mobile: khối này dùng display:flex, nên các rule cũ
+   (grid-template-columns) không có tác dụng → chồng lại đúng cách ── */
+@media (max-width: 900px) {
+  .advisor-section {
+    padding: 80px 40px;
+  }
+}
+@media (max-width: 480px) {
+  .advisor-section {
+    padding: 64px 20px;
+  }
+  .advisor-logo {
+    height: 52px;
+  }
+}
+
+/* ── About hero: grid 2 cột không có override mobile → chữ bị bóp
+   nát và ảnh bên phải mất hết không gian ── */
+@media (max-width: 1024px) {
+  .about-hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+  .about-hero-left {
+    padding: 120px 32px 60px;
+  }
+  .about-hero-right {
+    min-height: 320px;
+    order: -1;
+  }
+  .about-hero-vertical-text {
+    display: none;
+  }
+  .about-hero-logo {
+    width: 140px;
+    top: 40px;
+    left: 32px;
+  }
+}
+@media (max-width: 640px) {
+  .about-hero-left {
+    padding: 100px 20px 48px;
+  }
+  .about-hero-meta {
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+  .about-hero-tag {
+    top: 20px;
+    right: 20px;
+    left: 20px;
+    padding: 14px 18px;
+  }
+  .about-hero-right {
+    min-height: 240px;
+  }
+}
+
+/* ── Logo analysis section wrapper padding không co lại trên mobile ── */
+@media (max-width: 768px) {
+  .logo-section {
+    padding: 80px 24px;
+  }
+}
+@media (max-width: 480px) {
+  .logo-section {
+    padding: 64px 16px;
+  }
+}
+
+/* ── Guide (Eira & Rori) section padding chưa co trên mobile nhỏ ── */
+@media (max-width: 768px) {
+  .guide-section {
+    padding: 64px 24px 80px;
+  }
+}
+@media (max-width: 480px) {
+  .guide-section {
+    padding: 48px 16px 64px;
+  }
+  .guide-photo {
+    width: 96px;
+    height: 128px;
+  }
+}
+
+/* ── OC chart perspective/tilt 3D nặng, gây giật/khó nhìn trên mobile:
+   giảm hiệu ứng nghiêng cho màn hình nhỏ ── */
+@media (max-width: 640px) {
+  .oc-chart {
+    perspective: none;
+  }
+  .oc-card {
+    --tilt-x: 0deg;
+  }
+  .oc-card:hover {
+    --tilt-x: 0deg;
+  }
+  .oc-card.in {
+    --tilt-x: 0deg;
+  }
+}
+
+/* ── Story timeline: cột ngày quá hẹp (140px) trên 900px khiến chữ
+   ngày bị vỡ dòng xấu; nới cho dễ đọc ── */
+@media (max-width: 480px) {
+  .story-section {
+    padding: 56px 16px;
+  }
+  .story-event-title {
+    font-size: 21px;
   }
 }

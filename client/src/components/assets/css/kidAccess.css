@@ -1,7 +1,7 @@
 @import url("https://fonts.googleapis.com/css?family=Baloo+2:400,500,600,700&subset=vietnamese,latin&display=swap");
 @import url("https://fonts.googleapis.com/css?family=Nunito:300,400,600,700,800,900,400italic,700italic&subset=vietnamese,latin&display=swap");
 :root {
-  /*   Xanh dương - chủ đạo                  */
+  /*Xanh dương - chủ đạo */
   --kid-blue: #12a8e0;
   --kid-blue-2: #22c0e8;
   --kid-blue-dark: #0a6fa0;
@@ -41,8 +41,7 @@
   --kid-border: rgba(18, 100, 150, 0.14);
   --kid-border-strong: rgba(18, 100, 150, 0.26);
 
-  /* điểm nhấn riêng theo màu avatar của từng bé - mặc định
-     xanh dương thương hiệu, dùng cho vòng sáng quanh avatar */
+  /* điểm nhấn riêng theo màu avatar của từng bé */
   --kid-accent: var(--kid-blue);
   --kid-font-scale: 1;
 
@@ -238,10 +237,7 @@
   inset: 0;
   filter: saturate(1.05) drop-shadow(0 0 22px rgba(255, 255, 255, 0.28));
 }
-/* mỗi dải là một vòng viền rỗng (border), không tô nền - nên phần bụng
-   cầu vồng luôn trong suốt, không thể xuất hiện mảng màu đặc ở giữa.
-   cạnh trái/phải của mỗi span là cạnh thẳng của hộp (không phải cung
-   tròn) nên 2 chân cầu vồng luôn thẳng đứng, không cong vào trong. */
+
 .kid-rainbow-band {
   position: absolute;
   top: calc(var(--i) * 16px);
@@ -4233,25 +4229,7 @@
   }
 }
 
-/* ==========================================================================
-   MÀN MÂY MÙ MỞ ĐẦU - /e-kid  (v2 - mượt hơn, mây "thật" hơn, không còn
-   lỗi chữ chồng chữ)
-   ==========================================================================
-   Cấu trúc lại hoàn toàn so với bản cũ:
-   - Toàn bộ khối chữ + logo được gói trong MỘT flex-column duy nhất
-     (.kid-curtain-center), mỗi phần tử chỉ chiếm không gian riêng của nó
-     theo flow bình thường - không còn phần tử position:absolute nào đặt
-     chồng lên vùng chữ, nên không thể xảy ra hiện tượng "chữ đè chữ".
-   - Mây được dựng bằng nhiều lớp blob bo góc bất đối xứng (border-radius
-     khác nhau từng góc + xoay nhẹ) thay vì hình tròn đều, trông mềm và tự
-     nhiên hơn hẳn. Mỗi cụm mây còn có một lớp "lõi đặc" nằm trong để phần
-     giữa mây không bị rỗng loang màu khi blur lớn.
-   - Lúc "cover" mây trôi bồng bềnh rất nhẹ (không đứng yên chết cứng).
-     Lúc "leave" mây tản ra 6 hướng với độ trễ so le, vừa dịch chuyển vừa
-     phóng to vừa tăng blur - cảm giác như sương tan chứ không phải object
-     bay biến mất khô khốc. Có thêm một vệt sáng "flare" bừng lên đúng thời
-     điểm mây bắt đầu tách, và một gợn sáng (shimmer sweep) quét ngang nền.
-   ========================================================================== */
+/*    MÀN MÂY MÙ MỞ ĐẦU */
 .kid-curtain {
   --kid-curtain-leave: 1.7s;
   position: fixed;
@@ -4260,18 +4238,9 @@
   overflow: hidden;
   isolation: isolate;
   pointer-events: auto;
-  /* QUAN TRỌNG: không fade-in opacity lúc mount. Đây từng là nguyên nhân
-     lộ nền trần ~1s giữa lúc màn "khôi phục phiên làm việc" unmount và
-     màn mây này mount - vì trong lúc chờ transition opacity 0→1 chạy,
-     nền phía sau (bị fixed z-index:999 này che) vẫn xuyên qua được. Che
-     kín 100% ngay từ khung hình đầu tiên là an toàn nhất. */
   opacity: 1;
 }
 
-/* nền đặc, khớp đúng màu bầu trời hiện tại phía sau - đảm bảo che kín
-   hoàn toàn nội dung trong lúc tải. Vignette nhẹ ở rìa để bố cục có chiều
-   sâu thay vì một dải gradient phẳng, cộng thêm gợn sáng quét ngang tạo
-   cảm giác "đang xử lý" chuyên nghiệp hơn là một mảng màu tĩnh. */
 .kid-curtain-backdrop {
   position: absolute;
   inset: -2px;
@@ -4324,30 +4293,14 @@
   }
 }
 
-/* bầu trời mây thật: dựng bằng NHIỀU lớp gradient tròn mềm chồng lên
-   nhau (kỹ thuật "painterly clouds") - trắng sáng chủ đạo ở trên, một
-   lớp bóng đổ xanh xám rất nhẹ bên dưới mỗi cụm để tạo khối 3D bồng
-   bềnh như mây thật, không dùng noise/nhiễu hạt nên luôn mịn màng.
-   3 lớp xa/giữa/gần trôi lệch tốc độ tạo chiều sâu, cộng một quầng tia
-   nắng xoay rất chậm phía sau cho ánh sáng xuyên mây. */
+/* bầu trời mây thật */
 .kid-curtain-sky {
   position: absolute;
   inset: 0;
   overflow: hidden;
 }
 
-/* ================= MÀN MÂY THẬT =================
-   Toàn bộ phía sau là MỘT LỚP MÀN TRẮNG liền mạch (như đang ở trong
-   mây/sương), không phải từng cục rời rạc. Cách dựng: 4 mảng mây khổng
-   lồ (to hơn nhiều lần màn hình) đặt chồng lấp sâu vào nhau ở 4 góc,
-   mỗi mảng mờ dần rất êm ra rìa + blur mạnh nên ranh giới giữa các
-   mảng hoàn toàn vô hình - mắt chỉ thấy MỘT tấm mây trắng đồng nhất.
-   Cộng thêm 2 quầng sáng-tối rất nhạt, rất to, trôi cực chậm để có vài
-   chỗ "trôi nhè nhẹ" tự nhiên mà không lộ ra là hình dạng gì cả.
-   Lúc rời đi, 4 mảng này tách ra và bay toả về đúng 4 phía (trên-trái,
-   trên-phải, dưới-trái, dưới-phải) - đây mới là hiệu ứng chính khi lộ
-   diện, ánh sáng chỉ là điểm nhấn phụ rất nhẹ. */
-
+/* MÀN MÂY THẬT */
 .kid-curtain-mist {
   position: absolute;
   inset: 0;
@@ -4363,12 +4316,7 @@
   margin-left: -77.5vmax;
   margin-top: -77.5vmax;
   border-radius: 50%;
-  /* nhiều "thuỳ" tròn chồng lệch quanh tâm - khi 4 mảng còn phủ kín
-     nhau (lúc chờ) mắt chỉ thấy 1 lớp trắng liền mạch như trước, nhưng
-     ngay khi từng mảng tách ra bay đi thì viền lởm chởm nhiều thuỳ này
-     mới lộ ra, trông đúng là một áng mây bồng bềnh chứ không phải hình
-     tròn hình học trơn tru */
-  background-image:
+    background-image:
     radial-gradient(
       46vmax 40vmax at 37% 33%,
       rgba(255, 255, 255, 0.97) 0%,
@@ -4551,15 +4499,7 @@
   transform: translate(-50%, -50%) scale(1.4);
 }
 
-/* ================= CẦU VỒNG =================
-   Kỹ thuật: 1 hình tròn khổng lồ có tâm đặt hẳn phía dưới màn hình, chỉ
-   phần cung phía trên của nó lọt vào khung hình - đúng cách cầu vồng
-   thật xuất hiện trên bầu trời (một cung tròn, không phải đường cong tự
-   do). Bên trong dùng radial-gradient nhiều dải màu đúng thứ tự cầu
-   vồng thật (đỏ-cam-vàng-lục-lam-chàm-tím từ ngoài vào trong), mỗi dải
-   mờ dần rất nhẹ vào dải kế tiếp cho cảm giác trong trẻo như ánh sáng
-   thật chứ không phải viền cứng. Cộng thêm 1 cầu vồng phụ lớn hơn, mờ
-   hơn, màu đảo ngược ở ngoài - đúng hiện tượng cầu vồng đôi ngoài đời. */
+/* CẦU VỒNG  */
 .kid-curtain-rainbow {
   position: absolute;
   left: 50%;
@@ -4569,11 +4509,7 @@
   transform: translate(-50%, 0);
   border-radius: 50%;
   pointer-events: none;
-  /* KHÔNG dùng mix-blend-mode nữa - hoà trộn kiểu soft-light gần như vô
-     hình khi nền phía sau nhạt màu (các dải màu trên cao của bầu trời).
-     Dùng alpha trong suốt thông thường để màu cầu vồng luôn hiện rõ ràng
-     bất kể đang đứng trước nền màu gì. */
-  opacity: 1;
+   opacity: 1;
   transition:
     opacity calc(var(--kid-curtain-leave) * 1.1) ease-out
       calc(var(--kid-curtain-leave) * 0.4),
@@ -4640,18 +4576,7 @@
   transform: translate(-50%, 0) scale(1.08);
 }
 
-/* ============ BAY TẢN RA 4 PHÍA khi lộ diện ============
-   Đây là hiệu ứng CHÍNH của khoảnh khắc load xong: 4 mảng mây tách hẳn
-   ra khỏi nhau và bay toả về đúng 4 góc màn hình. QUAN TRỌNG: phải tắt
-   hẳn animation "trôi nhẹ" (animation: none) ở đây - nếu không animation
-   vô hạn đó sẽ liên tục ghi đè lên transition mỗi khung hình, khiến mảng
-   mây không bao giờ thực sự di chuyển mà chỉ mờ dần tại chỗ.
-   QUAN TRỌNG THỨ HAI: mây phải CO NHỎ LẠI khi bay xa (scale < 1), đúng
-   phối cảnh thật (càng xa càng nhỏ) - trước đây phóng to (scale > 1)
-   khiến mảng mây luôn to hơn cả màn hình, không bao giờ thực sự "biến
-   mất" mà chỉ nhoè liệt tại chỗ, nhìn như tan chứ không như bay. Blur
-   cũng giảm xuống mức vừa phải để vẫn giữ được hình khối mây lúc di
-   chuyển, không bị xoá nhoè hoàn toàn ngay từ đầu. */
+/* BAY TẢN RA 4 PHÍA khi lộ diện */
 .kid-curtain.is-leaving .kid-curtain-mistpanel-tl {
   animation: none;
   transform: translate3d(-88vw, -74vh, 0) scale(0.34) rotate(-14deg);
@@ -4681,8 +4606,6 @@
   transition-delay: 0.22s, 0.34s, 0.22s;
 }
 
-/* tia sáng bừng lên đúng lúc mây bắt đầu tản - điểm nhấn cho khoảnh khắc
-   "lộ diện", cộng thêm 2 vệt sáng mỏng quét chéo cho cảm giác lấp lánh */
 .kid-curtain-flare {
   position: absolute;
   inset: 0;
@@ -4714,8 +4637,7 @@
   }
 }
 
-/* nội dung giữa màn mây - MỘT flex-column duy nhất, mọi thứ theo flow
-   bình thường, không phần tử nào absolute đè lên chữ */
+/* nội dung giữa màn mây  */
 .kid-curtain-center {
   position: absolute;
   top: 50%;
@@ -4737,8 +4659,7 @@
   transform: translate(-50%, -50%) scale(0.85) translateY(-12px);
 }
 
-/* huy hiệu logo - một vòng gradient xoay duy nhất (không lồng 2 vòng
-   chồng nhau như bản cũ) + quầng sáng thở đều phía sau */
+/* huy hiệu logo  */
 .kid-curtain-badge {
   position: relative;
   width: 92px;
@@ -4815,9 +4736,7 @@
   }
 }
 
-/* chữ chờ - một dòng gradient mượt, không tách span-theo-màu như bản cũ
-   (nguồn gốc gây rối mắt); dùng background-clip để chữ óng ánh nhẹ mà vẫn
-   luôn là MỘT khối văn bản duy nhất, không thể bị chồng lên nhau. */
+/* chữ chờ */
 .kid-curtain-pill {
   display: flex;
   flex-direction: column;
@@ -4969,18 +4888,12 @@
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
-   KHÁM PHÁ THÊM - sách bán chạy + phù hợp độ tuổi, nút "Nhờ ba mẹ mua"
-   Dùng lại khung .kid-shelf-heading/.kid-book-grid/.kid-book-card của kệ
-   sách chính bên trên để toàn trang có 1 ngôn ngữ hình ảnh thống nhất.
-   ═══════════════════════════════════════════════════════════════════════ */
+/* KHÁM PHÁ THÊM*/
 .kid-discover {
   margin-top: 44px;
   animation: kidFadeUp 0.8s 0.25s var(--kid-ease) both;
 }
 
-/* icon box màu hồng cho tiêu đề chính (khác màu xanh của "Tủ sách của bé"
-   để bé phân biệt ngay đây là khu vực khác) */
 .kid-shelf-leaf--pink {
   color: var(--kid-pink-dark);
   background: var(--kid-pink-light);
@@ -5031,9 +4944,6 @@
   }
 }
 
-/* Thẻ sách khám phá: giống hệt .kid-book-card nhưng là <div> (không phải
-   <button>) vì bên trong có nút riêng "Nhờ ba mẹ mua" - không lồng
-   button trong button được. Vẫn giữ hiệu ứng nghiêng 3D khi rê chuột. */
 .kid-discover-card {
   cursor: default;
 }
@@ -5047,11 +4957,6 @@
   opacity: 0.45;
 }
 
-/* Ruy băng "#N bán chạy" - thay cho tem sao ở góc, dùng cho top 3 sách
-   bán chạy nhất để tạo cảm giác thứ hạng, vui mắt cho bé. Đặt ở góc
-   PHẢI (khác với tem sao gốc) vì góc trái đã dành cho tem độ tuổi
-   .kid-book-age - trước đây cả hai cùng đè lên tọa độ top-left 9px
-   khiến 2 tem chồng lên nhau, giờ tách hẳn sang 2 bên. */
 .kid-discover-rank {
   position: absolute;
   top: 9px;
@@ -5071,9 +4976,7 @@
   box-shadow: var(--kid-shadow-sm);
 }
 
-/* Nút "Nhờ ba mẹ mua" - LUÔN hiện (không phải overlay chỉ hiện khi rê
-   chuột như .kid-book-cta) vì đây là hành động chính của thẻ, cần bé
-   nhìn thấy và bấm được ngay cả trên máy tính bảng chạm. */
+
 .kid-discover-ask {
   all: unset;
   box-sizing: border-box;
