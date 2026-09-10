@@ -11,10 +11,17 @@ import {
   Lock,
   RotateCcw,
   Truck,
+  Bookmark,
+  Undo2,
 } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
 import { useAuthStore } from "../store/authStore";
-import { formatPrice, computeTierDiscount } from "../utils/helpers";
+import { useWishlistStore } from "../store/wishlistStore";
+import {
+  formatPrice,
+  computeTierDiscount,
+  getPreferredCartFormat,
+} from "../utils/helpers";
 import { orderService } from "../services/orderService";
 import { loyaltyService } from "../services/loyaltyService";
 import LoyaltyBadge from "../components/LoyaltyBadge";
@@ -30,9 +37,22 @@ const SHIPPING_THRESHOLD = 300000;
 const SHIPPING_FEE = 30000;
 
 export default function Cart() {
-  const { cart, fetchCart, updateItem, removeItem, clearCart, loading } =
-    useCartStore();
+  const {
+    cart,
+    fetchCart,
+    updateItem,
+    removeItem,
+    clearCart,
+    addToCart,
+    loading,
+  } = useCartStore();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const {
+    items: wishlistItems,
+    fetchWishlist,
+    toggleWishlist,
+    isInWishlist,
+  } = useWishlistStore();
   const [pendingItemId, setPendingItemId] = useState(null);
   const [loyaltyProfile, setLoyaltyProfile] = useState(null);
   const [confirmClear, setConfirmClear] = useState(false);
@@ -42,6 +62,13 @@ export default function Cart() {
   useEffect(() => {
     fetchCart();
   }, []);
+
+  // Danh sách "Lưu để mua sau" - tái dùng luôn Wishlist có sẵn của dự án
+  // (đã có backend + trang /wishlist riêng) thay vì tạo 1 danh sách localStorage mới
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    fetchWishlist();
+  }, [isAuthenticated]);
 
   // Hồ sơ hạng thành viên - quyết định % giảm giá & ngưỡng freeship tự động,
   // dùng chung công thức computeTierDiscount với Checkout để 2 trang luôn khớp số.
@@ -99,10 +126,79 @@ export default function Cart() {
     setPendingItemId(item.id);
     try {
       await removeItem(item.id);
+      // Hoàn tác sau khi xóa: hiện toast kèm nút khôi phục đúng sản phẩm vừa xóa
+      toast(
+        (t) => (
+          <span className="cart-undo-toast">
+            Đã xóa "{item.variant.book.title}"
+            <button
+              className="cart-undo-toast-btn"
+              onClick={async () => {
+                toast.dismiss(t.id);
+                try {
+                  await addToCart(
+                    item.variant.book.hashId,
+                    item.quantity,
+                    item.variant.format,
+                  );
+                  toast.success("Đã hoàn tác");
+                } catch {
+                  toast.error(
+                    "Không thể hoàn tác, vui lòng thêm lại sản phẩm thủ công",
+                  );
+                }
+              }}
+            >
+              <Undo2 size={12} /> Hoàn tác
+            </button>
+          </span>
+        ),
+        { duration: 6000 },
+      );
     } catch (err) {
       toast.error(err?.response?.data?.message || "Không thể xóa sản phẩm");
     } finally {
       setPendingItemId(null);
+    }
+  };
+
+  // ── Lưu để mua sau: thêm sách vào Wishlist rồi xóa item khỏi giỏ hàng ──
+  const handleSaveForLater = async (item) => {
+    if (pendingItemId === item.id) return;
+    setPendingItemId(item.id);
+    const book = item.variant.book;
+    try {
+      if (!isInWishlist(book.hashId)) {
+        await toggleWishlist(book.slug, book.hashId);
+      }
+      await removeItem(item.id);
+      toast.success("Đã lưu sản phẩm để mua sau");
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Không thể lưu sản phẩm");
+    } finally {
+      setPendingItemId(null);
+    }
+  };
+
+  // Chuyển 1 sách đã "lưu để mua sau" (Wishlist) trở lại giỏ hàng
+  const handleMoveSavedToCart = async (book) => {
+    try {
+      await addToCart(book.hashId, 1, getPreferredCartFormat(book));
+      await toggleWishlist(book.slug, book.hashId);
+      toast.success(`Đã chuyển "${book.title}" vào giỏ hàng`);
+    } catch (err) {
+      toast.error(
+        err?.response?.data?.message || "Không thể chuyển vào giỏ hàng",
+      );
+    }
+  };
+
+  // Xóa hẳn 1 sách khỏi danh sách "lưu để mua sau"
+  const handleRemoveSaved = async (book) => {
+    try {
+      await toggleWishlist(book.slug, book.hashId);
+    } catch {
+      toast.error("Không thể xóa sản phẩm khỏi danh sách");
     }
   };
 
@@ -128,10 +224,41 @@ export default function Cart() {
 
   const handleClearCart = async () => {
     if (clearingCart) return;
+    // Chụp lại toàn bộ item trước khi xóa để phục vụ "Hoàn tác"
+    const snapshot = items.map((i) => ({
+      hashId: i.variant.book.hashId,
+      format: i.variant.format,
+      quantity: i.quantity,
+    }));
     setClearingCart(true);
     try {
       await clearCart();
-      toast.success("Đã dọn sạch giỏ hàng");
+      toast(
+        (t) => (
+          <span className="cart-undo-toast">
+            Đã dọn sạch giỏ hàng ({snapshot.length} sản phẩm)
+            <button
+              className="cart-undo-toast-btn"
+              onClick={async () => {
+                toast.dismiss(t.id);
+                try {
+                  for (const s of snapshot) {
+                    await addToCart(s.hashId, s.quantity, s.format);
+                  }
+                  toast.success("Đã khôi phục giỏ hàng");
+                } catch {
+                  toast.error(
+                    "Không thể khôi phục toàn bộ, vui lòng thêm lại thủ công",
+                  );
+                }
+              }}
+            >
+              <Undo2 size={12} /> Hoàn tác
+            </button>
+          </span>
+        ),
+        { duration: 6000 },
+      );
     } catch (err) {
       toast.error(err?.response?.data?.message || "Không thể dọn giỏ hàng");
     } finally {
@@ -215,6 +342,52 @@ export default function Cart() {
               </button>
             </Link>
           </div>
+
+          {/* Vẫn hiển thị "Đã lưu để mua sau" dù giỏ hàng đang trống */}
+          {wishlistItems.length > 0 && (
+            <div className="cart-saved-section">
+              <div className="cart-saved-header">
+                <span>Đã lưu để mua sau ({wishlistItems.length})</span>
+                <Link to="/wishlist" className="cart-saved-header-link">
+                  Xem tất cả tại Yêu thích →
+                </Link>
+              </div>
+              {wishlistItems.map((book) => (
+                <div key={book.hashId} className="cart-saved-item">
+                  <div className="cart-saved-item-image">
+                    <img
+                      src={
+                        book.coverImage ||
+                        "https://placehold.co/88x112/0d3330/faf8f3?text=E"
+                      }
+                      alt={book.title}
+                    />
+                  </div>
+                  <div className="cart-saved-item-info">
+                    <div className="cart-saved-item-title">{book.title}</div>
+                    <div className="cart-saved-item-price">
+                      {formatPrice(book.salePrice ?? book.price)}
+                    </div>
+                  </div>
+                  <div className="cart-saved-actions">
+                    <button
+                      onClick={() => handleMoveSavedToCart(book)}
+                      disabled={book.stock === 0}
+                      className="cart-saved-move-btn"
+                    >
+                      {book.stock === 0 ? "Hết hàng" : "Chuyển vào giỏ"}
+                    </button>
+                    <button
+                      onClick={() => handleRemoveSaved(book)}
+                      className="cart-saved-remove-btn"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -334,6 +507,13 @@ export default function Cart() {
                       <div className="cart-item-title">
                         {item.variant.book.title}
                       </div>
+                      <button
+                        onClick={() => handleSaveForLater(item)}
+                        disabled={pendingItemId === item.id}
+                        className="cart-item-save-link"
+                      >
+                        <Bookmark size={11} /> Lưu để mua sau
+                      </button>
                     </div>
                   </div>
 
@@ -383,6 +563,52 @@ export default function Cart() {
                   </div>
                 </div>
               ))}
+
+          {/* ── Đã lưu để mua sau (dùng chung dữ liệu Wishlist) ── */}
+          {wishlistItems.length > 0 && (
+            <div className="cart-saved-section">
+              <div className="cart-saved-header">
+                <span>Đã lưu để mua sau ({wishlistItems.length})</span>
+                <Link to="/wishlist" className="cart-saved-header-link">
+                  Xem tất cả tại Yêu thích →
+                </Link>
+              </div>
+              {wishlistItems.map((book) => (
+                <div key={book.hashId} className="cart-saved-item">
+                  <div className="cart-saved-item-image">
+                    <img
+                      src={
+                        book.coverImage ||
+                        "https://placehold.co/88x112/0d3330/faf8f3?text=E"
+                      }
+                      alt={book.title}
+                    />
+                  </div>
+                  <div className="cart-saved-item-info">
+                    <div className="cart-saved-item-title">{book.title}</div>
+                    <div className="cart-saved-item-price">
+                      {formatPrice(book.salePrice ?? book.price)}
+                    </div>
+                  </div>
+                  <div className="cart-saved-actions">
+                    <button
+                      onClick={() => handleMoveSavedToCart(book)}
+                      disabled={book.stock === 0}
+                      className="cart-saved-move-btn"
+                    >
+                      {book.stock === 0 ? "Hết hàng" : "Chuyển vào giỏ"}
+                    </button>
+                    <button
+                      onClick={() => handleRemoveSaved(book)}
+                      className="cart-saved-remove-btn"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* RIGHT - Order summary */}
