@@ -50,6 +50,13 @@ const {
   getAdminSettings,
   updateAdminSettings,
 } = require("../controllers/settingsController");
+const {
+  getDashboardUsers,
+  getDashboardSales,
+  getDashboardContent,
+  getDashboardFamily,
+  getDashboardSupport,
+} = require("../controllers/adminDashboardController");
 const uploadImages = require("../middlewares/uploadImages");
 const {
   uploadProductImages,
@@ -60,6 +67,12 @@ const {
 router.use(protect);
 
 router.get("/dashboard", adminOnly, getDashboard);
+// Các tab dữ liệu mở rộng - mỗi tab 1 endpoint riêng, chỉ gọi khi FE chuyển tới tab đó
+router.get("/dashboard/users", adminOnly, getDashboardUsers);
+router.get("/dashboard/sales", adminOnly, getDashboardSales);
+router.get("/dashboard/content", adminOnly, getDashboardContent);
+router.get("/dashboard/family", adminOnly, getDashboardFamily);
+router.get("/dashboard/support", adminOnly, getDashboardSupport);
 
 // Cài đặt hệ thống (bảo trì + cấu hình chung) - chỉ ADMIN, STAFF không có quyền
 router.get("/settings", adminOnly, getAdminSettings);
