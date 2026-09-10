@@ -60,7 +60,13 @@ export default function LoginFlameEffect({
             <feGaussianBlur stdDeviation="1.1" />
           </filter>
 
-          <linearGradient id="flameGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient
+            id="flameGradient"
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
             <stop offset="0%" stopColor="#0af0ff" />
             <stop offset="35%" stopColor="#2b8cff" />
             <stop offset="65%" stopColor="#5b4bff" />
@@ -71,10 +77,10 @@ export default function LoginFlameEffect({
         {/* Khung viền được turbulence bóp méo cạnh -> hiệu ứng lửa */}
         <rect
           className="flame-border-rect"
-          x="14"
-          y="14"
-          width="calc(100% - 28px)"
-          height="calc(100% - 28px)"
+          x="0"
+          y="0"
+          width="100%"
+          height="100%"
           rx="18"
           fill="none"
           stroke="url(#flameGradient)"
