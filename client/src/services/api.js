@@ -5,6 +5,7 @@ import { useAuthStore } from "../store/authStore";
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1",
   withCredentials: true,
+  timeout: 20000,
 });
 
 api.interceptors.request.use((config) => {
@@ -74,7 +75,7 @@ api.interceptors.response.use(
         const newToken = await refreshSession();
         originalRequest.headers.Authorization = `Bearer ${newToken}`;
         return api(originalRequest);
-       } catch (refreshError) {
+      } catch (refreshError) {
         notifySessionExpired(refreshError.response?.data?.message);
         useAuthStore.getState().logout();
         return Promise.reject(refreshError);
