@@ -17,7 +17,7 @@ function isChunkLoadError(error) {
 class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, isChunkError: false };
+    this.state = { hasError: false, isChunkError: false, reloading: false };
   }
 
   static getDerivedStateFromError(error) {
@@ -40,7 +40,13 @@ class ErrorBoundary extends Component {
       const alreadyTried = sessionStorage.getItem(RELOAD_FLAG_KEY);
       if (!alreadyTried) {
         sessionStorage.setItem(RELOAD_FLAG_KEY, "1");
+        // "reloading" chỉ đúng cho LẦN NÀY - dùng state của component (mất
+        // đi khi trang thực sự tải lại) chứ không dựa vào sessionStorage,
+        // để lần lỗi tiếp theo (nếu reload không giải quyết được vấn đề)
+        // luôn hiện được UI báo lỗi thay vì render null vĩnh viễn.
+        this.setState({ reloading: true });
         window.location.reload();
+        return;
       }
     }
   }
@@ -52,12 +58,18 @@ class ErrorBoundary extends Component {
 
   render() {
     if (this.state.hasError) {
-      // Nếu đang trong quá trình tự-reload cho lỗi chunk thì không cần
-      // hiện UI, tránh nháy màn hình - trang sẽ reload gần như ngay lập tức.
-      const alreadyTried = sessionStorage.getItem(RELOAD_FLAG_KEY);
-      if (this.state.isChunkError && alreadyTried) {
+      // Chỉ ẩn UI trong khoảnh khắc NGẮN khi vừa tự kích hoạt reload ở lần
+      // lỗi đầu tiên, tránh nháy màn hình trước khi trang thực sự tải lại.
+      if (this.state.reloading) {
         return null;
       }
+
+      // Nếu đây là lỗi tải chunk NHƯNG đã từng tự-reload trước đó rồi mà vẫn
+      // lỗi lại (tức reload không giải quyết được - có thể do bản deploy mới
+      // chưa lên đầy đủ, hoặc CDN/proxy đang cache index.html cũ), dùng
+      // thông báo rõ ràng hơn thay vì thông báo lỗi chung chung.
+      const isRepeatedChunkError =
+        this.state.isChunkError && sessionStorage.getItem(RELOAD_FLAG_KEY);
 
       // Dùng đúng CSS variables + class .btn-primary sẵn có của project
       // (định nghĩa trong main.css) để tự động đồng bộ theo light/dark mode
@@ -90,8 +102,9 @@ class ErrorBoundary extends Component {
             Đã có lỗi xảy ra
           </h2>
           <p style={{ margin: 0, maxWidth: 420, color: "var(--text-muted)" }}>
-            Trang gặp sự cố khi tải. Vui lòng thử tải lại trang, nếu vẫn còn lỗi
-            hãy quay lại sau ít phút.
+            {isRepeatedChunkError
+              ? "Trang web vừa có bản cập nhật mới nhưng trình duyệt chưa tải được phiên bản mới nhất. Vui lòng tải lại trang; nếu vẫn còn lỗi hãy quay lại sau ít phút."
+              : "Trang gặp sự cố khi tải. Vui lòng thử tải lại trang, nếu vẫn còn lỗi hãy quay lại sau ít phút."}
           </p>
           <button className="btn-primary" onClick={this.handleReload}>
             Tải lại trang

@@ -1,32 +1,23 @@
+import { useEffect, useState } from "react";
+import FullScreenLoader from "./FullScreenLoader";
+
+const STUCK_AFTER_MS = 8000;
+
 export default function RouteLoader() {
+  const [stuck, setStuck] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setStuck(true), STUCK_AFTER_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <div
-      style={{
-        minHeight: "40vh",
-        width: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-      role="status"
-      aria-label="Đang tải trang..."
-    >
-      <span
-        style={{
-          width: 34,
-          height: 34,
-          borderRadius: "50%",
-          border: "3px solid rgba(74,158,63,0.25)",
-          borderTopColor: "#4a9e3f",
-          display: "inline-block",
-          animation: "eo-route-spin 0.8s linear infinite",
-        }}
-      />
-      <style>{`
-        @keyframes eo-route-spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
-    </div>
+    <FullScreenLoader
+      message={
+        stuck
+          ? "Trang tải hơi lâu, có thể do mạng chậm hoặc trang web vừa có bản cập nhật mới. Vui lòng thử tải lại trang."
+          : "Đang tải trang..."
+      }
+    />
   );
 }
