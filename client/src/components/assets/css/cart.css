@@ -622,3 +622,190 @@
     padding: 3px 6px;
   }
 }
+
+/* ── "Lưu để mua sau" - link nhỏ ngay dưới tên sách trong dòng giỏ hàng ── */
+.cart-item-save-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin-top: 2px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.cart-item-save-link:hover {
+  color: var(--gold);
+}
+.cart-item-save-link:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* ── Khu vực "Đã lưu để mua sau" (dữ liệu lấy từ Wishlist có sẵn) ── */
+.cart-saved-section {
+  margin-top: 40px;
+  padding-top: 28px;
+  border-top: 0.5px dashed var(--border);
+}
+
+.cart-saved-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.cart-saved-header-link {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: none;
+  color: var(--gold);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.cart-saved-header-link:hover {
+  text-decoration: underline;
+}
+
+.cart-saved-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 0.5px solid var(--border);
+}
+
+.cart-saved-item-image {
+  width: 56px;
+  height: 72px;
+  overflow: hidden;
+  border: 0.5px solid var(--border);
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+.cart-saved-item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cart-saved-item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cart-saved-item-title {
+  font-family: "Playfair Display", serif;
+  font-size: 14px;
+  color: var(--forest);
+  margin-bottom: 4px;
+}
+
+.cart-saved-item-price {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.cart-saved-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.cart-saved-move-btn {
+  background: transparent;
+  border: 0.5px solid var(--border);
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--forest);
+  white-space: nowrap;
+}
+.cart-saved-move-btn:hover {
+  background: var(--forest);
+  color: var(--ivory);
+}
+.cart-saved-move-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.cart-saved-remove-btn {
+  width: 28px;
+  height: 28px;
+  border: 0.5px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* ── Toast "Hoàn tác" (dùng trong react-hot-toast) ── */
+.cart-undo-toast {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 12px;
+}
+
+.cart-undo-toast-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--gold);
+  color: var(--forest);
+  border: none;
+  padding: 7px 14px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+.cart-undo-toast-btn:hover {
+  background: var(--gold-light);
+}
+
+/* ── Mobile: thêm mới cho 2 tính năng trên (không sửa media query cũ) ── */
+@media (max-width: 640px) {
+  .cart-saved-item {
+    gap: 12px;
+  }
+  .cart-saved-item-image {
+    width: 48px;
+    height: 62px;
+  }
+  .cart-saved-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .cart-saved-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .cart-undo-toast {
+    gap: 10px;
+    font-size: 11px;
+  }
+}
