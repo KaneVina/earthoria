@@ -117,16 +117,12 @@ function HomeOnlyPromoBanner() {
 }
 
 // ==** KHỞI ĐỘNG TRANG BẢO TRÌ **==
-const MAINTENANCE_MODE = false;
-// const MAINTENANCE_MODE = true;
+// const MAINTENANCE_MODE = false;
+const MAINTENANCE_MODE = true;
 
 export default function App() {
   const { setAuthChecked, authChecked, user, isAuthenticated } = useAuthStore();
   const [showLoader, setShowLoader] = useState(false);
-  // "normal" = thông báo khôi phục phiên bình thường.
-  // "slow"   = đã chờ khá lâu (>5s), rất có thể server đang cold-start ->
-  //            đổi sang thông báo trung thực để người dùng không tưởng bị
-  //            treo/lỗi.
   const [loaderStage, setLoaderStage] = useState("normal");
 
   // Trạng thái bảo trì lấy từ dashboard admin

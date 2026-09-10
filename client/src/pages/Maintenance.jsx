@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const TARGET_DATE = new Date("2026-09-06T12:00:00+07:00");
+const TARGET_DATE = new Date("2026-09-10T18:00:00+07:00");
 
 // Tiến độ bảo trì hệ thống hiển thị trên thanh progress bar (0-100).
 const MAINTENANCE_PROGRESS = 91;
@@ -319,7 +319,7 @@ export default function Maintenance({ until, message }) {
               <span>
                 Thời gian dự kiến hoàn tất:{" "}
                 <strong style={styles.timePillStrong}>
-                  12:00 · 06/09/2026
+                18:00 · 10/09/2026
                 </strong>
               </span>
             </div>
