@@ -45,7 +45,7 @@ export default function GoogleAuthSuccess() {
       <FullScreenLoader message="Đang xử lý đăng nhập..." />
       <LoginFlameEffect
         active={showFlame}
-        duration={900}
+        duration={2500}
         onComplete={handleFlameComplete}
       />
     </>

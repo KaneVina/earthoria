@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 
 export default function LoginFlameEffect({
   active,
-  duration = 900,
+  duration = 2500,
   onComplete,
 }) {
   const timeoutRef = useRef(null);
@@ -67,21 +67,22 @@ export default function LoginFlameEffect({
             x2="100%"
             y2="100%"
           >
-            <stop offset="0%" stopColor="#0af0ff" />
-            <stop offset="35%" stopColor="#2b8cff" />
-            <stop offset="65%" stopColor="#5b4bff" />
-            <stop offset="100%" stopColor="#0af0ff" />
+            <stop offset="0%" stopColor="#baff5c" />
+            <stop offset="35%" stopColor="#4a9e3f" />
+            <stop offset="65%" stopColor="#1a5c52" />
+            <stop offset="100%" stopColor="#baff5c" />
           </linearGradient>
         </defs>
 
-        {/* Khung viền được turbulence bóp méo cạnh -> hiệu ứng lửa */}
+        {/* Khung viền được turbulence bóp méo cạnh -> hiệu ứng lửa,
+            áp sát tuyệt đối 4 cạnh màn hình (x=0,y=0, không bo góc) */}
         <rect
           className="flame-border-rect"
           x="0"
           y="0"
           width="100%"
           height="100%"
-          rx="18"
+          rx="0"
           fill="none"
           stroke="url(#flameGradient)"
           strokeWidth="10"

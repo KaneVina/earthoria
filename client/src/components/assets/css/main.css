@@ -5006,11 +5006,7 @@ body.dark-mode .promo-strip {
     transform: rotate(360deg);
   }
 }
-/* ══════════════════════════════
-   PRODUCT DETAIL PAGE STYLES
-   (supplement to main.css)
-══════════════════════════════ */
-
+/*    PRODUCT DETAIL PAGE STYLES */
 /*  Reveal variants  */
 .reveal-left {
   opacity: 0;
@@ -5063,9 +5059,7 @@ body.dark-mode .promo-strip {
   font-weight: 400;
 }
 
-/* ══════════════════════════════
-   HERO SPLIT
-══════════════════════════════ */
+/*   HERO SPLIT */
 .product-hero {
   max-width: 1400px;
   margin: 0 auto;
@@ -5609,9 +5603,7 @@ body.dark-mode .promo-strip {
   flex-shrink: 0;
 }
 
-/* ══════════════════════════════
-   AR SHOWCASE
-══════════════════════════════ */
+/* AR SHOWCASE */
 .ar-section {
   max-width: 1400px;
   margin: 0 auto;
@@ -5837,9 +5829,7 @@ body.dark-mode .promo-strip {
   font-weight: 300;
 }
 
-/* ══════════════════════════════
-   TABS
-══════════════════════════════ */
+/* TABS */
 .tabs-section {
   max-width: 1400px;
   margin: 40px auto 0;
@@ -6153,9 +6143,7 @@ body.dark-mode .promo-strip {
   opacity: 0.6;
 }
 
-/* ══════════════════════════════
-   RELATED PRODUCTS
-══════════════════════════════ */
+/* RELATED PRODUCTS*/
 .related-section {
   background: var(--parchment);
   border-top: 0.5px solid var(--border);
@@ -6304,9 +6292,7 @@ body.dark-mode .promo-strip {
   border-color: var(--forest);
 }
 
-/* ══════════════════════════════
-   STICKY BAR
-══════════════════════════════ */
+/*    STICKY BAR */
 .sticky-bar {
   position: fixed;
   bottom: 0;
@@ -6384,9 +6370,7 @@ body.dark-mode .promo-strip {
   background: var(--gold-light);
 }
 
-/* ══════════════════════════════
-   DARK MODE
-══════════════════════════════ */
+/*DARK MODE */
 body.dark-mode .product-hero,
 body.dark-mode .tabs-section {
   background: transparent;
@@ -6439,9 +6423,7 @@ body.dark-mode .chapter-title {
   color: #c8d4cc;
 }
 
-/* ══════════════════════════════
-   RESPONSIVE
-══════════════════════════════ */
+/*RESPONSIVE */
 @media (max-width: 1100px) {
   .breadcrumb,
   .product-hero,
@@ -7546,9 +7528,7 @@ div[style*="flex: 0 0 280px"] .product-card {
   height: 100%;
 }
 
-/* ══════════════════════════════
-   SKELETON LOADING
-══════════════════════════════ */
+/*SKELETON LOADING*/
 @keyframes shimmer {
   0% {
     background-position: -600px 0;
@@ -7915,10 +7895,7 @@ body.dark-mode .skeleton {
   color: var(--forest, #2d7a3a);
 }
 
-/* ═══════════════════════════════════════════
-   OTP - Register flow
-   ═══════════════════════════════════════════ */
-
+/* OTP - Register flow */
 .auth-otp-step {
   animation: stepFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -8375,13 +8352,14 @@ body.dark-mode .trust-metric-label {
     display: none;
   }
 }
-/* Blue flame border - hiệu ứng full-screen khi login thành công */
+/* Green flame border - hiệu ứng full-screen khi login thành công,
+   viền áp sát tuyệt đối mép màn hình (inset: 0) */
 .flame-border-overlay {
   position: fixed;
   inset: 0;
   z-index: 9999;
   pointer-events: none;
-  animation: flameOverlayFade 0.9s ease forwards;
+  animation: flameOverlayFade 2.5s ease forwards;
 }
 
 .flame-border-svg {
@@ -8393,8 +8371,8 @@ body.dark-mode .trust-metric-label {
 
 .flame-border-rect {
   animation: flameRectIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  filter: drop-shadow(0 0 18px rgba(10, 240, 255, 0.55))
-    drop-shadow(0 0 42px rgba(43, 140, 255, 0.4));
+  filter: drop-shadow(0 0 18px rgba(74, 158, 63, 0.6))
+    drop-shadow(0 0 42px rgba(26, 92, 82, 0.45));
 }
 
 .flame-border-inner-glow {
@@ -8403,8 +8381,8 @@ body.dark-mode .trust-metric-label {
   background: radial-gradient(
     ellipse at center,
     transparent 55%,
-    rgba(10, 240, 255, 0.06) 78%,
-    rgba(43, 140, 255, 0.16) 100%
+    rgba(74, 158, 63, 0.07) 78%,
+    rgba(26, 92, 82, 0.18) 100%
   );
   opacity: 0;
   animation: flameGlowPulse 0.9s ease forwards;
@@ -8457,6 +8435,6 @@ body.dark-mode .trust-metric-label {
 }
 
 body.dark-mode .flame-border-rect {
-  filter: drop-shadow(0 0 22px rgba(10, 240, 255, 0.7))
-    drop-shadow(0 0 54px rgba(91, 75, 255, 0.5));
+  filter: drop-shadow(0 0 22px rgba(92, 184, 79, 0.75))
+    drop-shadow(0 0 54px rgba(45, 122, 110, 0.55));
 }

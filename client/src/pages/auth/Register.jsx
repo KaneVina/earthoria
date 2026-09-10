@@ -809,7 +809,7 @@ export default function Register() {
 
       <LoginFlameEffect
         active={showFlame}
-        duration={900}
+        duration={2500}
         onComplete={handleFlameComplete}
       />
     </main>
