@@ -117,8 +117,8 @@ function HomeOnlyPromoBanner() {
 }
 
 // ==** KHỞI ĐỘNG TRANG BẢO TRÌ **==
-// const MAINTENANCE_MODE = false;
-const MAINTENANCE_MODE = true;
+const MAINTENANCE_MODE = false;
+// const MAINTENANCE_MODE = true;
 
 export default function App() {
   const { setAuthChecked, authChecked, user, isAuthenticated } = useAuthStore();
