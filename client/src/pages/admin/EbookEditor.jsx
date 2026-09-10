@@ -67,6 +67,8 @@ import {
   Globe,
   Building2,
   Users,
+  Loader2,
+  Gamepad2,
 } from "lucide-react";
 import ColorPaletteStudio from "../../pages/admin/colorPalette/ColorPaletteStudio";
 
@@ -1059,6 +1061,247 @@ function qrLayerUrl(layer) {
   return `${window.location.origin}/${kind}/${layer.bookSlug}/${layer.code}`;
 }
 
+// Bản in giấy vẫn cần mã QR nhỏ gọn, nhưng khung nhúng trực tiếp trên web thì
+// cần đủ rộng mới thao tác được (xoay mô hình 3D, chơi mini-game...). Vì vậy
+// khung nhúng được PHÓNG TO so với khung QR gốc mà admin đặt trên trang, thay
+// vì dùng đúng 1:1 kích thước (vốn chỉ hợp cho ảnh QR nhỏ để scan).
+const QR_EMBED_SCALE = 1.7;
+const QR_EMBED_MIN_W = 220;
+const QR_EMBED_MIN_H = 190;
+const QR_EMBED_MAX_W = 520;
+const QR_EMBED_MAX_H = 380;
+
+function computeQrEmbedBox(layer, pageWidth, pageHeight) {
+  const rawW = (layer.width || 120) * QR_EMBED_SCALE;
+  const rawH = (layer.height || 120) * QR_EMBED_SCALE;
+  const maxW = pageWidth || rawW;
+  const maxH = pageHeight || rawH;
+  // Không để khung nhúng to hơn cả trang sách (trừ hao lề 16px mỗi bên).
+  const width = Math.min(
+    Math.max(rawW, QR_EMBED_MIN_W),
+    QR_EMBED_MAX_W,
+    Math.max(80, maxW - 16),
+  );
+  const height = Math.min(
+    Math.max(rawH, QR_EMBED_MIN_H),
+    QR_EMBED_MAX_H,
+    Math.max(80, maxH - 16),
+  );
+  // Giữ tâm khung nhúng trùng tâm vị trí QR gốc mà admin đã đặt, rồi mới kẹp
+  // lại trong biên trang để không bị .er-page (overflow: hidden) cắt mất.
+  const centerX = layer.x + (layer.width || 120) / 2;
+  const centerY = layer.y + (layer.height || 120) / 2;
+  let left = centerX - width / 2;
+  let top = centerY - height / 2;
+  left = Math.max(8, Math.min(left, maxW - width - 8));
+  top = Math.max(8, Math.min(top, maxH - height - 8));
+  return { left, top, width, height };
+}
+
+// Khung AR/Game nhúng full trang: chiếm toàn bộ khổ trang (không còn dựa vào
+// vị trí/kích thước layer QR gốc như trước), có iframe tự tải phía trên và
+// một dải chân trang bên dưới hiển thị mã QR thu nhỏ + tên liên kết - để bản
+// in giấy (vốn không chạy được iframe) vẫn có mã quét được kèm chú thích.
+function QrLiveEmbed({ layer, qrUrl, pageWidth, pageHeight }) {
+  const [loaded, setLoaded] = useState(false);
+  const iframeRef = useRef(null);
+  const isGame = layer.linkType === "GAME";
+  const FOOTER_H = 84;
+
+  const handleExpand = (e) => {
+    e.stopPropagation();
+    const el = iframeRef.current;
+    const request = el?.requestFullscreen || el?.webkitRequestFullscreen;
+    if (el && request) {
+      request
+        .call(el)
+        .catch(() => window.open(qrUrl, "_blank", "noopener,noreferrer"));
+    } else {
+      window.open(qrUrl, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: 0,
+        top: 0,
+        width: pageWidth,
+        height: pageHeight,
+        opacity: (layer.opacity ?? 100) / 100,
+      }}
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          background: "#0d1f1a",
+          overflow: "hidden",
+        }}
+      >
+        {/* Vùng iframe - chiếm hết chỗ còn lại phía trên chân trang */}
+        <div style={{ position: "relative", flex: 1, minHeight: 0 }}>
+          {!loaded && (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                color: "#cfe8d4",
+                background: "linear-gradient(135deg, #123c33, #0d2620)",
+                fontSize: 13,
+                fontFamily: "'Be Vietnam Pro', sans-serif",
+                zIndex: 1,
+              }}
+            >
+              <Loader2
+                size={24}
+                style={{ animation: "bb-spin 0.9s linear infinite" }}
+              />
+              <span>
+                {isGame ? "Đang tải trò chơi…" : "Đang tải trải nghiệm AR…"}
+              </span>
+            </div>
+          )}
+          <iframe
+            ref={iframeRef}
+            src={qrUrl}
+            title={
+              layer.label || (isGame ? "Trò chơi tương tác" : "Trải nghiệm AR")
+            }
+            allow="fullscreen; autoplay; microphone; camera"
+            allowFullScreen
+            loading="lazy"
+            onLoad={() => setLoaded(true)}
+            style={{
+              width: "100%",
+              height: "100%",
+              border: "none",
+              display: "block",
+              background: "#fff",
+            }}
+          />
+          <span
+            style={{
+              position: "absolute",
+              top: 12,
+              left: 12,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: 0.3,
+              padding: "4px 10px",
+              borderRadius: 999,
+              background: "rgba(13,31,26,0.78)",
+              color: "#fff",
+              pointerEvents: "none",
+              zIndex: 2,
+            }}
+          >
+            {isGame ? <Gamepad2 size={12} /> : <Sparkles size={12} />}
+            {isGame ? "GAME" : "AR"}
+          </span>
+          <button
+            type="button"
+            onClick={handleExpand}
+            title="Mở rộng toàn màn hình"
+            style={{
+              position: "absolute",
+              top: 12,
+              right: 12,
+              width: 30,
+              height: 30,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 999,
+              border: "none",
+              background: "rgba(13,31,26,0.78)",
+              color: "#fff",
+              cursor: "pointer",
+              zIndex: 2,
+            }}
+          >
+            <Maximize2 size={14} />
+          </button>
+        </div>
+
+        {/* Chân trang - giữ mã QR + tên liên kết luôn hiển thị, để bản in
+            giấy (không chạy được iframe) vẫn quét được đúng mã này. */}
+        <div
+          style={{
+            flexShrink: 0,
+            height: FOOTER_H,
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            padding: "0 18px",
+            background: "#fff",
+            borderTop: "1px solid rgba(13,31,26,0.08)",
+            boxSizing: "border-box",
+          }}
+        >
+          <QRCodeCanvas
+            value={qrUrl}
+            size={FOOTER_H - 24}
+            level="M"
+            includeMargin
+            bgColor="#ffffff"
+            fgColor="#1a5c47"
+          />
+          <div style={{ minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 10.5,
+                fontWeight: 700,
+                letterSpacing: 0.4,
+                color: isGame ? "#7c4dff" : "#1a5c47",
+              }}
+            >
+              {isGame ? "TRÒ CHƠI" : "TRẢI NGHIỆM AR"}
+            </div>
+            <div
+              style={{
+                fontSize: 13.5,
+                fontWeight: 600,
+                color: "#14332a",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {layer.label || (isGame ? "Trò chơi tương tác" : "Trải nghiệm AR")}
+            </div>
+            <div
+              style={{
+                fontSize: 10.5,
+                color: "#8a978f",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {layer.code}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ShapeSvg({ shapeType, fill, strokeColor, strokeWidth }) {
   const sw = strokeWidth || 0;
   if (shapeType === "line") {
@@ -1221,6 +1464,12 @@ function LayerView({
   readingWordIndex,
   fontScale,
   isUploading,
+  // Chỉ bật ở trải nghiệm đọc thật (PreviewOverlay) - KHÔNG bật ở canvas
+  // đang soạn thảo lẫn khi xuất PDF in giấy, để 2 nơi đó vẫn giữ nguyên
+  // hành vi/hình ảnh QR như trước.
+  interactiveEmbed,
+  pageWidth,
+  pageHeight,
   onSelect,
   onDragStart,
   onResizeStart,
@@ -1344,6 +1593,22 @@ function LayerView({
 
   if (layer.type === "qr") {
     const qrUrl = qrLayerUrl(layer);
+
+    // Đang ở trang đọc thật (web) và đã gắn liên kết AR/Game: nhúng thẳng
+    // trải nghiệm tương tác lên trang, tự chạy, không cần bấm mã QR. Mã QR
+    // gốc vẫn được giữ nguyên dữ liệu/kích thước để bản xuất PDF in giấy và
+    // canvas soạn thảo hiển thị như cũ (xem 2 nhánh render còn lại bên dưới).
+    if (readOnly && interactiveEmbed && qrUrl) {
+      return (
+        <QrLiveEmbed
+          layer={layer}
+          qrUrl={qrUrl}
+          pageWidth={pageWidth}
+          pageHeight={pageHeight}
+        />
+      );
+    }
+
     const clickable = readOnly && !!qrUrl;
     return (
       <div
@@ -2602,6 +2867,9 @@ export function PreviewOverlay({
                         layer={layer}
                         selected={false}
                         readOnly
+                        interactiveEmbed
+                        pageWidth={p.width || PAGE_W}
+                        pageHeight={p.height || PAGE_H}
                         isReadingThis={reading?.layerId === layer.id}
                         readingWordIndex={reading?.wordIndex}
                         onSelect={() => {}}
