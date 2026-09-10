@@ -1,6 +1,4 @@
 import { create } from "zustand";
-import { useCartStore } from "./cartStore";
-import { useWishlistStore } from "./wishlistStore";
 import { queryClient } from "../lib/queryClient";
 
 const SESSION_HINT_KEY = "eo_session_hint";
@@ -50,8 +48,15 @@ export const useAuthStore = create((set) => ({
       isAuthenticated: false,
       authChecked: true,
     });
-    useCartStore.getState().resetCart();
-    useWishlistStore.getState().resetWishlist();
+    // Cố ý KHÔNG import/gọi trực tiếp cartStore hay wishlistStore ở đây.
+    // 2 store đó tự lắng nghe isAuthenticated (subscribe ở cuối file của
+    // chúng) để tự reset khi logout. Nếu authStore quay lại import cartStore/
+    // wishlistStore sẽ tạo vòng lặp phụ thuộc: authStore -> cartStore ->
+    // cartService -> api -> authStore (api.js luôn import authStore để lấy
+    // accessToken). Vòng lặp này khiến Vite dev server mất khả năng xác định
+    // ranh giới HMR khi sửa hầu như bất kỳ service/file nào (vì gần như mọi
+    // service đều đi qua api.js) -> rơi về full page reload mỗi lần sửa code,
+    // thay vì hot update như bình thường.
     queryClient.clear();
   },
 

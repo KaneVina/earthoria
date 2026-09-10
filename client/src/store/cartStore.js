@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { cartService } from "../services/cartService";
+import { useAuthStore } from "./authStore";
 
 const calcCount = (items) => items.reduce((sum, i) => sum + i.quantity, 0);
 
@@ -151,3 +152,15 @@ export const useCartStore = create((set, get) => ({
     }
   },
 }));
+
+// Tự reset ngay khi isAuthenticated chuyển true -> false (logout, kể cả
+// logout tự động do 401 hết phiên). Đặt ở đây (thay vì để authStore import
+// cartStore rồi gọi resetCart) để tránh vòng lặp phụ thuộc: authStore ->
+// cartStore -> cartService -> api -> authStore (api.js luôn import authStore
+// để lấy accessToken) - vòng lặp đó khiến Vite dev server full-reload thay
+// vì HMR mỗi khi sửa gần như bất kỳ file service nào.
+useAuthStore.subscribe((state, prevState) => {
+  if (prevState.isAuthenticated && !state.isAuthenticated) {
+    useCartStore.getState().resetCart();
+  }
+});

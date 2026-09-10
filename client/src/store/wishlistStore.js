@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { wishlistService } from "../services/wishlistService";
+import { useAuthStore } from "./authStore";
 
 export const useWishlistStore = create((set, get) => ({
   items: [], // array of book object (đã encodeBook, có hashId, slug, ...)
@@ -90,3 +91,12 @@ export const useWishlistStore = create((set, get) => ({
     return get().toggling.has(hashId);
   },
 }));
+
+// Tự reset ngay khi isAuthenticated chuyển true -> false (logout, kể cả
+// logout tự động do 401 hết phiên). Lý do đặt ở đây thay vì trong
+// authStore.logout(): xem giải thích trong cartStore.js.
+useAuthStore.subscribe((state, prevState) => {
+  if (prevState.isAuthenticated && !state.isAuthenticated) {
+    useWishlistStore.getState().resetWishlist();
+  }
+});
