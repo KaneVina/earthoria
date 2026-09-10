@@ -69,6 +69,19 @@ export const useWishlistStore = create((set, get) => ({
     }
   },
 
+  // Reset state cục bộ (KHÔNG gọi API) - dùng khi logout để header không còn
+  // hiển thị số lượng wishlist của phiên cũ.
+  resetWishlist: () => {
+    const mySeq = get()._seq + 1; // huỷ mọi request wishlist đang bay dở
+    set({
+      _seq: mySeq,
+      items: [],
+      wishlistCount: 0,
+      loading: false,
+      toggling: new Set(),
+    });
+  },
+
   isInWishlist: (hashId) => {
     return get().items.some((b) => b.hashId === hashId);
   },

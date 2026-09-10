@@ -124,6 +124,13 @@ export const useCartStore = create((set, get) => ({
     }
   },
 
+  // Reset state cục bộ (KHÔNG gọi API) - dùng khi logout để header không còn
+  // hiển thị số lượng giỏ hàng của phiên cũ.
+  resetCart: () => {
+    const mySeq = get()._seq + 1; // huỷ mọi request cart đang bay dở
+    set({ _seq: mySeq, cart: null, itemCount: 0, loading: false });
+  },
+
   clearCart: async () => {
     const prev = get().cart;
     const mySeq = get()._seq + 1;
