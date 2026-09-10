@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { useCartStore } from "./cartStore";
 import { useWishlistStore } from "./wishlistStore";
+import { queryClient } from "../lib/queryClient";
 
 const SESSION_HINT_KEY = "eo_session_hint";
 
@@ -51,6 +52,7 @@ export const useAuthStore = create((set) => ({
     });
     useCartStore.getState().resetCart();
     useWishlistStore.getState().resetWishlist();
+    queryClient.clear();
   },
 
   updateUser: (user) => set({ user }),
