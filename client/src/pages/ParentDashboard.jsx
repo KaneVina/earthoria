@@ -657,6 +657,7 @@ export default function ParentDashboard() {
     "breakDurationMinutes",
   ];
   const [applyingAllSettings, setApplyingAllSettings] = useState(false);
+  const [applyAllConfirmOpen, setApplyAllConfirmOpen] = useState(false);
 
   const applySettingsToAllChildren = async () => {
     if (!activeChildId || applyingAllSettings) return;
@@ -1720,14 +1721,7 @@ export default function ParentDashboard() {
                       type="button"
                       className="pkd-mini-btn pf-btn-tactile"
                       disabled={applyingAllSettings}
-                      onClick={() => {
-                        const ok = window.confirm(
-                          `Áp dụng toàn bộ thiết lập "Quản lý giờ giấc" của ${
-                            activeChild?.name || "bé đang xem"
-                          } cho ${children.length - 1} hồ sơ còn lại?\n\nCác thiết lập riêng (nếu có) của những hồ sơ khác sẽ bị ghi đè.`,
-                        );
-                        if (ok) applySettingsToAllChildren();
-                      }}
+                      onClick={() => setApplyAllConfirmOpen(true)}
                     >
                       {applyingAllSettings ? (
                         <Loader2 size={13} className="pkd-spin" />
@@ -1740,7 +1734,7 @@ export default function ParentDashboard() {
                     </button>
                     <span className="pkd-apply-all-hint">
                       Áp dụng đúng các mục trong "Quản lý giờ giấc" bên dưới cho
-                      mọi hồ sơ khác. Bạn vẫn có thể chỉnh riêng từng bé sau đó.
+                      mọi hồ sơ khác.
                     </span>
                   </div>
                 )}
@@ -2436,6 +2430,39 @@ export default function ParentDashboard() {
           onContextMenu={(e) => e.preventDefault()}
         />
       </div>
+
+      {/*   MODAL: Xác nhận áp dụng giờ giấc cho tất cả hồ sơ   */}
+      {applyAllConfirmOpen && (
+        <ModalShell onClose={() => setApplyAllConfirmOpen(false)}>
+          <div className="pf-confirm-icon">
+            <Users size={18} />
+          </div>
+          <h3 className="pf-confirm-title">Áp dụng cho tất cả hồ sơ?</h3>
+          <p className="pf-confirm-msg">
+            Toàn bộ thiết lập "Quản lý giờ giấc" của{" "}
+            {activeChild?.name || "bé đang xem"} sẽ được áp dụng cho{" "}
+            {Math.max(children.length - 1, 0)} hồ sơ còn lại. Thiết lập riêng
+            (nếu có) của những hồ sơ đó sẽ bị ghi đè.
+          </p>
+          <div className="pf-confirm-actions">
+            <button
+              className="pf-confirm-cancel pf-btn-tactile"
+              onClick={() => setApplyAllConfirmOpen(false)}
+            >
+              Hủy
+            </button>
+            <button
+              className="pf-confirm-ok pf-btn-tactile"
+              onClick={() => {
+                setApplyAllConfirmOpen(false);
+                applySettingsToAllChildren();
+              }}
+            >
+              Áp dụng ngay
+            </button>
+          </div>
+        </ModalShell>
+      )}
 
       {/*   MODAL: Xác nhận khóa   */}
       {lockConfirmOpen && (
