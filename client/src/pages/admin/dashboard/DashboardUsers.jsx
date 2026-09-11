@@ -90,6 +90,16 @@ export default function DashboardUsers() {
   return (
     <>
       <DateRangeFilter value={range} onChange={setRange} />
+      <p
+        style={{
+          fontSize: 11,
+          color: "rgba(13,51,48,0.4)",
+          margin: "-12px 0 16px",
+        }}
+      >
+        4 số bên dưới là tổng toàn hệ thống (không đổi theo bộ lọc) - bộ lọc chỉ
+        áp dụng cho các biểu đồ xu hướng phía dưới.
+      </p>
 
       <MiniKpiGrid items={kpis} isLoading={isLoading} />
 
@@ -424,7 +434,7 @@ export default function DashboardUsers() {
                 Top tỉnh/thành <em>khách hàng</em>
               </>
             }
-            sub="Theo số địa chỉ đã lưu"
+            sub="Toàn hệ thống, theo số địa chỉ đã lưu"
             exportProps={{
               filename: "top-tinh-thanh-khach-hang",
               columns: [
@@ -455,7 +465,7 @@ export default function DashboardUsers() {
                 Hạng <em>thành viên</em>
               </>
             }
-            sub="Theo tổng chi tiêu (hệ thống Vùng Đất)"
+            sub="Toàn hệ thống, theo tổng chi tiêu trọn đời (kể cả chưa mua)"
             exportProps={{
               filename: "hang-thanh-vien",
               columns: [

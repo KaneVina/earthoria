@@ -1,18 +1,3 @@
-// ─────────────────────────────────────────────────────────────────────────
-// ADMIN DASHBOARD - dữ liệu mở rộng, tách riêng theo từng tab để:
-//  1) Không làm phình to adminController.js (đã rất lớn)
-//  2) Cho phép frontend load từng tab riêng lẻ (chỉ gọi API khi user bấm
-//     vào tab đó), tránh 1 request khổng lồ chậm cho trang tổng quan.
-//
-// TẤT CẢ endpoint dưới đây đều nhận query ?from=YYYY-MM-DD&to=YYYY-MM-DD
-// (xem server/src/utils/dateRange.js) - mặc định 30 ngày gần nhất nếu không
-// truyền. Các biểu đồ theo thời gian tự chọn granularity ngày/tuần/tháng
-// tuỳ độ dài khoảng đã chọn.
-//
-// Tab "Tổng quan" (getDashboard) nằm ở adminController.js, cũng dùng chung
-// helper dateRange.js này.
-// ─────────────────────────────────────────────────────────────────────────
-
 const prisma = require("../config/db");
 const { resolveTierBySpend } = require("../utils/loyaltyTier");
 const { calculateAge } = require("../utils/age");
@@ -60,6 +45,12 @@ exports.getDashboardUsers = async (req, res) => {
     const { start, end, bucket, keys, meta } = prepareRange(req);
     const createdInRange = { createdAt: { gte: start, lte: end } };
 
+    // ── Các số TỔNG/THÀNH PHẦN (vai trò, giới tính, số lượng, hạng thành viên) là
+    // TRẠNG THÁI HIỆN TẠI của toàn hệ thống - KHÔNG lọc theo khoảng ngày đã chọn.
+    // Lý do: nhãn "Tổng khách hàng" ngụ ý tổng toàn bộ, nếu âm thầm lọc theo ngày tạo
+    // sẽ gây hiểu nhầm (vd: đổi khoảng ngày mà số liệu không đổi vì phần lớn tài khoản
+    // đăng ký gần đây, khiến tưởng là lỗi). Chỉ các biểu đồ XU HƯỚNG theo thời gian
+    // (đăng ký mới, đăng nhập, thiết bị) mới lọc theo bộ lọc ngày phía dưới.
     const [
       roleGroups,
       genderGroups,
@@ -67,28 +58,23 @@ exports.getDashboardUsers = async (req, res) => {
       inactiveCount,
       totalChildren,
       lockedChildren,
+      allCustomers,
     ] = await Promise.all([
-      prisma.user.groupBy({
-        by: ["role"],
-        _count: { _all: true },
-        where: createdInRange,
-      }),
+      prisma.user.groupBy({ by: ["role"], _count: { _all: true } }),
       prisma.user.groupBy({
         by: ["gender"],
         _count: { _all: true },
-        where: { role: "CUSTOMER", ...createdInRange },
+        where: { role: "CUSTOMER" },
       }),
-      prisma.user.count({
-        where: { role: "CUSTOMER", isActive: true, ...createdInRange },
-      }),
-      prisma.user.count({
-        where: { role: "CUSTOMER", isActive: false, ...createdInRange },
-      }),
-      prisma.childProfile.count({
-        where: { isActive: true, ...createdInRange },
-      }),
-      prisma.childProfile.count({
-        where: { isActive: true, isLocked: true, ...createdInRange },
+      prisma.user.count({ where: { role: "CUSTOMER", isActive: true } }),
+      prisma.user.count({ where: { role: "CUSTOMER", isActive: false } }),
+      prisma.childProfile.count({ where: { isActive: true } }),
+      prisma.childProfile.count({ where: { isActive: true, isLocked: true } }),
+      // Toàn bộ khách hàng hiện có - dùng để tính hạng thành viên bên dưới,
+      // đảm bảo AI CŨNG có hạng (kể cả chưa mua gì = hạng thấp nhất/"hạng chùa")
+      prisma.user.findMany({
+        where: { role: "CUSTOMER" },
+        select: { id: true },
       }),
     ]);
 
@@ -102,6 +88,36 @@ exports.getDashboardUsers = async (req, res) => {
       name: GENDER_LABEL[g.gender] ?? "Chưa cập nhật",
       value: g._count._all,
     }));
+
+    // ── Hạng thành viên: tính trên TOÀN BỘ khách hàng hiện có (không lọc ngày, vì
+    // hạng là thuộc tính lâu dài của tài khoản) + dựa trên TỔNG CHI TIÊU TRỌN ĐỜI
+    // (mọi đơn thành công, không giới hạn theo khoảng ngày). Khách chưa từng mua gì
+    // (chi tiêu = 0) vẫn được xếp vào hạng thấp nhất thay vì bị bỏ sót như trước.
+    const spendByUser = await prisma.order.groupBy({
+      by: ["userId"],
+      where: { status: { in: SUCCESSFUL_ORDER_STATUSES } },
+      _sum: { total: true },
+    });
+    const spendMap = new Map(
+      spendByUser.map((r) => [r.userId, r._sum.total ?? 0]),
+    );
+    const tierMap = new Map();
+    for (const customer of allCustomers) {
+      const spend = spendMap.get(customer.id) ?? 0;
+      const tier = resolveTierBySpend(spend);
+      const prev = tierMap.get(tier.code) ?? {
+        name: tier.name,
+        color: tier.color,
+        count: 0,
+      };
+      prev.count += 1;
+      tierMap.set(tier.code, prev);
+    }
+    const loyaltyTierBreakdown = [...tierMap.values()].sort(
+      (a, b) => b.count - a.count,
+    );
+
+    // ── Từ đây trở xuống là các biểu đồ XU HƯỚNG - có lọc theo khoảng ngày đã chọn ──
 
     const newUsersRowsRaw = await prisma.$queryRaw`
       SELECT date_trunc(${bucket}, "createdAt") AS bucket, COUNT(*)::int AS count
@@ -152,10 +168,12 @@ exports.getDashboardUsers = async (req, res) => {
       return { month: `T${d.getMonth() + 1}`, new: added, total: cumulative };
     });
 
+    // Top tỉnh/thành: giữ SNAPSHOT toàn bộ khách hàng hiện có (không lọc ngày) -
+    // trả lời câu hỏi "khách hàng hiện đang ở đâu", nhất quán với role/gender/tier ở trên
     const provinceGroups = await prisma.address.groupBy({
       by: ["province"],
       _count: { _all: true },
-      where: { user: createdInRange },
+      where: { user: { role: "CUSTOMER" } },
       orderBy: { _count: { province: "desc" } },
       take: 8,
     });
@@ -193,26 +211,6 @@ exports.getDashboardUsers = async (req, res) => {
       name,
       value,
     }));
-
-    const spendByUser = await prisma.order.groupBy({
-      by: ["userId"],
-      where: { status: { in: SUCCESSFUL_ORDER_STATUSES }, ...createdInRange },
-      _sum: { total: true },
-    });
-    const tierMap = new Map();
-    for (const row of spendByUser) {
-      const tier = resolveTierBySpend(row._sum.total ?? 0);
-      const prev = tierMap.get(tier.code) ?? {
-        name: tier.name,
-        color: tier.color,
-        count: 0,
-      };
-      prev.count += 1;
-      tierMap.set(tier.code, prev);
-    }
-    const loyaltyTierBreakdown = [...tierMap.values()].sort(
-      (a, b) => b.count - a.count,
-    );
 
     return res.json({
       success: true,
