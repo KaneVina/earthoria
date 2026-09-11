@@ -1168,7 +1168,7 @@ export default function ParentDashboard() {
   };
 
   /*  Trạng thái tải/rỗng: chưa có hồ sơ con nào, hoặc đang tải */
-  if (childrenLoading) {
+  if (childrenLoading && children.length === 0) {
     return (
       <FullScreenLoader
         eyebrow="Vui lòng chờ"
@@ -1716,26 +1716,33 @@ export default function ParentDashboard() {
                   thiết lập luôn chính xác trên mọi thiết bị.
                 </p>
                 {children.length > 1 && (
-                  <div className="pkd-apply-all-row">
+                  <div className="pkd-apply-all-card">
+                    <span className="pkd-apply-all-icon">
+                      <Users size={18} />
+                    </span>
+                    <div className="pkd-apply-all-text">
+                      <strong>Áp dụng cho tất cả hồ sơ</strong>
+                      <p>
+                        Sao chép đúng các mục trong "Quản lý giờ giấc" bên dưới
+                        sang {children.length - 1} hồ sơ còn lại, khỏi phải
+                        chỉnh từng bé.
+                      </p>
+                    </div>
                     <button
                       type="button"
-                      className="pkd-mini-btn pf-btn-tactile"
+                      className="pkd-apply-all-btn pf-btn-tactile"
                       disabled={applyingAllSettings}
                       onClick={() => setApplyAllConfirmOpen(true)}
                     >
                       {applyingAllSettings ? (
-                        <Loader2 size={13} className="pkd-spin" />
+                        <Loader2 size={14} className="pkd-spin" />
                       ) : (
-                        <Users size={13} />
+                        <Users size={14} />
                       )}
                       {applyingAllSettings
                         ? "Đang áp dụng..."
-                        : `Áp dụng cho tất cả hồ sơ (${children.length - 1})`}
+                        : `Áp dụng cho ${children.length - 1} hồ sơ khác`}
                     </button>
-                    <span className="pkd-apply-all-hint">
-                      Áp dụng đúng các mục trong "Quản lý giờ giấc" bên dưới cho
-                      mọi hồ sơ khác.
-                    </span>
                   </div>
                 )}
               </RevealCard>

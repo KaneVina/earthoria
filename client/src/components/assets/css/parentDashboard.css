@@ -256,7 +256,7 @@
   box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
 }
 
-/* ═══════════ BODY LAYOUT ═══════════ */
+/*   BODY LAYOUT   */
 .pkd-body {
   max-width: 1100px;
   margin: 0 auto;
@@ -265,18 +265,12 @@
   flex-direction: column;
   gap: 56px;
 }
-/* Phần "chọn bé" + banner + pills nằm sát ngay dưới header xanh nên
-   khoảng cách phía trên co lại một chút cho liền mạch hơn. */
 .pkd-body-top {
   padding-top: 40px;
   gap: 0;
 }
 
-/* ═══════════ POWERED BY (cuối trang) ═══════════
-   Canh giữa theo chiều rộng trang (khác với .pkd-header-row là
-   space-between trái/phải). Mặc định mờ/đen-trắng như logo trong
-   dải "Hệ Sinh Thái Earthoria" lúc chưa hover; hover cả hàng để
-   lên màu/đầy đủ độ sáng, đồng bộ hiệu ứng với dải đó. */
+/*   POWERED BY (cuối trang)   */
 .pkd-poweredby {
   max-width: 1100px;
   margin: 0 auto;
@@ -397,33 +391,117 @@
 }
 
 /* Hàng nút "Áp dụng cho tất cả hồ sơ" trong đầu section .pkd-section-head */
-.pkd-apply-all-row {
+.pkd-apply-all-card {
+  margin-top: 18px;
   display: flex;
   align-items: center;
+  gap: 16px;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(212, 175, 55, 0.12),
+    rgba(212, 175, 55, 0.04)
+  );
+  border: 1px solid var(--border-gold);
+  border-radius: 10px;
+  padding: 16px 20px;
+  box-shadow: 0 10px 26px rgba(212, 175, 55, 0.12);
 }
-.pkd-apply-all-row .pkd-mini-btn {
+.pkd-apply-all-icon {
   flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gold);
+  color: var(--ivory);
+  animation: pkdApplyAllPulse 2.4s ease-in-out infinite;
 }
-.pkd-apply-all-row .pkd-mini-btn:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-  background: var(--gold-pale);
+@keyframes pkdApplyAllPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(212, 175, 55, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+  }
+}
+.pkd-apply-all-text {
+  flex: 1;
+  min-width: 220px;
+}
+.pkd-apply-all-text strong {
+  display: block;
+  font-size: 13.5px;
   color: var(--forest);
+  margin-bottom: 3px;
 }
-.pkd-apply-all-hint {
+.pkd-apply-all-text p {
+  margin: 0;
   font-size: 12px;
   color: var(--text-muted);
   line-height: 1.6;
   font-weight: 300;
-  max-width: 480px;
+}
+.pkd-apply-all-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--gold);
+  color: var(--ivory);
+  border: none;
+  border-radius: 8px;
+  padding: 11px 18px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(212, 175, 55, 0.3);
+  transition: all 0.2s ease;
+}
+.pkd-apply-all-btn:hover:not(:disabled) {
+  background: var(--forest);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(13, 43, 30, 0.22);
+}
+.pkd-apply-all-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+.pkd-apply-all-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
-/* Đoạn mô tả nhỏ dùng BÊN TRONG thẻ trắng (.pkd-card) - khác với
-   .pkd-section-sub (dùng trên nền xanh của .pkd-section-head) nên cần
-   một tông màu tối để vẫn đọc được trên nền trắng của thẻ. */
+body.dark-mode .pkd-apply-all-card {
+  background: linear-gradient(
+    135deg,
+    rgba(212, 175, 55, 0.14),
+    rgba(212, 175, 55, 0.05)
+  );
+  border-color: rgba(212, 175, 55, 0.35);
+}
+body.dark-mode .pkd-apply-all-text strong {
+  color: #c8d4cc;
+}
+
+@media (max-width: 560px) {
+  .pkd-apply-all-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .pkd-apply-all-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 .pkd-card-note {
   font-size: 13px;
   color: var(--text-muted);
@@ -431,7 +509,7 @@
   font-weight: 300;
 }
 
-/* ═══════════ SIDEBAR (danh sách bé) + MAIN (thiết lập) LAYOUT ═══════════ */
+/*   SIDEBAR (danh sách bé) + MAIN (thiết lập) LAYOUT   */
 .pkd-layout {
   display: flex;
   align-items: flex-start;
@@ -509,7 +587,7 @@
   background: #96453f;
 }
 
-/* ═══════════ BĂNG GIỚI HẠN HỒ SƠ TRẺ EM THEO HẠNG THÀNH VIÊN ═══════════ */
+/*   BĂNG GIỚI HẠN HỒ SƠ TRẺ EM THEO HẠNG THÀNH VIÊN   */
 .pkd-child-limit-banner {
   margin-top: 12px;
   padding: 12px 14px;
@@ -590,7 +668,7 @@
   color: var(--gold);
 }
 
-/* ═══════════ CHỌN BÉ ĐỂ CÀI ĐẶT (sidebar, dưới header xanh) ═══════════ */
+/*   CHỌN BÉ ĐỂ CÀI ĐẶT (sidebar, dưới header xanh)   */
 .pkd-child-picker-section {
   margin-bottom: 28px;
 }
@@ -840,7 +918,7 @@
   border-color: #b25450;
 }
 
-/* ═══════════ Nút "Thêm hồ sơ cho bé" cố định dưới cùng danh sách ═══════════ */
+/*   Nút "Thêm hồ sơ cho bé" cố định dưới cùng danh sách   */
 .pkd-add-child-bottom-btn {
   width: 100%;
   display: inline-flex;
@@ -1859,7 +1937,7 @@
   border-radius: 2px;
 }
 
-/* ═══════════ EMPTY STATE (chưa có hồ sơ trẻ em nào) ═══════════ */
+/*   EMPTY STATE (chưa có hồ sơ trẻ em nào)   */
 .pkd-empty-state {
   display: flex;
   flex-direction: column;
@@ -1900,7 +1978,7 @@
   gap: 8px;
 }
 
-/* ═══════════ ADD CHILD CARD (empty-state onboarding, dùng chung) ═══════════ */
+/*   ADD CHILD CARD (empty-state onboarding, dùng chung)   */
 .pkd-add-child-card {
   display: flex;
   flex-direction: column;
@@ -1926,7 +2004,7 @@
   background: rgba(74, 158, 63, 0.06);
 }
 
-/* ═══════════ SÁCH CỦA BÉ - toggle visibility rows ═══════════ */
+/*   SÁCH CỦA BÉ - toggle visibility rows   */
 .pkd-book-visible-row {
   display: flex;
   align-items: center;
@@ -1959,7 +2037,7 @@
   line-height: 1.4;
 }
 
-/* ═══════════ SÁCH CỦA BÉ - tab điện tử / giấy ═══════════ */
+/*   SÁCH CỦA BÉ - tab điện tử / giấy   */
 .pkd-book-tabs {
   display: flex;
   gap: 8px;
@@ -2016,7 +2094,7 @@
   white-space: nowrap;
 }
 
-/* ═══════════ CREATE CHILD WIZARD ═══════════ */
+/*   CREATE CHILD WIZARD   */
 
 /* Step 1: Email confirm box */
 .pkd-wizard-email-box {
@@ -2776,12 +2854,12 @@ body.dark-mode .pkd-switch-row-icon svg {
   color: #c8d4cc;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════
+/*       ═════
    "CON MUỐN MUA" - băng tóm tắt ở Tổng quan, badge trên avatar bé, tab
    "Muốn mua" trong mục Sách của bé. Theo đúng tông forest + gold hiện có
    của Bảng điều khiển phụ huynh; chỉ dùng đỏ nhạt #b25450 (màu "cần chú ý"
    đã dùng sẵn cho .pkd-child-lock-tag/.is-danger) để đánh dấu số đang chờ.
-   ═══════════════════════════════════════════════════════════════════════ */
+         ═════ */
 .pkd-wishlist-banner {
   margin-top: 20px;
   background: rgba(184, 134, 46, 0.05);
