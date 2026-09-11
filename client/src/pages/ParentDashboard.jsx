@@ -641,6 +641,72 @@ export default function ParentDashboard() {
     return () => clearSaveTimers();
   }, []);
 
+  // Áp dụng nguyên khối "Quản lý giờ giấc" của bé đang xem cho MỌI hồ sơ khác.
+  // Không cần API bulk mới ở server: gọi tuần tự updateSettings cho từng bé,
+  // tránh bắn hàng loạt request song song gây quá tải / lỗi một phần khó dò.
+  const TIME_RULE_KEYS = [
+    "dailyLimitMinutes",
+    "ruleEnabled",
+    "ruleIntervalMinutes",
+    "ruleRestSeconds",
+    "allowWindowEnabled",
+    "allowStart",
+    "allowEnd",
+    "mandatoryBreakEnabled",
+    "breakAfterMinutes",
+    "breakDurationMinutes",
+  ];
+  const [applyingAllSettings, setApplyingAllSettings] = useState(false);
+
+  const applySettingsToAllChildren = async () => {
+    if (!activeChildId || applyingAllSettings) return;
+    // Lưu ngay patch đang chờ (nếu có) của bé hiện tại trước, để không bị cuốn
+    // theo debounce và đảm bảo "settings" dùng để nhân bản là bản mới nhất.
+    clearSaveTimers();
+    await flushPendingSettings();
+
+    const patch = TIME_RULE_KEYS.reduce((acc, key) => {
+      acc[key] = settings[key];
+      return acc;
+    }, {});
+
+    const targets = children.filter((c) => c.id !== activeChildId);
+    if (targets.length === 0) {
+      toast.error("Chưa có hồ sơ nào khác để áp dụng");
+      return;
+    }
+
+    setApplyingAllSettings(true);
+    let successCount = 0;
+    const failedNames = [];
+    for (const child of targets) {
+      try {
+        await childService.updateSettings(child.id, patch);
+        successCount += 1;
+      } catch (err) {
+        failedNames.push(child.name);
+      }
+    }
+    setChildren((prev) =>
+      prev.map((c) =>
+        targets.some((t) => t.id === c.id) && !failedNames.includes(c.name)
+          ? { ...c, ...patch }
+          : c,
+      ),
+    );
+    setApplyingAllSettings(false);
+
+    if (failedNames.length === 0) {
+      toast.success(`Đã áp dụng giờ giấc cho ${successCount} hồ sơ khác`);
+    } else if (successCount === 0) {
+      toast.error("Không thể áp dụng cho hồ sơ khác, thử lại sau");
+    } else {
+      toast.error(
+        `Đã áp dụng cho ${successCount} hồ sơ, lỗi với: ${failedNames.join(", ")}`,
+      );
+    }
+  };
+
   const [allowStartDraft, setAllowStartDraft] = useState(settings.allowStart);
   const [allowEndDraft, setAllowEndDraft] = useState(settings.allowEnd);
   useEffect(() => {
@@ -1648,6 +1714,36 @@ export default function ParentDashboard() {
                   đồng bộ tự động và tính theo thời gian máy chủ Earthoria, giúp
                   thiết lập luôn chính xác trên mọi thiết bị.
                 </p>
+                {children.length > 1 && (
+                  <div className="pkd-apply-all-row">
+                    <button
+                      type="button"
+                      className="pkd-mini-btn pf-btn-tactile"
+                      disabled={applyingAllSettings}
+                      onClick={() => {
+                        const ok = window.confirm(
+                          `Áp dụng toàn bộ thiết lập "Quản lý giờ giấc" của ${
+                            activeChild?.name || "bé đang xem"
+                          } cho ${children.length - 1} hồ sơ còn lại?\n\nCác thiết lập riêng (nếu có) của những hồ sơ khác sẽ bị ghi đè.`,
+                        );
+                        if (ok) applySettingsToAllChildren();
+                      }}
+                    >
+                      {applyingAllSettings ? (
+                        <Loader2 size={13} className="pkd-spin" />
+                      ) : (
+                        <Users size={13} />
+                      )}
+                      {applyingAllSettings
+                        ? "Đang áp dụng..."
+                        : `Áp dụng cho tất cả hồ sơ (${children.length - 1})`}
+                    </button>
+                    <span className="pkd-apply-all-hint">
+                      Áp dụng đúng các mục trong "Quản lý giờ giấc" bên dưới cho
+                      mọi hồ sơ khác. Bạn vẫn có thể chỉnh riêng từng bé sau đó.
+                    </span>
+                  </div>
+                )}
               </RevealCard>
 
               <RevealCard className="pkd-card">

@@ -396,6 +396,31 @@
   font-weight: 300;
 }
 
+/* Hàng nút "Áp dụng cho tất cả hồ sơ" trong đầu section .pkd-section-head */
+.pkd-apply-all-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}
+.pkd-apply-all-row .pkd-mini-btn {
+  flex-shrink: 0;
+}
+.pkd-apply-all-row .pkd-mini-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  background: var(--gold-pale);
+  color: var(--forest);
+}
+.pkd-apply-all-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  font-weight: 300;
+  max-width: 480px;
+}
+
 /* Đoạn mô tả nhỏ dùng BÊN TRONG thẻ trắng (.pkd-card) - khác với
    .pkd-section-sub (dùng trên nền xanh của .pkd-section-head) nên cần
    một tông màu tối để vẫn đọc được trên nền trắng của thẻ. */
