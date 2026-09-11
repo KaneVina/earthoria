@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { ebookService } from "../../services/ebookService";
@@ -623,142 +623,51 @@ function sanitizeRichHtml(html) {
   return container.innerHTML;
 }
 
-// document.execCommand thường tự đặt lại vị trí con trỏ sau khi chạy - có
-// khi nhảy hẳn về đầu đoạn văn - bất kể vùng vừa bôi đen nằm ở đâu. Để tránh
-// phụ thuộc vào hành vi không ổn định đó: chèn tạm 2 "cột mốc" (span rỗng)
-// ngay 2 đầu vùng đang bôi đen, chạy lệnh định dạng, rồi dựa vào 2 cột mốc
-// đó dựng lại ĐÚNG vùng chọn ban đầu (giờ đã được định dạng) thay vì tin vào
-// nơi trình duyệt tự đặt con trỏ.
-function runFormatCommandKeepingSelection(range, runCommand) {
-  const endMarker = document.createElement("span");
-  endMarker.setAttribute("data-fmt-marker", "1");
-  const endBoundary = range.cloneRange();
-  endBoundary.collapse(false);
-  endBoundary.insertNode(endMarker);
+// ─ Mô hình "mảng ký tự phẳng" cho định dạng riêng phần (đậm/nghiêng/gạch
+// chân/màu áp cho 1 đoạn được bôi đen trong lúc soạn thảo) ─
+//
+// Cách làm CŨ (đã gỡ bỏ) tự chèn 2 "cột mốc" quanh vùng bôi đen rồi tự bọc/
+// gỡ thẻ <b>/<i>/<u> bằng range.cloneContents()/extractContents(). Lỗi gốc:
+// cloneContents()/extractContents() CHỈ trả về đúng phần bị vùng chọn "cắt
+// qua", KHÔNG bao gồm thẻ tổ tiên bao TRỌN cả vùng chọn (ví dụ bôi đen chữ
+// "ll" đã nằm trọn trong <b>ll</b> thì cloneContents() chỉ trả về mỗi text
+// "ll", KHÔNG có <b> bao ngoài) - khiến việc kiểm tra "đoạn đang chọn đã đậm
+// chưa" luôn trả về SAI (không đậm), nên bấm nút Đậm lần 2 (để BỎ đậm) lại
+// cứ lồng thêm 1 lớp <b> MỚI thay vì gỡ lớp cũ - y hệt lỗi "tô đậm 1 chữ,
+// muốn bỏ đậm thì bấm lại không ăn" mà người dùng gặp phải. Ngoài ra, việc
+// đồng bộ lại editingHtmlSnapshotRef rồi commit state sau đó vẫn khiến
+// React nạp lại (innerHTML = ...) toàn bộ DOM đang soạn ở lần re-render kế
+// tiếp - dù nội dung ký tự giống hệt, việc gán lại innerHTML luôn HUỶ + TẠO
+// MỚI toàn bộ node con, làm mất hiệu lực Selection/con trỏ vừa đặt, biểu
+// hiện ra ngoài là "con trỏ nhảy về bên trái ngoài cùng".
+//
+// Cách làm MỚI: quy toàn bộ nội dung đang soạn về 1 mảng phẳng, mỗi phần tử
+// là 1 KÝ TỰ kèm cờ định dạng đang áp dụng cho ký tự đó (đọc trực tiếp từ
+// DOM thật, không qua cloneContents/extractContents nên không bao giờ mất
+// ngữ cảnh thẻ tổ tiên) - bật/tắt định dạng cho 1 vùng chỉ đơn giản là lật
+// cờ true/false cho đúng dải chỉ số ký tự đó rồi dựng lại HTML tối giản từ
+// mảng đã lật. Còn việc "con trỏ nhảy trái" được xử lý riêng ở LayerView
+// bằng pendingSelectionRef + useLayoutEffect (xem chú thích ở đó): khôi
+// phục lại đúng vùng bôi đen (theo MỐC KÝ TỰ, không theo node DOM cũ) NGAY
+// SAU khi React nạp lại DOM, thay vì đặt Selection 1 lần trước khi React
+// kịp ghi đè.
 
-  const startMarker = document.createElement("span");
-  startMarker.setAttribute("data-fmt-marker", "1");
-  const startBoundary = range.cloneRange();
-  startBoundary.collapse(true);
-  startBoundary.insertNode(startMarker);
-
-  const contentRange = document.createRange();
-  contentRange.setStartAfter(startMarker);
-  contentRange.setEndBefore(endMarker);
-  const sel = window.getSelection();
-  sel.removeAllRanges();
-  sel.addRange(contentRange);
-
-  runCommand();
-
-  const afterStart = startMarker.nextSibling;
-  const beforeEnd = endMarker.previousSibling;
-  startMarker.remove();
-  endMarker.remove();
-
-  const finalRange = document.createRange();
-  if (afterStart && afterStart.parentNode) {
-    finalRange.setStartBefore(afterStart);
-  } else {
-    finalRange.setStart(contentRange.startContainer, contentRange.startOffset);
-  }
-  if (beforeEnd && beforeEnd.parentNode) {
-    finalRange.setEndAfter(beforeEnd);
-  } else {
-    finalRange.setEnd(finalRange.startContainer, finalRange.startOffset);
-  }
-  sel.removeAllRanges();
-  sel.addRange(finalRange);
-  return finalRange;
-}
-
-// Tự bọc/gỡ thẻ <b>/<i>/<u> bằng tay, KHÔNG dùng document.execCommand - vì
-// execCommand chạy trong vùng chọn bị thu hẹp giữa 2 cột mốc tạm (hàm ở
-// trên) đôi khi không nhận đúng ngữ cảnh và không bôi đậm/nghiêng gì cả.
-// Tự làm để chắc chắn 100% có hiệu lực, đồng thời tự xử lý bật/tắt (bấm lại
-// lần 2 thì bỏ đậm).
-function toggleWrapInRange(range, tagName) {
-  const preview = range.cloneContents();
-  const previewHolder = document.createElement("div");
-  previewHolder.appendChild(preview);
-  const walker = document.createTreeWalker(previewHolder, NodeFilter.SHOW_TEXT);
-  let hasText = false;
-  let allWrapped = true;
-  let node;
-  while ((node = walker.nextNode())) {
-    if (!node.textContent) continue;
-    hasText = true;
-    let wrapped = false;
-    let p = node.parentNode;
-    while (p && p !== previewHolder) {
-      if (p.tagName === tagName) {
-        wrapped = true;
-        break;
-      }
-      p = p.parentNode;
-    }
-    if (!wrapped) {
-      allWrapped = false;
-      break;
-    }
-  }
-
-  const frag = range.extractContents();
-  if (hasText && allWrapped) {
-    const holder = document.createElement("div");
-    holder.appendChild(frag);
-    holder.querySelectorAll(tagName.toLowerCase()).forEach((el) => {
-      while (el.firstChild) el.parentNode.insertBefore(el.firstChild, el);
-      el.parentNode.removeChild(el);
-    });
-    const result = document.createDocumentFragment();
-    while (holder.firstChild) result.appendChild(holder.firstChild);
-    range.insertNode(result);
-  } else {
-    const wrapper = document.createElement(tagName.toLowerCase());
-    wrapper.appendChild(frag);
-    range.insertNode(wrapper);
-  }
-}
-
-// Tự tô màu bằng cách bọc <span style="color:...">, gỡ trước các span màu
-// cũ lồng bên trong (nếu có) để không nhồi span chồng chéo mỗi lần đổi màu.
-function applyColorInRange(range, color) {
-  const frag = range.extractContents();
-  const holder = document.createElement("div");
-  holder.appendChild(frag);
-  holder.querySelectorAll("span[style]").forEach((el) => {
-    el.style.color = "";
-    if (!el.getAttribute("style") || !el.getAttribute("style").trim()) {
-      while (el.firstChild) el.parentNode.insertBefore(el.firstChild, el);
-      el.parentNode.removeChild(el);
-    }
-  });
-  const wrapper = document.createElement("span");
-  wrapper.style.color = color;
-  while (holder.firstChild) wrapper.appendChild(holder.firstChild);
-  range.insertNode(wrapper);
-}
-
-// Chế độ Xem trước / Đọc sách luôn tách chữ theo từng TỪ (để rê chuột tô
-// sáng/đọc theo từ hoạt động) - trước đây việc tách từ đó lấy thẳng từ
-// layer.text (chữ thô) nên định dạng riêng phần (đậm/nghiêng/màu 1 vài chữ)
-// bị mất hoàn toàn khi xem trước, dù đã lưu đúng trong layer.html. Hàm này
-// đọc layer.html, gán lại định dạng cho ĐÚNG từng từ tương ứng, để tách từ
-// mà vẫn giữ được định dạng riêng phần.
-function htmlToStyledWords(html) {
-  const container = document.createElement("div");
-  container.innerHTML = html || "";
-  const chars = [];
+// Duyệt cây DOM `root` theo đúng thứ tự tài liệu, trả về mảng ký tự phẳng
+// kèm định dạng thừa hưởng từ thẻ cha (đậm/nghiêng/gạch chân/màu). `brChar`
+// quyết định thẻ <br> được quy thành ký tự gì (mặc định "\n" để dựng lại
+// đúng chỗ xuống dòng; hàm tách-từ khi đọc sách dùng " " để BR cũng ngắt từ
+// như dấu cách).
+function collectCharRunsFromDom(root, { brChar = "\n" } = {}) {
+  const runs = [];
   const walk = (node, style) => {
     if (node.nodeType === 3) {
-      for (const ch of node.textContent) chars.push({ ch, ...style });
+      for (const ch of node.textContent) runs.push({ ch, ...style });
       return;
     }
     if (node.nodeType !== 1) return;
     const tag = node.tagName;
     if (tag === "BR") {
-      chars.push({ ch: " ", ...style });
+      runs.push({ ch: brChar, ...style });
       return;
     }
     const next = { ...style };
@@ -771,12 +680,176 @@ function htmlToStyledWords(html) {
       next.color = node.style.color;
     Array.from(node.childNodes).forEach((child) => walk(child, next));
   };
-  walk(container, {
-    bold: false,
-    italic: false,
-    underline: false,
-    color: null,
-  });
+  walk(root, { bold: false, italic: false, underline: false, color: null });
+  return runs;
+}
+
+// Ngược lại với collectCharRunsFromDom: gộp các ký tự LIÊN TIẾP có CÙNG bộ
+// định dạng thành 1 nhóm rồi dựng lại thành DOM thật (không ghép chuỗi HTML
+// thủ công - dùng style.color để trình duyệt tự xác thực/escape giá trị
+// màu, tránh rủi ro chèn HTML nếu giá trị màu chứa ký tự lạ), theo thứ tự
+// lồng thẻ cố định đậm > nghiêng > gạch chân > màu để không sinh thẻ thừa
+// hay lồng lặp qua nhiều lần bật/tắt liên tiếp. Trả về chuỗi innerHTML.
+function charRunsToHtml(runs) {
+  const container = document.createElement("div");
+  let i = 0;
+  while (i < runs.length) {
+    const r = runs[i];
+    const style = {
+      bold: !!r.bold,
+      italic: !!r.italic,
+      underline: !!r.underline,
+      color: r.color || null,
+    };
+    let text = "";
+    while (
+      i < runs.length &&
+      !!runs[i].bold === style.bold &&
+      !!runs[i].italic === style.italic &&
+      !!runs[i].underline === style.underline &&
+      (runs[i].color || null) === style.color
+    ) {
+      text += runs[i].ch;
+      i++;
+    }
+    let wrapped = document.createDocumentFragment();
+    text.split("\n").forEach((line, idx) => {
+      if (idx > 0) wrapped.appendChild(document.createElement("br"));
+      if (line) wrapped.appendChild(document.createTextNode(line));
+    });
+    if (style.color) {
+      const span = document.createElement("span");
+      span.style.color = style.color;
+      span.appendChild(wrapped);
+      wrapped = span;
+    }
+    if (style.underline) {
+      const u = document.createElement("u");
+      u.appendChild(wrapped);
+      wrapped = u;
+    }
+    if (style.italic) {
+      const em = document.createElement("i");
+      em.appendChild(wrapped);
+      wrapped = em;
+    }
+    if (style.bold) {
+      const b = document.createElement("b");
+      b.appendChild(wrapped);
+      wrapped = b;
+    }
+    container.appendChild(wrapped);
+  }
+  return container.innerHTML;
+}
+
+function countNodeChars(node) {
+  if (node.nodeType === 3) return node.textContent.length;
+  if (node.nodeType === 1) {
+    if (node.tagName === "BR") return 1;
+    let sum = 0;
+    node.childNodes.forEach((c) => (sum += countNodeChars(c)));
+    return sum;
+  }
+  return 0;
+}
+
+// Quy 1 điểm (container, offset) bất kỳ của Selection/Range trong cây DOM
+// `root` về vị trí ký tự (đếm từ đầu nội dung, mỗi <br> tính là 1 ký tự) -
+// dùng để biết vùng bôi đen hiện tại ứng với dải chỉ số nào trong mảng ký
+// tự phẳng ở trên.
+function charIndexOfDomPoint(root, container, offset) {
+  let index = 0;
+  let result = null;
+  const visit = (node) => {
+    if (result !== null) return;
+    if (node === container) {
+      if (node.nodeType === 3) {
+        result = index + offset;
+      } else {
+        let sum = 0;
+        for (let k = 0; k < offset && k < node.childNodes.length; k++) {
+          sum += countNodeChars(node.childNodes[k]);
+        }
+        result = index + sum;
+      }
+      return;
+    }
+    if (node.nodeType === 3) {
+      index += node.textContent.length;
+      return;
+    }
+    if (node.nodeType === 1) {
+      if (node.tagName === "BR") {
+        index += 1;
+        return;
+      }
+      for (const child of Array.from(node.childNodes)) {
+        visit(child);
+        if (result !== null) return;
+      }
+    }
+  };
+  visit(root);
+  return result === null ? index : result;
+}
+
+// Chiều ngược lại: từ 1 vị trí ký tự, dò ra điểm (node, offset) THẬT trong
+// DOM hiện tại của `root` - dùng để khôi phục đúng vùng bôi đen/con trỏ trên
+// DOM MỚI (đã bị React/ hoặc code dựng lại) theo mốc ký tự đã lưu trước đó,
+// thay vì tái sử dụng Range/node cũ (đã mất hiệu lực khi DOM bị nạp lại).
+function domPointAtCharIndex(root, charIndex) {
+  let remaining = charIndex;
+  let result = null;
+  const visit = (node) => {
+    if (result) return;
+    if (node.nodeType === 3) {
+      const len = node.textContent.length;
+      if (remaining <= len) {
+        result = { node, offset: remaining };
+        return;
+      }
+      remaining -= len;
+      return;
+    }
+    if (node.nodeType === 1) {
+      if (node.tagName === "BR") {
+        if (remaining <= 0) {
+          const parent = node.parentNode;
+          result = {
+            node: parent,
+            offset: Array.from(parent.childNodes).indexOf(node),
+          };
+          return;
+        }
+        remaining -= 1;
+        return;
+      }
+      for (const child of Array.from(node.childNodes)) {
+        visit(child);
+        if (result) return;
+      }
+    }
+  };
+  visit(root);
+  if (!result) result = { node: root, offset: root.childNodes.length };
+  return result;
+}
+
+// Chế độ Xem trước / Đọc sách luôn tách chữ theo từng TỪ (để rê chuột tô
+// sáng/đọc theo từ hoạt động) - trước đây việc tách từ đó lấy thẳng từ
+// layer.text (chữ thô) nên định dạng riêng phần (đậm/nghiêng/màu 1 vài chữ)
+// bị mất hoàn toàn khi xem trước, dù đã lưu đúng trong layer.html. Hàm này
+// đọc layer.html, gán lại định dạng cho ĐÚNG từng từ tương ứng, để tách từ
+// mà vẫn giữ được định dạng riêng phần.
+function htmlToStyledWords(html) {
+  const container = document.createElement("div");
+  container.innerHTML = html || "";
+  // BR quy thành dấu cách (không phải xuống dòng) ở đây vì mục đích là tách
+  // TỪ để đọc/tô sáng theo từ - dùng chung logic duyệt DOM với
+  // collectCharRunsFromDom để 2 nơi (soạn thảo và đọc) luôn hiểu 1 chuỗi
+  // HTML theo đúng 1 cách, không lệch nhau.
+  const chars = collectCharRunsFromDom(container, { brChar: " " });
 
   const words = [];
   let buf = "";
@@ -1464,6 +1537,7 @@ function LayerView({
   isEditingText,
   editableRef,
   editingHtmlSnapshotRef: editingHtmlSnapshotRefProp,
+  pendingSelectionRef: pendingSelectionRefProp,
   onStartEditText,
   onCommitText,
   onSelectionChange,
@@ -1498,6 +1572,50 @@ function LayerView({
   const handleDragStart = (e) => {
     if (!readOnly && !layer.locked) onDragStart(e, layer);
   };
+
+  // Đổi editingHtmlSnapshotRef (applyTextFormat/applyTextColor làm vậy sau
+  // khi bấm Đậm/Nghiêng/Gạch chân/Màu chữ cho 1 đoạn bôi đen) vẫn khiến
+  // React coi dangerouslySetInnerHTML là "đổi" và NẠP LẠI (innerHTML = ...)
+  // toàn bộ DOM đang soạn ở lần render này - dù nội dung ký tự giống hệt,
+  // thao tác đó luôn HUỶ + TẠO MỚI mọi node con, làm mất hiệu lực bất kỳ
+  // Selection/con trỏ nào đã đặt TRƯỚC render này (biểu hiện: con trỏ nhảy
+  // về bên trái ngoài cùng mỗi khi bấm nút định dạng). Không thể tránh việc
+  // React nạp lại DOM (cần nó để hiển thị đúng định dạng vừa đổi), nên thay
+  // vào đó: khôi phục lại vùng bôi đen NGAY SAU khi DOM mới được dựng xong,
+  // dựa theo MỐC KÝ TỰ (không phải node DOM cũ, đã mất hiệu lực) mà
+  // applyTextFormat/applyTextColor để lại trong pendingSelectionRef.
+  // useLayoutEffect chạy đồng bộ ngay sau khi trình duyệt cập nhật DOM,
+  // trước khi vẽ lại khung hình, nên mắt người không kịp thấy con trỏ "nháy"
+  // sai chỗ rồi mới nhảy lại đúng vị trí. Đặt Ở ĐẦU component (trước mọi
+  // early-return của layer "shape"/"qr" bên dưới) để không vi phạm quy tắc
+  // gọi Hook - layer chữ mới cần logic này, nhưng Hook vẫn phải luôn được
+  // gọi bất kể layer.type là gì.
+  useLayoutEffect(() => {
+    if (readOnly || !isEditingText) return;
+    const pending = pendingSelectionRefProp && pendingSelectionRefProp.current;
+    if (!pending) return;
+    const el = editableRef && editableRef.current;
+    if (!el) return;
+    pendingSelectionRefProp.current = null;
+    const startPoint = domPointAtCharIndex(el, pending.start);
+    const endPoint = domPointAtCharIndex(el, pending.end);
+    const range = document.createRange();
+    try {
+      range.setStart(startPoint.node, startPoint.offset);
+      range.setEnd(endPoint.node, endPoint.offset);
+    } catch {
+      return;
+    }
+    el.focus();
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    // Đồng bộ lại savedRangeRef/trạng thái nút Đậm-Nghiêng-Gạch chân ở
+    // component cha (cùng logic chạy khi người dùng tự bôi đen bằng chuột)
+    // để có thể bấm liên tiếp nhiều định dạng lên cùng 1 vùng chọn mà không
+    // cần bôi đen lại từ đầu mỗi lần.
+    if (onSelectionChange) onSelectionChange();
+  });
 
   if (layer.type === "shape") {
     const isVector = ["line", "arrow", "star", "triangle"].includes(
@@ -3547,6 +3665,20 @@ export default function BookBuilder() {
   // đè lên DOM thật, khiến chữ vừa bôi đậm/tô màu biến mất và con trỏ nhảy
   // về đầu đoạn (ra ngoài rìa trái).
   const editingHtmlSnapshotRef = useRef(null);
+  // Mốc [start, end] theo CHỈ SỐ KÝ TỰ mà applyTextFormat/applyTextColor để
+  // lại sau khi đổi định dạng, để LayerView khôi phục lại đúng vùng bôi đen
+  // đó NGAY SAU KHI DOM đang soạn bị React nạp lại (xem chú thích chi tiết
+  // tại useLayoutEffect trong LayerView) - đây là phần khắc phục lỗi "con
+  // trỏ nhảy về bên trái ngoài cùng" mỗi khi bấm Đậm/Nghiêng/Gạch chân/Màu.
+  const pendingSelectionRef = useRef(null);
+  // Định dạng THỰC TẾ của đúng đoạn đang được bôi đen (khác với
+  // layer.bold/layer.italic/layer.underline - đó là định dạng MẶC ĐỊNH của
+  // cả lớp chữ) - null khi không có vùng bôi đen nào (nút Đậm/Nghiêng/Gạch
+  // chân khi đó sáng theo định dạng mặc định của lớp như cũ). Đây là phần
+  // khắc phục lỗi nút "B" không sáng lên khi rê chọn lại đúng đoạn đã được
+  // bôi đậm riêng trước đó, khiến người dùng không biết bấm lại sẽ bỏ đậm
+  // hay bôi đậm thêm.
+  const [selFormat, setSelFormat] = useState(null);
 
   useEffect(() => setTtsOk(speechAvailable()), []);
   useEffect(() => {
@@ -3803,6 +3935,8 @@ export default function BookBuilder() {
     if (editingTextId === id) return;
     savedRangeRef.current = null;
     editingHtmlSnapshotRef.current = null;
+    pendingSelectionRef.current = null;
+    setSelFormat(null);
     setEditingTextId(id);
   };
 
@@ -3811,18 +3945,56 @@ export default function BookBuilder() {
     setEditingTextId(null);
     savedRangeRef.current = null;
     editingHtmlSnapshotRef.current = null;
+    pendingSelectionRef.current = null;
+    setSelFormat(null);
     if (!el) return;
     const html = sanitizeRichHtml(el.innerHTML);
     const text = el.innerText || el.textContent || "";
     updateLayer(id, { html, text }, { commit: true });
   };
 
-  // Ghi nhớ vùng bôi đen hiện tại trong lúc soạn thảo - cần thiết vì khi người dùng
-  // bấm nút Đậm/Nghiêng/Màu chữ ở bảng bên, ô soạn thảo có thể tạm mất focus.
+  // Ghi nhớ vùng bôi đen hiện tại trong lúc soạn thảo - cần thiết vì khi
+  // người dùng bấm nút Đậm/Nghiêng/Màu chữ ở bảng bên, ô soạn thảo có thể
+  // tạm mất focus. Đồng thời tính luôn định dạng THỰC TẾ (đậm/nghiêng/gạch
+  // chân) của đúng đoạn đang được bôi đen để nút tương ứng sáng lên đúng -
+  // trước đây nút chỉ dựa vào định dạng MẶC ĐỊNH của cả lớp chữ
+  // (selected.bold/.italic/.underline) nên bôi đậm riêng 1 vài chữ xong rê
+  // chọn lại đúng đoạn đó thì nút không bao giờ sáng lên, khiến không biết
+  // bấm lại sẽ BỎ đậm hay ĐẬM CHỒNG thêm 1 lớp nữa.
   const handleTextSelectionChange = () => {
     const sel = window.getSelection();
-    if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
-      savedRangeRef.current = sel.getRangeAt(0).cloneRange();
+    const el = editableRef.current;
+    if (sel && sel.rangeCount > 0 && !sel.isCollapsed && el) {
+      const range = sel.getRangeAt(0);
+      savedRangeRef.current = range.cloneRange();
+      let startIdx = charIndexOfDomPoint(
+        el,
+        range.startContainer,
+        range.startOffset,
+      );
+      let endIdx = charIndexOfDomPoint(el, range.endContainer, range.endOffset);
+      if (startIdx > endIdx) [startIdx, endIdx] = [endIdx, startIdx];
+      if (endIdx > startIdx) {
+        const runs = collectCharRunsFromDom(el);
+        let allBold = true;
+        let allItalic = true;
+        let allUnderline = true;
+        for (let i = startIdx; i < endIdx; i++) {
+          const r = runs[i];
+          if (!r || !r.bold) allBold = false;
+          if (!r || !r.italic) allItalic = false;
+          if (!r || !r.underline) allUnderline = false;
+        }
+        setSelFormat({
+          bold: allBold,
+          italic: allItalic,
+          underline: allUnderline,
+        });
+      } else {
+        setSelFormat(null);
+      }
+    } else {
+      setSelFormat(null);
     }
   };
 
@@ -3832,40 +4004,69 @@ export default function BookBuilder() {
     el.focus();
     const sel = window.getSelection();
     sel.removeAllRanges();
-    sel.addRange(savedRangeRef.current);
+    try {
+      sel.addRange(savedRangeRef.current);
+    } catch {
+      return null;
+    }
     return sel;
   };
 
-  // Áp dụng đậm / nghiêng / gạch chân: nếu đang bôi đen 1 đoạn chữ thì chỉ đổi đoạn đó,
-  // ngược lại (không có vùng chọn) thì giữ hành vi cũ - đổi định dạng mặc định cả lớp chữ.
+  // Áp dụng đậm/nghiêng/gạch chân: nếu đang bôi đen 1 đoạn chữ thì chỉ đổi
+  // ĐÚNG đoạn đó, dựa theo mô hình "mảng ký tự phẳng" (xem chú thích chi
+  // tiết ở collectCharRunsFromDom/charRunsToHtml phía trên) - kiểm tra CẢ
+  // dải ký tự đang chọn đã có định dạng này chưa (allOn) rồi lật ngược lại
+  // cho cả dải, nên bấm lần 2 luôn BỎ đúng định dạng vừa bấm lần 1, không
+  // còn phụ thuộc vùng chọn "cắt" thẻ <b>/<i>/<u> ở đâu trong cây DOM.
+  // Ngược lại (không có vùng chọn nào) thì giữ hành vi cũ - đổi định dạng
+  // mặc định của cả lớp chữ.
   const applyTextFormat = (command) => {
     if (!selected) return;
     if (editingTextId === selected.id && editableRef.current) {
       const sel = restoreSavedSelection();
       if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
-        const tagMap = { bold: "B", italic: "I", underline: "U" };
-        const tagName = tagMap[command];
-        const finalRange = runFormatCommandKeepingSelection(
-          sel.getRangeAt(0),
-          () => {
-            const liveRange = window.getSelection().getRangeAt(0);
-            toggleWrapInRange(liveRange, tagName);
-          },
+        const el = editableRef.current;
+        const liveRange = sel.getRangeAt(0);
+        let startIdx = charIndexOfDomPoint(
+          el,
+          liveRange.startContainer,
+          liveRange.startOffset,
         );
-        savedRangeRef.current = finalRange.cloneRange();
-        const html = sanitizeRichHtml(editableRef.current.innerHTML);
-        const text =
-          editableRef.current.innerText ||
-          editableRef.current.textContent ||
-          "";
-        // Đồng bộ lại snapshot "chốt" của LayerView với DOM mới (đã có
-        // <b>/<i>/<u> vừa bọc) - nếu không, updateLayer bên dưới khiến
-        // component re-render và LayerView vẫn dùng snapshot CŨ (lúc mới
-        // bắt đầu soạn) để ghi đè lại innerHTML, xoá mất định dạng vừa tô
-        // và đẩy con trỏ về đầu đoạn.
-        editingHtmlSnapshotRef.current = editableRef.current.innerHTML;
-        updateLayer(selected.id, { html, text }, { commit: true });
-        return;
+        let endIdx = charIndexOfDomPoint(
+          el,
+          liveRange.endContainer,
+          liveRange.endOffset,
+        );
+        if (startIdx > endIdx) [startIdx, endIdx] = [endIdx, startIdx];
+        if (endIdx > startIdx) {
+          const runs = collectCharRunsFromDom(el);
+          let allOn = true;
+          for (let i = startIdx; i < endIdx; i++) {
+            if (!runs[i] || !runs[i][command]) {
+              allOn = false;
+              break;
+            }
+          }
+          const nextVal = !allOn;
+          for (let i = startIdx; i < endIdx && i < runs.length; i++) {
+            runs[i] = { ...runs[i], [command]: nextVal };
+          }
+          const newHtml = charRunsToHtml(runs);
+          const text = el.innerText || el.textContent || "";
+          // Không tự set lại innerHTML/Selection ở đây - cứ để React nạp
+          // lại DOM bình thường qua updateLayer, rồi LayerView khôi phục
+          // đúng vùng bôi đen sau đó (theo pendingSelectionRef, xem chú
+          // thích ở useLayoutEffect trong LayerView) - đây chính là phần
+          // khắc phục lỗi "con trỏ nhảy về bên trái ngoài cùng".
+          editingHtmlSnapshotRef.current = newHtml;
+          pendingSelectionRef.current = { start: startIdx, end: endIdx };
+          updateLayer(
+            selected.id,
+            { html: sanitizeRichHtml(newHtml), text },
+            { commit: true },
+          );
+          return;
+        }
       }
     }
     if (command === "bold")
@@ -3880,8 +4081,9 @@ export default function BookBuilder() {
       );
   };
 
-  // Đổi màu chữ: nếu đang bôi đen 1 đoạn thì chỉ tô màu đoạn đó, còn không thì đổi màu
-  // mặc định của cả lớp chữ như trước.
+  // Đổi màu chữ: nếu đang bôi đen 1 đoạn thì chỉ tô màu đoạn đó (cùng mô
+  // hình mảng ký tự phẳng như applyTextFormat), còn không thì đổi màu mặc
+  // định của cả lớp chữ như trước.
   const applyTextColor = (color) => {
     if (!selected) return;
     // Gradient chỉ tô được cho cả khối chữ (CSS color không nhận gradient
@@ -3893,26 +4095,36 @@ export default function BookBuilder() {
       savedRangeRef.current
     ) {
       const sel = restoreSavedSelection();
-      if (sel && !sel.isCollapsed) {
-        const finalRange = runFormatCommandKeepingSelection(
-          sel.getRangeAt(0),
-          () => {
-            const liveRange = window.getSelection().getRangeAt(0);
-            applyColorInRange(liveRange, color);
-          },
+      if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
+        const el = editableRef.current;
+        const liveRange = sel.getRangeAt(0);
+        let startIdx = charIndexOfDomPoint(
+          el,
+          liveRange.startContainer,
+          liveRange.startOffset,
         );
-        savedRangeRef.current = finalRange.cloneRange();
-        const html = sanitizeRichHtml(editableRef.current.innerHTML);
-        const text =
-          editableRef.current.innerText ||
-          editableRef.current.textContent ||
-          "";
-        // Xem giải thích ở applyTextFormat - phải đồng bộ snapshot trước
-        // khi updateLayer, nếu không màu vừa tô cho 1 đoạn chữ sẽ bị mất
-        // và con trỏ nhảy về đầu ngay sau khi bấm chọn màu.
-        editingHtmlSnapshotRef.current = editableRef.current.innerHTML;
-        updateLayer(selected.id, { html, text }, { commit: true });
-        return;
+        let endIdx = charIndexOfDomPoint(
+          el,
+          liveRange.endContainer,
+          liveRange.endOffset,
+        );
+        if (startIdx > endIdx) [startIdx, endIdx] = [endIdx, startIdx];
+        if (endIdx > startIdx) {
+          const runs = collectCharRunsFromDom(el);
+          for (let i = startIdx; i < endIdx && i < runs.length; i++) {
+            runs[i] = { ...runs[i], color };
+          }
+          const newHtml = charRunsToHtml(runs);
+          const text = el.innerText || el.textContent || "";
+          editingHtmlSnapshotRef.current = newHtml;
+          pendingSelectionRef.current = { start: startIdx, end: endIdx };
+          updateLayer(
+            selected.id,
+            { html: sanitizeRichHtml(newHtml), text },
+            { commit: true },
+          );
+          return;
+        }
       }
     }
     updateLayer(selected.id, { color });
@@ -6497,8 +6709,20 @@ export default function BookBuilder() {
                 <div className="bb-field">
                   <label>Kiểu chữ</label>
                   <div className="bb-row3">
+                    {/* Khi đang bôi đen 1 đoạn (selFormat khác null), nút
+                    sáng theo định dạng THỰC TẾ của đúng đoạn đó, không phải
+                    định dạng mặc định của cả lớp chữ (selected.bold/.../…) -
+                    xem chú thích ở handleTextSelectionChange. */}
                     <button
-                      className={`bb-btn${selected.bold ? " active" : ""}`}
+                      className={`bb-btn${
+                        (
+                          editingTextId === selected.id && selFormat
+                            ? selFormat.bold
+                            : selected.bold
+                        )
+                          ? " active"
+                          : ""
+                      }`}
                       title="Đậm (bôi đen 1 đoạn để chỉ đổi đoạn đó)"
                       data-keep-edit="true"
                       onMouseDown={(e) => e.preventDefault()}
@@ -6507,7 +6731,15 @@ export default function BookBuilder() {
                       <Bold size={14} />
                     </button>
                     <button
-                      className={`bb-btn${selected.italic ? " active" : ""}`}
+                      className={`bb-btn${
+                        (
+                          editingTextId === selected.id && selFormat
+                            ? selFormat.italic
+                            : selected.italic
+                        )
+                          ? " active"
+                          : ""
+                      }`}
                       title="Nghiêng (bôi đen 1 đoạn để chỉ đổi đoạn đó)"
                       data-keep-edit="true"
                       onMouseDown={(e) => e.preventDefault()}
@@ -6516,7 +6748,15 @@ export default function BookBuilder() {
                       <Italic size={14} />
                     </button>
                     <button
-                      className={`bb-btn${selected.underline ? " active" : ""}`}
+                      className={`bb-btn${
+                        (
+                          editingTextId === selected.id && selFormat
+                            ? selFormat.underline
+                            : selected.underline
+                        )
+                          ? " active"
+                          : ""
+                      }`}
                       title="Gạch chân (bôi đen 1 đoạn để chỉ đổi đoạn đó)"
                       data-keep-edit="true"
                       onMouseDown={(e) => e.preventDefault()}
@@ -6824,6 +7064,11 @@ export default function BookBuilder() {
                     editingHtmlSnapshotRef={
                       editingTextId === layer.id
                         ? editingHtmlSnapshotRef
+                        : undefined
+                    }
+                    pendingSelectionRef={
+                      editingTextId === layer.id
+                        ? pendingSelectionRef
                         : undefined
                     }
                     onStartEditText={startEditText}
