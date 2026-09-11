@@ -17,6 +17,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [showFlame, setShowFlame] = useState(false);
   const [pendingNav, setPendingNav] = useState(null);
+  const [pendingAuth, setPendingAuth] = useState(null);
 
   const {
     register,
@@ -29,12 +30,7 @@ export default function Login() {
       setLoading(true);
       const res = await authService.login(data);
       const { user, accessToken } = res.data.data;
-      setAuth(user, accessToken);
 
-      // Nếu người dùng bị dẫn tới trang login từ 1 trang cần đăng nhập
-      // (vd quét QR AR), quay lại đúng trang đó thay vì luôn về trang
-      // chủ / dashboard. Chỉ chấp nhận đường dẫn nội bộ bắt đầu bằng
-      // "/" và không phải "//" (chặn open-redirect ra domain khác).
       const redirect = searchParams.get("redirect");
       const isSafeRedirect =
         redirect && redirect.startsWith("/") && !redirect.startsWith("//");
@@ -47,8 +43,7 @@ export default function Login() {
           ? "/dashboard"
           : "/";
 
-      // Không navigate ngay - kích hoạt hiệu ứng "viền lửa xanh" bao quanh
-      // màn hình trước, rồi mới chuyển trang khi hiệu ứng kết thúc.
+      setPendingAuth({ user, accessToken });
       setPendingNav(target);
       setShowFlame(true);
     } catch (err) {
@@ -60,6 +55,9 @@ export default function Login() {
   const handleFlameComplete = () => {
     setLoading(false);
     setShowFlame(false);
+    if (pendingAuth) {
+      setAuth(pendingAuth.user, pendingAuth.accessToken);
+    }
     if (pendingNav) {
       navigate(pendingNav, { replace: true });
     }

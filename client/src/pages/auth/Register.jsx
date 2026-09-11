@@ -43,6 +43,7 @@ export default function Register() {
   const otpRefs = useRef([]);
   const [showFlame, setShowFlame] = useState(false);
   const pendingNav = useRef(null);
+  const pendingAuth = useRef(null);
 
   //  Resend countdown
   useEffect(() => {
@@ -86,9 +87,7 @@ export default function Register() {
   });
   const checks = pwChecks(password);
 
-  // ════════════════════════════════════════
   // Step 1: Register → sendOtp → vào màn OTP
-  // ════════════════════════════════════════
   const onSubmit = async (data) => {
     try {
       setLoading(true);
@@ -115,9 +114,7 @@ export default function Register() {
     }
   };
 
-  // ════════════════════════════════════════
   // Step 2: OTP input handlers
-  // ════════════════════════════════════════
   const handleOtpChange = (idx, val) => {
     if (!/^\d?$/.test(val)) return;
     const next = [...otp];
@@ -168,11 +165,8 @@ export default function Register() {
       // Hiện viền xanh báo đúng, đợi 1 nhịp rồi mới chuyển bước tiếp theo
       setOtpStatus("success");
       await new Promise((r) => setTimeout(r, 500));
-      setAuth(user, accessToken);
       toast.success(`Chào mừng đến với Earthoria, ${user.name}! 🌿`);
-
-      // Kích hoạt hiệu ứng "viền lửa xanh" bao toàn màn hình trước khi
-      // điều hướng, thay vì navigate ngay.
+      pendingAuth.current = { user, accessToken };
       pendingNav.current = "/";
       setShowFlame(true);
     } catch (err) {
@@ -220,14 +214,15 @@ export default function Register() {
   };
 
   const handleFlameComplete = () => {
+    if (pendingAuth.current) {
+      setAuth(pendingAuth.current.user, pendingAuth.current.accessToken);
+    }
     if (pendingNav.current) {
       navigate(pendingNav.current);
     }
   };
 
-  // ════════════════════════════════════════
   // RENDER
-  // ════════════════════════════════════════
   return (
     <main className="auth-page">
       {/* LEFT - giữ nguyên */}
@@ -327,7 +322,7 @@ export default function Register() {
       {/* RIGHT */}
       <div className="auth-form-panel">
         <div className="auth-form-wrap">
-          {/* ══════════ BƯỚC OTP ══════════ */}
+          {/*   BƯỚC OTP   */}
           {step === "otp" ? (
             <div className="auth-otp-step">
               <div className="auth-form-header">
@@ -461,7 +456,7 @@ export default function Register() {
               </p>
             </div>
           ) : (
-            /* ══════════ BƯỚC ĐĂNG KÝ (giữ nguyên) ══════════ */
+            /*   BƯỚC ĐĂNG KÝ (giữ nguyên)   */
             <>
               <div className="auth-form-header">
                 <div className="auth-form-eyebrow">
