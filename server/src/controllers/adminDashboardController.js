@@ -1,8 +1,29 @@
+// ─────────────────────────────────────────────────────────────────────────
+// ADMIN DASHBOARD - dữ liệu mở rộng, tách riêng theo từng tab để:
+//  1) Không làm phình to adminController.js (đã rất lớn)
+//  2) Cho phép frontend load từng tab riêng lẻ (chỉ gọi API khi user bấm
+//     vào tab đó), tránh 1 request khổng lồ chậm cho trang tổng quan.
+//
+// TẤT CẢ endpoint dưới đây đều nhận query ?from=YYYY-MM-DD&to=YYYY-MM-DD
+// (xem server/src/utils/dateRange.js) - mặc định 30 ngày gần nhất nếu không
+// truyền. Các biểu đồ theo thời gian tự chọn granularity ngày/tuần/tháng
+// tuỳ độ dài khoảng đã chọn.
+//
+// Tab "Tổng quan" (getDashboard) nằm ở adminController.js, cũng dùng chung
+// helper dateRange.js này.
+// ─────────────────────────────────────────────────────────────────────────
+
 const prisma = require("../config/db");
 const { resolveTierBySpend } = require("../utils/loyaltyTier");
 const { calculateAge } = require("../utils/age");
+const {
+  resolveDateRange,
+  pickBucket,
+  bucketKeys,
+  fillBucketChart,
+} = require("../utils/dateRange");
 
-const SUCCESSFUL_ORDER_STATUSEpS = [
+const SUCCESSFUL_ORDER_STATUSES = [
   "CONFIRMED",
   "SHIPPING",
   "DELIVERED",
@@ -11,39 +32,6 @@ const SUCCESSFUL_ORDER_STATUSEpS = [
 
 /* ── Helpers dùng chung ── */
 
-// Sinh dãy N ngày gần nhất (bao gồm hôm nay), trả về mảng key "YYYY-MM-DD" theo thứ tự tăng dần
-function lastNDaysKeys(n) {
-  const out = [];
-  const now = new Date();
-  for (let i = n - 1; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(now.getDate() - i);
-    d.setHours(0, 0, 0, 0);
-    out.push(d);
-  }
-  return out;
-}
-
-const WEEKDAY_LABEL = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
-
-function fillDailyChart(rows, days, { dateField = "day", valueField = "count", labelWithWeekday = true } = {}) {
-  const map = new Map(
-    rows.map((r) => [new Date(r[dateField]).toISOString().slice(0, 10), r]),
-  );
-  return days.map((d) => {
-    const key = d.toISOString().slice(0, 10);
-    const row = map.get(key);
-    return {
-      day: labelWithWeekday
-        ? WEEKDAY_LABEL[d.getDay()]
-        : `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`,
-      date: key,
-      [valueField]: row ? Number(row[valueField]) : 0,
-    };
-  });
-}
-
-// Phân loại User-Agent thô thành nhóm thiết bị, chỉ để hiển thị biểu đồ, không cần chính xác tuyệt đối
 function classifyDevice(ua) {
   if (!ua) return "Không rõ";
   const s = ua.toLowerCase();
@@ -53,24 +41,56 @@ function classifyDevice(ua) {
   return "Khác";
 }
 
+// Chuẩn bị {start, end, bucket, keys, meta} dùng chung cho mọi hàm bên dưới
+function prepareRange(req) {
+  const { start, end } = resolveDateRange(req.query);
+  const bucket = pickBucket(start, end);
+  const keys = bucketKeys(start, end, bucket);
+  const meta = {
+    from: start.toISOString().slice(0, 10),
+    to: end.toISOString().slice(0, 10),
+    bucket,
+  };
+  return { start, end, bucket, keys, meta };
+}
+
 /* ═══════════════════════════ TAB: NGƯỜI DÙNG ═══════════════════════════ */
 exports.getDashboardUsers = async (req, res) => {
   try {
-    const now = new Date();
+    const { start, end, bucket, keys, meta } = prepareRange(req);
+    const createdInRange = { createdAt: { gte: start, lte: end } };
 
-    const [roleGroups, genderGroups, activeCount, inactiveCount, totalChildren, lockedChildren] =
-      await Promise.all([
-        prisma.user.groupBy({ by: ["role"], _count: { _all: true } }),
-        prisma.user.groupBy({
-          by: ["gender"],
-          _count: { _all: true },
-          where: { role: "CUSTOMER" },
-        }),
-        prisma.user.count({ where: { role: "CUSTOMER", isActive: true } }),
-        prisma.user.count({ where: { role: "CUSTOMER", isActive: false } }),
-        prisma.childProfile.count({ where: { isActive: true } }),
-        prisma.childProfile.count({ where: { isActive: true, isLocked: true } }),
-      ]);
+    const [
+      roleGroups,
+      genderGroups,
+      activeCount,
+      inactiveCount,
+      totalChildren,
+      lockedChildren,
+    ] = await Promise.all([
+      prisma.user.groupBy({
+        by: ["role"],
+        _count: { _all: true },
+        where: createdInRange,
+      }),
+      prisma.user.groupBy({
+        by: ["gender"],
+        _count: { _all: true },
+        where: { role: "CUSTOMER", ...createdInRange },
+      }),
+      prisma.user.count({
+        where: { role: "CUSTOMER", isActive: true, ...createdInRange },
+      }),
+      prisma.user.count({
+        where: { role: "CUSTOMER", isActive: false, ...createdInRange },
+      }),
+      prisma.childProfile.count({
+        where: { isActive: true, ...createdInRange },
+      }),
+      prisma.childProfile.count({
+        where: { isActive: true, isLocked: true, ...createdInRange },
+      }),
+    ]);
 
     const roleBreakdown = roleGroups.map((g) => ({
       role: g.role,
@@ -83,47 +103,59 @@ exports.getDashboardUsers = async (req, res) => {
       value: g._count._all,
     }));
 
-    // Người dùng mới 30 ngày gần nhất, theo ngày
-    const rangeStart30 = new Date(now);
-    rangeStart30.setDate(now.getDate() - 29);
-    rangeStart30.setHours(0, 0, 0, 0);
-
-    const newUsersRows = await prisma.$queryRaw`
-      SELECT date_trunc('day', "createdAt") AS day, COUNT(*)::int AS count
+    const newUsersRowsRaw = await prisma.$queryRaw`
+      SELECT date_trunc(${bucket}, "createdAt") AS bucket, COUNT(*)::int AS count
       FROM "User"
-      WHERE "createdAt" >= ${rangeStart30} AND role = 'CUSTOMER'
+      WHERE "createdAt" >= ${start} AND "createdAt" <= ${end} AND role = 'CUSTOMER'
       GROUP BY 1 ORDER BY 1
     `;
-    const newUsersChart30d = fillDailyChart(newUsersRows, lastNDaysKeys(30), {
-      labelWithWeekday: false,
-    });
+    const newUsersChart = fillBucketChart(newUsersRowsRaw, keys, bucket, [
+      "count",
+    ]).map((r) => ({
+      day: r.label,
+      date: r.date,
+      count: r.count,
+    }));
 
-    // Tăng trưởng người dùng theo tháng (12 tháng gần nhất) - lũy kế
-    const rangeStart12m = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+    // Tăng trưởng người dùng: biểu đồ MACRO cố định 12 tháng gần nhất, KHÔNG đổi theo bộ lọc
+    // ngày/tuần đang chọn (vì lũy kế theo range ngắn sẽ không có ý nghĩa xu hướng dài hạn)
+    const growthNow = new Date();
+    const growthRangeStart = new Date(
+      growthNow.getFullYear(),
+      growthNow.getMonth() - 11,
+      1,
+    );
     const growthRows = await prisma.$queryRaw`
-      SELECT date_trunc('month', "createdAt") AS month, COUNT(*)::int AS count
+      SELECT date_trunc('month', "createdAt") AS bucket, COUNT(*)::int AS count
       FROM "User"
-      WHERE "createdAt" >= ${rangeStart12m} AND role = 'CUSTOMER'
+      WHERE "createdAt" >= ${growthRangeStart} AND role = 'CUSTOMER'
       GROUP BY 1 ORDER BY 1
     `;
     const growthMap = new Map(
-      growthRows.map((r) => [`${r.month.getFullYear()}-${r.month.getMonth() + 1}`, r.count]),
+      growthRows.map((r) => [
+        `${r.bucket.getFullYear()}-${r.bucket.getMonth() + 1}`,
+        r.count,
+      ]),
     );
     let cumulative = await prisma.user.count({
-      where: { role: "CUSTOMER", createdAt: { lt: rangeStart12m } },
+      where: { role: "CUSTOMER", createdAt: { lt: growthRangeStart } },
     });
     const userGrowthChart = Array.from({ length: 12 }, (_, i) => {
-      const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
+      const d = new Date(
+        growthNow.getFullYear(),
+        growthNow.getMonth() - 11 + i,
+        1,
+      );
       const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
       const added = growthMap.get(key) ?? 0;
       cumulative += added;
       return { month: `T${d.getMonth() + 1}`, new: added, total: cumulative };
     });
 
-    // Top tỉnh/thành theo số địa chỉ đã lưu - đại diện gần đúng cho phân bố địa lý khách hàng
     const provinceGroups = await prisma.address.groupBy({
       by: ["province"],
       _count: { _all: true },
+      where: { user: createdInRange },
       orderBy: { _count: { province: "desc" } },
       take: 8,
     });
@@ -132,20 +164,22 @@ exports.getDashboardUsers = async (req, res) => {
       count: g._count._all,
     }));
 
-    // Hoạt động đăng nhập (proxy qua RefreshToken được tạo mới = 1 lượt đăng nhập) 7 ngày gần nhất
-    const rangeStart7 = new Date(now);
-    rangeStart7.setDate(now.getDate() - 6);
-    rangeStart7.setHours(0, 0, 0, 0);
     const loginRows = await prisma.$queryRaw`
-      SELECT date_trunc('day', "createdAt") AS day, COUNT(*)::int AS count
+      SELECT date_trunc(${bucket}, "createdAt") AS bucket, COUNT(*)::int AS count
       FROM "RefreshToken"
-      WHERE "createdAt" >= ${rangeStart7}
+      WHERE "createdAt" >= ${start} AND "createdAt" <= ${end}
       GROUP BY 1 ORDER BY 1
     `;
-    const loginActivityChart = fillDailyChart(loginRows, lastNDaysKeys(7));
+    const loginActivityChart = fillBucketChart(loginRows, keys, bucket, [
+      "count",
+    ]).map((r) => ({
+      day: r.label,
+      date: r.date,
+      count: r.count,
+    }));
 
-    // Phân loại thiết bị đăng nhập gần đây (mẫu 500 phiên gần nhất)
     const recentTokens = await prisma.refreshToken.findMany({
+      where: createdInRange,
       take: 500,
       orderBy: { createdAt: "desc" },
       select: { userAgent: true },
@@ -160,10 +194,9 @@ exports.getDashboardUsers = async (req, res) => {
       value,
     }));
 
-    // Phân bổ hạng thành viên (Vùng Đất) theo tổng chi tiêu các đơn thành công
     const spendByUser = await prisma.order.groupBy({
       by: ["userId"],
-      where: { status: { in: SUCCESSFUL_ORDER_STATUSES } },
+      where: { status: { in: SUCCESSFUL_ORDER_STATUSES }, ...createdInRange },
       _sum: { total: true },
     });
     const tierMap = new Map();
@@ -184,6 +217,7 @@ exports.getDashboardUsers = async (req, res) => {
     return res.json({
       success: true,
       data: {
+        meta,
         stats: {
           totalCustomers: activeCount + inactiveCount,
           activeCustomers: activeCount,
@@ -193,7 +227,7 @@ exports.getDashboardUsers = async (req, res) => {
         },
         roleBreakdown,
         genderBreakdown,
-        newUsersChart30d,
+        newUsersChart,
         userGrowthChart,
         topProvinces,
         loginActivityChart,
@@ -210,27 +244,38 @@ exports.getDashboardUsers = async (req, res) => {
 /* ═══════════════════════════ TAB: KINH DOANH ═══════════════════════════ */
 exports.getDashboardSales = async (req, res) => {
   try {
-    const now = new Date();
+    const { start, end, bucket, keys, meta } = prepareRange(req);
+    const createdInRange = { createdAt: { gte: start, lte: end } };
 
-    const [paymentGroups, formatGroups, cancelledCount, refundedCount, cartsWithItems, couponsAgg] =
-      await Promise.all([
-        prisma.order.groupBy({
-          by: ["paymentMethod"],
-          where: { paymentStatus: "PAID" },
-          _count: { _all: true },
-          _sum: { total: true },
-        }),
-        prisma.order.groupBy({
-          by: ["isDigital"],
-          where: { paymentStatus: "PAID" },
-          _count: { _all: true },
-          _sum: { total: true },
-        }),
-        prisma.order.count({ where: { status: "CANCELLED" } }),
-        prisma.order.count({ where: { status: "REFUNDED" } }),
-        prisma.cart.count({ where: { items: { some: {} } } }),
-        prisma.coupon.aggregate({ _sum: { usedCount: true }, _count: { _all: true } }),
-      ]);
+    const [
+      paymentGroups,
+      formatGroups,
+      cancelledCount,
+      refundedCount,
+      cartsWithItems,
+      couponsAgg,
+    ] = await Promise.all([
+      prisma.order.groupBy({
+        by: ["paymentMethod"],
+        where: { paymentStatus: "PAID", ...createdInRange },
+        _count: { _all: true },
+        _sum: { total: true },
+      }),
+      prisma.order.groupBy({
+        by: ["isDigital"],
+        where: { paymentStatus: "PAID", ...createdInRange },
+        _count: { _all: true },
+        _sum: { total: true },
+      }),
+      prisma.order.count({ where: { status: "CANCELLED", ...createdInRange } }),
+      prisma.order.count({ where: { status: "REFUNDED", ...createdInRange } }),
+      prisma.cart.count({ where: { items: { some: {} } } }),
+      prisma.coupon.aggregate({
+        _sum: { usedCount: true },
+        _count: { _all: true },
+        where: createdInRange,
+      }),
+    ]);
 
     const paymentMethodBreakdown = paymentGroups.map((g) => ({
       name: g.paymentMethod,
@@ -244,70 +289,83 @@ exports.getDashboardSales = async (req, res) => {
       revenue: Math.round(((g._sum.total ?? 0) / 1_000_000) * 10) / 10,
     }));
 
-    // Đơn hàng & doanh thu 30 ngày gần nhất
-    const rangeStart30 = new Date(now);
-    rangeStart30.setDate(now.getDate() - 29);
-    rangeStart30.setHours(0, 0, 0, 0);
     const dailyRows = await prisma.$queryRaw`
-      SELECT date_trunc('day', "createdAt") AS day,
+      SELECT date_trunc(${bucket}, "createdAt") AS bucket,
              COUNT(*)::int AS count,
-             COALESCE(SUM(total) FILTER (WHERE "paymentStatus" = 'PAID'), 0)::float AS revenue
+             COALESCE(SUM(total) FILTER (WHERE "paymentStatus" = 'PAID'), 0)::float AS revenueRaw
       FROM "Order"
-      WHERE "createdAt" >= ${rangeStart30}
+      WHERE "createdAt" >= ${start} AND "createdAt" <= ${end}
       GROUP BY 1 ORDER BY 1
     `;
-    const ordersChart30d = lastNDaysKeys(30).map((d) => {
-      const key = d.toISOString().slice(0, 10);
-      const row = dailyRows.find(
-        (r) => new Date(r.day).toISOString().slice(0, 10) === key,
-      );
-      return {
-        day: `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`,
-        orders: row?.count ?? 0,
-        revenue: row ? Math.round((row.revenue / 1_000_000) * 10) / 10 : 0,
-      };
-    });
+    const ordersChartRaw = fillBucketChart(dailyRows, keys, bucket, [
+      "count",
+      "revenueRaw",
+    ]);
+    const ordersChart = ordersChartRaw.map((r) => ({
+      day: r.label,
+      orders: r.count,
+      revenue: Math.round((r.revenueRaw / 1_000_000) * 10) / 10,
+    }));
 
-    // Top danh mục theo SỐ ĐƠN (khác với tab tổng quan đang tính theo doanh thu)
     const paidItems = await prisma.orderItem.findMany({
-      where: { order: { paymentStatus: "PAID" } },
+      where: { order: { paymentStatus: "PAID", ...createdInRange } },
       select: {
         quantity: true,
         variant: {
-          select: { book: { select: { category: { select: { name: true } } } } },
+          select: {
+            book: { select: { category: { select: { name: true } } } },
+          },
         },
       },
     });
     const categoryCountMap = new Map();
     for (const item of paidItems) {
       const name = item.variant.book.category?.name ?? "Chưa phân loại";
-      categoryCountMap.set(name, (categoryCountMap.get(name) ?? 0) + item.quantity);
+      categoryCountMap.set(
+        name,
+        (categoryCountMap.get(name) ?? 0) + item.quantity,
+      );
     }
     const topCategoriesByOrders = [...categoryCountMap.entries()]
       .map(([name, sold]) => ({ name, sold }))
       .sort((a, b) => b.sold - a.sold)
       .slice(0, 8);
 
-    // Top mã giảm giá dùng nhiều nhất
     const topCoupons = await prisma.coupon.findMany({
+      where: createdInRange,
       orderBy: { usedCount: "desc" },
       take: 6,
-      select: { code: true, type: true, value: true, usedCount: true, usageLimit: true },
+      select: {
+        code: true,
+        type: true,
+        value: true,
+        usedCount: true,
+        usageLimit: true,
+      },
     });
 
-    const totalPaidOrders = paymentGroups.reduce((s, g) => s + g._count._all, 0);
-    const totalPaidRevenue = paymentGroups.reduce((s, g) => s + (g._sum.total ?? 0), 0);
-    const avgOrderValue = totalPaidOrders > 0 ? Math.round(totalPaidRevenue / totalPaidOrders) : 0;
+    const totalPaidOrders = paymentGroups.reduce(
+      (s, g) => s + g._count._all,
+      0,
+    );
+    const totalPaidRevenue = paymentGroups.reduce(
+      (s, g) => s + (g._sum.total ?? 0),
+      0,
+    );
+    const avgOrderValue =
+      totalPaidOrders > 0 ? Math.round(totalPaidRevenue / totalPaidOrders) : 0;
 
-    // Ước lượng tỉ lệ bỏ giỏ hàng: số giỏ có sản phẩm / (giỏ có sản phẩm + đơn PAID)
     const cartAbandonmentRate =
       cartsWithItems + totalPaidOrders > 0
-        ? Math.round((cartsWithItems / (cartsWithItems + totalPaidOrders)) * 1000) / 10
+        ? Math.round(
+            (cartsWithItems / (cartsWithItems + totalPaidOrders)) * 1000,
+          ) / 10
         : 0;
 
     return res.json({
       success: true,
       data: {
+        meta,
         stats: {
           avgOrderValue,
           cancelledCount,
@@ -319,7 +377,7 @@ exports.getDashboardSales = async (req, res) => {
         },
         paymentMethodBreakdown,
         formatBreakdown,
-        ordersChart30d,
+        ordersChart,
         topCategoriesByOrders,
         topCoupons,
       },
@@ -333,52 +391,65 @@ exports.getDashboardSales = async (req, res) => {
 /* ═══════════════════════════ TAB: NỘI DUNG ═══════════════════════════ */
 exports.getDashboardContent = async (req, res) => {
   try {
-    const [topGames, topArCodes, ratingGroups, wishlistGroups, reviewCount, gameResultsAgg] =
-      await Promise.all([
-        prisma.game.findMany({
-          where: { isActive: true },
-          orderBy: { playCount: "desc" },
-          take: 8,
-          select: {
-            title: true,
-            playCount: true,
-            gameType: true,
-            difficulty: true,
-            book: { select: { title: true } },
-          },
-        }),
-        prisma.arCode.findMany({
-          where: { isActive: true },
-          orderBy: { scanCount: "desc" },
-          take: 8,
-          select: {
-            label: true,
-            scanCount: true,
-            book: { select: { title: true } },
-          },
-        }),
-        prisma.review.groupBy({
-          by: ["rating"],
-          where: { isVisible: true },
-          _count: { _all: true },
-        }),
-        prisma.wishlist.groupBy({
-          by: ["bookId"],
-          _count: { _all: true },
-          orderBy: { _count: { bookId: "desc" } },
-          take: 8,
-        }),
-        prisma.review.count({ where: { isVisible: true } }),
-        prisma.gameResult.aggregate({
-          _count: { _all: true },
-          _avg: { score: true, durationSeconds: true },
-        }),
-      ]);
+    const { start, end, meta } = prepareRange(req);
+    const completedInRange = { completedAt: { gte: start, lte: end } };
+    const createdInRange = { createdAt: { gte: start, lte: end } };
 
-    // Đọc ebook: dùng ChildActivityLog (nhật ký phiên đọc/AR của trẻ) làm nguồn dữ liệu thật
+    // playCount/scanCount là bộ đếm cộng dồn all-time trên Game/ArCode (không tách được
+    // theo khoảng thời gian) nên phần "top game/AR" giữ nguyên all-time, có ghi chú ở FE.
+    const [
+      topGames,
+      topArCodes,
+      ratingGroups,
+      wishlistGroups,
+      reviewCount,
+      gameResultsAgg,
+    ] = await Promise.all([
+      prisma.game.findMany({
+        where: { isActive: true },
+        orderBy: { playCount: "desc" },
+        take: 8,
+        select: {
+          title: true,
+          playCount: true,
+          gameType: true,
+          difficulty: true,
+          book: { select: { title: true } },
+        },
+      }),
+      prisma.arCode.findMany({
+        where: { isActive: true },
+        orderBy: { scanCount: "desc" },
+        take: 8,
+        select: {
+          label: true,
+          scanCount: true,
+          book: { select: { title: true } },
+        },
+      }),
+      prisma.review.groupBy({
+        by: ["rating"],
+        where: { isVisible: true, ...createdInRange },
+        _count: { _all: true },
+      }),
+      prisma.wishlist.groupBy({
+        by: ["bookId"],
+        where: createdInRange,
+        _count: { _all: true },
+        orderBy: { _count: { bookId: "desc" } },
+        take: 8,
+      }),
+      prisma.review.count({ where: { isVisible: true, ...createdInRange } }),
+      prisma.gameResult.aggregate({
+        where: completedInRange,
+        _count: { _all: true },
+        _avg: { score: true, durationSeconds: true },
+      }),
+    ]);
+
     const readingRows = await prisma.childActivityLog.groupBy({
       by: ["bookId"],
-      where: { bookId: { not: null } },
+      where: { bookId: { not: null }, ...createdInRange },
       _sum: { minutes: true },
       _count: { _all: true },
       orderBy: { _sum: { minutes: "desc" } },
@@ -398,15 +469,19 @@ exports.getDashboardContent = async (req, res) => {
       sessions: r._count._all,
     }));
 
-    // Rating trung bình + phân bổ 1-5 sao
-    const totalRatingSum = ratingGroups.reduce((s, g) => s + g.rating * g._count._all, 0);
-    const avgRating = reviewCount > 0 ? Math.round((totalRatingSum / reviewCount) * 10) / 10 : 0;
+    const totalRatingSum = ratingGroups.reduce(
+      (s, g) => s + g.rating * g._count._all,
+      0,
+    );
+    const avgRating =
+      reviewCount > 0
+        ? Math.round((totalRatingSum / reviewCount) * 10) / 10
+        : 0;
     const ratingBreakdown = [5, 4, 3, 2, 1].map((star) => ({
       star,
       count: ratingGroups.find((g) => g.rating === star)?._count._all ?? 0,
     }));
 
-    // Wishlist: gắn tên sách
     const wishlistBookIds = wishlistGroups.map((g) => g.bookId);
     const wishlistBooks = wishlistBookIds.length
       ? await prisma.book.findMany({
@@ -423,12 +498,15 @@ exports.getDashboardContent = async (req, res) => {
     return res.json({
       success: true,
       data: {
+        meta,
         stats: {
           totalReviews: reviewCount,
           avgRating,
           totalGamePlays: gameResultsAgg._count._all,
           avgGameScore: Math.round(gameResultsAgg._avg.score ?? 0),
-          avgGameDurationSeconds: Math.round(gameResultsAgg._avg.durationSeconds ?? 0),
+          avgGameDurationSeconds: Math.round(
+            gameResultsAgg._avg.durationSeconds ?? 0,
+          ),
         },
         topGames,
         topArCodes,
@@ -446,31 +524,40 @@ exports.getDashboardContent = async (req, res) => {
 /* ═══════════════════════════ TAB: GIA ĐÌNH (TRẺ EM) ═══════════════════════════ */
 exports.getDashboardFamily = async (req, res) => {
   try {
-    const [children, requestGroups, auditGroups, gardenAgg, mostActiveRows] = await Promise.all([
-      prisma.childProfile.findMany({
-        where: { isActive: true },
-        select: { dob: true, dailyLimitMinutes: true },
-      }),
-      prisma.childBookRequest.groupBy({ by: ["status"], _count: { _all: true } }),
-      prisma.childAuditLog.groupBy({
-        by: ["type"],
-        _count: { _all: true },
-        orderBy: { _count: { type: "desc" } },
-        take: 8,
-      }),
-      prisma.childGarden.aggregate({
-        _avg: { forestLevel: true, currentStreak: true, longestStreak: true },
-        _count: { _all: true },
-      }),
-      prisma.childActivityLog.groupBy({
-        by: ["childId"],
-        _sum: { minutes: true },
-        orderBy: { _sum: { minutes: "desc" } },
-        take: 8,
-      }),
-    ]);
+    const { start, end, meta } = prepareRange(req);
+    const createdInRange = { createdAt: { gte: start, lte: end } };
 
-    // Nhóm tuổi
+    const [children, requestGroups, auditGroups, gardenAgg, mostActiveRows] =
+      await Promise.all([
+        prisma.childProfile.findMany({
+          where: { isActive: true, ...createdInRange },
+          select: { dob: true, dailyLimitMinutes: true },
+        }),
+        prisma.childBookRequest.groupBy({
+          by: ["status"],
+          where: createdInRange,
+          _count: { _all: true },
+        }),
+        prisma.childAuditLog.groupBy({
+          by: ["type"],
+          where: createdInRange,
+          _count: { _all: true },
+          orderBy: { _count: { type: "desc" } },
+          take: 8,
+        }),
+        prisma.childGarden.aggregate({
+          _avg: { forestLevel: true, currentStreak: true, longestStreak: true },
+          _count: { _all: true },
+        }),
+        prisma.childActivityLog.groupBy({
+          by: ["childId"],
+          where: createdInRange,
+          _sum: { minutes: true },
+          orderBy: { _sum: { minutes: "desc" } },
+          take: 8,
+        }),
+      ]);
+
     const AGE_BUCKETS = [
       { label: "0-4 tuổi", min: 0, max: 4 },
       { label: "5-7 tuổi", min: 5, max: 7 },
@@ -490,7 +577,11 @@ exports.getDashboardFamily = async (req, res) => {
       ? Math.round(totalDailyLimit / children.length)
       : 0;
 
-    const REQUEST_LABEL = { PENDING: "Chờ duyệt", APPROVED: "Đã duyệt", DECLINED: "Từ chối" };
+    const REQUEST_LABEL = {
+      PENDING: "Chờ duyệt",
+      APPROVED: "Đã duyệt",
+      DECLINED: "Từ chối",
+    };
     const bookRequestBreakdown = requestGroups.map((g) => ({
       name: REQUEST_LABEL[g.status] ?? g.status,
       value: g._count._all,
@@ -501,7 +592,6 @@ exports.getDashboardFamily = async (req, res) => {
       count: g._count._all,
     }));
 
-    // Trẻ hoạt động nhiều nhất (theo tổng số phút đọc/xem AR)
     const childIds = mostActiveRows.map((r) => r.childId);
     const childProfiles = childIds.length
       ? await prisma.childProfile.findMany({
@@ -519,12 +609,16 @@ exports.getDashboardFamily = async (req, res) => {
     return res.json({
       success: true,
       data: {
+        meta,
         stats: {
           totalActiveChildren: children.length,
           avgDailyLimitMinutes,
-          avgForestLevel: Math.round((gardenAgg._avg.forestLevel ?? 0) * 10) / 10,
-          avgCurrentStreak: Math.round((gardenAgg._avg.currentStreak ?? 0) * 10) / 10,
-          avgLongestStreak: Math.round((gardenAgg._avg.longestStreak ?? 0) * 10) / 10,
+          avgForestLevel:
+            Math.round((gardenAgg._avg.forestLevel ?? 0) * 10) / 10,
+          avgCurrentStreak:
+            Math.round((gardenAgg._avg.currentStreak ?? 0) * 10) / 10,
+          avgLongestStreak:
+            Math.round((gardenAgg._avg.longestStreak ?? 0) * 10) / 10,
           totalGardens: gardenAgg._count._all,
         },
         ageBreakdown,
@@ -542,18 +636,38 @@ exports.getDashboardFamily = async (req, res) => {
 /* ═══════════════════════════ TAB: HỖ TRỢ (TICKET) ═══════════════════════════ */
 exports.getDashboardSupport = async (req, res) => {
   try {
-    const now = new Date();
+    const { start, end, bucket, keys, meta } = prepareRange(req);
+    const createdInRange = { createdAt: { gte: start, lte: end } };
 
-    const [statusGroups, subjectGroups, recentTickets, repliesAgg] = await Promise.all([
-      prisma.ticket.groupBy({ by: ["status"], _count: { _all: true } }),
-      prisma.ticket.groupBy({ by: ["subject"], _count: { _all: true } }),
-      prisma.ticket.findMany({
-        take: 6,
-        orderBy: { createdAt: "desc" },
-        select: { code: true, name: true, subject: true, status: true, createdAt: true },
-      }),
-      prisma.ticketReply.aggregate({ _count: { _all: true } }),
-    ]);
+    const [statusGroups, subjectGroups, recentTickets, repliesAgg] =
+      await Promise.all([
+        prisma.ticket.groupBy({
+          by: ["status"],
+          where: createdInRange,
+          _count: { _all: true },
+        }),
+        prisma.ticket.groupBy({
+          by: ["subject"],
+          where: createdInRange,
+          _count: { _all: true },
+        }),
+        prisma.ticket.findMany({
+          where: createdInRange,
+          take: 6,
+          orderBy: { createdAt: "desc" },
+          select: {
+            code: true,
+            name: true,
+            subject: true,
+            status: true,
+            createdAt: true,
+          },
+        }),
+        prisma.ticketReply.aggregate({
+          where: { ticket: createdInRange },
+          _count: { _all: true },
+        }),
+      ]);
 
     const STATUS_LABEL = {
       NEW: "Mới",
@@ -584,28 +698,30 @@ exports.getDashboardSupport = async (req, res) => {
       (statusGroups.find((g) => g.status === "NEW")?._count._all ?? 0) +
       (statusGroups.find((g) => g.status === "IN_PROGRESS")?._count._all ?? 0);
 
-    // Ticket mới 7 ngày gần nhất
-    const rangeStart7 = new Date(now);
-    rangeStart7.setDate(now.getDate() - 6);
-    rangeStart7.setHours(0, 0, 0, 0);
     const ticketRows = await prisma.$queryRaw`
-      SELECT date_trunc('day', "createdAt") AS day, COUNT(*)::int AS count
+      SELECT date_trunc(${bucket}, "createdAt") AS bucket, COUNT(*)::int AS count
       FROM "Ticket"
-      WHERE "createdAt" >= ${rangeStart7}
+      WHERE "createdAt" >= ${start} AND "createdAt" <= ${end}
       GROUP BY 1 ORDER BY 1
     `;
-    const newTicketsChart = fillDailyChart(ticketRows, lastNDaysKeys(7));
+    const newTicketsChart = fillBucketChart(ticketRows, keys, bucket, [
+      "count",
+    ]);
 
     const avgRepliesPerTicket =
-      totalTickets > 0 ? Math.round((repliesAgg._count._all / totalTickets) * 10) / 10 : 0;
+      totalTickets > 0
+        ? Math.round((repliesAgg._count._all / totalTickets) * 10) / 10
+        : 0;
 
     return res.json({
       success: true,
       data: {
+        meta,
         stats: {
           totalTickets,
           openTickets,
-          resolvedTickets: statusGroups.find((g) => g.status === "RESOLVED")?._count._all ?? 0,
+          resolvedTickets:
+            statusGroups.find((g) => g.status === "RESOLVED")?._count._all ?? 0,
           avgRepliesPerTicket,
         },
         statusBreakdown,

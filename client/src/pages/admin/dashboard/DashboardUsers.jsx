@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Users, UserCheck, UserX, Baby, Lock } from "lucide-react";
 import {
@@ -22,7 +23,9 @@ import {
   MiniKpiGrid,
   SimpleTooltip,
   RankedList,
+  CardHeader,
 } from "./dashboardShared";
+import DateRangeFilter, { rangeFromPreset } from "./DateRangeFilter";
 
 const ROLE_LABEL = {
   CUSTOMER: "Khách hàng",
@@ -32,9 +35,19 @@ const ROLE_LABEL = {
 };
 
 export default function DashboardUsers() {
+  const [range, setRange] = useState(() => ({
+    preset: "30d",
+    ...rangeFromPreset(30),
+  }));
+
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-dashboard-users"],
-    queryFn: () => api.get("/admin/dashboard/users").then((r) => r.data.data),
+    queryKey: ["admin-dashboard-users", range.from, range.to],
+    queryFn: () =>
+      api
+        .get("/admin/dashboard/users", {
+          params: { from: range.from, to: range.to },
+        })
+        .then((r) => r.data.data),
     staleTime: 60_000,
   });
 
@@ -76,17 +89,30 @@ export default function DashboardUsers() {
 
   return (
     <>
+      <DateRangeFilter value={range} onChange={setRange} />
+
       <MiniKpiGrid items={kpis} isLoading={isLoading} />
 
       <div className="a-chart-grid-2" style={{ marginBottom: 24 }}>
-        {/* Tăng trưởng người dùng 12 tháng */}
+        {/* Tăng trưởng người dùng 12 tháng - biểu đồ macro, không đổi theo bộ lọc ngày */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Tăng trưởng <em>người dùng</em>
-            </h3>
-            <p className="a-chart-sub">12 tháng gần nhất - lũy kế</p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Tăng trưởng <em>người dùng</em>
+              </>
+            }
+            sub="12 tháng gần nhất - lũy kế"
+            exportProps={{
+              filename: "tang-truong-nguoi-dung-12-thang",
+              columns: [
+                { key: "month", label: "Tháng" },
+                { key: "new", label: "Mới" },
+                { key: "total", label: "Tổng tích luỹ" },
+              ],
+              rows: data?.userGrowthChart ?? [],
+            }}
+          />
           {data?.userGrowthChart?.length ? (
             <ResponsiveContainer width="100%" height={200}>
               <AreaChart
@@ -128,24 +154,37 @@ export default function DashboardUsers() {
           )}
         </div>
 
-        {/* Người dùng mới 30 ngày */}
+        {/* Người dùng mới - theo khoảng thời gian đã chọn */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Đăng ký <em>mới</em>
-            </h3>
-            <p className="a-chart-sub">30 ngày gần nhất, theo ngày</p>
-          </div>
-          {data?.newUsersChart30d?.length ? (
+          <CardHeader
+            title={
+              <>
+                Đăng ký <em>mới</em>
+              </>
+            }
+            sub={`${range.from} → ${range.to}, theo ngày`}
+            exportProps={{
+              filename: "dang-ky-moi-theo-ngay",
+              columns: [
+                { key: "date", label: "Ngày" },
+                { key: "count", label: "Số đăng ký mới" },
+              ],
+              rows: data?.newUsersChart ?? [],
+            }}
+          />
+          {data?.newUsersChart?.length ? (
             <ResponsiveContainer width="100%" height={200}>
-              <BarChart data={data.newUsersChart30d}>
+              <BarChart data={data.newUsersChart}>
                 <CartesianGrid vertical={false} stroke={T.grid} />
                 <XAxis
                   dataKey="day"
                   axisLine={false}
                   tickLine={false}
                   tick={{ fill: T.tick, fontSize: 9 }}
-                  interval={4}
+                  interval={Math.max(
+                    0,
+                    Math.ceil(data.newUsersChart.length / 8) - 1,
+                  )}
                 />
                 <YAxis
                   axisLine={false}
@@ -174,12 +213,25 @@ export default function DashboardUsers() {
       <div className="a-chart-grid-2" style={{ marginBottom: 24 }}>
         {/* Vai trò + giới tính */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Phân bổ <em>vai trò</em>
-            </h3>
-            <p className="a-chart-sub">Toàn hệ thống</p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Phân bổ <em>vai trò</em>
+              </>
+            }
+            sub="Toàn hệ thống"
+            exportProps={{
+              filename: "phan-bo-vai-tro",
+              columns: [
+                { key: "title", label: "Vai trò" },
+                { key: "value", label: "Số lượng" },
+              ],
+              rows: (data?.roleBreakdown ?? []).map((r) => ({
+                title: ROLE_LABEL[r.role] ?? r.role,
+                value: r.count,
+              })),
+            }}
+          />
           <RankedList
             isLoading={isLoading}
             items={(data?.roleBreakdown ?? []).map((r) => ({
@@ -191,12 +243,22 @@ export default function DashboardUsers() {
 
         {/* Giới tính */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Giới tính <em>khách hàng</em>
-            </h3>
-            <p className="a-chart-sub">Thông tin đã cập nhật</p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Giới tính <em>khách hàng</em>
+              </>
+            }
+            sub="Thông tin đã cập nhật"
+            exportProps={{
+              filename: "gioi-tinh-khach-hang",
+              columns: [
+                { key: "name", label: "Giới tính" },
+                { key: "value", label: "Số lượng" },
+              ],
+              rows: data?.genderBreakdown ?? [],
+            }}
+          />
           {data?.genderBreakdown?.length ? (
             <>
               <ResponsiveContainer width="100%" height={160}>
@@ -269,12 +331,22 @@ export default function DashboardUsers() {
       <div className="a-chart-grid-2" style={{ marginBottom: 24 }}>
         {/* Hoạt động đăng nhập */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Lượt <em>đăng nhập</em>
-            </h3>
-            <p className="a-chart-sub">7 ngày gần nhất (phiên đăng nhập mới)</p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Lượt <em>đăng nhập</em>
+              </>
+            }
+            sub={`${range.from} → ${range.to} (phiên đăng nhập mới)`}
+            exportProps={{
+              filename: "hoat-dong-dang-nhap",
+              columns: [
+                { key: "date", label: "Ngày" },
+                { key: "count", label: "Số lượt đăng nhập" },
+              ],
+              rows: data?.loginActivityChart ?? [],
+            }}
+          />
           {data?.loginActivityChart?.length ? (
             <ResponsiveContainer width="100%" height={180}>
               <BarChart data={data.loginActivityChart}>
@@ -283,7 +355,11 @@ export default function DashboardUsers() {
                   dataKey="day"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: T.tick, fontSize: 11 }}
+                  tick={{ fill: T.tick, fontSize: 10 }}
+                  interval={Math.max(
+                    0,
+                    Math.ceil(data.loginActivityChart.length / 8) - 1,
+                  )}
                 />
                 <YAxis
                   axisLine={false}
@@ -310,12 +386,25 @@ export default function DashboardUsers() {
 
         {/* Thiết bị */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Thiết bị <em>truy cập</em>
-            </h3>
-            <p className="a-chart-sub">Mẫu 500 phiên gần nhất</p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Thiết bị <em>truy cập</em>
+              </>
+            }
+            sub="Mẫu 500 phiên gần nhất"
+            exportProps={{
+              filename: "thiet-bi-truy-cap",
+              columns: [
+                { key: "title", label: "Thiết bị" },
+                { key: "value", label: "Số lượng" },
+              ],
+              rows: (data?.deviceBreakdown ?? []).map((d) => ({
+                title: d.name,
+                value: d.value,
+              })),
+            }}
+          />
           <RankedList
             isLoading={isLoading}
             items={(data?.deviceBreakdown ?? []).map((d) => ({
@@ -329,12 +418,25 @@ export default function DashboardUsers() {
       <div className="a-chart-grid-2">
         {/* Top tỉnh thành */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Top tỉnh/thành <em>khách hàng</em>
-            </h3>
-            <p className="a-chart-sub">Theo số địa chỉ đã lưu</p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Top tỉnh/thành <em>khách hàng</em>
+              </>
+            }
+            sub="Theo số địa chỉ đã lưu"
+            exportProps={{
+              filename: "top-tinh-thanh-khach-hang",
+              columns: [
+                { key: "title", label: "Tỉnh/Thành" },
+                { key: "value", label: "Số địa chỉ" },
+              ],
+              rows: (data?.topProvinces ?? []).map((p) => ({
+                title: p.name,
+                value: p.count,
+              })),
+            }}
+          />
           <RankedList
             isLoading={isLoading}
             emptyText="Chưa có địa chỉ nào"
@@ -347,14 +449,25 @@ export default function DashboardUsers() {
 
         {/* Hạng thành viên */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Hạng <em>thành viên</em>
-            </h3>
-            <p className="a-chart-sub">
-              Theo tổng chi tiêu (hệ thống Vùng Đất)
-            </p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Hạng <em>thành viên</em>
+              </>
+            }
+            sub="Theo tổng chi tiêu (hệ thống Vùng Đất)"
+            exportProps={{
+              filename: "hang-thanh-vien",
+              columns: [
+                { key: "title", label: "Hạng" },
+                { key: "value", label: "Số lượng" },
+              ],
+              rows: (data?.loyaltyTierBreakdown ?? []).map((t) => ({
+                title: t.name,
+                value: t.count,
+              })),
+            }}
+          />
           <RankedList
             isLoading={isLoading}
             emptyText="Chưa có dữ liệu"

@@ -1,8 +1,13 @@
+// Thành phần UI dùng chung cho các tab dashboard mở rộng (Người dùng, Kinh doanh,
+// Nội dung, Gia đình, Hỗ trợ) - tránh lặp code giữa các file tab.
+
+import { Download } from "lucide-react";
+
 export const T = {
   forest: "#0D3330",
   green: "#4a9e3f",
   blue: "#2a78d6",
-  amber: "#edap100",
+  amber: "#eda100",
   purple: "#4a3aa7",
   red: "#e34948",
   grid: "#e8e5de",
@@ -146,6 +151,94 @@ export function SimpleTooltip({ active, payload, label, unit = "" }) {
           </span>
         </div>
       ))}
+    </div>
+  );
+}
+
+// Escape 1 ô dữ liệu cho CSV (bọc "" nếu có dấu phẩy/xuống dòng/dấu ngoặc kép)
+function escapeCsvCell(value) {
+  const s = value === null || value === undefined ? "" : String(value);
+  if (/[",\n;]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
+
+// Dựng chuỗi CSV từ mảng cột {key,label} và mảng dữ liệu (đã cho vào tất cả tab dùng chung)
+export function buildCsv(columns, rows) {
+  const headerLine = columns.map((c) => escapeCsvCell(c.label)).join(",");
+  const dataLines = rows.map((row) =>
+    columns
+      .map((c) =>
+        escapeCsvCell(
+          typeof c.value === "function" ? c.value(row) : row[c.key],
+        ),
+      )
+      .join(","),
+  );
+  // Thêm BOM \uFEFF để Excel đọc đúng tiếng Việt có dấu
+  return "\uFEFF" + [headerLine, ...dataLines].join("\r\n");
+}
+
+export function downloadCsv(filename, columns, rows) {
+  const csv = buildCsv(columns, rows);
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename.endsWith(".csv") ? filename : `${filename}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+// Nút xuất CSV nhỏ gọn, đặt trong header của card/bảng. Tự vô hiệu hoá khi chưa có dữ liệu.
+export function ExportCsvButton({
+  filename,
+  columns,
+  rows,
+  label = "Xuất CSV",
+}) {
+  const disabled = !rows?.length;
+  return (
+    <button
+      type="button"
+      className="a-btn-ghost"
+      disabled={disabled}
+      onClick={() => downloadCsv(filename, columns, rows)}
+      style={{
+        padding: "5px 10px",
+        fontSize: 10.5,
+        gap: 4,
+        opacity: disabled ? 0.4 : 1,
+        cursor: disabled ? "not-allowed" : "pointer",
+      }}
+      title={disabled ? "Chưa có dữ liệu để xuất" : "Tải xuống file CSV"}
+    >
+      <Download size={11} />
+      {label}
+    </button>
+  );
+}
+
+// Header chuẩn cho mọi card biểu đồ/bảng trong dashboard: tiêu đề + phụ đề bên trái,
+// nút xuất CSV bên phải (chỉ hiện khi truyền exportProps). Dùng chung cho tất cả 6 tab
+// để không lặp lại cùng 1 đoạn JSX ở mỗi file.
+export function CardHeader({ title, sub, exportProps }) {
+  return (
+    <div
+      className="a-chart-card-header"
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        gap: 8,
+      }}
+    >
+      <div>
+        <h3 className="a-chart-title">{title}</h3>
+        {sub ? <p className="a-chart-sub">{sub}</p> : null}
+      </div>
+      {exportProps ? <ExportCsvButton {...exportProps} /> : null}
     </div>
   );
 }

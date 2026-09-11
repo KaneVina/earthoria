@@ -14,6 +14,12 @@ const {
   resolveTierBySpend,
   buildLoyaltyProfile,
 } = require("../utils/loyaltyTier");
+const {
+  resolveDateRange,
+  pickBucket,
+  bucketKeys,
+  fillBucketChart,
+} = require("../utils/dateRange");
 
 // Trả về thông tin hạng rút gọn (đủ cho hiển thị danh sách) từ 1 mức chi tiêu.
 const buildTierSummary = (spend) => {
@@ -163,54 +169,49 @@ async function backfillUserCodes() {
 
 exports.getDashboard = async (req, res) => {
   try {
-    const now = new Date();
+    const { start, end } = resolveDateRange(req.query);
+    const bucket = pickBucket(start, end);
+    const keys = bucketKeys(start, end, bucket);
+    const rangeWhere = { createdAt: { gte: start, lte: end } };
 
-    const [totalUsers, totalBooks, totalOrders, revenueAgg] = await Promise.all(
-      [
-        prisma.user.count({ where: { role: "CUSTOMER" } }),
+    // totalBooks giữ nguyên "hiện có" (snapshot danh mục, không có ý nghĩa lọc theo ngày tạo).
+    // totalUsers/totalOrders/revenue đổi thành số liệu TRONG KHOẢNG đã chọn để khớp với bộ lọc.
+    const [newUsersInRange, totalBooks, ordersInRange, revenueAgg] =
+      await Promise.all([
+        prisma.user.count({ where: { role: "CUSTOMER", ...rangeWhere } }),
         prisma.book.count({ where: { isActive: true } }),
-        prisma.order.count(),
+        prisma.order.count({ where: rangeWhere }),
         prisma.order.aggregate({
           _sum: { total: true },
-          where: { paymentStatus: "PAID" },
+          where: { paymentStatus: "PAID", ...rangeWhere },
         }),
-      ],
-    );
-
-    const rangeStart = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+      ]);
 
     const revenueRows = await prisma.$queryRaw`
   SELECT
-    date_trunc('month', "createdAt") AS month,
+    date_trunc(${bucket}, "createdAt") AS bucket,
     COALESCE(SUM(total), 0)::float   AS revenue,
     COUNT(*)::int                   AS orders
   FROM "Order"
-  WHERE "createdAt" >= ${rangeStart}
+  WHERE "createdAt" >= ${start} AND "createdAt" <= ${end}
     AND "paymentStatus" = 'PAID'
   GROUP BY 1
   ORDER BY 1
 `;
 
-    const revenueMap = new Map(
-      revenueRows.map((r) => [
-        `${r.month.getFullYear()}-${r.month.getMonth() + 1}`,
-        r,
-      ]),
-    );
-
-    const revenueChart = Array.from({ length: 6 }, (_, i) => {
-      const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
-      const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
-      const row = revenueMap.get(key);
-      return {
-        month: `T${d.getMonth() + 1}`,
-        revenue: Math.round(((row?.revenue ?? 0) / 1_000_000) * 10) / 10,
-        orders: row?.orders ?? 0,
-      };
-    });
+    const revenueChartRaw = fillBucketChart(revenueRows, keys, bucket, [
+      "revenue",
+      "orders",
+    ]);
+    const revenueChart = revenueChartRaw.map((r) => ({
+      month: r.label,
+      revenue: Math.round((r.revenue / 1_000_000) * 10) / 10,
+      orders: r.orders,
+    }));
 
     const statusGroups = await prisma.order.groupBy({
       by: ["status"],
+      where: rangeWhere,
       _count: { _all: true },
     });
     const totalForPct =
@@ -222,12 +223,10 @@ exports.getDashboard = async (req, res) => {
     }));
 
     // Sách bán chạy + doanh thu theo danh mục - cùng dùng 1 query OrderItem
-    // của tháng này (đã sửa: OrderItem không còn bookId trực tiếp, phải lấy
-    // qua variant.bookId / variant.book.categoryId)
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    // của khoảng thời gian ĐÃ CHỌN (trước đây cố định "tháng này")
     const monthlyPaidItems = await prisma.orderItem.findMany({
       where: {
-        order: { createdAt: { gte: monthStart }, paymentStatus: "PAID" },
+        order: { paymentStatus: "PAID", ...rangeWhere },
       },
       select: {
         quantity: true,
@@ -298,33 +297,23 @@ exports.getDashboard = async (req, res) => {
       .sort((a, b) => a.stock - b.stock)
       .slice(0, 10);
 
-    const newUsersRangeStart = new Date(now);
-    newUsersRangeStart.setDate(now.getDate() - 6);
-    newUsersRangeStart.setHours(0, 0, 0, 0);
-
     const newUsersRows = await prisma.$queryRaw`
       SELECT
-        date_trunc('day', "createdAt") AS day,
+        date_trunc(${bucket}, "createdAt") AS bucket,
         COUNT(*)::int AS count
       FROM "User"
-      WHERE "createdAt" >= ${newUsersRangeStart}
+      WHERE "createdAt" >= ${start} AND "createdAt" <= ${end}
         AND role = 'CUSTOMER'
       GROUP BY 1
       ORDER BY 1
     `;
-    const newUsersMap = new Map(
-      newUsersRows.map((r) => [r.day.toISOString().slice(0, 10), r.count]),
-    );
-    const WEEKDAY_LABEL = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
-    const newUsersChart = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(newUsersRangeStart);
-      d.setDate(d.getDate() + i);
-      const key = d.toISOString().slice(0, 10);
-      return {
-        day: WEEKDAY_LABEL[d.getDay()],
-        count: newUsersMap.get(key) ?? 0,
-      };
-    });
+    const newUsersChartRaw = fillBucketChart(newUsersRows, keys, bucket, [
+      "count",
+    ]);
+    const newUsersChart = newUsersChartRaw.map((r) => ({
+      day: r.label,
+      count: r.count,
+    }));
 
     const categoryRevenueMap = new Map();
     for (const item of monthlyPaidItems) {
@@ -387,10 +376,18 @@ exports.getDashboard = async (req, res) => {
     return res.json({
       success: true,
       data: {
+        meta: {
+          from: start.toISOString().slice(0, 10),
+          to: end.toISOString().slice(0, 10),
+          bucket,
+        },
         stats: {
-          totalUsers,
+          // Giữ cả 2 tên field: cũ (tương thích ngược nếu nơi khác còn gọi) + mới (rõ nghĩa hơn)
+          totalUsers: newUsersInRange,
+          newUsersInRange,
           totalBooks,
-          totalOrders,
+          totalOrders: ordersInRange,
+          ordersInRange,
           revenue: revenueAgg._sum.total ?? 0,
         },
         revenueChart,

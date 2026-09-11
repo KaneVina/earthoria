@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Star, Gamepad2, Scan, Clock, Heart } from "lucide-react";
 import {
@@ -16,12 +17,24 @@ import {
   MiniKpiGrid,
   SimpleTooltip,
   RankedList,
+  CardHeader,
 } from "./dashboardShared";
+import DateRangeFilter, { rangeFromPreset } from "./DateRangeFilter";
 
 export default function DashboardContent() {
+  const [range, setRange] = useState(() => ({
+    preset: "30d",
+    ...rangeFromPreset(30),
+  }));
+
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-dashboard-content"],
-    queryFn: () => api.get("/admin/dashboard/content").then((r) => r.data.data),
+    queryKey: ["admin-dashboard-content", range.from, range.to],
+    queryFn: () =>
+      api
+        .get("/admin/dashboard/content", {
+          params: { from: range.from, to: range.to },
+        })
+        .then((r) => r.data.data),
     staleTime: 60_000,
   });
 
@@ -29,14 +42,14 @@ export default function DashboardContent() {
 
   const kpis = [
     {
-      label: "Đánh giá",
+      label: "Đánh giá trong kỳ",
       value: stats?.totalReviews ?? "-",
       icon: Star,
       color: T.amber,
       sub: stats ? `Điểm TB ${stats.avgRating}/5` : null,
     },
     {
-      label: "Lượt chơi game",
+      label: "Lượt chơi trong kỳ",
       value: stats?.totalGamePlays ?? "-",
       icon: Gamepad2,
       color: T.purple,
@@ -52,17 +65,30 @@ export default function DashboardContent() {
 
   return (
     <>
+      <DateRangeFilter value={range} onChange={setRange} />
+
       <MiniKpiGrid items={kpis} isLoading={isLoading} />
 
       <div className="a-chart-grid-2" style={{ marginBottom: 24 }}>
-        {/* Top game */}
+        {/* Top game - lưu ý: playCount là bộ đếm cộng dồn all-time, không lọc được theo kỳ */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Top <em>trò chơi</em>
-            </h3>
-            <p className="a-chart-sub">Theo tổng lượt chơi</p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Top <em>trò chơi</em>
+              </>
+            }
+            sub="Toàn thời gian (playCount cộng dồn, không tách được theo kỳ)"
+            exportProps={{
+              filename: "top-tro-choi",
+              columns: [
+                { key: "title", label: "Trò chơi" },
+                { key: "playCount", label: "Lượt chơi" },
+                { key: "gameType", label: "Loại" },
+              ],
+              rows: data?.topGames ?? [],
+            }}
+          />
           {data?.topGames?.length ? (
             <ResponsiveContainer width="100%" height={200}>
               <BarChart
@@ -103,14 +129,24 @@ export default function DashboardContent() {
           )}
         </div>
 
-        {/* Top AR scan */}
+        {/* Top AR scan - cũng all-time vì lý do tương tự */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Top <em>mã AR quét nhiều</em>
-            </h3>
-            <p className="a-chart-sub">Theo tổng lượt quét</p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Top <em>mã AR quét nhiều</em>
+              </>
+            }
+            sub="Toàn thời gian (scanCount cộng dồn)"
+            exportProps={{
+              filename: "top-ma-ar",
+              columns: [
+                { key: "label", label: "Mã AR" },
+                { key: "scanCount", label: "Lượt quét" },
+              ],
+              rows: data?.topArCodes ?? [],
+            }}
+          />
           <RankedList
             isLoading={isLoading}
             emptyText="Chưa có lượt quét nào"
@@ -128,17 +164,28 @@ export default function DashboardContent() {
       </div>
 
       <div className="a-chart-grid-2" style={{ marginBottom: 24 }}>
-        {/* Sách đọc nhiều nhất (qua ChildActivityLog) */}
+        {/* Sách đọc nhiều nhất trong kỳ (qua ChildActivityLog) */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Sách <em>đọc nhiều nhất</em>
-            </h3>
-            <p className="a-chart-sub">Theo tổng phút đọc/xem AR của trẻ</p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Sách <em>đọc nhiều nhất</em>
+              </>
+            }
+            sub="Theo tổng phút đọc/xem AR của trẻ, trong kỳ đã chọn"
+            exportProps={{
+              filename: "sach-doc-nhieu-nhat",
+              columns: [
+                { key: "title", label: "Sách" },
+                { key: "minutes", label: "Tổng phút" },
+                { key: "sessions", label: "Số phiên" },
+              ],
+              rows: data?.topReadBooks ?? [],
+            }}
+          />
           <RankedList
             isLoading={isLoading}
-            emptyText="Chưa có phiên đọc nào"
+            emptyText="Chưa có phiên đọc nào trong kỳ"
             items={(data?.topReadBooks ?? []).map((b) => ({
               title: b.title,
               value: `${b.minutes} phút`,
@@ -146,19 +193,27 @@ export default function DashboardContent() {
           />
         </div>
 
-        {/* Wishlist */}
+        {/* Wishlist trong kỳ */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Top <em>yêu thích</em>
-            </h3>
-            <p className="a-chart-sub">
-              Sách được thêm vào wishlist nhiều nhất
-            </p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Top <em>yêu thích</em>
+              </>
+            }
+            sub="Sách được thêm vào wishlist nhiều nhất trong kỳ"
+            exportProps={{
+              filename: "top-wishlist",
+              columns: [
+                { key: "title", label: "Sách" },
+                { key: "count", label: "Lượt thêm" },
+              ],
+              rows: data?.topWishlistBooks ?? [],
+            }}
+          />
           <RankedList
             isLoading={isLoading}
-            emptyText="Chưa có wishlist nào"
+            emptyText="Chưa có wishlist nào trong kỳ"
             items={(data?.topWishlistBooks ?? []).map((w) => ({
               title: w.title,
               value: w.count,
@@ -172,14 +227,24 @@ export default function DashboardContent() {
         </div>
       </div>
 
-      {/* Phân bổ đánh giá sao */}
+      {/* Phân bổ đánh giá sao trong kỳ */}
       <div className="a-chart-card">
-        <div className="a-chart-card-header">
-          <h3 className="a-chart-title">
-            Phân bổ <em>đánh giá</em>
-          </h3>
-          <p className="a-chart-sub">Số lượng đánh giá theo mức sao</p>
-        </div>
+        <CardHeader
+          title={
+            <>
+              Phân bổ <em>đánh giá</em>
+            </>
+          }
+          sub="Số lượng đánh giá theo mức sao, trong kỳ đã chọn"
+          exportProps={{
+            filename: "phan-bo-danh-gia",
+            columns: [
+              { key: "star", label: "Số sao" },
+              { key: "count", label: "Số lượng" },
+            ],
+            rows: data?.ratingBreakdown ?? [],
+          }}
+        />
         {data?.ratingBreakdown?.length ? (
           <ResponsiveContainer width="100%" height={160}>
             <BarChart data={data.ratingBreakdown}>

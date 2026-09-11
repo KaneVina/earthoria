@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Baby, Clock, Trees, Flame } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
@@ -8,7 +9,9 @@ import {
   EmptyState,
   MiniKpiGrid,
   RankedList,
+  CardHeader,
 } from "./dashboardShared";
+import DateRangeFilter, { rangeFromPreset } from "./DateRangeFilter";
 
 const AUDIT_LABEL = {
   CHILD_CREATED: "Tạo hồ sơ trẻ",
@@ -30,9 +33,19 @@ const AUDIT_LABEL = {
 };
 
 export default function DashboardFamily() {
+  const [range, setRange] = useState(() => ({
+    preset: "30d",
+    ...rangeFromPreset(30),
+  }));
+
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-dashboard-family"],
-    queryFn: () => api.get("/admin/dashboard/family").then((r) => r.data.data),
+    queryKey: ["admin-dashboard-family", range.from, range.to],
+    queryFn: () =>
+      api
+        .get("/admin/dashboard/family", {
+          params: { from: range.from, to: range.to },
+        })
+        .then((r) => r.data.data),
     staleTime: 60_000,
   });
 
@@ -40,7 +53,7 @@ export default function DashboardFamily() {
 
   const kpis = [
     {
-      label: "Trẻ đang hoạt động",
+      label: "Trẻ hoạt động (tạo trong kỳ)",
       value: stats?.totalActiveChildren ?? "-",
       icon: Baby,
       color: T.amber,
@@ -56,7 +69,7 @@ export default function DashboardFamily() {
       value: stats?.avgForestLevel ?? "-",
       icon: Trees,
       color: T.green,
-      sub: stats ? `${stats.totalGardens} khu vườn` : null,
+      sub: stats ? `${stats.totalGardens} khu vườn (toàn thời gian)` : null,
     },
     {
       label: "Chuỗi ngày hiện tại TB",
@@ -69,17 +82,29 @@ export default function DashboardFamily() {
 
   return (
     <>
+      <DateRangeFilter value={range} onChange={setRange} />
+
       <MiniKpiGrid items={kpis} isLoading={isLoading} />
 
       <div className="a-chart-grid-2" style={{ marginBottom: 24 }}>
         {/* Nhóm tuổi */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Nhóm <em>tuổi</em>
-            </h3>
-            <p className="a-chart-sub">Hồ sơ trẻ đang hoạt động</p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Nhóm <em>tuổi</em>
+              </>
+            }
+            sub="Hồ sơ trẻ đang hoạt động, tạo trong kỳ đã chọn"
+            exportProps={{
+              filename: "nhom-tuoi-tre",
+              columns: [
+                { key: "name", label: "Nhóm tuổi" },
+                { key: "value", label: "Số trẻ" },
+              ],
+              rows: data?.ageBreakdown ?? [],
+            }}
+          />
           {data?.ageBreakdown?.some((a) => a.value > 0) ? (
             <>
               <ResponsiveContainer width="100%" height={160}>
@@ -150,12 +175,22 @@ export default function DashboardFamily() {
 
         {/* Yêu cầu mua sách */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Yêu cầu <em>mua sách</em>
-            </h3>
-            <p className="a-chart-sub">"Nhờ ba mẹ mua" từ trang /e-kid</p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Yêu cầu <em>mua sách</em>
+              </>
+            }
+            sub={'"Nhờ ba mẹ mua" từ trang /e-kid, trong kỳ đã chọn'}
+            exportProps={{
+              filename: "yeu-cau-mua-sach",
+              columns: [
+                { key: "name", label: "Trạng thái" },
+                { key: "value", label: "Số lượng" },
+              ],
+              rows: data?.bookRequestBreakdown ?? [],
+            }}
+          />
           <RankedList
             isLoading={isLoading}
             emptyText="Chưa có yêu cầu nào"
@@ -170,12 +205,22 @@ export default function DashboardFamily() {
       <div className="a-chart-grid-2">
         {/* Trẻ hoạt động nhiều nhất */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Trẻ <em>hoạt động nhiều nhất</em>
-            </h3>
-            <p className="a-chart-sub">Theo tổng phút đọc/xem AR</p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Trẻ <em>hoạt động nhiều nhất</em>
+              </>
+            }
+            sub="Theo tổng phút đọc/xem AR, trong kỳ đã chọn"
+            exportProps={{
+              filename: "tre-hoat-dong-nhieu-nhat",
+              columns: [
+                { key: "name", label: "Tên trẻ" },
+                { key: "minutes", label: "Tổng phút" },
+              ],
+              rows: data?.mostActiveChildren ?? [],
+            }}
+          />
           <RankedList
             isLoading={isLoading}
             emptyText="Chưa có dữ liệu hoạt động"
@@ -188,12 +233,22 @@ export default function DashboardFamily() {
 
         {/* Nhật ký hành động phụ huynh */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Hành động <em>phụ huynh</em>
-            </h3>
-            <p className="a-chart-sub">Loại hành động phổ biến nhất</p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Hành động <em>phụ huynh</em>
+              </>
+            }
+            sub="Loại hành động phổ biến nhất, trong kỳ đã chọn"
+            exportProps={{
+              filename: "hanh-dong-phu-huynh",
+              columns: [
+                { key: "type", label: "Loại hành động" },
+                { key: "count", label: "Số lần" },
+              ],
+              rows: data?.auditTypeBreakdown ?? [],
+            }}
+          />
           <RankedList
             isLoading={isLoading}
             emptyText="Chưa có nhật ký nào"

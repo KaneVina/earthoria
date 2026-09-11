@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Inbox, MessageCircleReply, CheckCircle2, Ticket } from "lucide-react";
 import {
@@ -17,7 +18,10 @@ import {
   MiniKpiGrid,
   SimpleTooltip,
   RankedList,
+  CardHeader,
+  ExportCsvButton,
 } from "./dashboardShared";
+import DateRangeFilter, { rangeFromPreset } from "./DateRangeFilter";
 
 const STATUS_CLS = {
   NEW: "info",
@@ -27,9 +31,19 @@ const STATUS_CLS = {
 };
 
 export default function DashboardSupport() {
+  const [range, setRange] = useState(() => ({
+    preset: "30d",
+    ...rangeFromPreset(30),
+  }));
+
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-dashboard-support"],
-    queryFn: () => api.get("/admin/dashboard/support").then((r) => r.data.data),
+    queryKey: ["admin-dashboard-support", range.from, range.to],
+    queryFn: () =>
+      api
+        .get("/admin/dashboard/support", {
+          params: { from: range.from, to: range.to },
+        })
+        .then((r) => r.data.data),
     staleTime: 60_000,
   });
 
@@ -37,7 +51,7 @@ export default function DashboardSupport() {
 
   const kpis = [
     {
-      label: "Tổng ticket",
+      label: "Tổng ticket trong kỳ",
       value: stats?.totalTickets ?? "-",
       icon: Ticket,
       color: T.forest,
@@ -65,15 +79,27 @@ export default function DashboardSupport() {
 
   return (
     <>
+      <DateRangeFilter value={range} onChange={setRange} />
+
       <MiniKpiGrid items={kpis} isLoading={isLoading} />
 
       <div className="a-chart-card" style={{ marginBottom: 24 }}>
-        <div className="a-chart-card-header">
-          <h3 className="a-chart-title">
-            Ticket <em>mới</em>
-          </h3>
-          <p className="a-chart-sub">7 ngày gần nhất</p>
-        </div>
+        <CardHeader
+          title={
+            <>
+              Ticket <em>mới</em>
+            </>
+          }
+          sub={`${range.from} → ${range.to}`}
+          exportProps={{
+            filename: "ticket-moi-theo-ngay",
+            columns: [
+              { key: "day", label: "Thời điểm" },
+              { key: "count", label: "Số ticket" },
+            ],
+            rows: data?.newTicketsChart ?? [],
+          }}
+        />
         {data?.newTicketsChart?.length ? (
           <ResponsiveContainer width="100%" height={180}>
             <AreaChart
@@ -118,11 +144,21 @@ export default function DashboardSupport() {
       <div className="a-chart-grid-2" style={{ marginBottom: 24 }}>
         {/* Trạng thái */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Trạng thái <em>ticket</em>
-            </h3>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Trạng thái <em>ticket</em>
+              </>
+            }
+            exportProps={{
+              filename: "trang-thai-ticket",
+              columns: [
+                { key: "name", label: "Trạng thái" },
+                { key: "value", label: "Số lượng" },
+              ],
+              rows: data?.statusBreakdown ?? [],
+            }}
+          />
           <RankedList
             isLoading={isLoading}
             items={(data?.statusBreakdown ?? []).map((s) => ({
@@ -134,11 +170,21 @@ export default function DashboardSupport() {
 
         {/* Chủ đề */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Chủ đề <em>liên hệ</em>
-            </h3>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Chủ đề <em>liên hệ</em>
+              </>
+            }
+            exportProps={{
+              filename: "chu-de-lien-he",
+              columns: [
+                { key: "name", label: "Chủ đề" },
+                { key: "value", label: "Số lượng" },
+              ],
+              rows: data?.subjectBreakdown ?? [],
+            }}
+          />
           <RankedList
             isLoading={isLoading}
             items={(data?.subjectBreakdown ?? []).map((s) => ({
@@ -151,10 +197,28 @@ export default function DashboardSupport() {
 
       {/* Ticket gần đây */}
       <div className="a-table-card">
-        <div className="a-table-head">
+        <div
+          className="a-table-head"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <h3 className="a-table-title">
             Ticket <em>gần đây</em>
           </h3>
+          <ExportCsvButton
+            filename="ticket-gan-day"
+            columns={[
+              { key: "code", label: "Mã" },
+              { key: "name", label: "Người gửi" },
+              { key: "subjectLabel", label: "Chủ đề" },
+              { key: "statusLabel", label: "Trạng thái" },
+              { key: "createdAt", label: "Ngày gửi" },
+            ]}
+            rows={data?.recentTickets ?? []}
+          />
         </div>
         <div className="a-table-wrap">
           <table className="a-table">
@@ -191,7 +255,7 @@ export default function DashboardSupport() {
                       color: "rgba(13,51,48,0.3)",
                     }}
                   >
-                    Chưa có ticket nào
+                    Chưa có ticket nào trong kỳ
                   </td>
                 </tr>
               ) : (

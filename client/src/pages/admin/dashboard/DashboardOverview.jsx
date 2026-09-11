@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import {
@@ -25,6 +26,8 @@ import {
 import api from "../../../services/api";
 import { formatPrice, formatDate, getOrderCode } from "../../../utils/helpers";
 import ServerStatus from "../ServerStatus";
+import { CardHeader, ExportCsvButton } from "./dashboardShared";
+import DateRangeFilter, { rangeFromPreset } from "./DateRangeFilter";
 
 /*  Design tokens (mirror admin.css vars)  */
 const T = {
@@ -125,9 +128,17 @@ const renderPieLabel = ({
 };
 
 export default function DashboardOverview() {
+  const [range, setRange] = useState(() => ({
+    preset: "30d",
+    ...rangeFromPreset(30),
+  }));
+
   const { data, isLoading } = useQuery({
-    queryKey: ["admin-dashboard"],
-    queryFn: () => api.get("/admin/dashboard").then((r) => r.data.data),
+    queryKey: ["admin-dashboard", range.from, range.to],
+    queryFn: () =>
+      api
+        .get("/admin/dashboard", { params: { from: range.from, to: range.to } })
+        .then((r) => r.data.data),
     staleTime: 60_000,
   });
 
@@ -155,12 +166,12 @@ export default function DashboardOverview() {
 
   const kpiCards = [
     {
-      label: "Người dùng",
+      label: "Người dùng mới",
       value: stats?.totalUsers ?? "-",
       icon: Users,
       accent: "blue",
       delta: null,
-      sub: "khách hàng đã đăng ký",
+      sub: "trong kỳ đã chọn",
     },
     {
       label: "Đầu sách",
@@ -176,7 +187,7 @@ export default function DashboardOverview() {
       icon: ShoppingBag,
       accent: "amber",
       delta: null,
-      sub: "tổng đơn hàng",
+      sub: "trong kỳ đã chọn",
     },
     {
       label: "Doanh thu",
@@ -184,12 +195,14 @@ export default function DashboardOverview() {
       icon: TrendingUp,
       accent: "purple",
       delta: null,
-      sub: "từ đơn đã thanh toán",
+      sub: "trong kỳ đã chọn (đã thanh toán)",
     },
   ];
 
   return (
     <>
+      <DateRangeFilter value={range} onChange={setRange} />
+
       {/*  KPI Cards  */}
       <div className="a-kpi-grid">
         {kpiCards.map((card, i) => {
@@ -232,12 +245,23 @@ export default function DashboardOverview() {
       <div className="a-chart-grid-2">
         {/* Revenue Bar Chart */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Doanh thu <em>theo tháng</em>
-            </h3>
-            <p className="a-chart-sub">6 tháng gần nhất (đơn vị: triệu VNĐ)</p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Doanh thu <em>theo thời gian</em>
+              </>
+            }
+            sub={`${range.from} → ${range.to} (đơn vị: triệu VNĐ)`}
+            exportProps={{
+              filename: "doanh-thu-theo-thoi-gian",
+              columns: [
+                { key: "month", label: "Thời điểm" },
+                { key: "revenue", label: "Doanh thu (triệu VNĐ)" },
+                { key: "orders", label: "Số đơn" },
+              ],
+              rows: revenueData,
+            }}
+          />
           <div className="a-chart-legend">
             <span className="a-legend-item">
               <span className="a-legend-sq" style={{ background: T.forest }} />
@@ -285,12 +309,22 @@ export default function DashboardOverview() {
 
         {/* Order status Donut */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Phân bổ <em>đơn hàng</em>
-            </h3>
-            <p className="a-chart-sub">Trạng thái hiện tại</p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Phân bổ <em>đơn hàng</em>
+              </>
+            }
+            sub="Theo trạng thái, trong kỳ đã chọn"
+            exportProps={{
+              filename: "phan-bo-don-hang",
+              columns: [
+                { key: "name", label: "Trạng thái" },
+                { key: "value", label: "Tỉ lệ (%)" },
+              ],
+              rows: orderPieData,
+            }}
+          />
           {orderPieData.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={160}>
@@ -382,12 +416,22 @@ export default function DashboardOverview() {
       <div className="a-chart-grid-2" style={{ marginBottom: 24 }}>
         {/* Top books horizontal bar */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Top sách <em>bán chạy</em>
-            </h3>
-            <p className="a-chart-sub">Tháng này</p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Top sách <em>bán chạy</em>
+              </>
+            }
+            sub="Trong kỳ đã chọn"
+            exportProps={{
+              filename: "top-sach-ban-chay",
+              columns: [
+                { key: "title", label: "Sách" },
+                { key: "sold", label: "Số lượng bán" },
+              ],
+              rows: topBooksData,
+            }}
+          />
           {topBooksData.length > 0 ? (
             <ResponsiveContainer width="100%" height={180}>
               <BarChart
@@ -436,19 +480,29 @@ export default function DashboardOverview() {
                 fontSize: 12,
               }}
             >
-              {isLoading ? "Đang tải..." : "Chưa có đơn hàng tháng này"}
+              {isLoading ? "Đang tải..." : "Chưa có đơn hàng trong kỳ đã chọn"}
             </div>
           )}
         </div>
 
         {/* Activity feed */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Hoạt động <em>hệ thống</em>
-            </h3>
-            <p className="a-chart-sub">Cập nhật gần nhất</p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Hoạt động <em>hệ thống</em>
+              </>
+            }
+            sub="Cập nhật gần nhất (không theo bộ lọc thời gian)"
+            exportProps={{
+              filename: "hoat-dong-he-thong",
+              columns: [
+                { key: "text", label: "Nội dung" },
+                { key: "time", label: "Thời điểm" },
+              ],
+              rows: activityFeed,
+            }}
+          />
           <div className="a-activity">
             {isLoading ? (
               <div
@@ -491,12 +545,22 @@ export default function DashboardOverview() {
       <div className="a-chart-grid-2" style={{ marginBottom: 24 }}>
         {/* Người dùng mới 7 ngày */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Người dùng <em>mới</em>
-            </h3>
-            <p className="a-chart-sub">7 ngày gần nhất</p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Người dùng <em>mới</em>
+              </>
+            }
+            sub={`${range.from} → ${range.to}`}
+            exportProps={{
+              filename: "nguoi-dung-moi",
+              columns: [
+                { key: "day", label: "Thời điểm" },
+                { key: "count", label: "Người đăng ký mới" },
+              ],
+              rows: newUsersData,
+            }}
+          />
           {newUsersData.length > 0 ? (
             <ResponsiveContainer width="100%" height={180}>
               <AreaChart
@@ -556,12 +620,22 @@ export default function DashboardOverview() {
 
         {/* Doanh thu theo danh mục */}
         <div className="a-chart-card">
-          <div className="a-chart-card-header">
-            <h3 className="a-chart-title">
-              Doanh thu <em>theo danh mục</em>
-            </h3>
-            <p className="a-chart-sub">Tháng này (đơn vị: triệu VNĐ)</p>
-          </div>
+          <CardHeader
+            title={
+              <>
+                Doanh thu <em>theo danh mục</em>
+              </>
+            }
+            sub="Trong kỳ đã chọn (đơn vị: triệu VNĐ)"
+            exportProps={{
+              filename: "doanh-thu-theo-danh-muc",
+              columns: [
+                { key: "name", label: "Danh mục" },
+                { key: "value", label: "Doanh thu (triệu VNĐ)" },
+              ],
+              rows: categoryRevenueData,
+            }}
+          />
           {categoryRevenueData.length > 0 ? (
             <>
               <ResponsiveContainer width="100%" height={160}>
@@ -649,16 +723,23 @@ export default function DashboardOverview() {
 
       {/*  Cảnh báo tồn kho  */}
       <div className="a-chart-card" style={{ marginBottom: 24 }}>
-        <div className="a-chart-card-header">
-          <h3
-            className="a-chart-title"
-            style={{ display: "flex", alignItems: "center", gap: 8 }}
-          >
-            <AlertTriangle size={16} color={T.amber} />
-            Sách <em>sắp hết hàng</em>
-          </h3>
-          <p className="a-chart-sub">Còn ≤ 10 cuốn trong kho</p>
-        </div>
+        <CardHeader
+          title={
+            <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <AlertTriangle size={16} color={T.amber} />
+              Sách <em>sắp hết hàng</em>
+            </span>
+          }
+          sub="Còn ≤ 10 cuốn trong kho (trạng thái hiện tại, không theo bộ lọc thời gian)"
+          exportProps={{
+            filename: "sach-sap-het-hang",
+            columns: [
+              { key: "title", label: "Sách" },
+              { key: "stock", label: "Tồn kho" },
+            ],
+            rows: lowStockBooks,
+          }}
+        />
         {lowStockBooks.length > 0 ? (
           <div
             style={{
@@ -718,13 +799,38 @@ export default function DashboardOverview() {
           <h3 className="a-table-title">
             Đơn hàng <em>gần đây</em>
           </h3>
-          <Link to="/dashboard/orders" className="a-table-link">
-            Xem tất cả{" "}
-            <ArrowUpRight
-              size={11}
-              style={{ display: "inline", verticalAlign: "middle" }}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <ExportCsvButton
+              filename="don-hang-gan-day"
+              columns={[
+                { key: "code", label: "Mã đơn" },
+                { key: "type", label: "Loại" },
+                { key: "customerName", label: "Khách hàng" },
+                { key: "customerEmail", label: "Email" },
+                { key: "itemCount", label: "Số sản phẩm" },
+                { key: "total", label: "Tổng tiền" },
+                { key: "statusLabel", label: "Trạng thái" },
+                { key: "createdAt", label: "Ngày đặt" },
+              ]}
+              rows={(data?.recentOrders ?? []).map((o) => ({
+                code: getOrderCode(o),
+                type: o.isDigital ? "Ebook" : "Sách giấy",
+                customerName: o.user?.name ?? "",
+                customerEmail: o.user?.email ?? "",
+                itemCount: o.items?.length ?? 0,
+                total: o.total,
+                statusLabel: (ORDER_META[o.status] ?? ORDER_META.PENDING).label,
+                createdAt: o.createdAt,
+              }))}
             />
-          </Link>
+            <Link to="/dashboard/orders" className="a-table-link">
+              Xem tất cả{" "}
+              <ArrowUpRight
+                size={11}
+                style={{ display: "inline", verticalAlign: "middle" }}
+              />
+            </Link>
+          </div>
         </div>
         <div className="a-table-wrap">
           <table className="a-table">
