@@ -3671,14 +3671,6 @@ export default function BookBuilder() {
   // tại useLayoutEffect trong LayerView) - đây là phần khắc phục lỗi "con
   // trỏ nhảy về bên trái ngoài cùng" mỗi khi bấm Đậm/Nghiêng/Gạch chân/Màu.
   const pendingSelectionRef = useRef(null);
-  // Định dạng THỰC TẾ của đúng đoạn đang được bôi đen (khác với
-  // layer.bold/layer.italic/layer.underline - đó là định dạng MẶC ĐỊNH của
-  // cả lớp chữ) - null khi không có vùng bôi đen nào (nút Đậm/Nghiêng/Gạch
-  // chân khi đó sáng theo định dạng mặc định của lớp như cũ). Đây là phần
-  // khắc phục lỗi nút "B" không sáng lên khi rê chọn lại đúng đoạn đã được
-  // bôi đậm riêng trước đó, khiến người dùng không biết bấm lại sẽ bỏ đậm
-  // hay bôi đậm thêm.
-  const [selFormat, setSelFormat] = useState(null);
 
   useEffect(() => setTtsOk(speechAvailable()), []);
   useEffect(() => {
@@ -3936,7 +3928,6 @@ export default function BookBuilder() {
     savedRangeRef.current = null;
     editingHtmlSnapshotRef.current = null;
     pendingSelectionRef.current = null;
-    setSelFormat(null);
     setEditingTextId(id);
   };
 
@@ -3946,7 +3937,6 @@ export default function BookBuilder() {
     savedRangeRef.current = null;
     editingHtmlSnapshotRef.current = null;
     pendingSelectionRef.current = null;
-    setSelFormat(null);
     if (!el) return;
     const html = sanitizeRichHtml(el.innerHTML);
     const text = el.innerText || el.textContent || "";
@@ -3955,46 +3945,17 @@ export default function BookBuilder() {
 
   // Ghi nhớ vùng bôi đen hiện tại trong lúc soạn thảo - cần thiết vì khi
   // người dùng bấm nút Đậm/Nghiêng/Màu chữ ở bảng bên, ô soạn thảo có thể
-  // tạm mất focus. Đồng thời tính luôn định dạng THỰC TẾ (đậm/nghiêng/gạch
-  // chân) của đúng đoạn đang được bôi đen để nút tương ứng sáng lên đúng -
-  // trước đây nút chỉ dựa vào định dạng MẶC ĐỊNH của cả lớp chữ
-  // (selected.bold/.italic/.underline) nên bôi đậm riêng 1 vài chữ xong rê
-  // chọn lại đúng đoạn đó thì nút không bao giờ sáng lên, khiến không biết
-  // bấm lại sẽ BỎ đậm hay ĐẬM CHỒNG thêm 1 lớp nữa.
+  // tạm mất focus. CHỈ ghi vào ref (không setState) - hàm này chạy trên MỖI
+  // lần nhả chuột/nhả phím trong lúc soạn (kể cả khi chỉ đang bôi đen, chưa
+  // bấm định dạng gì), nên tuyệt đối không được kích hoạt re-render ở đây,
+  // nếu không rất dễ làm rớt vùng bôi đen ngay khi người dùng vừa kéo chọn
+  // xong (bug "bôi đen phát là con trỏ nhảy" khi trước có thử thêm setState
+  // vào đúng chỗ này để làm nút Đậm/Nghiêng/Gạch chân tự sáng theo vùng
+  // chọn).
   const handleTextSelectionChange = () => {
     const sel = window.getSelection();
-    const el = editableRef.current;
-    if (sel && sel.rangeCount > 0 && !sel.isCollapsed && el) {
-      const range = sel.getRangeAt(0);
-      savedRangeRef.current = range.cloneRange();
-      let startIdx = charIndexOfDomPoint(
-        el,
-        range.startContainer,
-        range.startOffset,
-      );
-      let endIdx = charIndexOfDomPoint(el, range.endContainer, range.endOffset);
-      if (startIdx > endIdx) [startIdx, endIdx] = [endIdx, startIdx];
-      if (endIdx > startIdx) {
-        const runs = collectCharRunsFromDom(el);
-        let allBold = true;
-        let allItalic = true;
-        let allUnderline = true;
-        for (let i = startIdx; i < endIdx; i++) {
-          const r = runs[i];
-          if (!r || !r.bold) allBold = false;
-          if (!r || !r.italic) allItalic = false;
-          if (!r || !r.underline) allUnderline = false;
-        }
-        setSelFormat({
-          bold: allBold,
-          italic: allItalic,
-          underline: allUnderline,
-        });
-      } else {
-        setSelFormat(null);
-      }
-    } else {
-      setSelFormat(null);
+    if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
+      savedRangeRef.current = sel.getRangeAt(0).cloneRange();
     }
   };
 
@@ -6709,20 +6670,15 @@ export default function BookBuilder() {
                 <div className="bb-field">
                   <label>Kiểu chữ</label>
                   <div className="bb-row3">
-                    {/* Khi đang bôi đen 1 đoạn (selFormat khác null), nút
-                    sáng theo định dạng THỰC TẾ của đúng đoạn đó, không phải
-                    định dạng mặc định của cả lớp chữ (selected.bold/.../…) -
-                    xem chú thích ở handleTextSelectionChange. */}
+                    {/* Nút sáng theo định dạng MẶC ĐỊNH của cả lớp chữ
+                    (selected.bold/.italic/.underline) - không phản ánh định
+                    dạng riêng của đúng đoạn đang bôi đen (nếu có). Bấm vẫn
+                    áp dụng đúng cho riêng đoạn đang bôi đen (xem
+                    applyTextFormat) - chỉ phần "tự sáng theo vùng chọn" là
+                    chưa làm, vì cách làm trước (tính lại mỗi khi bôi đen)
+                    gây mất vùng chọn ngay khi vừa bôi đen. */}
                     <button
-                      className={`bb-btn${
-                        (
-                          editingTextId === selected.id && selFormat
-                            ? selFormat.bold
-                            : selected.bold
-                        )
-                          ? " active"
-                          : ""
-                      }`}
+                      className={`bb-btn${selected.bold ? " active" : ""}`}
                       title="Đậm (bôi đen 1 đoạn để chỉ đổi đoạn đó)"
                       data-keep-edit="true"
                       onMouseDown={(e) => e.preventDefault()}
@@ -6731,15 +6687,7 @@ export default function BookBuilder() {
                       <Bold size={14} />
                     </button>
                     <button
-                      className={`bb-btn${
-                        (
-                          editingTextId === selected.id && selFormat
-                            ? selFormat.italic
-                            : selected.italic
-                        )
-                          ? " active"
-                          : ""
-                      }`}
+                      className={`bb-btn${selected.italic ? " active" : ""}`}
                       title="Nghiêng (bôi đen 1 đoạn để chỉ đổi đoạn đó)"
                       data-keep-edit="true"
                       onMouseDown={(e) => e.preventDefault()}
@@ -6748,15 +6696,7 @@ export default function BookBuilder() {
                       <Italic size={14} />
                     </button>
                     <button
-                      className={`bb-btn${
-                        (
-                          editingTextId === selected.id && selFormat
-                            ? selFormat.underline
-                            : selected.underline
-                        )
-                          ? " active"
-                          : ""
-                      }`}
+                      className={`bb-btn${selected.underline ? " active" : ""}`}
                       title="Gạch chân (bôi đen 1 đoạn để chỉ đổi đoạn đó)"
                       data-keep-edit="true"
                       onMouseDown={(e) => e.preventDefault()}
