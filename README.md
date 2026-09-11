@@ -1,29 +1,28 @@
 # Earthoria
 
-Earthoria is a full-stack **digital platform for children's reading and learning**, built around a bookstore core and extended with digital reading, augmented reality, educational mini-games, gamified rewards, and a parent-controlled Kid Mode. Rather than being a plain online shop, Earthoria is best described as a *children's content and engagement platform*: commerce is the entry point, but the product is really about giving children a safe, interactive space to read, play, and learn, while giving parents visibility and control over that experience.
+Earthoria is a full-stack platform for children's reading and learning, built around an e-commerce bookstore core and extended with a digital ebook reader, augmented-reality (AR) book content, educational mini-games, a gamified "garden" reward system, and a parent-controlled Kid Mode. Commerce is the entry point, but the underlying product is a safe, interactive space where children can read and play under parental supervision, while parents and administrators retain full visibility and control.
 
-| | |
-|---|---|
-| **Repository** | `KaneVina/earthoria` |
-| **Owner / Maintainer** | Nguyen Phuc Khang (Kane) |
-| **Phone** | 0849324423 |
-| **Email** | wtskane@gmail.com |
-| **Live Frontend** | https://earthoria.vercel.app / https://earthoria.id.vn |
-| **Live API** | https://api.earthoria.id.vn/api/v1 |
+|                   |                                                               |
+| ----------------- | ------------------------------------------------------------- |
+| **Repository**    | [`KaneVina/earthoria`](https://github.com/KaneVina/earthoria) |
+| **Maintainer**    | Nguyen Phuc Khang (Kane)                                      |
+| **Email**         | wtskane@gmail.com                                             |
+| **Live Frontend** | https://earthoria.vercel.app · https://earthoria.id.vn        |
+| **Live API**      | https://api.earthoria.id.vn/api/v1                            |
 
 ---
 
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [Platform Philosophy](#platform-philosophy)
-3. [Key Features](#key-features)
+2. [Core Concept](#core-concept)
+3. [Feature Set](#feature-set)
 4. [Tech Stack](#tech-stack)
-5. [Project Structure](#project-structure)
+5. [Repository Layout](#repository-layout)
 6. [Architecture](#architecture)
 7. [Data Model](#data-model)
-8. [API Overview](#api-overview)
-9. [User Roles](#user-roles)
+8. [API Surface](#api-surface)
+9. [Roles & Access Control](#roles--access-control)
 10. [Getting Started](#getting-started)
 11. [Environment Variables](#environment-variables)
 12. [Available Scripts](#available-scripts)
@@ -38,53 +37,57 @@ Earthoria is a full-stack **digital platform for children's reading and learning
 
 ## Overview
 
-Earthoria lets customers browse and purchase physical and digital children's books, unlock companion ebooks and educational mini-games tied to a book via AR codes, and track rewards through a loyalty program. Parents can create supervised child profiles (Kid Mode), protected by a separate PIN, that restrict which books and games a child can access and log their reading/play activity. The platform also includes a full admin back office for catalog, order, user, coupon, review, and support-ticket management, plus an AI chat assistant for book recommendations.
+Earthoria lets customers browse and buy physical and digital children's books, unlock companion ebooks and educational mini-games attached to a book through AR codes, and collect points through a loyalty program. Parents can create supervised child profiles ("Kid Mode") protected by a separate PIN, restrict which books and games a child is allowed to open, and review activity logs of what the child has read or played. On the operational side, a full admin back office covers catalog, orders, users, coupons, reviews, and support tickets, alongside an AI chat assistant that helps customers find books.
 
-The project is deployed as a production-style system: the frontend is hosted on Vercel, the backend connects to a managed PostgreSQL database on Supabase, and payments integrate with real Vietnamese payment providers (VNPay, Momo, and bank transfer via QR/SePay webhook).
+The system is built and deployed in a production-style setup: the client is hosted on Vercel, the API connects to a managed PostgreSQL database on Supabase, media is served through Cloudinary, and checkout integrates with real Vietnamese payment rails — VNPay, MoMo, and bank transfer via a QR/SePay webhook — alongside Stripe support.
 
-## Platform Philosophy
+## Core Concept
 
-Earthoria is designed around three connected layers rather than a single storefront:
+Earthoria is structured around three layers that build on top of each other rather than a single storefront:
 
-1. **Commerce layer** - customers discover, purchase, and manage physical/digital books, much like a conventional e-commerce site.
-2. **Content & engagement layer** - every book can be extended with an ebook version, an AR experience, and an educational mini-game, turning a static purchase into an ongoing interactive activity. A gamified "garden" system rewards children for continued engagement.
-3. **Family safety layer** - Kid Mode isolates the child's experience behind a parent-owned PIN, restricts which content a child can reach, and gives parents dashboards and activity logs, so the platform can be used directly by children rather than only by the purchasing adult.
+1. **Commerce layer** — customers discover, purchase, and manage physical or digital books, similar to a conventional online bookstore.
+2. **Content & engagement layer** — a purchased book can be extended with an ebook edition, an AR experience, and an educational mini-game, turning a one-time purchase into an ongoing activity. A gamified "garden" system rewards children for continued reading and play.
+3. **Family safety layer** — Kid Mode puts the child's experience behind a parent-owned PIN, limits which content a child can reach, and gives parents dashboards and activity logs, so the platform can be handed directly to a child rather than only used by the purchasing adult.
 
-This combination - commerce + interactive content + parental control - is what distinguishes Earthoria from a typical online bookstore.
+The combination of commerce, interactive content, and parental control is what separates Earthoria from a typical bookstore template.
 
 ---
 
-## Key Features
+## Feature Set
 
-### Storefront (Customer-facing)
-- Product catalog with search, multi-criteria filtering (category, feature tags, rating), sorting, and pagination
+### Storefront (customer-facing)
+
+- Catalog browsing with search, multi-criteria filtering (category, tags, rating), sorting, and pagination
 - Product detail pages with reviews, review voting, and wishlist
 - Shopping cart and multi-step checkout
-- Multiple payment methods: VNPay, Momo, bank transfer QR (SePay webhook)
-- Order history, order cancellation, and delivery confirmation
+- Multiple payment methods: VNPay, MoMo, bank transfer QR (SePay webhook), Stripe
+- Order history, cancellation, and delivery confirmation
 - Address book management
 - Coupon/discount code validation at checkout
-- Loyalty tiers and points profile
+- Loyalty tiers and points tracking
 - Support ticket submission
-- AI-powered chat assistant for book recommendations
+- AI-powered chat assistant for book recommendations (Groq-backed)
 
-### Digital & Interactive Content
-- Ebook reader accessible via unique book links
+### Digital & interactive content
+
+- Ebook reader accessible through unique per-book links
 - Educational mini-games tied to specific books, with per-book leaderboards
-- AR (Augmented Reality) codes that unlock 3D/interactive book content
-- "Garden" gamification system that rewards reading/play activity for children
+- AR codes that unlock 3D/interactive content for a physical book
+- "Garden" gamification system that rewards a child's reading/play activity
 
-### Kid Mode (Parental Controls)
-- Parent-managed child profiles, independent of the main account login
-- Parent PIN system (set, verify, change, and recover via OTP) to gate access to parental settings
-- Per-child book visibility controls and settings
-- Profile locking/unlocking, soft delete, and permanent deletion (PIN + name confirmation required)
-- Tokenized "kid access" links that let a child use the platform without a full login
-- Per-child activity logging and dashboards for parents
+### Kid Mode (parental controls)
 
-### Admin / Back Office
+- Parent-managed child profiles, separate from the main account login
+- Parent PIN system — set, verify, change, and recover via OTP — gating access to parental settings
+- Per-child book visibility and access controls
+- Profile locking/unlocking, soft delete, and permanent deletion (requires PIN and name confirmation)
+- Tokenized "kid access" links so a child can use the platform without a full login
+- Per-child activity logging and parent-facing dashboards
+
+### Admin / back office
+
 - Dashboard with system and business metrics
-- Product (book) management: create, edit, delete, variants, images, AI-assisted content drafting
+- Book management: create, edit, delete, variants, images, AI-assisted content drafting
 - Category management
 - Ebook and game management, including access control and leaderboards
 - AR code management, including per-product access settings
@@ -96,9 +99,10 @@ This combination - commerce + interactive content + parental control - is what d
 - Manual email sending with history and preview
 - Inventory import records
 - Site-wide settings management
-- Server/system status check
+- Server/system status page
 
-### Authentication & Account
+### Authentication & account
+
 - Email/password registration with OTP verification
 - Google OAuth login
 - JWT-based authentication with refresh tokens
@@ -110,72 +114,76 @@ This combination - commerce + interactive content + parental control - is what d
 ## Tech Stack
 
 ### Backend
-| Category | Technology |
-|---|---|
-| Runtime | Node.js |
-| Framework | Express 5 |
-| ORM / Database | Prisma 6, PostgreSQL (Supabase) |
-| Authentication | JSON Web Tokens (jsonwebtoken), Passport.js (Google OAuth 2.0), bcrypt |
-| Security | Helmet, CORS, express-rate-limit (with Redis-backed store via ioredis / rate-limit-redis) |
-| File Uploads | Multer, Cloudinary |
-| Email | Nodemailer, Resend |
-| Payments | Stripe SDK, custom VNPay / Momo / Bank QR (SePay) integrations |
-| Logging | Winston, Morgan |
-| Utilities | Hashids (obfuscated IDs), Slugify |
+
+| Category            | Technology                                                                     |
+| ------------------- | ------------------------------------------------------------------------------ |
+| Runtime             | Node.js                                                                        |
+| Framework           | Express 5                                                                      |
+| ORM / Database      | Prisma 6, PostgreSQL (hosted on Supabase)                                      |
+| Authentication      | JSON Web Tokens, Passport.js (Google OAuth 2.0), bcrypt / bcryptjs             |
+| Security middleware | Helmet, CORS, express-rate-limit (Redis-backed via ioredis / rate-limit-redis) |
+| File uploads        | Multer, Cloudinary                                                             |
+| Email               | Nodemailer, Resend                                                             |
+| Payments            | Stripe SDK, custom VNPay / MoMo / Bank QR (SePay) integrations                 |
+| Observability       | Sentry, Winston, Morgan                                                        |
+| AI                  | Groq LLM API (chat completions)                                                |
+| Utilities           | Hashids (ID obfuscation), Slugify                                              |
 
 ### Frontend
-| Category | Technology |
-|---|---|
-| Framework | React 19 |
-| Build Tool | Vite |
-| Styling | Tailwind CSS 4 |
-| State Management | Zustand |
-| Data Fetching | TanStack React Query, Axios |
-| Routing | React Router 7 |
-| 3D / AR | Three.js, @react-three/fiber, @react-three/drei |
-| Charts | Recharts, ECharts |
-| Forms & Validation | React Hook Form, Zod |
-| Animation | Framer Motion, GSAP, Lenis |
-| Maps | Leaflet, React-Leaflet |
-| Other | jsPDF, html2canvas, XLSX (Excel export), QRCode.react, Swiper |
 
-### Infrastructure & Tooling
-- Database hosting: Supabase (PostgreSQL, pooled connection via PgBouncer)
-- Frontend hosting: Vercel
-- Media storage/CDN: Cloudinary
-- Cache / rate-limit store: Redis
-- Linting: ESLint (client)
+| Category           | Technology                                                      |
+| ------------------ | --------------------------------------------------------------- |
+| Framework          | React 19                                                        |
+| Build tool         | Vite                                                            |
+| Styling            | Tailwind CSS 4                                                  |
+| State management   | Zustand                                                         |
+| Data fetching      | TanStack React Query, Axios                                     |
+| Routing            | React Router 7                                                  |
+| 3D / AR            | Three.js, @react-three/fiber, @react-three/drei                 |
+| Charts             | Recharts, ECharts                                               |
+| Forms & validation | React Hook Form, Zod                                            |
+| Animation          | Framer Motion, GSAP, Lenis                                      |
+| Maps               | Leaflet, React-Leaflet                                          |
+| Other              | jsPDF, html2canvas, SheetJS (XLSX export), QRCode.react, Swiper |
+
+### Infrastructure
+
+- **Database:** Supabase-managed PostgreSQL (pooled connection via PgBouncer for the app, direct connection for migrations)
+- **Frontend hosting:** Vercel
+- **Media/CDN:** Cloudinary
+- **Cache & rate-limit store:** Redis
+- **Error tracking:** Sentry (client and server)
 
 ---
 
-## Project Structure
+## Repository Layout
 
 ```
 earthoria/
-├── client/                     # React frontend (Vite)
+├── client/                       # React frontend (Vite)
 │   ├── src/
-│   │   ├── components/         # Reusable UI components
-│   │   ├── pages/              # Route-level views
-│   │   ├── hooks/              # Custom React hooks
-│   │   ├── services/           # API client functions
-│   │   ├── store/              # Zustand state stores
-│   │   ├── games/              # Mini-game implementations
-│   │   └── utils/              # Frontend utilities
+│   │   ├── components/           # Reusable UI building blocks (incl. 3D, kid, parent, admin)
+│   │   ├── pages/                # Route-level views (storefront, admin, kid, legal, auth)
+│   │   ├── hooks/                # Custom React hooks
+│   │   ├── services/             # API client functions
+│   │   ├── store/                # Zustand state stores
+│   │   ├── games/                # Mini-game engine, editors, and players
+│   │   └── utils/                # Frontend utilities
 │   ├── public/
 │   ├── index.html
 │   └── vite.config.js
 │
-└── server/                     # Express backend
+└── server/                       # Express backend
     ├── src/
-    │   ├── routes/              # Express route definitions (one file per domain)
-    │   ├── controllers/         # Request handlers / business logic
-    │   ├── services/            # Domain services (e.g. AI chat, payments)
-    │   ├── middlewares/         # Auth, rate limiting, uploads, maintenance guard
-    │   ├── config/               # DB, Passport, and other configuration
-    │   ├── scripts/              # One-off / maintenance scripts
-    │   └── app.js                 # Express app configuration
+    │   ├── routes/                # One Express router file per domain
+    │   ├── controllers/           # Request handlers / business logic
+    │   ├── services/              # Domain services (AI chat, email, payments, tokens, ...)
+    │   ├── middlewares/           # Auth, rate limiting, uploads, maintenance guard
+    │   ├── config/                 # DB, Passport, Cloudinary, logger, Sentry configuration
+    │   ├── scripts/                 # One-off / maintenance scripts (AR codes, sitemap, seeding)
+    │   └── app.js                    # Express app wiring
     ├── prisma/
-    │   ├── schema.prisma          # Database schema (38 models)
+    │   ├── schema.prisma              # Database schema (39 models)
     │   ├── migrations/
     │   └── seed.js
     └── package.json
@@ -185,24 +193,25 @@ earthoria/
 
 ## Architecture
 
-The backend follows a layered MVC-style architecture:
+The backend follows a layered, MVC-style request pipeline:
 
 ```
 Client (React SPA)
       │
       ▼
 Express App (app.js)
-  ├─ Global middleware: Helmet, CORS, rate limiting, cookie parsing, Passport
-  ├─ Maintenance guard
+  ├─ Sentry initialization (earliest possible, catches errors from all later middleware)
+  ├─ Helmet, CORS, global rate limiting, JSON/urlencoded body parsing, cookies, Passport
+  ├─ Maintenance guard (blocks traffic during planned maintenance, with allow-listed paths)
       │
       ▼
-Routes (/api/v1/*)
+Routes  (/api/v1/*, one router per domain)
       │
       ▼
-Middlewares (protect / optionalAuth / adminOnly / staffOrAdmin)
+Middlewares  (protect / optionalAuth / adminOnly / staffOrAdmin, endpoint-specific rate limiters)
       │
       ▼
-Controllers (request validation, orchestration, response shaping)
+Controllers  (request handling, orchestration, response shaping)
       │
       ▼
 Services / Prisma Client
@@ -211,103 +220,112 @@ Services / Prisma Client
 PostgreSQL (Supabase)
 ```
 
-Key architectural points:
+Key points:
+
 - All API routes are versioned under `/api/v1`.
-- Authorization is layered: `protect` (verifies JWT and loads the user) is applied at the router level for admin routes, with `adminOnly` or `staffOrAdmin` applied per sub-route group for finer-grained access control.
-- Public, customer, and admin concerns are separated into distinct route/controller files per domain (e.g. `bookRoutes` vs. `adminController` product endpoints).
-- Sensitive endpoints (login, OTP requests, PIN operations) have dedicated rate limiters in addition to the global rate limiter.
-- Payment providers each expose dedicated IPN/webhook and verification endpoints, decoupled from the core order flow.
+- Authorization is layered: `protect` verifies the JWT and loads the user, while `adminOnly` / `staffOrAdmin` are applied per sub-route group for finer-grained access control within `/admin`.
+- Public, customer, and admin concerns live in separate route/controller files per domain (e.g. `bookRoutes.js` for the public catalog vs. the book-management endpoints inside `adminController.js`).
+- Sensitive endpoints (login, OTP requests, PIN operations) have dedicated rate limiters layered on top of the global limiter.
+- Each payment provider exposes its own IPN/webhook and verification endpoints, decoupled from the core order-creation flow.
+- Sentry is wired in before all other middleware and again as an Express error handler, so both request-time and unhandled errors are captured.
 
 ---
 
 ## Data Model
 
-The Prisma schema defines 38 models, grouped by domain:
+The Prisma schema (`server/prisma/schema.prisma`) defines the following models, grouped by domain:
 
-- **Identity & Access:** `User`, `PendingUser`, `UserCodeSeq`, `RefreshToken`
+- **Identity & access:** `User`, `PendingUser`, `UserCodeSeq`, `RefreshToken`
 - **Catalog:** `Book`, `BookVariant`, `Category`, `Tag`, `BookTag`, `Author`, `BookAuthor`, `ProductCodeSeq`
 - **Commerce:** `Cart`, `CartItem`, `Order`, `OrderItem`, `PaymentTransaction`, `PaymentIdempotency`, `Coupon`, `Address`
 - **Inventory:** `InventoryImport`, `InventoryImportItem`
 - **Engagement:** `Review`, `ReviewVote`, `Wishlist`
-- **Digital Content:** `Ebook`, `Game`, `GameResult`, `ArCode`
-- **Kid Mode:** `ChildProfile`, `ChildBookAccess`, `ChildActivityLog`, `ChildAuditLog`, `ChildGarden`, `ChildTree`
-- **Support & Ops:** `Ticket`, `TicketReply`, `SiteSetting`
+- **Digital content:** `Ebook`, `Game`, `GameResult`, `ArCode`
+- **Kid Mode:** `ChildProfile`, `ChildBookRequest`, `ChildBookAccess`, `ChildActivityLog`, `ChildAuditLog`, `ChildGarden`, `ChildTree`
+- **Content/CMS & support:** `NewsPost`, `NewsFile`, `Ticket`, `TicketReply`, `SiteSetting`
+
+The database runs on PostgreSQL, accessed through Prisma with a pooled connection (`DATABASE_URL`) for normal queries and a direct connection (`DIRECT_URL`) for migrations.
 
 ---
 
-## API Overview
+## API Surface
 
-The API exposes roughly 150 endpoints across 23 functional modules, all under the `/api/v1` prefix. Major route groups include:
+All endpoints are mounted under `/api/v1`. Major route groups:
 
-| Base Path | Domain |
-|---|---|
-| `/auth` | Registration, login, OAuth, password/OTP flows |
-| `/books` | Public catalog browsing, search, filtering, reviews, wishlist |
-| `/categories` | Public category listing |
-| `/cart` | Shopping cart management |
-| `/orders` | Checkout, order history, cancellation |
-| `/addresses` | Customer address book |
-| `/children` | Parent-managed child profiles |
-| `/parent-pin` | Parental PIN setup, verification, and recovery |
-| `/kid-access` | Tokenized, login-free access for children |
-| `/tickets` | Customer support ticket submission |
-| `/payments` | VNPay / Momo / Bank QR IPN, webhook, and verification |
-| `/coupons` | Coupon validation |
-| `/loyalty` | Membership tiers and points |
-| `/ai` | AI chat assistant |
-| `/ar` | AR code lookup and redemption |
-| `/games` | Public game play and leaderboards |
-| `/ebook-reader` | Ebook reading access |
-| `/admin/*` | Full back-office API (products, categories, orders, users, coupons, AR codes, ebooks, games, reviews, tickets, emails, settings, inventory, dashboard) |
+| Base path       | Domain                                                                                                                                                       |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `/auth`         | Registration, login, Google OAuth, password/OTP flows                                                                                                        |
+| `/books`        | Public catalog browsing, search, filtering, reviews, wishlist                                                                                                |
+| `/categories`   | Public category listing                                                                                                                                      |
+| `/cart`         | Shopping cart management                                                                                                                                     |
+| `/orders`       | Checkout, order history, cancellation                                                                                                                        |
+| `/addresses`    | Customer address book                                                                                                                                        |
+| `/children`     | Parent-managed child profiles                                                                                                                                |
+| `/parent-pin`   | Parental PIN setup, verification, recovery                                                                                                                   |
+| `/kid-access`   | Tokenized, login-free access for children                                                                                                                    |
+| `/tickets`      | Customer support ticket submission                                                                                                                           |
+| `/payments`     | VNPay / MoMo / Bank QR IPN, webhook, and verification                                                                                                        |
+| `/coupons`      | Coupon validation                                                                                                                                            |
+| `/loyalty`      | Membership tiers and points                                                                                                                                  |
+| `/ai`           | AI chat assistant                                                                                                                                            |
+| `/news`         | Blog/news content                                                                                                                                            |
+| `/ar`           | AR code lookup and redemption                                                                                                                                |
+| `/games`        | Public game play and leaderboards                                                                                                                            |
+| `/ebook-reader` | Ebook reading access                                                                                                                                         |
+| `/status`       | Public system status                                                                                                                                         |
+| `/admin/*`      | Full back-office API — products, categories, orders, users, coupons, AR codes, ebooks, games, reviews, tickets, news, emails, settings, inventory, dashboard |
 
-Most admin list endpoints support a consistent pattern of `search`, one or more domain-specific `filter` parameters, `sort`/`orderBy`, and `page`/`limit` pagination.
+A generic health check is also exposed at `GET /api/health` outside the versioned prefix. Most admin list endpoints follow a consistent `search` + domain-specific `filter` + `sort`/`orderBy` + `page`/`limit` pagination pattern.
 
 ---
 
-## User Roles
+## Roles & Access Control
 
-Earthoria defines three primary roles, enforced through backend authorization middleware (`protect`, `adminOnly`, `staffOrAdmin`):
+| Role                 | Description                                                                                                                   | Typical access                                                                                                |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Customer**         | Registered adult account that can shop, manage orders/addresses, and create child profiles                                    | Storefront, cart, checkout, orders, loyalty, tickets, child profile management                                |
+| **Child (Kid Mode)** | Profile created and restricted by a parent account, reached via PIN or a tokenized kid-access link rather than a normal login | Reading, games, AR content, and the garden/rewards system, scoped to what the parent allows                   |
+| **Staff**            | Internal account with elevated access to support and content-management areas                                                 | Tickets, reviews, ebooks, games (a subset of `/admin`)                                                        |
+| **Admin**            | Full administrative access                                                                                                    | Entire `/admin` back office: catalog, orders, users, coupons, AR codes, settings, dashboard, email, inventory |
 
-| Role | Description | Typical Access |
-|---|---|---|
-| **Customer** | A registered adult account that can shop, manage orders/addresses, and create child profiles | Storefront, cart, checkout, orders, loyalty, tickets, child profile management |
-| **Child (Kid Mode)** | A profile created and restricted by a parent/customer account, accessed via PIN or a tokenized kid-access link rather than a normal login | Reading, games, AR content, and the garden/rewards system, scoped to what the parent has allowed |
-| **Staff** | An internal account with elevated access to support and content-management areas of the admin back office | Tickets, reviews, ebooks, games (subset of `/admin`) |
-| **Admin** | Full administrative access | Full `/admin` back office: catalog, orders, users, coupons, AR codes, settings, dashboard, email, inventory |
+Enforcement happens through backend middleware (`protect`, `adminOnly`, `staffOrAdmin`) rather than being left to the client.
 
 ---
 
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js (LTS recommended)
 - A PostgreSQL database (e.g. a Supabase project)
-- Redis instance (for rate limiting)
-- Accounts/API keys for the third-party services you intend to use (Cloudinary, Google OAuth, email provider, payment gateways) as applicable
+- A Redis instance (for rate limiting)
+- API keys/accounts for any third-party services you intend to exercise locally (Cloudinary, Google OAuth, an email provider, payment gateways, Groq)
 
-### Backend Setup
+### Backend setup
 
 ```bash
 cd server
 npm install
-cp .env.example .env       # fill in real values - see Environment Variables below
+cp .env.example .env       # fill in real values — see Environment Variables below
 npx prisma generate
 npx prisma migrate dev
 npm run dev                 # starts the API with nodemon
 ```
 
-The API will be available at `http://localhost:5000/api/v1` by default.
+The API is available at `http://localhost:5000/api/v1` by default.
 
-### Frontend Setup
+### Frontend setup
 
 ```bash
 cd client
 npm install
-# create a .env file with at least VITE_API_URL pointing to your backend
+# create a .env file with at least VITE_API_URL pointing at your backend
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:5173` by default.
+The frontend is available at `http://localhost:5173` by default.
+
+> Before running either side against a real database, read the [Security Notes](#security-notes) section below — the repository's git history contains real, since-exposed credentials that must never be reused.
 
 ---
 
@@ -315,78 +333,81 @@ The frontend will be available at `http://localhost:5173` by default.
 
 ### Server (`server/.env`)
 
-| Variable | Purpose |
-|---|---|
-| `DATABASE_URL` | Pooled PostgreSQL connection string (used at runtime) |
-| `DIRECT_URL` | Direct PostgreSQL connection string (used for migrations) |
-| `PORT` | API server port |
-| `NODE_ENV` | Environment mode (`development` / `production`) |
-| `JWT_ACCESS_SECRET`, `JWT_EXPIRES_IN` | JWT signing configuration |
-| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Media storage |
-| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASS`, `EMAIL_FROM_NAME`, `EMAIL_LOGO_URL` | Transactional email (SMTP) |
-| `RESEND_API_KEY` | Resend email provider |
-| `STRIPE_SECRET_KEY` | Stripe payments (if enabled) |
-| `HASH_SALT` | Salt used for Hashids ID obfuscation |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL` | Google OAuth login |
-| `CLIENT_URL` | Frontend base URL (used for redirects/CORS) |
-| `VNPAY_HASH_SECRET`, `VNPAY_URL` | VNPay payment integration |
-| `MOMO_PARTNER_CODE`, `MOMO_ACCESS_KEY`, `MOMO_SECRET_KEY`, `MOMO_ENDPOINT` | Momo payment integration |
-| `BANKQR_BANK_CODE`, `BANKQR_ACCOUNT_NO`, `BANKQR_ACCOUNT_NAME` | Bank transfer QR generation |
-| `SEPAY_WEBHOOK_API_KEY` | SePay webhook authentication |
-| `SERVER_URL` | Public backend URL (used for callbacks) |
-| `UPTIMEROBOT_API_KEY`, `UPTIMEROBOT_MONITOR_ID` | Uptime monitoring integration |
+| Variable                                                                                    | Purpose                                                   |
+| ------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `DATABASE_URL`                                                                              | Pooled PostgreSQL connection string (used at runtime)     |
+| `DIRECT_URL`                                                                                | Direct PostgreSQL connection string (used for migrations) |
+| `PORT`                                                                                      | API server port                                           |
+| `NODE_ENV`                                                                                  | Environment mode (`development` / `production`)           |
+| `JWT_SECRET`, `JWT_EXPIRES_IN`                                                              | JWT signing configuration                                 |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`                      | Media storage                                             |
+| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASS`, `EMAIL_FROM_NAME`, `EMAIL_LOGO_URL` | Transactional email (SMTP)                                |
+| `RESEND_API_KEY`                                                                            | Resend email provider                                     |
+| `STRIPE_SECRET_KEY`                                                                         | Stripe payments                                           |
+| `HASH_SALT`                                                                                 | Salt used for Hashids ID obfuscation                      |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`                           | Google OAuth login                                        |
+| `CLIENT_URL`                                                                                | Frontend base URL (used for redirects/CORS)               |
+| `VNPAY_HASH_SECRET`, `VNPAY_URL`                                                            | VNPay payment integration                                 |
+| `MOMO_PARTNER_CODE`, `MOMO_ACCESS_KEY`, `MOMO_SECRET_KEY`, `MOMO_ENDPOINT`                  | MoMo payment integration                                  |
+| `BANKQR_BANK_CODE`, `BANKQR_ACCOUNT_NO`, `BANKQR_ACCOUNT_NAME`                              | Bank transfer QR generation                               |
+| `SEPAY_WEBHOOK_API_KEY`                                                                     | SePay webhook authentication                              |
+| `SERVER_URL`                                                                                | Public backend URL (used for callbacks)                   |
+| `GROQ_API_KEY`, `GROQ_URL`, `GROQ_MODEL`                                                    | Groq LLM API for the AI chat assistant                    |
+| `UPTIMEROBOT_API_KEY`, `UPTIMEROBOT_MONITOR_ID`                                             | Uptime monitoring integration                             |
 
 ### Client (`client/.env`)
 
-| Variable | Purpose |
-|---|---|
-| `VITE_API_URL` | Base URL of the backend API |
-| `VITE_GROQ_KEY`, `VITE_GROQ_URL`, `VITE_GROQ_MODEL` | Groq LLM API for AI chat features |
-| `VITE_FB_PAGE_ID`, `VITE_FB_TOKEN` | Facebook Page integration |
-| `VITE_UMAMI_URL`, `VITE_UMAMI_SITE_ID`, `VITE_UMAMI_USER`, `VITE_UMAMI_PASS` | Umami analytics |
-| `VITE_UPTIMEROBOT_API_KEY`, `VITE_UPTIMEROBOT_MONITOR_ID` | Uptime monitoring dashboard |
+| Variable                                                                     | Purpose                     |
+| ---------------------------------------------------------------------------- | --------------------------- |
+| `VITE_API_URL`                                                               | Base URL of the backend API |
+| `VITE_FB_PAGE_ID`, `VITE_FB_TOKEN`                                           | Facebook Page integration   |
+| `VITE_UMAMI_URL`, `VITE_UMAMI_SITE_ID`, `VITE_UMAMI_USER`, `VITE_UMAMI_PASS` | Umami analytics             |
+| `VITE_UPTIMEROBOT_API_KEY`, `VITE_UPTIMEROBOT_MONITOR_ID`                    | Uptime monitoring dashboard |
 
-> **Important:** Never commit real credentials to version control. Both `server/.env` and `client/.env` should be excluded via `.gitignore`, and only placeholder values should exist in any committed `.env.example` file.
+> **Never commit real credentials.** Both `server/.env` and `client/.env` must be excluded via `.gitignore`, and only placeholder values should ever exist in a committed `.env.example`. See [Security Notes](#security-notes) — this repository's history is a concrete example of what happens when that rule is broken.
 
 ---
 
 ## Available Scripts
 
 ### Server
-| Command | Description |
-|---|---|
-| `npm run dev` | Start the API in development mode with nodemon |
-| `npm start` | Start the API in production mode |
-| `npm run db:migrate` | Run Prisma migrations |
-| `npm run db:studio` | Open Prisma Studio |
-| `npm run db:generate` | Regenerate the Prisma client |
+
+| Command                    | Description                                    |
+| -------------------------- | ---------------------------------------------- |
+| `npm run dev`              | Start the API in development mode with nodemon |
+| `npm start`                | Start the API in production mode               |
+| `npm run db:migrate`       | Run Prisma migrations (`prisma migrate dev`)   |
+| `npm run db:studio`        | Open Prisma Studio                             |
+| `npm run db:generate`      | Regenerate the Prisma client                   |
+| `npm run sitemap:generate` | Generate the public sitemap                    |
 
 ### Client
-| Command | Description |
-|---|---|
-| `npm run dev` | Start the Vite development server |
-| `npm run build` | Build the production bundle |
+
+| Command           | Description                          |
+| ----------------- | ------------------------------------ |
+| `npm run dev`     | Start the Vite development server    |
+| `npm run build`   | Build the production bundle          |
 | `npm run preview` | Preview the production build locally |
-| `npm run lint` | Run ESLint |
+| `npm run lint`    | Run ESLint                           |
 
 ---
 
 ## Deployment
 
-The reference deployment for Earthoria uses the following setup, which can be used as a template for new environments:
+The reference deployment uses the following setup, which can serve as a template for new environments:
 
-| Component | Provider | Notes |
-|---|---|---|
-| Frontend (React/Vite build) | Vercel | Configured via `client/vercel.json`; connects to the production API URL |
-| Backend (Express API) | Node hosting behind a reverse proxy | `app.set('trust proxy', 1)` is enabled for correct client IP resolution behind Render/Cloudflare-style proxies |
-| Database | Supabase (managed PostgreSQL) | Uses a pooled connection (`DATABASE_URL`, via PgBouncer) for the app and a direct connection (`DIRECT_URL`) for migrations |
-| Media storage | Cloudinary | Product images, ebook assets, game assets |
-| Cache / Rate limiting | Redis | Backs `express-rate-limit` via `rate-limit-redis` for multi-instance consistency |
-| Email delivery | SMTP (Nodemailer) and/or Resend | Used for OTP, transactional, and manual admin emails |
-| Uptime monitoring | UptimeRobot | Status surfaced both to the admin dashboard and the public status widget |
-| Analytics | Umami | Self-hosted, privacy-friendly analytics for the storefront |
+| Component                   | Provider                            | Notes                                                                                                                         |
+| --------------------------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Frontend (React/Vite build) | Vercel                              | Configured via `client/vercel.json`; also rewrites requests from known crawler/bot user agents to a prerender service for SEO |
+| Backend (Express API)       | Node hosting behind a reverse proxy | `app.set('trust proxy', 1)` is enabled for correct client IP resolution behind Render/Cloudflare-style proxies                |
+| Database                    | Supabase (managed PostgreSQL)       | Pooled connection (`DATABASE_URL`, via PgBouncer) for the app, direct connection (`DIRECT_URL`) for migrations                |
+| Media storage               | Cloudinary                          | Product images, ebook assets, game assets                                                                                     |
+| Cache / rate limiting       | Redis                               | Backs `express-rate-limit` via `rate-limit-redis` for consistency across multiple instances                                   |
+| Email delivery              | Nodemailer (SMTP) and/or Resend     | Used for OTP, transactional, and manual admin emails                                                                          |
+| Error tracking              | Sentry                              | Both frontend (`@sentry/react`) and backend (`@sentry/node`)                                                                  |
+| Uptime monitoring           | UptimeRobot                         | Surfaced on both the admin dashboard and the public status page                                                               |
 
-A typical deployment flow: push to the main branch → frontend auto-builds and deploys on Vercel → backend is redeployed on its host → `prisma migrate deploy` is run against the production database before the new backend version starts serving traffic.
+A typical release flow: push to the main branch → the frontend auto-builds and deploys on Vercel → the backend is redeployed on its host → `prisma migrate deploy` runs against the production database before the new backend version starts serving traffic.
 
 ---
 
@@ -429,7 +450,7 @@ Earthoria is currently maintained as a single-owner project. If you would like t
 4. Run `npm run lint` on the client before submitting changes to the frontend.
 5. Open a pull request with a clear description of what changed and why.
 
-Since the project does not yet have an automated test suite or CI pipeline (see [Roadmap](#roadmap)), please manually verify affected flows (especially authentication, checkout, and payment callbacks) before submitting a pull request.
+Since the project does not yet have an automated test suite or CI pipeline (see [Roadmap](https://github.com/KaneVina/earthoria#roadmap)), please manually verify affected flows (especially authentication, checkout, and payment callbacks) before submitting a pull request.
 
 ---
 
@@ -443,9 +464,8 @@ No open-source license has been published for this repository at this time. All 
 
 For questions, collaboration inquiries, or issue reports related to Earthoria, please reach out to the project owner:
 
-| | |
-|---|---|
-| **Name** | Nguyen Phuc Khang |
-| **Phone** | 0849324423 |
-| **Email** | wtskane@gmail.com |
+|            |                                         |
+| ---------- | --------------------------------------- |
+| **Name**   | Nguyen Phuc Khang                       |
+| **Email**  | wtskane@gmail.com                       |
 | **GitHub** | [KaneVina](https://github.com/KaneVina) |
