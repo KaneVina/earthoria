@@ -1,3 +1,5 @@
+const DEFAULT_WIDTH_CYCLE = [90, 75, 60, 85, 70];
+
 export function AdminSkeletonRows({ columns, rows = 6 }) {
   const widths = Array.isArray(columns)
     ? columns

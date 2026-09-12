@@ -1,6 +1,3 @@
-// Thành phần UI dùng chung cho các tab dashboard mở rộng (Người dùng, Kinh doanh,
-// Nội dung, Gia đình, Hỗ trợ) - tránh lặp code giữa các file tab.
-
 import { Download } from "lucide-react";
 import { AdminSkeletonLines } from "../../../components/skeletons/SkeletonAdmin";
 
@@ -26,9 +23,6 @@ export const PALETTE = [
   "#8a9990",
 ];
 
-// Ô trống / đang tải dùng chung trong các card biểu đồ - khi đang tải hiện
-// vài thanh skeleton (không phải chữ "Đang tải...") để đúng chuẩn loading
-// chung của app (chỉ Skeleton hoặc FullScreenLoader).
 export function EmptyState({ loading, emptyText = "Chưa có dữ liệu" }) {
   if (loading) {
     return (
@@ -230,9 +224,6 @@ export function ExportCsvButton({
   );
 }
 
-// Header chuẩn cho mọi card biểu đồ/bảng trong dashboard: tiêu đề + phụ đề bên trái,
-// nút xuất CSV bên phải (chỉ hiện khi truyền exportProps). Dùng chung cho tất cả 6 tab
-// để không lặp lại cùng 1 đoạn JSX ở mỗi file.
 export function CardHeader({ title, sub, exportProps }) {
   return (
     <div
