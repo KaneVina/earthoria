@@ -1,6 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import {
+  useQuery,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import {
   Clock,
   Timer,
@@ -225,9 +230,6 @@ function SwitchRow({ icon, title, desc, checked, onChange }) {
   );
 }
 
-// Băng thông báo giới hạn hồ sơ trẻ em theo hạng thành viên - hiển thị
-// "X/Y tài khoản trẻ" + gợi ý lên hạng tiếp theo ("sắp mở khóa"), kèm nút
-// "Xem thêm" dẫn sang trang /loyalty. Dùng chung dữ liệu trả về từ
 // GET /children (field childLimit) nên không cần gọi thêm API nào.
 function ChildLimitBanner({ childLimit }) {
   if (!childLimit) return null;
@@ -346,168 +348,155 @@ function RevealCard({
 /*   ═ MAIN COMPONENT   ═ */
 
 export default function ParentDashboard() {
-  const [children, setChildren] = useState([]);
-  const [childrenLoading, setChildrenLoading] = useState(true);
+  const qc = useQueryClient();
+
   const [activeChildId, setActiveChildId] = useState(null);
   const [activeSection, setActiveSection] = useState("overview");
   const [pillsStuck, setPillsStuck] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [hasPin, setHasPin] = useState(true); // mặc định true để tránh nháy UI trước khi biết chắc
-  // Giới hạn số hồ sơ trẻ em theo hạng thành viên hiện tại - { current, max,
-  // isMaxTier, tierRoman, tierName, nextTierRoman, nextTierName, nextMax }.
-  // Trả về cùng payload với GET /children, tránh phải gọi thêm API /loyalty/me.
-  const [childLimit, setChildLimit] = useState(null);
-
-  const [dashboard, setDashboard] = useState(null); // { child, todayMinutes, weeklyMinutes, sessions, auditLog }
-  const [dashboardLoading, setDashboardLoading] = useState(false);
-
-  const [books, setBooks] = useState({ ebooks: [], physicalBooks: [] });
-  const [booksLoading, setBooksLoading] = useState(false);
   const [booksTab, setBooksTab] = useState("ebook"); // 'ebook' | 'physical' | 'wishlist'
+  const [respondingRequestId, setRespondingRequestId] = useState(null);
+
+  // Danh sách hồ sơ trẻ em + giới hạn theo hạng thành viên hiện tại - {
+  // current, max, isMaxTier, tierRoman, tierName, nextTierRoman, nextTierName,
+  // nextMax }. Dùng React Query để cache theo trang: rời /family rồi quay lại
+  // trong staleTime (xem src/lib/queryClient.js) sẽ không tải lại từ đầu -
+  // chỉ tải lại khi hết hạn hoặc sau khi có thao tác thay đổi dữ liệu (tạo/
+  // xoá bé, khoá/mở khoá, đổi cài đặt, duyệt yêu cầu mua sách...).
+  const childrenQuery = useQuery({
+    queryKey: ["family-children"],
+    queryFn: () => childService.list().then((res) => res.data.data),
+  });
+  const children = childrenQuery.data?.children ?? [];
+  const childLimit = childrenQuery.data?.childLimit ?? null;
+  const childrenLoading = childrenQuery.isLoading;
 
   // "Sách con muốn mua" - gộp yêu cầu của MỌI bé (không tách theo
   // activeChildId) vì cần dùng chung cho băng tóm tắt ở Tổng quan lẫn badge
   // trên từng bé ở sidebar; lọc theo bé đang chọn khi hiển thị trong tab
   // "Muốn mua" của mục Sách của bé.
-  const [bookRequests, setBookRequests] = useState([]);
-  const [bookRequestsLoading, setBookRequestsLoading] = useState(true);
-  const [respondingRequestId, setRespondingRequestId] = useState(null);
+  const bookRequestsQuery = useQuery({
+    queryKey: ["family-book-requests"],
+    queryFn: () =>
+      childService
+        .getBookRequests()
+        .then((res) => res.data.data.requests ?? []),
+  });
+  const bookRequests = bookRequestsQuery.data ?? [];
+  const bookRequestsLoading = bookRequestsQuery.isLoading;
 
-  const childrenReqId = useRef(0);
-  const loadChildren = useCallback(async () => {
-    const reqId = ++childrenReqId.current;
-    setChildrenLoading(true);
-    try {
-      const res = await childService.list();
-      if (reqId !== childrenReqId.current) return; // đã có request/thao tác mới hơn, bỏ kết quả cũ
-      const list = res.data.data.children;
-      setChildren(list);
-      setChildLimit(res.data.data.childLimit ?? null);
-      setActiveChildId((prev) =>
-        prev && list.some((c) => c.id === prev) ? prev : (list[0]?.id ?? null),
-      );
-    } catch (err) {
-      if (reqId !== childrenReqId.current) return;
-      toast.error(
-        err.response?.data?.message || "Không thể tải danh sách hồ sơ trẻ em",
-      );
-    } finally {
-      if (reqId === childrenReqId.current) setChildrenLoading(false);
-    }
-  }, []);
-
-  const bookRequestsReqId = useRef(0);
-  const loadBookRequests = useCallback(async () => {
-    const reqId = ++bookRequestsReqId.current;
-    setBookRequestsLoading(true);
-    try {
-      const res = await childService.getBookRequests();
-      if (reqId !== bookRequestsReqId.current) return;
-      setBookRequests(res.data.data.requests ?? []);
-    } catch {
-      // im lặng: đây là khu bổ sung, không chặn phần còn lại của dashboard
-    } finally {
-      if (reqId === bookRequestsReqId.current) setBookRequestsLoading(false);
-    }
-  }, []);
+  // Chọn bé đang xem mỗi khi danh sách bé thay đổi (tải lần đầu, tạo/xoá bé):
+  // giữ nguyên bé đang chọn nếu vẫn còn trong danh sách, ngược lại chuyển
+  // sang bé đầu tiên (hoặc null nếu không còn bé nào).
+  useEffect(() => {
+    if (!childrenQuery.data) return;
+    const list = childrenQuery.data.children;
+    setActiveChildId((prev) =>
+      prev && list.some((c) => c.id === prev) ? prev : (list[0]?.id ?? null),
+    );
+  }, [childrenQuery.data]);
 
   useEffect(() => {
-    loadChildren();
-    loadBookRequests();
+    if (childrenQuery.error) {
+      toast.error(
+        childrenQuery.error.response?.data?.message ||
+          "Không thể tải danh sách hồ sơ trẻ em",
+      );
+    }
+  }, [childrenQuery.error]);
+
+  useEffect(() => {
     parentPinService
       .status()
       .then((res) => setHasPin(!!res.data.data.hasPin))
       .catch(() => {});
-  }, [loadChildren, loadBookRequests]);
-
-  const dashboardReqId = useRef(0);
-  const loadDashboard = useCallback(async (childId) => {
-    if (!childId) return;
-    const reqId = ++dashboardReqId.current;
-    setDashboardLoading(true);
-    try {
-      const res = await childService.getDashboard(childId);
-      if (reqId !== dashboardReqId.current) return; // đã có request mới hơn, bỏ kết quả cũ
-      setDashboard(res.data.data);
-    } catch (err) {
-      if (reqId !== dashboardReqId.current) return;
-      toast.error(
-        err.response?.data?.message || "Không thể tải dữ liệu bảng điều khiển",
-      );
-    } finally {
-      if (reqId === dashboardReqId.current) setDashboardLoading(false);
-    }
   }, []);
 
-  const booksReqId = useRef(0);
-  const loadBooks = useCallback(async (childId) => {
-    if (!childId) return;
-    const reqId = ++booksReqId.current;
-    setBooksLoading(true);
-    try {
-      const res = await childService.getBooks(childId);
-      if (reqId !== booksReqId.current) return; // đã có request mới hơn, bỏ kết quả cũ
-      setBooks({
-        ebooks: res.data.data.ebooks ?? [],
-        physicalBooks: res.data.data.physicalBooks ?? [],
-      });
-    } catch (err) {
-      // Im lặng: không để lỗi tải sách chặn phần còn lại của dashboard
-      if (reqId !== booksReqId.current) return;
-    } finally {
-      if (reqId === booksReqId.current) setBooksLoading(false);
-    }
-  }, []);
+  // { child, todayMinutes, weeklyMinutes, sessions, auditLog }. placeholderData:
+  // keepPreviousData giữ dữ liệu của bé đang xem TRƯỚC khi đổi sang bé khác
+  // (không chớp về rỗng trong lúc chờ) - đúng hành vi cũ. Khi activeChildId
+  // về null (xoá hết bé/bỏ chọn), biến `dashboard` bên dưới ép về null ngay
+  // dù cache còn giữ placeholder của bé trước đó.
+  const dashboardQuery = useQuery({
+    queryKey: ["family-dashboard", activeChildId],
+    queryFn: () =>
+      childService.getDashboard(activeChildId).then((res) => res.data.data),
+    enabled: !!activeChildId,
+    placeholderData: keepPreviousData,
+  });
+  const dashboard = activeChildId ? (dashboardQuery.data ?? null) : null;
+  const dashboardLoading = dashboardQuery.isLoading;
 
   useEffect(() => {
-    if (activeChildId) {
-      loadDashboard(activeChildId);
-      loadBooks(activeChildId);
-    } else {
-      // Vô hiệu hóa mọi loadDashboard()/loadBooks() cũ đang bay ngầm.
-      // Nếu không: khi bé đang xem bị xóa (hoặc bị bỏ chọn) → activeChildId
-      // về null → set về rỗng ở đây, nhưng nếu có 1 request GET dashboard/sách
-      // của bé đó gửi TRƯỚC lúc xóa vẫn đang bay và resolve SAU dòng này, nó
-      // sẽ "hồi sinh" lại dashboard/sách của bé đã xóa, và vì không còn ai gọi
-      // lại loadDashboard/loadBooks nữa (activeChildId vẫn là null) nên dữ
-      // liệu ma đó sẽ ở lại màn hình vĩnh viễn cho tới khi F5.
-      dashboardReqId.current += 1;
-      booksReqId.current += 1;
-      setDashboard(null);
-      setBooks({ ebooks: [], physicalBooks: [] });
+    if (dashboardQuery.error) {
+      toast.error(
+        dashboardQuery.error.response?.data?.message ||
+          "Không thể tải dữ liệu bảng điều khiển",
+      );
     }
-  }, [activeChildId, loadDashboard, loadBooks]);
+  }, [dashboardQuery.error]);
+
+  // Im lặng khi lỗi (giữ đúng hành vi cũ): không để lỗi tải sách chặn phần
+  // còn lại của dashboard, không hiện toast riêng cho query này.
+  const booksQuery = useQuery({
+    queryKey: ["family-books", activeChildId],
+    queryFn: () =>
+      childService.getBooks(activeChildId).then((res) => ({
+        ebooks: res.data.data.ebooks ?? [],
+        physicalBooks: res.data.data.physicalBooks ?? [],
+      })),
+    enabled: !!activeChildId,
+    placeholderData: keepPreviousData,
+  });
+  const books = activeChildId
+    ? (booksQuery.data ?? { ebooks: [], physicalBooks: [] })
+    : { ebooks: [], physicalBooks: [] };
+  const booksLoading = booksQuery.isLoading;
 
   const handleChildCreated = (child) => {
-    // Vô hiệu hóa loadChildren() cũ đang bay ngầm (vd: từ lúc mount trang) -
-    // nếu nó resolve trễ hơn, dữ liệu cũ (chưa có bé mới) sẽ đè mất bé vừa
-    // tạo khỏi UI dù bé đã được tạo thành công trên server.
-    childrenReqId.current += 1;
-    setChildren((prev) => [...prev, { ...child, todayMinutes: 0 }]);
-    setActiveChildId(child.id);
-    // Cập nhật lạc quan số hồ sơ hiện có ngay lập tức - tránh banner giới
-    // hạn hiển thị số liệu cũ trong lúc chờ lần load tiếp theo.
-    setChildLimit((prev) =>
-      prev ? { ...prev, current: prev.current + 1 } : prev,
+    // Huỷ mọi refetch "family-children" đang bay ngầm (vd: từ lúc mount
+    // trang) trước khi ghi optimistic - nếu không, response cũ (chưa có bé
+    // mới) resolve trễ hơn sẽ đè mất bé vừa tạo khỏi UI dù đã tạo thành công.
+    qc.cancelQueries({ queryKey: ["family-children"] });
+    // Cập nhật lạc quan luôn cả danh sách bé lẫn số hồ sơ hiện tại (banner
+    // giới hạn) - tránh hiển thị số liệu cũ trong lúc chờ lần tải lại tiếp theo.
+    qc.setQueryData(["family-children"], (prev) =>
+      prev
+        ? {
+            children: [...prev.children, { ...child, todayMinutes: 0 }],
+            childLimit: prev.childLimit
+              ? { ...prev.childLimit, current: prev.childLimit.current + 1 }
+              : prev.childLimit,
+          }
+        : prev,
     );
+    setActiveChildId(child.id);
   };
 
   const toggleBookVisibility = async (bookId, visible) => {
-    // Vô hiệu hóa mọi loadBooks() cũ đang bay ngầm (vd: gọi lúc mount/đổi bé)
-    // - nếu không, response cũ resolve trễ hơn sẽ đè mất optimistic update này
-    // và state sai sẽ ở lại luôn (không có ai fetch lại để tự sửa).
-    booksReqId.current += 1;
-    setBooks((prev) => ({
-      ...prev,
-      ebooks: prev.ebooks.map((b) => (b.id === bookId ? { ...b, visible } : b)),
-    }));
+    const booksKey = ["family-books", activeChildId];
+    // Huỷ mọi fetch "family-books" đang bay ngầm (vd: gọi lúc mount/đổi bé)
+    // trước khi ghi optimistic - nếu không, response cũ resolve trễ hơn sẽ đè
+    // mất optimistic update này và cache sai sẽ ở lại luôn.
+    await qc.cancelQueries({ queryKey: booksKey });
+    qc.setQueryData(booksKey, (prev) =>
+      prev
+        ? {
+            ...prev,
+            ebooks: prev.ebooks.map((b) =>
+              b.id === bookId ? { ...b, visible } : b,
+            ),
+          }
+        : prev,
+    );
     try {
       await childService.setBookVisibility(activeChildId, bookId, visible);
     } catch (err) {
       toast.error(
         err.response?.data?.message || "Không thể cập nhật hiển thị sách",
       );
-      loadBooks(activeChildId);
+      qc.invalidateQueries({ queryKey: booksKey });
     }
   };
 
@@ -583,10 +572,17 @@ export default function ParentDashboard() {
     const { childId, patch } = pending;
     try {
       await childService.updateSettings(childId, patch);
-      // Chặn loadChildren() cũ resolve trễ hơn đè mất field vừa lưu
-      childrenReqId.current += 1;
-      setChildren((prev) =>
-        prev.map((c) => (c.id === childId ? { ...c, ...patch } : c)),
+      // Chặn refetch "family-children" cũ resolve trễ hơn đè mất field vừa lưu
+      qc.cancelQueries({ queryKey: ["family-children"] });
+      qc.setQueryData(["family-children"], (prev) =>
+        prev
+          ? {
+              ...prev,
+              children: prev.children.map((c) =>
+                c.id === childId ? { ...c, ...patch } : c,
+              ),
+            }
+          : prev,
       );
       toast.success("Đã lưu thay đổi");
     } catch (err) {
@@ -597,7 +593,7 @@ export default function ParentDashboard() {
       // Chỉ tải lại dashboard nếu vẫn đang xem đúng bé đó - nếu phụ huynh đã
       // chuyển sang bé khác thì đừng lấy dữ liệu bé cũ đè lên màn hình hiện tại.
       if (childId === activeChildIdRef.current) {
-        loadDashboard(childId);
+        qc.invalidateQueries({ queryKey: ["family-dashboard", childId] });
       }
     }
   };
@@ -605,14 +601,15 @@ export default function ParentDashboard() {
   const updateSettings = (patch) => {
     if (!activeChildId) return;
     const targetChildId = activeChildId;
-    // Vô hiệu hóa mọi loadDashboard() cũ đang bay ngầm (vd: gọi lúc mount hoặc
+    // Huỷ mọi fetch "family-dashboard" đang bay ngầm (vd: gọi lúc mount hoặc
     // lúc đổi bé) TRƯỚC khi ghi optimistic - nếu không, response cũ (chứa dữ
     // liệu trước khi đổi setting) có thể resolve trễ hơn và đè mất giá trị vừa
     // đổi. Không có bước nào tự fetch lại sau khi lưu thành công, nên nếu bị
     // đè thì UI sẽ SAI VĨNH VIỄN cho tới khi người dùng tự F5.
-    dashboardReqId.current += 1;
+    const dashboardKey = ["family-dashboard", targetChildId];
+    qc.cancelQueries({ queryKey: dashboardKey });
     // Optimistic update để UI mượt ngay khi bấm - không cần chờ debounce
-    setDashboard((prev) =>
+    qc.setQueryData(dashboardKey, (prev) =>
       prev ? { ...prev, child: { ...prev.child, ...patch } } : prev,
     );
 
@@ -688,12 +685,19 @@ export default function ParentDashboard() {
         failedNames.push(child.name);
       }
     }
-    setChildren((prev) =>
-      prev.map((c) =>
-        targets.some((t) => t.id === c.id) && !failedNames.includes(c.name)
-          ? { ...c, ...patch }
-          : c,
-      ),
+    qc.cancelQueries({ queryKey: ["family-children"] });
+    qc.setQueryData(["family-children"], (prev) =>
+      prev
+        ? {
+            ...prev,
+            children: prev.children.map((c) =>
+              targets.some((t) => t.id === c.id) &&
+              !failedNames.includes(c.name)
+                ? { ...c, ...patch }
+                : c,
+            ),
+          }
+        : prev,
     );
     setApplyingAllSettings(false);
 
@@ -739,7 +743,9 @@ export default function ParentDashboard() {
   const handleChildDeleted = () => {
     toast.success(`Đã xoá vĩnh viễn hồ sơ của ${deleteTarget?.name}`);
     setDeleteTarget(null);
-    loadChildren(); // tải lại danh sách activeChildId sẽ tự chuyển sang bé còn lại (xem loadChildren)
+    // Tải lại danh sách - activeChildId sẽ tự chuyển sang bé còn lại (xem
+    // useEffect đồng bộ activeChildId theo childrenQuery.data ở trên).
+    qc.invalidateQueries({ queryKey: ["family-children"] });
   };
 
   const requestLock = (child) => {
@@ -757,20 +763,26 @@ export default function ParentDashboard() {
     try {
       const res = await childService.lock(lockTarget.id);
       if (lockTarget.id === activeChildId) {
-        // Vô hiệu hóa loadDashboard() cũ đang bay ngầm - tránh trường hợp nó
+        // Huỷ fetch "family-dashboard" cũ đang bay ngầm - tránh trường hợp nó
         // resolve trễ hơn với isLocked=false (dữ liệu trước khi khóa) rồi đè
         // lại đúng lúc mình vừa set isLocked=true.
-        dashboardReqId.current += 1;
-        setDashboard((prev) =>
+        const dashboardKey = ["family-dashboard", lockTarget.id];
+        qc.cancelQueries({ queryKey: dashboardKey });
+        qc.setQueryData(dashboardKey, (prev) =>
           prev ? { ...prev, child: res.data.data.child } : prev,
         );
       }
-      // Cùng lý do: chặn loadChildren() cũ đè mất trạng thái isLocked vừa set
-      childrenReqId.current += 1;
-      setChildren((prev) =>
-        prev.map((c) =>
-          c.id === lockTarget.id ? { ...c, isLocked: true } : c,
-        ),
+      // Cùng lý do: chặn refetch "family-children" cũ đè mất isLocked vừa set
+      qc.cancelQueries({ queryKey: ["family-children"] });
+      qc.setQueryData(["family-children"], (prev) =>
+        prev
+          ? {
+              ...prev,
+              children: prev.children.map((c) =>
+                c.id === lockTarget.id ? { ...c, isLocked: true } : c,
+              ),
+            }
+          : prev,
       );
       toast.success(res.data.message);
     } catch (err) {
@@ -796,17 +808,25 @@ export default function ParentDashboard() {
     if (!lockTarget) return;
     const res = await childService.unlock(lockTarget.id, pin);
     if (lockTarget.id === activeChildId) {
-      // Cùng lý do như confirmLock: tránh loadDashboard() cũ resolve trễ hơn
-      // rồi đè lại isLocked=false → false, xoá mất kết quả mở khóa vừa xong.
-      dashboardReqId.current += 1;
-      setDashboard((prev) =>
+      // Cùng lý do như confirmLock: tránh fetch "family-dashboard" cũ resolve
+      // trễ hơn rồi đè lại isLocked=false, xoá mất kết quả mở khóa vừa xong.
+      const dashboardKey = ["family-dashboard", lockTarget.id];
+      qc.cancelQueries({ queryKey: dashboardKey });
+      qc.setQueryData(dashboardKey, (prev) =>
         prev ? { ...prev, child: res.data.data.child } : prev,
       );
     }
-    // Cùng lý do: chặn loadChildren() cũ đè mất trạng thái isLocked vừa mở
-    childrenReqId.current += 1;
-    setChildren((prev) =>
-      prev.map((c) => (c.id === lockTarget.id ? { ...c, isLocked: false } : c)),
+    // Cùng lý do: chặn refetch "family-children" cũ đè mất isLocked vừa mở
+    qc.cancelQueries({ queryKey: ["family-children"] });
+    qc.setQueryData(["family-children"], (prev) =>
+      prev
+        ? {
+            ...prev,
+            children: prev.children.map((c) =>
+              c.id === lockTarget.id ? { ...c, isLocked: false } : c,
+            ),
+          }
+        : prev,
     );
     setUnlockPinOpen(false);
     toast.success(res.data.message);
@@ -1112,9 +1132,11 @@ export default function ParentDashboard() {
   // Cập nhật lạc quan trước, phục hồi lại nếu API lỗi.
   const respondToBookRequest = async (request, action) => {
     setRespondingRequestId(request.id);
-    const prevRequests = bookRequests;
-    setBookRequests((prev) =>
-      prev.map((r) =>
+    const requestsKey = ["family-book-requests"];
+    await qc.cancelQueries({ queryKey: requestsKey });
+    const prevRequests = qc.getQueryData(requestsKey);
+    qc.setQueryData(requestsKey, (prev) =>
+      (prev ?? []).map((r) =>
         r.id === request.id
           ? {
               ...r,
@@ -1134,9 +1156,9 @@ export default function ParentDashboard() {
             : `Đã duyệt yêu cầu của ${request.child.name}`
           : `Đã từ chối yêu cầu của ${request.child.name}`,
       );
-      loadChildren(); // cập nhật lại badge số lượng chờ duyệt ở sidebar
+      qc.invalidateQueries({ queryKey: ["family-children"] }); // cập nhật lại badge số lượng chờ duyệt ở sidebar
     } catch (err) {
-      setBookRequests(prevRequests);
+      qc.setQueryData(requestsKey, prevRequests);
       toast.error(
         err.response?.data?.message ||
           "Không thể cập nhật yêu cầu, thử lại nhé",
