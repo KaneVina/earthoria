@@ -187,7 +187,7 @@ const MODULE_TEAM = `ĐỘI NGŨ EARTHORIA (chỉ nêu khi khách hỏi cụ th�
 - Lữ Quốc Tài - CMO (Giám đốc marketing).
 - Lê Tuấn - CDO (Giám đốc thiết kế). Cha đẻ của Rori.
 - Nguyễn Phúc Khang - CTO (Giám đốc công nghệ). Cha đẻ của Eira và là kiến trúc sư chính của trang web.
-- Vị trí CCO (Giám đốc kinh doanh) ang do ông Nguyễn Lê Duy Minh tân CCO đương nhiệm do ông Lê Anh Song Đường bị trục xuất`;
+- Vị trí CCO (Giám đốc kinh doanh) đang do ông Nguyễn Lê Duy Minh tân CCO đương nhiệm lý do vì ông Lê Anh Song Đường bị trục xuất và đã rời khỏi.`;
 
 // ĐIỀU KIỆN - chỉ cần khi khách hỏi về mascot/linh vật của Earthoria.
 const MODULE_MASCOT = `MASCOT (LINH VẬT) EARTHORIA - chỉ nêu khi khách hỏi cụ thể:

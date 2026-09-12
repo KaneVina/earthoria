@@ -169,37 +169,40 @@ const listChildren = async (req, res) => {
     });
 
     const startOfToday = startOfTodayVn();
-
     const childIds = children.map((c) => c.id);
-    const todayLogs = childIds.length
-      ? await prisma.childActivityLog.groupBy({
-          by: ["childId"],
-          where: {
-            childId: { in: childIds },
-            occurredOn: { gte: startOfToday },
-          },
-          _sum: { minutes: true },
-        })
-      : [];
+
+    const [todayLogs, pendingRequestGroups, loyaltyProfile] = await Promise.all(
+      [
+        childIds.length
+          ? prisma.childActivityLog.groupBy({
+              by: ["childId"],
+              where: {
+                childId: { in: childIds },
+                occurredOn: { gte: startOfToday },
+              },
+              _sum: { minutes: true },
+            })
+          : Promise.resolve([]),
+        // Số lời nhắn "nhờ ba mẹ mua" đang chờ duyệt của từng bé - hiển thị
+        // dạng badge nhỏ ở danh sách chọn bé, để phụ huynh biết ngay bé nào
+        // đang có yêu cầu mới mà chưa xem.
+        childIds.length
+          ? prisma.childBookRequest.groupBy({
+              by: ["childId"],
+              where: { childId: { in: childIds }, status: "PENDING" },
+              _count: { _all: true },
+            })
+          : Promise.resolve([]),
+        getUserLoyaltyProfile(req.user.id),
+      ],
+    );
+
     const todayByChild = Object.fromEntries(
       todayLogs.map((row) => [row.childId, row._sum.minutes || 0]),
     );
-
-    // Số lời nhắn "nhờ ba mẹ mua" đang chờ duyệt của từng bé - hiển thị dạng
-    // badge nhỏ ở danh sách chọn bé, để phụ huynh biết ngay bé nào đang có
-    // yêu cầu mới mà chưa xem.
-    const pendingRequestGroups = childIds.length
-      ? await prisma.childBookRequest.groupBy({
-          by: ["childId"],
-          where: { childId: { in: childIds }, status: "PENDING" },
-          _count: { _all: true },
-        })
-      : [];
     const pendingRequestsByChild = Object.fromEntries(
       pendingRequestGroups.map((row) => [row.childId, row._count._all]),
     );
-
-    const loyaltyProfile = await getUserLoyaltyProfile(req.user.id);
     const childLimit = buildChildLimitPayload(loyaltyProfile, children.length);
 
     return formatResponse(res, 200, "OK", {
@@ -580,15 +583,20 @@ const getChildBooks = async (req, res) => {
       if (book) digitalBookMap.set(book.id, book);
     }
 
-    const ebookRecords = await prisma.ebook.findMany({
-      where: { isActive: true, bookId: { in: [...digitalBookMap.keys()] } },
-      select: { bookId: true },
-    });
+    // access chỉ cần child.id (đã biết từ đầu hàm) - KHÔNG cần đợi
+    // ebookRecords trước, nên gộp 2 truy vấn này chạy song song thay vì nối
+    // đuôi nhau (trước đây: ebookRecords xong mới bắt đầu access, dù access
+    // không thật sự phụ thuộc vào kết quả của ebookRecords, chỉ cần lọc lại
+    // theo ebookBookIds bằng JS sau khi cả 2 đã có).
+    const [ebookRecords, allAccess] = await Promise.all([
+      prisma.ebook.findMany({
+        where: { isActive: true, bookId: { in: [...digitalBookMap.keys()] } },
+        select: { bookId: true },
+      }),
+      prisma.childBookAccess.findMany({ where: { childId: child.id } }),
+    ]);
     const ebookBookIds = new Set(ebookRecords.map((e) => e.bookId));
-
-    const access = await prisma.childBookAccess.findMany({
-      where: { childId: child.id, bookId: { in: [...ebookBookIds] } },
-    });
+    const access = allAccess.filter((a) => ebookBookIds.has(a.bookId));
     const visibilityMap = Object.fromEntries(
       access.map((a) => [a.bookId, a.visible]),
     );
