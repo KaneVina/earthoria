@@ -1430,7 +1430,6 @@ export default function ParentDashboard() {
                 </span>
               </div>
               <div className="pkd-active-child-row pkd-active-child-row-sub">
-                <span className="pkd-active-child-dot" />
                 <Wifi size={13} />
                 <span>
                   Hoạt động gần nhất của {activeChild.name}:{" "}

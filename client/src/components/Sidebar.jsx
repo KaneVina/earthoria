@@ -1,4 +1,3 @@
-// Sidebar.jsx - Sidebar admin, menu chia nhóm, mỗi nhóm bấm vào tiêu đề để thu gọn/mở rộng
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
