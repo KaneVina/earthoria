@@ -1,4 +1,52 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
+
+// Sinh ngẫu nhiên các "đốm lửa" bay dọc theo 4 cạnh màn hình, tạt vào
+// trong rồi tắt dần - tạo cảm giác lửa đang liếm vào màn hình thay vì
+// một đường viền tĩnh, đều tăm tắp như khung ảnh.
+function makeEmbers(count = 22) {
+  const edges = ["top", "bottom", "left", "right"];
+  const embers = [];
+  for (let i = 0; i < count; i++) {
+    const edge = edges[i % edges.length];
+    const along = 4 + Math.random() * 92;
+    const size = 3 + Math.random() * 6;
+    const delay = Math.random() * 1.6;
+    const dur = 1 + Math.random() * 1.1;
+    const drift = 26 + Math.random() * 60;
+    const jitter = (Math.random() - 0.5) * 50;
+
+    const style = {
+      "--size": `${size}px`,
+      "--delay": `${delay}s`,
+      "--dur": `${dur}s`,
+    };
+
+    if (edge === "top") {
+      style.top = "0%";
+      style.left = `${along}%`;
+      style["--tx"] = `${jitter}px`;
+      style["--ty"] = `${drift}px`;
+    } else if (edge === "bottom") {
+      style.top = "100%";
+      style.left = `${along}%`;
+      style["--tx"] = `${jitter}px`;
+      style["--ty"] = `${-drift}px`;
+    } else if (edge === "left") {
+      style.top = `${along}%`;
+      style.left = "0%";
+      style["--tx"] = `${drift}px`;
+      style["--ty"] = `${jitter}px`;
+    } else {
+      style.top = `${along}%`;
+      style.left = "100%";
+      style["--tx"] = `${-drift}px`;
+      style["--ty"] = `${jitter}px`;
+    }
+
+    embers.push({ id: i, style });
+  }
+  return embers;
+}
 
 export default function LoginFlameEffect({
   active,
@@ -6,6 +54,7 @@ export default function LoginFlameEffect({
   onComplete,
 }) {
   const timeoutRef = useRef(null);
+  const embers = useMemo(() => (active ? makeEmbers(22) : []), [active]);
 
   useEffect(() => {
     if (!active) return;
@@ -26,7 +75,6 @@ export default function LoginFlameEffect({
         preserveAspectRatio="none"
       >
         <defs>
-          {/* Turbulence làm nhiễu -> đẩy lệch pixel dọc viền -> tạo cảm giác lay động */}
           <filter
             id="flameTurbulence"
             x="-30%"
@@ -53,13 +101,14 @@ export default function LoginFlameEffect({
             <feDisplacementMap
               in="SourceGraphic"
               in2="noise"
-              scale="34"
+              scale="26"
               xChannelSelector="R"
               yChannelSelector="G"
             />
             <feGaussianBlur stdDeviation="1.1" />
           </filter>
 
+          {/* Gradient nhiều tông hơn: tâm nóng vàng-chanh -> xanh chuối -> xanh rêu đậm */}
           <linearGradient
             id="flameGradient"
             x1="0%"
@@ -67,31 +116,37 @@ export default function LoginFlameEffect({
             x2="100%"
             y2="100%"
           >
-            <stop offset="0%" stopColor="#baff5c" />
-            <stop offset="35%" stopColor="#4a9e3f" />
-            <stop offset="65%" stopColor="#1a5c52" />
+            <stop offset="0%" stopColor="#eaffc2" />
+            <stop offset="20%" stopColor="#baff5c" />
+            <stop offset="45%" stopColor="#4a9e3f" />
+            <stop offset="70%" stopColor="#1a5c52" />
             <stop offset="100%" stopColor="#baff5c" />
           </linearGradient>
         </defs>
 
-        {/* Khung viền được turbulence bóp méo cạnh -> hiệu ứng lửa,
-            áp sát tuyệt đối 4 cạnh màn hình (x=0,y=0, không bo góc) */}
+        {/* Bo góc nhẹ để bớt cảm giác "khung ảnh" cứng nhắc. strokeWidth
+            đặt sẵn = giá trị hiển thị đầy đủ ngay từ frame đầu tiên (CSS
+            animation chỉ tinh chỉnh thêm), tránh phụ thuộc hoàn toàn vào
+            animation để có thứ hiển thị. */}
         <rect
           className="flame-border-rect"
           x="0"
           y="0"
           width="100%"
           height="100%"
-          rx="0"
+          rx="18"
           fill="none"
           stroke="url(#flameGradient)"
-          strokeWidth="10"
+          strokeWidth="14"
           filter="url(#flameTurbulence)"
         />
       </svg>
 
-      {/* Lớp glow mềm phía trong viền để ánh sáng lan vào màn hình */}
       <div className="flame-border-inner-glow" />
+
+      {embers.map((e) => (
+        <span key={e.id} className="flame-ember" style={e.style} />
+      ))}
     </div>
   );
 }

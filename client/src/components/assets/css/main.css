@@ -8353,7 +8353,8 @@ body.dark-mode .trust-metric-label {
   }
 }
 /* Green flame border - hiệu ứng full-screen khi login thành công,
-   viền áp sát tuyệt đối mép màn hình (inset: 0) */
+   viền áp sát tuyệt đối mép màn hình (inset: 0), 1 lớp rect (đã kiểm
+   chứng render ổn định) + các đốm lửa nhỏ bay tạt vào trong từ 4 cạnh */
 .flame-border-overlay {
   position: fixed;
   inset: 0;
@@ -8370,9 +8371,10 @@ body.dark-mode .trust-metric-label {
 }
 
 .flame-border-rect {
-  animation: flameRectIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  filter: drop-shadow(0 0 18px rgba(74, 158, 63, 0.6))
-    drop-shadow(0 0 42px rgba(26, 92, 82, 0.45));
+  animation: flameRectIn 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  filter: drop-shadow(0 0 14px rgba(234, 255, 194, 0.95))
+    drop-shadow(0 0 32px rgba(126, 217, 87, 0.75))
+    drop-shadow(0 0 64px rgba(26, 92, 82, 0.55));
 }
 
 .flame-border-inner-glow {
@@ -8380,30 +8382,49 @@ body.dark-mode .trust-metric-label {
   inset: 0;
   background: radial-gradient(
     ellipse at center,
-    transparent 55%,
-    rgba(74, 158, 63, 0.07) 78%,
-    rgba(26, 92, 82, 0.18) 100%
+    transparent 50%,
+    rgba(74, 158, 63, 0.08) 76%,
+    rgba(26, 92, 82, 0.2) 100%
   );
   opacity: 0;
   animation: flameGlowPulse 0.9s ease forwards;
 }
 
+/* Đốm lửa nhỏ - bay từ mép vào trong rồi tắt dần, mỗi đốm có toạ độ
+   xuất phát + hướng bay (--tx/--ty) riêng do component set qua style */
+.flame-ember {
+  position: absolute;
+  width: var(--size, 5px);
+  height: var(--size, 5px);
+  margin-top: calc(var(--size, 5px) / -2);
+  margin-left: calc(var(--size, 5px) / -2);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    #eaffc2 0%,
+    #7ed957 45%,
+    rgba(74, 158, 63, 0) 75%
+  );
+  opacity: 0;
+  animation: flameEmberDrift var(--dur, 1.3s) ease-out var(--delay, 0s) forwards;
+}
+
 @keyframes flameRectIn {
   0% {
-    stroke-width: 0;
-    opacity: 0;
+    stroke-width: 6px;
+    opacity: 0.5;
   }
   35% {
-    stroke-width: 12px;
+    stroke-width: 20px;
     opacity: 1;
   }
   70% {
-    stroke-width: 8px;
+    stroke-width: 12px;
     opacity: 1;
   }
   100% {
-    stroke-width: 10px;
-    opacity: 0.85;
+    stroke-width: 14px;
+    opacity: 0.95;
   }
 }
 
@@ -8416,6 +8437,22 @@ body.dark-mode .trust-metric-label {
   }
   100% {
     opacity: 0.75;
+  }
+}
+
+@keyframes flameEmberDrift {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.5);
+  }
+  18% {
+    opacity: 1;
+    transform: translate(calc(var(--tx, 0px) * 0.2), calc(var(--ty, 0px) * 0.2))
+      scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx, 0px), var(--ty, 0px)) scale(0.3);
   }
 }
 
@@ -8435,6 +8472,7 @@ body.dark-mode .trust-metric-label {
 }
 
 body.dark-mode .flame-border-rect {
-  filter: drop-shadow(0 0 22px rgba(92, 184, 79, 0.75))
-    drop-shadow(0 0 54px rgba(45, 122, 110, 0.55));
+  filter: drop-shadow(0 0 16px rgba(234, 255, 194, 0.95))
+    drop-shadow(0 0 34px rgba(126, 217, 87, 0.75))
+    drop-shadow(0 0 68px rgba(45, 122, 110, 0.55));
 }
