@@ -862,37 +862,19 @@ body.dark-mode {
   box-shadow: 0 0 0 5px var(--lj-gold-true-soft);
 }
 .lj-seam-journey-stats {
-  height: 150px;
+  height: 56px;
   background: linear-gradient(to bottom, var(--lj-bg-b), var(--forest));
-  background: linear-gradient(
-    to bottom,
-    var(--lj-bg-b) 0%,
-    color-mix(in srgb, var(--lj-bg-b) 78%, var(--forest)) 32%,
-    color-mix(in srgb, var(--lj-bg-b) 22%, var(--forest)) 62%,
-    var(--forest) 100%
-  );
+  background: linear-gradient(to bottom in oklab, var(--lj-bg-b), var(--forest));
 }
 .lj-seam-stats-steps {
-  height: 150px;
+  height: 56px;
   background: linear-gradient(to bottom, var(--forest), var(--lj-bg-a));
-  background: linear-gradient(
-    to bottom,
-    var(--forest) 0%,
-    color-mix(in srgb, var(--forest) 78%, var(--lj-bg-a)) 38%,
-    color-mix(in srgb, var(--forest) 22%, var(--lj-bg-a)) 68%,
-    var(--lj-bg-a) 100%
-  );
+  background: linear-gradient(to bottom in oklab, var(--forest), var(--lj-bg-a));
 }
 .lj-seam-steps-cta {
-  height: 160px;
+  height: 64px;
   background: linear-gradient(to bottom, var(--lj-bg-a), var(--forest));
-  background: linear-gradient(
-    to bottom,
-    var(--lj-bg-a) 0%,
-    color-mix(in srgb, var(--lj-bg-a) 78%, var(--forest)) 32%,
-    color-mix(in srgb, var(--lj-bg-a) 22%, var(--forest)) 62%,
-    var(--forest) 100%
-  );
+  background: linear-gradient(to bottom in oklab, var(--lj-bg-a), var(--forest));
 }
 
 /*   STATS STRIP - bảng thông số chuyến bay   */
