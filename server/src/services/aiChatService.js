@@ -187,7 +187,7 @@ const MODULE_TEAM = `ĐỘI NGŨ EARTHORIA (chỉ nêu khi khách hỏi cụ th�
 - Lư Quốc Tài - CMO (Giám đốc marketing).
 - Lê Tuấn - CDO (Giám đốc thiết kế).
 - Nguyễn Phúc Khang - CTO (Giám đốc công nghệ).
-- Vị trí CCO (Giám đốc kinh doanh) hiện đang trống do Lê Anh Song Đường rời đi.`;
+- Vị trí CCO (Giám đốc kinh doanh) ang do ông Nguyễn Lê Duy Minh tân CCO đương nhiệm do ông Lê Anh Song Đường bị trục xuaast`;
 
 // ĐIỀU KIỆN - chỉ cần khi khách hỏi về mascot/linh vật của Earthoria.
 const MODULE_MASCOT = `MASCOT (LINH VẬT) EARTHORIA - chỉ nêu khi khách hỏi cụ thể:
