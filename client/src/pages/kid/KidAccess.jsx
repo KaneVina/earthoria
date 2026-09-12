@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   BookOpen,
   Clock,
@@ -44,8 +45,9 @@ const INSPIRE_LINES = [
   "Trí tưởng tượng của bé không có giới hạn đâu!",
 ];
 
+const EMPTY_BOOKS = [];
+const EMPTY_REQUEST_STATUS = {};
 const SHELF_ACCENTS = ["leaf", "sky", "berry", "sun", "grape", "coral"];
-// số cuốn tối đa hiện trong dải "Đang đọc dở"
 const MAX_RECENT_READING = 5;
 const FONT_SCALES = [
   { key: "sm", label: "Nhỏ", value: 0.88 },
@@ -56,9 +58,6 @@ const FONT_SCALES = [
 const HOLD_DURATION_MS = 900;
 const BACK_TO_TOP_THRESHOLD = 520;
 
-//   màn mây mù mở đầu trang /e-kid: thời gian che phủ tối thiểu (để không bị
-//   chớp nháy nếu API trả lời quá nhanh) và thời lượng hoạt ảnh mây tản ra -
-//   giá trị này phải khớp với --kid-curtain-leave trong kidAccess.css
 const INTRO_COVER_MIN_MS = 900;
 const INTRO_LEAVE_MS = 2750;
 
@@ -343,19 +342,8 @@ export default function KidAccess() {
   const navigate = useNavigate();
   const location = useLocation();
   const skyState = useSkyState(); // bầu trời theo giờ thực - chạy cho mọi trạng thái của trang
-  const [status, setStatus] = useState("loading"); // loading | ok | invalid
-  const [child, setChild] = useState(null);
-  const [books, setBooks] = useState([]);
+  const qc = useQueryClient();
   const [activeBook, setActiveBook] = useState(null);
-
-  //   khu "Khám phá thêm": sách bán chạy + phù hợp độ tuổi, và trạng thái
-  //   các lời nhắn "nhờ ba mẹ mua" bé đã gửi (để khoá nút tránh gửi trùng)
-  const [discover, setDiscover] = useState({
-    bestsellers: [],
-    ageAppropriate: [],
-  });
-  const [discoverLoading, setDiscoverLoading] = useState(true);
-  const [requestStatusByBook, setRequestStatusByBook] = useState({});
   const [sendingRequestId, setSendingRequestId] = useState(null);
 
   //   phiên đọc (chỉ hiển thị, không ghi vào server)
@@ -384,62 +372,57 @@ export default function KidAccess() {
   const [searchFocused, setSearchFocused] = useState(false);
   const searchInputRef = useRef(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const [profileRes, booksRes] = await Promise.all([
-          kidAccessService.getProfile(token),
-          kidAccessService.getBooks(token),
-        ]);
-        if (cancelled) return;
-        setChild(profileRes.data.data.child);
-        setBooks(booksRes.data.data.books);
-        setStatus("ok");
-      } catch {
-        if (!cancelled) setStatus("invalid");
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [token]);
+  // Hồ sơ bé + tủ sách
+  const profileQuery = useQuery({
+    queryKey: ["kid-access-profile", token],
+    queryFn: () =>
+      kidAccessService.getProfile(token).then((res) => res.data.data.child),
+    enabled: !!token,
+  });
+  const booksQuery = useQuery({
+    queryKey: ["kid-access-books", token],
+    queryFn: () =>
+      kidAccessService.getBooks(token).then((res) => res.data.data.books),
+    enabled: !!token,
+  });
+  const child = profileQuery.data ?? null;
+  const books = booksQuery.data ?? EMPTY_BOOKS;
+  const status =
+    profileQuery.isLoading || booksQuery.isLoading
+      ? "loading"
+      : profileQuery.isError || booksQuery.isError
+        ? "invalid"
+        : "ok";
 
-  //   khu "Khám phá thêm" tải riêng, không chặn phần còn lại của trang nếu
-  //   lỗi/chậm - chỉ chạy sau khi đã xác thực token hợp lệ (status === "ok")
-  useEffect(() => {
-    if (status !== "ok" || !token) return;
-    let cancelled = false;
-    (async () => {
-      setDiscoverLoading(true);
-      try {
-        const [discoverRes, requestsRes] = await Promise.all([
-          kidAccessService.getDiscover(token),
-          kidAccessService.getBookRequests(token),
-        ]);
-        if (cancelled) return;
-        setDiscover({
-          bestsellers: discoverRes.data.data.bestsellers ?? [],
-          ageAppropriate: discoverRes.data.data.ageAppropriate ?? [],
-        });
-        const statusMap = {};
-        for (const r of requestsRes.data.data.requests ?? []) {
-          // requests đã sắp xếp mới nhất trước, chỉ giữ trạng thái mới nhất/sách
-          if (!(r.bookId in statusMap)) statusMap[r.bookId] = r.status;
-        }
-        setRequestStatusByBook(statusMap);
-      } catch {
-        // im lặng: khu khám phá là phần bổ sung, không phải lõi của trang
-      } finally {
-        if (!cancelled) setDiscoverLoading(false);
+  const discoverQuery = useQuery({
+    queryKey: ["kid-access-discover", token],
+    queryFn: async () => {
+      const [discoverRes, requestsRes] = await Promise.all([
+        kidAccessService.getDiscover(token),
+        kidAccessService.getBookRequests(token),
+      ]);
+      const requestStatusByBook = {};
+      for (const r of requestsRes.data.data.requests ?? []) {
+        // requests đã sắp xếp mới nhất trước, chỉ giữ trạng thái mới nhất/sách
+        if (!(r.bookId in requestStatusByBook))
+          requestStatusByBook[r.bookId] = r.status;
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [status, token]);
+      return {
+        bestsellers: discoverRes.data.data.bestsellers ?? [],
+        ageAppropriate: discoverRes.data.data.ageAppropriate ?? [],
+        requestStatusByBook,
+      };
+    },
+    enabled: status === "ok",
+  });
+  const discover = {
+    bestsellers: discoverQuery.data?.bestsellers ?? [],
+    ageAppropriate: discoverQuery.data?.ageAppropriate ?? [],
+  };
+  const discoverLoading = discoverQuery.isLoading;
+  const requestStatusByBook =
+    discoverQuery.data?.requestStatusByBook ?? EMPTY_REQUEST_STATUS;
 
-  //   bé bấm "Nhờ ba mẹ mua" trên 1 cuốn sách ở khu Khám phá thêm
   const handleAskParent = useCallback(
     (book, e) => {
       if (sendingRequestId || requestStatusByBook[book.id] === "PENDING")
@@ -448,19 +431,29 @@ export default function KidAccess() {
         spawnRipple(e);
         spawnSparkles(e, 10);
       }
+      const discoverKey = ["kid-access-discover", token];
+      const markPending = () =>
+        qc.setQueryData(discoverKey, (prev) =>
+          prev
+            ? {
+                ...prev,
+                requestStatusByBook: {
+                  ...prev.requestStatusByBook,
+                  [book.id]: "PENDING",
+                },
+              }
+            : prev,
+        );
       setSendingRequestId(book.id);
       kidAccessService
         .sendBookRequest(token, book.id)
         .then(() => {
-          setRequestStatusByBook((prev) => ({ ...prev, [book.id]: "PENDING" }));
+          markPending();
           toast.success("Đã gửi lời nhắn cho ba mẹ rồi!", { icon: "💌" });
         })
         .catch((err) => {
           if (err.response?.data?.code === "ALREADY_REQUESTED") {
-            setRequestStatusByBook((prev) => ({
-              ...prev,
-              [book.id]: "PENDING",
-            }));
+            markPending();
             return;
           }
           toast.error(
@@ -469,18 +462,13 @@ export default function KidAccess() {
         })
         .finally(() => setSendingRequestId(null));
     },
-    [token, sendingRequestId, requestStatusByBook],
+    [token, sendingRequestId, requestStatusByBook, qc],
   );
 
-  //   tối đa 5 cuốn sách bé đọc gần đây nhất mà vẫn còn dang dở (đọc từ
-  //   localStorage do trang đọc sách ghi lại), dùng để hiển thị dải thẻ
-  //   "Đang đọc dở" kèm thanh tiến độ cho từng cuốn
   const [recentReadings, setRecentReadings] = useState([]);
 
   useEffect(() => {
     if (!token || books.length === 0) return;
-    // map theo slug -> cuốn sách đầy đủ, để lấy được id thật (dùng tính màu
-    // tem cho khớp với màu ở kệ sách/modal) vì localStorage chỉ lưu slug
     const bookBySlug = new Map(books.map((b) => [b.slug, b]));
 
     const loadProgress = () => {
@@ -534,9 +522,6 @@ export default function KidAccess() {
 
   const isOk = status === "ok" && child && !child.isLocked;
 
-  //   nhắc nghỉ mắt định kỳ + giải lao bắt buộc - dùng chung với
-  //   EbookReader/ArView/GardenPage để tính năng chạy xuyên suốt cả lúc bé
-  //   đang đọc sách/xem AR, không chỉ lúc đứng ở trang kệ sách này.
   const {
     showRest,
     showBreak,
@@ -614,10 +599,10 @@ export default function KidAccess() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOk]);
 
-  //   MÀN MÂY MÙ MỞ ĐẦU: "cover" (mây phủ kín, chờ tải) → "leave" (mây tản
-  //   ra để lộ giao diện) → "done" (gỡ hẳn khỏi DOM). Giữ mây hiện đủ
-  //   INTRO_COVER_MIN_MS dù server trả lời nhanh, để tránh chớp nháy.
-  const [introStage, setIntroStage] = useState("cover");
+  //   MÀN MÂY MÙ MỞ ĐẦU
+  const [introStage, setIntroStage] = useState(() =>
+    qc.getQueryData(["kid-access-profile", token]) ? "done" : "cover",
+  );
   const introMountedAtRef = useRef(null);
   useEffect(() => {
     introMountedAtRef.current =
@@ -832,12 +817,6 @@ export default function KidAccess() {
   const inWindow = child.allowWindowEnabled
     ? withinWindow(child.allowStart, child.allowEnd)
     : true;
-  // bé chỉ thực sự đọc được khi CẢ hai điều kiện đều thoả: chưa hết giờ
-  // trong ngày VÀ đang trong khung giờ ba mẹ cho phép - dùng chung 1 biến
-  // để mọi nút "Đọc ngay/Đọc tiếp" (kệ sách, thẻ đang đọc dở, modal) đều
-  // khoá đồng nhất, tránh trường hợp bấm được nhưng vào tới nơi lại bị
-  // server chặn (trải nghiệm dở, dù không mất an toàn vì server luôn
-  // kiểm tra lại).
   const canRead = inWindow && !limitReached;
   const modalAccent = activeBook ? accentForId(activeBook.id) : "sky";
 
