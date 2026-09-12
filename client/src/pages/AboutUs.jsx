@@ -1164,7 +1164,7 @@ export default function AboutUs() {
                 <span
                   className="tech-editor-number tech-editor-number--secondary"
                   id="tech-file-counter"
-                  data-target="403
+                  data-target="403"
                 >
                   0
                 </span>
