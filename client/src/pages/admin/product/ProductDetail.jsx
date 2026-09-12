@@ -15,6 +15,7 @@ import api from "../../../services/api";
 import { getGameDefinition } from "../../../games/gameRegistry";
 import toast from "react-hot-toast";
 import AdminLayout from "../AdminLayout";
+import { AdminSkeletonLines } from "../../../components/skeletons/SkeletonAdmin";
 import ProductFormFields from "./ProductFormFields";
 import { EMPTY_FORM, bookToForm, formToPayload } from "./productFormUtils";
 
@@ -214,7 +215,24 @@ export default function ProductDetail() {
         <ArrowLeft size={13} /> Quay lại danh sách sách
       </button>
 
-      {isLoading || !book ? (
+      {isLoading ? (
+        <>
+          <div className="a-page-header">
+            <div style={{ display: "flex", gap: 16 }}>
+              <span
+                className="a-skeleton"
+                style={{ width: 64, height: 88, borderRadius: 6 }}
+              />
+              <div style={{ flex: 1, paddingTop: 4 }}>
+                <AdminSkeletonLines lines={3} />
+              </div>
+            </div>
+          </div>
+          <div className="a-chart-card" style={{ marginTop: 18 }}>
+            <AdminSkeletonLines lines={6} />
+          </div>
+        </>
+      ) : !book ? (
         <div
           style={{
             padding: 60,
@@ -222,7 +240,7 @@ export default function ProductDetail() {
             color: "rgba(13,51,48,0.3)",
           }}
         >
-          {isLoading ? "Đang tải..." : "Không tìm thấy sách"}
+          Không tìm thấy sách
         </div>
       ) : (
         <>

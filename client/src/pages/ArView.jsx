@@ -154,8 +154,15 @@ function WorldMapCard({ habitatCountries, habitatRegion }) {
   if (!mapReady) {
     return (
       <div className="ar-more-map ar-more-map--loading">
-        <span className="ar-more-map__loading-dot" />
-        <p className="ar-more-map__empty">Đang tải bản đồ…</p>
+        <span
+          className="skeleton"
+          style={{
+            width: "100%",
+            height: "100%",
+            position: "absolute",
+            inset: 0,
+          }}
+        />
       </div>
     );
   }

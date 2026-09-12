@@ -18,6 +18,7 @@ import { newsService } from "../../services/newsService";
 import { useAuthStore } from "../../store/authStore";
 import toast from "react-hot-toast";
 import AdminLayout from "./AdminLayout";
+import { AdminSkeletonRows } from "../../components/skeletons/SkeletonAdmin";
 
 function formatDateTime(date) {
   return new Intl.DateTimeFormat("vi-VN", {
@@ -214,18 +215,7 @@ function PostsTab() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    style={{
-                      padding: 48,
-                      textAlign: "center",
-                      color: "rgba(13,51,48,0.3)",
-                    }}
-                  >
-                    Đang tải...
-                  </td>
-                </tr>
+                <AdminSkeletonRows columns={6} rows={6} />
               ) : !posts.length ? (
                 <tr>
                   <td
@@ -621,18 +611,7 @@ function FilesTab() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={7}
-                    style={{
-                      padding: 48,
-                      textAlign: "center",
-                      color: "rgba(13,51,48,0.3)",
-                    }}
-                  >
-                    Đang tải...
-                  </td>
-                </tr>
+                <AdminSkeletonRows columns={7} rows={5} />
               ) : !files.length ? (
                 <tr>
                   <td

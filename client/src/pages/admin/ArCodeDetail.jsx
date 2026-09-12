@@ -23,6 +23,7 @@ import {
 import api from "../../services/api";
 import toast from "react-hot-toast";
 import AdminLayout from "./AdminLayout";
+import { AdminSkeletonLines } from "../../components/skeletons/SkeletonAdmin";
 
 const ACCESS_OPTIONS = [
   { value: "CUSTOMER_ONLY", label: "Khách đã mua" },
@@ -292,14 +293,13 @@ export default function ArCodeDetail() {
   if (isEditMode && loadingAr) {
     return (
       <AdminLayout crumbs={[{ label: "Tạo mã QR" }, { label: "Chi tiết" }]}>
-        <div
-          style={{
-            padding: 60,
-            textAlign: "center",
-            color: "rgba(13,51,48,0.3)",
-          }}
-        >
-          Đang tải...
+        <div className="a-chart-grid-2 a-ar-layout">
+          <div className="a-chart-card">
+            <AdminSkeletonLines lines={6} />
+          </div>
+          <div className="a-chart-card">
+            <AdminSkeletonLines lines={4} />
+          </div>
         </div>
       </AdminLayout>
     );

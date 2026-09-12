@@ -16,6 +16,7 @@ import { ebookService } from "../../services/ebookService";
 import api from "../../services/api";
 import toast from "react-hot-toast";
 import AdminLayout from "./AdminLayout";
+import { AdminSkeletonRows } from "../../components/skeletons/SkeletonAdmin";
 import "../../components/assets/css/gamestudio.css";
 
 /* Modal chọn sách để gắn nội dung sách điện tử */
@@ -310,18 +311,7 @@ export default function EbookManager() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    style={{
-                      padding: 32,
-                      textAlign: "center",
-                      color: "rgba(13,51,48,0.3)",
-                    }}
-                  >
-                    Đang tải...
-                  </td>
-                </tr>
+                <AdminSkeletonRows columns={5} rows={6} />
               ) : !groups.length ? (
                 <tr>
                   <td

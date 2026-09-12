@@ -16,6 +16,10 @@ import { ticketService } from "../../services/ticketService";
 import { useAuthStore } from "../../store/authStore";
 import toast from "react-hot-toast";
 import AdminLayout from "./AdminLayout";
+import {
+  AdminSkeletonRows,
+  AdminSkeletonLines,
+} from "../../components/skeletons/SkeletonAdmin";
 
 /*  Constants  */
 export const TICKET_STATUS = {
@@ -447,9 +451,7 @@ function TicketDrawer({ ticket, onClose, currentUser }) {
               Lịch sử phản hồi ({t.replies?.length ?? 0})
             </div>
             {isLoading ? (
-              <div style={{ fontSize: 12, color: "rgba(13,51,48,0.4)" }}>
-                Đang tải...
-              </div>
+              <AdminSkeletonLines lines={3} />
             ) : !t.replies?.length ? (
               <div style={{ fontSize: 12, color: "rgba(13,51,48,0.4)" }}>
                 Chưa có phản hồi nào
@@ -719,18 +721,7 @@ export default function Tickets() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    style={{
-                      padding: 48,
-                      textAlign: "center",
-                      color: "rgba(13,51,48,0.3)",
-                    }}
-                  >
-                    Đang tải...
-                  </td>
-                </tr>
+                <AdminSkeletonRows columns={6} rows={8} />
               ) : !tickets.length ? (
                 <tr>
                   <td

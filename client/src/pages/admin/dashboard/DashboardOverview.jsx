@@ -26,8 +26,12 @@ import {
 import api from "../../../services/api";
 import { formatPrice, formatDate, getOrderCode } from "../../../utils/helpers";
 import ServerStatus from "../ServerStatus";
-import { CardHeader, ExportCsvButton } from "./dashboardShared";
+import { CardHeader, ExportCsvButton, EmptyState } from "./dashboardShared";
 import DateRangeFilter, { rangeFromPreset } from "./DateRangeFilter";
+import {
+  AdminSkeletonLines,
+  AdminSkeletonRows,
+} from "../../../components/skeletons/SkeletonAdmin";
 
 /*  Design tokens (mirror admin.css vars)  */
 const T = {
@@ -398,16 +402,10 @@ export default function DashboardOverview() {
               </div>
             </>
           ) : (
-            <div
-              style={{
-                padding: "40px 0",
-                textAlign: "center",
-                color: "rgba(13,51,48,0.3)",
-                fontSize: 12,
-              }}
-            >
-              {isLoading ? "Đang tải..." : "Chưa có dữ liệu đơn hàng"}
-            </div>
+            <EmptyState
+              loading={isLoading}
+              emptyText="Chưa có dữ liệu đơn hàng"
+            />
           )}
         </div>
       </div>
@@ -472,16 +470,10 @@ export default function DashboardOverview() {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div
-              style={{
-                padding: "40px 0",
-                textAlign: "center",
-                color: "rgba(13,51,48,0.3)",
-                fontSize: 12,
-              }}
-            >
-              {isLoading ? "Đang tải..." : "Chưa có đơn hàng trong kỳ đã chọn"}
-            </div>
+            <EmptyState
+              loading={isLoading}
+              emptyText="Chưa có đơn hàng trong kỳ đã chọn"
+            />
           )}
         </div>
 
@@ -505,15 +497,8 @@ export default function DashboardOverview() {
           />
           <div className="a-activity">
             {isLoading ? (
-              <div
-                style={{
-                  padding: "24px 0",
-                  textAlign: "center",
-                  color: "rgba(13,51,48,0.3)",
-                  fontSize: 12,
-                }}
-              >
-                Đang tải...
+              <div style={{ padding: "10px 4px" }}>
+                <AdminSkeletonLines lines={4} />
               </div>
             ) : activityFeed.length > 0 ? (
               activityFeed.map((item, i) => (
@@ -605,16 +590,7 @@ export default function DashboardOverview() {
               </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <div
-              style={{
-                padding: "40px 0",
-                textAlign: "center",
-                color: "rgba(13,51,48,0.3)",
-                fontSize: 12,
-              }}
-            >
-              {isLoading ? "Đang tải..." : "Chưa có dữ liệu"}
-            </div>
+            <EmptyState loading={isLoading} emptyText="Chưa có dữ liệu" />
           )}
         </div>
 
@@ -707,16 +683,7 @@ export default function DashboardOverview() {
               </div>
             </>
           ) : (
-            <div
-              style={{
-                padding: "40px 0",
-                textAlign: "center",
-                color: "rgba(13,51,48,0.3)",
-                fontSize: 12,
-              }}
-            >
-              {isLoading ? "Đang tải..." : "Chưa có dữ liệu"}
-            </div>
+            <EmptyState loading={isLoading} emptyText="Chưa có dữ liệu" />
           )}
         </div>
       </div>
@@ -780,16 +747,10 @@ export default function DashboardOverview() {
             ))}
           </div>
         ) : (
-          <div
-            style={{
-              padding: "24px 0",
-              textAlign: "center",
-              color: "rgba(13,51,48,0.3)",
-              fontSize: 12,
-            }}
-          >
-            {isLoading ? "Đang tải..." : "Không có sách nào sắp hết hàng"}
-          </div>
+          <EmptyState
+            loading={isLoading}
+            emptyText="Không có sách nào sắp hết hàng"
+          />
         )}
       </div>
 
@@ -851,18 +812,7 @@ export default function DashboardOverview() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={7}
-                    style={{
-                      padding: 40,
-                      textAlign: "center",
-                      color: "rgba(13,51,48,0.3)",
-                    }}
-                  >
-                    Đang tải...
-                  </td>
-                </tr>
+                <AdminSkeletonRows columns={7} rows={5} />
               ) : !data?.recentOrders?.length ? (
                 <tr>
                   <td

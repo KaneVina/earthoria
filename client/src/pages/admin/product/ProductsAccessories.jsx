@@ -5,6 +5,7 @@ import { Plus, Search, Eye, Trash2, X, Package } from "lucide-react";
 import api from "../../../services/api";
 import { formatPrice } from "../../../utils/helpers";
 import toast from "react-hot-toast";
+import { AdminSkeletonRows } from "../../../components/skeletons/SkeletonAdmin";
 
 export default function ProductsAccessories() {
   const qc = useQueryClient();
@@ -96,18 +97,7 @@ export default function ProductsAccessories() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={7}
-                    style={{
-                      padding: 48,
-                      textAlign: "center",
-                      color: "rgba(13,51,48,0.3)",
-                    }}
-                  >
-                    Đang tải...
-                  </td>
-                </tr>
+                <AdminSkeletonRows columns={7} rows={6} />
               ) : !items.length ? (
                 <tr>
                   <td

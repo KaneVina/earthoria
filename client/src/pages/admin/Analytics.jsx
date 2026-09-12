@@ -27,6 +27,7 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from "recharts";
+import { AdminSkeletonLines } from "../../components/skeletons/SkeletonAdmin";
 
 // ─ CONFIG
 const UMAMI_URL = import.meta.env.VITE_UMAMI_URL || "";
@@ -1084,15 +1085,21 @@ export default function Analytics() {
             }}
           >
             {pageviews.length === 0 ? (
-              <div
-                style={{
-                  textAlign: "center",
-                  padding: "48px 0",
-                  color: "rgba(13,51,48,0.25)",
-                  fontSize: 13,
-                }}
-              >
-                {loading ? "Đang tải..." : "Chưa có dữ liệu"}
+              <div style={{ padding: "20px 8px" }}>
+                {loading ? (
+                  <AdminSkeletonLines lines={4} />
+                ) : (
+                  <div
+                    style={{
+                      textAlign: "center",
+                      padding: "28px 0",
+                      color: "rgba(13,51,48,0.25)",
+                      fontSize: 13,
+                    }}
+                  >
+                    Chưa có dữ liệu
+                  </div>
+                )}
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={220}>

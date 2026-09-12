@@ -10,6 +10,10 @@ import {
 import toast from "react-hot-toast";
 import AdminLayout from "./AdminLayout";
 import { TierBadge } from "./user/UserBadges";
+import {
+  AdminSkeletonRows,
+  AdminSkeletonLines,
+} from "../../components/skeletons/SkeletonAdmin";
 
 /*  Constants  */
 export const ORDER_STATUS = {
@@ -302,15 +306,10 @@ function OrderDrawer({ orderId, onClose, onUpdateStatus, isUpdating }) {
         </div>
 
         {isLoading || !order ? (
-          <div
-            style={{
-              padding: 48,
-              textAlign: "center",
-              color: "rgba(13,51,48,0.3)",
-              fontSize: 13,
-            }}
-          >
-            Đang tải...
+          <div style={{ padding: 24 }}>
+            <AdminSkeletonLines lines={3} style={{ marginBottom: 22 }} />
+            <AdminSkeletonLines lines={4} style={{ marginBottom: 22 }} />
+            <AdminSkeletonLines lines={3} />
           </div>
         ) : (
           <div style={{ padding: 24, flex: 1 }}>
@@ -999,18 +998,7 @@ export default function Orders() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={7}
-                    style={{
-                      padding: 48,
-                      textAlign: "center",
-                      color: "rgba(13,51,48,0.3)",
-                    }}
-                  >
-                    Đang tải...
-                  </td>
-                </tr>
+                <AdminSkeletonRows columns={7} rows={8} />
               ) : !orders.length ? (
                 <tr>
                   <td

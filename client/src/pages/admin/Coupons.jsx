@@ -301,7 +301,10 @@ export default function Coupons() {
 
       <p className="a-vc-count">
         {isLoading ? (
-          "Đang tải danh sách mã..."
+          <span
+            className="a-skeleton"
+            style={{ display: "inline-block", height: 12, width: 160 }}
+          />
         ) : (
           <>
             Hiển thị <strong>{filteredCoupons.length}</strong> /{" "}

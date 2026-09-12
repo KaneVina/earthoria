@@ -16,6 +16,10 @@ import toast from "react-hot-toast";
 import api from "../../services/api";
 import { formatDate } from "../../utils/helpers";
 import AdminLayout from "./AdminLayout";
+import {
+  AdminSkeletonRows,
+  AdminSkeletonLines,
+} from "../../components/skeletons/SkeletonAdmin";
 
 /*  Status badge config  */
 const STATUS_CLS = {
@@ -586,15 +590,7 @@ function DetailModal({ id, onClose }) {
         </div>
         <div className="a-modal-body">
           {isLoading ? (
-            <div
-              style={{
-                padding: "30px 0",
-                textAlign: "center",
-                color: "var(--a-ink-40)",
-              }}
-            >
-              Đang tải...
-            </div>
+            <AdminSkeletonLines lines={4} style={{ padding: "8px 4px" }} />
           ) : !data ? (
             <div
               style={{
@@ -730,18 +726,7 @@ export default function Emails() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    style={{
-                      padding: 40,
-                      textAlign: "center",
-                      color: "var(--a-ink-40)",
-                    }}
-                  >
-                    Đang tải...
-                  </td>
-                </tr>
+                <AdminSkeletonRows columns={5} rows={6} />
               ) : emails.length === 0 ? (
                 <tr>
                   <td

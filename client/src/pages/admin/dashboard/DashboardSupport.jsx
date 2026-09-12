@@ -22,6 +22,7 @@ import {
   ExportCsvButton,
 } from "./dashboardShared";
 import DateRangeFilter, { rangeFromPreset } from "./DateRangeFilter";
+import { AdminSkeletonRows } from "../../../components/skeletons/SkeletonAdmin";
 
 const STATUS_CLS = {
   NEW: "info",
@@ -233,18 +234,7 @@ export default function DashboardSupport() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    style={{
-                      padding: 40,
-                      textAlign: "center",
-                      color: "rgba(13,51,48,0.3)",
-                    }}
-                  >
-                    Đang tải...
-                  </td>
-                </tr>
+                <AdminSkeletonRows columns={5} rows={5} />
               ) : !data?.recentTickets?.length ? (
                 <tr>
                   <td

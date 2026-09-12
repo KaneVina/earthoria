@@ -6,6 +6,7 @@ import { Search, Edit2, Plus, Download, Copy, Upload } from "lucide-react";
 import api from "../../services/api";
 import toast from "react-hot-toast";
 import AdminLayout from "./AdminLayout";
+import { AdminSkeletonRows } from "../../components/skeletons/SkeletonAdmin";
 
 const ACCESS_OPTIONS = [
   { value: "CUSTOMER_ONLY", label: "Chỉ khách đã mua" },
@@ -211,18 +212,7 @@ export default function ArCodeManager() {
               </thead>
               <tbody>
                 {isLoading ? (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      style={{
-                        padding: 32,
-                        textAlign: "center",
-                        color: "rgba(13,51,48,0.3)",
-                      }}
-                    >
-                      Đang tải...
-                    </td>
-                  </tr>
+                  <AdminSkeletonRows columns={6} rows={6} />
                 ) : !groups.length ? (
                   <tr>
                     <td

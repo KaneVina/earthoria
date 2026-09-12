@@ -13,6 +13,7 @@ import {
 import api from "../../../services/api";
 import { formatDate, formatPrice } from "../../../utils/helpers";
 import { TierBadge } from "./UserBadges";
+import { AdminSkeletonLines } from "../../../components/skeletons/SkeletonAdmin";
 
 /* ─ Avatar color pool (deterministic by first char) - đồng bộ với Users.jsx ─ */
 const AVATAR_COLORS = [
@@ -182,15 +183,10 @@ export default function UserDetailDrawer({
         </div>
 
         {isLoading || !data ? (
-          <div
-            style={{
-              padding: 48,
-              textAlign: "center",
-              color: "rgba(13,51,48,0.3)",
-              fontSize: 13,
-            }}
-          >
-            Đang tải...
+          <div style={{ padding: 24 }}>
+            <AdminSkeletonLines lines={3} style={{ marginBottom: 22 }} />
+            <AdminSkeletonLines lines={4} style={{ marginBottom: 22 }} />
+            <AdminSkeletonLines lines={3} />
           </div>
         ) : (
           <div style={{ padding: 24, flex: 1 }}>

@@ -29,6 +29,7 @@ import {
 } from "../../games/gameRegistry";
 import toast from "react-hot-toast";
 import AdminLayout from "./AdminLayout";
+import { AdminSkeletonLines } from "../../components/skeletons/SkeletonAdmin";
 import "../../components/assets/css/gamestudio.css";
 
 const ACCESS_OPTIONS = [
@@ -273,14 +274,13 @@ export default function GameDetail() {
   if (isEditMode && loadingGame) {
     return (
       <AdminLayout crumbs={[{ label: "Trò chơi" }, { label: "Chi tiết" }]}>
-        <div
-          style={{
-            padding: 60,
-            textAlign: "center",
-            color: "rgba(13,51,48,0.3)",
-          }}
-        >
-          Đang tải...
+        <div className="a-chart-grid-2 a-ar-layout">
+          <div className="a-chart-card">
+            <AdminSkeletonLines lines={6} />
+          </div>
+          <div className="a-chart-card">
+            <AdminSkeletonLines lines={4} />
+          </div>
         </div>
       </AdminLayout>
     );

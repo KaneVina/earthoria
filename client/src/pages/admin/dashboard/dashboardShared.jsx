@@ -2,6 +2,7 @@
 // Nội dung, Gia đình, Hỗ trợ) - tránh lặp code giữa các file tab.
 
 import { Download } from "lucide-react";
+import { AdminSkeletonLines } from "../../../components/skeletons/SkeletonAdmin";
 
 export const T = {
   forest: "#0D3330",
@@ -25,8 +26,17 @@ export const PALETTE = [
   "#8a9990",
 ];
 
-// Ô trống / đang tải dùng chung trong các card biểu đồ
+// Ô trống / đang tải dùng chung trong các card biểu đồ - khi đang tải hiện
+// vài thanh skeleton (không phải chữ "Đang tải...") để đúng chuẩn loading
+// chung của app (chỉ Skeleton hoặc FullScreenLoader).
 export function EmptyState({ loading, emptyText = "Chưa có dữ liệu" }) {
+  if (loading) {
+    return (
+      <div style={{ padding: "20px 14px" }}>
+        <AdminSkeletonLines lines={4} />
+      </div>
+    );
+  }
   return (
     <div
       style={{
@@ -36,7 +46,7 @@ export function EmptyState({ loading, emptyText = "Chưa có dữ liệu" }) {
         fontSize: 12,
       }}
     >
-      {loading ? "Đang tải..." : emptyText}
+      {emptyText}
     </div>
   );
 }

@@ -17,6 +17,7 @@ import { gameService } from "../../services/gameService";
 import { GAME_TYPE_LIST, getGameDefinition } from "../../games/gameRegistry";
 import toast from "react-hot-toast";
 import AdminLayout from "./AdminLayout";
+import { AdminSkeletonRows } from "../../components/skeletons/SkeletonAdmin";
 import "../../components/assets/css/gamestudio.css";
 
 const ACCESS_OPTIONS = [
@@ -242,18 +243,7 @@ export default function GameManager() {
               </thead>
               <tbody>
                 {isLoading ? (
-                  <tr>
-                    <td
-                      colSpan={8}
-                      style={{
-                        padding: 32,
-                        textAlign: "center",
-                        color: "rgba(13,51,48,0.3)",
-                      }}
-                    >
-                      Đang tải...
-                    </td>
-                  </tr>
+                  <AdminSkeletonRows columns={8} rows={6} />
                 ) : !groups.length ? (
                   <tr>
                     <td

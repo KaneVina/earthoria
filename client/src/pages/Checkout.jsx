@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-
 import {
   ArrowLeft,
   ChevronRight,
@@ -1414,22 +1413,43 @@ function VoucherModal({
           style={{ overflowY: "auto", padding: "18px 24px 24px" }}
         >
           {loading ? (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 10,
-                padding: "56px 0",
-                fontSize: 13,
-                color: "var(--text-muted)",
-              }}
-            >
-              <Loader2
-                size={16}
-                style={{ animation: "spin 0.8s linear infinite" }}
-              />
-              Đang tải ưu đãi…
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="eo-voucher-card"
+                  style={{
+                    display: "flex",
+                    background: "var(--white)",
+                    border: "0.5px solid var(--border)",
+                  }}
+                >
+                  <div style={{ flex: 1, minWidth: 0, padding: "16px 16px" }}>
+                    <span
+                      className="skeleton"
+                      style={{
+                        height: 15,
+                        width: "55%",
+                        marginBottom: 10,
+                        display: "block",
+                      }}
+                    />
+                    <span
+                      className="skeleton"
+                      style={{
+                        height: 11,
+                        width: "80%",
+                        marginBottom: 12,
+                        display: "block",
+                      }}
+                    />
+                    <span
+                      className="skeleton"
+                      style={{ height: 8, width: "100%", display: "block" }}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : coupons.length === 0 ? (
             <div style={{ padding: "56px 0", textAlign: "center" }}>
@@ -1799,8 +1819,6 @@ export default function Checkout() {
     wardName: "",
     isDefault: false,
   });
-  // Ward list cho form địa chỉ mới - phải khai báo SAU newAddrForm vì phụ thuộc
-  // vào newAddrForm.provinceCode (đặt trước sẽ lỗi "Cannot access before initialization").
   const { wards: newAddrWards, loading: newAddrWardsLoading } = useWards(
     newAddrForm.provinceCode,
   );
@@ -1810,9 +1828,6 @@ export default function Checkout() {
     lng: null,
   });
   const [loyaltyProfile, setLoyaltyProfile] = useState(null);
-  // shipCalc phải khai báo TRƯỚC applyAddress vì applyAddress (và các hàm bên
-  // dưới) đọc/ghi setShipCalc - khai báo sau sẽ gặp lỗi hoisting y hệt lỗi
-  // newAddrForm phía trên nếu React Compiler tối ưu hoá thứ tự gọi hàm.
   const [shipCalc, setShipCalc] = useState({
     km: null,
     fee: 30_000,
@@ -1850,9 +1865,6 @@ export default function Checkout() {
 
   const applyAddress = (addr) => {
     setSelectedAddressId(addr.id);
-    // Địa chỉ đã lưu chỉ có tên tỉnh/phường (string), không có code, nên phải
-    // tự tra code tương ứng trong danh sách tỉnh đang có để 2 combobox tỉnh/phường
-    // nhận đúng giá trị đã chọn (trước đây bị bỏ trống code -> hiện sai/rỗng).
     const matchedProvince = provinces.find((p) => p.name === addr.province);
     setShip((f) => ({
       ...f,
@@ -1864,8 +1876,6 @@ export default function Checkout() {
       wardCode: "", // sẽ được điền lại khi danh sách phường/xã của tỉnh này tải xong
       street: addr.street,
     }));
-    // Ghi nhớ tên phường/xã cần khớp code, useEffect bên dưới sẽ tự điền khi
-    // useWards(provinceCode) tải xong danh sách phường/xã của tỉnh vừa chọn.
     setPendingWardName(addr.ward);
 
     const currentSubtotal = (cart?.items || []).reduce(
@@ -1887,8 +1897,6 @@ export default function Checkout() {
       return;
     }
 
-    // Địa chỉ không lưu sẵn lat/lng (không còn dùng bản đồ để ghim toạ độ) ->
-    // tự geocode theo tên phường/tỉnh để vẫn tính được phí ship theo khoảng cách.
     setShipCalc((s) => ({ ...s, loading: true }));
     (async () => {
       let lat = null,
@@ -1996,8 +2004,7 @@ export default function Checkout() {
         street: newAddrForm.street,
         province: newAddrForm.provinceName,
         ward: newAddrForm.wardName,
-        // Chưa có địa chỉ nào thì không cần gửi isDefault - backend tự động
-        // đặt địa chỉ đầu tiên làm mặc định.
+        // Chưa có địa chỉ nào thì không cần gửi isDefault
         ...(savedAddresses.length > 0
           ? { isDefault: newAddrForm.isDefault }
           : {}),
@@ -2015,9 +2022,7 @@ export default function Checkout() {
     }
   };
 
-  // Chỉ áp dụng địa chỉ mặc định SAU KHI danh sách tỉnh/thành đã tải xong,
-  // để applyAddress tra được đúng provinceCode (trước đây gọi applyAddress
-  // ngay khi vừa có địa chỉ, lúc đó `provinces` có thể vẫn rỗng -> tra không ra).
+  // Chỉ áp dụng địa chỉ mặc định SAU KHI danh sách tỉnh/thành đã tải xong).
   useEffect(() => {
     if (defaultAddrToApply && provinces.length > 0) {
       applyAddress(defaultAddrToApply);
@@ -2025,8 +2030,7 @@ export default function Checkout() {
     }
   }, [defaultAddrToApply, provinces]);
 
-  // Khi useWards(ship.provinceCode) tải xong phường/xã của tỉnh vừa áp dụng,
-  // khớp tên phường/xã đã lưu với code tương ứng để combobox hiển thị đúng.
+  // Khi useWards(ship.provinceCode) tải xong phường/xã của tỉnh vừa áp dụng đểkhớp tên phường/xã đã lưu với code tương ứng để combobox hiển thị đúng.
   useEffect(() => {
     if (pendingWardName && wards.length > 0) {
       const matchedWard = wards.find((w) => w.name === pendingWardName);
@@ -2265,9 +2269,7 @@ export default function Checkout() {
       return;
     }
 
-    // VNPay / MoMo → đơn đã tạo (giữ trạng thái UNPAID), giờ lấy link cổng thanh toán rồi chuyển hướng.
-    // Tách try/catch riêng: nếu bước này lỗi, đơn hàng VẪN đã tồn tại - báo rõ để người dùng
-    // vào lịch sử đơn hàng bấm "Thanh toán lại" thay vì tưởng nhầm là chưa đặt được gì.
+    // VNPay / MoMo
     if (method === "bankqr") {
       try {
         const { data: qrData } =
@@ -4439,10 +4441,7 @@ export default function Checkout() {
           )}
         </div>
 
-        {/* ══════════════════════════════════════
-            RIGHT COLUMN - Order Summary
-            (luôn hiển thị, sync realtime)
-        ══════════════════════════════════════ */}
+        {/*RIGHT COLUMN - Order Summary */}
         {showPriceModal && (
           <div
             onClick={() => setShowPriceModal(false)}

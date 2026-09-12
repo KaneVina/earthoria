@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import AdminLayout from "./AdminLayout";
+import { AdminSkeletonLines } from "../../components/skeletons/SkeletonAdmin";
 
 // Lazy load từng tab - tách bundle riêng, chỉ tải khi người dùng bấm vào tab đó.
 // Giúp trang tải nhanh hơn thay vì gộp toàn bộ số liệu vào 1 file khổng lồ.
@@ -21,17 +22,34 @@ const TABS = [
   { key: "web", label: "Web Analytics", Component: Analytics },
 ];
 
+// Suspense fallback khi đang tải mã (JS chunk) của 1 tab dashboard - phỏng
+// theo bố cục chung của mọi tab (hàng thẻ KPI + 2 khối biểu đồ) thay vì chỉ
+// hiện chữ "Đang tải dữ liệu..." trơ trọi.
 function TabFallback() {
   return (
-    <div
-      style={{
-        textAlign: "center",
-        padding: "60px 0",
-        color: "rgba(13,51,48,0.3)",
-        fontSize: 13,
-      }}
-    >
-      Đang tải dữ liệu...
+    <div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+          gap: 14,
+          marginBottom: 24,
+        }}
+      >
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="a-chart-card" style={{ padding: "16px 18px" }}>
+            <AdminSkeletonLines lines={2} />
+          </div>
+        ))}
+      </div>
+      <div className="a-chart-grid-2">
+        <div className="a-chart-card">
+          <AdminSkeletonLines lines={5} />
+        </div>
+        <div className="a-chart-card">
+          <AdminSkeletonLines lines={5} />
+        </div>
+      </div>
     </div>
   );
 }

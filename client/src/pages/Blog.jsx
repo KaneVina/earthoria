@@ -13,7 +13,7 @@ import {
   Mail,
 } from "lucide-react";
 
-/* ─ TOKENS ─ */
+/* TOKENS */
 const T = {
   ink: "#080c0a",
   forest: "#0a2e28",
@@ -316,9 +316,7 @@ function useReveal() {
   }, []);
 }
 
-/* ══════════════════════════════════════════
-   HERO
-══════════════════════════════════════════ */
+/*  HERO */
 function Hero() {
   const recent = [
     {
@@ -758,9 +756,7 @@ function Hero() {
   );
 }
 
-/* ══════════════════════════════════════════
-   CATEGORY STRIP
-══════════════════════════════════════════ */
+/* CATEGORY STRIP */
 function CatStrip() {
   const [act, setAct] = useState(0);
   const cats = [
@@ -853,9 +849,7 @@ function CatStrip() {
   );
 }
 
-/* ══════════════════════════════════════════
-   ARTICLES
-══════════════════════════════════════════ */
+/* ARTICLES*/
 function Articles() {
   const [tags, setTags] = useState(["Rừng nguyên sinh"]);
   const tog = (t) =>
@@ -1503,9 +1497,7 @@ function Articles() {
   );
 }
 
-/* ══════════════════════════════════════════
-   EDITORIAL
-══════════════════════════════════════════ */
+/*  EDITORIAL */
 function Editorial() {
   const series = [
     {
@@ -1644,9 +1636,7 @@ function Editorial() {
   );
 }
 
-/* ══════════════════════════════════════════
-   QUOTE
-══════════════════════════════════════════ */
+/* QUOTE*/
 function Quote() {
   return (
     <section
@@ -1742,9 +1732,7 @@ function Quote() {
   );
 }
 
-/* ══════════════════════════════════════════
-   CTA NEWSLETTER
-══════════════════════════════════════════ */
+/*  CTA NEWSLETTER */
 function CTA() {
   const [ints, setInts] = useState(["Thiên nhiên", "Nông nghiệp"]);
   const all = [
@@ -2110,13 +2098,33 @@ function NewsBoard() {
       {loading ? (
         <div
           style={{
-            textAlign: "center",
-            padding: "40px 0",
-            color: T.textMuted,
-            fontSize: 12,
+            display: "grid",
+            gridTemplateColumns: "repeat(2,1fr)",
+            gap: 18,
           }}
+          className="bp-ed-grid"
         >
-          Đang tải bảng tin...
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bp-newspost" style={{ padding: 16 }}>
+              <span
+                className="skeleton"
+                style={{ height: 16, width: "70%", marginBottom: 10 }}
+              />
+              <span
+                className="skeleton"
+                style={{ height: 12, width: "40%", marginBottom: 14 }}
+              />
+              <span
+                className="skeleton"
+                style={{ height: 11, width: "100%", marginBottom: 6 }}
+              />
+              <span
+                className="skeleton"
+                style={{ height: 11, width: "90%", marginBottom: 6 }}
+              />
+              <span className="skeleton" style={{ height: 11, width: "60%" }} />
+            </div>
+          ))}
         </div>
       ) : !posts.length ? (
         <div
@@ -2294,13 +2302,31 @@ function PublicFiles() {
       {loading ? (
         <div
           style={{
-            textAlign: "center",
-            padding: "30px 0",
-            color: T.textMuted,
-            fontSize: 12,
+            display: "grid",
+            gridTemplateColumns: "repeat(6,1fr)",
+            gap: 14,
           }}
+          className="bp-fb-grid"
         >
-          Đang tải danh sách tệp...
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div
+              key={i}
+              className="bp-filecard-face"
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 8,
+                padding: "16px 8px",
+              }}
+            >
+              <span
+                className="skeleton"
+                style={{ width: 30, height: 30, borderRadius: 6 }}
+              />
+              <span className="skeleton" style={{ width: "80%", height: 10 }} />
+            </div>
+          ))}
         </div>
       ) : !files.length ? (
         <div
@@ -2371,9 +2397,7 @@ function PublicFiles() {
   );
 }
 
-/* ══════════════════════════════════════════
-   ROOT
-══════════════════════════════════════════ */
+/* ROOT */
 export default function Blog() {
   useReveal();
   useEffect(() => {

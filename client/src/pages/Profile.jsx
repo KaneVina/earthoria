@@ -4311,14 +4311,32 @@ function ArTab({ arCodes, loading }) {
           logo="/logo/logo-mau/lg-m-family-studio.png"
         />
         <ParentDashboardBanner />
-        <div
-          style={{
-            padding: 48,
-            textAlign: "center",
-            color: "var(--text-muted)",
-          }}
-        >
-          Đang tải...
+        <div className="pf-ar-book-grid">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="pf-ar-book-card">
+              <div className="pf-ar-book-cover">
+                <span
+                  className="skeleton"
+                  style={{ width: "100%", height: "100%" }}
+                />
+              </div>
+              <div className="pf-ar-book-info">
+                <span
+                  className="skeleton"
+                  style={{
+                    height: 14,
+                    width: "80%",
+                    marginBottom: 8,
+                    display: "block",
+                  }}
+                />
+                <span
+                  className="skeleton"
+                  style={{ height: 11, width: "45%", display: "block" }}
+                />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );

@@ -4,6 +4,7 @@ import { X, Search, Send, EyeOff, Eye, Star } from "lucide-react";
 import { bookService } from "../../services/bookService";
 import toast from "react-hot-toast";
 import AdminLayout from "./AdminLayout";
+import { AdminSkeletonRows } from "../../components/skeletons/SkeletonAdmin";
 
 function formatDateTime(date) {
   return new Intl.DateTimeFormat("vi-VN", {
@@ -41,7 +42,10 @@ function ReviewDrawer({ review, onClose }) {
   const qc = useQueryClient();
   const [replyText, setReplyText] = useState("");
 
-  const { data: detail, isLoading } = useQuery({
+  // Không cần loading state ở đây: `review` (prop, dữ liệu tóm tắt từ danh
+  // sách) đã đủ để hiển thị ngay lập tức trong lúc chờ `detail` (dữ liệu đầy
+  // đủ hơn) tải xong - xem dòng "const r = detail || review" bên dưới.
+  const { data: detail } = useQuery({
     queryKey: ["admin-review", review?.id],
     queryFn: () =>
       bookService.getAdminReviewById(review.id).then((r) => r.data.data),
@@ -507,18 +511,7 @@ export default function Reviews() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={7}
-                    style={{
-                      padding: 48,
-                      textAlign: "center",
-                      color: "rgba(13,51,48,0.3)",
-                    }}
-                  >
-                    Đang tải...
-                  </td>
-                </tr>
+                <AdminSkeletonRows columns={7} rows={8} />
               ) : !reviews.length ? (
                 <tr>
                   <td

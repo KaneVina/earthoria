@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, Pencil, Trash2, X, FolderTree } from "lucide-react";
 import api from "../../../services/api";
 import toast from "react-hot-toast";
+import { AdminSkeletonRows } from "../../../components/skeletons/SkeletonAdmin";
 
 const EMPTY_FORM = { name: "", slug: "", description: "" };
 
@@ -109,18 +110,7 @@ export default function ProductsCategories() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={4}
-                    style={{
-                      padding: 48,
-                      textAlign: "center",
-                      color: "rgba(13,51,48,0.3)",
-                    }}
-                  >
-                    Đang tải...
-                  </td>
-                </tr>
+                <AdminSkeletonRows columns={4} rows={6} />
               ) : !filtered.length ? (
                 <tr>
                   <td

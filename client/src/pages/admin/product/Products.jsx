@@ -16,6 +16,7 @@ import toast from "react-hot-toast";
 import AdminLayout from "../AdminLayout";
 import ProductsAccessories from "./ProductsAccessories";
 import ProductsCategories from "./ProductsCategories";
+import { AdminSkeletonRows } from "../../../components/skeletons/SkeletonAdmin";
 import { calcDiscountPercent } from "./productFormUtils";
 
 const EMPTY_FILTERS = {
@@ -325,18 +326,7 @@ function BooksTab() {
             </thead>
             <tbody>
               {isLoading ? (
-                <tr>
-                  <td
-                    colSpan={8}
-                    style={{
-                      padding: 48,
-                      textAlign: "center",
-                      color: "rgba(13,51,48,0.3)",
-                    }}
-                  >
-                    Đang tải...
-                  </td>
-                </tr>
+                <AdminSkeletonRows columns={8} rows={8} />
               ) : !products.length ? (
                 <tr>
                   <td

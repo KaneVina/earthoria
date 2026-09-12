@@ -1,12 +1,13 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { Loader2, Lock, SearchX, AlarmClock } from "lucide-react";
+import { Lock, SearchX, AlarmClock } from "lucide-react";
 import toast from "react-hot-toast";
 import { ebookService } from "../services/ebookService";
 import { kidAccessService } from "../services/kidAccessService";
 import { PreviewOverlay } from "./admin/EbookEditor";
 import { useKidRestBreak } from "../hooks/useKidRestBreak";
 import { KidRestBreakOverlay } from "../components/kid/KidRestBreakOverlay";
+import FullScreenLoader from "../components/FullScreenLoader";
 import "../components/assets/css/gameplay.css";
 import "../components/assets/css/kidAccess.css";
 
@@ -231,14 +232,7 @@ export default function EbookReader() {
   }, [isKidMode, state.status, state.data?.book?.id, token, slug, navigate]);
 
   if (state.status === "loading") {
-    return (
-      <main className="gp-view gp-view--center">
-        <div className="gp-loading">
-          <Loader2 size={26} className="gp-spin" />
-          <span>Đang tải sách điện tử…</span>
-        </div>
-      </main>
-    );
+    return <FullScreenLoader message="Đang tải sách điện tử..." />;
   }
 
   if (state.status === "restricted") {

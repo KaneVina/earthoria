@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
-  Loader2,
   PlayCircle,
   Trophy,
   RotateCcw,
@@ -21,6 +20,7 @@ import {
 } from "lucide-react";
 import { gameService } from "../services/gameService";
 import { getGameDefinition } from "../games/gameRegistry";
+import FullScreenLoader from "../components/FullScreenLoader";
 import "../components/assets/css/gameplay.css";
 
 // Quy đổi điểm số (thang điểm khác nhau tuỳ loại game, nhưng đều dao động
@@ -198,14 +198,7 @@ export default function GamePlay() {
   };
 
   if (state.status === "loading") {
-    return (
-      <main className="gp-view gp-view--center">
-        <div className="gp-loading">
-          <Loader2 size={28} className="gp-spin" />
-          <span>Đang tải trò chơi…</span>
-        </div>
-      </main>
-    );
+    return <FullScreenLoader message="Đang tải trò chơi..." />;
   }
 
   if (state.status === "forbidden") {

@@ -50,7 +50,6 @@ function IconX({ size = 18 }) {
     </svg>
   );
 }
-// Thay IconScale (hay bị vỡ font ⚖ trên một số trình duyệt/hệ điều hành) bằng icon mũi tên so sánh an toàn
 function IconCompareArrow() {
   return (
     <svg
@@ -362,24 +361,33 @@ export default function CompareModal({ open, onClose, currentBook }) {
         )}
 
         {/*  Body: product list  */}
-        {/* FIX: bỏ inline minHeight cố định (từng gây khóa cứng 320px, làm nội dung dài hơn bị tràn ra ngoài panel).
-            Chiều cao/scroll giờ do class .search-panel-body trong CSS kiểm soát hoàn toàn. */}
         <div className="search-panel-body">
           {loading ? (
-            <div className="search-loading-state">
-              <div className="search-spinner">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
+            <div className="search-results-list">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div
+                  key={i}
+                  className="search-result-row"
+                  style={{ cursor: "default" }}
                 >
-                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                </svg>
-              </div>
-              Đang tải sản phẩm...
+                  <div className="search-result-thumb" style={{ padding: 0 }}>
+                    <span
+                      className="skeleton"
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  </div>
+                  <div className="search-result-info">
+                    <span
+                      className="skeleton"
+                      style={{ height: 13, width: "70%", marginBottom: 6 }}
+                    />
+                    <span
+                      className="skeleton"
+                      style={{ height: 10, width: "40%" }}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
           ) : allProducts.length === 0 ? (
             <div className="search-empty-state">
@@ -459,8 +467,6 @@ export default function CompareModal({ open, onClose, currentBook }) {
                     <span className="search-result-price">
                       {formatPrice(hasSale ? p.salePrice : p.price)}
                     </span>
-                    {/* Bỏ margin-left cứng 12px gây cảm giác nút "+"/check trôi xa giá;
-                        khoảng cách giờ do gap của .search-result-row (đã set trong CSS) đảm nhiệm */}
                     <div
                       style={{
                         width: "30px",
