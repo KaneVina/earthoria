@@ -7,8 +7,7 @@ const {
   toggleReviewVisibility,
 } = require("../controllers/adminReviewController");
 
-// Middleware protect + staffOrAdmin đã được áp dụng ở adminRoutes.js trước khi vào router này
-
+// Middleware protect + staffOrAdmin
 router.get("/", getReviews);
 router.get("/:id", getReviewById);
 router.post("/:id/reply", replyToReview);

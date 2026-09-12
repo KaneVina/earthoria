@@ -17,7 +17,7 @@ const {
   hardDeleteFile,
 } = require("../controllers/adminNewsController");
 
-// ── Bảng tin ──
+// Bảng tin
 router.get("/posts", getPosts);
 router.post("/posts", createPost);
 router.put("/posts/:id", updatePost);
@@ -26,7 +26,7 @@ router.patch("/posts/:id/restore", restorePost);
 router.delete("/posts/:id/soft", softDeletePost);
 router.delete("/posts/:id/hard", hardDeletePost);
 
-// ── File công khai ──
+// File công khai
 router.get("/files", getFiles);
 router.post("/files", uploadNewsFile.single("file"), createFile);
 router.patch("/files/:id/hide", toggleHideFile);

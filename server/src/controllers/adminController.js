@@ -14,6 +14,12 @@ const {
   resolveTierBySpend,
   buildLoyaltyProfile,
 } = require("../utils/loyaltyTier");
+const {
+  resolveDateRange,
+  pickBucket,
+  bucketKeys,
+  fillBucketChart,
+} = require("../utils/dateRange");
 
 // Trả về thông tin hạng rút gọn (đủ cho hiển thị danh sách) từ 1 mức chi tiêu.
 const buildTierSummary = (spend) => {
@@ -163,21 +169,20 @@ async function backfillUserCodes() {
 
 exports.getDashboard = async (req, res) => {
   try {
-    const now = new Date();
-    const rangeStart = new Date(now.getFullYear(), now.getMonth() - 5, 1);
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const newUsersRangeStart = new Date(now);
-    newUsersRangeStart.setDate(now.getDate() - 6);
-    newUsersRangeStart.setHours(0, 0, 0, 0);
+    const { start, end } = resolveDateRange(req.query);
+    const bucket = pickBucket(start, end);
+    const keys = bucketKeys(start, end, bucket);
+    const rangeWhere = { createdAt: { gte: start, lte: end } };
 
     // Gộp TẤT CẢ truy vấn độc lập (không phụ thuộc kết quả của nhau) vào 1
     // Promise.all duy nhất, thay vì chuỗi await nối tiếp như trước (mỗi await
     // là 1 lượt round-trip riêng tới DB, cộng dồn lại rất chậm). Vẫn giữ
-    // nguyên từng câu query - chỉ đổi cách gọi.
+    // nguyên từng câu query - chỉ đổi cách gọi + thêm điều kiện lọc theo
+    // khoảng thời gian đã chọn (bộ lọc trên dashboard).
     const [
-      totalUsers,
+      newUsersInRange,
       totalBooks,
-      totalOrders,
+      ordersInRange,
       revenueAgg,
       revenueRows,
       statusGroups,
@@ -188,34 +193,38 @@ exports.getDashboard = async (req, res) => {
       latestOrders,
       latestUsers,
     ] = await Promise.all([
-      prisma.user.count({ where: { role: "CUSTOMER" } }),
+      // totalBooks giữ nguyên "hiện có" (snapshot danh mục, không có ý nghĩa lọc
+      // theo ngày tạo). newUsersInRange/ordersInRange/revenue đổi thành số liệu
+      // TRONG KHOẢNG đã chọn để khớp với bộ lọc.
+      prisma.user.count({ where: { role: "CUSTOMER", ...rangeWhere } }),
       prisma.book.count({ where: { isActive: true } }),
-      prisma.order.count(),
+      prisma.order.count({ where: rangeWhere }),
       prisma.order.aggregate({
         _sum: { total: true },
-        where: { paymentStatus: "PAID" },
+        where: { paymentStatus: "PAID", ...rangeWhere },
       }),
       prisma.$queryRaw`
         SELECT
-          date_trunc('month', "createdAt") AS month,
+          date_trunc(${bucket}, "createdAt") AS bucket,
           COALESCE(SUM(total), 0)::float   AS revenue,
           COUNT(*)::int                   AS orders
         FROM "Order"
-        WHERE "createdAt" >= ${rangeStart}
+        WHERE "createdAt" >= ${start} AND "createdAt" <= ${end}
           AND "paymentStatus" = 'PAID'
         GROUP BY 1
         ORDER BY 1
       `,
       prisma.order.groupBy({
         by: ["status"],
+        where: rangeWhere,
         _count: { _all: true },
       }),
       // Sách bán chạy + doanh thu theo danh mục - cùng dùng 1 query OrderItem
-      // của tháng này (OrderItem không còn bookId trực tiếp, phải lấy qua
-      // variant.bookId / variant.book.categoryId)
+      // của khoảng thời gian ĐÃ CHỌN (OrderItem không còn bookId trực tiếp,
+      // phải lấy qua variant.bookId / variant.book.categoryId)
       prisma.orderItem.findMany({
         where: {
-          order: { createdAt: { gte: monthStart }, paymentStatus: "PAID" },
+          order: { paymentStatus: "PAID", ...rangeWhere },
         },
         select: {
           quantity: true,
@@ -256,10 +265,10 @@ exports.getDashboard = async (req, res) => {
       }),
       prisma.$queryRaw`
         SELECT
-          date_trunc('day', "createdAt") AS day,
+          date_trunc(${bucket}, "createdAt") AS bucket,
           COUNT(*)::int AS count
         FROM "User"
-        WHERE "createdAt" >= ${newUsersRangeStart}
+        WHERE "createdAt" >= ${start} AND "createdAt" <= ${end}
           AND role = 'CUSTOMER'
         GROUP BY 1
         ORDER BY 1
@@ -277,23 +286,15 @@ exports.getDashboard = async (req, res) => {
       }),
     ]);
 
-    const revenueMap = new Map(
-      revenueRows.map((r) => [
-        `${r.month.getFullYear()}-${r.month.getMonth() + 1}`,
-        r,
-      ]),
-    );
-
-    const revenueChart = Array.from({ length: 6 }, (_, i) => {
-      const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
-      const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
-      const row = revenueMap.get(key);
-      return {
-        month: `T${d.getMonth() + 1}`,
-        revenue: Math.round(((row?.revenue ?? 0) / 1_000_000) * 10) / 10,
-        orders: row?.orders ?? 0,
-      };
-    });
+    const revenueChartRaw = fillBucketChart(revenueRows, keys, bucket, [
+      "revenue",
+      "orders",
+    ]);
+    const revenueChart = revenueChartRaw.map((r) => ({
+      month: r.label,
+      revenue: Math.round((r.revenue / 1_000_000) * 10) / 10,
+      orders: r.orders,
+    }));
 
     const totalForPct =
       statusGroups.reduce((s, g) => s + g._count._all, 0) || 1;
@@ -333,19 +334,12 @@ exports.getDashboard = async (req, res) => {
       .sort((a, b) => a.stock - b.stock)
       .slice(0, 10);
 
-    const newUsersMap = new Map(
-      newUsersRows.map((r) => [r.day.toISOString().slice(0, 10), r.count]),
-    );
-    const WEEKDAY_LABEL = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
-    const newUsersChart = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(newUsersRangeStart);
-      d.setDate(d.getDate() + i);
-      const key = d.toISOString().slice(0, 10);
-      return {
-        day: WEEKDAY_LABEL[d.getDay()],
-        count: newUsersMap.get(key) ?? 0,
-      };
-    });
+    const newUsersChart = fillBucketChart(newUsersRows, keys, bucket, [
+      "count",
+    ]).map((r) => ({
+      day: r.label,
+      count: r.count,
+    }));
 
     const categoryRevenueMap = new Map();
     for (const item of monthlyPaidItems) {
@@ -394,10 +388,18 @@ exports.getDashboard = async (req, res) => {
     return res.json({
       success: true,
       data: {
+        meta: {
+          from: start.toISOString().slice(0, 10),
+          to: end.toISOString().slice(0, 10),
+          bucket,
+        },
         stats: {
-          totalUsers,
+          // Giữ cả 2 tên field: cũ (tương thích ngược) + mới (rõ nghĩa hơn)
+          totalUsers: newUsersInRange,
+          newUsersInRange,
           totalBooks,
-          totalOrders,
+          totalOrders: ordersInRange,
+          ordersInRange,
           revenue: revenueAgg._sum.total ?? 0,
         },
         revenueChart,

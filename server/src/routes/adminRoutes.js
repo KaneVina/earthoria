@@ -128,7 +128,7 @@ router.put("/coupons/:id/toggle", staffOrAdmin, toggleCoupon);
 router.put("/coupons/:id", staffOrAdmin, updateCoupon);
 router.delete("/coupons/:id", staffOrAdmin, deleteCoupon);
 
-// Tạo mã QR: chỉ ADMIN (theo bảng phân quyền) - trước đây là staffOrAdmin, đã siết lại
+// Tạo mã QR: chỉ ADMIN
 router.get("/ar-codes", adminOnly, getArCodesGroupedAll);
 router.get("/ar-codes/:id", adminOnly, getArCodeById);
 router.patch("/ar-codes/:id/access", adminOnly, updateArCodeAccess);
