@@ -2179,6 +2179,9 @@ export default function Home() {
   const ctaRef = useRef(null);
   const { addToCart } = useCartStore();
 
+  // queryKey "featured-books" cũng được Shop.jsx dùng lại (chỉ lấy phần tử
+  // đầu qua `select`) để share cache - đổi shape dữ liệu trả về ở đây thì
+  // nhớ kiểm tra luôn Shop.jsx.
   const { data: featuredBooks = [], isLoading: isFeaturedLoading } = useQuery({
     queryKey: ["featured-books"],
     queryFn: () => bookService.getFeatured().then((r) => r.data.data),
