@@ -1013,8 +1013,13 @@ export default function Profile() {
     };
   }, [sidebarOpen]);
 
+  // queryKey "current-user" dùng chung với AdminProfile.jsx (cùng gọi
+  // authService.getMe() lấy đúng 1 dữ liệu: user hiện tại) - trước đây mỗi
+  // trang 1 key riêng ("profile" / "admin-profile") nên nhân viên/admin
+  // vừa vào /profile vừa vào trang admin trong cùng phiên bị fetch lại 2
+  // lần cho cùng 1 dữ liệu.
   const { data: profile } = useQuery({
-    queryKey: ["profile"],
+    queryKey: ["current-user"],
     queryFn: () => authService.getMe().then((r) => r.data.data),
     initialData: user,
     initialDataUpdatedAt: 0,
@@ -1054,7 +1059,7 @@ export default function Profile() {
     onSuccess: (res, patch) => {
       const updated = { ...profile, ...patch };
       updateUser(updated);
-      queryClient.setQueryData(["profile"], updated);
+      queryClient.setQueryData(["current-user"], updated);
       toast.success("Đã cập nhật thông tin");
     },
   });
@@ -3173,7 +3178,7 @@ function CreatePasswordFlow({ email }) {
       setOtpStatus("success");
       setTimeout(() => {
         toast.success("Tạo mật khẩu thành công!");
-        queryClient.invalidateQueries({ queryKey: ["profile"] });
+        queryClient.invalidateQueries({ queryKey: ["current-user"] });
         setOtpStatus("idle");
       }, 500);
     },
