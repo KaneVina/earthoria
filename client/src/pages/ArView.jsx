@@ -476,11 +476,18 @@ export default function ArView() {
   // dùng CHUNG query key với trang kệ sách (KidAccess: "kid-access-profile")
   // và trang đọc ebook, nên nếu bé vừa ở 1 trong 2 trang đó rồi mở AR, hồ sơ
   // đã có sẵn trong cache, khỏi phải gọi lại đúng API đó thêm 1 lần nữa.
+  // staleTime/refetchInterval 5 giây (đồng nhất với KidAccess/EbookReader/
+  // Garden) - hồ sơ chứa isLocked/giới hạn giờ nên ba mẹ khoá máy ở /family
+  // cần có hiệu lực gần như ngay lập tức, không chờ tải lại trang. Trong lúc
+  // đang xem AR, việc này chỉ là 1 lớp phòng hờ - server đã tự kiểm tra
+  // CHILD_LOCKED/DAILY_LIMIT_REACHED/OUTSIDE_ALLOWED_WINDOW ở chính API AR,
+  // và ping hoạt động 5 giây bên dưới cũng đã đẩy bé ra nếu bị khoá giữa chừng.
   const profileQuery = useQuery({
     queryKey: ["kid-access-profile", token],
     queryFn: () =>
       kidAccessService.getProfile(token).then((res) => res.data.data.child),
     enabled: isKidMode && !!token,
+    refetchInterval: 5000,
   });
   const kidChild = profileQuery.data ?? null;
 
