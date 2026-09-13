@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sprout, Flame, X } from "lucide-react";
 import { kidAccessService } from "../../services/kidAccessService";
@@ -11,11 +12,8 @@ const POLL_MS = 90_000;
 const DISMISS_KEY_PREFIX = "kid-garden-widget-dismissed:";
 
 export default function GardenWidget({ token, slug }) {
-  const [status, setStatus] = useState("loading");
-  const [data, setData] = useState(null);
   const [dismissed, setDismissed] = useState(true); // mặc định ẩn cho tới khi đọc xong localStorage
   const navigate = useNavigate();
-  const mountedRef = useRef(true);
 
   useEffect(() => {
     if (!token) return;
@@ -27,44 +25,19 @@ export default function GardenWidget({ token, slug }) {
     }
   }, [token]);
 
-  const fetchGarden = useCallback(
-    async ({ silent = false } = {}) => {
-      if (!token) return;
-      if (!silent) setStatus((s) => (s === "ok" ? s : "loading"));
-      try {
-        const res = await kidAccessService.getGarden(token);
-        if (!mountedRef.current) return;
-        setData(res.data.data);
-        setStatus("ok");
-      } catch {
-        if (!mountedRef.current) return;
-        if (!silent) setStatus((s) => (s === "ok" ? s : "error"));
-      }
-    },
-    [token],
-  );
-
-  useEffect(() => {
-    mountedRef.current = true;
-    fetchGarden();
-    return () => {
-      mountedRef.current = false;
-    };
-  }, [fetchGarden]);
-
-  useEffect(() => {
-    const onVisible = () => {
-      if (document.visibilityState === "visible") fetchGarden({ silent: true });
-    };
-    document.addEventListener("visibilitychange", onVisible);
-    const id = setInterval(() => {
-      if (document.visibilityState === "visible") fetchGarden({ silent: true });
-    }, POLL_MS);
-    return () => {
-      document.removeEventListener("visibilitychange", onVisible);
-      clearInterval(id);
-    };
-  }, [fetchGarden]);
+  // queryKey ["kid-garden", token] dùng chung với GardenPage.jsx (trang Vườn
+  // Tri Thức đầy đủ) - trước đây mỗi nơi tự useState + useEffect riêng,
+  // không cache, nên widget này và trang Vườn Tri Thức luôn fetch lại từ
+  // đầu dù đang hiển thị cùng 1 dữ liệu.
+  const gardenQuery = useQuery({
+    queryKey: ["kid-garden", token],
+    queryFn: () => kidAccessService.getGarden(token).then((r) => r.data.data),
+    enabled: !!token,
+    staleTime: POLL_MS,
+    refetchInterval: POLL_MS,
+    retry: false,
+  });
+  const data = gardenQuery.data ?? null;
 
   const goToGarden = useCallback(() => {
     navigate(`/e-kid/${slug}/${token}/garden`);
@@ -83,7 +56,7 @@ export default function GardenWidget({ token, slug }) {
     [token],
   );
 
-  if (dismissed || status === "error" || !data) return null;
+  if (dismissed || gardenQuery.isError || !data) return null;
 
   const { garden, activeTree } = data;
   const isFreshStart =
