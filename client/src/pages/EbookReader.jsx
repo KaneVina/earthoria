@@ -77,18 +77,11 @@ export default function EbookReader() {
             ? "not-found"
             : "ready";
 
-  // staleTime/refetchInterval 5 giây (đồng nhất với KidAccess/ArView/Garden)
-  // - hồ sơ chứa isLocked/giới hạn giờ nên ba mẹ khoá máy ở /family cần có
-  // hiệu lực gần như ngay lập tức, không chờ tải lại trang. Trong lúc đang
-  // đọc, việc này chỉ là 1 lớp phòng hờ - server đã tự kiểm tra CHILD_LOCKED/
-  // DAILY_LIMIT_REACHED/OUTSIDE_ALLOWED_WINDOW ở chính API đọc sách, và ping
-  // hoạt động 5 giây bên dưới cũng đã đẩy bé ra nếu bị khoá giữa chừng.
   const profileQuery = useQuery({
     queryKey: ["kid-access-profile", token],
     queryFn: () =>
       kidAccessService.getProfile(token).then((res) => res.data.data.child),
     enabled: isKidMode && !!token,
-    refetchInterval: 5000,
   });
   const kidChild = profileQuery.data ?? null;
 
@@ -306,6 +299,7 @@ export default function EbookReader() {
         onProgress={saveKidReadingProgress}
         onClose={() => navigate(bookUrl)}
         kidTimeInfo={isKidMode ? kidTimeInfo : null}
+        kidToken={isKidMode ? token : null}
       />
       {isKidMode && (
         <KidRestBreakOverlay

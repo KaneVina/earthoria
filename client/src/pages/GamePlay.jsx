@@ -18,8 +18,11 @@ import {
   Type,
   Timer,
   HelpCircle,
+  AlarmClock,
 } from "lucide-react";
+import toast from "react-hot-toast";
 import { gameService } from "../services/gameService";
+import { kidAccessService } from "../services/kidAccessService";
 import { getGameDefinition } from "../games/gameRegistry";
 import FullScreenLoader from "../components/FullScreenLoader";
 import "../components/assets/css/gameplay.css";
@@ -131,56 +134,157 @@ function PodiumItem({ rank, entry }) {
 }
 
 export default function GamePlay() {
-  const { slug, code } = useParams();
+  // :token chỉ có khi vào từ link riêng của bé (route /e-kid/:slug/:token/game/:code)
+  const { slug, code, token } = useParams();
   const navigate = useNavigate();
+  const isKidMode = !!token;
 
   const [stage, setStage] = useState("intro"); // intro | playing | finished
   const [result, setResult] = useState(null); // { score, durationSeconds }
   const [leaderboard, setLeaderboard] = useState([]);
 
   // Dữ liệu trò chơi (đề bài, cấu hình, sách gốc...) - dùng React Query để
-  // cache theo `code` thay vì useState/useEffect gọi axios thẳng. Route
-  // /game/:slug/:code là route ĐỘC LẬP, không nested, nên trước đây mỗi lần
-  // bé thoát ra rồi bấm lại ĐÚNG game đó là remount hẳn component, `status`
-  // về "loading" và tải lại từ đầu dù dữ liệu vừa tải cách đó vài giây. Cache
-  // dùng chung queryClient (staleTime 5 phút - xem src/lib/queryClient.js)
-  // giúp quay lại trong 5 phút có dữ liệu ngay; React Query cũng tự bỏ kết
-  // quả của request cũ nên hết luôn race-condition nếu bấm ra/vào liên tục.
+  // cache theo (code, token) thay vì useState/useEffect gọi axios thẳng. Route
+  // /game/:slug/:code (hoặc /e-kid/.../game/:code) là route ĐỘC LẬP, không
+  // nested, nên trước đây mỗi lần bé thoát ra rồi bấm lại ĐÚNG game đó là
+  // remount hẳn component, `status` về "loading" và tải lại từ đầu dù dữ
+  // liệu vừa tải cách đó vài giây. Cache dùng chung queryClient (staleTime 5
+  // phút - xem src/lib/queryClient.js) giúp quay lại trong 5 phút có dữ liệu
+  // ngay; React Query cũng tự bỏ kết quả của request cũ nên hết luôn
+  // race-condition nếu bấm ra/vào liên tục.
   const gameQuery = useQuery({
-    queryKey: ["game", code],
+    queryKey: ["game", code, token],
     queryFn: () =>
-      gameService.getGame(code).then((res) => res.data?.data ?? null),
+      gameService.getGame(code, token).then((res) => res.data?.data ?? null),
     enabled: !!code,
   });
   const gameHttpStatus = gameQuery.error?.response?.status;
+  const gameErrCode = gameQuery.error?.response?.data?.code;
 
   // Chuyển hướng về đúng slug sách gốc nếu URL cũ/slug đã đổi - chỉ chạy khi
   // có dữ liệu mới, không phải trên mỗi lần render.
   useEffect(() => {
     const data = gameQuery.data;
     if (data?.book?.slug && data.book.slug !== slug) {
-      navigate(`/game/${data.book.slug}/${code}`, { replace: true });
+      const correctPath = isKidMode
+        ? `/e-kid/${data.book.slug}/${token}/game/${code}`
+        : `/game/${data.book.slug}/${code}`;
+      navigate(correctPath, { replace: true });
     }
-  }, [gameQuery.data, slug, code, navigate]);
+  }, [gameQuery.data, slug, isKidMode, token, code, navigate]);
 
-  // Chưa đăng nhập - đá về /login kèm redirect, giữ đúng hành vi cũ.
+  // Chưa đăng nhập (chỉ áp dụng ngoài chế độ chơi riêng của bé - phiên của
+  // bé không có tài khoản nào để đăng nhập lại, xem `status` bên dưới) - đá
+  // về /login kèm redirect, giữ đúng hành vi cũ.
   useEffect(() => {
-    if (gameHttpStatus !== 401) return;
+    if (gameHttpStatus !== 401 || isKidMode) return;
     const currentUrl = `${window.location.pathname}${window.location.search}`;
     navigate(`/login?redirect=${encodeURIComponent(currentUrl)}`, {
       replace: true,
     });
-  }, [gameHttpStatus, navigate]);
+  }, [gameHttpStatus, isKidMode, navigate]);
+
+  // 403 kèm mã lỗi cụ thể (thiết bị bị khoá/hết giờ/ngoài khung giờ) hiện
+  // màn "restricted" với tiêu đề + nội dung riêng, khác với 403 chung chung
+  // (gia đình chưa mua sách) hiện màn "forbidden".
+  const restrictedInfo =
+    gameHttpStatus !== 403
+      ? null
+      : gameErrCode === "CHILD_LOCKED"
+        ? {
+            title: "Trò chơi đang bị khoá",
+            message:
+              "Ba mẹ đã tạm khoá thiết bị của bé rồi. Nhờ ba mẹ mở khoá lại nhé!",
+          }
+        : gameErrCode === "DAILY_LIMIT_REACHED"
+          ? {
+              title: "Hết giờ dùng hôm nay rồi",
+              message:
+                "Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!",
+            }
+          : gameErrCode === "OUTSIDE_ALLOWED_WINDOW"
+            ? {
+                title: "Ngoài giờ được phép rồi",
+                message: "Bây giờ không phải giờ ba mẹ cho phép bé chơi nhé.",
+              }
+            : null;
 
   const status = gameQuery.isLoading
     ? "loading"
     : gameHttpStatus === 401
-      ? "loading" // đang chuyển hướng sang /login, tránh chớp màn "not-found"
-      : gameHttpStatus === 403
-        ? "forbidden"
-        : gameQuery.isError || !gameQuery.data
-          ? "not-found"
-          : "ready";
+      ? isKidMode
+        ? "not-found"
+        : "loading" // không phải kid mode: đang chuyển hướng sang /login
+      : restrictedInfo
+        ? "restricted"
+        : gameHttpStatus === 403
+          ? "forbidden"
+          : gameQuery.isError || !gameQuery.data
+            ? "not-found"
+            : "ready";
+
+  // Kid mode: ghi nhận phiên chơi thật lên server (server tự tính phút bằng
+  // đồng hồ server, không dùng số phút đếm ở client) - để Parent Dashboard có
+  // dữ liệu thật và daily limit/khung giờ được áp dụng đúng trong lúc chơi,
+  // đồng thời phát hiện phụ huynh khoá thiết bị gần như ngay lập tức (poll
+  // 5s) thay vì chỉ kiểm tra 1 lần lúc tải trang. Mirror y hệt cơ chế đã có
+  // ở EbookReader.jsx/ArView.jsx.
+  useEffect(() => {
+    if (!isKidMode || status !== "ready") return;
+
+    let cancelled = false;
+    let activityId = null;
+    let intervalId = null;
+
+    async function start() {
+      try {
+        const res = await kidAccessService.startActivity(token, {
+          bookId: gameQuery.data?.book?.id,
+        });
+        if (cancelled) return;
+        activityId = res.data?.data?.activityId;
+        if (!activityId) return;
+
+        intervalId = setInterval(async () => {
+          try {
+            const pingRes = await kidAccessService.pingActivity(
+              token,
+              activityId,
+            );
+            const info = pingRes.data?.data;
+            if (
+              info?.locked ||
+              info?.limitReached ||
+              info?.withinWindow === false
+            ) {
+              // Báo ngay cho bé biết vì sao bị đưa ra khỏi trang chơi, thay
+              // vì chuyển trang lặng lẽ khiến bé không hiểu chuyện gì xảy ra.
+              const msg = info?.locked
+                ? "Ba mẹ đã khoá thiết bị rồi. Hẹn bé lần sau nhé!"
+                : info?.limitReached
+                  ? "Bé đã chơi đủ giờ hôm nay rồi, giỏi lắm!"
+                  : "Đã ngoài giờ chơi ba mẹ cho phép rồi.";
+              toast(msg, { icon: <AlarmClock size={16} />, duration: 5000 });
+              navigate(`/e-kid/${slug}/${token}`, { replace: true });
+            }
+          } catch {
+            // Bỏ qua lỗi 1 lần ping (vd mất mạng tạm thời) - thử lại ở lần kế tiếp
+          }
+        }, 5000);
+      } catch {
+        // Không chặn trải nghiệm chơi chỉ vì việc ghi nhận phiên thất bại
+      }
+    }
+
+    start();
+
+    return () => {
+      cancelled = true;
+      if (intervalId) clearInterval(intervalId);
+      if (activityId)
+        kidAccessService.pingActivity(token, activityId).catch(() => {});
+    };
+  }, [isKidMode, status, gameQuery.data?.book?.id, token, slug, navigate]);
 
   const handleFinish = async (score, durationSeconds) => {
     setResult({ score, durationSeconds });
@@ -204,6 +308,30 @@ export default function GamePlay() {
     return <FullScreenLoader message="Đang tải trò chơi..." />;
   }
 
+  if (status === "restricted") {
+    return (
+      <main className="gp-view gp-view--center">
+        <div className="gp-empty">
+          <div className="gp-empty-badge">
+            <Lock size={24} />
+          </div>
+          <span className="gp-eyebrow">Trò chơi</span>
+          <h1>{restrictedInfo?.title || "Chưa chơi được trò chơi này"}</h1>
+          <p>{restrictedInfo?.message || "Nhờ ba mẹ kiểm tra lại nhé!"}</p>
+          {isKidMode && (
+            <Link
+              to={`/e-kid/${slug}/${token}`}
+              className="gp-cta"
+              style={{ marginTop: 12 }}
+            >
+              Quay lại tủ sách
+            </Link>
+          )}
+        </div>
+      </main>
+    );
+  }
+
   if (status === "forbidden") {
     return (
       <main className="gp-view gp-view--center">
@@ -212,12 +340,25 @@ export default function GamePlay() {
             <Lock size={24} />
           </div>
           <span className="gp-eyebrow">Trò chơi</span>
-          <h1>Bạn chưa có quyền chơi trò chơi này</h1>
+          <h1>
+            {isKidMode
+              ? "Chưa chơi được trò chơi này"
+              : "Bạn chưa có quyền chơi trò chơi này"}
+          </h1>
           <p>
-            Trò chơi này chỉ dành cho khách hàng đã mua và nhận được cuốn sách
-            tương ứng. Nếu bạn đã mua sách này, vui lòng kiểm tra lại tài khoản
-            đang đăng nhập hoặc liên hệ với chúng tôi để được hỗ trợ.
+            {isKidMode
+              ? "Trò chơi chỉ chơi được khi gia đình đã mua sách này. Nhờ ba mẹ kiểm tra lại nhé!"
+              : "Trò chơi này chỉ dành cho khách hàng đã mua và nhận được cuốn sách tương ứng. Nếu bạn đã mua sách này, vui lòng kiểm tra lại tài khoản đang đăng nhập hoặc liên hệ với chúng tôi để được hỗ trợ."}
           </p>
+          {isKidMode && (
+            <Link
+              to={`/e-kid/${slug}/${token}`}
+              className="gp-cta"
+              style={{ marginTop: 12 }}
+            >
+              Quay lại tủ sách
+            </Link>
+          )}
         </div>
       </main>
     );
@@ -236,6 +377,15 @@ export default function GamePlay() {
             Mã trò chơi không tồn tại hoặc đã bị vô hiệu hoá. Vui lòng kiểm tra
             lại trang sách hoặc mã QR.
           </p>
+          {isKidMode && (
+            <Link
+              to={`/e-kid/${slug}/${token}`}
+              className="gp-cta"
+              style={{ marginTop: 12 }}
+            >
+              Quay lại tủ sách
+            </Link>
+          )}
         </div>
       </main>
     );
@@ -245,8 +395,9 @@ export default function GamePlay() {
   const def = getGameDefinition(data.gameType);
   const Icon = def?.icon || Info;
   const Player = def?.Player;
-  const bookHref =
-    data.book?.slug && data.book?.hashId
+  const bookHref = isKidMode
+    ? `/e-kid/${slug}/${token}`
+    : data.book?.slug && data.book?.hashId
       ? `/books/${data.book.slug}/${data.book.hashId}`
       : "/";
   const difficultyMeta = DIFFICULTY_META[data.difficulty];
@@ -260,7 +411,9 @@ export default function GamePlay() {
         <div className="gp-hud-inner">
           <Link to={bookHref} className="gp-back">
             <ArrowLeft size={14} />{" "}
-            <span>{data.book?.title || "Về trang sách"}</span>
+            <span>
+              {data.book?.title || (isKidMode ? "Tủ sách" : "Về trang sách")}
+            </span>
           </Link>
           <GpHudProgress stage={stage} />
         </div>
@@ -464,7 +617,8 @@ export default function GamePlay() {
                 <RotateCcw size={16} /> Chơi lại
               </button>
               <Link to={bookHref} className="gp-cta gp-cta-ghost">
-                <ArrowLeft size={16} /> Về trang sách
+                <ArrowLeft size={16} />{" "}
+                {isKidMode ? "Tủ sách" : "Về trang sách"}
               </Link>
             </div>
           </div>

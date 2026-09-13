@@ -1,10 +1,16 @@
 const prisma = require("../config/db");
 const { userOwnsBook } = require("../utils/bookOwnership");
 const { encodeId } = require("../utils/hashids");
+const {
+  isWithinAllowedWindow,
+  isDailyLimitReached,
+} = require("../utils/childPolicy");
+const { notifyLimitExceeded } = require("../utils/childNotify");
 
 exports.getGame = async (req, res) => {
   try {
     const { code } = req.params;
+    const { kidToken } = req.query;
 
     const game = await prisma.game.findUnique({
       where: { code },
@@ -22,14 +28,71 @@ exports.getGame = async (req, res) => {
     }
 
     if (game.accessType !== "PUBLIC") {
-      if (!req.user) {
+      // Phiên của bé (link/QR riêng, không đăng nhập tài khoản chính) - xác
+      // thực bằng kidToken thay vì req.user, vẫn tôn trọng khoá thiết bị +
+      // giới hạn giờ/khung giờ + ẩn sách mà phụ huynh đã đặt cho bé (giống
+      // hệt getArCode - trước đây route này hoàn toàn không biết tới khái
+      // niệm "bé", nên khoá thiết bị của phụ huynh không có tác dụng gì khi
+      // bé đang chơi game nhúng trong sách).
+      let child = null;
+      if (!req.user && kidToken) {
+        child = await prisma.childProfile.findFirst({
+          where: { kidLinkToken: kidToken, isActive: true },
+        });
+      }
+
+      if (child) {
+        if (child.isLocked) {
+          return res.status(403).json({
+            success: false,
+            code: "CHILD_LOCKED",
+            message: "Trò chơi đã bị phụ huynh khoá. Nhờ ba mẹ mở khoá nhé!",
+          });
+        }
+
+        if (!isWithinAllowedWindow(child)) {
+          return res.status(403).json({
+            success: false,
+            code: "OUTSIDE_ALLOWED_WINDOW",
+            message: "Ngoài khung giờ ba mẹ cho phép sử dụng.",
+          });
+        }
+
+        if (await isDailyLimitReached(prisma, child)) {
+          notifyLimitExceeded(child); // fire-and-forget, tự throttle 1 lần/ngày
+          return res.status(403).json({
+            success: false,
+            code: "DAILY_LIMIT_REACHED",
+            message:
+              "Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!",
+          });
+        }
+
+        const access = await prisma.childBookAccess.findFirst({
+          where: { childId: child.id, bookId: game.bookId },
+          select: { visible: true },
+        });
+        if (access && access.visible === false) {
+          return res.status(403).json({
+            success: false,
+            message: "Sách này đã bị ẩn khỏi tủ sách của bé",
+          });
+        }
+
+        const owns = await userOwnsBook(prisma, child.parentId, game.bookId);
+        if (!owns) {
+          return res.status(403).json({
+            success: false,
+            message:
+              "Gia đình bạn cần sở hữu cuốn sách này (đơn hàng đã giao) để chơi trò chơi",
+          });
+        }
+      } else if (!req.user) {
         return res.status(401).json({
           success: false,
           message: "Vui lòng đăng nhập để chơi trò chơi này",
         });
-      }
-
-      if (req.user.role !== "ADMIN" && req.user.role !== "STAFF") {
+      } else if (req.user.role !== "ADMIN" && req.user.role !== "STAFF") {
         const owns = await userOwnsBook(prisma, req.user.id, game.bookId);
         if (!owns) {
           return res.status(403).json({

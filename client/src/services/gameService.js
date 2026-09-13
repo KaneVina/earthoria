@@ -2,7 +2,9 @@ import api from "./api";
 
 export const gameService = {
   // Public
-  getGame: (code) => api.get(`/games/${code}`),
+  // kidToken: truyền khi chơi từ link/QR riêng của bé (chưa đăng nhập tài khoản chính)
+  getGame: (code, kidToken) =>
+    api.get(`/games/${code}`, kidToken ? { params: { kidToken } } : undefined),
   completeGame: (code, payload) => api.post(`/games/${code}/complete`, payload),
   getLeaderboard: (code) => api.get(`/games/${code}/leaderboard`),
 
@@ -13,7 +15,8 @@ export const gameService = {
   create: (bookId, payload) => api.post(`/admin/games/book/${bookId}`, payload),
   update: (id, payload) => api.put(`/admin/games/${id}`, payload),
   toggle: (id) => api.put(`/admin/games/${id}/toggle`),
-  updateAccess: (id, accessType) => api.patch(`/admin/games/${id}/access`, { accessType }),
+  updateAccess: (id, accessType) =>
+    api.patch(`/admin/games/${id}/access`, { accessType }),
   remove: (id) => api.delete(`/admin/games/${id}`),
   getLeaderboardAdmin: (id) => api.get(`/admin/games/${id}/leaderboard`),
   uploadImage: (file, gameId) => {

@@ -1127,9 +1127,18 @@ function defaultQrLayer(overrides = {}) {
   };
 }
 
-function qrLayerUrl(layer) {
+function qrLayerUrl(layer, kidToken) {
   if (!layer || !layer.code || !layer.bookSlug) return "";
   const kind = layer.linkType === "GAME" ? "game" : "ar";
+  // kidToken: chỉ truyền khi đang nhúng trực tiếp lúc đọc ở link riêng của bé
+  // (PreviewOverlay, xem LayerView) - để trang Game/AR mở ra vẫn còn nhận
+  // diện đúng bé đang đọc, giúp khoá thiết bị/giới hạn giờ của phụ huynh áp
+  // dụng được luôn ở đây, không chỉ ở trang đọc sách. QR in giấy và các nơi
+  // hiển thị khác (canvas soạn thảo, admin xem link...) KHÔNG được truyền
+  // kidToken - phải luôn là link công khai vì mã in tĩnh không biết ai quét.
+  if (kidToken) {
+    return `${window.location.origin}/e-kid/${layer.bookSlug}/${kidToken}/${kind}/${layer.code}`;
+  }
   return `${window.location.origin}/${kind}/${layer.bookSlug}/${layer.code}`;
 }
 
@@ -1518,6 +1527,9 @@ function LayerView({
   // đang soạn thảo lẫn khi xuất PDF in giấy, để 2 nơi đó vẫn giữ nguyên
   // hành vi/hình ảnh QR như trước.
   interactiveEmbed,
+  // Chỉ có giá trị khi interactiveEmbed=true VÀ đang ở link đọc riêng của bé
+  // - xem qrLayerUrl().
+  kidToken,
   pageWidth,
   pageHeight,
   onSelect,
@@ -1694,10 +1706,11 @@ function LayerView({
     // gốc vẫn được giữ nguyên dữ liệu/kích thước để bản xuất PDF in giấy và
     // canvas soạn thảo hiển thị như cũ (xem 2 nhánh render còn lại bên dưới).
     if (readOnly && interactiveEmbed && qrUrl) {
+      const embedUrl = kidToken ? qrLayerUrl(layer, kidToken) : qrUrl;
       return (
         <QrLiveEmbed
           layer={layer}
-          qrUrl={qrUrl}
+          qrUrl={embedUrl}
           pageWidth={pageWidth}
           pageHeight={pageHeight}
         />
@@ -2227,6 +2240,12 @@ export function PreviewOverlay({
   // { dailyLimitMinutes, todayMinutes } - chỉ truyền khi đang ở link đọc
   // riêng của bé, dùng để hiện "giờ đọc còn lại" do ba mẹ thiết lập.
   kidTimeInfo,
+  // Token của link đọc riêng của bé (nếu có) - truyền tiếp xuống LayerView
+  // để link Game/AR nhúng trực tiếp trong sách mở đúng route có token, nhờ
+  // đó khoá thiết bị/giới hạn giờ vẫn áp dụng được khi bé bấm vào (xem
+  // qrLayerUrl()). Không có giá trị này thì link nhúng luôn là link công
+  // khai, mất hẳn ngữ cảnh "đang là bé nào đọc" ngay khi bé bấm vào.
+  kidToken,
 }) {
   const THEMES = {
     forest: { label: "Rừng đêm" },
@@ -3002,6 +3021,7 @@ export function PreviewOverlay({
                         selected={false}
                         readOnly
                         interactiveEmbed
+                        kidToken={kidToken}
                         pageWidth={p.width || PAGE_W}
                         pageHeight={p.height || PAGE_H}
                         isReadingThis={reading?.layerId === layer.id}
