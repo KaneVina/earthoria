@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -51,97 +52,76 @@ const RESTRICTED_COPY = {
 export default function GardenPage() {
   const { slug, token } = useParams();
   const navigate = useNavigate();
-  const [status, setStatus] = useState("loading");
-  const [data, setData] = useState(null);
-  const [restricted, setRestricted] = useState(null);
   const [selectedTreeId, setSelectedTreeId] = useState(null);
   const [celebrate, setCelebrate] = useState(null);
   const prevSnapshotRef = useRef(null);
   const skyState = useSkyState(); // bầu trời theo giờ thực - đồng bộ với KidAccess
 
-  // Hồ sơ đầy đủ của bé (bao gồm cấu hình nhắc nghỉ mắt/giải lao bắt buộc) -
-  // getGarden() ở dưới chỉ trả dữ liệu khu vườn, không có các trường này,
-  // nên cần gọi riêng để nhắc nghỉ mắt cũng chạy được ở trang Vườn Tri Thức.
-  const [kidChild, setKidChild] = useState(null);
-  useEffect(() => {
-    if (!token) return;
-    let cancelled = false;
-    kidAccessService
-      .getProfile(token)
-      .then((res) => {
-        if (cancelled) return;
-        const child = res.data?.data?.child;
-        if (child) setKidChild(child);
-      })
-      .catch(() => {
-        // Không chặn trải nghiệm xem vườn nếu không lấy được hồ sơ bé
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [token]);
+  // Hồ sơ đầy đủ của bé (bao gồm cấu hình nhắc nghỉ mắt/giải lao bắt buộc).
+  // queryKey ["kid-access-profile", token] dùng chung với KidAccess.jsx -
+  // trước đây trang này tự fetch riêng bằng useEffect, gọi trùng API dù
+  // KidAccess đã fetch (và cache) đúng dữ liệu này rồi.
+  const { data: kidChild = null } = useQuery({
+    queryKey: ["kid-access-profile", token],
+    queryFn: () =>
+      kidAccessService.getProfile(token).then((res) => res.data.data.child),
+    enabled: !!token,
+  });
+
+  // queryKey ["kid-garden", token] dùng chung với GardenWidget.jsx (widget
+  // xem nhanh khu vườn ngay trong trang KidAccess) - trước đây mỗi nơi tự
+  // useState + useEffect riêng, không cache, nên rời trang rồi quay lại
+  // (hoặc widget + trang cùng hiển thị) đều load lại từ đầu.
+  const gardenQuery = useQuery({
+    queryKey: ["kid-garden", token],
+    queryFn: () => kidAccessService.getGarden(token).then((r) => r.data.data),
+    enabled: !!token,
+    staleTime: POLL_MS,
+    refetchInterval: POLL_MS,
+    retry: false,
+  });
+  const data = gardenQuery.data ?? null;
+  const status = gardenQuery.isLoading
+    ? "loading"
+    : gardenQuery.error
+      ? RESTRICTED_COPY[gardenQuery.error?.response?.data?.code] &&
+        gardenQuery.error?.response?.status === 403
+        ? "restricted"
+        : "error"
+      : "ok";
+  const restricted =
+    status === "restricted"
+      ? RESTRICTED_COPY[gardenQuery.error?.response?.data?.code]
+      : null;
+
   const restBreak = useKidRestBreak(kidChild, status === "ok", token);
 
-  const fetchGarden = useCallback(
-    async ({ silent = false } = {}) => {
-      if (!token) return;
-      if (!silent) setStatus((s) => (s === "ok" ? s : "loading"));
-      try {
-        const res = await kidAccessService.getGarden(token);
-        const payload = res.data.data;
-        setData(payload);
-        setStatus("ok");
-
-        const prev = prevSnapshotRef.current;
-        const newLevel = payload.activeTree.level.level;
-        const newStreak = payload.garden.currentStreak;
-        if (prev) {
-          if (newLevel > prev.level) {
-            setCelebrate(`${payload.activeTree.level.name}! 🎉`);
-          } else if (
-            newStreak > prev.streak &&
-            payload.streakMilestones.includes(newStreak)
-          ) {
-            setCelebrate(`Chuỗi ${newStreak} ngày! 🔥`);
-          }
-        }
-        prevSnapshotRef.current = { level: newLevel, streak: newStreak };
-      } catch (err) {
-        const errCode = err?.response?.data?.code;
-        if (err?.response?.status === 403 && RESTRICTED_COPY[errCode]) {
-          setRestricted(RESTRICTED_COPY[errCode]);
-          setStatus("restricted");
-          return;
-        }
-        if (!silent) setStatus((s) => (s === "ok" ? s : "error"));
-      }
-    },
-    [token],
-  );
-
+  // Phát hiện lên cấp / đạt mốc chuỗi ngày mới giữa 2 lần fetch để hiện
+  // hiệu ứng ăn mừng (trước đây nằm trong hàm fetchGarden, giờ theo dõi
+  // qua thay đổi của `data` từ React Query).
   useEffect(() => {
-    fetchGarden();
-  }, [fetchGarden]);
+    if (!data) return;
+    const prev = prevSnapshotRef.current;
+    const newLevel = data.activeTree.level.level;
+    const newStreak = data.garden.currentStreak;
+    if (prev) {
+      if (newLevel > prev.level) {
+        setCelebrate(`${data.activeTree.level.name}! 🎉`);
+      } else if (
+        newStreak > prev.streak &&
+        data.streakMilestones.includes(newStreak)
+      ) {
+        setCelebrate(`Chuỗi ${newStreak} ngày! 🔥`);
+      }
+    }
+    prevSnapshotRef.current = { level: newLevel, streak: newStreak };
+  }, [data]);
 
   useEffect(() => {
     if (!celebrate) return;
     const id = setTimeout(() => setCelebrate(null), 2600);
     return () => clearTimeout(id);
   }, [celebrate]);
-
-  useEffect(() => {
-    const onVisible = () => {
-      if (document.visibilityState === "visible") fetchGarden({ silent: true });
-    };
-    document.addEventListener("visibilitychange", onVisible);
-    const id = setInterval(() => {
-      if (document.visibilityState === "visible") fetchGarden({ silent: true });
-    }, POLL_MS);
-    return () => {
-      document.removeEventListener("visibilitychange", onVisible);
-      clearInterval(id);
-    };
-  }, [fetchGarden]);
 
   const goBack = useCallback(() => {
     navigate(`/e-kid/${slug}/${token}`);
@@ -236,7 +216,7 @@ export default function GardenPage() {
               <button
                 type="button"
                 className="kg-cta-btn"
-                onClick={() => fetchGarden()}
+                onClick={() => gardenQuery.refetch()}
               >
                 Thử lại
               </button>
