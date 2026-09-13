@@ -552,7 +552,7 @@ export default function ArView() {
           } catch {
             // Bỏ qua lỗi 1 lần ping (vd mất mạng tạm thời) - thử lại ở lần kế tiếp
           }
-        }, 45000);
+        }, 5000); // giảm từ 45s xuống 5s để phát hiện khóa/giới hạn gần như ngay lập tức
       } catch {
         // Không chặn trải nghiệm xem AR chỉ vì việc ghi nhận phiên thất bại
       }

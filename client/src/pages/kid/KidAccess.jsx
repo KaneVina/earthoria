@@ -372,12 +372,16 @@ export default function KidAccess() {
   const [searchFocused, setSearchFocused] = useState(false);
   const searchInputRef = useRef(null);
 
-  // Hồ sơ bé + tủ sách
+  // Hồ sơ bé + tủ sách. refetchInterval 5s để phụ huynh khóa/mở khóa thiết
+  // bị ở dashboard có hiệu lực gần như ngay lập tức bên phía bé - trước đây
+  // chỉ fetch 1 lần lúc vào trang nên bé ngồi yên ở tủ sách sẽ không bị
+  // khóa cho tới khi tải lại trang.
   const profileQuery = useQuery({
     queryKey: ["kid-access-profile", token],
     queryFn: () =>
       kidAccessService.getProfile(token).then((res) => res.data.data.child),
     enabled: !!token,
+    refetchInterval: 5000,
   });
   const booksQuery = useQuery({
     queryKey: ["kid-access-books", token],

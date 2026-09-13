@@ -13,6 +13,11 @@ const {
   getKidBookRequests,
   createKidBookRequest,
 } = require("../controllers/childBookRequestController");
+const { kidAccessLimiter } = require("../middlewares/rateLimiters");
+
+// Các trang bé dùng đều poll ngắn (~5s) để phát hiện khóa gần như ngay lập
+// tức - dùng hạn mức riêng theo token thay vì rate limit IP chung của site.
+router.use(kidAccessLimiter);
 
 router.get("/:token", getKidPublicProfile);
 router.get("/:token/books", getKidPublicBooks);

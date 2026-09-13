@@ -37,6 +37,11 @@ app.use(
     max: 100,
     standardHeaders: true,
     legacyHeaders: false,
+    // /kid-access/* poll ngắn hạn (~5s) để phát hiện khóa gần như ngay lập
+    // tức, đã có hạn mức riêng theo token (kidAccessLimiter) - loại khỏi
+    // đây để không dùng chung 100 request/15 phút với việc mua sắm bình
+    // thường của cả nhà (thường chung 1 mạng wifi/IP với thiết bị của bé).
+    skip: (req) => req.path.startsWith("/api/v1/kid-access"),
     message: {
       success: false,
       message: "Quá nhiều request, thử lại sau",

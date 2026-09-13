@@ -128,6 +128,32 @@ const ticketLimiter = rateLimit({
   keyGenerator: emailIpKeyGenerator,
 });
 
+// Định danh theo token trong URL (vd /kid-access/:token/...) thay vì IP -
+// vì cả nhà dùng chung 1 mạng wifi, tính theo IP sẽ khiến các bé (mỗi bé 1
+// token riêng) tranh nhau chung 1 hạn mức, và ảnh hưởng luôn tới việc mua
+// sắm bình thường của phụ huynh trên cùng mạng.
+const kidAccessTokenKeyGenerator = (req) => {
+  const token = req.path.split("/")[1]; // req.path ở đây là phần sau "/kid-access"
+  return token ? `kid-${token}` : ipKeyGenerator(req.ip);
+};
+
+// Các trang bé dùng (tủ sách, đọc sách, AR, Vườn Tri Thức) đều poll ngắn
+// (~5s) để phát hiện phụ huynh khóa thiết bị gần như ngay lập tức, nên cần
+// hạn mức riêng cao hơn nhiều so với rate limit chung của cả site - đồng
+// thời được loại khỏi rate limit chung đó (xem app.js) để không đụng vào
+// hạn mức mua sắm bình thường của phụ huynh.
+const kidAccessLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 phút
+  max: 60, // dư dả cho vài trang cùng poll 5s + thao tác thường của bé
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Quá nhiều request, thử lại sau ít phút.",
+  },
+  keyGenerator: kidAccessTokenKeyGenerator,
+});
+
 module.exports = {
   forgotPasswordLimiter,
   verifyOtpLimiter,
@@ -138,4 +164,5 @@ module.exports = {
   createPasswordLimiter,
   parentPinLimiter,
   ticketLimiter,
+  kidAccessLimiter,
 };

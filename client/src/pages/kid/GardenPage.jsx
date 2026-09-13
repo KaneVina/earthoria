@@ -29,7 +29,7 @@ import "../../components/assets/css/kidAccess.css";
 import "../../components/assets/css/knowledgeGarden.css";
 import "../../components/assets/css/gardenPage.css";
 
-const POLL_MS = 90_000;
+const POLL_MS = 5_000; // giảm từ 90s xuống 5s để phát hiện khóa/giới hạn gần như ngay lập tức
 
 // Thông điệp thân thiện cho từng mã lỗi 403 - dùng chung nội dung với
 // EbookReader/ArView để bé thấy đồng nhất dù đang ở màn nào.

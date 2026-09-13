@@ -8,7 +8,7 @@ import { kidAccessService } from "../../services/kidAccessService";
 import GardenTreeVisual from "./GardenTreeVisual";
 import "../assets/css/knowledgeGarden.css";
 
-const POLL_MS = 90_000;
+const POLL_MS = 5_000; // giảm từ 90s xuống 5s để phát hiện khóa/giới hạn gần như ngay lập tức
 const DISMISS_KEY_PREFIX = "kid-garden-widget-dismissed:";
 
 export default function GardenWidget({ token, slug }) {
