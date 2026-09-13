@@ -453,14 +453,15 @@ export default function LegalHub() {
           display: flex; flex-direction: column; gap: 10px;
           padding: 20px 0; border-top: 0.5px solid var(--border);
         }
-        .lh-card-highlight {
-          display: flex; align-items: center; gap: 10px;
-          font-size: 12px; color: var(--text-muted); font-weight: 300;
-        }
-        .lh-highlight-dot {
-          width: 4px; height: 4px; border-radius: 50%;
-          background: var(--gold); flex-shrink: 0;
-        }
+.lh-card-highlight {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 12px; color: var(--text-muted); font-weight: 300;
+}
+.lh-highlight-dot {
+  width: 4px; height: 4px; border-radius: 50%;
+  background: var(--gold); flex-shrink: 0;
+  margin-top: 7px;
+}
 
         .lh-card-foot {
           padding: 24px 36px 32px;
@@ -764,7 +765,7 @@ export default function LegalHub() {
             </a>
             <span className="lh-contact-item">
               <MapPin size={15} />
-            600 Nguyễn Văn Cừ Nối Dài, An Bình, Cần Thơ 900000
+              600 Nguyễn Văn Cừ Nối Dài, An Bình, Cần Thơ 900000
             </span>
           </div>
         </div>
