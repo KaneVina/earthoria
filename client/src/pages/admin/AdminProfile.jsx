@@ -15,8 +15,10 @@ export default function AdminProfile() {
   const { user, logout, updateUser } = useAuthStore();
   const { isDark, toggle } = useAdminTheme();
 
+  // queryKey "current-user" dùng chung với Profile.jsx (cùng gọi
+  // authService.getMe()) - xem ghi chú trong Profile.jsx.
   const { data: profile } = useQuery({
-    queryKey: ["admin-profile"],
+    queryKey: ["current-user"],
     queryFn: () => authService.getMe().then((r) => r.data.data),
     initialData: user,
     initialDataUpdatedAt: 0,
@@ -27,7 +29,7 @@ export default function AdminProfile() {
     onSuccess: (_res, patch) => {
       const updated = { ...profile, ...patch };
       updateUser(updated);
-      queryClient.setQueryData(["admin-profile"], updated);
+      queryClient.setQueryData(["current-user"], updated);
       toast.success("Đã cập nhật thông tin");
     },
   });
