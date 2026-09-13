@@ -1011,13 +1011,16 @@ export default function Shop() {
     setActiveFeatures([]);
   };
 
+  // Dùng chung queryKey "featured-books" với Home.jsx - cùng 1 API
+  // bookService.getFeatured(), chỉ khác Shop chỉ cần phần tử đầu tiên.
+  // Trước đây key khác nhau ("shop-featured-book" vs "featured-books") nên
+  // 2 trang không share cache, điều hướng Home -> Shop luôn gọi lại API dù
+  // dữ liệu vừa fetch xong. queryFn khớp với Home.jsx để dữ liệu cache
+  // nhất quán bất kể trang nào mount trước.
   const { data: featuredBook } = useQuery({
-    queryKey: ["shop-featured-book"],
-    queryFn: () =>
-      bookService.getFeatured().then((r) => {
-        const list = r.data.data.books || r.data.data || [];
-        return Array.isArray(list) ? list[0] : list;
-      }),
+    queryKey: ["featured-books"],
+    queryFn: () => bookService.getFeatured().then((r) => r.data.data),
+    select: (list) => (Array.isArray(list) ? list[0] : list),
   });
 
   // CTA video: chỉ load khi gần viewport, phát chậm 0.4x
