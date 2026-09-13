@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { AlarmClock } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../services/api";
@@ -377,36 +378,115 @@ export default function ArView() {
   const navigate = useNavigate();
   const isKidMode = !!token;
 
-  const [state, setState] = useState({
-    status: "loading", // loading | ready | not-found | forbidden | locked
-    data: null,
+  // Dữ liệu mô hình AR (model 3D, thông tin loài/sách gốc...) - dùng React
+  // Query để cache theo (code, token) thay vì useState/useEffect gọi axios
+  // thẳng. Đây là route ĐỘC LẬP (/ar/:slug/:code hoặc /e-kid/.../ar/:code -
+  // xem App.jsx), không nested, nên trước đây mỗi lần bé thoát ra rồi bấm
+  // lại ĐÚNG mã AR đó là remount hẳn component, hiện "Đang chuẩn bị mô hình
+  // AR…" và tải lại (kèm load lại model 3D) từ đầu dù dữ liệu vừa tải cách
+  // đó vài giây. Cache dùng chung queryClient (staleTime 5 phút - xem
+  // src/lib/queryClient.js) giúp quay lại trong 5 phút có dữ liệu ngay;
+  // React Query cũng tự bỏ kết quả của request cũ nên hết luôn race-condition
+  // nếu bé bấm ra/vào liên tục.
+  const arQuery = useQuery({
+    queryKey: ["ar-code", code, token],
+    queryFn: () =>
+      arService.getArCode(code, token).then((res) => {
+        const data = res.data?.data;
+        if (!data) return null;
+        const baseData = CODE_OVERRIDES[code] || FALLBACK_DATA;
+        return {
+          ...baseData,
+          ...data,
+          specs: data.specs || baseData.specs,
+          description: data.description || baseData.description,
+          funFacts: data.funFacts || baseData.funFacts,
+          habitatRegion: data.habitatRegion || baseData.habitatRegion,
+          habitatCountries: data.habitatCountries || baseData.habitatCountries,
+        };
+      }),
+    enabled: !!code,
   });
+  const arHttpStatus = arQuery.error?.response?.status;
+  const arErrCode = arQuery.error?.response?.data?.code;
+
+  // Chuyển hướng về đúng slug sách gốc nếu URL cũ/slug đã đổi - chỉ chạy khi
+  // có dữ liệu mới, không phải trên mỗi lần render.
+  useEffect(() => {
+    const data = arQuery.data;
+    if (data?.book?.slug && data.book.slug !== slug) {
+      const correctPath = isKidMode
+        ? `/e-kid/${data.book.slug}/${token}/ar/${code}`
+        : `/ar/${data.book.slug}/${code}`;
+      navigate(correctPath, { replace: true });
+    }
+  }, [arQuery.data, slug, isKidMode, token, code, navigate]);
+
+  // Chưa đăng nhập (chỉ áp dụng ngoài chế độ xem riêng của bé - phiên của bé
+  // không có tài khoản nào để đăng nhập lại, xem `status` bên dưới) - đá về
+  // /login kèm redirect, giữ đúng hành vi cũ.
+  useEffect(() => {
+    if (arHttpStatus !== 401 || isKidMode) return;
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    navigate(`/login?redirect=${encodeURIComponent(currentUrl)}`, {
+      replace: true,
+    });
+  }, [arHttpStatus, isKidMode, navigate]);
+
+  // 403 kèm mã lỗi cụ thể (thiết bị bị khoá/hết giờ/ngoài khung giờ) hiện
+  // màn "locked" với tiêu đề + nội dung riêng, khác với 403 chung chung
+  // (chưa mua sách) hiện màn "forbidden".
+  const lockedInfo =
+    arHttpStatus !== 403
+      ? null
+      : arErrCode === "CHILD_LOCKED"
+        ? {
+            title: "AR đang bị khoá",
+            message: "Ba mẹ đã tạm khoá AR rồi. Nhờ ba mẹ mở khoá lại nhé!",
+          }
+        : arErrCode === "DAILY_LIMIT_REACHED"
+          ? {
+              title: "Hết giờ dùng hôm nay rồi",
+              message:
+                "Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!",
+            }
+          : arErrCode === "OUTSIDE_ALLOWED_WINDOW"
+            ? {
+                title: "Ngoài giờ được phép rồi",
+                message:
+                  "Bây giờ không phải giờ ba mẹ cho phép bé dùng AR nhé.",
+              }
+            : null;
+
+  const status = arQuery.isLoading
+    ? "loading"
+    : arHttpStatus === 401
+      ? isKidMode
+        ? "not-found"
+        : "loading" // không phải kid mode: đang chuyển hướng sang /login
+      : lockedInfo
+        ? "locked"
+        : arHttpStatus === 403
+          ? "forbidden"
+          : arQuery.isError || !arQuery.data
+            ? "not-found"
+            : "ready";
 
   // Hồ sơ đầy đủ của bé (bao gồm cấu hình nhắc nghỉ mắt/giải lao bắt buộc) -
-  // để nhắc nghỉ mắt vẫn chạy được ngay trong lúc bé đang xem AR, đồng bộ
-  // với trang kệ sách (/e-kid/:slug/:token) và trang đọc ebook.
-  const [kidChild, setKidChild] = useState(null);
-  useEffect(() => {
-    if (!isKidMode || !token) return;
-    let cancelled = false;
-    kidAccessService
-      .getProfile(token)
-      .then((res) => {
-        if (cancelled) return;
-        const child = res.data?.data?.child;
-        if (child) setKidChild(child);
-      })
-      .catch(() => {
-        // Không chặn trải nghiệm xem AR nếu không lấy được hồ sơ bé
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [isKidMode, token]);
+  // dùng CHUNG query key với trang kệ sách (KidAccess: "kid-access-profile")
+  // và trang đọc ebook, nên nếu bé vừa ở 1 trong 2 trang đó rồi mở AR, hồ sơ
+  // đã có sẵn trong cache, khỏi phải gọi lại đúng API đó thêm 1 lần nữa.
+  const profileQuery = useQuery({
+    queryKey: ["kid-access-profile", token],
+    queryFn: () =>
+      kidAccessService.getProfile(token).then((res) => res.data.data.child),
+    enabled: isKidMode && !!token,
+  });
+  const kidChild = profileQuery.data ?? null;
 
   const restBreak = useKidRestBreak(
     kidChild,
-    isKidMode && state.status === "ready",
+    isKidMode && status === "ready",
     token,
   );
 
@@ -428,114 +508,11 @@ export default function ArView() {
     if (stage !== "preview") setIsExpanded(false);
   }, [stage]);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchArCode() {
-      try {
-        const res = await arService.getArCode(code, token);
-        if (cancelled) return;
-
-        const data = res.data?.data;
-        if (!data) {
-          setState({ status: "not-found", data: null });
-          return;
-        }
-
-        if (data.book?.slug && data.book.slug !== slug) {
-          const correctPath = isKidMode
-            ? `/e-kid/${data.book.slug}/${token}/ar/${code}`
-            : `/ar/${data.book.slug}/${code}`;
-          navigate(correctPath, { replace: true });
-        }
-
-        const baseData = CODE_OVERRIDES[code] || FALLBACK_DATA;
-
-        setState({
-          status: "ready",
-          data: {
-            ...baseData,
-            ...data,
-            specs: data.specs || baseData.specs,
-            description: data.description || baseData.description,
-            funFacts: data.funFacts || baseData.funFacts,
-            habitatRegion: data.habitatRegion || baseData.habitatRegion,
-            habitatCountries:
-              data.habitatCountries || baseData.habitatCountries,
-          },
-        });
-      } catch (err) {
-        if (cancelled) return;
-
-        const httpStatus = err.response?.status;
-
-        if (httpStatus === 401) {
-          // Phiên của bé không có tài khoản để đăng nhập lại - hiện màn hình
-          // "không tìm thấy" thân thiện thay vì đá về /login.
-          if (isKidMode) {
-            setState({ status: "not-found", data: null });
-            return;
-          }
-          const currentUrl = `${window.location.pathname}${window.location.search}`;
-          navigate(`/login?redirect=${encodeURIComponent(currentUrl)}`, {
-            replace: true,
-          });
-          return;
-        }
-
-        if (httpStatus === 403) {
-          const errCode = err.response?.data?.code;
-          if (errCode === "CHILD_LOCKED") {
-            setState({
-              status: "locked",
-              data: {
-                title: "AR đang bị khoá",
-                message: "Ba mẹ đã tạm khoá AR rồi. Nhờ ba mẹ mở khoá lại nhé!",
-              },
-            });
-            return;
-          }
-          if (errCode === "DAILY_LIMIT_REACHED") {
-            setState({
-              status: "locked",
-              data: {
-                title: "Hết giờ dùng hôm nay rồi",
-                message:
-                  "Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!",
-              },
-            });
-            return;
-          }
-          if (errCode === "OUTSIDE_ALLOWED_WINDOW") {
-            setState({
-              status: "locked",
-              data: {
-                title: "Ngoài giờ được phép rồi",
-                message:
-                  "Bây giờ không phải giờ ba mẹ cho phép bé dùng AR nhé.",
-              },
-            });
-            return;
-          }
-          setState({ status: "forbidden", data: null });
-          return;
-        }
-
-        setState({ status: "not-found", data: null });
-      }
-    }
-
-    fetchArCode();
-    return () => {
-      cancelled = true;
-    };
-  }, [code, slug, token, isKidMode, navigate]);
-
   // Kid mode: ghi nhận phiên xem AR thật lên server (server tự tính phút bằng
   // đồng hồ server, không dùng số phút đếm ở client) - để Parent Dashboard có
   // dữ liệu thật và daily limit/khung giờ được áp dụng đúng trong lúc xem.
   useEffect(() => {
-    if (!isKidMode || state.status !== "ready") return;
+    if (!isKidMode || status !== "ready") return;
 
     let cancelled = false;
     let activityId = null;
@@ -544,7 +521,7 @@ export default function ArView() {
     async function start() {
       try {
         const res = await kidAccessService.startActivity(token, {
-          bookId: state.data?.book?.id,
+          bookId: arQuery.data?.book?.id,
         });
         if (cancelled) return;
         activityId = res.data?.data?.activityId;
@@ -589,19 +566,19 @@ export default function ArView() {
       if (activityId)
         kidAccessService.pingActivity(token, activityId).catch(() => {});
     };
-  }, [isKidMode, state.status, state.data?.book?.id, token, slug, navigate]);
+  }, [isKidMode, status, arQuery.data?.book?.id, token, slug, navigate]);
 
   // Sau khi data sẵn sàng, chạy hiệu ứng quét rồi mới chuyển sang preview
   useEffect(() => {
-    if (state.status !== "ready") return;
+    if (status !== "ready") return;
     setStage("scanning");
     scanTimeoutRef.current = setTimeout(() => {
       setStage("preview");
     }, SCAN_DURATION_MS);
     return () => clearTimeout(scanTimeoutRef.current);
-  }, [state.status]);
+  }, [status]);
 
-  if (state.status === "loading") {
+  if (status === "loading") {
     return (
       <main className="ar-view ar-view--center">
         <div className="ar-view__loading" role="status" aria-live="polite">
@@ -614,7 +591,7 @@ export default function ArView() {
     );
   }
 
-  if (state.status === "locked") {
+  if (status === "locked") {
     return (
       <main className="ar-view ar-view--center">
         <div className="ar-view__empty">
@@ -643,9 +620,9 @@ export default function ArView() {
             </svg>
           </div>
           <span className="ar-view__eyebrow">Earthoria AR</span>
-          <h1>{state.data?.title || "AR đang bị khoá"}</h1>
+          <h1>{lockedInfo?.title || "AR đang bị khoá"}</h1>
           <p>
-            {state.data?.message ||
+            {lockedInfo?.message ||
               "Ba mẹ đã tạm khoá AR rồi. Nhờ ba mẹ mở khoá lại nhé!"}
           </p>
           {isKidMode && (
@@ -658,7 +635,7 @@ export default function ArView() {
     );
   }
 
-  if (state.status === "forbidden") {
+  if (status === "forbidden") {
     return (
       <main className="ar-view ar-view--center">
         <div className="ar-view__empty">
@@ -703,7 +680,7 @@ export default function ArView() {
     );
   }
 
-  if (state.status === "not-found") {
+  if (status === "not-found") {
     return (
       <main className="ar-view ar-view--center">
         <div className="ar-view__empty">
@@ -754,7 +731,7 @@ export default function ArView() {
     funFacts,
     habitatRegion,
     habitatCountries,
-  } = state.data;
+  } = arQuery.data;
   const isScanning = stage === "scanning";
   const isImmersive = stage === "immersive";
   const isPreview = stage === "preview";
