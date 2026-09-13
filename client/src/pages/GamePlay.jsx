@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import {
   PlayCircle,
   Trophy,
@@ -133,51 +134,53 @@ export default function GamePlay() {
   const { slug, code } = useParams();
   const navigate = useNavigate();
 
-  const [state, setState] = useState({ status: "loading", data: null });
   const [stage, setStage] = useState("intro"); // intro | playing | finished
   const [result, setResult] = useState(null); // { score, durationSeconds }
   const [leaderboard, setLeaderboard] = useState([]);
 
+  // Dữ liệu trò chơi (đề bài, cấu hình, sách gốc...) - dùng React Query để
+  // cache theo `code` thay vì useState/useEffect gọi axios thẳng. Route
+  // /game/:slug/:code là route ĐỘC LẬP, không nested, nên trước đây mỗi lần
+  // bé thoát ra rồi bấm lại ĐÚNG game đó là remount hẳn component, `status`
+  // về "loading" và tải lại từ đầu dù dữ liệu vừa tải cách đó vài giây. Cache
+  // dùng chung queryClient (staleTime 5 phút - xem src/lib/queryClient.js)
+  // giúp quay lại trong 5 phút có dữ liệu ngay; React Query cũng tự bỏ kết
+  // quả của request cũ nên hết luôn race-condition nếu bấm ra/vào liên tục.
+  const gameQuery = useQuery({
+    queryKey: ["game", code],
+    queryFn: () =>
+      gameService.getGame(code).then((res) => res.data?.data ?? null),
+    enabled: !!code,
+  });
+  const gameHttpStatus = gameQuery.error?.response?.status;
+
+  // Chuyển hướng về đúng slug sách gốc nếu URL cũ/slug đã đổi - chỉ chạy khi
+  // có dữ liệu mới, không phải trên mỗi lần render.
   useEffect(() => {
-    let cancelled = false;
-
-    async function fetchGame() {
-      try {
-        const res = await gameService.getGame(code);
-        if (cancelled) return;
-        const data = res.data?.data;
-        if (!data) {
-          setState({ status: "not-found", data: null });
-          return;
-        }
-        if (data.book?.slug && data.book.slug !== slug) {
-          navigate(`/game/${data.book.slug}/${code}`, { replace: true });
-        }
-        setState({ status: "ready", data });
-      } catch (err) {
-        if (cancelled) return;
-        const httpStatus = err.response?.status;
-
-        if (httpStatus === 401) {
-          const currentUrl = `${window.location.pathname}${window.location.search}`;
-          navigate(`/login?redirect=${encodeURIComponent(currentUrl)}`, {
-            replace: true,
-          });
-          return;
-        }
-        if (httpStatus === 403) {
-          setState({ status: "forbidden", data: null });
-          return;
-        }
-        setState({ status: "not-found", data: null });
-      }
+    const data = gameQuery.data;
+    if (data?.book?.slug && data.book.slug !== slug) {
+      navigate(`/game/${data.book.slug}/${code}`, { replace: true });
     }
+  }, [gameQuery.data, slug, code, navigate]);
 
-    fetchGame();
-    return () => {
-      cancelled = true;
-    };
-  }, [code, slug, navigate]);
+  // Chưa đăng nhập - đá về /login kèm redirect, giữ đúng hành vi cũ.
+  useEffect(() => {
+    if (gameHttpStatus !== 401) return;
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    navigate(`/login?redirect=${encodeURIComponent(currentUrl)}`, {
+      replace: true,
+    });
+  }, [gameHttpStatus, navigate]);
+
+  const status = gameQuery.isLoading
+    ? "loading"
+    : gameHttpStatus === 401
+      ? "loading" // đang chuyển hướng sang /login, tránh chớp màn "not-found"
+      : gameHttpStatus === 403
+        ? "forbidden"
+        : gameQuery.isError || !gameQuery.data
+          ? "not-found"
+          : "ready";
 
   const handleFinish = async (score, durationSeconds) => {
     setResult({ score, durationSeconds });
@@ -197,11 +200,11 @@ export default function GamePlay() {
     setStage("intro");
   };
 
-  if (state.status === "loading") {
+  if (status === "loading") {
     return <FullScreenLoader message="Đang tải trò chơi..." />;
   }
 
-  if (state.status === "forbidden") {
+  if (status === "forbidden") {
     return (
       <main className="gp-view gp-view--center">
         <div className="gp-empty">
@@ -220,7 +223,7 @@ export default function GamePlay() {
     );
   }
 
-  if (state.status === "not-found") {
+  if (status === "not-found") {
     return (
       <main className="gp-view gp-view--center">
         <div className="gp-empty">
@@ -238,7 +241,7 @@ export default function GamePlay() {
     );
   }
 
-  const { data } = state;
+  const data = gameQuery.data;
   const def = getGameDefinition(data.gameType);
   const Icon = def?.icon || Info;
   const Player = def?.Player;
