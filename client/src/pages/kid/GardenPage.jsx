@@ -57,21 +57,14 @@ export default function GardenPage() {
   const prevSnapshotRef = useRef(null);
   const skyState = useSkyState(); // bầu trời theo giờ thực - đồng bộ với KidAccess
 
-  // Hồ sơ đầy đủ của bé (bao gồm cấu hình nhắc nghỉ mắt/giải lao bắt buộc).
-  // queryKey ["kid-access-profile", token] dùng chung với KidAccess.jsx -
-  // trước đây trang này tự fetch riêng bằng useEffect, gọi trùng API dù
-  // KidAccess đã fetch (và cache) đúng dữ liệu này rồi.
   const { data: kidChild = null } = useQuery({
     queryKey: ["kid-access-profile", token],
     queryFn: () =>
       kidAccessService.getProfile(token).then((res) => res.data.data.child),
     enabled: !!token,
+    refetchInterval: 5000,
   });
 
-  // queryKey ["kid-garden", token] dùng chung với GardenWidget.jsx (widget
-  // xem nhanh khu vườn ngay trong trang KidAccess) - trước đây mỗi nơi tự
-  // useState + useEffect riêng, không cache, nên rời trang rồi quay lại
-  // (hoặc widget + trang cùng hiển thị) đều load lại từ đầu.
   const gardenQuery = useQuery({
     queryKey: ["kid-garden", token],
     queryFn: () => kidAccessService.getGarden(token).then((r) => r.data.data),
@@ -96,9 +89,6 @@ export default function GardenPage() {
 
   const restBreak = useKidRestBreak(kidChild, status === "ok", token);
 
-  // Phát hiện lên cấp / đạt mốc chuỗi ngày mới giữa 2 lần fetch để hiện
-  // hiệu ứng ăn mừng (trước đây nằm trong hàm fetchGarden, giờ theo dõi
-  // qua thay đổi của `data` từ React Query).
   useEffect(() => {
     if (!data) return;
     const prev = prevSnapshotRef.current;
