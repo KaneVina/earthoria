@@ -2,7 +2,7 @@ const { formatResponse } = require("../utils/helpers");
 const { runChatTurn } = require("../services/aiChatService");
 const {
   buildModelTierList,
-  resolveUserMaxTier,
+  resolveMaxTierBySpend,
   getTierByCode,
 } = require("../utils/aiModelTier");
 const { getUserLifetimeSpend } = require("../utils/loyaltyTier");
@@ -98,7 +98,12 @@ const sendMessage = async (req, res) => {
 const getModels = async (req, res) => {
   try {
     const spend = req.user?.id ? await getUserLifetimeSpend(req.user.id) : 0;
-    const maxTier = await resolveUserMaxTier(req.user || null);
+    // Trước đây gọi thêm resolveUserMaxTier(), nhưng hàm đó lại TỰ GỌI LẠI
+    // getUserLifetimeSpend() y hệt ở trên - 2 lần query DB giống hệt nhau,
+    // tuần tự (không song song) mỗi lần mở chatbox, khiến modal danh sách
+    // hạng AI hiện lâu hơn cần thiết. resolveMaxTierBySpend() tính thuần từ
+    // `spend` đã có sẵn, không cần hỏi DB thêm lần nữa.
+    const maxTier = resolveMaxTierBySpend(spend);
     return formatResponse(res, 200, "OK", {
       tiers: buildModelTierList(spend),
       currentMaxTier: maxTier.code,
