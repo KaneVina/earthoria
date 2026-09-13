@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { Lock, SearchX, AlarmClock } from "lucide-react";
 import toast from "react-hot-toast";
 import { ebookService } from "../services/ebookService";
@@ -19,17 +20,71 @@ export default function EbookReader() {
   const isKidMode = !!token;
   const effectiveSlug = isKidMode ? bookSlug : slug;
 
-  const [state, setState] = useState({ status: "loading", data: null });
-  const book = state.data?.book;
+  const ebookQuery = useQuery({
+    queryKey: ["ebook-reader", effectiveSlug, token],
+    queryFn: () =>
+      ebookService
+        .readBySlug(effectiveSlug, token)
+        .then((res) => res.data?.data ?? null),
+    enabled: !!effectiveSlug,
+  });
+  const book = ebookQuery.data?.book;
+  const ebookHttpStatus = ebookQuery.error?.response?.status;
+  const ebookErrCode = ebookQuery.error?.response?.data?.code;
 
-  // Giờ đọc còn lại hôm nay (do ba mẹ thiết lập) - chỉ có ở chế độ đọc
-  // riêng của bé. Lấy 1 lần từ hồ sơ bé, rồi cập nhật số phút đã đọc theo
-  // mỗi lần ping phiên hoạt động bên dưới.
-  const [kidTimeInfo, setKidTimeInfo] = useState(null);
-  // Hồ sơ đầy đủ của bé (bao gồm cấu hình nhắc nghỉ mắt/giải lao bắt buộc) -
-  // để nhắc nghỉ mắt vẫn chạy được ngay trong lúc bé đang đọc sách, đồng bộ
-  // với trang kệ sách (/e-kid/:slug/:token) thay vì chỉ chạy ở đó.
-  const [kidChild, setKidChild] = useState(null);
+  useEffect(() => {
+    if (ebookHttpStatus !== 401 || isKidMode) return;
+    const currentUrl = `${window.location.pathname}${window.location.search}`;
+    navigate(`/login?redirect=${encodeURIComponent(currentUrl)}`, {
+      replace: true,
+    });
+  }, [ebookHttpStatus, isKidMode, navigate]);
+
+  const restrictedInfo =
+    ebookHttpStatus !== 403
+      ? null
+      : ebookErrCode === "CHILD_LOCKED"
+        ? {
+            title: "Thiết bị đang bị khoá",
+            message:
+              "Ba mẹ đã tạm khoá thiết bị của bé rồi. Nhờ ba mẹ mở khoá lại nhé!",
+          }
+        : ebookErrCode === "DAILY_LIMIT_REACHED"
+          ? {
+              title: "Hết giờ dùng hôm nay rồi",
+              message:
+                "Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!",
+            }
+          : ebookErrCode === "OUTSIDE_ALLOWED_WINDOW"
+            ? {
+                title: "Ngoài giờ được phép rồi",
+                message:
+                  "Bây giờ không phải giờ ba mẹ cho phép bé đọc sách nhé.",
+              }
+            : null;
+
+  const status = ebookQuery.isLoading
+    ? "loading"
+    : ebookHttpStatus === 401
+      ? isKidMode
+        ? "not-found"
+        : "loading" // không phải kid mode: đang chuyển hướng sang /login
+      : restrictedInfo
+        ? "restricted"
+        : ebookHttpStatus === 403
+          ? "forbidden"
+          : ebookQuery.isError || !ebookQuery.data
+            ? "not-found"
+            : "ready";
+
+  const profileQuery = useQuery({
+    queryKey: ["kid-access-profile", token],
+    queryFn: () =>
+      kidAccessService.getProfile(token).then((res) => res.data.data.child),
+    enabled: isKidMode && !!token,
+  });
+  const kidChild = profileQuery.data ?? null;
+
   const saveKidReadingProgress = useCallback(
     (currentPage, totalPages) => {
       if (!isKidMode || !token || !book?.slug || !totalPages) return;
@@ -53,123 +108,25 @@ export default function EbookReader() {
     [isKidMode, token, book],
   );
 
-  // Lấy giới hạn giờ đọc/ngày do ba mẹ đặt + số phút bé đã đọc hôm nay,
-  // để hiện icon "giờ đọc còn lại" trên header của trình đọc sách. Đồng
-  // thời lưu cả hồ sơ đầy đủ để dùng cho nhắc nghỉ mắt/giải lao bắt buộc.
-  useEffect(() => {
-    if (!isKidMode || !token) return;
-    let cancelled = false;
-    kidAccessService
-      .getProfile(token)
-      .then((res) => {
-        if (cancelled) return;
-        const child = res.data?.data?.child;
-        if (!child) return;
-        setKidTimeInfo({
-          dailyLimitMinutes: child.dailyLimitMinutes || 0,
-          todayMinutes: child.todayMinutes || 0,
-        });
-        setKidChild(child);
-      })
-      .catch(() => {
-        // Không chặn trải nghiệm đọc nếu không lấy được thông tin giờ đọc
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [isKidMode, token]);
+  const [pingedTodayMinutes, setPingedTodayMinutes] = useState(null);
+  const kidTimeInfo = kidChild
+    ? {
+        dailyLimitMinutes: kidChild.dailyLimitMinutes || 0,
+        todayMinutes: pingedTodayMinutes ?? (kidChild.todayMinutes || 0),
+      }
+    : null;
 
   // Nhắc nghỉ mắt định kỳ + giải lao bắt buộc - chạy ngay trong lúc đọc,
   // dùng chung hook/overlay với trang kệ sách (KidAccess) và trang AR.
   const restBreak = useKidRestBreak(
     kidChild,
-    isKidMode && state.status === "ready",
+    isKidMode && status === "ready",
     token,
   );
 
+  // Kid mode
   useEffect(() => {
-    let cancelled = false;
-
-    async function fetchEbook() {
-      try {
-        const res = await ebookService.readBySlug(effectiveSlug, token);
-        if (cancelled) return;
-        const data = res.data?.data;
-        if (!data) {
-          setState({ status: "not-found", data: null });
-          return;
-        }
-        setState({ status: "ready", data });
-      } catch (err) {
-        if (cancelled) return;
-        const httpStatus = err.response?.status;
-
-        if (httpStatus === 401) {
-          // Phiên của bé không có tài khoản để đăng nhập lại - hiện màn
-          // hình "không tìm thấy" thân thiện thay vì đá về /login.
-          if (isKidMode) {
-            setState({ status: "not-found", data: null });
-            return;
-          }
-          const currentUrl = `${window.location.pathname}${window.location.search}`;
-          navigate(`/login?redirect=${encodeURIComponent(currentUrl)}`, {
-            replace: true,
-          });
-          return;
-        }
-        if (httpStatus === 403) {
-          const errCode = err.response?.data?.code;
-          if (errCode === "CHILD_LOCKED") {
-            setState({
-              status: "restricted",
-              data: {
-                title: "Thiết bị đang bị khoá",
-                message:
-                  "Ba mẹ đã tạm khoá thiết bị của bé rồi. Nhờ ba mẹ mở khoá lại nhé!",
-              },
-            });
-            return;
-          }
-          if (errCode === "DAILY_LIMIT_REACHED") {
-            setState({
-              status: "restricted",
-              data: {
-                title: "Hết giờ dùng hôm nay rồi",
-                message:
-                  "Bé đã dùng hết thời gian hôm nay rồi, hẹn bé ngày mai nhé!",
-              },
-            });
-            return;
-          }
-          if (errCode === "OUTSIDE_ALLOWED_WINDOW") {
-            setState({
-              status: "restricted",
-              data: {
-                title: "Ngoài giờ được phép rồi",
-                message:
-                  "Bây giờ không phải giờ ba mẹ cho phép bé đọc sách nhé.",
-              },
-            });
-            return;
-          }
-          setState({ status: "forbidden", data: null });
-          return;
-        }
-        setState({ status: "not-found", data: null });
-      }
-    }
-
-    fetchEbook();
-    return () => {
-      cancelled = true;
-    };
-  }, [effectiveSlug, token, isKidMode, navigate]);
-
-  // Kid mode: ghi nhận phiên đọc thật lên server (server tự tính phút bằng
-  // đồng hồ server, không dùng số phút đếm ở client) - để Parent Dashboard có
-  // dữ liệu thật và daily limit/khung giờ được áp dụng đúng trong lúc đọc.
-  useEffect(() => {
-    if (!isKidMode || state.status !== "ready") return;
+    if (!isKidMode || status !== "ready") return;
 
     let cancelled = false;
     let activityId = null;
@@ -178,7 +135,7 @@ export default function EbookReader() {
     async function start() {
       try {
         const res = await kidAccessService.startActivity(token, {
-          bookId: state.data?.book?.id,
+          bookId: book?.id,
         });
         if (cancelled) return;
         activityId = res.data?.data?.activityId;
@@ -192,10 +149,7 @@ export default function EbookReader() {
             );
             const info = pingRes.data?.data;
             if (typeof info?.todayMinutes === "number") {
-              setKidTimeInfo((prev) => ({
-                dailyLimitMinutes: prev?.dailyLimitMinutes ?? 0,
-                todayMinutes: info.todayMinutes,
-              }));
+              setPingedTodayMinutes(info.todayMinutes);
             }
             if (
               info?.locked ||
@@ -229,13 +183,13 @@ export default function EbookReader() {
       if (activityId)
         kidAccessService.pingActivity(token, activityId).catch(() => {});
     };
-  }, [isKidMode, state.status, state.data?.book?.id, token, slug, navigate]);
+  }, [isKidMode, status, book?.id, token, slug, navigate]);
 
-  if (state.status === "loading") {
+  if (status === "loading") {
     return <FullScreenLoader message="Đang tải sách điện tử..." />;
   }
 
-  if (state.status === "restricted") {
+  if (status === "restricted") {
     return (
       <main className="gp-view gp-view--center">
         <div className="gp-empty">
@@ -243,8 +197,8 @@ export default function EbookReader() {
             <Lock size={22} />
           </div>
           <span className="gp-eyebrow">Sách điện tử</span>
-          <h1>{state.data?.title || "Chưa đọc được sách này"}</h1>
-          <p>{state.data?.message || "Nhờ ba mẹ kiểm tra lại nhé!"}</p>
+          <h1>{restrictedInfo?.title || "Chưa đọc được sách này"}</h1>
+          <p>{restrictedInfo?.message || "Nhờ ba mẹ kiểm tra lại nhé!"}</p>
           {isKidMode && (
             <Link
               to={`/e-kid/${slug}/${token}`}
@@ -259,7 +213,7 @@ export default function EbookReader() {
     );
   }
 
-  if (state.status === "forbidden") {
+  if (status === "forbidden") {
     return (
       <main className="gp-view gp-view--center">
         <div className="gp-empty">
@@ -299,7 +253,7 @@ export default function EbookReader() {
     );
   }
 
-  if (state.status === "not-found") {
+  if (status === "not-found") {
     return (
       <main className="gp-view gp-view--center">
         <div className="gp-empty">
@@ -323,7 +277,7 @@ export default function EbookReader() {
     );
   }
 
-  const { data } = state;
+  const data = ebookQuery.data;
   const bookUrl = isKidMode
     ? `/e-kid/${slug}/${token}`
     : data.book?.slug && data.book?.hashId
