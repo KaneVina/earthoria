@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { createPortal } from "react-dom";
 import {
   MessageCircle,
@@ -671,7 +672,7 @@ function EiraUI() {
   const [isExpanded, setIsExpanded] = useState(false); // popup phóng to (không phải fullscreen)
 
   /* Hạng model AI (núi) - Yên Tử -> Bạch Mã -> Bà Nà -> Tam Đảo -> Fansipan */
-  const [modelTiers, setModelTiers] = useState([]);
+  const authUserId = useAuthStore((s) => s.user?.id) || "guest";
   const [selectedModel, setSelectedModel] = useState(
     () => localStorage.getItem("eira_model") || null,
   );
@@ -997,31 +998,34 @@ function EiraUI() {
     return () => document.removeEventListener("keydown", handler);
   }, [isOpen]);
 
-  /* Tải danh sách hạng model AI khi mở chat lần đầu (chỉ gọi 1 lần) */
-  useEffect(() => {
-    if (!isOpen || modelTiers.length > 0) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await api.get("/ai/models");
-        const tiers = res?.data?.data?.tiers || [];
-        if (cancelled || !tiers.length) return;
-        setModelTiers(tiers);
+  // Danh sách hạng model AI - cache theo React Query (queryKey kèm userId để
+  // khách đăng nhập/đăng xuất không dùng nhầm cache của người khác). Trước
+  // đây tự fetch bằng useState + useEffect, không cache: mỗi lần EiraChatbox
+  // bị unmount/remount (vd rời khỏi trang đang ẩn chatbox - xem
+  // HideEiraChatboxOnReader trong App.jsx - rồi quay lại) là mất sạch, phải
+  // gọi lại /ai/models từ đầu dù dữ liệu vừa tải cách đó vài giây.
+  const modelTiersQuery = useQuery({
+    queryKey: ["ai-model-tiers", authUserId],
+    queryFn: () =>
+      api.get("/ai/models").then((res) => res?.data?.data?.tiers || []),
+    enabled: isOpen,
+  });
+  const modelTiers = modelTiersQuery.data || [];
 
-        // Chọn model đã lưu nếu vẫn còn hợp lệ & đã mở khóa, ngược lại dùng hạng cao nhất đã mở khóa.
-        const saved = tiers.find((t) => t.code === selectedModel && t.unlocked);
-        const fallback = tiers.find((t) => t.isMaxUnlocked) || tiers[0];
-        const toUse = saved || fallback;
-        setSelectedModel(toUse.code);
-        setActiveModel(toUse);
-      } catch {
-        // Không tải được danh sách hạng cũng không sao - server tự chọn hạng mặc định khi chat.
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [isOpen, modelTiers.length, selectedModel]);
+  // Chọn model mặc định (đã lưu nếu còn hợp lệ & mở khóa, ngược lại hạng cao
+  // nhất đã mở khóa) đúng 1 lần khi danh sách hạng có dữ liệu lần đầu - canh
+  // theo `activeModel` còn trống, không phải theo việc fetch đã chạy hay
+  // chưa (fetch giờ do React Query lo, có thể trả ngay từ cache).
+  useEffect(() => {
+    if (!modelTiers.length || activeModel) return;
+    const saved = modelTiers.find(
+      (t) => t.code === selectedModel && t.unlocked,
+    );
+    const fallback = modelTiers.find((t) => t.isMaxUnlocked) || modelTiers[0];
+    const toUse = saved || fallback;
+    setSelectedModel(toUse.code);
+    setActiveModel(toUse);
+  }, [modelTiers, selectedModel, activeModel]);
 
   const handleModelIconError = useCallback((code) => {
     setBrokenModelIcons((prev) => {
