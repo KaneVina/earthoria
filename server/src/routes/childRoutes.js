@@ -19,9 +19,14 @@ const {
   respondBookRequest,
 } = require("../controllers/childBookRequestController");
 const { protect } = require("../middlewares/authMiddleware");
+const { requireFamilyGate } = require("../middlewares/familyGate");
 const { parentPinLimiter } = require("../middlewares/rateLimiters");
 
 router.use(protect);
+// Cổng PIN: bảo vệ MỌI route bên dưới (kể cả GET xem báo cáo/giờ giấc của
+// bé) - không chỉ riêng hành động "mở khoá" như trước đây. Xem
+// middlewares/familyGate.js để biết vì sao chặn ở đây thay vì chỉ ở frontend.
+router.use(requireFamilyGate);
 
 router.get("/", listChildren);
 router.post("/", createChild);

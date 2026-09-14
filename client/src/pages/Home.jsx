@@ -2178,10 +2178,28 @@ function TopRatedSection({ books, onAddCart }) {
 export default function Home() {
   const ctaRef = useRef(null);
   const { addToCart } = useCartStore();
+  const promoImgRef = useRef(null);
+  const promoFloatRef = useRef(null);
+  const handlePromoMouseMove = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
+    if (promoImgRef.current) {
+      promoImgRef.current.style.transform = `rotateX(${py * -6}deg) rotateY(${px * 8}deg)`;
+    }
+    if (promoFloatRef.current) {
+      promoFloatRef.current.style.animationPlayState = "paused";
+    }
+  };
+  const handlePromoMouseLeave = () => {
+    if (promoImgRef.current) {
+      promoImgRef.current.style.transform = "rotateX(0deg) rotateY(0deg)";
+    }
+    if (promoFloatRef.current) {
+      promoFloatRef.current.style.animationPlayState = "running";
+    }
+  };
 
-  // queryKey "featured-books" cũng được Shop.jsx dùng lại (chỉ lấy phần tử
-  // đầu qua `select`) để share cache - đổi shape dữ liệu trả về ở đây thì
-  // nhớ kiểm tra luôn Shop.jsx.
   const { data: featuredBooks = [], isLoading: isFeaturedLoading } = useQuery({
     queryKey: ["featured-books"],
     queryFn: () => bookService.getFeatured().then((r) => r.data.data),
@@ -2366,10 +2384,12 @@ export default function Home() {
     return () => fireflies.forEach((el) => el.remove());
   }, []);
 
-  // Counter animation
+  // Counter animation - chỉ chạy khi section số liệu thật sự lọt vào khung nhìn
   useEffect(() => {
     const counters = document.querySelectorAll(".stat-count");
-    counters.forEach((counter) => {
+    if (!counters.length) return;
+
+    const animate = (counter) => {
       const target = +counter.dataset.target;
       if (!target) return;
       let count = 0;
@@ -2382,7 +2402,22 @@ export default function Home() {
         }
         counter.textContent = Math.round(count).toLocaleString("vi-VN");
       }, 20);
-    });
+    };
+
+    const observer = new IntersectionObserver(
+      (entries, obs) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            animate(entry.target);
+            obs.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.3 },
+    );
+
+    counters.forEach((counter) => observer.observe(counter));
+    return () => observer.disconnect();
   }, []);
 
   // Reveal on scroll
@@ -2483,8 +2518,8 @@ export default function Home() {
         </div>
       </div>
       {/*   STATS   */}
-      <section className="stats-section reveal" id="section-stats">
-        <div className="stats-inner">
+      <section className="stats-section" id="section-stats">
+        <div className="stats-inner reveal">
           {[
             {
               label: "Trẻ Em Khám Phá",
@@ -2870,33 +2905,56 @@ export default function Home() {
             </div>
           </div>
           <div
-            className="reveal reveal-delay-1 promo-product-showcase"
+            className="reveal reveal-delay-1 promo-product-showcase promo-product-stage"
             style={{
               position: "absolute",
               bottom: 0,
               right: "60px",
               zIndex: 2,
             }}
+            onMouseMove={handlePromoMouseMove}
+            onMouseLeave={handlePromoMouseLeave}
           >
-            <Link to="/shop" style={{ display: "block", lineHeight: 0 }}>
-              <img
-                src="homepage/product1.png"
-                alt="Combo 3 cuốn - Tiết kiệm 30%"
-                draggable={false}
-                onContextMenu={(e) => e.preventDefault()}
-                style={{
-                  display: "block",
-                  height: "clamp(320px,30vw,460px)",
-                  width: "auto",
-                  maxWidth: "none",
-                  filter: "drop-shadow(0 40px 45px rgba(0,0,0,0.4))",
-                  cursor: "pointer",
-                  userselect: "none",
-                  webkituserselect: "none",
-                  webkittouchcallout: "none",
-                  pointerevents: "auto",
-                }}
-              />
+            <div className="promo-product-glow" aria-hidden="true" />
+            <div className="promo-product-ring" aria-hidden="true" />
+            <span className="promo-sparkle promo-sparkle-1" aria-hidden="true" />
+            <span className="promo-sparkle promo-sparkle-2" aria-hidden="true" />
+            <span className="promo-sparkle promo-sparkle-3" aria-hidden="true" />
+            <span className="promo-sparkle promo-sparkle-4" aria-hidden="true" />
+            <span className="promo-sparkle promo-sparkle-5" aria-hidden="true" />
+            <Link
+              to="/shop"
+              style={{
+                display: "block",
+                lineHeight: 0,
+                perspective: "1200px",
+              }}
+            >
+              <div className="promo-product-float" ref={promoFloatRef}>
+                <img
+                  ref={promoImgRef}
+                  src="homepage/product1.png"
+                  alt="Combo 3 cuốn - Tiết kiệm 30%"
+                  draggable={false}
+                  onContextMenu={(e) => e.preventDefault()}
+                  className="promo-product-img"
+                  style={{
+                    display: "block",
+                    height: "clamp(320px,30vw,460px)",
+                    width: "auto",
+                    maxWidth: "none",
+                    filter: "drop-shadow(0 40px 45px rgba(0,0,0,0.4))",
+                    cursor: "pointer",
+                    userSelect: "none",
+                    WebkitUserSelect: "none",
+                    WebkitTouchCallout: "none",
+                    pointerEvents: "auto",
+                    transform: "rotateX(0deg) rotateY(0deg)",
+                    transition: "transform 0.35s cubic-bezier(0.22, 1, 0.36, 1)",
+                    transformStyle: "preserve-3d",
+                  }}
+                />
+              </div>
             </Link>
           </div>
         </div>

@@ -1,0 +1,51 @@
+.fg-forgot-link {
+  display: block;
+  margin: 4px auto 22px;
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  font-family: "Be Vietnam Pro", sans-serif;
+}
+.fg-forgot-link:hover {
+  color: var(--forest);
+}
+
+/* Nút "Khoá lại" nổi góc trên khi dashboard đang mở - để phụ huynh chủ
+   động khoá ngay trước khi đưa thiết bị cho con, không cần đợi tự động. */
+.fg-lock-btn {
+  position: fixed;
+  top: 18px;
+  right: 24px;
+  z-index: 1500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--white);
+  border: 0.5px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+  box-shadow: 0 10px 24px rgba(13, 43, 30, 0.1);
+  font-family: "Be Vietnam Pro", sans-serif;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+.fg-lock-btn:hover {
+  border-color: var(--border-gold);
+  color: var(--forest);
+}
+
+@media (max-width: 640px) {
+  .fg-lock-btn {
+    top: auto;
+    bottom: 18px;
+    right: 18px;
+  }
+}

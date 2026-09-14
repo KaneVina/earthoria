@@ -779,6 +779,7 @@ enum ChildAuditType {
   SKIPPED_REST
   BOOK_REQUEST_CREATED
   BOOK_REQUEST_RESPONDED
+  FAMILY_GATE_UNLOCK
 }
 
 // Nhật ký hành động của phụ huynh

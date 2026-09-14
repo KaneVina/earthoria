@@ -101,6 +101,7 @@ export default function Navbar() {
         document.documentElement.clientHeight;
       setProgress(height > 0 ? (scrollY / height) * 100 : 0);
     };
+    handler();
     window.addEventListener("scroll", handler);
     return () => window.removeEventListener("scroll", handler);
   }, []);

@@ -7,6 +7,13 @@ const {
   hashPin,
   verifyParentPin,
 } = require("../utils/parentPin");
+const {
+  FAMILY_GATE_TTL_MINUTES,
+  setFamilyGateCookie,
+  clearFamilyGateCookie,
+  verifyFamilyGateToken,
+  FAMILY_GATE_COOKIE_NAME,
+} = require("../utils/familyGate");
 
 const OTP_LENGTH = 6;
 const OTP_EXPIRY_MINUTES = 10;
@@ -26,7 +33,16 @@ const getPinStatus = async (req, res) => {
       where: { id: req.user.id },
       select: { parentPinHash: true },
     });
-    return formatResponse(res, 200, "OK", { hasPin: !!user.parentPinHash });
+    const gateActive = verifyFamilyGateToken(
+      req.cookies?.[FAMILY_GATE_COOKIE_NAME],
+      req.user.id,
+    );
+    return formatResponse(res, 200, "OK", {
+      hasPin: !!user.parentPinHash,
+      // true nếu phiên "cổng PIN" của /family vẫn còn hiệu lực (vd vừa mở
+      // khoá cách đây vài phút) - để frontend khỏi hỏi lại PIN không cần thiết.
+      gateActive,
+    });
   } catch (error) {
     console.error(error);
     return formatResponse(res, 500, "Lỗi server");
@@ -63,6 +79,10 @@ const setPin = async (req, res) => {
         message: "Đã thiết lập mã PIN phụ huynh",
       },
     });
+
+    // Vừa đặt PIN xong tức là vừa chứng minh chính họ đang thao tác - mở
+    // luôn cổng cho phiên hiện tại thay vì bắt nhập lại PIN ngay lập tức.
+    setFamilyGateCookie(res, req.user.id);
 
     return formatResponse(res, 200, "Đã thiết lập mã PIN thành công");
   } catch (error) {
@@ -127,6 +147,9 @@ const changePin = async (req, res) => {
         message: "Bạn đã đổi mã PIN",
       },
     });
+
+    // Đổi PIN thành công cũng là một lần xác thực hợp lệ - làm mới cổng.
+    setFamilyGateCookie(res, req.user.id);
 
     return formatResponse(res, 200, "Đã đổi mã PIN thành công");
   } catch (error) {
@@ -243,11 +266,60 @@ const resetPinWithOtp = async (req, res) => {
       },
     });
 
+    // Xác thực bằng OTP gửi tới đúng email tài khoản cũng là một hình thức
+    // chứng minh danh tính hợp lệ - mở luôn cổng cho phiên hiện tại.
+    setFamilyGateCookie(res, req.user.id);
+
     return formatResponse(res, 200, "Đã đặt lại mã PIN mới thành công");
   } catch (error) {
     console.error(error);
     return formatResponse(res, 500, "Lỗi server");
   }
+};
+
+// POST /api/v1/parent-pin/gate/unlock - { pin }
+// Xác thực PIN để MỞ CỔNG vào toàn bộ trang /family cho phiên hiện tại.
+// Khác với verifyPin (chỉ dùng nội bộ ở bước "PIN cũ" khi đổi PIN), endpoint
+// này là nơi DUY NHẤT phát ra cookie phiên nâng quyền.
+const unlockGate = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    const result = await verifyParentPin(user, req.body.pin);
+    if (!result.ok) {
+      return formatResponse(
+        res,
+        result.code === "LOCKED_OUT" ? 429 : 400,
+        result.message,
+        { code: result.code },
+      );
+    }
+
+    setFamilyGateCookie(res, req.user.id);
+
+    await prisma.childAuditLog.create({
+      data: {
+        parentId: req.user.id,
+        type: "FAMILY_GATE_UNLOCK",
+        message: "Đã mở khoá trang quản lý gia đình bằng mã PIN",
+      },
+    });
+
+    return formatResponse(res, 200, "Đã mở khoá", {
+      gateActive: true,
+      expiresInMinutes: FAMILY_GATE_TTL_MINUTES,
+    });
+  } catch (error) {
+    console.error(error);
+    return formatResponse(res, 500, "Lỗi server");
+  }
+};
+
+// POST /api/v1/parent-pin/gate/lock
+// Phụ huynh tự khoá lại NGAY (vd trước khi đưa thiết bị cho con) - không đòi
+// PIN vì đây là hành động THẮT CHẶT an toàn, không phải nới lỏng.
+const lockGate = async (req, res) => {
+  clearFamilyGateCookie(res);
+  return formatResponse(res, 200, "Đã khoá trang quản lý gia đình");
 };
 
 module.exports = {
@@ -257,4 +329,6 @@ module.exports = {
   changePin,
   sendForgotPinOtp,
   resetPinWithOtp,
+  unlockGate,
+  lockGate,
 };

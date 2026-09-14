@@ -72,6 +72,7 @@ const ProductCreate = lazy(() => import("./pages/admin/product/ProductCreate"));
 const ArCodeDetail = lazy(() => import("./pages/admin/ArCodeDetail"));
 const Compare = lazy(() => import("./pages/Compare"));
 const ParentDashboard = lazy(() => import("./pages/ParentDashboard"));
+const FamilyGate = lazy(() => import("./components/parent/FamilyGate"));
 const KidAccess = lazy(() => import("./pages/kid/KidAccess"));
 const GardenPage = lazy(() => import("./pages/kid/GardenPage"));
 const Tickets = lazy(() => import("./pages/admin/Tickets"));
@@ -273,7 +274,9 @@ export default function App() {
               path="/family"
               element={
                 <ProtectedRoute>
-                  <ParentDashboard />
+                  <FamilyGate>
+                    <ParentDashboard />
+                  </FamilyGate>
                 </ProtectedRoute>
               }
             />
@@ -530,7 +533,6 @@ export default function App() {
           <Route path="/e-kid/:slug/:token" element={<KidAccess />} />
           <Route path="/e-kid/:slug/:token/garden" element={<GardenPage />} />
           <Route path="/e-kid/:slug/:token/ar/:code" element={<ArView />} />
-          <Route path="/e-kid/:slug/:token/game/:code" element={<GamePlay />} />
           <Route
             path="/e-kid/:slug/:token/ebook/:bookSlug"
             element={<EbookReader />}

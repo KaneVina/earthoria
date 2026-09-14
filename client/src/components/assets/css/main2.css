@@ -1763,11 +1763,148 @@ body.dark-mode .wl-empty-sub {
   color: rgba(180, 200, 188, 0.45);
 }
 
-/* ═══ Grid inline-style responsive fixes ═══ */
+/* Grid inline-style responsive fixes */
 .promo-banner-grid {
   display: grid;
   grid-template-columns: 1fr auto;
   padding: 80px 100px;
+}
+
+/* promo product showcase - fancy effects */
+.promo-product-stage {
+  overflow: visible;
+}
+.promo-product-glow {
+  position: absolute;
+  left: 50%;
+  bottom: 10%;
+  width: 70%;
+  height: 55%;
+  transform: translatex(-50%);
+  background: radial-gradient(
+    circle,
+    rgba(212, 175, 55, 0.35) 0%,
+    rgba(74, 158, 63, 0.22) 45%,
+    transparent 72%
+  );
+  filter: blur(38px);
+  z-index: 0;
+  animation: promoglowpulse 4s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes promoglowpulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: translatex(-50%) scale(0.92);
+  }
+  50% {
+    opacity: 0.95;
+    transform: translatex(-50%) scale(1.08);
+  }
+}
+
+.promo-product-ring {
+  position: absolute;
+  left: 50%;
+  bottom: 6%;
+  width: 62%;
+  aspect-ratio: 1 / 1;
+  transform: translatex(-50%);
+  border-radius: 50%;
+  border: 1px dashed rgba(212, 175, 55, 0.35);
+  z-index: 0;
+  animation: promoringspin 16s linear infinite;
+  pointer-events: none;
+}
+@keyframes promoringspin {
+  from {
+    transform: translatex(-50%) rotate(0deg);
+  }
+  to {
+    transform: translatex(-50%) rotate(360deg);
+  }
+}
+
+.promo-product-float {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  animation: promofloat 4.5s ease-in-out infinite;
+}
+@keyframes promofloat {
+  0%,
+  100% {
+    transform: translatey(0);
+  }
+  50% {
+    transform: translatey(-16px);
+  }
+}
+
+.promo-sparkle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--gold);
+  border-radius: 1px;
+  transform: rotate(45deg);
+  box-shadow: 0 0 8px 2px rgba(212, 175, 55, 0.8);
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+  animation: promosparkletwinkle 3s ease-in-out infinite;
+}
+.promo-sparkle-1 {
+  top: 8%;
+  left: 6%;
+  animation-delay: 0s;
+}
+.promo-sparkle-2 {
+  top: 22%;
+  right: 4%;
+  width: 4px;
+  height: 4px;
+  animation-delay: 0.6s;
+}
+.promo-sparkle-3 {
+  top: 55%;
+  left: -2%;
+  animation-delay: 1.2s;
+}
+.promo-sparkle-4 {
+  bottom: 18%;
+  right: 10%;
+  width: 5px;
+  height: 5px;
+  animation-delay: 1.8s;
+}
+.promo-sparkle-5 {
+  bottom: 4%;
+  left: 22%;
+  width: 4px;
+  height: 4px;
+  animation-delay: 2.4s;
+}
+@keyframes promosparkletwinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: rotate(45deg) scale(0.4);
+  }
+  50% {
+    opacity: 1;
+    transform: rotate(45deg) scale(1.15);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .promo-product-glow,
+  .promo-product-ring,
+  .promo-product-float,
+  .promo-sparkle {
+    animation: none !important;
+  }
 }
 .bestseller-podium {
   display: grid;
@@ -1898,10 +2035,10 @@ body.dark-mode .auth-social-btn.google-btn:focus-visible {
     0 0 0 3px rgba(74, 158, 63, 0.25),
     0 10px 24px rgba(0, 0, 0, 0.3);
 }
-/* ═══════════════════════════════════════
+/*════════════════════════════════════
    FIX: Compare modal & floating bar
    Thêm vào CUỐI main2.css
-   ═══════════════════════════════════════ */
+   ════════════════════════════════════*/
 
 /* 1) Item đầu không bị dính sát tab / cắt khi cuộn */
 .search-results-list {

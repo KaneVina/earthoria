@@ -87,6 +87,7 @@ const AUDIT_TYPE_MAP = {
   PARENT_PIN_SET: "settings",
   PARENT_PIN_CHANGED: "settings",
   PARENT_PIN_RESET: "settings",
+  FAMILY_GATE_UNLOCK: "unlock",
 };
 
 function formatRelativeTime(iso) {

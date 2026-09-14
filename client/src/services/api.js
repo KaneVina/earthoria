@@ -51,6 +51,15 @@ api.interceptors.response.use(
     const originalRequest = error.config;
     const status = error.response?.status;
 
+    // Cổng PIN của /family hết hạn giữa phiên (hoặc bị khoá lại ở tab khác) -
+    // báo cho FamilyGate biết để hiện lại màn hình nhập PIN, thay vì để mỗi
+    // nơi gọi API tự xử lý lỗi này theo cách khác nhau. Dùng "code" riêng
+    // (không dựa vào status 403 nói chung) để tránh đụng các trường hợp 403
+    // khác trong app.
+    if (error.response?.data?.code === "FAMILY_GATE_REQUIRED") {
+      window.dispatchEvent(new Event("family-gate:locked"));
+    }
+
     const isArRequest = originalRequest?.url?.includes("/ar/");
     // Chỉ bỏ qua auto-refresh cho endpoint CÔNG KHAI /games/:code (trang
     // GamePlay tự xử lý 401 bằng cách điều hướng sang /login) - các gọi
