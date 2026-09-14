@@ -533,6 +533,7 @@ export default function App() {
           <Route path="/e-kid/:slug/:token" element={<KidAccess />} />
           <Route path="/e-kid/:slug/:token/garden" element={<GardenPage />} />
           <Route path="/e-kid/:slug/:token/ar/:code" element={<ArView />} />
+          <Route path="/e-kid/:slug/:token/game/:code" element={<GamePlay />} />
           <Route
             path="/e-kid/:slug/:token/ebook/:bookSlug"
             element={<EbookReader />}
