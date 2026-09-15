@@ -1,10 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;0,9..144,800;0,9..144,900;1,9..144,500;1,9..144,600;1,9..144,700&family=Baloo+2:wght@500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap");
 
-/* ═══════════════════════════════════════════════════════════
-   GIAO DIỆN "VƯỜN PHIÊU LƯU" - bảng màu trái cây tươi sáng,
-   chữ tròn trịa thân thiện, bố cục rộng rãi như một sân chơi
-   ngoài trời chứ không phải bảng điều khiển phần mềm.
-   ═══════════════════════════════════════════════════════════ */
+/* GIAO DIỆN "VƯỜN PHIÊU LƯU" */
 .gp-view {
   /* - nền & mực: kem nắng ấm, mực lá cây đậm - */
   --gp-ink: #1b3a2c;
@@ -362,7 +358,6 @@
   display: flex;
   flex-direction: column;
   gap: 22px;
-  animation: gp-rise 0.5s var(--gp-ease) both;
 }
 
 /* - dải hero: ảnh nền trải rộng toàn bộ chiều ngang, chữ đặt trực tiếp lên trên - */
@@ -835,12 +830,31 @@
    nheo trang trí phía trên, khung viền như lều xiếc.
    ═══════════════════════════════════════════════════ */
 .gp-arena {
+  position: relative;
   width: 100%;
   max-width: var(--gp-max);
   margin: 22px auto 0;
-  animation: gp-rise 0.45s var(--gp-ease) both;
+}
+/* vầng sáng mềm phía sau sân chơi - tạo chiều sâu như ánh đèn sân khấu rọi
+   xuống, chỉ đặt phía dưới thanh tiêu đề nên không đè lên chữ/badge */
+.gp-arena::before {
+  content: "";
+  position: absolute;
+  top: 64px;
+  left: 4%;
+  right: 4%;
+  bottom: -24px;
+  z-index: 0;
+  background: radial-gradient(
+    60% 60% at 50% 38%,
+    rgba(255, 201, 60, 0.16),
+    transparent 72%
+  );
+  pointer-events: none;
 }
 .gp-arena-top {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -897,6 +911,7 @@
 
 .gp-arena-surface {
   position: relative;
+  z-index: 1;
   background: linear-gradient(180deg, #fff 0%, var(--gp-ivory) 100%);
   border: 2px solid rgba(30, 122, 60, 0.08);
   border-radius: var(--gp-r-xl);
@@ -1010,13 +1025,13 @@
 
 /* ═══ Finished - hero ăn mừng + bảng xếp hạng cạnh nhau khi đủ chỗ ═══ */
 .gp-finished {
+  position: relative;
   width: 100%;
   max-width: var(--gp-max);
   margin: 26px auto 0;
   display: grid;
   grid-template-columns: 1fr;
   gap: 20px;
-  animation: gp-rise 0.5s var(--gp-ease) both;
 }
 .gp-finished:not(.gp-finished--with-board) {
   max-width: 600px;
@@ -1322,10 +1337,7 @@
   font-size: 13.5px;
 }
 
-/* ═══════════════════════════════════════════
-   BẢNG CHƠI DÙNG CHUNG CHO CẢ 4 LOẠI TRÒ CHƠI
-   ═══════════════════════════════════════════ */
-
+/* BẢNG CHƠI DÙNG CHUNG CHO CẢ 4 LOẠI TRÒ CHƠI */
 .g-play {
   display: flex;
   flex-direction: column;
@@ -2018,9 +2030,191 @@
   transform: translateY(1px);
 }
 
-/* ═══════════════════════ RESPONSIVE ═══════════════════════ */
+/* CONFETTI ĂN MỪNG */
+.gp-confetti-field {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: hidden;
+  pointer-events: none;
+}
+.gp-confetti-piece {
+  position: absolute;
+  top: -24px;
+  opacity: 0.95;
+  animation: gp-confetti-drop linear both;
+  box-shadow: 0 1px 1px rgba(20, 50, 32, 0.12);
+}
+.gp-confetti-piece.gp-confetti--round {
+  border-radius: 50%;
+}
+.gp-confetti-piece.gp-confetti--square {
+  border-radius: 2px;
+}
+@keyframes gp-confetti-drop {
+  0% {
+    transform: translate3d(0, -10vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate3d(var(--gp-confetti-drift), 108vh, 0)
+      rotate(var(--gp-confetti-rot));
+    opacity: 0.85;
+  }
+}
 
-/* ═ Desktop rộng: intro chia hai cột nội dung/số liệu, tận dụng chiều ngang ═ */
+/*  FOCUS-VISIBLE  */
+.gp-view a:focus-visible,
+.gp-view button:focus-visible,
+.gp-view [tabindex]:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 0 6px var(--gp-leaf),
+    var(--gp-shadow-sm);
+}
+.gp-view .g-mm-card:focus-visible .g-mm-card-inner,
+.gp-view .g-ws-cell:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px #fff,
+    0 0 0 6px var(--gp-sky);
+}
+
+/* XUẤT HIỆN SO LE  */
+@keyframes gp-tile-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.g-mm-grid .g-mm-card,
+.g-ws-board .g-ws-cell,
+.g-mp-play-item,
+.g-lh-grid .g-lh-cell,
+.g-quiz-options .g-quiz-option {
+  animation: gp-tile-in 0.4s var(--gp-ease-spring) both;
+}
+.g-mm-grid .g-mm-card:nth-child(8n + 1),
+.g-ws-board .g-ws-cell:nth-child(8n + 1),
+.g-lh-grid .g-lh-cell:nth-child(8n + 1) {
+  animation-delay: 0ms;
+}
+.g-mm-grid .g-mm-card:nth-child(8n + 2),
+.g-ws-board .g-ws-cell:nth-child(8n + 2),
+.g-lh-grid .g-lh-cell:nth-child(8n + 2) {
+  animation-delay: 25ms;
+}
+.g-mm-grid .g-mm-card:nth-child(8n + 3),
+.g-ws-board .g-ws-cell:nth-child(8n + 3),
+.g-lh-grid .g-lh-cell:nth-child(8n + 3) {
+  animation-delay: 50ms;
+}
+.g-mm-grid .g-mm-card:nth-child(8n + 4),
+.g-ws-board .g-ws-cell:nth-child(8n + 4),
+.g-lh-grid .g-lh-cell:nth-child(8n + 4) {
+  animation-delay: 75ms;
+}
+.g-mm-grid .g-mm-card:nth-child(8n + 5),
+.g-ws-board .g-ws-cell:nth-child(8n + 5),
+.g-lh-grid .g-lh-cell:nth-child(8n + 5) {
+  animation-delay: 100ms;
+}
+.g-mm-grid .g-mm-card:nth-child(8n + 6),
+.g-ws-board .g-ws-cell:nth-child(8n + 6),
+.g-lh-grid .g-lh-cell:nth-child(8n + 6) {
+  animation-delay: 125ms;
+}
+.g-mm-grid .g-mm-card:nth-child(8n + 7),
+.g-ws-board .g-ws-cell:nth-child(8n + 7),
+.g-lh-grid .g-lh-cell:nth-child(8n + 7) {
+  animation-delay: 150ms;
+}
+.g-mm-grid .g-mm-card:nth-child(8n + 8),
+.g-ws-board .g-ws-cell:nth-child(8n + 8),
+.g-lh-grid .g-lh-cell:nth-child(8n + 8) {
+  animation-delay: 175ms;
+}
+/* Match Pairs và Quiz có ít mục hơn hẳn (thường dưới 8) nên trễ tăng dần
+   trực tiếp theo thứ tự, không cần chu kỳ lặp */
+.g-mp-play-item:nth-child(1) {
+  animation-delay: 0ms;
+}
+.g-mp-play-item:nth-child(2) {
+  animation-delay: 40ms;
+}
+.g-mp-play-item:nth-child(3) {
+  animation-delay: 80ms;
+}
+.g-mp-play-item:nth-child(4) {
+  animation-delay: 120ms;
+}
+.g-mp-play-item:nth-child(5) {
+  animation-delay: 160ms;
+}
+.g-mp-play-item:nth-child(n + 6) {
+  animation-delay: 200ms;
+}
+.g-quiz-options .g-quiz-option:nth-child(1) {
+  animation-delay: 0ms;
+}
+.g-quiz-options .g-quiz-option:nth-child(2) {
+  animation-delay: 60ms;
+}
+.g-quiz-options .g-quiz-option:nth-child(3) {
+  animation-delay: 120ms;
+}
+.g-quiz-options .g-quiz-option:nth-child(n + 4) {
+  animation-delay: 180ms;
+}
+
+/* Bục xếp hạng + danh sách cũng "trồi" lên so le nhẹ cho màn kết quả sống động hơn */
+.gp-podium-item {
+  animation: gp-tile-in 0.4s var(--gp-ease-spring) both;
+}
+.gp-podium-item--2 {
+  animation-delay: 80ms;
+}
+.gp-podium-item--3 {
+  animation-delay: 160ms;
+}
+.gp-leaderboard-row {
+  animation: gp-tile-in 0.32s var(--gp-ease) both;
+}
+.gp-leaderboard-row:nth-child(1) {
+  animation-delay: 60ms;
+}
+.gp-leaderboard-row:nth-child(2) {
+  animation-delay: 100ms;
+}
+.gp-leaderboard-row:nth-child(n + 3) {
+  animation-delay: 140ms;
+}
+
+/* CHẾ ĐỘ TẬP TRUNG  */
+.gp-view::before {
+  transition: opacity 0.4s var(--gp-ease);
+}
+.gp-view--focus::before {
+  opacity: 0.35;
+}
+.gp-view--focus .gp-hud {
+  background: rgba(255, 253, 247, 0.6);
+}
+
+/*    THANH "CHƠI NGAY"  */
+.gp-mobile-playbar {
+  display: none;
+}
+
+/*  RESPONSIVE */
 @media (min-width: 900px) {
   .gp-intro-grid {
     grid-template-columns: 1.55fr 1fr;
@@ -2087,6 +2281,59 @@
   .g-lh-grid,
   .g-lh-progress {
     max-width: 700px;
+  }
+}
+
+@media (max-width: 640px) {
+  .gp-intro {
+    padding-bottom: 96px;
+  }
+  .gp-intro-footer {
+    display: none;
+  }
+  .gp-mobile-playbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 25;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom));
+    background: rgba(255, 253, 247, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 2px solid rgba(30, 122, 60, 0.1);
+    box-shadow: 0 -10px 24px -8px rgba(30, 70, 45, 0.16);
+    animation: gp-rise 0.4s var(--gp-ease) both 0.15s;
+  }
+  .gp-mobile-playbar-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .gp-mobile-playbar-label {
+    font-family: var(--gp-font-ui);
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--gp-ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .gp-mobile-playbar-sub {
+    font-family: var(--gp-font-ui);
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--gp-ink-soft);
+  }
+  .gp-mobile-playbar-btn {
+    flex-shrink: 0;
+    padding: 11px 20px !important;
+    font-size: 14px !important;
   }
 }
 

@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   PlayCircle,
   Trophy,
@@ -25,7 +26,43 @@ import { gameService } from "../services/gameService";
 import { kidAccessService } from "../services/kidAccessService";
 import { getGameDefinition } from "../games/gameRegistry";
 import FullScreenLoader from "../components/FullScreenLoader";
+import { useCountUp } from "../hooks/useCountUp";
+import { useConfettiBurst, GpConfetti } from "../hooks/useConfettiBurst";
 import "../components/assets/css/gameplay.css";
+
+// Easing dùng chung cho chuyển cảnh giữa 3 chặng (intro/playing/finished) -
+// cùng đường cong với --gp-ease trong gameplay.css để khớp cảm giác "mượt"
+// với phần còn lại của giao diện thay vì easing mặc định của framer-motion.
+const GP_EASE = [0.16, 1, 0.3, 1];
+
+// Biến thể chuyển cảnh cho từng chặng - mỗi chặng một kiểu vào/ra riêng để
+// không đơn điệu: intro trượt lên nhẹ, arena "phóng to" như kéo màn lên sân
+// khấu, màn kết quả trồi lên như một tấm huy chương.
+const STAGE_VARIANTS = {
+  intro: {
+    initial: { opacity: 0, y: 26 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -18, scale: 0.98 },
+  },
+  playing: {
+    initial: { opacity: 0, y: 18, scale: 0.97 },
+    animate: { opacity: 1, y: 0, scale: 1 },
+    exit: { opacity: 0, scale: 0.98 },
+  },
+  finished: {
+    initial: { opacity: 0, y: 30, scale: 0.96 },
+    animate: { opacity: 1, y: 0, scale: 1 },
+    exit: { opacity: 0, y: -12 },
+  },
+};
+
+// Bản rút gọn cho người dùng bật "giảm chuyển động" (prefers-reduced-motion) -
+// chỉ còn fade, không còn dịch chuyển/scale.
+const STAGE_VARIANTS_REDUCED = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+};
 
 // Quy đổi điểm số (thang điểm khác nhau tuỳ loại game, nhưng đều dao động
 // quanh mốc ~50–1100) thành 1–3 sao để màn kết thúc trực quan như game thật.
@@ -142,6 +179,15 @@ export default function GamePlay() {
   const [stage, setStage] = useState("intro"); // intro | playing | finished
   const [result, setResult] = useState(null); // { score, durationSeconds }
   const [leaderboard, setLeaderboard] = useState([]);
+
+  const shouldReduceMotion = useReducedMotion();
+  // Điểm số đếm tăng dần khi vừa vào màn "finished" thay vì hiện thẳng con số
+  // cuối - và confetti rơi kèm theo, cả hai đều tự tắt sau vài giây.
+  const displayScore = useCountUp(result?.score, {
+    active: stage === "finished",
+    duration: shouldReduceMotion ? 0 : 900,
+  });
+  const confetti = useConfettiBurst({ count: shouldReduceMotion ? 0 : 46 });
 
   // Dữ liệu trò chơi (đề bài, cấu hình, sách gốc...) - dùng React Query để
   // cache theo (code, token) thay vì useState/useEffect gọi axios thẳng. Route
@@ -289,6 +335,7 @@ export default function GamePlay() {
   const handleFinish = async (score, durationSeconds) => {
     setResult({ score, durationSeconds });
     setStage("finished");
+    confetti.trigger();
     try {
       await gameService.completeGame(code, { score, durationSeconds });
       const lb = await gameService.getLeaderboard(code);
@@ -405,8 +452,15 @@ export default function GamePlay() {
   const top3 = leaderboard.slice(0, 3);
   const rest = leaderboard.slice(3, 5);
 
+  // Gói initial/animate/exit/transition cho <motion.div> của mỗi chặng - gom
+  // vào một hàm để 3 khối JSX bên dưới không phải lặp lại cùng một cụm props.
+  const stageMotion = (key) => ({
+    ...(shouldReduceMotion ? STAGE_VARIANTS_REDUCED : STAGE_VARIANTS[key]),
+    transition: { duration: shouldReduceMotion ? 0.15 : 0.24, ease: GP_EASE },
+  });
+
   return (
-    <main className="gp-view">
+    <main className={`gp-view${stage === "playing" ? " gp-view--focus" : ""}`}>
       <header className="gp-hud">
         <div className="gp-hud-inner">
           <Link to={bookHref} className="gp-back">
@@ -420,22 +474,146 @@ export default function GamePlay() {
       </header>
 
       <div className="gp-shell">
-        {stage === "intro" && (
-          <div className="gp-intro">
-            {/* Dải hero rộng toàn chiều ngang - tiêu đề game nằm ngay trên ảnh minh hoạ */}
-            <div className="gp-intro-visual">
-              {data.thumbnailUrl ? (
-                <img src={data.thumbnailUrl} alt="" />
-              ) : (
-                <div className="gp-intro-visual-fallback" aria-hidden="true">
-                  <Icon />
+        <AnimatePresence mode="wait">
+          {stage === "intro" && (
+            <motion.div
+              className="gp-intro"
+              key="intro"
+              {...stageMotion("intro")}
+            >
+              {/* Dải hero rộng toàn chiều ngang - tiêu đề game nằm ngay trên ảnh minh hoạ */}
+              <div className="gp-intro-visual">
+                {data.thumbnailUrl ? (
+                  <img src={data.thumbnailUrl} alt="" />
+                ) : (
+                  <div className="gp-intro-visual-fallback" aria-hidden="true">
+                    <Icon />
+                  </div>
+                )}
+                <div className="gp-intro-hero-content">
+                  <div className="gp-badges-row">
+                    <span className="gp-eyebrow">
+                      <Icon size={13} /> {def?.label}
+                    </span>
+                    {difficultyMeta && (
+                      <span
+                        className={`gp-difficulty-badge gp-difficulty-badge--${difficultyMeta.cls}`}
+                      >
+                        <Gauge size={11} />
+                        {difficultyMeta.label}
+                      </span>
+                    )}
+                  </div>
+                  <h1>{data.title}</h1>
                 </div>
-              )}
-              <div className="gp-intro-hero-content">
-                <div className="gp-badges-row">
-                  <span className="gp-eyebrow">
-                    <Icon size={13} /> {def?.label}
+              </div>
+
+              {/* Hàng dưới: nội dung mô tả bên trái (rộng hơn), số liệu + nút chơi bên phải */}
+              <div className="gp-intro-grid">
+                <div className="gp-intro-panel">
+                  <div className="gp-description-card">
+                    {data.description && (
+                      <p className="gp-description">{data.description}</p>
+                    )}
+
+                    {data.book?.title && (
+                      <Link to={bookHref} className="gp-book-chip">
+                        {data.book.coverImage ? (
+                          <img src={data.book.coverImage} alt="" />
+                        ) : (
+                          <BookOpen size={13} />
+                        )}
+                        <span>Trích từ sách "{data.book.title}"</span>
+                      </Link>
+                    )}
+                  </div>
+
+                  {data.instructions && (
+                    <div className="gp-howto">
+                      <div className="gp-howto-icon">
+                        <Info size={16} />
+                      </div>
+                      <div className="gp-howto-body">
+                        <span className="gp-howto-label">Cách chơi</span>
+                        <p>{data.instructions}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="gp-intro-side">
+                  <div className="gp-stats-grid">
+                    <div className="gp-stat-card gp-stat-card--accent">
+                      <span className="gp-stat-card-icon">
+                        <Users size={16} />
+                      </span>
+                      <span>{data.playCount} lượt chơi</span>
+                    </div>
+                    {playStats.map((s, i) => (
+                      <div className="gp-stat-card" key={i}>
+                        <span className="gp-stat-card-icon">
+                          <s.icon size={16} />
+                        </span>
+                        <span>{s.label}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="gp-intro-footer">
+                    <button
+                      type="button"
+                      className="gp-cta gp-cta-play"
+                      onClick={() => setStage("playing")}
+                    >
+                      <PlayCircle size={20} /> Bắt đầu chơi
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Thanh "Chơi ngay" dính đáy - chỉ hiện trên màn hình nhỏ, để
+                bé/phụ huynh không phải cuộn qua mô tả + cách chơi mới bấm được
+                nút bắt đầu (nút to trong gp-intro-side vẫn còn, thanh này chỉ
+                là lối tắt song song). */}
+              <div className="gp-mobile-playbar">
+                <div className="gp-mobile-playbar-info">
+                  <span className="gp-mobile-playbar-label">{data.title}</span>
+                  {difficultyMeta && (
+                    <span className="gp-mobile-playbar-sub">
+                      {difficultyMeta.label}
+                    </span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  className="gp-cta gp-cta-play gp-mobile-playbar-btn"
+                  onClick={() => setStage("playing")}
+                >
+                  <PlayCircle size={18} /> Chơi ngay
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {stage === "playing" && Player && (
+            <motion.div
+              className="gp-arena"
+              key="playing"
+              {...stageMotion("playing")}
+            >
+              <div className="gp-arena-top">
+                <div className="gp-arena-heading">
+                  <span className="gp-arena-icon">
+                    <Icon size={22} />
                   </span>
+                  <div>
+                    <span className="gp-arena-kicker">
+                      {def?.shortLabel || def?.label}
+                    </span>
+                    <h2 className="gp-arena-title">{data.title}</h2>
+                  </div>
+                </div>
+                <div className="gp-arena-meta">
                   {difficultyMeta && (
                     <span
                       className={`gp-difficulty-badge gp-difficulty-badge--${difficultyMeta.cls}`}
@@ -445,184 +623,99 @@ export default function GamePlay() {
                     </span>
                   )}
                 </div>
-                <h1>{data.title}</h1>
               </div>
-            </div>
-
-            {/* Hàng dưới: nội dung mô tả bên trái (rộng hơn), số liệu + nút chơi bên phải */}
-            <div className="gp-intro-grid">
-              <div className="gp-intro-panel">
-                <div className="gp-description-card">
-                  {data.description && (
-                    <p className="gp-description">{data.description}</p>
-                  )}
-
-                  {data.book?.title && (
-                    <Link to={bookHref} className="gp-book-chip">
-                      {data.book.coverImage ? (
-                        <img src={data.book.coverImage} alt="" />
-                      ) : (
-                        <BookOpen size={13} />
-                      )}
-                      <span>Trích từ sách "{data.book.title}"</span>
-                    </Link>
-                  )}
-                </div>
-
-                {data.instructions && (
-                  <div className="gp-howto">
-                    <div className="gp-howto-icon">
-                      <Info size={16} />
-                    </div>
-                    <div className="gp-howto-body">
-                      <span className="gp-howto-label">Cách chơi</span>
-                      <p>{data.instructions}</p>
-                    </div>
-                  </div>
-                )}
+              <div className="gp-arena-surface">
+                <span className="gp-corner gp-corner--tl" aria-hidden="true" />
+                <span className="gp-corner gp-corner--tr" aria-hidden="true" />
+                <span className="gp-corner gp-corner--bl" aria-hidden="true" />
+                <span className="gp-corner gp-corner--br" aria-hidden="true" />
+                <Player config={data.config} onFinish={handleFinish} />
               </div>
+            </motion.div>
+          )}
 
-              <div className="gp-intro-side">
-                <div className="gp-stats-grid">
-                  <div className="gp-stat-card gp-stat-card--accent">
-                    <span className="gp-stat-card-icon">
-                      <Users size={16} />
-                    </span>
-                    <span>{data.playCount} lượt chơi</span>
-                  </div>
-                  {playStats.map((s, i) => (
-                    <div className="gp-stat-card" key={i}>
-                      <span className="gp-stat-card-icon">
-                        <s.icon size={16} />
-                      </span>
-                      <span>{s.label}</span>
-                    </div>
+          {stage === "finished" && (
+            <motion.div
+              className={`gp-finished${leaderboard.length > 0 ? " gp-finished--with-board" : ""}`}
+              key="finished"
+              {...stageMotion("finished")}
+            >
+              <GpConfetti pieces={confetti.pieces} />
+              <div className="gp-finished-hero">
+                <div className="gp-stars" aria-hidden="true">
+                  {[1, 2, 3].map((n) => (
+                    <Star
+                      key={n}
+                      size={32}
+                      className={`gp-star${n <= scoreToStars(result?.score) ? " filled" : ""}`}
+                      style={{ animationDelay: `${n * 0.12}s` }}
+                    />
                   ))}
                 </div>
 
-                <div className="gp-intro-footer">
-                  <button
-                    type="button"
-                    className="gp-cta gp-cta-play"
-                    onClick={() => setStage("playing")}
-                  >
-                    <PlayCircle size={20} /> Bắt đầu chơi
-                  </button>
+                <div className="gp-finished-trophy">
+                  <Trophy size={32} />
                 </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {stage === "playing" && Player && (
-          <div className="gp-arena">
-            <div className="gp-arena-top">
-              <div className="gp-arena-heading">
-                <span className="gp-arena-icon">
-                  <Icon size={22} />
-                </span>
-                <div>
-                  <span className="gp-arena-kicker">
-                    {def?.shortLabel || def?.label}
-                  </span>
-                  <h2 className="gp-arena-title">{data.title}</h2>
+                <h1>Hoàn thành! 🎉</h1>
+                <p className="gp-finished-grade">
+                  {scoreToGrade(result?.score)}
+                </p>
+                <div className="gp-score-block">
+                  <span className="gp-score">{displayScore}</span>
+                  <span className="gp-score-unit">điểm</span>
                 </div>
-              </div>
-              <div className="gp-arena-meta">
-                {difficultyMeta && (
-                  <span
-                    className={`gp-difficulty-badge gp-difficulty-badge--${difficultyMeta.cls}`}
-                  >
-                    <Gauge size={11} />
-                    {difficultyMeta.label}
-                  </span>
+                {typeof result?.durationSeconds === "number" && (
+                  <div className="gp-duration">
+                    <Timer size={13} /> Thời gian: {result.durationSeconds}s
+                  </div>
                 )}
               </div>
-            </div>
-            <div className="gp-arena-surface">
-              <span className="gp-corner gp-corner--tl" aria-hidden="true" />
-              <span className="gp-corner gp-corner--tr" aria-hidden="true" />
-              <span className="gp-corner gp-corner--bl" aria-hidden="true" />
-              <span className="gp-corner gp-corner--br" aria-hidden="true" />
-              <Player config={data.config} onFinish={handleFinish} />
-            </div>
-          </div>
-        )}
 
-        {stage === "finished" && (
-          <div
-            className={`gp-finished${leaderboard.length > 0 ? " gp-finished--with-board" : ""}`}
-          >
-            <div className="gp-finished-hero">
-              <div className="gp-stars" aria-hidden="true">
-                {[1, 2, 3].map((n) => (
-                  <Star
-                    key={n}
-                    size={32}
-                    className={`gp-star${n <= scoreToStars(result?.score) ? " filled" : ""}`}
-                    style={{ animationDelay: `${n * 0.12}s` }}
-                  />
-                ))}
-              </div>
+              {leaderboard.length > 0 && (
+                <div className="gp-leaderboard">
+                  <div className="gp-leaderboard-head">
+                    <Trophy size={14} /> Bảng xếp hạng
+                  </div>
 
-              <div className="gp-finished-trophy">
-                <Trophy size={32} />
-              </div>
-              <h1>Hoàn thành! 🎉</h1>
-              <p className="gp-finished-grade">{scoreToGrade(result?.score)}</p>
-              <div className="gp-score-block">
-                <span className="gp-score">{result?.score ?? 0}</span>
-                <span className="gp-score-unit">điểm</span>
-              </div>
-              {typeof result?.durationSeconds === "number" && (
-                <div className="gp-duration">
-                  <Timer size={13} /> Thời gian: {result.durationSeconds}s
+                  {top3.length > 0 && (
+                    <div className="gp-podium">
+                      {top3.map((r, i) => (
+                        <PodiumItem key={r.id} rank={i + 1} entry={r} />
+                      ))}
+                    </div>
+                  )}
+
+                  {rest.length > 0 && (
+                    <div className="gp-leaderboard-list">
+                      {rest.map((r, i) => (
+                        <div className="gp-leaderboard-row" key={r.id}>
+                          <span className="gp-leaderboard-rank">{i + 4}</span>
+                          <span className="gp-leaderboard-name">
+                            {r.avatarEmoji ? `${r.avatarEmoji} ` : ""}
+                            {r.displayName}
+                          </span>
+                          <span className="gp-leaderboard-score">
+                            {r.score}đ
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
 
-            {leaderboard.length > 0 && (
-              <div className="gp-leaderboard">
-                <div className="gp-leaderboard-head">
-                  <Trophy size={14} /> Bảng xếp hạng
-                </div>
-
-                {top3.length > 0 && (
-                  <div className="gp-podium">
-                    {top3.map((r, i) => (
-                      <PodiumItem key={r.id} rank={i + 1} entry={r} />
-                    ))}
-                  </div>
-                )}
-
-                {rest.length > 0 && (
-                  <div className="gp-leaderboard-list">
-                    {rest.map((r, i) => (
-                      <div className="gp-leaderboard-row" key={r.id}>
-                        <span className="gp-leaderboard-rank">{i + 4}</span>
-                        <span className="gp-leaderboard-name">
-                          {r.avatarEmoji ? `${r.avatarEmoji} ` : ""}
-                          {r.displayName}
-                        </span>
-                        <span className="gp-leaderboard-score">{r.score}đ</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
+              <div className="gp-finished-actions">
+                <button type="button" className="gp-cta" onClick={handleReplay}>
+                  <RotateCcw size={16} /> Chơi lại
+                </button>
+                <Link to={bookHref} className="gp-cta gp-cta-ghost">
+                  <ArrowLeft size={16} />{" "}
+                  {isKidMode ? "Tủ sách" : "Về trang sách"}
+                </Link>
               </div>
-            )}
-
-            <div className="gp-finished-actions">
-              <button type="button" className="gp-cta" onClick={handleReplay}>
-                <RotateCcw size={16} /> Chơi lại
-              </button>
-              <Link to={bookHref} className="gp-cta gp-cta-ghost">
-                <ArrowLeft size={16} />{" "}
-                {isKidMode ? "Tủ sách" : "Về trang sách"}
-              </Link>
-            </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </main>
   );
