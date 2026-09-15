@@ -7925,28 +7925,46 @@ body.dark-mode .skeleton {
   letter-spacing: 0.02em;
 }
 
-/* 6 ô nhập OTP */
+/* Ô nhập PIN (4 số) / OTP (6 số) - kích thước cố định (không dùng width:100%
+   trong flex nữa) để nhóm ô luôn nằm giữa và đều nhau tuyệt đối, bất kể
+   vùng chứa co giãn thế nào. */
 .otp-inputs {
   display: flex;
-  gap: 10px;
+  flex-wrap: nowrap;
   justify-content: center;
-  margin: 28px 0 20px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin: 28px auto 20px;
 }
 
 .otp-input {
-  width: 100%;
-  height: 58px;
+  flex: 0 1 54px;
+  width: 54px;
+  height: 62px;
   text-align: center;
   font-size: 24px;
   font-family: "Playfair Display", serif;
-  border: 0.5px solid var(--border);
+  border: 1.5px solid var(--border);
+  border-radius: var(--pf-radius-sm, 3px);
   background: var(--white);
   color: var(--forest);
   outline: none;
+  caret-color: var(--gold);
   transition:
-    border-color 0.25s,
-    box-shadow 0.25s;
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease,
+    transform 0.15s ease;
   -moz-appearance: textfield;
+}
+
+/* Bộ 6 ô (OTP) thu nhỏ hơn một chút để vẫn gọn gàng trong modal */
+.otp-inputs:has(> :nth-child(6)) .otp-input {
+  flex-basis: 46px;
+  width: 46px;
+  height: 56px;
+  font-size: 20px;
 }
 
 .otp-input::-webkit-outer-spin-button,
@@ -7954,28 +7972,81 @@ body.dark-mode .skeleton {
   -webkit-appearance: none;
 }
 
-.otp-input:focus {
-  border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgba(74, 158, 63, 0.08);
+/* Đang gõ hoặc vừa gõ xong (chưa xác thực) - viền xanh nhạt */
+.otp-input:focus,
+.otp-input.filled:not(.error):not(.success) {
+  border-color: var(--gold-light, var(--gold));
+  box-shadow: 0 0 0 4px rgba(92, 184, 79, 0.14);
+  background: rgba(92, 184, 79, 0.04);
 }
 
-.otp-input.filled {
-  border-color: var(--forest);
+/* Mã đúng - toàn bộ các ô chuyển xanh đậm */
+.otp-input.success {
+  border-color: var(--forest-mid);
+  background: rgba(26, 92, 82, 0.07);
+  box-shadow: 0 0 0 4px rgba(26, 92, 82, 0.14);
+  color: var(--forest-mid);
 }
 
+/* Mã sai - toàn bộ các ô cùng chuyển đỏ như nhau (không riêng ô nào),
+   để không ai đoán được số nào gõ sai. */
 .otp-input.error {
   border-color: #c0392b;
-  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.06);
-}
-
-.otp-input.success {
-  border-color: #2e7d32;
-  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.08);
+  background: rgba(192, 57, 43, 0.05);
+  box-shadow: 0 0 0 4px rgba(192, 57, 43, 0.12);
+  color: #c0392b;
 }
 
 .otp-input:disabled {
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: not-allowed;
+}
+/* Vẫn giữ đỏ/xanh rõ ràng trong lúc ô bị khoá để chạy hiệu ứng rung/thành công */
+.otp-input.error:disabled,
+.otp-input.success:disabled {
+  opacity: 1;
+}
+
+/* Rung nhẹ toàn bộ hàng ô khi xác thực sai */
+.fg-pin-shake {
+  animation: fgPinShake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+@keyframes fgPinShake {
+  10%,
+  90% {
+    transform: translateX(-1px);
+  }
+  20%,
+  80% {
+    transform: translateX(3px);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-6px);
+  }
+  40%,
+  60% {
+    transform: translateX(6px);
+  }
+}
+
+@media (max-width: 420px) {
+  .otp-inputs {
+    gap: 8px;
+  }
+  .otp-input {
+    flex-basis: 46px;
+    width: 46px;
+    height: 54px;
+    font-size: 20px;
+  }
+  .otp-inputs:has(> :nth-child(6)) .otp-input {
+    flex-basis: 36px;
+    width: 36px;
+    height: 48px;
+    font-size: 16px;
+  }
 }
 
 /* Resend row */
@@ -8019,8 +8090,19 @@ body.dark-mode .otp-input {
   border-color: var(--border);
 }
 
-body.dark-mode .otp-input.filled {
-  border-color: var(--gold);
+body.dark-mode .otp-input:focus,
+body.dark-mode .otp-input.filled:not(.error):not(.success) {
+  border-color: var(--gold-light, var(--gold));
+}
+
+body.dark-mode .otp-input.success {
+  border-color: var(--forest-light, var(--forest-mid));
+  color: var(--ivory);
+}
+
+body.dark-mode .otp-input.error {
+  border-color: #e07a72;
+  color: #f3d2ce;
 }
 /* ─ TRUST NUMBERS (nâng cấp) ─ */
 .trust-numbers-grid {

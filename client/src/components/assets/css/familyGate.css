@@ -1,3 +1,21 @@
+.fg-card {
+  padding-top: 40px;
+  padding-bottom: 34px;
+}
+.fg-card .pf-confirm-icon {
+  margin: 0 auto 20px;
+  width: 48px;
+  height: 48px;
+  background: var(--gold-pale);
+  border-color: var(--border-gold);
+}
+.fg-card .pf-confirm-title {
+  margin-bottom: 12px;
+}
+.fg-card .pf-confirm-msg {
+  margin-bottom: 4px;
+}
+
 .fg-forgot-link {
   display: block;
   margin: 4px auto 22px;

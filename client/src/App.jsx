@@ -47,6 +47,7 @@ const TermsOfService = lazy(() => import("./pages/legal/TermsOfService"));
 const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
 const ShippingPolicy = lazy(() => import("./pages/legal/ShippingPolicy"));
 const ReturnPolicy = lazy(() => import("./pages/legal/ReturnPolicy"));
+const PaymentPolicy = lazy(() => import("./pages/legal/PaymentPolicy"));
 const MembershipPolicy = lazy(() => import("./pages/legal/MembershipPolicy"));
 const LegalHub = lazy(() => import("./pages/legal/LegalHub"));
 const CopyrightNotice = lazy(() => import("./pages/legal/CopyrightNotice"));
@@ -246,6 +247,7 @@ export default function App() {
             <Route path="/legal/shipping" element={<ShippingPolicy />} />
             <Route path="/legal/cookies" element={<CookiePolicy />} />
             <Route path="/legal/returns" element={<ReturnPolicy />} />
+            <Route path="/legal/payment" element={<PaymentPolicy />} />
             <Route path="/legal/membership" element={<MembershipPolicy />} />
             <Route path="/legal/copyright" element={<CopyrightNotice />} />
             <Route path="/legal/ai" element={<AIPolicy />} />

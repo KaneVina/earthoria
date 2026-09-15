@@ -27,40 +27,117 @@ const INACTIVITY_RELOCK_MS = 2 * 60 * 1000;
 const FAMILY_GATE_STATUS_KEY = ["family-gate-status"];
 
 const emptyDigits = (n) => Array(n).fill("");
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-/** Dãy ô nhập số dùng chung cho PIN (4 số) và OTP (6 số). */
-function DigitInputs({ digits, refsArray, hasError, disabled, onChange }) {
+/**
+ * Dãy ô nhập số dùng chung cho PIN (4 số) và OTP (6 số).
+ *
+ * - Mỗi số vừa gõ chỉ hiện thật trong chốc lát (hoặc trong lúc ô đó đang
+ *   được focus để dễ sửa) rồi tự chuyển thành "*" - số ở các ô trước đó
+ *   luôn bị che ngay khi con trỏ rời sang ô kế tiếp, tránh lộ mã khi có
+ *   người đứng cạnh nhìn màn hình.
+ * - Gõ xong số cuối cùng sẽ tự gọi onComplete (tương đương tự bấm "Xác
+ *   nhận"/"Tiếp tục"), không cần thao tác thêm.
+ * - hasError bung viền đỏ cho TẤT CẢ các ô như nhau (không riêng ô nào) để
+ *   không ai đoán được số nào gõ sai; hasSuccess bung xanh đậm toàn bộ khi
+ *   mã đã được xác thực đúng. shake=true rung nhẹ cả hàng khi nhập sai.
+ */
+function DigitInputs({
+  digits,
+  refsArray,
+  hasError,
+  hasSuccess,
+  shake,
+  disabled,
+  onChange,
+  onComplete,
+}) {
+  const count = digits.length;
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+  const [revealIndex, setRevealIndex] = useState(-1);
+  const revealTimerRef = useRef(null);
+
+  useEffect(() => () => clearTimeout(revealTimerRef.current), []);
+
+  const revealBriefly = (idx, ms = 450) => {
+    setRevealIndex(idx);
+    clearTimeout(revealTimerRef.current);
+    revealTimerRef.current = setTimeout(
+      () => setRevealIndex((cur) => (cur === idx ? -1 : cur)),
+      ms,
+    );
+  };
+
   const setDigit = (idx, raw) => {
     const digit = raw.replace(/[^0-9]/g, "").slice(-1);
     const next = [...digits];
     next[idx] = digit;
     onChange(next);
-    if (digit && idx < digits.length - 1) refsArray.current[idx + 1]?.focus();
+    if (!digit) return; // vừa xoá bằng cách gõ đè - không cần hiệu ứng gì thêm
+
+    revealBriefly(idx);
+    if (idx < count - 1) {
+      refsArray.current[idx + 1]?.focus();
+    } else {
+      refsArray.current[idx]?.blur();
+      if (next.every((d) => d)) onComplete?.(next.join(""));
+    }
   };
+
   const onKeyDown = (idx, e) => {
     if (e.key === "Backspace" && !digits[idx] && idx > 0) {
       refsArray.current[idx - 1]?.focus();
     }
   };
+
+  // Cho phép dán nguyên chuỗi mã (vd copy từ email/SMS) vào bất kỳ ô nào.
+  const onPaste = (idx, e) => {
+    const text = e.clipboardData.getData("text").replace(/[^0-9]/g, "");
+    if (!text) return;
+    e.preventDefault();
+    const next = [...digits];
+    let lastIdx = idx;
+    for (let i = 0; i < text.length && idx + i < count; i++) {
+      next[idx + i] = text[i];
+      lastIdx = idx + i;
+    }
+    onChange(next);
+    revealBriefly(lastIdx);
+    if (next.every((d) => d)) {
+      refsArray.current[lastIdx]?.blur();
+      onComplete?.(next.join(""));
+    } else {
+      refsArray.current[Math.min(lastIdx + 1, count - 1)]?.focus();
+    }
+  };
+
   return (
-    <div
-      className="otp-inputs"
-      style={{ maxWidth: digits.length === 6 ? 320 : 220, margin: "20px auto" }}
-    >
-      {digits.map((d, i) => (
-        <input
-          key={i}
-          ref={(el) => (refsArray.current[i] = el)}
-          className={`otp-input ${d ? "filled" : ""} ${hasError ? "error" : ""}`}
-          inputMode="numeric"
-          maxLength={1}
-          autoFocus={i === 0}
-          value={d}
-          disabled={disabled}
-          onChange={(e) => setDigit(i, e.target.value)}
-          onKeyDown={(e) => onKeyDown(i, e)}
-        />
-      ))}
+    <div className={`otp-inputs ${shake ? "fg-pin-shake" : ""}`}>
+      {digits.map((d, i) => {
+        const showRealDigit = d && (i === revealIndex || i === focusedIndex);
+        return (
+          <input
+            key={i}
+            ref={(el) => (refsArray.current[i] = el)}
+            className={`otp-input ${d ? "filled" : ""} ${hasError ? "error" : ""} ${hasSuccess ? "success" : ""}`}
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={1}
+            autoFocus={i === 0}
+            value={showRealDigit ? d : d ? "*" : ""}
+            disabled={disabled}
+            aria-label={`Chữ số thứ ${i + 1} trên ${count}`}
+            onFocus={(e) => {
+              setFocusedIndex(i);
+              e.target.select(); // bôi đen số cũ để gõ số mới là ghi đè luôn
+            }}
+            onBlur={() => setFocusedIndex((cur) => (cur === i ? -1 : cur))}
+            onChange={(e) => setDigit(i, e.target.value)}
+            onKeyDown={(e) => onKeyDown(i, e)}
+            onPaste={(e) => onPaste(i, e)}
+          />
+        );
+      })}
     </div>
   );
 }
@@ -122,6 +199,20 @@ export default function FamilyGate({ children }) {
   const [isLockedOut, setIsLockedOut] = useState(false);
   const lockoutTimerRef = useRef(null);
   const pinRefs = useRef([]);
+  // Hiệu ứng dùng chung cho mọi bước nhập số (pin/otp/new/confirm): rung +
+  // đỏ toàn bộ khi sai, xanh đậm toàn bộ khi server xác nhận đúng.
+  const [digitShake, setDigitShake] = useState(false);
+  const [digitSuccess, setDigitSuccess] = useState(false);
+  const shakeFor = async (ms = 550) => {
+    setDigitShake(true);
+    await sleep(ms);
+    setDigitShake(false);
+  };
+  const flashSuccess = async (ms = 450) => {
+    setDigitSuccess(true);
+    await sleep(ms);
+    setDigitSuccess(false);
+  };
 
   useEffect(() => () => clearTimeout(lockoutTimerRef.current), []);
 
@@ -197,23 +288,27 @@ export default function FamilyGate({ children }) {
     setNewPinDigits(emptyDigits(4));
     setConfirmPinDigits(emptyDigits(4));
     setPinError("");
+    setDigitShake(false);
+    setDigitSuccess(false);
   };
 
-  const submitPin = async () => {
-    const pin = pinDigits.join("");
-    if (pin.length < 4) return;
+  const submitPin = async (pinOverride) => {
+    const pin = pinOverride ?? pinDigits.join("");
+    if (pin.length < 4 || pinSubmitting) return;
     setPinSubmitting(true);
+    setPinError("");
     try {
       await parentPinService.unlockGate(pin);
+      await flashSuccess();
       writeGateState({ hasPin: true, gateActive: true });
       setPinDigits(emptyDigits(4));
-      setPinError("");
     } catch (err) {
       const data = err.response?.data;
       setPinError(data?.message || "Mã PIN không đúng.");
+      await shakeFor();
       if (data?.data?.code === "LOCKED_OUT") startLockout();
       setPinDigits(emptyDigits(4));
-      pinRefs.current[0]?.focus();
+      requestAnimationFrame(() => pinRefs.current[0]?.focus());
     } finally {
       setPinSubmitting(false);
     }
@@ -240,37 +335,44 @@ export default function FamilyGate({ children }) {
     sendOtp();
   };
 
-  const submitOtpStep = () => {
-    if (otpDigits.join("").length < 6) {
+  const submitOtpStep = async (otpOverride) => {
+    const otp = otpOverride ?? otpDigits.join("");
+    if (otp.length < 6) {
       setPinError("Vui lòng nhập đủ 6 số.");
+      await shakeFor(450);
       return;
     }
     setPinError("");
     setStep("new");
   };
 
-  const submitNewPinStep = () => {
-    const newPin = newPinDigits.join("");
+  const submitNewPinStep = async (pinOverride) => {
+    const newPin = pinOverride ?? newPinDigits.join("");
     if (!/^[0-9]{4}$/.test(newPin)) {
       setPinError("Mã PIN gồm đúng 4 chữ số.");
+      await shakeFor(450);
       return;
     }
     setPinError("");
     setStep("confirm");
   };
 
-  const submitConfirmStep = async () => {
+  const submitConfirmStep = async (confirmOverride) => {
     const newPin = newPinDigits.join("");
-    const confirmPin = confirmPinDigits.join("");
+    const confirmPin = confirmOverride ?? confirmPinDigits.join("");
+    if (confirmPin.length < 4 || forgotSubmitting) return;
     if (confirmPin !== newPin) {
       setPinError("Hai mã PIN không khớp, thử lại nhé.");
+      await shakeFor();
       setConfirmPinDigits(emptyDigits(4));
-      confirmPinRefs.current[0]?.focus();
+      requestAnimationFrame(() => confirmPinRefs.current[0]?.focus());
       return;
     }
     setForgotSubmitting(true);
+    setPinError("");
     try {
       await parentPinService.resetWithOtp(otpDigits.join(""), newPin);
+      await flashSuccess();
       toast.success("Đã đặt lại mã PIN mới");
       writeGateState({ hasPin: true, gateActive: true }); // resetWithOtp cũng đã mở cổng cho phiên hiện tại
       setIsLockedOut(false);
@@ -280,6 +382,7 @@ export default function FamilyGate({ children }) {
       setPinError(
         err.response?.data?.message || "Không thể lưu mã PIN, thử lại nhé.",
       );
+      await shakeFor();
     } finally {
       setForgotSubmitting(false);
     }
@@ -388,8 +491,11 @@ export default function FamilyGate({ children }) {
                   digits={pinDigits}
                   refsArray={pinRefs}
                   hasError={!!pinError}
+                  hasSuccess={digitSuccess}
+                  shake={digitShake}
                   disabled={pinSubmitting}
                   onChange={setPinDigits}
+                  onComplete={submitPin}
                 />
                 {pinError && (
                   <p className="pf-field-error" style={{ textAlign: "center" }}>
@@ -414,7 +520,7 @@ export default function FamilyGate({ children }) {
               {!isLockedOut && (
                 <button
                   className="pf-confirm-ok pf-btn-tactile"
-                  onClick={submitPin}
+                  onClick={() => submitPin()}
                   disabled={pinSubmitting}
                 >
                   {pinSubmitting ? (
@@ -455,8 +561,10 @@ export default function FamilyGate({ children }) {
                   digits={otpDigits}
                   refsArray={otpRefs}
                   hasError={!!pinError}
+                  shake={digitShake}
                   disabled={otpSending}
                   onChange={setOtpDigits}
+                  onComplete={submitOtpStep}
                 />
                 {pinError && (
                   <p className="pf-field-error" style={{ textAlign: "center" }}>
@@ -484,7 +592,7 @@ export default function FamilyGate({ children }) {
                   </button>
                   <button
                     className="pf-confirm-ok pf-btn-tactile"
-                    onClick={submitOtpStep}
+                    onClick={() => submitOtpStep()}
                   >
                     Tiếp tục
                   </button>
@@ -505,7 +613,9 @@ export default function FamilyGate({ children }) {
                   digits={newPinDigits}
                   refsArray={newPinRefs}
                   hasError={!!pinError}
+                  shake={digitShake}
                   onChange={setNewPinDigits}
+                  onComplete={submitNewPinStep}
                 />
                 {pinError && (
                   <p className="pf-field-error" style={{ textAlign: "center" }}>
@@ -521,7 +631,7 @@ export default function FamilyGate({ children }) {
                   </button>
                   <button
                     className="pf-confirm-ok pf-btn-tactile"
-                    onClick={submitNewPinStep}
+                    onClick={() => submitNewPinStep()}
                   >
                     Tiếp tục
                   </button>
@@ -542,8 +652,11 @@ export default function FamilyGate({ children }) {
                   digits={confirmPinDigits}
                   refsArray={confirmPinRefs}
                   hasError={!!pinError}
+                  hasSuccess={digitSuccess}
+                  shake={digitShake}
                   disabled={forgotSubmitting}
                   onChange={setConfirmPinDigits}
+                  onComplete={submitConfirmStep}
                 />
                 {pinError && (
                   <p className="pf-field-error" style={{ textAlign: "center" }}>
@@ -559,7 +672,7 @@ export default function FamilyGate({ children }) {
                   </button>
                   <button
                     className="pf-confirm-ok pf-btn-tactile"
-                    onClick={submitConfirmStep}
+                    onClick={() => submitConfirmStep()}
                     disabled={forgotSubmitting}
                   >
                     {forgotSubmitting ? (

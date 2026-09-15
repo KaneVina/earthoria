@@ -1098,7 +1098,6 @@ export default function AboutUs() {
       </section>
 
       {/* Dong code */}
-      {/* TECH STATS */}
       <section className="tech-stats-section" id="section-tech">
         <div className="tech-stats-blob tech-stats-blob-navy"></div>
         <div className="tech-stats-blob tech-stats-blob-green"></div>
