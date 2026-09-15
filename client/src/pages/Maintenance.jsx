@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 
-const TARGET_DATE = new Date("2026-09-10T18:00:00+07:00");
+const TARGET_DATE = new Date("2026-09-25T18:00:00+07:00");
 
 // Tiến độ bảo trì hệ thống hiển thị trên thanh progress bar (0-100).
-const MAINTENANCE_PROGRESS = 91;
+const MAINTENANCE_PROGRESS = 65;
 
 function useCountdown(target) {
   const [time, setTime] = useState(() => calc());
@@ -68,8 +68,8 @@ export default function Maintenance({ until, message }) {
   const target = until ? new Date(until) : TARGET_DATE;
   const { d, h, m, s, done } = useCountdown(target);
 
-  // Chạy hiệu ứng "fill dần" từ 0 -> 78% ngay khi trang mount, nhờ CSS
-  // transition trên width (mượt hơn nhiều so với set thẳng 78% ngay từ đầu).
+  // Chạy hiệu ứng "fill dần" từ 0 -> MAINTENANCE_PROGRESS ngay khi trang mount, nhờ CSS
+  // transition trên width (mượt hơn nhiều so với set thẳng % ngay từ đầu).
   const [progress, setProgress] = useState(0);
   useEffect(() => {
     const t = setTimeout(() => setProgress(MAINTENANCE_PROGRESS), 300);
@@ -279,7 +279,7 @@ export default function Maintenance({ until, message }) {
               </div>
             )}
 
-            {/* Thanh tiến độ bảo trì - fill mượt tới 78%, có hiệu ứng
+            {/* Thanh tiến độ bảo trì - fill mượt tới MAINTENANCE_PROGRESS%, có hiệu ứng
                 shimmer ánh sáng lướt qua liên tục để trông sống động. */}
             <div className="em-progress" style={styles.progressWrap}>
               <div style={styles.progressHead}>
@@ -319,7 +319,7 @@ export default function Maintenance({ until, message }) {
               <span>
                 Thời gian dự kiến hoàn tất:{" "}
                 <strong style={styles.timePillStrong}>
-                18:00 · 10/09/2026
+                  18:00 · 25/09/2026
                 </strong>
               </span>
             </div>
@@ -995,7 +995,7 @@ const styles = {
   },
   timePillStrong: { color: GOLD_LIGHT, fontWeight: 500 },
 
-  /* Thanh tiến độ bảo trì hệ thống (78%) */
+  /* Thanh tiến độ bảo trì hệ thống */
   progressWrap: {
     position: "relative",
     marginTop: 22,
