@@ -28,6 +28,7 @@ import { getGameDefinition } from "../games/gameRegistry";
 import FullScreenLoader from "../components/FullScreenLoader";
 import { useCountUp } from "../hooks/useCountUp";
 import { useConfettiBurst, GpConfetti } from "../hooks/useConfettiBurst";
+import { isEmbeddedInIframe } from "../utils/embed";
 import "../components/assets/css/gameplay.css";
 
 // Easing dùng chung cho chuyển cảnh giữa 3 chặng (intro/playing/finished) -
@@ -179,6 +180,13 @@ export default function GamePlay() {
   const [stage, setStage] = useState("intro"); // intro | playing | finished
   const [result, setResult] = useState(null); // { score, durationSeconds }
   const [leaderboard, setLeaderboard] = useState([]);
+
+  // Trang đang được nhúng trực tiếp trong iframe trên trang sách điện tử
+  // (xem QrLiveEmbed trong admin/EbookEditor.jsx) hay đang mở như 1 trang
+  // độc lập bình thường (vd quét mã QR in giấy). Khung nhúng thường cao hơn
+  // nhiều so với nội dung thật sự cần nên căn giữa + phóng nhẹ 1 số khối
+  // chính cho đỡ "lọt thỏm" - xem .gp-view--embedded trong gameplay.css.
+  const isEmbedded = isEmbeddedInIframe();
 
   const shouldReduceMotion = useReducedMotion();
   // Điểm số đếm tăng dần khi vừa vào màn "finished" thay vì hiện thẳng con số
@@ -460,7 +468,9 @@ export default function GamePlay() {
   });
 
   return (
-    <main className={`gp-view${stage === "playing" ? " gp-view--focus" : ""}`}>
+    <main
+      className={`gp-view${stage === "playing" ? " gp-view--focus" : ""}${isEmbedded ? " gp-view--embedded" : ""}`}
+    >
       <header className="gp-hud">
         <div className="gp-hud-inner">
           <Link to={bookHref} className="gp-back">

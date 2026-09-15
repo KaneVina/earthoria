@@ -2209,6 +2209,31 @@
   background: rgba(255, 253, 247, 0.6);
 }
 
+/* CHẾ ĐỘ NHÚNG IFRAME (.gp-view--embedded, bật ở GamePlay.jsx khi
+   isEmbeddedInIframe() === true) - khung nhúng trực tiếp trên trang sách
+   điện tử (QrLiveEmbed trong admin/EbookEditor.jsx) luôn cao bằng cả trang
+   sách, thường cao hơn nhiều so với nội dung intro/arena/finished thật sự
+   cần, để mặc định "trôi" lên đầu thì phần dưới trống trải rất mất cân đối.
+   Căn giữa theo chiều dọc + phóng to nhẹ dải hero cho đỡ "lọt thỏm". */
+.gp-view--embedded .gp-shell {
+  align-items: center;
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+.gp-view--embedded .gp-intro,
+.gp-view--embedded .gp-arena,
+.gp-view--embedded .gp-finished {
+  margin-top: 0;
+}
+.gp-view--embedded .gp-intro-visual {
+  min-height: 360px;
+}
+@media (min-width: 560px) {
+  .gp-view--embedded .gp-intro-visual {
+    min-height: 420px;
+  }
+}
+
 /*    THANH "CHƠI NGAY"  */
 .gp-mobile-playbar {
   display: none;
