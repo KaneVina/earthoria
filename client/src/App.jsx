@@ -19,6 +19,7 @@ import FlyingWishlistHeart from "./components/FlyingWishlistHeart";
 import FullScreenLoader from "./components/FullScreenLoader";
 import RouteLoader from "./components/RouteLoader";
 import PromoBanner from "./components/PromoBanner";
+import { isEmbeddedInIframe } from "./utils/embed";
 
 const Home = lazy(() => import("./pages/Home"));
 const Shop = lazy(() => import("./pages/Shop"));
@@ -126,6 +127,8 @@ export default function App() {
   const { setAuthChecked, authChecked, user, isAuthenticated } = useAuthStore();
   const [showLoader, setShowLoader] = useState(false);
   const [loaderStage, setLoaderStage] = useState("normal");
+  // Đang nhúng trong iframe không vẽ thêm 1 bộ nữa ở đây để tránh chồng/lặp (xem utils/embed.js).
+  const isEmbedded = isEmbeddedInIframe();
 
   // Trạng thái bảo trì lấy từ dashboard admin
   const { data: siteSettings } = useQuery({
@@ -220,11 +223,13 @@ export default function App() {
     <BrowserRouter>
       <EarthoriaSecurity />
       <ScrollToTop />
-      <CustomCursor />
+      {!isEmbedded && <CustomCursor />}
       <HomeOnlyPromoBanner />
-      <Suspense fallback={null}>
-        <EiraChatbox />
-      </Suspense>
+      {!isEmbedded && (
+        <Suspense fallback={null}>
+          <EiraChatbox />
+        </Suspense>
+      )}
       <FloatingCompareBar />
       <FlyingWishlistHeart />
       <Suspense fallback={<RouteLoader />}>
