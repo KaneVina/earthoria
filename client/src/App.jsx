@@ -55,6 +55,9 @@ const CopyrightNotice = lazy(() => import("./pages/legal/CopyrightNotice"));
 const AIPolicy = lazy(() => import("./pages/legal/AIPolicy"));
 const Sitemap = lazy(() => import("./pages/Sitemap"));
 const EiraChatbox = lazy(() => import("./components/EiraChatbox"));
+const KidBackgroundMusic = lazy(
+  () => import("./components/KidBackgroundMusic"),
+);
 const Wishlist = lazy(() => import("./pages/Wishlist"));
 const ContactPage = lazy(() => import("./pages/ContactPage"));
 const Maintenance = lazy(() => import("./pages/Maintenance"));
@@ -228,6 +231,11 @@ export default function App() {
       {!isEmbedded && (
         <Suspense fallback={null}>
           <EiraChatbox />
+        </Suspense>
+      )}
+      {!isEmbedded && (
+        <Suspense fallback={null}>
+          <KidBackgroundMusic />
         </Suspense>
       )}
       <FloatingCompareBar />
