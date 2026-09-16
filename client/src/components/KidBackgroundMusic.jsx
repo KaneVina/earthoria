@@ -82,9 +82,14 @@ export default function KidBackgroundMusic() {
     if (!active || initedRef.current) return undefined;
     initedRef.current = true;
 
-    let cancelled = false;
     loadYouTubeApi().then((YT) => {
-      if (cancelled || !slotRef.current) return;
+      // Không dùng cờ "cancelled" theo cleanup ở đây: React StrictMode (dev)
+      // chạy mount -> cleanup -> mount lại, và nếu huỷ theo cleanup thì
+      // promise của lượt mount đầu sẽ bị chặn ngay trước khi kịp tạo player,
+      // trong khi lượt mount thứ 2 lại bị initedRef chặn không tạo lại nữa
+      // => player không bao giờ được khởi tạo, mất tiếng hoàn toàn.
+      // Guard bằng playerRef để chỉ tạo player đúng 1 lần cho cả vòng đời app.
+      if (playerRef.current || !slotRef.current) return;
       const prefs = prefsRef.current;
       playerRef.current = new YT.Player(slotRef.current, {
         videoId: VIDEO_ID,
@@ -115,13 +120,14 @@ export default function KidBackgroundMusic() {
               e.target.playVideo();
             }
           },
+          onError: (e) => {
+            // In lỗi ra console để dễ debug (ví dụ video bị chặn nhúng,
+            // sai ID...) thay vì im lặng mất tiếng không rõ nguyên nhân.
+            console.error("[KidBackgroundMusic] YouTube player error, code:", e.data);
+          },
         },
       });
     });
-
-    return () => {
-      cancelled = true;
-    };
   }, [active]);
 
   useEffect(() => {
