@@ -2,16 +2,33 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Volume2, Volume1, VolumeX } from "lucide-react";
 import { isEmbeddedInIframe } from "../utils/embed";
+import {
+  registerKidBgmTrackSetter,
+  useKidBgmTrackBridge,
+} from "../hooks/useKidBgmTrack";
 import "./assets/css/KidBackgroundMusic.css";
 
-const VIDEO_ID = "xxYJONmXE8w";
+// Các bài nhạc nền theo từng "khung cảnh". "default" phát khi ở khu vực kid
+// nói chung (đọc ebook, màn chờ...); "game"/"result" do GamePlay chủ động
+// yêu cầu qua hook useKidBgmTrack() khi vào màn chơi / màn kết quả.
+const TRACKS = {
+  default: "xxYJONmXE8w",
+  game: "8MreC8RjVng",
+  result: "RV8s08clQi4",
+};
 
 const STORAGE_KEY = "earthoria:kid-bgm";
 const DEFAULT_VOLUME = 55;
 const AUTO_CLOSE_MS = 4000;
 
 function shouldPlayOnPath(pathname) {
-  return pathname.startsWith("/e-kid/") || pathname.startsWith("/ebook/");
+  return (
+    pathname.startsWith("/e-kid/") ||
+    pathname.startsWith("/ebook/") ||
+    // /game/:slug/:code - GamePlay còn có thể mở độc lập, không nằm dưới
+    // /e-kid/, nên phải liệt kê riêng thì nhạc lúc chơi game mới phát được.
+    pathname.startsWith("/game/")
+  );
 }
 
 function loadPrefs() {
@@ -67,16 +84,26 @@ export default function KidBackgroundMusic() {
   const initedRef = useRef(false);
   const prefsRef = useRef(loadPrefs());
   const closeTimerRef = useRef(null);
+  const loadedTrackRef = useRef(TRACKS.default);
 
   const [ready, setReady] = useState(false);
   const [muted, setMuted] = useState(() => loadPrefs().muted);
   const [volume, setVolume] = useState(() => loadPrefs().volume);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [trackKey, setTrackKey] = useState("default");
 
   const updatePrefs = useCallback((next) => {
     prefsRef.current = { ...prefsRef.current, ...next };
     savePrefs(prefsRef.current);
   }, []);
+
+  // Mở "cổng" cho useKidBgmTrack() ở nơi khác (vd GamePlay) gọi vào, vì đây
+  // là component singleton duy nhất giữ player thật.
+  useEffect(() => registerKidBgmTrackSetter(setTrackKey), []);
+
+  // Nhận yêu cầu đổi bài gửi từ 1 iframe con nhúng ngay trên trang này (vd
+  // khung chơi game nhúng trong ebook) - xem useKidBgmTrackBridge.
+  useKidBgmTrackBridge(setTrackKey);
 
   useEffect(() => {
     if (!active || initedRef.current) return undefined;
@@ -92,12 +119,12 @@ export default function KidBackgroundMusic() {
       if (playerRef.current || !slotRef.current) return;
       const prefs = prefsRef.current;
       playerRef.current = new YT.Player(slotRef.current, {
-        videoId: VIDEO_ID,
+        videoId: TRACKS.default,
         playerVars: {
           autoplay: 1,
           mute: 1, // bắt buộc tắt tiếng để trình duyệt cho tự phát - mở lại ở lượt chạm đầu tiên
           loop: 1,
-          playlist: VIDEO_ID, // mẹo chính thức của Youtube để lặp lại đúng 1 video
+          playlist: TRACKS.default, // mẹo chính thức của Youtube để lặp lại đúng 1 video
           controls: 0,
           disablekb: 1,
           fs: 0,
@@ -123,12 +150,31 @@ export default function KidBackgroundMusic() {
           onError: (e) => {
             // In lỗi ra console để dễ debug (ví dụ video bị chặn nhúng,
             // sai ID...) thay vì im lặng mất tiếng không rõ nguyên nhân.
-            console.error("[KidBackgroundMusic] YouTube player error, code:", e.data);
+            console.error(
+              "[KidBackgroundMusic] YouTube player error, code:",
+              e.data,
+            );
           },
         },
       });
     });
   }, [active]);
+
+  useEffect(() => {
+    const player = playerRef.current;
+    if (!ready || !player || typeof player.loadVideoById !== "function") {
+      return;
+    }
+    const nextId = TRACKS[trackKey] || TRACKS.default;
+    if (nextId === loadedTrackRef.current) return;
+    loadedTrackRef.current = nextId;
+    player.loadVideoById(nextId);
+    // loadVideoById thường giữ nguyên volume/mute hiện tại của player, áp
+    // lại cho chắc để không bị "bật tiếng" ngoài ý muốn lúc đổi bài.
+    player.setVolume(prefsRef.current.volume);
+    if (prefsRef.current.muted) player.mute();
+    else player.unMute();
+  }, [ready, trackKey]);
 
   useEffect(() => {
     if (!active) return undefined;

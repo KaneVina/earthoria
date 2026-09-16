@@ -26,6 +26,7 @@ import { gameService } from "../services/gameService";
 import { kidAccessService } from "../services/kidAccessService";
 import { getGameDefinition } from "../games/gameRegistry";
 import FullScreenLoader from "../components/FullScreenLoader";
+import { useKidBgmTrack } from "../hooks/useKidBgmTrack";
 import { useCountUp } from "../hooks/useCountUp";
 import { useConfettiBurst, GpConfetti } from "../hooks/useConfettiBurst";
 import { isEmbeddedInIframe } from "../utils/embed";
@@ -180,6 +181,13 @@ export default function GamePlay() {
   const [stage, setStage] = useState("intro"); // intro | playing | finished
   const [result, setResult] = useState(null); // { score, durationSeconds }
   const [leaderboard, setLeaderboard] = useState([]);
+
+  // Đổi nhạc nền theo giai đoạn: đang chơi -> nhạc "game", có kết quả ->
+  // nhạc "result". Màn "intro" không yêu cầu gì riêng nên rơi về nhạc mặc
+  // định của KidBackgroundMusic (xem useKidBgmTrack trong component đó).
+  useKidBgmTrack(
+    stage === "playing" ? "game" : stage === "finished" ? "result" : null,
+  );
 
   // Trang đang được nhúng trực tiếp trong iframe trên trang sách điện tử
   // (xem QrLiveEmbed trong admin/EbookEditor.jsx) hay đang mở như 1 trang
