@@ -3,6 +3,7 @@ const router = express.Router();
 const passport = require("../config/passport");
 const {
   login,
+  staffLogin,
   getMe,
   updateProfile,
   changePassword,
@@ -29,6 +30,7 @@ const {
   verifyOtpLimiter,
   resetPasswordLimiter,
   loginLimiter,
+  staffLoginLimiter,
   registerLimiter,
   createPasswordOtpLimiter,
   createPasswordLimiter,
@@ -38,6 +40,10 @@ const { protect } = require("../middlewares/authMiddleware");
 router.post("/send-register-otp", registerLimiter, sendRegisterOtp);
 router.post("/verify-register-otp", verifyOtpLimiter, verifyRegisterOtp);
 router.post("/login", loginLimiter, login);
+// Đăng nhập riêng cho Cổng Quản trị (admin/staff) - xem staffLogin() trong
+// authController: chặn thẳng tài khoản không phải ADMIN/STAFF trước khi cấp
+// phiên đăng nhập, kể cả khi mật khẩu đúng.
+router.post("/staff-login", staffLoginLimiter, staffLogin);
 router.post("/refresh", refresh);
 router.post("/logout", logout);
 router.post("/forgot-password", forgotPasswordLimiter, forgotPassword);
@@ -60,10 +66,20 @@ router.post("/create-password", protect, createPasswordLimiter, createPassword);
 router.get("/google", googleAuth);
 router.get(
   "/google/callback",
-  passport.authenticate("google", {
-    session: false,
-    failureRedirect: `${process.env.CLIENT_URL}/login?error=google_failed`,
-  }),
+  (req, res, next) => {
+    // failureRedirect tĩnh của passport không đọc được req.query lúc chạy,
+    // nên bọc lại để chọn đúng trang đăng nhập (Cổng Quản trị hay trang
+    // khách hàng) khi Google từ chối/hủy đăng nhập.
+    const portal = req.query.state === "admin" ? "admin" : "customer";
+    const failureRedirect =
+      portal === "admin"
+        ? `${process.env.CLIENT_URL}/admin/login?error=google_failed`
+        : `${process.env.CLIENT_URL}/login?error=google_failed`;
+    return passport.authenticate("google", {
+      session: false,
+      failureRedirect,
+    })(req, res, next);
+  },
   googleCallback,
 );
 

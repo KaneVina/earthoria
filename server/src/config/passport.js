@@ -8,9 +8,13 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: process.env.GOOGLE_CALLBACK_URL,
+      passReqToCallback: true,
     },
-    async (accessToken, refreshToken, profile, done) => {
+    async (req, accessToken, refreshToken, profile, done) => {
       try {
+        // Yêu cầu đến từ nút Google trên Cổng Quản trị (?portal=admin ở bước
+        // /auth/google, Google trả lại nguyên vẹn qua "state" ở callback).
+        const isAdminPortal = req.query.state === "admin";
         const email = profile.emails?.[0]?.value;
         const emailVerified = profile.emails?.[0]?.verified;
         const avatar = profile.photos?.[0]?.value;
@@ -45,6 +49,15 @@ passport.use(
             },
           });
           return done(null, user);
+        }
+
+        // Cổng Quản trị không tự tạo tài khoản mới từ một lượt đăng nhập Google
+        // lạ - chỉ những Google account đã liên kết sẵn với một User ADMIN/STAFF
+        // (2 nhánh done() phía trên) mới được đi tiếp. done(null, false) khiến
+        // passport rơi vào failureRedirect (?error=google_failed) thay vì tạo
+        // account khách hàng mới rồi mới chặn ở bước sau.
+        if (isAdminPortal) {
+          return done(null, false);
         }
 
         // Tạo user mới

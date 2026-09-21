@@ -26,6 +26,7 @@ const Shop = lazy(() => import("./pages/Shop"));
 const BookDetail = lazy(() => import("./pages/BookDetail"));
 const Cart = lazy(() => import("./pages/CartPage"));
 const Login = lazy(() => import("./pages/auth/Login"));
+const AdminPortalLogin = lazy(() => import("./pages/auth/AdminPortalLogin"));
 const Register = lazy(() => import("./pages/auth/Register"));
 const AboutUs = lazy(() => import("./pages/AboutUs"));
 const Ecosystem = lazy(() => import("./pages/Ecosystem"));
@@ -115,6 +116,16 @@ const GuestRoute = ({ children }) => {
   return !isAuthenticated ? children : <Navigate to="/" replace />;
 };
 
+// Cổng Quản trị (/admin/login): nếu đã đăng nhập sẵn với vai trò ADMIN/STAFF
+// thì vào thẳng dashboard, không cần thấy lại form đăng nhập.
+const AdminGuestRoute = ({ children }) => {
+  const { user, isAuthenticated } = useAuthStore();
+  if (isAuthenticated && ["ADMIN", "STAFF"].includes(user?.role)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return children;
+};
+
 function HomeOnlyPromoBanner() {
   const location = useLocation();
   const isHome = location.pathname === "/" || location.pathname === "/home";
@@ -142,8 +153,11 @@ export default function App() {
     retry: 1,
   });
 
-  // Admin đã đăng nhập thì không bao giờ bị chặn bởi bảo trì (kể cả trang ngoài lẫn dashboard)
-  const isAdminUser = isAuthenticated && user?.role === "ADMIN";
+  // Admin/Staff đã đăng nhập thì không bao giờ bị chặn bởi bảo trì (kể cả trang
+  // ngoài lẫn dashboard) - trước đây chỉ check "ADMIN" nên STAFF bị kẹt ở màn
+  // bảo trì dù đăng nhập thành công.
+  const isStaffOrAdmin =
+    isAuthenticated && ["ADMIN", "STAFF"].includes(user?.role);
   const maintenanceActive =
     MAINTENANCE_MODE || Boolean(siteSettings?.maintenanceActive);
 
@@ -192,7 +206,7 @@ export default function App() {
     ) : null;
   }
 
-  if (maintenanceActive && !isAdminUser) {
+  if (maintenanceActive && !isStaffOrAdmin) {
     return (
       <BrowserRouter>
         <EarthoriaSecurity />
@@ -205,6 +219,21 @@ export default function App() {
                   <Login />
                 </GuestRoute>
               }
+            />
+            {/* Cổng Quản trị + callback Google phải luôn vào được, kể cả khi
+                đang bảo trì - đây chính là lối vào duy nhất để admin/staff
+                đăng nhập và thoát khỏi màn bảo trì. */}
+            <Route
+              path="/admin/login"
+              element={
+                <AdminGuestRoute>
+                  <AdminPortalLogin />
+                </AdminGuestRoute>
+              }
+            />
+            <Route
+              path="/auth/google/success"
+              element={<GoogleAuthSuccess />}
             />
             <Route path="/status" element={<StatusPage />} />
             <Route
@@ -329,6 +358,14 @@ export default function App() {
               <GuestRoute>
                 <Login />
               </GuestRoute>
+            }
+          />
+          <Route
+            path="/admin/login"
+            element={
+              <AdminGuestRoute>
+                <AdminPortalLogin />
+              </AdminGuestRoute>
             }
           />
           <Route path="/3d" element={<Logo3D />} />

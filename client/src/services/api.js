@@ -69,6 +69,7 @@ api.interceptors.response.use(
       !originalRequest?.url?.includes("/admin/");
     const isAuthEndpoint =
       originalRequest?.url?.includes("/auth/login") ||
+      originalRequest?.url?.includes("/auth/staff-login") ||
       originalRequest?.url?.includes("/auth/refresh");
     const isSilentAuth = originalRequest?.__silentAuth === true;
 

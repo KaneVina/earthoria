@@ -39,7 +39,7 @@ export default function Login() {
 
       const target = isSafeRedirect
         ? redirect
-        : user.role === "ADMIN"
+        : ["ADMIN", "STAFF"].includes(user.role)
           ? "/dashboard"
           : "/";
 

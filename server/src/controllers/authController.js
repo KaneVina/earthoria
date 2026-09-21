@@ -116,6 +116,73 @@ const login = async (req, res) => {
   }
 };
 
+// Đăng nhập dành riêng cho Cổng Quản trị (admin/staff) - dùng chung logic xác
+// thực với login() nhưng chặn thẳng các tài khoản không phải ADMIN/STAFF
+// TRƯỚC khi cấp refresh token/cookie, để không tạo phiên đăng nhập cho các
+// tài khoản khách hàng dù họ nhập đúng mật khẩu của chính họ.
+const staffLogin = async (req, res) => {
+  try {
+    const { email, password, remember } = req.body;
+
+    if (!email || !password) {
+      return formatResponse(res, 400, "Vui lòng nhập email và mật khẩu");
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      return formatResponse(res, 401, "Email hoặc mật khẩu không đúng");
+    }
+
+    if (!user.isActive) {
+      return formatResponse(res, 401, "Tài khoản đã bị khóa");
+    }
+
+    if (!user.password) {
+      return formatResponse(
+        res,
+        401,
+        "Tài khoản này đăng nhập bằng Google, vui lòng dùng Google",
+      );
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return formatResponse(res, 401, "Email hoặc mật khẩu không đúng");
+    }
+
+    if (!["ADMIN", "STAFF"].includes(user.role)) {
+      return formatResponse(
+        res,
+        403,
+        "Tài khoản của bạn không có quyền truy cập khu vực quản trị",
+      );
+    }
+
+    const accessToken = generateAccessToken(user.id);
+    const { rawToken, expiresAt } = await tokenService.createRefreshToken(
+      user.id,
+      !!remember,
+      getRequestMeta(req),
+    );
+    setRefreshCookie(res, rawToken, expiresAt);
+
+    return formatResponse(res, 200, "Đăng nhập thành công", {
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        userCode: user.userCode,
+      },
+      accessToken,
+    });
+  } catch (error) {
+    console.error(error);
+    return formatResponse(res, 500, "Lỗi server");
+  }
+};
+
 const getMe = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
@@ -244,14 +311,37 @@ const changePassword = async (req, res) => {
   }
 };
 
-const googleAuth = passport.authenticate("google", {
-  scope: ["profile", "email"],
-  session: false,
-});
+// ?portal=admin (từ nút "Tiếp tục với Google" trên Cổng Quản trị) được gói vào
+// tham số "state" chuẩn của OAuth2 để Google trả lại nguyên vẹn ở bước callback -
+// nhờ đó callback biết yêu cầu đến từ Cổng Quản trị hay từ trang đăng nhập khách hàng.
+const googleAuth = (req, res, next) => {
+  const state = req.query.portal === "admin" ? "admin" : undefined;
+  return passport.authenticate("google", {
+    scope: ["profile", "email"],
+    session: false,
+    state,
+  })(req, res, next);
+};
 
 const googleCallback = async (req, res) => {
+  const portal = req.query.state === "admin" ? "admin" : "customer";
+  const failureRedirect =
+    portal === "admin"
+      ? `${process.env.CLIENT_URL}/admin/login?error=google_failed`
+      : `${process.env.CLIENT_URL}/login?error=google_failed`;
+
   try {
     const user = req.user;
+
+    // Cổng Quản trị: chỉ ADMIN/STAFF mới được cấp phiên đăng nhập, dù tài
+    // khoản Google đó có hợp lệ với hệ thống hay không (vd tài khoản khách
+    // hàng bình thường liên kết cùng địa chỉ Gmail).
+    if (portal === "admin" && !["ADMIN", "STAFF"].includes(user.role)) {
+      return res.redirect(
+        `${process.env.CLIENT_URL}/admin/login?error=forbidden`,
+      );
+    }
+
     // Đăng nhập Google mặc định coi như "remember" = true (không có checkbox
     // để user chọn), giữ phiên dài như hành vi quen thuộc của OAuth login.
     const { rawToken, expiresAt } = await tokenService.createRefreshToken(
@@ -260,10 +350,15 @@ const googleCallback = async (req, res) => {
       getRequestMeta(req),
     );
     setRefreshCookie(res, rawToken, expiresAt);
-    res.redirect(`${process.env.CLIENT_URL}/auth/google/success`);
+
+    const successUrl =
+      portal === "admin"
+        ? `${process.env.CLIENT_URL}/auth/google/success?portal=admin`
+        : `${process.env.CLIENT_URL}/auth/google/success`;
+    res.redirect(successUrl);
   } catch (error) {
     console.error(error);
-    res.redirect(`${process.env.CLIENT_URL}/login?error=google_failed`);
+    res.redirect(failureRedirect);
   }
 };
 
@@ -334,6 +429,7 @@ const logout = async (req, res) => {
 module.exports = {
   register,
   login,
+  staffLogin,
   getMe,
   updateProfile,
   changePassword,

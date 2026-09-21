@@ -8,7 +8,6 @@ import toast from "react-hot-toast";
 
 export default function GoogleAuthSuccess() {
   const navigate = useNavigate();
-  const { setAuth } = useAuthStore();
   const handled = useRef(false); // chặn StrictMode chạy 2 lần
   const [showFlame, setShowFlame] = useState(false);
   const pendingNav = useRef(null);
@@ -17,17 +16,38 @@ export default function GoogleAuthSuccess() {
     if (handled.current) return;
     handled.current = true;
 
+    const goToTarget = (u) => {
+      pendingNav.current = ["ADMIN", "STAFF"].includes(u.role)
+        ? "/dashboard"
+        : "/";
+      setShowFlame(true);
+    };
+
+    // Nếu App vừa chuyển từ cây route "bảo trì" sang cây route đầy đủ ngay
+    // trong lượt refresh() trước đó (setAuth() ở refreshSession làm
+    // isStaffOrAdmin bật lên), component này có thể bị unmount/mount lại ở
+    // đây lần thứ hai với cùng URL. Lúc đó store đã có sẵn user rồi nên
+    // không cần gọi lại /auth/refresh (tránh xoay vòng token + hiện toast
+    // chào mừng 2 lần) - chuyển hướng thẳng luôn.
+    const already = useAuthStore.getState();
+    if (already.isAuthenticated && already.user) {
+      goToTarget(already.user);
+      return;
+    }
+
     const run = async () => {
       try {
         await authService.refresh();
         const { user } = useAuthStore.getState();
         toast.success(`Chào mừng trở lại, ${user.name}!`);
-
-        pendingNav.current = user.role === "ADMIN" ? "/dashboard" : "/";
-        setShowFlame(true);
-      } catch (err) {
+        goToTarget(user);
+      } catch {
+        const isAdminPortal =
+          new URLSearchParams(window.location.search).get("portal") === "admin";
         toast.error("Đăng nhập Google thất bại");
-        navigate("/login", { replace: true });
+        navigate(isAdminPortal ? "/admin/login" : "/login", {
+          replace: true,
+        });
       }
     };
 

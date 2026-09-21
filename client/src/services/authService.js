@@ -2,6 +2,8 @@ import api, { refreshSession } from "./api";
 
 export const authService = {
   login: (data) => api.post("/auth/login", data),
+  staffLogin: (data) =>
+    api.post("/auth/staff-login", data, { __silentAuth: true }),
   refresh: (opts) => refreshSession(opts),
   logout: () => api.post("/auth/logout"),
   getMe: () => api.get("/auth/me"),
