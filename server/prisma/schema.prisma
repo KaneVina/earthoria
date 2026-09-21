@@ -891,6 +891,23 @@ model SiteSetting {
   updatedAt     DateTime @updatedAt
 }
 
+model MaintenanceTask {
+  id          String    @id @default(uuid())
+  title       String
+  description String    @db.Text
+  isDone      Boolean   @default(false) // Admin xác nhận hoàn thành hạng mục này
+  order       Int       @default(0) // Thứ tự hiển thị, admin sắp xếp bằng nút lên/xuống
+  completedAt DateTime?
+
+  createdById   String?
+  createdByName String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([order])
+}
+
 // ─ TICKET (form Liên hệ /contact) ─
 enum TicketStatus {
   NEW         // Mới gửi, chưa ai xử lý
