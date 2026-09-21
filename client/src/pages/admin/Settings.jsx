@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { settingsService } from "../../services/settingsService";
 import AdminLayout from "./AdminLayout";
 import MaintenancePanel from "./settings/MaintenancePanel";
+import MaintenanceTasksPanel from "./settings/MaintenanceTasksPanel";
 import GeneralSettingsPanel from "./settings/GeneralSettingsPanel";
 
 export default function Settings() {
@@ -48,6 +49,7 @@ export default function Settings() {
             saving={updateSiteSettingsMutation.isPending}
             onSave={saveSiteSettings}
           />
+          <MaintenanceTasksPanel />
           <GeneralSettingsPanel
             settings={siteSettings}
             saving={updateSiteSettingsMutation.isPending}

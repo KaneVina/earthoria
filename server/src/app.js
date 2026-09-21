@@ -65,6 +65,7 @@ app.use(maintenanceGuard);
 const v1 = express.Router();
 v1.use("/auth", require("./routes/authRoutes"));
 v1.use("/settings", require("./routes/settingsRoutes"));
+v1.use("/maintenance", require("./routes/maintenanceRoutes"));
 v1.use("/books", require("./routes/bookRoutes"));
 v1.use("/categories", require("./routes/categoryRoutes"));
 v1.use("/cart", require("./routes/cartRoutes"));

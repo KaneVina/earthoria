@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { ebookService } from "../../services/ebookService";
 import api from "../../services/api";
+import { resetKidBgmTrack } from "../../hooks/useKidBgmTrack";
 import { QRCodeCanvas } from "qrcode.react";
 import "../../components/assets/css/ebookPreview.css";
 import "../../components/assets/css/bookBuilder.css";
@@ -1187,6 +1188,20 @@ function QrLiveEmbed({ layer, qrUrl, pageWidth, pageHeight }) {
   const iframeRef = useRef(null);
   const isGame = layer.linkType === "GAME";
   const FOOTER_H = 84;
+
+  // Khung game nhúng có thể tự đổi nhạc nền sang "game"/"result" lúc bé
+  // chơi (xem GamePlay.jsx + useKidBgmTrack). Nếu khung này bị gỡ khỏi
+  // trang (bé lật qua trang khác, đổi sách...) trong lúc nhạc đang là
+  // "game"/"result", KHÔNG thể trông chờ code dọn dẹp bên trong iframe kịp
+  // chạy (trình duyệt huỷ ngay ngữ cảnh JS của iframe khi bị gỡ khỏi DOM),
+  // nên phải tự trả nhạc về mặc định ở ngay đây - component NGOÀI iframe,
+  // nơi unmount luôn chạy bình thường, đáng tin cậy.
+  useEffect(() => {
+    if (!isGame) return undefined;
+    return () => {
+      resetKidBgmTrack();
+    };
+  }, [isGame]);
 
   const handleExpand = (e) => {
     e.stopPropagation();

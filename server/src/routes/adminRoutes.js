@@ -78,6 +78,9 @@ router.get("/dashboard/support", adminOnly, getDashboardSupport);
 router.get("/settings", adminOnly, getAdminSettings);
 router.put("/settings", adminOnly, updateAdminSettings);
 
+// Hạng mục bảo trì (tiêu đề + mô tả, xác nhận hoàn thành -> % tự tính lại) - chỉ ADMIN
+router.use("/maintenance", adminOnly, require("./adminMaintenanceRoutes"));
+
 router.get("/products/search", staffOrAdmin, searchProductsQuick);
 router.get("/products/:id", staffOrAdmin, getProductById);
 router.get("/products", staffOrAdmin, getProducts);

@@ -8,6 +8,7 @@ const {
 const ALWAYS_ALLOWED_PREFIXES = [
   "/api/v1/auth",
   "/api/v1/settings/public",
+  "/api/v1/maintenance/public",
   "/api/health",
   "/api/v1/payments/vnpay/ipn",
   "/api/v1/payments/momo/ipn",

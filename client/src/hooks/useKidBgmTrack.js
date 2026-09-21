@@ -45,6 +45,20 @@ function requestTrack(trackKey) {
 }
 
 /**
+ * Trả nhạc nền về mặc định ngay lập tức. Dùng ở phía TẠO RA 1 khung nhúng
+ * game (vd QrLiveEmbed) để tự dọn dẹp lúc gỡ khung đó khỏi trang (lật qua
+ * trang sách khác, đổi sách...) - đáng tin cậy hơn nhiều so với việc trông
+ * chờ code dọn dẹp CHẠY BÊN TRONG iframe kịp thực thi: trình duyệt huỷ ngay
+ * ngữ cảnh JS của iframe khi phần tử bị gỡ khỏi DOM, không đảm bảo cleanup
+ * effect bên trong (postMessage ra ngoài) có kịp chạy hay không. Gọi hàm
+ * này ở component NGOÀI iframe (chỗ tạo ra thẻ <iframe>) thì luôn chắc ăn,
+ * vì đó là unmount bình thường của chính cây React đang chứa nó.
+ */
+export function resetKidBgmTrack() {
+  requestTrack("default");
+}
+
+/**
  * Yêu cầu KidBackgroundMusic phát bài ứng với `trackKey` ("game", "result"…)
  * trong lúc component gọi hook này còn mounted; tự trả lại nhạc mặc định
  * ("default") khi unmount hoặc khi trackKey chuyển thành falsy. Hoạt động

@@ -32,14 +32,8 @@ import { useConfettiBurst, GpConfetti } from "../hooks/useConfettiBurst";
 import { isEmbeddedInIframe } from "../utils/embed";
 import "../components/assets/css/gameplay.css";
 
-// Easing dùng chung cho chuyển cảnh giữa 3 chặng (intro/playing/finished) -
-// cùng đường cong với --gp-ease trong gameplay.css để khớp cảm giác "mượt"
-// với phần còn lại của giao diện thay vì easing mặc định của framer-motion.
 const GP_EASE = [0.16, 1, 0.3, 1];
 
-// Biến thể chuyển cảnh cho từng chặng - mỗi chặng một kiểu vào/ra riêng để
-// không đơn điệu: intro trượt lên nhẹ, arena "phóng to" như kéo màn lên sân
-// khấu, màn kết quả trồi lên như một tấm huy chương.
 const STAGE_VARIANTS = {
   intro: {
     initial: { opacity: 0, y: 26 },
@@ -469,7 +463,6 @@ export default function GamePlay() {
   const rest = leaderboard.slice(3, 5);
 
   // Gói initial/animate/exit/transition cho <motion.div> của mỗi chặng - gom
-  // vào một hàm để 3 khối JSX bên dưới không phải lặp lại cùng một cụm props.
   const stageMotion = (key) => ({
     ...(shouldReduceMotion ? STAGE_VARIANTS_REDUCED : STAGE_VARIANTS[key]),
     transition: { duration: shouldReduceMotion ? 0.15 : 0.24, ease: GP_EASE },

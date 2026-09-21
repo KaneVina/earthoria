@@ -13,7 +13,7 @@ import "./assets/css/KidBackgroundMusic.css";
 // yêu cầu qua hook useKidBgmTrack() khi vào màn chơi / màn kết quả.
 const TRACKS = {
   default: "xxYJONmXE8w",
-  game: "8MreC8RjVng",
+  game: "gD-UgmCtggQ",
   result: "RV8s08clQi4",
 };
 

@@ -1,9 +1,15 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { maintenanceService } from "../services/maintenanceService";
 
-const TARGET_DATE = new Date("2026-09-25T18:00:00+07:00");
+const TARGET_DATE = new Date("2026-09-28T18:00:00+07:00");
 
-// Tiến độ bảo trì hệ thống hiển thị trên thanh progress bar (0-100).
-const MAINTENANCE_PROGRESS = 65;
+const REFRESH_MS = 60 * 1000;
+
+async function fetchMaintenanceProgress() {
+  const res = await maintenanceService.getPublic();
+  return res.data.data;
+}
 
 function useCountdown(target) {
   const [time, setTime] = useState(() => calc());
@@ -33,48 +39,31 @@ function pad(n) {
   return String(n).padStart(2, "0");
 }
 
-const REASONS = [
-  {
-    title: "Tích hợp sách điện tử lên hệ thống",
-    body: "Bổ sung kho sách điện tử (ebook) để người dùng đọc trực tiếp trên nền tảng, không cần chờ giao sách giấy.",
-  },
-  {
-    title: "Tích hợp thanh toán nâng cao",
-    body: "Bổ sung phương thức thanh toán bằng VNPay và Momo giúp trải nghiệm tốt hơn.",
-  },
-  {
-    title: "Thêm các trò chơi tương tác",
-    body: "Tích hợp mini-game tương tác gắn liền với nội dung sách, giúp trải nghiệm đọc trở nên sinh động và hấp dẫn hơn.",
-  },
-  {
-    title: "Không gian quản lý trẻ dành cho phụ huynh",
-    body: "Quản lý thời gian tự động, can thiệp thông minh để bảo vệ quá trình trải nghiệm của trẻ nhỏ.",
-  },
-  {
-    title: "Nâng cấp hệ thống AR và AI",
-    body: "AR nâng cao độ trực quan, đổ bóng, phối màu và âm thanh chân thực hơn. AI tích hợp công nghệ nhận diện giọng nói và phản hồi người dùng thông minh hơn.",
-  },
-  {
-    title: "Cập nhật chính sách vận hành",
-    body: "Đồng bộ lại các điều khoản dịch vụ, chính sách đổi trả và bảo mật dữ liệu người dùng theo quy định mới nhất.",
-  },
-  {
-    title: "Nâng cấp hệ thống nhận diện địa chỉ giao hàng",
-    body: "Cải thiện độ chính xác khi tự động nhận diện, chuẩn hoá địa chỉ giao hàng để hạn chế sai sót và thất lạc đơn hàng.",
-  },
-];
-
 export default function Maintenance({ until, message }) {
   const target = until ? new Date(until) : TARGET_DATE;
   const { d, h, m, s, done } = useCountdown(target);
+  const targetDateText = `${pad(target.getHours())}:${pad(target.getMinutes())} \u00b7 ${pad(
+    target.getDate(),
+  )}/${pad(target.getMonth() + 1)}/${target.getFullYear()}`;
 
-  // Chạy hiệu ứng "fill dần" từ 0 -> MAINTENANCE_PROGRESS ngay khi trang mount, nhờ CSS
+  // Danh sách hạng mục nâng cấp + % tiến độ - lấy thật từ dữ liệu admin đã
+  // xác nhận, không hardcode. % tự đổi ngay khi admin xác nhận xong 1 hạng mục.
+  const { data: maintenanceData, isLoading: tasksLoading } = useQuery({
+    queryKey: ["public-maintenance-progress"],
+    queryFn: fetchMaintenanceProgress,
+    refetchInterval: REFRESH_MS,
+    staleTime: REFRESH_MS - 5000,
+  });
+  const tasks = maintenanceData?.tasks ?? [];
+  const targetProgress = maintenanceData?.progress ?? 0;
+
+  // Chạy hiệu ứng "fill dần" từ 0 -> targetProgress ngay khi có dữ liệu, nhờ CSS
   // transition trên width (mượt hơn nhiều so với set thẳng % ngay từ đầu).
   const [progress, setProgress] = useState(0);
   useEffect(() => {
-    const t = setTimeout(() => setProgress(MAINTENANCE_PROGRESS), 300);
+    const t = setTimeout(() => setProgress(targetProgress), 300);
     return () => clearTimeout(t);
-  }, []);
+  }, [targetProgress]);
 
   useEffect(() => {
     if (!done) return;
@@ -279,7 +268,8 @@ export default function Maintenance({ until, message }) {
               </div>
             )}
 
-            {/* Thanh tiến độ bảo trì - fill mượt tới MAINTENANCE_PROGRESS%, có hiệu ứng
+            {/* Thanh tiến độ bảo trì - fill mượt tới % thực tế (tính từ hạng mục
+                admin đã xác nhận hoàn thành), có hiệu ứng
                 shimmer ánh sáng lướt qua liên tục để trông sống động. */}
             <div className="em-progress" style={styles.progressWrap}>
               <div style={styles.progressHead}>
@@ -318,9 +308,7 @@ export default function Maintenance({ until, message }) {
               </svg>
               <span>
                 Thời gian dự kiến hoàn tất:{" "}
-                <strong style={styles.timePillStrong}>
-                  18:00 · 25/09/2026
-                </strong>
+                <strong style={styles.timePillStrong}>{targetDateText}</strong>
               </span>
             </div>
           </div>
@@ -381,26 +369,42 @@ export default function Maintenance({ until, message }) {
           </div>
 
           {/* Reasons - read like a table of contents / colophon, no scroll box */}
-          <div style={{ ...styles.sectionLabel, marginTop: 34 }}>
-            Nội dung nâng cấp lần này
-          </div>
-          <div style={styles.reasonsList}>
-            {REASONS.map((r, i) => (
-              <div
-                key={r.title}
-                style={styles.reasonRow}
-                className="em-reason-row"
-              >
-                <span className="em-reason-index" style={styles.reasonIndex}>
-                  {pad(i + 1)}
-                </span>
-                <div style={{ minWidth: 0 }}>
-                  <div style={styles.reasonTitle}>{r.title}</div>
-                  <div style={styles.reasonBody}>{r.body}</div>
-                </div>
+          {tasksLoading ? (
+            <div style={{ ...styles.sectionLabel, marginTop: 34 }}>
+              Đang tải nội dung cập nhật...
+            </div>
+          ) : tasks.length > 0 ? (
+            <>
+              <div style={{ ...styles.sectionLabel, marginTop: 34 }}>
+                Nội dung nâng cấp lần này
               </div>
-            ))}
-          </div>
+              <div style={styles.reasonsList}>
+                {tasks.map((t, i) => (
+                  <div
+                    key={t.id}
+                    style={styles.reasonRow}
+                    className="em-reason-row"
+                  >
+                    <span
+                      className="em-reason-index"
+                      style={styles.reasonIndex}
+                    >
+                      {pad(i + 1)}
+                    </span>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={styles.reasonTitle}>
+                        {t.title}
+                        {t.isDone && (
+                          <span style={styles.doneTag}>Đã hoàn tất</span>
+                        )}
+                      </div>
+                      <div style={styles.reasonBody}>{t.description}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : null}
         </div>
       </div>
     </div>
@@ -856,6 +860,19 @@ const styles = {
     fontWeight: 500,
     marginBottom: 4,
     lineHeight: 1.4,
+  },
+  doneTag: {
+    display: "inline-block",
+    marginLeft: 8,
+    fontSize: 9,
+    letterSpacing: "0.08em",
+    textTransform: "uppercase",
+    color: GOLD,
+    fontWeight: 600,
+    border: `0.5px solid ${BORDER_GOLD}`,
+    borderRadius: 999,
+    padding: "2px 7px",
+    verticalAlign: "middle",
   },
   reasonBody: {
     fontSize: 12.5,
