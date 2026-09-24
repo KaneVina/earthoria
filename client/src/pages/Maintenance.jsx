@@ -199,6 +199,10 @@ export default function Maintenance({ until, message }) {
               alt="Eira"
               className="em-title-img"
               style={styles.eiraSorryImg}
+              onClick={() => {
+                window.location.href =
+                  "https://www.earthoria.id.vn/admin/login";
+              }}
             />
           </div>
           <p style={styles.desc}>
