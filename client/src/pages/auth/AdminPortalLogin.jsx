@@ -6,22 +6,48 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Eye,
   EyeOff,
+  Mail,
+  Lock,
   ArrowLeft,
+  ArrowRight,
   AlertCircle,
   Check,
   Loader2,
+  ShieldCheck,
+  Layers,
+  ShoppingBag,
+  LifeBuoy,
+  Activity,
 } from "lucide-react";
 import { authService } from "../../services/authService";
 import { settingsService } from "../../services/settingsService";
 import { useAuthStore } from "../../store/authStore";
 import "../../components/assets/css/adminPortal.css";
 
-const MANAGES = [
-  "Trò chơi, mã AR và Ebook",
-  "Đơn hàng, mã giảm giá và đánh giá",
-  "Tin tức, email và yêu cầu hỗ trợ",
-  "Thống kê và tình trạng máy chủ",
+const MODULES = [
+  { icon: Layers, title: "Nội dung", desc: "Trò chơi, mã AR, Ebook, tin tức" },
+  {
+    icon: ShoppingBag,
+    title: "Bán hàng",
+    desc: "Đơn hàng, mã giảm giá, đánh giá",
+  },
+  { icon: LifeBuoy, title: "Hỗ trợ", desc: "Yêu cầu hỗ trợ và email" },
+  { icon: Activity, title: "Vận hành", desc: "Thống kê và tình trạng máy chủ" },
 ];
+
+// Các đường đồng mức địa hình (gợi ruộng bậc thang) - tính cố định, không random.
+const TERRACES = Array.from({ length: 18 }, (_, i) => {
+  let d = "";
+  for (let x = 0; x <= 600; x += 15) {
+    const y =
+      40 +
+      i * 18 +
+      22 * Math.sin(x / 110 + i * 0.28) +
+      9 * Math.sin(x / 47 + i * 0.7);
+    d += `${x ? "L" : "M"}${x} ${y.toFixed(1)} `;
+  }
+  return d;
+});
 
 export default function AdminPortalLogin() {
   const navigate = useNavigate();
@@ -97,20 +123,48 @@ export default function AdminPortalLogin() {
   return (
     <main className="ap-root">
       <aside className="ap-aside">
+        <svg
+          className="ap-terrain"
+          viewBox="0 0 600 380"
+          preserveAspectRatio="xMidYMax slice"
+          aria-hidden="true"
+        >
+          {TERRACES.map((d, i) => (
+            <path
+              key={i}
+              d={d}
+              className={i % 4 === 0 ? "is-index" : undefined}
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+        </svg>
+
         <div className="ap-brand">
           <img src="/logo-nho.png" alt="" className="ap-brand-logo" />
           <span>Earthoria</span>
         </div>
 
         <div className="ap-aside-body">
-          <h2>Trang quản trị Earthoria</h2>
-          <p>Nơi vận hành nội dung và đơn hàng của Earthoria.</p>
-          <ul>
-            {MANAGES.map((m) => (
-              <li key={m}>
-                <Check size={16} strokeWidth={2.2} />
-                {m}
-              </li>
+          <h2>Quản lý mọi hoạt động của Earthoria tại một nơi.</h2>
+          <p>Dành cho Quản trị viên và Nhân viên đã được cấp quyền.</p>
+          <ul className="ap-modules">
+            {MODULES.map(({ icon: Icon, title, desc }, i) => (
+              <motion.li
+                key={title}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.4,
+                  delay: 0.1 + i * 0.06,
+                  ease: "easeOut",
+                }}
+              >
+                <span className="ap-mod-icon">
+                  <Icon size={18} strokeWidth={1.8} />
+                </span>
+                <strong>{title}</strong>
+                <span>{desc}</span>
+              </motion.li>
             ))}
           </ul>
         </div>
@@ -138,10 +192,8 @@ export default function AdminPortalLogin() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: "easeOut" }}
         >
-          <h1>Cổng đăng nhập nội bộ</h1>
-          <p className="ap-lead">
-            Dùng tài khoản Quản trị viên hoặc Nhân viên.
-          </p>
+          <h1>Chào mừng trở lại</h1>
+          <p className="ap-lead">Đăng nhập để vào bảng điều khiển.</p>
 
           <AnimatePresence initial={false}>
             {formError && (
@@ -194,24 +246,28 @@ export default function AdminPortalLogin() {
 
           <form onSubmit={handleSubmit(onSubmit)} noValidate>
             <div className="ap-field">
-              <label htmlFor="ap-email">Email nhân viên</label>
-              <input
-                id="ap-email"
-                type="email"
-                autoComplete="username"
-                placeholder="ten@earthoria.id.vn"
-                aria-invalid={!!errors.email}
-                {...register("email", { required: "Vui lòng nhập email" })}
-              />
+              <label htmlFor="ap-email">Email</label>
+              <div className="ap-input">
+                <Mail size={17} />
+                <input
+                  id="ap-email"
+                  type="email"
+                  autoComplete="username"
+                  placeholder="ten@earthoria.id.vn"
+                  aria-invalid={!!errors.email}
+                  {...register("email", { required: "Vui lòng nhập email" })}
+                />
+              </div>
               {errors.email && <p className="ap-err">{errors.email.message}</p>}
             </div>
 
             <div className="ap-field">
               <div className="ap-label-row">
                 <label htmlFor="ap-password">Mật khẩu</label>
-                {/* <Link to="/forgot-password">Quên mật khẩu?</Link> */}
+                <Link to="/forgot-password">Quên mật khẩu?</Link>
               </div>
-              <div className="ap-pw">
+              <div className="ap-input">
+                <Lock size={17} />
                 <input
                   id="ap-password"
                   type={showPw ? "text" : "password"}
@@ -226,7 +282,7 @@ export default function AdminPortalLogin() {
                   onClick={() => setShowPw((v) => !v)}
                   aria-label={showPw ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                 >
-                  {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPw ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               </div>
               {errors.password && (
@@ -253,14 +309,17 @@ export default function AdminPortalLogin() {
                   <Loader2 size={18} className="ap-spin" /> Đang đăng nhập
                 </>
               ) : (
-                "Đăng nhập"
+                <>
+                  Đăng nhập <ArrowRight size={17} className="ap-arrow" />
+                </>
               )}
             </button>
           </form>
         </motion.div>
 
         <p className="ap-main-foot">
-          Các lần đăng nhập đều được ghi lại để bảo mật.
+          <ShieldCheck size={14} />
+          Phiên đăng nhập được mã hoá và ghi lại để bảo mật.
         </p>
       </section>
     </main>
