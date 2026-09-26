@@ -3556,25 +3556,31 @@ function PageStripItem({
   onDragAutoScroll,
 }) {
   const dragControls = useDragControls();
+  // Theo dõi cục bộ trang này có đang được kéo hay không, để chỉ "nhấc" đúng ô
+  // vuông số trang (đã có sẵn nền + bo góc + đổ bóng) lên - KHÔNG áp hiệu ứng
+  // lên cả khối (ô số + tên trang), tránh tạo ra 1 khối bóng đổ trên nền trong
+  // suốt trông như 1 hộp trắng "vô hình" xấu xí khi kéo.
+  const [isDragging, setIsDragging] = useState(false);
   return (
     <Reorder.Item
       as="div"
       value={page.id}
       dragListener={false}
       dragControls={dragControls}
-      className="bb-page-item"
-      onDragStart={onDragStartCommit}
-      onDragEnd={onDragEndCommit}
-      onDrag={(event) => onDragAutoScroll(event)}
-      whileDrag={{
-        scale: 1.06,
-        zIndex: 30,
-        boxShadow: "0 12px 26px rgba(20, 51, 42, 0.28)",
+      className={`bb-page-item${isDragging ? " is-dragging" : ""}`}
+      onDragStart={(event, info) => {
+        setIsDragging(true);
+        onDragStartCommit(event, info);
       }}
+      onDragEnd={(event, info) => {
+        setIsDragging(false);
+        onDragEndCommit(event, info);
+      }}
+      onDrag={(event) => onDragAutoScroll(event)}
     >
       <div
         className={`bb-page-thumb${isActive ? " active" : ""}`}
-        style={{ background: page.background, cursor: "grab" }}
+        style={{ background: page.background }}
         onPointerDown={(e) => dragControls.start(e)}
         onClick={onSelect}
       >
