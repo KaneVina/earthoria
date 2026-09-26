@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { Reorder, useDragControls } from "framer-motion";
 import toast from "react-hot-toast";
 import { ebookService } from "../../services/ebookService";
 import api from "../../services/api";
@@ -3532,6 +3533,71 @@ export function PreviewOverlay({
   );
 }
 
+// 1 ô trang trong dải trang phía dưới trình soạn - kéo được để sắp xếp lại thứ
+// tự trang trong sách. Tách riêng thành component để dùng useDragControls()
+// (hook của framer-motion) một cách hợp lệ: nếu gọi hook này trực tiếp bên
+// trong pages.map(...) ở component cha, số lần gọi hook sẽ thay đổi mỗi khi
+// thêm/xoá trang và làm vỡ "Rules of Hooks" của React.
+//
+// Chỉ riêng ô vuông đánh số trang (bb-page-thumb) mới là tay cầm kéo
+// (dragListener=false + dragControls.start ở onPointerDown) - nhờ vậy việc bấm
+// chọn/gõ tên trang trong ô nhập bên cạnh không bao giờ vô tình bị hiểu nhầm
+// thành một thao tác kéo.
+function PageStripItem({
+  page,
+  index,
+  isActive,
+  onSelect,
+  onTitleChange,
+  onEditStart,
+  onEditEnd,
+  onDragStartCommit,
+  onDragEndCommit,
+  onDragAutoScroll,
+}) {
+  const dragControls = useDragControls();
+  return (
+    <Reorder.Item
+      as="div"
+      value={page.id}
+      dragListener={false}
+      dragControls={dragControls}
+      className="bb-page-item"
+      onDragStart={onDragStartCommit}
+      onDragEnd={onDragEndCommit}
+      onDrag={(event) => onDragAutoScroll(event)}
+      whileDrag={{
+        scale: 1.06,
+        zIndex: 30,
+        boxShadow: "0 12px 26px rgba(20, 51, 42, 0.28)",
+      }}
+    >
+      <div
+        className={`bb-page-thumb${isActive ? " active" : ""}`}
+        style={{ background: page.background, cursor: "grab" }}
+        onPointerDown={(e) => dragControls.start(e)}
+        onClick={onSelect}
+      >
+        {index + 1}
+      </div>
+      {isActive ? (
+        <input
+          className="bb-page-title-input"
+          value={page.title}
+          placeholder="Tên trang"
+          onFocus={onEditStart}
+          onBlur={onEditEnd}
+          onChange={(e) => onTitleChange(e.target.value)}
+        />
+      ) : (
+        <span className="bb-page-title-input" style={{ color: "#b7bfb9" }}>
+          {page.title || "\u00A0"}
+        </span>
+      )}
+    </Reorder.Item>
+  );
+}
+
 export default function BookBuilder() {
   const navigate = useNavigate();
   const { id: routeId } = useParams();
@@ -3609,10 +3675,11 @@ export default function BookBuilder() {
 
   const [dragLayerId, setDragLayerId] = useState(null);
   const [dragOverLayerId, setDragOverLayerId] = useState(null);
-  const [dragPageId, setDragPageId] = useState(null);
-  const [dragOverPageId, setDragOverPageId] = useState(null);
 
   const wrapRef = useRef(null);
+  // Dải trang (pages strip) tự cuộn ngang khi kéo 1 trang tới gần mép trái/phải,
+  // để có thể kéo trang 1 xa tới tận trang cuối trong sách nhiều trang.
+  const pageStripScrollRef = useRef(null);
   const canvasRef = useRef(null);
   const imageFileInputRef = useRef(null);
   const imageUploadTargetIdRef = useRef(null);
@@ -4559,21 +4626,46 @@ export default function BookBuilder() {
     });
     setPageIndex(target);
   };
-  const reorderPages = (draggedId, targetId) => {
-    if (!draggedId || draggedId === targetId) return;
-    let newIndex = pageIndex;
-    setPagesCommit((prev) => {
-      const copy = [...prev];
-      const fromIdx = copy.findIndex((p) => p.id === draggedId);
-      const toIdx = copy.findIndex((p) => p.id === targetId);
-      if (fromIdx === -1 || toIdx === -1) return prev;
-      const currentId = copy[pageIndex]?.id;
-      const [item] = copy.splice(fromIdx, 1);
-      copy.splice(toIdx, 0, item);
-      newIndex = copy.findIndex((p) => p.id === currentId);
-      return copy;
-    });
-    setPageIndex((i) => (newIndex >= 0 ? newIndex : i));
+  // Kéo-thả sắp xếp lại thứ tự trang: dùng Reorder của framer-motion (đã có sẵn
+  // trong dependencies) thay vì HTML5 drag-and-drop gốc - vốn không hoạt động
+  // trên thiết bị cảm ứng (điện thoại/máy tính bảng) và không ổn định trên
+  // Firefox (thiếu dataTransfer.setData), lại tính sai vị trí thả (chèn trước
+  // hay sau trang đích tuỳ theo kéo xuôi/ngược chiều). `onReorder` được gọi
+  // liên tục trong lúc kéo nên chỉ cập nhật state "live" (không đẩy vào lịch sử
+  // hoàn tác mỗi lần đảo vị trí); 1 bản ghi hoàn tác duy nhất cho cả thao tác kéo
+  // được tạo bởi beginEdit()/endEdit() gắn ở onDragStart/onDragEnd bên dưới.
+  const handlePagesReorder = (newIds) => {
+    const byId = new Map(pages.map((p) => [p.id, p]));
+    const reordered = newIds.map((id) => byId.get(id)).filter(Boolean);
+    // An toàn: nếu vì lý do gì đó bị thiếu/thừa trang thì bỏ qua thay vì làm
+    // mất trang của người dùng.
+    if (reordered.length !== pages.length) return;
+    const activeId = pages[pageIndex]?.id;
+    const newIndex = reordered.findIndex((p) => p.id === activeId);
+    setPagesLive(() => reordered);
+    if (newIndex >= 0 && newIndex !== pageIndex) setPageIndex(newIndex);
+  };
+  // Tự cuộn dải trang khi kéo 1 trang tới gần mép trái/phải của khung cuộn, để
+  // luôn thả được vào bất kỳ vị trí nào kể cả khi sách có nhiều trang hơn màn
+  // hình hiển thị.
+  const handlePageDragAutoScroll = (event) => {
+    const el = pageStripScrollRef.current;
+    if (!el) return;
+    const clientX =
+      typeof event?.clientX === "number"
+        ? event.clientX
+        : event?.touches?.[0]?.clientX;
+    if (typeof clientX !== "number") return;
+    const rect = el.getBoundingClientRect();
+    const edge = 56;
+    const maxSpeed = 16;
+    const distFromLeft = clientX - rect.left;
+    const distFromRight = rect.right - clientX;
+    if (distFromLeft < edge) {
+      el.scrollLeft -= maxSpeed * (1 - Math.max(distFromLeft, 0) / edge);
+    } else if (distFromRight < edge) {
+      el.scrollLeft += maxSpeed * (1 - Math.max(distFromRight, 0) / edge);
+    }
   };
   const setPageBackground = (color) =>
     setPagesLive((prev) =>
@@ -5352,64 +5444,33 @@ export default function BookBuilder() {
       )}
 
       <div className="bb-pages-strip">
-        <div className="bb-pages-strip-scroll">
+        <Reorder.Group
+          as="div"
+          axis="x"
+          ref={pageStripScrollRef}
+          className="bb-pages-strip-scroll"
+          values={pages.map((p) => p.id)}
+          onReorder={handlePagesReorder}
+        >
           {pages.map((p, i) => (
-            <div
-              className="bb-page-item"
+            <PageStripItem
               key={p.id}
-              draggable
-              onDragStart={(e) => {
-                e.dataTransfer.effectAllowed = "move";
-                setDragPageId(p.id);
+              page={p}
+              index={i}
+              isActive={i === pageIndex}
+              onSelect={() => {
+                setPageIndex(i);
+                setSelectedId(null);
               }}
-              onDragOver={(e) => {
-                e.preventDefault();
-                if (dragPageId && dragPageId !== p.id) setDragOverPageId(p.id);
-              }}
-              onDragLeave={() =>
-                setDragOverPageId((id) => (id === p.id ? null : id))
-              }
-              onDrop={(e) => {
-                e.preventDefault();
-                reorderPages(dragPageId, p.id);
-                setDragPageId(null);
-                setDragOverPageId(null);
-              }}
-              onDragEnd={() => {
-                setDragPageId(null);
-                setDragOverPageId(null);
-              }}
-            >
-              <div
-                className={`bb-page-thumb${i === pageIndex ? " active" : ""}${dragOverPageId === p.id ? " drag-over" : ""}${dragPageId === p.id ? " dragging-self" : ""}`}
-                style={{ background: p.background, cursor: "grab" }}
-                onClick={() => {
-                  setPageIndex(i);
-                  setSelectedId(null);
-                }}
-              >
-                {i + 1}
-              </div>
-              {i === pageIndex ? (
-                <input
-                  className="bb-page-title-input"
-                  value={p.title}
-                  placeholder="Tên trang"
-                  onFocus={beginEdit}
-                  onBlur={endEdit}
-                  onChange={(e) => setPageTitle(e.target.value)}
-                />
-              ) : (
-                <span
-                  className="bb-page-title-input"
-                  style={{ color: "#b7bfb9" }}
-                >
-                  {p.title || "\u00A0"}
-                </span>
-              )}
-            </div>
+              onTitleChange={setPageTitle}
+              onEditStart={beginEdit}
+              onEditEnd={endEdit}
+              onDragStartCommit={beginEdit}
+              onDragEndCommit={endEdit}
+              onDragAutoScroll={handlePageDragAutoScroll}
+            />
           ))}
-        </div>
+        </Reorder.Group>
         <div className="bb-strip-divider" />
 
         <div className="bb-page-strip-actions">

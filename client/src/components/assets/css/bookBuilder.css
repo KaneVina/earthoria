@@ -332,12 +332,8 @@
     0 0 0 3px rgba(74, 158, 63, 0.2),
     0 4px 10px rgba(20, 51, 42, 0.14);
 }
-.bb-page-thumb.drag-over {
-  border-color: #4a9e3f;
-  transform: translateY(-3px);
-}
-.bb-page-thumb.dragging-self {
-  opacity: 0.4;
+.bb-page-thumb:active {
+  cursor: grabbing;
 }
 .bb-page-thumb::after {
   content: "";
