@@ -1135,6 +1135,31 @@ function defaultQrLayer(overrides = {}) {
   };
 }
 
+// Layer "loa" - icon kéo-thả-resize y hệt sticker/QR, gắn 1 nguồn âm thanh
+// (link YouTube HOẶC file audio tải lên - dùng chung shape videoId/audioUrl
+// với MusicSourcePicker/musicPatchFromSource để tái dùng nguyên UI chọn
+// nhạc đã có). Khác với "Âm thanh khi bấm loa" cũ (1 nút cố định góc màn
+// hình, dùng chung cho cả trang): mỗi layer sound là 1 điểm phát riêng, đặt
+// tuỳ ý trên hình (vd ngay con hổ), nhiều điểm/trang thoải mái - xem thêm
+// SoundHotspot (component phát thật ở trang đọc) và nhánh
+// layer.type === "sound" trong LayerView.
+function defaultSoundLayer(overrides = {}) {
+  return {
+    id: uid(),
+    type: "sound",
+    videoId: "",
+    audioUrl: "",
+    label: "",
+    x: BASE_PAGE_W / 2 - 24,
+    y: BASE_PAGE_H / 2 - 24,
+    width: 48,
+    height: 48,
+    opacity: 100,
+    locked: false,
+    ...overrides,
+  };
+}
+
 function qrLayerUrl(layer, kidToken) {
   if (!layer || !layer.code || !layer.bookSlug) return "";
   const kind = layer.linkType === "GAME" ? "game" : "ar";
@@ -1383,6 +1408,70 @@ function QrLiveEmbed({ layer, qrUrl, pageWidth, pageHeight }) {
   );
 }
 
+// Icon loa kéo-thả-resize như sticker, đặt trực tiếp lên hình minh hoạ.
+// Rê chuột / chạm vào mới phát (không tự phát khi lật trang). Không dừng
+// khi rê ra ngoài - chỉ dừng ngay khi resetKey (=flipId ở PreviewOverlay)
+// đổi giá trị, tức là đổi trang.
+function SoundHotspot({ layer, resetKey }) {
+  const [playing, setPlaying] = useState(false);
+  useEffect(() => {
+    setPlaying(false);
+  }, [resetKey]);
+
+  const hasSource = !!(layer.videoId || layer.audioUrl);
+  if (!hasSource) return null;
+
+  const start = () => setPlaying(true);
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: layer.x,
+        top: layer.y,
+        width: layer.width,
+        height: layer.height,
+        opacity: (layer.opacity ?? 100) / 100,
+        zIndex: 3,
+      }}
+      onPointerDown={(e) => e.stopPropagation()}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        type="button"
+        className={`er-sound-hotspot${playing ? " er-sound-hotspot--playing" : ""}`}
+        style={{ width: "100%", height: "100%" }}
+        onMouseEnter={start}
+        onTouchStart={start}
+        onFocus={start}
+        title={layer.label || "Nghe âm thanh"}
+        aria-label={layer.label || "Nghe âm thanh"}
+      >
+        <Volume2 size={Math.max(14, Math.min(layer.width, layer.height) * 0.5)} />
+      </button>
+      {playing && layer.audioUrl && (
+        <audio
+          key={`${layer.audioUrl}-${resetKey}`}
+          src={layer.audioUrl}
+          autoPlay
+          onEnded={() => setPlaying(false)}
+          style={{ display: "none" }}
+        />
+      )}
+      {playing && layer.videoId && (
+        <div className="er-click-sound-yt" aria-hidden="true">
+          <iframe
+            key={`${layer.videoId}-${resetKey}`}
+            src={`https://www.youtube.com/embed/${layer.videoId}?autoplay=1`}
+            title={layer.label || "Âm thanh"}
+            allow="autoplay"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ShapeSvg({ shapeType, fill, strokeColor, strokeWidth }) {
   const sw = strokeWidth || 0;
   if (shapeType === "line") {
@@ -1552,6 +1641,9 @@ function LayerView({
   // Chỉ có giá trị khi interactiveEmbed=true VÀ đang ở link đọc riêng của bé
   // - xem qrLayerUrl().
   kidToken,
+  // flipId của PreviewOverlay - đổi mỗi lần lật trang, dùng làm resetKey cho
+  // SoundHotspot để dừng âm thanh ngay khi chuyển trang.
+  flipId,
   pageWidth,
   pageHeight,
   onSelect,
@@ -1829,6 +1921,88 @@ function LayerView({
               }}
             >
               {layer.linkType === "GAME" ? "GAME" : "AR"}
+            </span>
+          )}
+        </div>
+        {!readOnly && selected && !layer.locked && (
+          <div
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              onResizeStart(e, layer);
+            }}
+            className="bb-resize-handle"
+            style={{ cursor: "nwse-resize" }}
+          />
+        )}
+      </div>
+    );
+  }
+
+  if (layer.type === "sound") {
+    const hasSource = !!(layer.videoId || layer.audioUrl);
+
+    // Trang đọc thật: icon phát thật, hover/chạm để nghe. Ẩn hẳn nếu chưa
+    // gắn nguồn (không có gì để kéo/bấm ở đây cho người đọc).
+    if (readOnly && interactiveEmbed) {
+      return <SoundHotspot layer={layer} resetKey={flipId} />;
+    }
+
+    // Canvas soạn thảo / xuất PDF: icon tĩnh, kéo/resize được như sticker.
+    return (
+      <div
+        style={{ ...wrapStyle, width: layer.width, height: layer.height }}
+        onPointerDown={handleDragStart}
+        onClick={handleClick}
+      >
+        <div
+          style={{
+            position: "relative",
+            width: "100%",
+            height: "100%",
+            boxSizing: "border-box",
+            borderRadius: "50%",
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: hasSource
+              ? "linear-gradient(135deg, #e6aa14, #c98a0e)"
+              : "repeating-linear-gradient(135deg, #eef1ee, #eef1ee 10px, #e5e9e4 10px, #e5e9e4 20px)",
+            border: hasSource ? "none" : "1.5px dashed #c7d0c9",
+            outline:
+              !readOnly && selected
+                ? "2px solid #4a9e3f"
+                : "2px solid transparent",
+            outlineOffset: 4,
+            cursor: readOnly
+              ? "default"
+              : layer.locked
+                ? "not-allowed"
+                : "grab",
+            touchAction: "none",
+            boxShadow:
+              !readOnly && selected ? "0 0 0 4px rgba(74,158,63,0.14)" : "none",
+            transition: "outline-color 0.12s ease, box-shadow 0.12s ease",
+            color: hasSource ? "#fff" : "#8a978f",
+          }}
+        >
+          <Volume2
+            size={Math.max(14, Math.min(layer.width, layer.height) * 0.45)}
+            strokeWidth={1.8}
+          />
+          {!readOnly && !hasSource && (
+            <span
+              style={{
+                position: "absolute",
+                bottom: -18,
+                left: "50%",
+                transform: "translateX(-50%)",
+                fontSize: 9,
+                color: "#8a978f",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Chưa gắn âm thanh
             </span>
           )}
         </div>
@@ -2993,6 +3167,28 @@ export function PreviewOverlay({
           pointer-events: none;
         }
         .er-click-sound-yt iframe { width: 200px; height: 150px; border: 0; }
+        .er-sound-hotspot {
+          border: none;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #e6aa14, #c98a0e);
+          color: #fff;
+          cursor: pointer;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.32);
+          animation: er-click-sound-pulse 2.2s ease-in-out infinite;
+          transition: transform 0.15s ease;
+        }
+        .er-sound-hotspot:hover { transform: scale(1.08); }
+        .er-sound-hotspot--playing {
+          background: linear-gradient(135deg, #4a9e3f, #3a8330);
+          animation: er-sound-hotspot-glow 1.1s ease-in-out infinite;
+        }
+        @keyframes er-sound-hotspot-glow {
+          0%, 100% { box-shadow: 0 4px 16px rgba(0,0,0,0.32), 0 0 0 0 rgba(74,158,63,0.55); }
+          50% { box-shadow: 0 4px 16px rgba(0,0,0,0.32), 0 0 0 12px rgba(74,158,63,0); }
+        }
       `}</style>
 
       {clickSound && (
@@ -3135,6 +3331,7 @@ export function PreviewOverlay({
                         readOnly
                         interactiveEmbed
                         kidToken={kidToken}
+                        flipId={flipId}
                         pageWidth={p.width || PAGE_W}
                         pageHeight={p.height || PAGE_H}
                         isReadingThis={reading?.layerId === layer.id}
@@ -3662,8 +3859,11 @@ function PageStripItem({
     page.music?.ambient?.mode === "custom" &&
     !!(page.music.ambient.videoId || page.music.ambient.audioUrl);
   const hasClickSound = !!(
-    page.music?.click &&
-    (page.music.click.videoId || page.music.click.audioUrl)
+    (page.music?.click &&
+      (page.music.click.videoId || page.music.click.audioUrl)) ||
+    (page.layers || []).some(
+      (l) => l.type === "sound" && (l.videoId || l.audioUrl),
+    )
   );
   const hasMusic = hasAmbient || hasClickSound;
   return (
@@ -4574,6 +4774,16 @@ export default function BookBuilder() {
     selectLayer(layer.id);
     setActivePanel("format");
   };
+  const addSoundLayer = () => {
+    const layer = defaultSoundLayer();
+    setPagesCommit((prev) =>
+      prev.map((p, i) =>
+        i === pageIndex ? { ...p, layers: [...p.layers, layer] } : p,
+      ),
+    );
+    selectLayer(layer.id);
+    setActivePanel("format");
+  };
   const removeLayer = (id) => {
     setPagesCommit((prev) =>
       prev.map((p, i) =>
@@ -5060,7 +5270,7 @@ export default function BookBuilder() {
           x: l.x * rx,
           y: l.y * ry,
           width: l.width * rx,
-          ...(l.type === "image" || l.type === "qr"
+          ...(l.type === "image" || l.type === "qr" || l.type === "sound"
             ? { height: l.height * ry }
             : {}),
         })),
@@ -5260,7 +5470,7 @@ export default function BookBuilder() {
           x = PAGE_W / 2 - w / 2;
           gx = true;
         }
-        if (layerMeta.type === "image") {
+        if (layerMeta.type === "image" || layerMeta.type === "sound") {
           const h = layerMeta.height || 0;
           const centerY = y + h / 2;
           if (Math.abs(centerY - PAGE_H / 2) < 6) {
@@ -5331,7 +5541,11 @@ export default function BookBuilder() {
     const onMove = (e) => {
       const dx = (e.clientX - resizing.startClientX) / scale;
       const dy = (e.clientY - resizing.startClientY) / scale;
-      if (resizing.type === "image" || resizing.type === "shape") {
+      if (
+        resizing.type === "image" ||
+        resizing.type === "shape" ||
+        resizing.type === "sound"
+      ) {
         updateLayer(resizing.id, {
           width: Math.max(30, resizing.startW + dx),
           height: Math.max(30, resizing.startH + dy),
@@ -5949,6 +6163,14 @@ export default function BookBuilder() {
           >
             <Square size={18} />
             <span>Hình</span>
+          </button>
+          <button
+            className="bb-rail-btn"
+            onClick={addSoundLayer}
+            title="Thêm icon loa (kéo thả lên hình, rê chuột để nghe)"
+          >
+            <Volume2 size={18} />
+            <span>Loa</span>
           </button>
           <button
             className={`bb-rail-btn${activePanel === "qr" ? " active" : ""}`}
@@ -6584,6 +6806,8 @@ export default function BookBuilder() {
                     )
                   ) : layer.type === "qr" ? (
                     <QrCode size={12} />
+                  ) : layer.type === "sound" ? (
+                    <Volume2 size={12} />
                   ) : (
                     <Type size={12} />
                   )}
@@ -6602,7 +6826,12 @@ export default function BookBuilder() {
                         : "(chưa có ảnh)"
                     : layer.type === "qr"
                       ? layer.label || "(chưa gắn liên kết)"
-                      : layer.text || "(trống)"}
+                      : layer.type === "sound"
+                        ? layer.label ||
+                          (layer.videoId || layer.audioUrl
+                            ? "Icon loa"
+                            : "Icon loa (chưa gắn âm thanh)")
+                        : layer.text || "(trống)"}
                 </span>
                 <button
                   className="bb-mini-btn"
@@ -6847,6 +7076,95 @@ export default function BookBuilder() {
                       onChange={(e) =>
                         updateLayer(selected.id, {
                           strokeWidth: Number(e.target.value) || 0,
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+                <div className="bb-field">
+                  <label>Độ trong suốt ({selected.opacity}%)</label>
+                  <input
+                    type="range"
+                    min={10}
+                    max={100}
+                    value={selected.opacity}
+                    onFocus={beginEdit}
+                    onBlur={endEdit}
+                    onChange={(e) =>
+                      updateLayer(selected.id, {
+                        opacity: Number(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+              </>
+            ) : selected.type === "sound" ? (
+              <>
+                <div className="bb-field">
+                  <label>
+                    Nguồn âm thanh
+                    <InfoHint>
+                      Dán link YouTube hoặc tải file audio lên. Bé rê chuột /
+                      chạm vào icon loa trên trang là nghe được ngay.
+                    </InfoHint>
+                  </label>
+                  <MusicSourcePicker
+                    value={{
+                      videoId: selected.videoId,
+                      audioUrl: selected.audioUrl,
+                    }}
+                    ebookId={ebookId}
+                    onChange={(next) =>
+                      updateLayer(
+                        selected.id,
+                        musicPatchFromSource(next),
+                        { commit: true },
+                      )
+                    }
+                  />
+                </div>
+                <div className="bb-field">
+                  <input
+                    type="text"
+                    placeholder="Tên (tuỳ chọn) - vd: Tiếng hổ gầm"
+                    value={selected.label || ""}
+                    onFocus={beginEdit}
+                    onBlur={endEdit}
+                    onChange={(e) =>
+                      updateLayer(selected.id, { label: e.target.value })
+                    }
+                  />
+                  <div className="bb-hint" style={{ marginTop: 4 }}>
+                    Đặt tên cho icon này (hiện khi rê chuột vào)
+                  </div>
+                </div>
+                <div className="bb-field">
+                  <label>
+                    Kích thước (rộng × cao)
+                    <InfoHint>
+                      Nên để rộng = cao để icon loa tròn đều, không bị méo.
+                    </InfoHint>
+                  </label>
+                  <div className="bb-color-size">
+                    <input
+                      type="number"
+                      value={Math.round(selected.width)}
+                      onFocus={beginEdit}
+                      onBlur={endEdit}
+                      onChange={(e) =>
+                        updateLayer(selected.id, {
+                          width: Number(e.target.value) || 24,
+                        })
+                      }
+                    />
+                    <input
+                      type="number"
+                      value={Math.round(selected.height)}
+                      onFocus={beginEdit}
+                      onBlur={endEdit}
+                      onChange={(e) =>
+                        updateLayer(selected.id, {
+                          height: Number(e.target.value) || 24,
                         })
                       }
                     />
