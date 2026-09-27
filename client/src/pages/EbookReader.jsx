@@ -300,6 +300,7 @@ export default function EbookReader() {
         pageNumberPos={{ v: "bottom", h: "center" }}
         showTitleWithPageNumber={false}
         hidePageNumberOnCover={false}
+        bookMusic={data.music}
         bookInfo={data.book}
         storageKey={data.id}
         resumeFromStorage
