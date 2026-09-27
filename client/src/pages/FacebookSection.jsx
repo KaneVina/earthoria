@@ -189,7 +189,6 @@ function SkeletonCard() {
 
 /* ─ CARD ─ */
 function FbCard({ post, index }) {
-  const reactions = post.likes?.summary?.total_count ?? 0;
   const comments = post.comments?.summary?.total_count ?? 0;
   const date = fmtDate(post.created_time);
   const href = post.permalink_url || `https://www.facebook.com/${FB_PAGE_ID}`;
@@ -380,58 +379,26 @@ function FbCard({ post, index }) {
         />
 
         {/* actions */}
-        <div style={{ display: "flex", alignItems: "center" }}>
-          {/* reactions */}
-          <div style={{ display: "flex", alignItems: "center" }}>
-            {["#1877F2", "#E0325C", "#F7B928"].map((bg, ri) => (
-              <div
-                key={ri}
-                style={{
-                  width: 17,
-                  height: 17,
-                  borderRadius: "50%",
-                  background: bg,
-                  border: "1.5px solid " + T.white,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 9,
-                  marginLeft: ri === 0 ? 0 : -4,
-                }}
-              >
-                {["👍", "❤️", "😮"][ri]}
-              </div>
-            ))}
-            <span
-              style={{
-                fontSize: 11,
-                color: T.textMuted,
-                marginLeft: 6,
-                fontWeight: 300,
-              }}
-            >
-              {reactions}
-            </span>
-          </div>
-          {/* right */}
-          <div
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-end",
+          }}
+        >
+          <span
             style={{
-              marginLeft: "auto",
               display: "flex",
               alignItems: "center",
-              gap: 10,
+              gap: 3,
               fontSize: 11,
               color: T.textMuted,
+              fontWeight: 300,
             }}
           >
-            <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
-              <CommentIcon />
-              {comments}
-            </span>
-            <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
-              <ShareIcon />
-            </span>
-          </div>
+            <CommentIcon />
+            {comments}
+          </span>
         </div>
       </div>
     </a>
@@ -441,10 +408,14 @@ function FbCard({ post, index }) {
 /* ══════════════════════════════════════════
    MAIN COMPONENT
 ══════════════════════════════════════════ */
+const FB_PAGE_URL = "https://www.facebook.com/Earthoriavn";
+
 export default function FacebookSection() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [current, setCurrent] = useState(0);
+  const [showPlugin, setShowPlugin] = useState(false);
+  const [pluginLoaded, setPluginLoaded] = useState(false);
   const trackRef = useRef(null);
   const timerRef = useRef(null);
   const isDragging = useRef(false);
@@ -678,104 +649,169 @@ export default function FacebookSection() {
           </a>
         </div>
 
-        {/* Track container */}
-        <div
-          style={{ overflow: "hidden", position: "relative", margin: "0 -2px" }}
-          onMouseEnter={() => {
-            hovered.current = true;
-          }}
-          onMouseLeave={() => {
-            hovered.current = false;
-          }}
-        >
-          {/* fade edges */}
-          {["left", "right"].map((side) => (
-            <div
-              key={side}
-              style={{
-                position: "absolute",
-                top: 0,
-                bottom: 0,
-                [side]: 0,
-                width: 48,
-                zIndex: 10,
-                pointerEvents: "none",
-                background: `linear-gradient(to ${side === "left" ? "right" : "left"}, ${T.ivory}, transparent)`,
-              }}
-            />
-          ))}
-
-          {/* scrollable track */}
+        {/* Stack: carousel <-> Facebook Page Plugin, crossfade mượt */}
+        <div style={{ display: "grid" }}>
+          {/* ── Carousel block ── */}
           <div
-            ref={trackRef}
             style={{
-              display: "flex",
-              gap: GAP,
-              padding: "6px 2px 12px",
-              cursor: "grab",
-              userSelect: "none",
-              willChange: "transform",
+              gridArea: "1 / 1",
+              opacity: showPlugin ? 0 : 1,
+              transform: showPlugin
+                ? "translateY(10px) scale(.98)"
+                : "translateY(0) scale(1)",
+              pointerEvents: showPlugin ? "none" : "auto",
+              transition:
+                "opacity .5s cubic-bezier(.4,0,.2,1), transform .5s cubic-bezier(.4,0,.2,1)",
             }}
-            onMouseDown={onMouseDown}
-            onMouseMove={onMouseMove}
-            onMouseUp={onMouseUp}
-            onMouseLeave={onMouseUp}
-            onTouchStart={onTouchStart}
-            onTouchEnd={onTouchEnd}
           >
-            {loading
-              ? Array.from({ length: 4 }).map((_, i) => (
-                  <SkeletonCard key={i} />
-                ))
-              : displayedPosts.map((p, i) => (
-                  <FbCard
-                    key={`${p.id}-${i}`}
-                    post={p}
-                    index={i % posts.length}
+            {/* Track container */}
+            <div
+              style={{
+                overflow: "hidden",
+                position: "relative",
+                margin: "0 -2px",
+              }}
+              onMouseEnter={() => {
+                hovered.current = true;
+              }}
+              onMouseLeave={() => {
+                hovered.current = false;
+              }}
+            >
+              {/* fade edges */}
+              {["left", "right"].map((side) => (
+                <div
+                  key={side}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    bottom: 0,
+                    [side]: 0,
+                    width: 48,
+                    zIndex: 10,
+                    pointerEvents: "none",
+                    background: `linear-gradient(to ${side === "left" ? "right" : "left"}, ${T.ivory}, transparent)`,
+                  }}
+                />
+              ))}
+
+              {/* scrollable track */}
+              <div
+                ref={trackRef}
+                style={{
+                  display: "flex",
+                  gap: GAP,
+                  padding: "6px 2px 12px",
+                  cursor: "grab",
+                  userSelect: "none",
+                  willChange: "transform",
+                }}
+                onMouseDown={onMouseDown}
+                onMouseMove={onMouseMove}
+                onMouseUp={onMouseUp}
+                onMouseLeave={onMouseUp}
+                onTouchStart={onTouchStart}
+                onTouchEnd={onTouchEnd}
+              >
+                {loading
+                  ? Array.from({ length: 4 }).map((_, i) => (
+                      <SkeletonCard key={i} />
+                    ))
+                  : displayedPosts.map((p, i) => (
+                      <FbCard
+                        key={`${p.id}-${i}`}
+                        post={p}
+                        index={i % posts.length}
+                      />
+                    ))}
+              </div>
+            </div>
+
+            {/* Dots */}
+            {!loading && total > 0 && (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  gap: 6,
+                  marginTop: 18,
+                }}
+              >
+                {posts.map((_, i) => (
+                  <div
+                    key={i}
+                    onClick={() => {
+                      goTo(i);
+                      stopAuto();
+                      setTimeout(startAuto, 4000);
+                    }}
+                    style={{
+                      width: 5,
+                      height: 5,
+                      borderRadius: "50%",
+                      cursor: "pointer",
+                      background:
+                        i === current % total ? T.gold : "rgba(10,46,40,0.18)",
+                      transform:
+                        i === current % total ? "scale(1.5)" : "scale(1)",
+                      transition: "background .3s, transform .3s",
+                    }}
                   />
                 ))}
+              </div>
+            )}
+          </div>
+
+          {/* ── Facebook Page Plugin block ── */}
+          <div
+            style={{
+              gridArea: "1 / 1",
+              opacity: showPlugin ? 1 : 0,
+              transform: showPlugin
+                ? "translateY(0) scale(1)"
+                : "translateY(10px) scale(.98)",
+              pointerEvents: showPlugin ? "auto" : "none",
+              transition:
+                "opacity .5s cubic-bezier(.4,0,.2,1) .08s, transform .5s cubic-bezier(.4,0,.2,1) .08s",
+              display: "flex",
+              justifyContent: "center",
+              padding: "6px 2px 12px",
+            }}
+          >
+            {pluginLoaded && (
+              <iframe
+                title="Trang Facebook Earthoria"
+                src={
+                  `https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(FB_PAGE_URL)}` +
+                  `&tabs=timeline&width=500&height=650&small_header=false` +
+                  `&adapt_container_width=true&hide_cover=false&show_facepile=true`
+                }
+                width="500"
+                height="650"
+                style={{
+                  border: "none",
+                  overflow: "hidden",
+                  maxWidth: "100%",
+                  borderRadius: 10,
+                  boxShadow: "0 14px 36px rgba(13,43,30,0.11)",
+                }}
+                scrolling="no"
+                frameBorder="0"
+                allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            )}
           </div>
         </div>
 
-        {/* Dots */}
-        {!loading && total > 0 && (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: 6,
-              marginTop: 18,
-            }}
-          >
-            {posts.map((_, i) => (
-              <div
-                key={i}
-                onClick={() => {
-                  goTo(i);
-                  stopAuto();
-                  setTimeout(startAuto, 4000);
-                }}
-                style={{
-                  width: 5,
-                  height: 5,
-                  borderRadius: "50%",
-                  cursor: "pointer",
-                  background:
-                    i === current % total ? T.gold : "rgba(10,46,40,0.18)",
-                  transform: i === current % total ? "scale(1.5)" : "scale(1)",
-                  transition: "background .3s, transform .3s",
-                }}
-              />
-            ))}
-          </div>
-        )}
-
         {/* Bottom CTA */}
         <div style={{ marginTop: 24, textAlign: "center" }}>
-          <a
-            href="https://www.facebook.com/Earthoriavn"
-            target="_blank"
-            rel="noreferrer"
+          <button
+            type="button"
+            onClick={() => {
+              if (!showPlugin) setPluginLoaded(true);
+              setShowPlugin((v) => !v);
+            }}
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -785,16 +821,29 @@ export default function FacebookSection() {
               textTransform: "uppercase",
               color: "#fff",
               background: T.fb,
+              border: "none",
+              cursor: "pointer",
               textDecoration: "none",
               padding: "11px 26px",
               transition: "opacity .3s",
               borderRadius: 2,
+              fontFamily: "inherit",
             }}
             onMouseEnter={(e) => (e.currentTarget.style.opacity = ".88")}
             onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
           >
-            <FbIcon size={13} /> Xem thêm trên Facebook <ArrowIcon />
-          </a>
+            <FbIcon size={13} />
+            {showPlugin ? "Quay lại thư viện" : "Xem thêm trên Facebook"}
+            <span
+              style={{
+                display: "inline-flex",
+                transition: "transform .35s cubic-bezier(.4,0,.2,1)",
+                transform: showPlugin ? "rotate(180deg)" : "rotate(0deg)",
+              }}
+            >
+              <ArrowIcon />
+            </span>
+          </button>
         </div>
       </div>
     </section>
