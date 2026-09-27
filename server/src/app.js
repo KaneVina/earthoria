@@ -34,7 +34,7 @@ app.use(
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: 500,
     standardHeaders: true,
     legacyHeaders: false,
     // /kid-access/* poll ngắn hạn (~5s) để phát hiện khóa gần như ngay lập
