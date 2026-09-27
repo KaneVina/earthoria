@@ -1,14 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Volume2, Volume1, VolumeX } from "lucide-react";
 import { isEmbeddedInIframe } from "../utils/embed";
 import {
   registerKidBgmTrackSetter,
   useKidBgmTrackBridge,
   normalizeBgmTrackRequest,
 } from "../hooks/useKidBgmTrack";
+import { useBgmPrefs } from "../hooks/useKidBgmVolume";
 import "./assets/css/KidBackgroundMusic.css";
-
 
 const SITE_BGM = {
   videoId: "wZkpXDJ_Vs4",
@@ -48,39 +47,10 @@ const DEFAULT_TRACK_REQUEST = normalizeBgmTrackRequest(
       : { silent: true },
 );
 
-const STORAGE_KEY = "earthoria:kid-bgm";
-const DEFAULT_VOLUME = 55;
-const AUTO_CLOSE_MS = 4000;
-
 function shouldPlayOnPath(pathname) {
   if (pathname.startsWith("/dashboard")) return false;
   if (pathname.startsWith("/admin/login")) return false;
   return true;
-}
-
-function loadPrefs() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { muted: false, volume: DEFAULT_VOLUME };
-    const parsed = JSON.parse(raw);
-    const volume = Number(parsed.volume);
-    return {
-      muted: Boolean(parsed.muted),
-      volume: Number.isFinite(volume)
-        ? Math.min(100, Math.max(0, volume))
-        : DEFAULT_VOLUME,
-    };
-  } catch {
-    return { muted: false, volume: DEFAULT_VOLUME };
-  }
-}
-
-function savePrefs(prefs) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
-  } catch {
-    // localStorage có thể bị chặn (chế độ ẩn danh...) - bỏ qua, không chặn nhạc
-  }
 }
 
 // Tải script Youtube IFrame API đúng 1 lần cho cả app
@@ -116,6 +86,11 @@ function resolveTrackAtPath(track, pathname) {
   return null;
 }
 
+// Component này KHÔNG còn hiển thị nút/thanh chỉnh âm lượng nổi trên
+// trang nữa - việc chỉnh âm lượng/tắt-mở nhạc nền giờ nằm trong Hồ Sơ >
+// Cài Đặt Hệ Thống (SettingsTab, chương VI). Component vẫn giữ nguyên
+// player YouTube ẩn + thẻ <audio> để thực sự phát nhạc, chỉ đọc/ghi âm
+// lượng qua useBgmPrefs() (state dùng chung, đồng bộ ngay với Settings).
 export default function KidBackgroundMusic() {
   const location = useLocation();
   const embedded = isEmbeddedInIframe();
@@ -125,21 +100,14 @@ export default function KidBackgroundMusic() {
   const playerRef = useRef(null);
   const audioElRef = useRef(null);
   const initedRef = useRef(false);
-  const prefsRef = useRef(loadPrefs());
-  const closeTimerRef = useRef(null);
   const loadedYtIdRef = useRef(null);
   const loadedAudioUrlRef = useRef(null);
 
   const [ready, setReady] = useState(false);
-  const [muted, setMuted] = useState(() => loadPrefs().muted);
-  const [volume, setVolume] = useState(() => loadPrefs().volume);
-  const [panelOpen, setPanelOpen] = useState(false);
   const [track, setTrack] = useState(DEFAULT_TRACK_REQUEST);
-
-  const updatePrefs = useCallback((next) => {
-    prefsRef.current = { ...prefsRef.current, ...next };
-    savePrefs(prefsRef.current);
-  }, []);
+  const [prefs] = useBgmPrefs();
+  const prefsRef = useRef(prefs);
+  prefsRef.current = prefs;
 
   useEffect(() => registerKidBgmTrackSetter(setTrack), []);
   useKidBgmTrackBridge(setTrack);
@@ -150,7 +118,6 @@ export default function KidBackgroundMusic() {
 
     loadYouTubeApi().then((YT) => {
       if (playerRef.current || !slotRef.current) return;
-      const prefs = prefsRef.current;
       const initialVideoId = TRACKS.default || TRACKS.game;
       loadedYtIdRef.current = initialVideoId;
       playerRef.current = new YT.Player(slotRef.current, {
@@ -171,7 +138,7 @@ export default function KidBackgroundMusic() {
         },
         events: {
           onReady: (e) => {
-            e.target.setVolume(prefs.volume);
+            e.target.setVolume(prefsRef.current.volume);
             setReady(true);
           },
           onStateChange: (e) => {
@@ -191,16 +158,16 @@ export default function KidBackgroundMusic() {
     });
   }, [active]);
 
+  // Đổi bài phát theo `track` hiện tại.
   useEffect(() => {
     const player = playerRef.current;
     const audioEl = audioElRef.current;
-    const prefs = prefsRef.current;
+    const prefsNow = prefsRef.current;
 
     const resolved = resolveTrackAtPath(track, location.pathname);
     const ytId = resolved?.videoId || null;
     const audioUrl = resolved?.audioUrl || null;
 
-    // Nhánh YouTube (preset hoặc video tuỳ ý)
     if (ytId) {
       if (audioEl && !audioEl.paused) audioEl.pause();
       if (ready && player && typeof player.loadVideoById === "function") {
@@ -208,15 +175,14 @@ export default function KidBackgroundMusic() {
           loadedYtIdRef.current = ytId;
           player.loadVideoById(ytId);
         }
-        player.setVolume(prefs.volume);
-        if (prefs.muted) player.mute();
+        player.setVolume(prefsNow.volume);
+        if (prefsNow.muted) player.mute();
         else player.unMute();
         if (typeof player.playVideo === "function") player.playVideo();
       }
       return;
     }
 
-    // Nhánh file audio tải lên
     if (audioUrl) {
       if (player && typeof player.pauseVideo === "function") {
         player.pauseVideo();
@@ -226,9 +192,9 @@ export default function KidBackgroundMusic() {
           loadedAudioUrlRef.current = audioUrl;
           audioEl.src = audioUrl;
         }
-        audioEl.volume = Math.min(1, Math.max(0, prefs.volume / 100));
-        audioEl.muted = prefs.muted;
-        if (!prefs.muted) {
+        audioEl.volume = Math.min(1, Math.max(0, prefsNow.volume / 100));
+        audioEl.muted = prefsNow.muted;
+        if (!prefsNow.muted) {
           audioEl.play().catch(() => {
             // Trình duyệt chặn autoplay có tiếng - sẽ tự phát khi người
             // dùng chạm vào trang lần đầu (xem effect "unlock" bên dưới).
@@ -238,7 +204,6 @@ export default function KidBackgroundMusic() {
       return;
     }
 
-    // Nhánh silent: dừng hẳn cả 2 nguồn, không phát gì.
     if (track?.kind === "silent") {
       if (player && typeof player.pauseVideo === "function") {
         player.pauseVideo();
@@ -246,6 +211,24 @@ export default function KidBackgroundMusic() {
       if (audioEl && !audioEl.paused) audioEl.pause();
     }
   }, [ready, track, location.pathname]);
+
+  // Áp lại âm lượng/tắt-mở ngay khi được đổi từ nơi khác (vd tab Cài Đặt).
+  useEffect(() => {
+    const player = playerRef.current;
+    const audioEl = audioElRef.current;
+    if (player) {
+      player.setVolume(prefs.volume);
+      if (prefs.muted) player.mute();
+      else player.unMute();
+    }
+    if (audioEl) {
+      audioEl.volume = Math.min(1, Math.max(0, prefs.volume / 100));
+      audioEl.muted = prefs.muted;
+      if (!prefs.muted && audioEl.src && track?.kind === "audio") {
+        audioEl.play().catch(() => {});
+      }
+    }
+  }, [prefs, track]);
 
   useEffect(() => {
     if (!active) return undefined;
@@ -294,109 +277,14 @@ export default function KidBackgroundMusic() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, ready]);
 
-  // Tự đóng bảng chỉnh âm lượng sau vài giây không thao tác, cho gọn gàng.
-  const scheduleAutoClose = useCallback(() => {
-    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-    closeTimerRef.current = setTimeout(
-      () => setPanelOpen(false),
-      AUTO_CLOSE_MS,
-    );
-  }, []);
-
-  useEffect(() => {
-    return () => {
-      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-    };
-  }, []);
-
-  const applyVolume = useCallback(
-    (nextVolume, nextMuted) => {
-      const player = playerRef.current;
-      const audioEl = audioElRef.current;
-      setVolume(nextVolume);
-      setMuted(nextMuted);
-      updatePrefs({ volume: nextVolume, muted: nextMuted });
-      if (player) {
-        player.setVolume(nextVolume);
-        if (nextMuted) player.mute();
-        else player.unMute();
-      }
-      if (audioEl) {
-        audioEl.volume = Math.min(1, Math.max(0, nextVolume / 100));
-        audioEl.muted = nextMuted;
-        if (!nextMuted && audioEl.src && track?.kind === "audio") {
-          audioEl.play().catch(() => {});
-        }
-      }
-    },
-    [updatePrefs, track],
-  );
-
-  const handleSliderChange = (e) => {
-    const v = Number(e.target.value);
-    applyVolume(v, v === 0);
-    scheduleAutoClose();
-  };
-
-  const handleToggleClick = () => {
-    if (!panelOpen) {
-      setPanelOpen(true);
-      scheduleAutoClose();
-      return;
-    }
-    // Bảng đang mở, bấm lại icon = chuyển nhanh tắt/mở tiếng (không đóng bảng)
-    if (muted || volume === 0) {
-      applyVolume(
-        prefsRef.current.volume > 0 ? prefsRef.current.volume : DEFAULT_VOLUME,
-        false,
-      );
-    } else {
-      applyVolume(volume, true);
-    }
-    scheduleAutoClose();
-  };
-
   if (!active) return null;
 
-  const isSilent = muted || volume === 0;
-  const Icon = isSilent ? VolumeX : volume < 55 ? Volume1 : Volume2;
-
+  // Chỉ còn khung YouTube ẩn + thẻ audio ẩn để thực sự phát âm thanh -
+  // không còn nút/panel nổi trên giao diện nữa.
   return (
-    <div
-      className={`kbm-root${panelOpen ? " kbm-root--open" : ""}`}
-      onPointerEnter={() => {
-        if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-      }}
-      onPointerLeave={scheduleAutoClose}
-    >
-      {/* Khung Youtube thật - giấu kín, chỉ dùng để phát âm thanh */}
-      <div ref={slotRef} className="kbm-yt-slot" aria-hidden="true" />
-      {/* File audio tải lên (nhạc nền tuỳ chỉnh của ebook) - chạy song song
-          với player YouTube ở trên, chỉ 1 trong 2 thực sự phát ra tiếng. */}
-      <audio ref={audioElRef} loop preload="auto" aria-hidden="true" />
-
-      <div className="kbm-panel" role="group" aria-label="Âm lượng nhạc nền">
-        <input
-          type="range"
-          className="kbm-slider"
-          min={0}
-          max={100}
-          value={isSilent ? 0 : volume}
-          onChange={handleSliderChange}
-          style={{ "--kbm-val": isSilent ? 0 : volume }}
-          aria-label="Âm lượng nhạc nền"
-        />
-      </div>
-
-      <button
-        type="button"
-        className="kbm-toggle"
-        onClick={handleToggleClick}
-        aria-label={isSilent ? "Bật nhạc nền" : "Chỉnh âm lượng nhạc nền"}
-        title={isSilent ? "Bật nhạc nền" : "Chỉnh âm lượng nhạc nền"}
-      >
-        <Icon size={19} />
-      </button>
+    <div className="kbm-root" aria-hidden="true">
+      <div ref={slotRef} className="kbm-yt-slot" />
+      <audio ref={audioElRef} loop preload="auto" />
     </div>
   );
 }

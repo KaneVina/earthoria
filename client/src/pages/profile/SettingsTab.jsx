@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { Volume2, Volume1, VolumeX } from "lucide-react";
 import { formatDate } from "../../utils/helpers";
 import { statusService } from "../../services/statusService";
+import { useBgmPrefs } from "../../hooks/useKidBgmVolume";
 import { Icon, SYSTEM_INFO, SectionHeader } from "../Profile";
 
 const STATUS_REFRESH_MS = 60 * 1000; // khớp với thời gian cache 60s ở server /status
@@ -161,6 +163,30 @@ const COOKIE_GROUP_LABELS = {
 
 export default function SettingsTab() {
   const { isDark, toggle } = useTheme();
+  const [bgmPrefs, setBgmPrefs] = useBgmPrefs();
+  const bgmSilent = bgmPrefs.muted || bgmPrefs.volume === 0;
+  const BgmIcon = bgmSilent
+    ? VolumeX
+    : bgmPrefs.volume < 55
+      ? Volume1
+      : Volume2;
+
+  const toggleBgmMuted = () => {
+    if (bgmSilent) {
+      setBgmPrefs({
+        muted: false,
+        volume: bgmPrefs.volume > 0 ? bgmPrefs.volume : 55,
+      });
+    } else {
+      setBgmPrefs({ muted: true });
+    }
+  };
+
+  const handleBgmVolumeChange = (e) => {
+    const v = Number(e.target.value);
+    setBgmPrefs({ volume: v, muted: v === 0 });
+  };
+
   const consent = useCookiePrefs();
   const clock = useServerClock(SYSTEM_INFO.timezone);
   const [expandedChangelog, setExpandedChangelog] = useState(false);
@@ -433,6 +459,60 @@ export default function SettingsTab() {
               </span>
             </span>
           </label>
+        </div>
+      </div>
+
+      <div className="pf-settings-card">
+        <div className="pf-settings-card-head">
+          <div className="pf-lock-icon-wrap">
+            <BgmIcon size={16} />
+          </div>
+          <div>
+            <h3 className="pf-settings-card-title">Nhạc Nền</h3>
+            <p className="pf-settings-card-sub">
+              Bật/tắt và chỉnh âm lượng nhạc nền phát trên toàn hệ thống
+            </p>
+          </div>
+        </div>
+
+        <div className="pf-theme-row" style={{ marginBottom: 18 }}>
+          <div>
+            <div className="pf-theme-row-title">Nhạc nền</div>
+            <div className="pf-theme-row-desc">
+              {bgmSilent
+                ? "Đang tắt - sẽ không phát âm thanh trên các trang"
+                : "Đang bật - đang phát trên các trang có hỗ trợ nhạc nền"}
+            </div>
+          </div>
+          <label className="pf-switch">
+            <input
+              type="checkbox"
+              checked={!bgmSilent}
+              onChange={toggleBgmMuted}
+            />
+            <span className="pf-switch-track">
+              <span className="pf-switch-thumb">
+                <BgmIcon size={13} />
+              </span>
+            </span>
+          </label>
+        </div>
+
+        <div className="pf-bgm-volume-row">
+          <span className="pf-bgm-volume-label">Âm lượng</span>
+          <input
+            type="range"
+            className="pf-bgm-volume-slider"
+            min={0}
+            max={100}
+            value={bgmSilent ? 0 : bgmPrefs.volume}
+            onChange={handleBgmVolumeChange}
+            style={{ "--bgm-val": bgmSilent ? 0 : bgmPrefs.volume }}
+            aria-label="Âm lượng nhạc nền"
+          />
+          <span className="pf-bgm-volume-val">
+            {bgmSilent ? 0 : bgmPrefs.volume}%
+          </span>
         </div>
       </div>
 
