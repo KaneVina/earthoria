@@ -351,7 +351,7 @@ export default function KidBackgroundMusic() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, ready]);
 
-  if (!active) return null;
+  if (embedded) return null;
 
   // Chỉ còn khung YouTube ẩn + thẻ audio ẩn để thực sự phát âm thanh -
   // không còn nút/panel nổi trên giao diện nữa.
