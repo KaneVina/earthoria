@@ -24,11 +24,29 @@ function pickDefaultTrack(cfg, fallback) {
   return fallback ?? null;
 }
 
-function defaultTrackForPath(pathname) {
-  if (pathname.startsWith("/e-kid/")) {
-    return pickDefaultTrack(KID_BGM, pickDefaultTrack(SITE_BGM, null));
+// `erroredIds` (Set videoId đã biết lỗi, vd bị chặn nhúng) là tuỳ chọn -
+// khi có, hàm sẽ bỏ qua bài đã lỗi và thử lùi về phương án còn lại thay vì
+// cứ đưa lại đúng video vừa lỗi (gây mất nhạc mãi mỗi khi đổi trang trong
+// cùng vùng). Không ảnh hưởng gì khi chưa có lỗi nào (erroredIds rỗng/undefined).
+function defaultTrackForPath(pathname, erroredIds) {
+  const isKidRegion = pathname.startsWith("/e-kid/");
+  const primary = isKidRegion ? KID_BGM : SITE_BGM;
+  const secondary = isKidRegion ? SITE_BGM : KID_BGM;
+
+  const primaryTrack = pickDefaultTrack(primary, null);
+  const primaryId = typeof primaryTrack === "string" ? primaryTrack : null;
+  if (primaryTrack && !(primaryId && erroredIds?.has(primaryId))) {
+    return primaryTrack;
   }
-  return pickDefaultTrack(SITE_BGM, null);
+
+  const secondaryTrack = pickDefaultTrack(secondary, null);
+  const secondaryId =
+    typeof secondaryTrack === "string" ? secondaryTrack : null;
+  if (secondaryTrack && !(secondaryId && erroredIds?.has(secondaryId))) {
+    return secondaryTrack;
+  }
+
+  return null;
 }
 
 const SITE_DEFAULT_TRACK = pickDefaultTrack(SITE_BGM, null);
@@ -71,13 +89,13 @@ function loadYouTubeApi() {
   return apiPromise;
 }
 
-function resolveTrackAtPath(track, pathname) {
+function resolveTrackAtPath(track, pathname, erroredIds) {
   if (!track || track.kind === "preset") {
     if (track?.key && track.key !== "default") {
       const ytId = TRACKS[track.key] || null;
       return ytId ? { videoId: ytId } : null;
     }
-    const def = defaultTrackForPath(pathname);
+    const def = defaultTrackForPath(pathname, erroredIds);
     if (!def) return null;
     return typeof def === "string" ? { videoId: def } : def;
   }
@@ -102,15 +120,68 @@ export default function KidBackgroundMusic() {
   const initedRef = useRef(false);
   const loadedYtIdRef = useRef(null);
   const loadedAudioUrlRef = useRef(null);
+  // Ghi lại những videoId đã từng lỗi (vd bị chặn nhúng) để không lặp lại
+  // vô ích, và để biết đường fallback sang bài khác thay vì im lặng luôn.
+  const erroredIdsRef = useRef(new Set());
 
   const [ready, setReady] = useState(false);
   const [track, setTrack] = useState(DEFAULT_TRACK_REQUEST);
   const [prefs] = useBgmPrefs();
   const prefsRef = useRef(prefs);
   prefsRef.current = prefs;
+  // Player YouTube chỉ khởi tạo 1 lần cho cả vòng đời app (xem initedRef ở
+  // dưới), nên handler onError của nó không thể dựa vào `location` đóng
+  // gói lúc tạo player (sẽ bị "đứng hình" ở trang lúc khởi tạo) - phải đọc
+  // pathname mới nhất qua ref này mỗi lần có lỗi thật sự xảy ra.
+  const pathnameRef = useRef(location.pathname);
+  pathnameRef.current = location.pathname;
 
   useEffect(() => registerKidBgmTrackSetter(setTrack), []);
   useKidBgmTrackBridge(setTrack);
+
+  // Xử lý lỗi phát video YouTube (vd bị chặn nhúng, video riêng tư, bị
+  // xoá...). Thay vì im lặng luôn, thử lùi về 1 lựa chọn còn lại (nếu có)
+  // để khu vực bé không mất nhạc chỉ vì đúng 1 video bị lỗi - đồng thời in
+  // rõ nguyên nhân khả dĩ ra console để dễ chẩn đoán.
+  const handleYtPlayerError = (e) => {
+    const code = e.data;
+    const failedId = loadedYtIdRef.current;
+    const reasonMap = {
+      2: "ID video không hợp lệ",
+      5: "Trình phát HTML5 gặp lỗi",
+      100: "Video không tồn tại, đã bị xoá, hoặc để Riêng tư",
+      101: "Chủ sở hữu video đã TẮT quyền nhúng (Cho phép nhúng) cho video này",
+      150: "Chủ sở hữu video đã TẮT quyền nhúng (Cho phép nhúng) cho video này",
+    };
+    console.error(
+      `[KidBackgroundMusic] Lỗi phát video "${failedId}" (mã ${code}): ${
+        reasonMap[code] || "Không rõ nguyên nhân"
+      }. Kiểm tra lại chế độ hiển thị và mục "Cho phép nhúng" (Allow embedding) trong cài đặt nâng cao của video trên YouTube Studio.`,
+    );
+    if (failedId) erroredIdsRef.current.add(failedId);
+
+    const player = playerRef.current;
+    if (!player || typeof player.loadVideoById !== "function") return;
+
+    // Chỉ tự fallback khi video lỗi là 1 trong 2 bài mặc định do hệ thống
+    // tự chọn theo vùng (SITE_BGM/KID_BGM) - không đụng vào video riêng do
+    // 1 ebook/trang chủ động yêu cầu, vì đó là lựa chọn có chủ đích.
+    const isKidRegion = pathnameRef.current.startsWith("/e-kid/");
+    const fallbackId = isKidRegion
+      ? SITE_BGM.videoId // khu bé lỗi -> thử lùi về bài chung của site
+      : KID_BGM.videoId; // (hiếm khi xảy ra) site lỗi -> thử bài khu bé
+    if (
+      fallbackId &&
+      fallbackId !== failedId &&
+      !erroredIdsRef.current.has(fallbackId)
+    ) {
+      loadedYtIdRef.current = fallbackId;
+      player.loadVideoById(fallbackId);
+      player.setVolume(prefsRef.current.volume);
+      if (prefsRef.current.muted) player.mute();
+      else player.unMute();
+    }
+  };
 
   useEffect(() => {
     if (!active || initedRef.current) return undefined;
@@ -147,12 +218,7 @@ export default function KidBackgroundMusic() {
               e.target.playVideo();
             }
           },
-          onError: (e) => {
-            console.error(
-              "[KidBackgroundMusic] YouTube player error, code:",
-              e.data,
-            );
-          },
+          onError: (e) => handleYtPlayerError(e),
         },
       });
     });
@@ -164,7 +230,11 @@ export default function KidBackgroundMusic() {
     const audioEl = audioElRef.current;
     const prefsNow = prefsRef.current;
 
-    const resolved = resolveTrackAtPath(track, location.pathname);
+    const resolved = resolveTrackAtPath(
+      track,
+      location.pathname,
+      erroredIdsRef.current,
+    );
     const ytId = resolved?.videoId || null;
     const audioUrl = resolved?.audioUrl || null;
 
@@ -257,7 +327,11 @@ export default function KidBackgroundMusic() {
     const player = playerRef.current;
     const audioEl = audioElRef.current;
     if (active) {
-      const resolved = resolveTrackAtPath(track, location.pathname);
+      const resolved = resolveTrackAtPath(
+        track,
+        location.pathname,
+        erroredIdsRef.current,
+      );
       if (
         ready &&
         player &&

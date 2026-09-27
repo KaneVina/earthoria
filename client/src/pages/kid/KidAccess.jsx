@@ -28,6 +28,9 @@ import {
   TrendingUp,
   Check,
   Loader2,
+  Volume2,
+  Volume1,
+  VolumeX,
 } from "lucide-react";
 import { kidAccessService } from "../../services/kidAccessService";
 import { useSkyState, DynamicSky, PhaseIcon } from "../../components/KidSky";
@@ -36,6 +39,7 @@ import GardenWidget from "../../components/knowledgeGarden/GardenWidget";
 import KidCloudCurtain from "../../components/KidCloudCurtain";
 import { useKidRestBreak, fmtClock } from "../../hooks/useKidRestBreak";
 import { KidRestBreakOverlay } from "../../components/kid/KidRestBreakOverlay";
+import { useBgmPrefs } from "../../hooks/useKidBgmVolume";
 
 const INSPIRE_LINES = [
   "Mỗi trang sách là một cánh cửa dẫn đến thế giới mới.",
@@ -354,6 +358,30 @@ export default function KidAccess() {
 
   //   cỡ chữ do bé/phụ huynh chọn trong bảng cài đặt, nhớ theo từng link
   const [fontKey, setFontKey] = useState("md");
+
+  //   âm lượng/tắt-mở nhạc nền - dùng chung state với KidBackgroundMusic
+  //   và tab Cài Đặt Hệ Thống trong Profile, đổi ở đâu cũng đồng bộ ngay
+  const [bgmPrefs, setBgmPrefs] = useBgmPrefs();
+  const bgmSilent = bgmPrefs.muted || bgmPrefs.volume === 0;
+  const BgmVolumeIcon = bgmSilent
+    ? VolumeX
+    : bgmPrefs.volume < 55
+      ? Volume1
+      : Volume2;
+  const toggleBgmMuted = () => {
+    if (bgmSilent) {
+      setBgmPrefs({
+        muted: false,
+        volume: bgmPrefs.volume > 0 ? bgmPrefs.volume : 55,
+      });
+    } else {
+      setBgmPrefs({ muted: true });
+    }
+  };
+  const handleBgmVolumeChange = (e) => {
+    const v = Number(e.target.value);
+    setBgmPrefs({ volume: v, muted: v === 0 });
+  };
 
   //   bảng cài đặt dành cho phụ huynh + cơ chế "giữ để mở" trên nút bánh răng
   const [showSettings, setShowSettings] = useState(false);
@@ -1760,6 +1788,38 @@ export default function KidAccess() {
                   style={{ "--kid-font-scale": fontScale }}
                 >
                   Bé thích đọc sách cùng Earthoria Kid Studio!
+                </div>
+              </div>
+
+              <div className="kid-settings-divider" />
+
+              <div className="kid-settings-section">
+                <div className="kid-settings-label">
+                  <BgmVolumeIcon size={14} /> Nhạc nền
+                </div>
+                <div className="kid-bgm-row">
+                  <button
+                    type="button"
+                    className={`kid-bgm-mute-btn${bgmSilent ? " is-muted" : ""}`}
+                    onClick={toggleBgmMuted}
+                    aria-label={bgmSilent ? "Bật nhạc nền" : "Tắt nhạc nền"}
+                    title={bgmSilent ? "Bật nhạc nền" : "Tắt nhạc nền"}
+                  >
+                    <BgmVolumeIcon size={16} />
+                  </button>
+                  <input
+                    type="range"
+                    className="kid-bgm-slider"
+                    min={0}
+                    max={100}
+                    value={bgmSilent ? 0 : bgmPrefs.volume}
+                    onChange={handleBgmVolumeChange}
+                    style={{ "--kid-bgm-val": bgmSilent ? 0 : bgmPrefs.volume }}
+                    aria-label="Âm lượng nhạc nền"
+                  />
+                  <span className="kid-bgm-val">
+                    {bgmSilent ? 0 : bgmPrefs.volume}%
+                  </span>
                 </div>
               </div>
 
