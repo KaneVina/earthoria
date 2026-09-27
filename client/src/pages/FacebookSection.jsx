@@ -191,8 +191,8 @@ function SkeletonCard() {
 
 /* ─ CARD ─ */
 function FbCard({ post, index }) {
-  const reactions = ((post.id.charCodeAt(0) * 7) % 200) + 18;
-  const comments = ((post.id.charCodeAt(1) * 3) % 52) + 3;
+  const reactions = post.likes?.summary?.total_count ?? 0;
+  const comments = post.comments?.summary?.total_count ?? 0;
   const date = fmtDate(post.created_time);
   const href = post.permalink_url || `https://www.facebook.com/${FB_PAGE_ID}`;
   const msg = trimMsg(post.message);
@@ -471,7 +471,8 @@ export default function FacebookSection() {
     } catch (_) {}
     const url =
       `https://graph.facebook.com/v19.0/${FB_PAGE_ID}/posts` +
-      `?fields=id,message,created_time,full_picture,permalink_url&limit=6&access_token=${FB_TOKEN}`;
+      `?fields=id,message,created_time,full_picture,permalink_url,likes.summary(true),comments.summary(true)` +
+      `&limit=6&access_token=${FB_TOKEN}`;
     fetch(url)
       .then((r) => r.json())
       .then((json) => {
