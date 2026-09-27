@@ -624,11 +624,19 @@ export default function FacebookSection() {
         </div>
 
         {/* Stack: carousel <-> Facebook Page Plugin, crossfade mượt */}
-        <div style={{ display: "grid" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr",
+            width: "100%",
+          }}
+        >
           {/* ── Carousel block ── */}
           <div
             style={{
               gridArea: "1 / 1",
+              width: "100%",
+              minWidth: 0,
               opacity: showPlugin ? 0 : 1,
               transform: showPlugin
                 ? "translateY(10px) scale(.98)"
@@ -740,6 +748,8 @@ export default function FacebookSection() {
           <div
             style={{
               gridArea: "1 / 1",
+              width: "100%",
+              minWidth: 0,
               opacity: showPlugin ? 1 : 0,
               transform: showPlugin
                 ? "translateY(0) scale(1)"
@@ -750,6 +760,7 @@ export default function FacebookSection() {
               display: "flex",
               justifyContent: "center",
               padding: "6px 2px 12px",
+              boxSizing: "border-box",
             }}
           >
             {pluginLoaded && (
