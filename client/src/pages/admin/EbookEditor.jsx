@@ -6387,16 +6387,6 @@ export default function BookBuilder() {
                   trang này.
                 </InfoHint>
               </label>
-              <div className="bb-field" style={{ marginBottom: 8 }}>
-                <input
-                  type="text"
-                  placeholder="Nhãn nút (không bắt buộc), vd: Nghe tiếng hổ"
-                  value={currentPage.music?.click?.label || ""}
-                  onFocus={beginEdit}
-                  onBlur={endEdit}
-                  onChange={(e) => setPageMusicClickLabelLive(e.target.value)}
-                />
-              </div>
               <MusicSourcePicker
                 value={{
                   videoId: currentPage.music?.click?.videoId,
@@ -6416,6 +6406,19 @@ export default function BookBuilder() {
                       })
                 }
               />
+              <div className="bb-field" style={{ marginTop: 10, marginBottom: 0 }}>
+                <input
+                  type="text"
+                  placeholder="Tên hiển thị trên nút (tuỳ chọn) - vd: Nghe tiếng hổ"
+                  value={currentPage.music?.click?.label || ""}
+                  onFocus={beginEdit}
+                  onBlur={endEdit}
+                  onChange={(e) => setPageMusicClickLabelLive(e.target.value)}
+                />
+                <div className="bb-hint" style={{ marginTop: 4 }}>
+                  Đặt tên cho nút
+                </div>
+              </div>
             </div>
 
             <div className="bb-field">
