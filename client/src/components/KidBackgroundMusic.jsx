@@ -9,31 +9,53 @@ import {
 } from "../hooks/useKidBgmTrack";
 import "./assets/css/KidBackgroundMusic.css";
 
-// Các bài nhạc nền PRESET theo từng "khung cảnh". "default" phát khi ở khu
-// vực kid nói chung (đọc ebook, màn chờ...); "game"/"result" do GamePlay
-// chủ động yêu cầu qua hook useKidBgmTrack() khi vào màn chơi / màn kết
-// quả. Ngoài các preset cố định này, nơi gọi (vd ebook) còn có thể yêu cầu
-// 1 video YouTube/1 file audio TUỲ Ý - xem xử lý "kind" bên dưới.
+
+const SITE_BGM = {
+  videoId: "wZkpXDJ_Vs4",
+  audioUrl: "",
+};
+const KID_BGM = {
+  videoId: "gIC2sIGWCQM",
+  audioUrl: "",
+};
+
+function pickDefaultTrack(cfg, fallback) {
+  if (cfg?.videoId) return cfg.videoId;
+  if (cfg?.audioUrl) return { audioUrl: cfg.audioUrl };
+  return fallback ?? null;
+}
+
+function defaultTrackForPath(pathname) {
+  if (pathname.startsWith("/e-kid/")) {
+    return pickDefaultTrack(KID_BGM, pickDefaultTrack(SITE_BGM, null));
+  }
+  return pickDefaultTrack(SITE_BGM, null);
+}
+
+const SITE_DEFAULT_TRACK = pickDefaultTrack(SITE_BGM, null);
+
 const TRACKS = {
-  default: "xxYJONmXE8w",
+  default: typeof SITE_DEFAULT_TRACK === "string" ? SITE_DEFAULT_TRACK : null,
   game: "gD-UgmCtggQ",
   result: "RV8s08clQi4",
 };
 
-const DEFAULT_TRACK_REQUEST = normalizeBgmTrackRequest("default");
+const DEFAULT_TRACK_REQUEST = normalizeBgmTrackRequest(
+  SITE_BGM.videoId
+    ? "default"
+    : SITE_BGM.audioUrl
+      ? { audioUrl: SITE_BGM.audioUrl }
+      : { silent: true },
+);
 
 const STORAGE_KEY = "earthoria:kid-bgm";
 const DEFAULT_VOLUME = 55;
 const AUTO_CLOSE_MS = 4000;
 
 function shouldPlayOnPath(pathname) {
-  return (
-    pathname.startsWith("/e-kid/") ||
-    pathname.startsWith("/ebook/") ||
-    // /game/:slug/:code - GamePlay còn có thể mở độc lập, không nằm dưới
-    // /e-kid/, nên phải liệt kê riêng thì nhạc lúc chơi game mới phát được.
-    pathname.startsWith("/game/")
-  );
+  if (pathname.startsWith("/dashboard")) return false;
+  if (pathname.startsWith("/admin/login")) return false;
+  return true;
 }
 
 function loadPrefs() {
@@ -79,12 +101,18 @@ function loadYouTubeApi() {
   return apiPromise;
 }
 
-// videoId cần phát cho 1 track request đã chuẩn hoá, ứng với player YouTube
-// (preset hoặc "video" tuỳ ý) - null nếu track này không dùng YouTube.
-function videoIdForTrack(track) {
-  if (!track) return TRACKS.default;
-  if (track.kind === "preset") return TRACKS[track.key] || TRACKS.default;
-  if (track.kind === "video") return track.videoId;
+function resolveTrackAtPath(track, pathname) {
+  if (!track || track.kind === "preset") {
+    if (track?.key && track.key !== "default") {
+      const ytId = TRACKS[track.key] || null;
+      return ytId ? { videoId: ytId } : null;
+    }
+    const def = defaultTrackForPath(pathname);
+    if (!def) return null;
+    return typeof def === "string" ? { videoId: def } : def;
+  }
+  if (track.kind === "video") return { videoId: track.videoId };
+  if (track.kind === "audio") return { audioUrl: track.audioUrl };
   return null;
 }
 
@@ -113,12 +141,7 @@ export default function KidBackgroundMusic() {
     savePrefs(prefsRef.current);
   }, []);
 
-  // Mở "cổng" cho useKidBgmTrack() ở nơi khác (vd GamePlay, ebook) gọi vào,
-  // vì đây là component singleton duy nhất giữ player thật.
   useEffect(() => registerKidBgmTrackSetter(setTrack), []);
-
-  // Nhận yêu cầu đổi bài gửi từ 1 iframe con nhúng ngay trên trang này (vd
-  // khung chơi game nhúng trong ebook) - xem useKidBgmTrackBridge.
   useKidBgmTrackBridge(setTrack);
 
   useEffect(() => {
@@ -126,22 +149,17 @@ export default function KidBackgroundMusic() {
     initedRef.current = true;
 
     loadYouTubeApi().then((YT) => {
-      // Không dùng cờ "cancelled" theo cleanup ở đây: React StrictMode (dev)
-      // chạy mount -> cleanup -> mount lại, và nếu huỷ theo cleanup thì
-      // promise của lượt mount đầu sẽ bị chặn ngay trước khi kịp tạo player,
-      // trong khi lượt mount thứ 2 lại bị initedRef chặn không tạo lại nữa
-      // => player không bao giờ được khởi tạo, mất tiếng hoàn toàn.
-      // Guard bằng playerRef để chỉ tạo player đúng 1 lần cho cả vòng đời app.
       if (playerRef.current || !slotRef.current) return;
       const prefs = prefsRef.current;
-      loadedYtIdRef.current = TRACKS.default;
+      const initialVideoId = TRACKS.default || TRACKS.game;
+      loadedYtIdRef.current = initialVideoId;
       playerRef.current = new YT.Player(slotRef.current, {
-        videoId: TRACKS.default,
+        videoId: initialVideoId,
         playerVars: {
           autoplay: 1,
           mute: 1, // bắt buộc tắt tiếng để trình duyệt cho tự phát - mở lại ở lượt chạm đầu tiên
           loop: 1,
-          playlist: TRACKS.default, // mẹo chính thức của Youtube để lặp lại đúng 1 video
+          playlist: initialVideoId, // mẹo chính thức của Youtube để lặp lại đúng 1 video
           controls: 0,
           disablekb: 1,
           fs: 0,
@@ -157,16 +175,12 @@ export default function KidBackgroundMusic() {
             setReady(true);
           },
           onStateChange: (e) => {
-            // Lưới an toàn: phòng khi mẹo loop+playlist không ăn ở 1 vài trình
-            // duyệt, video kết thúc thì tự tua lại từ đầu và phát tiếp.
             if (e.data === window.YT.PlayerState.ENDED) {
               e.target.seekTo(0);
               e.target.playVideo();
             }
           },
           onError: (e) => {
-            // In lỗi ra console để dễ debug (ví dụ video bị chặn nhúng,
-            // sai ID...) thay vì im lặng mất tiếng không rõ nguyên nhân.
             console.error(
               "[KidBackgroundMusic] YouTube player error, code:",
               e.data,
@@ -177,17 +191,14 @@ export default function KidBackgroundMusic() {
     });
   }, [active]);
 
-  // Đổi bài phát theo `track` hiện tại - nhánh theo "kind": preset/video
-  // (YouTube) dùng player ẩn có sẵn; "audio" (file tải lên) dùng thẻ
-  // <audio> riêng chạy song song; "silent" dừng cả hai. Chỉ 1 trong 2 nguồn
-  // phát ra tiếng tại 1 thời điểm.
   useEffect(() => {
     const player = playerRef.current;
     const audioEl = audioElRef.current;
     const prefs = prefsRef.current;
 
-    const ytId = videoIdForTrack(track);
-    const audioUrl = track?.kind === "audio" ? track.audioUrl : null;
+    const resolved = resolveTrackAtPath(track, location.pathname);
+    const ytId = resolved?.videoId || null;
+    const audioUrl = resolved?.audioUrl || null;
 
     // Nhánh YouTube (preset hoặc video tuỳ ý)
     if (ytId) {
@@ -197,8 +208,6 @@ export default function KidBackgroundMusic() {
           loadedYtIdRef.current = ytId;
           player.loadVideoById(ytId);
         }
-        // loadVideoById thường giữ nguyên volume/mute hiện tại của player, áp
-        // lại cho chắc để không bị "bật tiếng" ngoài ý muốn lúc đổi bài.
         player.setVolume(prefs.volume);
         if (prefs.muted) player.mute();
         else player.unMute();
@@ -236,7 +245,7 @@ export default function KidBackgroundMusic() {
       }
       if (audioEl && !audioEl.paused) audioEl.pause();
     }
-  }, [ready, track]);
+  }, [ready, track, location.pathname]);
 
   useEffect(() => {
     if (!active) return undefined;
@@ -265,15 +274,16 @@ export default function KidBackgroundMusic() {
     const player = playerRef.current;
     const audioEl = audioElRef.current;
     if (active) {
+      const resolved = resolveTrackAtPath(track, location.pathname);
       if (
         ready &&
         player &&
         typeof player.playVideo === "function" &&
-        videoIdForTrack(track)
+        resolved?.videoId
       ) {
         player.playVideo();
       }
-      if (audioEl && track?.kind === "audio" && !prefsRef.current.muted) {
+      if (audioEl && resolved?.audioUrl && !prefsRef.current.muted) {
         audioEl.play().catch(() => {});
       }
     } else {
