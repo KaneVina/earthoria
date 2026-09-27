@@ -209,7 +209,7 @@ export default function App() {
   if (maintenanceActive && !isStaffOrAdmin) {
     return (
       <BrowserRouter>
-        <EarthoriaSecurity />
+        {/* <EarthoriaSecurity /> */}
         <Suspense fallback={<RouteLoader />}>
           <Routes>
             <Route
@@ -253,7 +253,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      <EarthoriaSecurity />
+      {/* <EarthoriaSecurity /> */}
       <ScrollToTop />
       {!isEmbedded && <CustomCursor />}
       <HomeOnlyPromoBanner />
