@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 
 /* ─ CONFIG ─ */
 const FB_PAGE_ID = import.meta.env.VITE_FB_PAGE_ID;
-const FB_TOKEN = import.meta.env.VITE_FB_TOKEN_NEW;
+const FB_TOKEN = import.meta.env.VITE_FB_TOKEN;
 const CARD_WIDTH = 276; // px - bao gồm gap
 const GAP = 16;
 const AUTO_MS = 3200;
@@ -189,7 +189,6 @@ function SkeletonCard() {
 
 /* ─ CARD ─ */
 function FbCard({ post, index }) {
-  const comments = post.comments?.summary?.total_count ?? 0;
   const date = fmtDate(post.created_time);
   const href = post.permalink_url || `https://www.facebook.com/${FB_PAGE_ID}`;
   const msg = trimMsg(post.message);
@@ -374,32 +373,7 @@ function FbCard({ post, index }) {
         </p>
 
         {/* divider */}
-        <div
-          style={{ height: ".5px", background: T.border, marginBottom: 10 }}
-        />
-
-        {/* actions */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-end",
-          }}
-        >
-          <span
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 3,
-              fontSize: 11,
-              color: T.textMuted,
-              fontWeight: 300,
-            }}
-          >
-            <CommentIcon />
-            {comments}
-          </span>
-        </div>
+        <div style={{ height: ".5px", background: T.border }} />
       </div>
     </a>
   );
@@ -440,7 +414,7 @@ export default function FacebookSection() {
     } catch (_) {}
     const url =
       `https://graph.facebook.com/v19.0/${FB_PAGE_ID}/posts` +
-      `?fields=id,message,created_time,full_picture,permalink_url,likes.summary(true),comments.summary(true)` +
+      `?fields=id,message,created_time,full_picture,permalink_url` +
       `&limit=6&access_token=${FB_TOKEN}`;
     fetch(url)
       .then((r) => r.json())

@@ -360,7 +360,7 @@ The frontend is available at `http://localhost:5173` by default.
 | Variable                                                                     | Purpose                     |
 | ---------------------------------------------------------------------------- | --------------------------- |
 | `VITE_API_URL`                                                               | Base URL of the backend API |
-| `VITE_FB_PAGE_ID`, `VITE_FB_TOKEN`                                           | Facebook Page integration   |
+| `VITE_FB_PAGE_ID`, `VITE_FB_TOKEN_NEW`                                           | Facebook Page integration   |
 | `VITE_UMAMI_URL`, `VITE_UMAMI_SITE_ID`, `VITE_UMAMI_USER`, `VITE_UMAMI_PASS` | Umami analytics             |
 | `VITE_UPTIMEROBOT_API_KEY`, `VITE_UPTIMEROBOT_MONITOR_ID`                    | Uptime monitoring dashboard |
 
