@@ -14,6 +14,7 @@ import {
 
 import { parentPinService } from "../../services/parentPinService";
 import FullScreenLoader from "../FullScreenLoader";
+import PinDigitInputs from "./PinDigitInputs";
 import "../assets/css/profile.css";
 import "../assets/css/parentDashboard.css";
 import "../assets/css/familyGate.css";
@@ -28,119 +29,6 @@ const FAMILY_GATE_STATUS_KEY = ["family-gate-status"];
 
 const emptyDigits = (n) => Array(n).fill("");
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-/**
- * Dãy ô nhập số dùng chung cho PIN (4 số) và OTP (6 số).
- *
- * - Mỗi số vừa gõ chỉ hiện thật trong chốc lát (hoặc trong lúc ô đó đang
- *   được focus để dễ sửa) rồi tự chuyển thành "*" - số ở các ô trước đó
- *   luôn bị che ngay khi con trỏ rời sang ô kế tiếp, tránh lộ mã khi có
- *   người đứng cạnh nhìn màn hình.
- * - Gõ xong số cuối cùng sẽ tự gọi onComplete (tương đương tự bấm "Xác
- *   nhận"/"Tiếp tục"), không cần thao tác thêm.
- * - hasError bung viền đỏ cho TẤT CẢ các ô như nhau (không riêng ô nào) để
- *   không ai đoán được số nào gõ sai; hasSuccess bung xanh đậm toàn bộ khi
- *   mã đã được xác thực đúng. shake=true rung nhẹ cả hàng khi nhập sai.
- */
-function DigitInputs({
-  digits,
-  refsArray,
-  hasError,
-  hasSuccess,
-  shake,
-  disabled,
-  onChange,
-  onComplete,
-}) {
-  const count = digits.length;
-  const [focusedIndex, setFocusedIndex] = useState(-1);
-  const [revealIndex, setRevealIndex] = useState(-1);
-  const revealTimerRef = useRef(null);
-
-  useEffect(() => () => clearTimeout(revealTimerRef.current), []);
-
-  const revealBriefly = (idx, ms = 450) => {
-    setRevealIndex(idx);
-    clearTimeout(revealTimerRef.current);
-    revealTimerRef.current = setTimeout(
-      () => setRevealIndex((cur) => (cur === idx ? -1 : cur)),
-      ms,
-    );
-  };
-
-  const setDigit = (idx, raw) => {
-    const digit = raw.replace(/[^0-9]/g, "").slice(-1);
-    const next = [...digits];
-    next[idx] = digit;
-    onChange(next);
-    if (!digit) return; // vừa xoá bằng cách gõ đè - không cần hiệu ứng gì thêm
-
-    revealBriefly(idx);
-    if (idx < count - 1) {
-      refsArray.current[idx + 1]?.focus();
-    } else {
-      refsArray.current[idx]?.blur();
-      if (next.every((d) => d)) onComplete?.(next.join(""));
-    }
-  };
-
-  const onKeyDown = (idx, e) => {
-    if (e.key === "Backspace" && !digits[idx] && idx > 0) {
-      refsArray.current[idx - 1]?.focus();
-    }
-  };
-
-  // Cho phép dán nguyên chuỗi mã (vd copy từ email/SMS) vào bất kỳ ô nào.
-  const onPaste = (idx, e) => {
-    const text = e.clipboardData.getData("text").replace(/[^0-9]/g, "");
-    if (!text) return;
-    e.preventDefault();
-    const next = [...digits];
-    let lastIdx = idx;
-    for (let i = 0; i < text.length && idx + i < count; i++) {
-      next[idx + i] = text[i];
-      lastIdx = idx + i;
-    }
-    onChange(next);
-    revealBriefly(lastIdx);
-    if (next.every((d) => d)) {
-      refsArray.current[lastIdx]?.blur();
-      onComplete?.(next.join(""));
-    } else {
-      refsArray.current[Math.min(lastIdx + 1, count - 1)]?.focus();
-    }
-  };
-
-  return (
-    <div className={`otp-inputs ${shake ? "fg-pin-shake" : ""}`}>
-      {digits.map((d, i) => {
-        const showRealDigit = d && (i === revealIndex || i === focusedIndex);
-        return (
-          <input
-            key={i}
-            ref={(el) => (refsArray.current[i] = el)}
-            className={`otp-input ${d ? "filled" : ""} ${hasError ? "error" : ""} ${hasSuccess ? "success" : ""}`}
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            maxLength={1}
-            autoFocus={i === 0}
-            value={showRealDigit ? d : d ? "*" : ""}
-            disabled={disabled}
-            aria-label={`Chữ số thứ ${i + 1} trên ${count}`}
-            onFocus={(e) => {
-              setFocusedIndex(i);
-              e.target.select(); // bôi đen số cũ để gõ số mới là ghi đè luôn
-            }}
-            onBlur={() => setFocusedIndex((cur) => (cur === i ? -1 : cur))}
-            onChange={(e) => setDigit(i, e.target.value)}
-            onKeyDown={(e) => onKeyDown(i, e)}
-            onPaste={(e) => onPaste(i, e)}
-          />
-        );
-      })}
-    </div>
-  );
-}
 
 /**
  * Cổng PIN bảo vệ toàn bộ khu vực /family (Bảng điều khiển phụ huynh).
@@ -487,7 +375,7 @@ export default function FamilyGate({ children }) {
               </div>
             ) : (
               <>
-                <DigitInputs
+                <PinDigitInputs
                   digits={pinDigits}
                   refsArray={pinRefs}
                   hasError={!!pinError}
@@ -557,7 +445,7 @@ export default function FamilyGate({ children }) {
                 <div className="otp-email-mask">
                   {maskedEmail || "email của bạn"}
                 </div>
-                <DigitInputs
+                <PinDigitInputs
                   digits={otpDigits}
                   refsArray={otpRefs}
                   hasError={!!pinError}
@@ -609,7 +497,7 @@ export default function FamilyGate({ children }) {
                 <p className="pf-confirm-msg">
                   Chọn 4 chữ số dễ nhớ nhưng không quá đơn giản.
                 </p>
-                <DigitInputs
+                <PinDigitInputs
                   digits={newPinDigits}
                   refsArray={newPinRefs}
                   hasError={!!pinError}
@@ -648,7 +536,7 @@ export default function FamilyGate({ children }) {
                 <p className="pf-confirm-msg">
                   Xác nhận lại để chắc chắn không gõ nhầm.
                 </p>
-                <DigitInputs
+                <PinDigitInputs
                   digits={confirmPinDigits}
                   refsArray={confirmPinRefs}
                   hasError={!!pinError}

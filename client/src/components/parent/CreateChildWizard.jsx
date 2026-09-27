@@ -426,6 +426,7 @@ export default function CreateChildWizard({
               <label>Mã PIN mới</label>
               <input
                 type="password"
+                autoComplete="new-password"
                 inputMode="numeric"
                 maxLength={4}
                 className="pf-pw-input pkd-wizard-input"
@@ -439,6 +440,7 @@ export default function CreateChildWizard({
               <label>Nhập lại mã PIN</label>
               <input
                 type="password"
+                autoComplete="new-password"
                 inputMode="numeric"
                 maxLength={4}
                 className="pf-pw-input pkd-wizard-input"

@@ -73,6 +73,7 @@ export default function DeleteChildModal({
             <input
               autoFocus
               type="password"
+              autoComplete="current-password"
               inputMode="numeric"
               maxLength={4}
               className="pkd-wizard-input pf-pw-input"

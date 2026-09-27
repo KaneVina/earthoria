@@ -60,6 +60,9 @@ import FullScreenLoader from "../components/FullScreenLoader";
 import KidLinkCard from "../components/parent/KidLinkCard";
 import DeleteChildModal from "../components/parent/DeleteChildModal";
 import RadialQuickNav from "../components/RadialQuickNav";
+import PinDigitInputs from "../components/parent/PinDigitInputs";
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const parentDashboardSections = [
   { id: "overview", label: "Tổng quan", icon: Clock },
@@ -850,40 +853,15 @@ export default function ParentDashboard() {
   const newPinRefs = useRef([]);
   const confirmPinRefs = useRef([]);
 
-  // Tạo cặp (onChange, onKeyDown) cho 1 bộ 4 ô số PIN dùng chung 1 kiểu
-  // component với bước OTP (đã test ổn định) thay vì <input type="password">
-  // gốc của trình duyệt (gây lệch dấu chấm/con trỏ khi kết hợp letter-spacing).
-  const makePinDigitHandlers = (digits, setDigits, refs) => ({
-    onChange: (idx, val) => {
-      const digit = val.replace(/[^0-9]/g, "").slice(-1);
-      setDigits((prev) => {
-        const next = [...prev];
-        next[idx] = digit;
-        return next;
-      });
-      if (digit && idx < 3) refs.current[idx + 1]?.focus();
-    },
-    onKeyDown: (idx, e) => {
-      if (e.key === "Backspace" && !digits[idx] && idx > 0) {
-        refs.current[idx - 1]?.focus();
-      }
-    },
-  });
-  const oldPinHandlers = makePinDigitHandlers(
-    oldPinDigits,
-    setOldPinDigits,
-    oldPinRefs,
-  );
-  const newPinHandlers = makePinDigitHandlers(
-    newPinDigits,
-    setNewPinDigits,
-    newPinRefs,
-  );
-  const confirmPinHandlers = makePinDigitHandlers(
-    confirmPinDigits,
-    setConfirmPinDigits,
-    confirmPinRefs,
-  );
+  // Hiệu ứng rung dùng chung cho mọi bộ ô PIN/OTP trong trang này (đổi PIN,
+  // quên PIN, mở khoá AR) - chỉ 1 bộ ô hiển thị tại 1 thời điểm nên dùng
+  // chung 1 state là đủ, giống cách FamilyGate.jsx xử lý.
+  const [pinShake, setPinShake] = useState(false);
+  const shakePinFor = async (ms = 550) => {
+    setPinShake(true);
+    await sleep(ms);
+    setPinShake(false);
+  };
 
   // Các bước hiển thị phụ thuộc vào 2 trường hợp:
   // - Chưa từng đặt PIN (!hasPin): chỉ cần "new" → "confirm" (không có PIN cũ để xác thực, không cần OTP)
@@ -938,6 +916,7 @@ export default function ParentDashboard() {
       setPinError(err.response?.data?.message || "Mã PIN cũ không đúng.");
       setOldPinDigits(["", "", "", ""]);
       oldPinRefs.current[0]?.focus();
+      shakePinFor();
     } finally {
       setPinSubmitting(false);
     }
@@ -958,20 +937,6 @@ export default function ParentDashboard() {
     }
   };
 
-  const handleOtpChange = (idx, val) => {
-    const digit = val.replace(/[^0-9]/g, "").slice(-1);
-    setOtpValues((prev) => {
-      const next = [...prev];
-      next[idx] = digit;
-      return next;
-    });
-    if (digit && idx < 5) otpRefs.current[idx + 1]?.focus();
-  };
-  const handleOtpKeyDown = (idx, e) => {
-    if (e.key === "Backspace" && !otpValues[idx] && idx > 0) {
-      otpRefs.current[idx - 1]?.focus();
-    }
-  };
   const submitOtp = () => {
     const code = otpValues.join("");
     if (code.length < 6) {
@@ -998,6 +963,7 @@ export default function ParentDashboard() {
       setPinError("Hai mã PIN không khớp, thử lại nhé.");
       setConfirmPinDigits(["", "", "", ""]);
       confirmPinRefs.current[0]?.focus();
+      shakePinFor();
       return;
     }
     setPinSubmitting(true);
@@ -1031,15 +997,6 @@ export default function ParentDashboard() {
   const unlockRefs = useRef([]);
   const isLockedOut = !!unlockLockedUntil && unlockLockedUntil > Date.now();
 
-  const handleUnlockDigit = (idx, val) => {
-    const digit = val.replace(/[^0-9]/g, "").slice(-1);
-    setUnlockPinDigits((prev) => {
-      const next = [...prev];
-      next[idx] = digit;
-      return next;
-    });
-    if (digit && idx < 3) unlockRefs.current[idx + 1]?.focus();
-  };
   const submitUnlockPin = async () => {
     const pin = unlockPinDigits.join("");
     if (pin.length < 4) return;
@@ -1056,6 +1013,7 @@ export default function ParentDashboard() {
       }
       setUnlockPinDigits(["", "", "", ""]);
       unlockRefs.current[0]?.focus();
+      shakePinFor();
     } finally {
       setUnlockSubmitting(false);
     }
@@ -2545,21 +2503,16 @@ export default function ParentDashboard() {
             </div>
           ) : (
             <>
-              <div
-                className="otp-inputs"
-                style={{ maxWidth: 220, margin: "20px auto" }}
-              >
-                {unlockPinDigits.map((d, i) => (
-                  <input
-                    key={i}
-                    ref={(el) => (unlockRefs.current[i] = el)}
-                    className={`otp-input ${d ? "filled" : ""} ${unlockError ? "error" : ""}`}
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={d}
-                    onChange={(e) => handleUnlockDigit(i, e.target.value)}
-                  />
-                ))}
+              <div style={{ maxWidth: 220, margin: "20px auto" }}>
+                <PinDigitInputs
+                  digits={unlockPinDigits}
+                  refsArray={unlockRefs}
+                  hasError={!!unlockError}
+                  shake={pinShake}
+                  disabled={unlockSubmitting}
+                  onChange={setUnlockPinDigits}
+                  onComplete={() => submitUnlockPin()}
+                />
               </div>
               {unlockError && (
                 <p className="pf-field-error" style={{ textAlign: "center" }}>
@@ -2583,7 +2536,7 @@ export default function ParentDashboard() {
             {!isLockedOut && (
               <button
                 className="pf-confirm-ok pf-btn-tactile"
-                onClick={submitUnlockPin}
+                onClick={() => submitUnlockPin()}
                 disabled={unlockSubmitting}
               >
                 {unlockSubmitting ? (
@@ -2619,23 +2572,16 @@ export default function ParentDashboard() {
               <p className="pf-confirm-msg">
                 Xác nhận mã PIN cũ trước khi đặt mã mới.
               </p>
-              <div
-                className="otp-inputs"
-                style={{ maxWidth: 220, margin: "20px auto" }}
-              >
-                {oldPinDigits.map((d, i) => (
-                  <input
-                    key={i}
-                    ref={(el) => (oldPinRefs.current[i] = el)}
-                    className={`otp-input ${d ? "filled" : ""} ${pinError ? "error" : ""}`}
-                    inputMode="numeric"
-                    maxLength={1}
-                    autoFocus={i === 0}
-                    value={d}
-                    onChange={(e) => oldPinHandlers.onChange(i, e.target.value)}
-                    onKeyDown={(e) => oldPinHandlers.onKeyDown(i, e)}
-                  />
-                ))}
+              <div style={{ maxWidth: 220, margin: "20px auto" }}>
+                <PinDigitInputs
+                  digits={oldPinDigits}
+                  refsArray={oldPinRefs}
+                  hasError={!!pinError}
+                  shake={pinShake}
+                  disabled={pinSubmitting}
+                  onChange={setOldPinDigits}
+                  onComplete={() => submitOldPin()}
+                />
               </div>
               {pinError && (
                 <p className="pf-field-error" style={{ textAlign: "center" }}>
@@ -2651,7 +2597,7 @@ export default function ParentDashboard() {
                 </button>
                 <button
                   className="pf-confirm-ok pf-btn-tactile"
-                  onClick={submitOldPin}
+                  onClick={() => submitOldPin()}
                   disabled={pinSubmitting}
                 >
                   {pinSubmitting ? (
@@ -2676,21 +2622,15 @@ export default function ParentDashboard() {
               <div className="otp-email-mask">
                 {maskedEmail || "email của bạn"}
               </div>
-              <div className="otp-inputs">
-                {otpValues.map((d, i) => (
-                  <input
-                    key={i}
-                    ref={(el) => (otpRefs.current[i] = el)}
-                    className={`otp-input ${d ? "filled" : ""} ${pinError ? "error" : ""}`}
-                    inputMode="numeric"
-                    maxLength={1}
-                    value={d}
-                    disabled={otpSending}
-                    onChange={(e) => handleOtpChange(i, e.target.value)}
-                    onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                  />
-                ))}
-              </div>
+              <PinDigitInputs
+                digits={otpValues}
+                refsArray={otpRefs}
+                hasError={!!pinError}
+                shake={pinShake}
+                disabled={otpSending}
+                onChange={setOtpValues}
+                onComplete={() => submitOtp()}
+              />
               {pinError && (
                 <p className="pf-field-error" style={{ textAlign: "center" }}>
                   {pinError}
@@ -2717,7 +2657,7 @@ export default function ParentDashboard() {
                 </button>
                 <button
                   className="pf-confirm-ok pf-btn-tactile"
-                  onClick={submitOtp}
+                  onClick={() => submitOtp()}
                   disabled={otpSending}
                 >
                   {otpSending ? (
@@ -2739,23 +2679,15 @@ export default function ParentDashboard() {
               <p className="pf-confirm-msg">
                 Chọn 4 chữ số dễ nhớ nhưng không quá đơn giản.
               </p>
-              <div
-                className="otp-inputs"
-                style={{ maxWidth: 220, margin: "20px auto" }}
-              >
-                {newPinDigits.map((d, i) => (
-                  <input
-                    key={i}
-                    ref={(el) => (newPinRefs.current[i] = el)}
-                    className={`otp-input ${d ? "filled" : ""} ${pinError ? "error" : ""}`}
-                    inputMode="numeric"
-                    maxLength={1}
-                    autoFocus={i === 0}
-                    value={d}
-                    onChange={(e) => newPinHandlers.onChange(i, e.target.value)}
-                    onKeyDown={(e) => newPinHandlers.onKeyDown(i, e)}
-                  />
-                ))}
+              <div style={{ maxWidth: 220, margin: "20px auto" }}>
+                <PinDigitInputs
+                  digits={newPinDigits}
+                  refsArray={newPinRefs}
+                  hasError={!!pinError}
+                  shake={pinShake}
+                  onChange={setNewPinDigits}
+                  onComplete={() => submitNewPin()}
+                />
               </div>
               {pinError && (
                 <p className="pf-field-error" style={{ textAlign: "center" }}>
@@ -2771,7 +2703,7 @@ export default function ParentDashboard() {
                 </button>
                 <button
                   className="pf-confirm-ok pf-btn-tactile"
-                  onClick={submitNewPin}
+                  onClick={() => submitNewPin()}
                 >
                   Tiếp tục
                 </button>
@@ -2788,25 +2720,16 @@ export default function ParentDashboard() {
               <p className="pf-confirm-msg">
                 Xác nhận lại để chắc chắn không gõ nhầm.
               </p>
-              <div
-                className="otp-inputs"
-                style={{ maxWidth: 220, margin: "20px auto" }}
-              >
-                {confirmPinDigits.map((d, i) => (
-                  <input
-                    key={i}
-                    ref={(el) => (confirmPinRefs.current[i] = el)}
-                    className={`otp-input ${d ? "filled" : ""} ${pinError ? "error" : ""}`}
-                    inputMode="numeric"
-                    maxLength={1}
-                    autoFocus={i === 0}
-                    value={d}
-                    onChange={(e) =>
-                      confirmPinHandlers.onChange(i, e.target.value)
-                    }
-                    onKeyDown={(e) => confirmPinHandlers.onKeyDown(i, e)}
-                  />
-                ))}
+              <div style={{ maxWidth: 220, margin: "20px auto" }}>
+                <PinDigitInputs
+                  digits={confirmPinDigits}
+                  refsArray={confirmPinRefs}
+                  hasError={!!pinError}
+                  shake={pinShake}
+                  disabled={pinSubmitting}
+                  onChange={setConfirmPinDigits}
+                  onComplete={() => submitConfirmPin()}
+                />
               </div>
               {pinError && (
                 <p className="pf-field-error" style={{ textAlign: "center" }}>
@@ -2822,7 +2745,7 @@ export default function ParentDashboard() {
                 </button>
                 <button
                   className="pf-confirm-ok pf-btn-tactile"
-                  onClick={submitConfirmPin}
+                  onClick={() => submitConfirmPin()}
                   disabled={pinSubmitting}
                 >
                   {pinSubmitting ? (
