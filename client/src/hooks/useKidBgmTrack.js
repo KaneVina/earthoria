@@ -1,38 +1,49 @@
 import { useEffect } from "react";
 import { isEmbeddedInIframe } from "../utils/embed";
 
-// Store rất nhỏ: KidBackgroundMusic (singleton, luôn mount ở App.jsx) đăng
-// ký setter của nó vào đây lúc mount; các trang không nằm trên cùng cây
-// component (vd GamePlay) gọi useKidBgmTrack() để yêu cầu đổi bài đang phát,
-// mà không cần kéo React Context vào chỉ cho việc này.
-let setActiveTrackKey = null;
+let setActiveTrackRequest = null;
 
 // Loại message dùng để bắc cầu qua ranh giới iframe (xem ghi chú dưới).
 const BRIDGE_MESSAGE_TYPE = "earthoria:kid-bgm-track";
+
+/**
+ * Chuẩn hoá 1 yêu cầu đổi bài về đúng 1 dạng object gọn, dùng làm dữ liệu
+ * lưu trong state của KidBackgroundMusic lẫn làm khoá so sánh dependency
+ * (qua JSON.stringify) - tránh việc object reference đổi mỗi lần re-render
+ * khiến nhạc bị nạp lại không cần thiết. Chấp nhận:
+ *  - chuỗi preset cũ ("default"/"game"/"result"...)
+ *  - { videoId }        1 video YouTube tuỳ ý (ebook dán link)
+ *  - { audioUrl }       1 file audio tải lên (ebook)
+ *  - { silent: true }   tắt hẳn nhạc nền ở nơi gọi (khác hẳn null: null =
+ *    "không yêu cầu gì, giữ nguyên bài đang phát", silent = "chủ động im
+ *    lặng")
+ * Trả về null nếu không phải yêu cầu hợp lệ nào ở trên.
+ */
+export function normalizeBgmTrackRequest(request) {
+  if (!request) return null;
+  if (typeof request === "string") return { kind: "preset", key: request };
+  if (request.silent) return { kind: "silent" };
+  if (request.videoId) return { kind: "video", videoId: request.videoId };
+  if (request.audioUrl) return { kind: "audio", audioUrl: request.audioUrl };
+  return null;
+}
 
 /**
  * Gọi trong KidBackgroundMusic lúc mount để "mở cổng" nhận yêu cầu đổi bài
  * từ nơi khác. Trả về hàm dọn dẹp, dùng trực tiếp làm return của useEffect.
  */
 export function registerKidBgmTrackSetter(setter) {
-  setActiveTrackKey = setter;
+  setActiveTrackRequest = setter;
   return () => {
-    setActiveTrackKey = null;
+    setActiveTrackRequest = null;
   };
 }
 
-function requestTrack(trackKey) {
+function requestTrack(normalized) {
   if (isEmbeddedInIframe()) {
-    // Trang hiện tại đang bị nhúng trong iframe (vd khung chơi game nhúng
-    // ngay trong trang ebook - xem QrLiveEmbed trong admin/EbookEditor.jsx).
-    // KidBackgroundMusic ở CHÍNH trang bị nhúng này không hề mount (App.jsx
-    // chỉ mount nó khi !isEmbedded, để tránh chồng tiếng 2 player), nên
-    // player nhạc THẬT đang chạy ở trang cha (window.top). Phải "nhắn" ra
-    // ngoài đó bằng postMessage thay vì gọi setter cục bộ (vốn không tồn
-    // tại/không có tác dụng gì trong ngữ cảnh này).
     try {
       window.top.postMessage(
-        { type: BRIDGE_MESSAGE_TYPE, trackKey },
+        { type: BRIDGE_MESSAGE_TYPE, track: normalized },
         window.location.origin,
       );
     } catch {
@@ -41,7 +52,7 @@ function requestTrack(trackKey) {
     }
     return;
   }
-  setActiveTrackKey?.(trackKey);
+  setActiveTrackRequest?.(normalized);
 }
 
 /**
@@ -55,24 +66,32 @@ function requestTrack(trackKey) {
  * vì đó là unmount bình thường của chính cây React đang chứa nó.
  */
 export function resetKidBgmTrack() {
-  requestTrack("default");
+  requestTrack(normalizeBgmTrackRequest("default"));
 }
 
 /**
- * Yêu cầu KidBackgroundMusic phát bài ứng với `trackKey` ("game", "result"…)
- * trong lúc component gọi hook này còn mounted; tự trả lại nhạc mặc định
- * ("default") khi unmount hoặc khi trackKey chuyển thành falsy. Hoạt động
- * đúng dù component gọi hook đang nằm trên chính trang có player, hay đang
- * chạy trong 1 iframe nhúng của trang đó (vd game nhúng trong ebook).
+ * Yêu cầu KidBackgroundMusic phát bài ứng với `trackRequest` trong lúc
+ * component gọi hook này còn mounted; tự trả lại nhạc mặc định ("default")
+ * khi unmount hoặc khi trackRequest chuyển thành falsy. Hoạt động đúng dù
+ * component gọi hook đang nằm trên chính trang có player, hay đang chạy
+ * trong 1 iframe nhúng của trang đó (vd game nhúng trong ebook).
+ *
+ * `trackRequest` chấp nhận preset string ("game", "result"...) như trước,
+ * hoặc object { videoId } / { audioUrl } / { silent: true } - xem
+ * normalizeBgmTrackRequest(). Truyền null/undefined = không yêu cầu gì.
  */
-export function useKidBgmTrack(trackKey) {
+export function useKidBgmTrack(trackRequest) {
+  const normalized = normalizeBgmTrackRequest(trackRequest);
+  const depKey = normalized ? JSON.stringify(normalized) : "";
+
   useEffect(() => {
-    if (!trackKey) return undefined;
-    requestTrack(trackKey);
+    if (!normalized) return undefined;
+    requestTrack(normalized);
     return () => {
-      requestTrack("default");
+      requestTrack(normalizeBgmTrackRequest("default"));
     };
-  }, [trackKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [depKey]);
 }
 
 /**
@@ -80,14 +99,14 @@ export function useKidBgmTrack(trackKey) {
  * thật) để lắng nghe yêu cầu đổi bài gửi từ 1 iframe con đang nhúng trên
  * trang đó, thông qua requestTrack() ở trên.
  */
-export function useKidBgmTrackBridge(onTrackKey) {
+export function useKidBgmTrackBridge(onTrackRequest) {
   useEffect(() => {
     const handleMessage = (event) => {
       if (event.origin !== window.location.origin) return;
       if (event.data?.type !== BRIDGE_MESSAGE_TYPE) return;
-      onTrackKey(event.data.trackKey || "default");
+      onTrackRequest(event.data.track || normalizeBgmTrackRequest("default"));
     };
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [onTrackKey]);
+  }, [onTrackRequest]);
 }

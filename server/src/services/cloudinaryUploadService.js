@@ -74,6 +74,28 @@ function deleteImageByPublicId(publicId) {
   return cloudinary.uploader.destroy(publicId, { resource_type: "image" });
 }
 
+// Nhạc nền / âm thanh của ebook (upload trực tiếp file, không phải link
+// YouTube). Cloudinary không có resource_type "audio" riêng - dùng chung
+// "video" đúng theo chuẩn của Cloudinary cho mọi file âm thanh.
+function uploadEbookAudioBuffer(buffer, ebookId) {
+  return new Promise((resolve, reject) => {
+    const publicId = `ebooks/${ebookId || "draft"}/audio/${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: "video", // chuẩn Cloudinary cho audio
+        public_id: publicId,
+        overwrite: false,
+      },
+      (err, result) => (err ? reject(err) : resolve(result)),
+    );
+    stream.end(buffer);
+  });
+}
+
+function deleteAudioByPublicId(publicId) {
+  return cloudinary.uploader.destroy(publicId, { resource_type: "video" });
+}
+
 function extractPublicId(url) {
   const m = url.match(/\/upload\/(?:v\d+\/)?(.+)\.\w+$/);
   return m ? m[1] : null;
@@ -109,6 +131,8 @@ module.exports = {
   uploadGameImageBuffer,
   uploadEbookImageBuffer,
   deleteImageByPublicId,
+  uploadEbookAudioBuffer,
+  deleteAudioByPublicId,
   extractPublicId,
   uploadNewsFileBuffer,
   deleteRawByPublicId,

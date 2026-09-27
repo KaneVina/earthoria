@@ -4,7 +4,12 @@ import { Reorder, useDragControls } from "framer-motion";
 import toast from "react-hot-toast";
 import { ebookService } from "../../services/ebookService";
 import api from "../../services/api";
-import { resetKidBgmTrack } from "../../hooks/useKidBgmTrack";
+import { resetKidBgmTrack, useKidBgmTrack } from "../../hooks/useKidBgmTrack";
+import {
+  extractYoutubeVideoId,
+  resolvePageBgmTrack,
+  resolvePageClickSound,
+} from "../../utils/bgm";
 import { QRCodeCanvas } from "qrcode.react";
 import "../../components/assets/css/ebookPreview.css";
 import "../../components/assets/css/bookBuilder.css";
@@ -70,6 +75,7 @@ import {
   Building2,
   Users,
   Gamepad2,
+  Music,
 } from "lucide-react";
 import ColorPaletteStudio from "../../pages/admin/colorPalette/ColorPaletteStudio";
 
@@ -2249,6 +2255,7 @@ export function PreviewOverlay({
   pageNumberColor,
   showTitleWithPageNumber,
   hidePageNumberOnCover,
+  bookMusic,
   bookInfo,
   storageKey,
   resumeFromStorage,
@@ -2362,6 +2369,24 @@ export function PreviewOverlay({
       if (flipContentTimer.current) clearTimeout(flipContentTimer.current);
     };
   }, []);
+
+  // ---- Nhạc nền + âm thanh khi bấm cho trang đang đọc ----
+  // Nhạc NỀN tự phát, đi qua hệ thống KidBackgroundMusic dùng chung (chỉ
+  // thật sự phát ra tiếng ở các route /ebook/, /e-kid/...; ở trình soạn
+  // không có tác dụng vì route đó không nằm trong vùng hoạt động của nó -
+  // dùng nút "Nghe thử" riêng trong MusicSourcePicker để nghe trước).
+  const currentPageMusic = pages[idx]?.music;
+  const ambientTrack = resolvePageBgmTrack(currentPageMusic, bookMusic);
+  useKidBgmTrack(ambientTrack);
+
+  // Âm thanh CẦN BẤM mới phát (vd tiếng con vật, hiệu ứng...) - độc lập
+  // hoàn toàn với nhạc nền tự phát ở trên, phát trực tiếp bằng 1 thẻ
+  // <audio>/iframe nhỏ ngay tại đây, không đi qua KidBackgroundMusic.
+  const clickSound = resolvePageClickSound(currentPageMusic);
+  const [clickPlaying, setClickPlaying] = useState(false);
+  useEffect(() => {
+    setClickPlaying(false);
+  }, [idx]);
 
   const [bookmarks, setBookmarks] = useState(() => {
     try {
@@ -2930,7 +2955,79 @@ export function PreviewOverlay({
           0%, 100% { box-shadow: 0 0 0 0 rgba(26,92,71,0.32); }
           50% { box-shadow: 0 0 0 9px rgba(26,92,71,0); }
         }
+        .er-click-sound-btn {
+          position: fixed;
+          right: 18px;
+          bottom: 18px;
+          z-index: 5000;
+          width: 46px;
+          height: 46px;
+          border-radius: 50%;
+          border: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #e6aa14, #c98a0e);
+          color: #fff;
+          cursor: pointer;
+          box-shadow: 0 4px 16px rgba(0,0,0,0.32);
+          animation: er-click-sound-pulse 2.2s ease-in-out infinite;
+          transition: transform 0.15s ease;
+        }
+        .er-click-sound-btn:hover { transform: scale(1.08); }
+        .er-click-sound-btn:active { transform: scale(0.94); }
+        .er-click-sound-btn--playing {
+          background: linear-gradient(135deg, #4a9e3f, #3a8330);
+          animation: none;
+        }
+        @keyframes er-click-sound-pulse {
+          0%, 100% { box-shadow: 0 4px 16px rgba(0,0,0,0.32), 0 0 0 0 rgba(230,170,20,0.45); }
+          50% { box-shadow: 0 4px 16px rgba(0,0,0,0.32), 0 0 0 10px rgba(230,170,20,0); }
+        }
+        .er-click-sound-yt {
+          position: fixed;
+          width: 1px;
+          height: 1px;
+          overflow: hidden;
+          opacity: 0;
+          pointer-events: none;
+        }
+        .er-click-sound-yt iframe { width: 200px; height: 150px; border: 0; }
       `}</style>
+
+      {clickSound && (
+        <button
+          type="button"
+          className={`er-click-sound-btn${clickPlaying ? " er-click-sound-btn--playing" : ""}`}
+          onClick={() => setClickPlaying((v) => !v)}
+          title={
+            clickSound.label ||
+            (clickPlaying ? "Dừng âm thanh" : "Nghe âm thanh")
+          }
+          aria-label={clickSound.label || "Nghe âm thanh"}
+        >
+          {clickPlaying ? <VolumeX size={20} /> : <Volume2 size={20} />}
+        </button>
+      )}
+      {clickPlaying && clickSound?.audioUrl && (
+        <audio
+          key={clickSound.audioUrl}
+          src={clickSound.audioUrl}
+          autoPlay
+          onEnded={() => setClickPlaying(false)}
+          style={{ display: "none" }}
+        />
+      )}
+      {clickPlaying && clickSound?.videoId && (
+        <div className="er-click-sound-yt" aria-hidden="true">
+          <iframe
+            key={clickSound.videoId}
+            src={`https://www.youtube.com/embed/${clickSound.videoId}?autoplay=1`}
+            title={clickSound.label || "Âm thanh"}
+            allow="autoplay"
+          />
+        </div>
+      )}
 
       <div className="er-topbar">
         <button
@@ -3561,6 +3658,14 @@ function PageStripItem({
   // lên cả khối (ô số + tên trang), tránh tạo ra 1 khối bóng đổ trên nền trong
   // suốt trông như 1 hộp trắng "vô hình" xấu xí khi kéo.
   const [isDragging, setIsDragging] = useState(false);
+  const hasAmbient =
+    page.music?.ambient?.mode === "custom" &&
+    !!(page.music.ambient.videoId || page.music.ambient.audioUrl);
+  const hasClickSound = !!(
+    page.music?.click &&
+    (page.music.click.videoId || page.music.click.audioUrl)
+  );
+  const hasMusic = hasAmbient || hasClickSound;
   return (
     <Reorder.Item
       as="div"
@@ -3585,6 +3690,20 @@ function PageStripItem({
         onClick={onSelect}
       >
         {index + 1}
+        {hasMusic && (
+          <span
+            className="bb-page-music-badge"
+            title={
+              hasAmbient && hasClickSound
+                ? "Trang có nhạc nền riêng + âm thanh khi bấm"
+                : hasAmbient
+                  ? "Trang có nhạc nền riêng"
+                  : "Trang có âm thanh khi bấm"
+            }
+          >
+            <Music size={9} />
+          </span>
+        )}
       </div>
       {isActive ? (
         <input
@@ -3601,6 +3720,179 @@ function PageStripItem({
         </span>
       )}
     </Reorder.Item>
+  );
+}
+
+// Gộp 1 nguồn nhạc lại thành patch để merge vào state (videoId | audioUrl -
+// LUÔN xoá field còn lại để không bị lưu rác cả 2 cùng lúc). next=null nghĩa
+// là xoá hẳn nguồn đang có.
+function musicPatchFromSource(next) {
+  return {
+    videoId: next?.videoId || undefined,
+    audioUrl: next?.audioUrl || undefined,
+  };
+}
+
+// UI chọn 1 nguồn nhạc (dán link YouTube HOẶC tải file audio lên) kèm nút
+// nghe thử - dùng chung cho cả 3 chỗ cần chọn nhạc trong trình soạn: nhạc
+// nền mặc định của sách, nhạc nền riêng của 1 trang, và âm thanh-khi-bấm
+// của 1 trang. Không phụ thuộc hệ thống nhạc nền toàn cục (KidBackgroundMusic)
+// vì trang trình soạn không nằm trong vùng nó hoạt động - "Nghe thử" ở đây tự
+// dựng 1 player nhỏ độc lập (iframe YouTube ẩn danh / thẻ audio có sẵn control).
+function MusicSourcePicker({ value, onChange, ebookId }) {
+  const [urlInput, setUrlInput] = useState(
+    value?.videoId ? `https://youtu.be/${value.videoId}` : "",
+  );
+  const [uploading, setUploading] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    setUrlInput(value?.videoId ? `https://youtu.be/${value.videoId}` : "");
+  }, [value?.videoId]);
+
+  const hasSource = !!(value?.videoId || value?.audioUrl);
+
+  const commitUrl = () => {
+    const raw = urlInput.trim();
+    if (!raw) return;
+    const canonical = value?.videoId ? `https://youtu.be/${value.videoId}` : "";
+    if (raw === canonical) return;
+    const videoId = extractYoutubeVideoId(raw);
+    if (!videoId) {
+      toast.error("Không nhận diện được link YouTube này");
+      return;
+    }
+    onChange({ videoId });
+    setPreviewOpen(false);
+  };
+
+  // Bấm ra ngoài mà chưa gõ gì (hoặc đã xoá sạch ô) mà chưa bấm "Xoá" hẳn -
+  // trả lại đúng link đang lưu, tránh ô nhập trông "trống" trong khi dữ
+  // liệu thực ra vẫn còn (chỉ mất đồng bộ mặt hiển thị).
+  const handleUrlBlur = () => {
+    if (!urlInput.trim()) {
+      setUrlInput(value?.videoId ? `https://youtu.be/${value.videoId}` : "");
+      return;
+    }
+    commitUrl();
+  };
+
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("audio/")) {
+      toast.error("Chỉ chấp nhận file âm thanh");
+      return;
+    }
+    if (file.size > 25 * 1024 * 1024) {
+      toast.error("File âm thanh tối đa 25MB");
+      return;
+    }
+    setUploading(true);
+    try {
+      const res = await ebookService.uploadAudio(file, ebookId);
+      onChange({ audioUrl: res.data.data.url });
+      setPreviewOpen(false);
+      toast.success("Đã tải nhạc lên");
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Tải file thất bại");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleClear = () => {
+    if (value?.audioUrl)
+      ebookService.deleteAudio(value.audioUrl).catch(() => {});
+    setUrlInput("");
+    setPreviewOpen(false);
+    onChange(null);
+  };
+
+  return (
+    <div className="bb-music-picker">
+      <div className="bb-music-picker-row">
+        <input
+          type="text"
+          placeholder="Dán link YouTube..."
+          value={value?.audioUrl ? "" : urlInput}
+          disabled={!!value?.audioUrl || uploading}
+          onChange={(e) => setUrlInput(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              commitUrl();
+            }
+          }}
+          onBlur={handleUrlBlur}
+        />
+      </div>
+      <div className="bb-music-picker-row">
+        <button
+          type="button"
+          className="bb-btn"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+        >
+          <Upload size={14} />
+          {uploading
+            ? "Đang tải..."
+            : value?.audioUrl
+              ? "Đổi file"
+              : "Tải file lên"}
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="audio/*"
+          style={{ display: "none" }}
+          onChange={handleFile}
+        />
+        {hasSource && (
+          <button type="button" className="bb-btn" onClick={handleClear}>
+            <Trash2 size={14} /> Xoá
+          </button>
+        )}
+        {hasSource && (
+          <button
+            type="button"
+            className={`bb-btn${previewOpen ? " active" : ""}`}
+            onClick={() => setPreviewOpen((v) => !v)}
+          >
+            {previewOpen ? <VolumeX size={14} /> : <Volume2 size={14} />}
+            {previewOpen ? "Đóng" : "Nghe thử"}
+          </button>
+        )}
+      </div>
+      {hasSource && (
+        <div className="bb-music-picker-current">
+          <Music size={12} />
+          {value.videoId
+            ? `YouTube: ${value.videoId}`
+            : "File âm thanh đã tải lên"}
+        </div>
+      )}
+      {previewOpen && value?.videoId && (
+        <iframe
+          key={value.videoId}
+          className="bb-music-preview-frame"
+          src={`https://www.youtube.com/embed/${value.videoId}?autoplay=1`}
+          title="Nghe thử nhạc nền"
+          allow="autoplay"
+        />
+      )}
+      {previewOpen && value?.audioUrl && (
+        <audio
+          key={value.audioUrl}
+          className="bb-music-preview-audio"
+          src={value.audioUrl}
+          controls
+          autoPlay
+        />
+      )}
+    </div>
   );
 }
 
@@ -3632,6 +3924,13 @@ export default function BookBuilder() {
   const [pageNumberColor, setPageNumberColor] = useState("#2c3b34");
   const [showTitleWithPageNumber, setShowTitleWithPageNumber] = useState(false);
   const [hidePageNumberOnCover, setHidePageNumberOnCover] = useState(false);
+  // Nhạc nền mặc định của cả sách - từng trang có thể tự đặt riêng (xem
+  // page.music.ambient) hoặc kế thừa đúng nguồn này khi mode="default".
+  const [music, setMusic] = useState({
+    enabled: false,
+    videoId: "",
+    audioUrl: "",
+  });
 
   const [pages, setPages] = useState([
     defaultPage({
@@ -3713,6 +4012,8 @@ export default function BookBuilder() {
   showTitleWithPageNumberRef.current = showTitleWithPageNumber;
   const hidePageNumberOnCoverRef = useRef(hidePageNumberOnCover);
   hidePageNumberOnCoverRef.current = hidePageNumberOnCover;
+  const musicRef = useRef(music);
+  musicRef.current = music;
 
   const currentPage = pages[pageIndex] || pages[0];
 
@@ -3809,6 +4110,12 @@ export default function BookBuilder() {
             setShowTitleWithPageNumber(eb.showTitleWithPageNumber);
           if (typeof eb.hidePageNumberOnCover === "boolean")
             setHidePageNumberOnCover(eb.hidePageNumberOnCover);
+          if (eb.music && typeof eb.music === "object")
+            setMusic({
+              enabled: !!eb.music.enabled,
+              videoId: eb.music.videoId || "",
+              audioUrl: eb.music.audioUrl || "",
+            });
           if (Array.isArray(eb.pages) && eb.pages.length) setPages(eb.pages);
         } else if (bookIdFromQuery) {
           try {
@@ -3886,6 +4193,14 @@ export default function BookBuilder() {
         pageNumberColor: pageNumberColorRef.current,
         showTitleWithPageNumber: showTitleWithPageNumberRef.current,
         hidePageNumberOnCover: hidePageNumberOnCoverRef.current,
+        music: {
+          enabled: !!musicRef.current.enabled,
+          ...(musicRef.current.videoId
+            ? { videoId: musicRef.current.videoId }
+            : musicRef.current.audioUrl
+              ? { audioUrl: musicRef.current.audioUrl }
+              : {}),
+        },
       };
       if (ebookIdRef.current) {
         await ebookService.update(ebookIdRef.current, payload);
@@ -3923,6 +4238,7 @@ export default function BookBuilder() {
     pageNumberColor,
     showTitleWithPageNumber,
     hidePageNumberOnCover,
+    music,
     loaded,
     loadError,
   ]);
@@ -4680,6 +4996,50 @@ export default function BookBuilder() {
   const setPageTitle = (title) =>
     setPagesLive((prev) =>
       prev.map((p, i) => (i === pageIndex ? { ...p, title } : p)),
+    );
+
+  // ---- Nhạc nền riêng trang + âm thanh khi bấm (xem client/src/utils/bgm.js) ----
+  const setPageMusicAmbient = (patch) =>
+    setPagesCommit((prev) =>
+      prev.map((p, i) =>
+        i === pageIndex
+          ? {
+              ...p,
+              music: {
+                ...(p.music || {}),
+                ambient: { ...(p.music?.ambient || {}), ...patch },
+              },
+            }
+          : p,
+      ),
+    );
+  const setPageMusicClick = (patch) =>
+    setPagesCommit((prev) =>
+      prev.map((p, i) =>
+        i === pageIndex
+          ? {
+              ...p,
+              music: {
+                ...(p.music || {}),
+                click: { ...(p.music?.click || {}), ...patch },
+              },
+            }
+          : p,
+      ),
+    );
+  const setPageMusicClickLabelLive = (label) =>
+    setPagesLive((prev) =>
+      prev.map((p, i) =>
+        i === pageIndex
+          ? {
+              ...p,
+              music: {
+                ...(p.music || {}),
+                click: { ...(p.music?.click || {}), label },
+              },
+            }
+          : p,
+      ),
     );
 
   // Đổi khổ giấy (rộng × cao, tính bằng px) cho TOÀN BỘ sách - co giãn lại vị trí & kích
@@ -5917,6 +6277,145 @@ export default function BookBuilder() {
                 />
                 Không hiện số trang ở trang bìa (trang 1)
               </label>
+            </div>
+
+            <div className="bb-field">
+              <label>
+                Nhạc nền mặc định (cả sách)
+                <InfoHint>
+                  Tự phát nhẹ ngay khi bé mở sách để đọc, không cần bấm gì. Dán
+                  link YouTube hoặc tải file nhạc lên. Có thể đặt riêng cho từng
+                  trang ở mục bên dưới nếu muốn.
+                </InfoHint>
+              </label>
+              <label
+                className="bb-checkbox-field"
+                style={{ marginBottom: music.enabled ? 10 : 0 }}
+              >
+                <input
+                  type="checkbox"
+                  checked={!!music.enabled}
+                  onChange={(e) =>
+                    setMusic((prev) => ({ ...prev, enabled: e.target.checked }))
+                  }
+                />
+                Bật nhạc nền mặc định cho cả sách
+              </label>
+              {music.enabled && (
+                <MusicSourcePicker
+                  value={{ videoId: music.videoId, audioUrl: music.audioUrl }}
+                  ebookId={ebookId}
+                  onChange={(next) =>
+                    setMusic((prev) => ({
+                      ...prev,
+                      ...musicPatchFromSource(next),
+                    }))
+                  }
+                />
+              )}
+            </div>
+
+            <div className="bb-field">
+              <label>
+                Nhạc nền riêng - trang {pageIndex + 1}
+                <InfoHint>
+                  "Theo mặc định" dùng đúng nhạc nền chung của sách ở trên.
+                  "Tắt" làm trang này im lặng dù sách có bật nhạc mặc định.
+                  "Nhạc riêng" phát 1 bài khác chỉ ở trang này.
+                </InfoHint>
+              </label>
+              <div className="bb-row3">
+                <button
+                  type="button"
+                  className={`bb-btn${
+                    (currentPage.music?.ambient?.mode || "default") ===
+                    "default"
+                      ? " active"
+                      : ""
+                  }`}
+                  onClick={() => setPageMusicAmbient({ mode: "default" })}
+                >
+                  Theo mặc định
+                </button>
+                <button
+                  type="button"
+                  className={`bb-btn${currentPage.music?.ambient?.mode === "off" ? " active" : ""}`}
+                  onClick={() => setPageMusicAmbient({ mode: "off" })}
+                >
+                  Tắt
+                </button>
+                <button
+                  type="button"
+                  className={`bb-btn${currentPage.music?.ambient?.mode === "custom" ? " active" : ""}`}
+                  onClick={() => setPageMusicAmbient({ mode: "custom" })}
+                >
+                  Nhạc riêng
+                </button>
+              </div>
+              {currentPage.music?.ambient?.mode === "custom" && (
+                <div style={{ marginTop: 8 }}>
+                  <MusicSourcePicker
+                    value={{
+                      videoId: currentPage.music?.ambient?.videoId,
+                      audioUrl: currentPage.music?.ambient?.audioUrl,
+                    }}
+                    ebookId={ebookId}
+                    onChange={(next) =>
+                      next
+                        ? setPageMusicAmbient({
+                            mode: "custom",
+                            ...musicPatchFromSource(next),
+                          })
+                        : setPageMusicAmbient({
+                            mode: "default",
+                            videoId: undefined,
+                            audioUrl: undefined,
+                          })
+                    }
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="bb-field">
+              <label>
+                Âm thanh khi bấm loa - trang {pageIndex + 1}
+                <InfoHint>
+                  Khác với nhạc nền ở trên: âm thanh này KHÔNG tự phát, chỉ phát
+                  khi bé bấm vào nút loa hiện trên trang lúc đọc. Hợp để gắn
+                  tiếng con vật, hiệu ứng vui... Để trống = không hiện nút loa ở
+                  trang này.
+                </InfoHint>
+              </label>
+              <div className="bb-field" style={{ marginBottom: 8 }}>
+                <input
+                  type="text"
+                  placeholder="Nhãn nút (không bắt buộc), vd: Nghe tiếng hổ"
+                  value={currentPage.music?.click?.label || ""}
+                  onFocus={beginEdit}
+                  onBlur={endEdit}
+                  onChange={(e) => setPageMusicClickLabelLive(e.target.value)}
+                />
+              </div>
+              <MusicSourcePicker
+                value={{
+                  videoId: currentPage.music?.click?.videoId,
+                  audioUrl: currentPage.music?.click?.audioUrl,
+                }}
+                ebookId={ebookId}
+                onChange={(next) =>
+                  next
+                    ? setPageMusicClick({
+                        enabled: true,
+                        ...musicPatchFromSource(next),
+                      })
+                    : setPageMusicClick({
+                        enabled: false,
+                        videoId: undefined,
+                        audioUrl: undefined,
+                      })
+                }
+              />
             </div>
 
             <div className="bb-field">
@@ -7237,6 +7736,7 @@ export default function BookBuilder() {
           pageNumberColor={pageNumberColor}
           showTitleWithPageNumber={showTitleWithPageNumber}
           hidePageNumberOnCover={hidePageNumberOnCover}
+          bookMusic={music}
           bookInfo={{ title: bookTitle }}
           storageKey={ebookId || bookId || "draft"}
           onClose={() => setPreviewOpen(false)}

@@ -2,6 +2,8 @@ const prisma = require("../config/db");
 const {
   uploadEbookImageBuffer,
   deleteImageByPublicId,
+  uploadEbookAudioBuffer,
+  deleteAudioByPublicId,
   extractPublicId,
 } = require("../services/cloudinaryUploadService");
 
@@ -22,6 +24,21 @@ function emptyPage() {
     background: "#fffdf8",
     layers: [],
   };
+}
+
+// Nhạc nền mặc định của cả sách - chỉ giữ lại đúng các field đã biết, tránh
+// lưu rác/dữ liệu tuỳ ý vào cột Json. `videoId` dùng khi dán link YouTube
+// (đã được FE trích xuất sẵn), `audioUrl` dùng khi tải file lên Cloudinary -
+// chỉ giữ 1 trong 2, ưu tiên videoId nếu có cả 2 (không nên xảy ra ở FE).
+function sanitizeMusicConfig(music) {
+  if (!music || typeof music !== "object") return null;
+  const out = { enabled: !!music.enabled };
+  if (typeof music.videoId === "string" && music.videoId.trim()) {
+    out.videoId = music.videoId.trim().slice(0, 32);
+  } else if (typeof music.audioUrl === "string" && music.audioUrl.trim()) {
+    out.audioUrl = music.audioUrl.trim().slice(0, 1000);
+  }
+  return out;
 }
 
 function validatePages(pages) {
@@ -165,6 +182,7 @@ exports.createEbook = async (req, res) => {
       pageNumberColor,
       showTitleWithPageNumber,
       hidePageNumberOnCover,
+      music,
     } = req.body;
 
     if (!title?.trim())
@@ -204,6 +222,7 @@ exports.createEbook = async (req, res) => {
           typeof hidePageNumberOnCover === "boolean"
             ? hidePageNumberOnCover
             : undefined,
+        music: music !== undefined ? sanitizeMusicConfig(music) : undefined,
       },
     });
 
@@ -226,6 +245,7 @@ exports.updateEbook = async (req, res) => {
       pageNumberColor,
       showTitleWithPageNumber,
       hidePageNumberOnCover,
+      music,
     } = req.body;
 
     const existing = await prisma.ebook.findUnique({ where: { id } });
@@ -254,6 +274,7 @@ exports.updateEbook = async (req, res) => {
       data.showTitleWithPageNumber = showTitleWithPageNumber;
     if (typeof hidePageNumberOnCover === "boolean")
       data.hidePageNumberOnCover = hidePageNumberOnCover;
+    if (music !== undefined) data.music = sanitizeMusicConfig(music);
 
     if (pages !== undefined) {
       const pagesError = validatePages(pages);
@@ -330,5 +351,36 @@ exports.deleteEbookImage = async (req, res) => {
     return res.json({ success: true });
   } catch (err) {
     return serverError(res, err, "deleteEbookImage");
+  }
+};
+
+exports.uploadEbookAudio = async (req, res) => {
+  try {
+    if (!req.file)
+      return res
+        .status(400)
+        .json({ success: false, message: "Thiếu file âm thanh" });
+    const ebookId = req.query.ebookId || req.body.ebookId;
+    const result = await uploadEbookAudioBuffer(req.file.buffer, ebookId);
+    return res
+      .status(201)
+      .json({ success: true, data: { url: result.secure_url } });
+  } catch (err) {
+    return serverError(res, err, "uploadEbookAudio");
+  }
+};
+
+exports.deleteEbookAudio = async (req, res) => {
+  try {
+    const { url } = req.body;
+    if (!url)
+      return res
+        .status(400)
+        .json({ success: false, message: "Thiếu url âm thanh" });
+    const publicId = extractPublicId(url);
+    if (publicId) await deleteAudioByPublicId(publicId).catch(() => {});
+    return res.json({ success: true });
+  } catch (err) {
+    return serverError(res, err, "deleteEbookAudio");
   }
 };

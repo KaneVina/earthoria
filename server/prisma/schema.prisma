@@ -397,6 +397,7 @@ model Ebook {
   pageNumberColor         String?
   showTitleWithPageNumber Boolean          @default(false)
   hidePageNumberOnCover   Boolean          @default(false)
+  music                   Json?
   createdAt               DateTime         @default(now())
   updatedAt               DateTime         @updatedAt
 

@@ -5,17 +5,22 @@ import { isEmbeddedInIframe } from "../utils/embed";
 import {
   registerKidBgmTrackSetter,
   useKidBgmTrackBridge,
+  normalizeBgmTrackRequest,
 } from "../hooks/useKidBgmTrack";
 import "./assets/css/KidBackgroundMusic.css";
 
-// Các bài nhạc nền theo từng "khung cảnh". "default" phát khi ở khu vực kid
-// nói chung (đọc ebook, màn chờ...); "game"/"result" do GamePlay chủ động
-// yêu cầu qua hook useKidBgmTrack() khi vào màn chơi / màn kết quả.
+// Các bài nhạc nền PRESET theo từng "khung cảnh". "default" phát khi ở khu
+// vực kid nói chung (đọc ebook, màn chờ...); "game"/"result" do GamePlay
+// chủ động yêu cầu qua hook useKidBgmTrack() khi vào màn chơi / màn kết
+// quả. Ngoài các preset cố định này, nơi gọi (vd ebook) còn có thể yêu cầu
+// 1 video YouTube/1 file audio TUỲ Ý - xem xử lý "kind" bên dưới.
 const TRACKS = {
   default: "xxYJONmXE8w",
   game: "gD-UgmCtggQ",
   result: "RV8s08clQi4",
 };
+
+const DEFAULT_TRACK_REQUEST = normalizeBgmTrackRequest("default");
 
 const STORAGE_KEY = "earthoria:kid-bgm";
 const DEFAULT_VOLUME = 55;
@@ -74,6 +79,15 @@ function loadYouTubeApi() {
   return apiPromise;
 }
 
+// videoId cần phát cho 1 track request đã chuẩn hoá, ứng với player YouTube
+// (preset hoặc "video" tuỳ ý) - null nếu track này không dùng YouTube.
+function videoIdForTrack(track) {
+  if (!track) return TRACKS.default;
+  if (track.kind === "preset") return TRACKS[track.key] || TRACKS.default;
+  if (track.kind === "video") return track.videoId;
+  return null;
+}
+
 export default function KidBackgroundMusic() {
   const location = useLocation();
   const embedded = isEmbeddedInIframe();
@@ -81,29 +95,31 @@ export default function KidBackgroundMusic() {
 
   const slotRef = useRef(null);
   const playerRef = useRef(null);
+  const audioElRef = useRef(null);
   const initedRef = useRef(false);
   const prefsRef = useRef(loadPrefs());
   const closeTimerRef = useRef(null);
-  const loadedTrackRef = useRef(TRACKS.default);
+  const loadedYtIdRef = useRef(null);
+  const loadedAudioUrlRef = useRef(null);
 
   const [ready, setReady] = useState(false);
   const [muted, setMuted] = useState(() => loadPrefs().muted);
   const [volume, setVolume] = useState(() => loadPrefs().volume);
   const [panelOpen, setPanelOpen] = useState(false);
-  const [trackKey, setTrackKey] = useState("default");
+  const [track, setTrack] = useState(DEFAULT_TRACK_REQUEST);
 
   const updatePrefs = useCallback((next) => {
     prefsRef.current = { ...prefsRef.current, ...next };
     savePrefs(prefsRef.current);
   }, []);
 
-  // Mở "cổng" cho useKidBgmTrack() ở nơi khác (vd GamePlay) gọi vào, vì đây
-  // là component singleton duy nhất giữ player thật.
-  useEffect(() => registerKidBgmTrackSetter(setTrackKey), []);
+  // Mở "cổng" cho useKidBgmTrack() ở nơi khác (vd GamePlay, ebook) gọi vào,
+  // vì đây là component singleton duy nhất giữ player thật.
+  useEffect(() => registerKidBgmTrackSetter(setTrack), []);
 
   // Nhận yêu cầu đổi bài gửi từ 1 iframe con nhúng ngay trên trang này (vd
   // khung chơi game nhúng trong ebook) - xem useKidBgmTrackBridge.
-  useKidBgmTrackBridge(setTrackKey);
+  useKidBgmTrackBridge(setTrack);
 
   useEffect(() => {
     if (!active || initedRef.current) return undefined;
@@ -118,6 +134,7 @@ export default function KidBackgroundMusic() {
       // Guard bằng playerRef để chỉ tạo player đúng 1 lần cho cả vòng đời app.
       if (playerRef.current || !slotRef.current) return;
       const prefs = prefsRef.current;
+      loadedYtIdRef.current = TRACKS.default;
       playerRef.current = new YT.Player(slotRef.current, {
         videoId: TRACKS.default,
         playerVars: {
@@ -160,33 +177,80 @@ export default function KidBackgroundMusic() {
     });
   }, [active]);
 
+  // Đổi bài phát theo `track` hiện tại - nhánh theo "kind": preset/video
+  // (YouTube) dùng player ẩn có sẵn; "audio" (file tải lên) dùng thẻ
+  // <audio> riêng chạy song song; "silent" dừng cả hai. Chỉ 1 trong 2 nguồn
+  // phát ra tiếng tại 1 thời điểm.
   useEffect(() => {
     const player = playerRef.current;
-    if (!ready || !player || typeof player.loadVideoById !== "function") {
+    const audioEl = audioElRef.current;
+    const prefs = prefsRef.current;
+
+    const ytId = videoIdForTrack(track);
+    const audioUrl = track?.kind === "audio" ? track.audioUrl : null;
+
+    // Nhánh YouTube (preset hoặc video tuỳ ý)
+    if (ytId) {
+      if (audioEl && !audioEl.paused) audioEl.pause();
+      if (ready && player && typeof player.loadVideoById === "function") {
+        if (ytId !== loadedYtIdRef.current) {
+          loadedYtIdRef.current = ytId;
+          player.loadVideoById(ytId);
+        }
+        // loadVideoById thường giữ nguyên volume/mute hiện tại của player, áp
+        // lại cho chắc để không bị "bật tiếng" ngoài ý muốn lúc đổi bài.
+        player.setVolume(prefs.volume);
+        if (prefs.muted) player.mute();
+        else player.unMute();
+        if (typeof player.playVideo === "function") player.playVideo();
+      }
       return;
     }
-    const nextId = TRACKS[trackKey] || TRACKS.default;
-    if (nextId === loadedTrackRef.current) return;
-    loadedTrackRef.current = nextId;
-    player.loadVideoById(nextId);
-    // loadVideoById thường giữ nguyên volume/mute hiện tại của player, áp
-    // lại cho chắc để không bị "bật tiếng" ngoài ý muốn lúc đổi bài.
-    player.setVolume(prefsRef.current.volume);
-    if (prefsRef.current.muted) player.mute();
-    else player.unMute();
-  }, [ready, trackKey]);
+
+    // Nhánh file audio tải lên
+    if (audioUrl) {
+      if (player && typeof player.pauseVideo === "function") {
+        player.pauseVideo();
+      }
+      if (audioEl) {
+        if (loadedAudioUrlRef.current !== audioUrl) {
+          loadedAudioUrlRef.current = audioUrl;
+          audioEl.src = audioUrl;
+        }
+        audioEl.volume = Math.min(1, Math.max(0, prefs.volume / 100));
+        audioEl.muted = prefs.muted;
+        if (!prefs.muted) {
+          audioEl.play().catch(() => {
+            // Trình duyệt chặn autoplay có tiếng - sẽ tự phát khi người
+            // dùng chạm vào trang lần đầu (xem effect "unlock" bên dưới).
+          });
+        }
+      }
+      return;
+    }
+
+    // Nhánh silent: dừng hẳn cả 2 nguồn, không phát gì.
+    if (track?.kind === "silent") {
+      if (player && typeof player.pauseVideo === "function") {
+        player.pauseVideo();
+      }
+      if (audioEl && !audioEl.paused) audioEl.pause();
+    }
+  }, [ready, track]);
 
   useEffect(() => {
     if (!active) return undefined;
     const unlock = () => {
       const player = playerRef.current;
-      if (
-        player &&
-        typeof player.unMute === "function" &&
-        !prefsRef.current.muted
-      ) {
+      const audioEl = audioElRef.current;
+      if (prefsRef.current.muted) return;
+      if (player && typeof player.unMute === "function") {
         player.unMute();
         player.setVolume(prefsRef.current.volume);
+      }
+      if (audioEl && audioEl.src) {
+        audioEl.muted = false;
+        audioEl.play().catch(() => {});
       }
     };
     document.addEventListener("pointerdown", unlock, { once: true });
@@ -199,12 +263,25 @@ export default function KidBackgroundMusic() {
 
   useEffect(() => {
     const player = playerRef.current;
-    if (!ready || !player || typeof player.playVideo !== "function") return;
+    const audioEl = audioElRef.current;
     if (active) {
-      player.playVideo();
+      if (
+        ready &&
+        player &&
+        typeof player.playVideo === "function" &&
+        videoIdForTrack(track)
+      ) {
+        player.playVideo();
+      }
+      if (audioEl && track?.kind === "audio" && !prefsRef.current.muted) {
+        audioEl.play().catch(() => {});
+      }
     } else {
-      player.pauseVideo();
+      if (player && typeof player.pauseVideo === "function")
+        player.pauseVideo();
+      if (audioEl && !audioEl.paused) audioEl.pause();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, ready]);
 
   // Tự đóng bảng chỉnh âm lượng sau vài giây không thao tác, cho gọn gàng.
@@ -225,15 +302,24 @@ export default function KidBackgroundMusic() {
   const applyVolume = useCallback(
     (nextVolume, nextMuted) => {
       const player = playerRef.current;
+      const audioEl = audioElRef.current;
       setVolume(nextVolume);
       setMuted(nextMuted);
       updatePrefs({ volume: nextVolume, muted: nextMuted });
-      if (!player) return;
-      player.setVolume(nextVolume);
-      if (nextMuted) player.mute();
-      else player.unMute();
+      if (player) {
+        player.setVolume(nextVolume);
+        if (nextMuted) player.mute();
+        else player.unMute();
+      }
+      if (audioEl) {
+        audioEl.volume = Math.min(1, Math.max(0, nextVolume / 100));
+        audioEl.muted = nextMuted;
+        if (!nextMuted && audioEl.src && track?.kind === "audio") {
+          audioEl.play().catch(() => {});
+        }
+      }
     },
-    [updatePrefs],
+    [updatePrefs, track],
   );
 
   const handleSliderChange = (e) => {
@@ -275,6 +361,9 @@ export default function KidBackgroundMusic() {
     >
       {/* Khung Youtube thật - giấu kín, chỉ dùng để phát âm thanh */}
       <div ref={slotRef} className="kbm-yt-slot" aria-hidden="true" />
+      {/* File audio tải lên (nhạc nền tuỳ chỉnh của ebook) - chạy song song
+          với player YouTube ở trên, chỉ 1 trong 2 thực sự phát ra tiếng. */}
+      <audio ref={audioElRef} loop preload="auto" aria-hidden="true" />
 
       <div className="kbm-panel" role="group" aria-label="Âm lượng nhạc nền">
         <input

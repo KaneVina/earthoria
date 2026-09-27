@@ -5,7 +5,8 @@ export const ebookService = {
   list: (params) => api.get("/admin/ebooks", { params }),
   getById: (id) => api.get(`/admin/ebooks/${id}`),
   getForBook: (bookId) => api.get(`/admin/ebooks/book/${bookId}`),
-  create: (bookId, payload) => api.post(`/admin/ebooks/book/${bookId}`, payload),
+  create: (bookId, payload) =>
+    api.post(`/admin/ebooks/book/${bookId}`, payload),
   update: (id, payload) => api.put(`/admin/ebooks/${id}`, payload),
   toggle: (id) => api.put(`/admin/ebooks/${id}/toggle`),
   remove: (id) => api.delete(`/admin/ebooks/${id}`),
@@ -17,7 +18,19 @@ export const ebookService = {
     });
   },
   deleteImage: (url) => api.post("/admin/ebooks/delete-image", { url }),
+  uploadAudio: (file, ebookId) => {
+    const fd = new FormData();
+    fd.append("audio", file);
+    return api.post("/admin/ebooks/upload-audio", fd, {
+      params: ebookId ? { ebookId } : undefined,
+    });
+  },
+  deleteAudio: (url) => api.post("/admin/ebooks/delete-audio", { url }),
 
   // Public
-  readBySlug: (slug, kidToken) => api.get(`/ebook-reader/${slug}`, kidToken ? { params: { kidToken } } : undefined),
+  readBySlug: (slug, kidToken) =>
+    api.get(
+      `/ebook-reader/${slug}`,
+      kidToken ? { params: { kidToken } } : undefined,
+    ),
 };

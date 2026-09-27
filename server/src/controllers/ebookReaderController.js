@@ -122,6 +122,7 @@ exports.getEbookForReading = async (req, res) => {
         pages: ebook.pages,
         orientation: ebook.orientation,
         thumbnailUrl: ebook.thumbnailUrl,
+        music: ebook.music || null,
         book: {
           id: book.id,
           title: book.title,
