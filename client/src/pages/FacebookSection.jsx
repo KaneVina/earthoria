@@ -1,10 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 /* ─ CONFIG ─ */
-const FB_PAGE_ID = import.meta.env.VITE_FB_PAGE_ID || "1173249219198136";
-const FB_TOKEN =
-  import.meta.env.VITE_FB_TOKEN ||
-  "EAAdmI3uGZATEBR8YoZBizZCTEqFFHvFXV01xZA6B0WTh5ur3oYNByOuo5pjWe7iERYYEIv6TGzVSSwCmpZCrO5iQDyPNcUxN7C4a4QfnmOdoZCazZC44raFYCwNdf7qaDHIBdrep3XT6UgmeftUnZACCKahklaavZAoMrSg7ZAitB33zkZBxCRYnfIdd425o3Mbgo14VvzOZChxJlqRmIKtagCFee81O";
+const FB_PAGE_ID = import.meta.env.VITE_FB_PAGE_ID;
+const FB_TOKEN = import.meta.env.VITE_FB_TOKEN_NEW;
 const CARD_WIDTH = 276; // px - bao gồm gap
 const GAP = 16;
 const AUTO_MS = 3200;
