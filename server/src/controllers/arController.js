@@ -143,38 +143,51 @@ exports.getArCode = async (req, res) => {
 };
 
 /**
- * GET /api/v1/ar/my-books - danh sách toàn bộ ArCode thuộc các sách mà
- * user đã mua và đã được giao, để hiển thị trong "Sách AR của tôi".
+ * GET /api/v1/ar/my-books - danh sách các cuốn SÁCH mà user đã mua và đã được
+ * giao (DELIVERED/COMPLETED), hiển thị trong tab "Sách AR của tôi".
+ *
+ * Trả về theo sách (không còn chỉ trả về ArCode) để sách đã mua luôn hiện ra,
+ * kể cả khi chưa có mã AR nào. Mỗi sách kèm `arCodes` (chỉ các mã đang bật) để
+ * client vẽ mã QR ngay trong thẻ sách; sách chưa có mã AR thì `arCodes` = [].
  */
 exports.getMyArCodes = async (req, res) => {
   try {
-    const arCodes = await prisma.arCode.findMany({
+    const books = await prisma.book.findMany({
       where: {
-        isActive: true,
-        book: {
-          variants: {
-            some: {
-              orderItems: {
-                some: {
-                  order: {
-                    userId: req.user.id,
-                    status: { in: ["DELIVERED", "COMPLETED"] },
-                  },
+        variants: {
+          some: {
+            orderItems: {
+              some: {
+                order: {
+                  userId: req.user.id,
+                  status: { in: ["DELIVERED", "COMPLETED"] },
                 },
               },
             },
           },
         },
       },
-      include: {
-        book: {
-          select: { id: true, title: true, slug: true, coverImage: true },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        coverImage: true,
+        arCodes: {
+          where: { isActive: true },
+          orderBy: { createdAt: "asc" },
+          select: {
+            id: true,
+            code: true,
+            label: true,
+            accessType: true,
+            scanCount: true,
+          },
         },
       },
-      orderBy: [{ bookId: "asc" }, { createdAt: "asc" }],
+      orderBy: { title: "asc" },
     });
 
-    return res.json({ success: true, data: arCodes });
+    return res.json({ success: true, data: books });
   } catch (err) {
     console.error("[getMyArCodes]", err);
     return res.status(500).json({ success: false, message: "Lỗi server" });
