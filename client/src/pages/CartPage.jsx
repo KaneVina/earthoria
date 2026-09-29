@@ -215,7 +215,15 @@ export default function Cart() {
   const afterDiscount = Math.max(subtotal - tierDiscount, 0);
   const freeShipThreshold =
     loyaltyProfile?.tier?.freeShipThreshold ?? SHIPPING_THRESHOLD;
-  const shippingFee = afterDiscount >= freeShipThreshold ? 0 : SHIPPING_FEE;
+  // Đơn TOÀN sách điện tử không có bước giao hàng nên luôn miễn phí ship, không
+  // phụ thuộc ngưỡng freeship - cùng quy tắc với server (createOrder) và Checkout.
+  const isDigitalOnly =
+    items.length > 0 && items.every((i) => i.variant?.format === "DIGITAL");
+  const shippingFee = isDigitalOnly
+    ? 0
+    : afterDiscount >= freeShipThreshold
+      ? 0
+      : SHIPPING_FEE;
   const total = afterDiscount + shippingFee;
   const shippingPct =
     freeShipThreshold <= 0
@@ -265,10 +273,6 @@ export default function Cart() {
       setClearingCart(false);
       setConfirmClear(false);
     }
-  };
-
-  const handleCheckout = async () => {
-    toast("Tính năng thanh toán sẽ sớm ra mắt!", { icon: "🚀" });
   };
 
   if (loading && !cart) {
@@ -616,7 +620,12 @@ export default function Cart() {
           {/* Shipping progress */}
           <div className="cart-summary-shipping">
             <div className="cart-summary-shipping-text">
-              {afterDiscount >= freeShipThreshold ? (
+              {isDigitalOnly ? (
+                <span style={{ color: "var(--gold)" }}>
+                  Sách điện tử - nhận ngay sau khi thanh toán,{" "}
+                  <strong>không phí giao hàng</strong>
+                </span>
+              ) : afterDiscount >= freeShipThreshold ? (
                 <span style={{ color: "var(--gold)" }}>
                   Bạn được <strong>miễn phí giao hàng!</strong>
                 </span>
@@ -632,16 +641,20 @@ export default function Cart() {
                 </>
               )}
             </div>
-            <div className="cart-progress-track">
-              <div
-                className="cart-progress-fill"
-                style={{ width: `${shippingPct}%` }}
-              />
-            </div>
-            <div className="cart-progress-labels">
-              <span>{formatPrice(afterDiscount)}</span>
-              <span>{formatPrice(freeShipThreshold)}</span>
-            </div>
+            {!isDigitalOnly && (
+              <>
+                <div className="cart-progress-track">
+                  <div
+                    className="cart-progress-fill"
+                    style={{ width: `${shippingPct}%` }}
+                  />
+                </div>
+                <div className="cart-progress-labels">
+                  <span>{formatPrice(afterDiscount)}</span>
+                  <span>{formatPrice(freeShipThreshold)}</span>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="cart-summary-body">
@@ -658,6 +671,15 @@ export default function Cart() {
                   val: `-${formatPrice(items.reduce((s, i) => s + (i.variant.price - (i.variant.salePrice ?? i.variant.price)) * i.quantity, 0))}`,
                   green: true,
                 },
+                ...(isDigitalOnly
+                  ? [
+                      {
+                        label: "Phí giao hàng",
+                        val: "Miễn phí",
+                        free: true,
+                      },
+                    ]
+                  : []),
                 ...(tierDiscount > 0
                   ? [
                       {
@@ -717,7 +739,7 @@ export default function Cart() {
             </div>
 
             <Link to="/checkout" style={{ textDecoration: "none" }}>
-              <button onClick={handleCheckout} className="cart-checkout-btn">
+              <button className="cart-checkout-btn">
                 Tiến hành thanh toán
                 <ArrowRight size={14} />
               </button>

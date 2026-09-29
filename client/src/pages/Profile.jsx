@@ -30,6 +30,9 @@ import LogoutConfirmModal from "../components/LogoutConfirmModal";
 import InvoiceModal from "../components/InvoiceModal";
 import LoyaltyBadge from "../components/LoyaltyBadge";
 import SettingsTab from "./profile/SettingsTab";
+import BankQrCountdown, {
+  withBankQrDeadline,
+} from "../components/BankQrCountdown";
 
 const F = {
   serif: "'Playfair Display', serif",
@@ -2432,7 +2435,7 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
     if (order.paymentMethod === "BANKQR") {
       try {
         const { data } = await paymentService.createBankQrPayment(order.id);
-        setBankQrData(data.data);
+        setBankQrData(withBankQrDeadline(data.data));
         setBankQrMismatch(null);
         toast.success("Đã tạo mã QR - quét để chuyển khoản");
       } catch (err) {
@@ -2774,12 +2777,17 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
                     border: "0.5px solid var(--border)",
                   }}
                 />
+                <BankQrCountdown
+                  deadlineMs={bankQrData.deadlineMs}
+                  totalMs={bankQrData.totalMs}
+                  marginTop={14}
+                />
                 <div
                   style={{
                     display: "flex",
                     alignItems: "center",
                     gap: 8,
-                    marginTop: 16,
+                    marginTop: 14,
                     fontSize: 12,
                     color: "var(--gold)",
                   }}

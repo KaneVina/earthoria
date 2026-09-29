@@ -36,6 +36,9 @@ import { paymentService } from "../services/paymentService";
 import api from "../services/api";
 import { addressService } from "../services/addressService";
 import StepBar from "../components/StepBar";
+import BankQrCountdown, {
+  withBankQrDeadline,
+} from "../components/BankQrCountdown";
 
 //  helpers
 function stripDiacritics(str) {
@@ -747,6 +750,7 @@ function OrderSummary({
   onRemoveCoupon,
   couponLoading,
   onOpenVouchers,
+  isDigitalOrder,
 }) {
   const totalDiscount = discount + tierDiscount;
   const afterDiscount = subtotal - totalDiscount;
@@ -772,11 +776,18 @@ function OrderSummary({
           style={{
             fontSize: 12,
             color: "rgba(255,255,255,0.7)",
-            marginBottom: 10,
+            marginBottom: isDigitalOrder ? 0 : 10,
             fontWeight: 300,
           }}
         >
-          {afterDiscount >= freeShipThreshold ? (
+          {isDigitalOrder ? (
+            <span>
+              Sách điện tử - nhận ngay sau khi thanh toán,{" "}
+              <strong style={{ color: "var(--ivory)" }}>
+                không phí giao hàng
+              </strong>
+            </span>
+          ) : afterDiscount >= freeShipThreshold ? (
             <span>
               <Truck size={16} color="var(--forest)" /> Bạn được{" "}
               <strong style={{ color: "var(--ivory)" }}>
@@ -793,23 +804,25 @@ function OrderSummary({
             </>
           )}
         </div>
-        <div
-          style={{
-            height: 2,
-            background: "rgba(255,255,255,0.12)",
-            borderRadius: 1,
-          }}
-        >
+        {!isDigitalOrder && (
           <div
             style={{
-              height: "100%",
+              height: 2,
+              background: "rgba(255,255,255,0.12)",
               borderRadius: 1,
-              background: "linear-gradient(90deg, #4a9e3f, #5cb84f)",
-              width: `${pct}%`,
-              transition: "width 0.6s ease",
             }}
-          />
-        </div>
+          >
+            <div
+              style={{
+                height: "100%",
+                borderRadius: 1,
+                background: "linear-gradient(90deg, #4a9e3f, #5cb84f)",
+                width: `${pct}%`,
+                transition: "width 0.6s ease",
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* item list */}
@@ -2274,7 +2287,7 @@ export default function Checkout() {
       try {
         const { data: qrData } =
           await paymentService.createBankQrPayment(orderId);
-        setBankQrData(qrData.data);
+        setBankQrData(withBankQrDeadline(qrData.data));
         setBankQrStatus("pending");
         setBankQrExpired(false);
         toast.success("Đã tạo mã QR - quét để chuyển khoản");
@@ -4245,12 +4258,18 @@ export default function Checkout() {
                       }}
                     />
 
+                    <BankQrCountdown
+                      deadlineMs={bankQrData.deadlineMs}
+                      totalMs={bankQrData.totalMs}
+                      marginTop={20}
+                    />
+
                     <div
                       style={{
                         display: "flex",
                         alignItems: "center",
                         gap: 8,
-                        marginTop: 20,
+                        marginTop: 16,
                         fontSize: 12,
                         color: "var(--gold)",
                         fontWeight: 400,
@@ -4720,6 +4739,7 @@ export default function Checkout() {
           onApply={applyCoupon}
           couponLoading={couponLoading}
           onOpenVouchers={openVoucherModal}
+          isDigitalOrder={isDigitalOrder}
           onRemoveCoupon={() => {
             setCouponApplied(null);
             setCouponInput("");
