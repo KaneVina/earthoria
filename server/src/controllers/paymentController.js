@@ -767,6 +767,9 @@ const createBankQrPayment = async (req, res) => {
       amount: order.total,
       addInfo,
       expiresAt: paymentSessionExpiresAt,
+      // Thời gian còn lại tính từ lúc server tạo phiên - FE dùng để đếm ngược mà
+      // không phụ thuộc đồng hồ máy khách (có thể chạy sai giờ).
+      expiresInMs: PAYMENT_SESSION_TTL_MS,
     });
   } catch (error) {
     console.error("[createBankQrPayment]", error);
