@@ -1839,7 +1839,7 @@
   transform: translateX(6px);
   box-shadow: var(--pf-shadow-md);
 }
-.pf-mini-order-accent {
+.pf-mini-order.pf-sheen-surface > .pf-mini-order-accent {
   position: absolute;
   left: 0;
   top: 0;
@@ -1853,6 +1853,24 @@
 }
 .pf-mini-order:hover .pf-mini-order-accent {
   opacity: 1;
+}
+.pf-mini-order-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+.pf-mini-order-thumbs {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.pf-mini-order-thumbs .pf-thumb-cell {
+  width: 44px;
+  height: 58px;
+}
+.pf-mini-order:hover .pf-thumb-cell {
+  transform: translateY(-2px);
 }
 .pf-mini-order-code {
   font-size: 13px;

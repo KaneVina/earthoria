@@ -1961,16 +1961,21 @@ function OverviewTab({
 function MiniOrderSkeleton() {
   return (
     <div className="pf-mini-order" style={{ cursor: "default" }}>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "8px",
-          paddingLeft: "4px",
-        }}
-      >
-        <div className="pf-skel" style={{ width: "160px", height: "13px" }} />
-        <div className="pf-skel" style={{ width: "200px", height: "11px" }} />
+      <div className="pf-mini-order-main">
+        <div className="pf-mini-order-thumbs">
+          <div className="pf-skel" style={{ width: "44px", height: "58px" }} />
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "8px",
+            paddingLeft: "4px",
+          }}
+        >
+          <div className="pf-skel" style={{ width: "160px", height: "13px" }} />
+          <div className="pf-skel" style={{ width: "200px", height: "11px" }} />
+        </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
         <div className="pf-skel" style={{ width: "78px", height: "22px" }} />
@@ -1995,10 +2000,26 @@ function MiniOrderCard({ order, delay, onClick }) {
     >
       <span className="pf-sheen-glow" aria-hidden="true" />
       <div className="pf-mini-order-accent" />
-      <div style={{ paddingLeft: "4px" }}>
-        <div className="pf-mini-order-code">Đơn #{getOrderCode(order)}</div>
-        <div className="pf-mini-order-meta">
-          {order.items?.length || 0} sản phẩm · {formatDate(order.createdAt)}
+      <div className="pf-mini-order-main">
+        <div className="pf-mini-order-thumbs">
+          {(order.items || []).slice(0, 4).map((item, i) => (
+            <div key={i} className="pf-thumb-cell">
+              {item.book?.coverImage && (
+                <img src={item.book.coverImage} alt="" />
+              )}
+            </div>
+          ))}
+          {(order.items?.length || 0) > 4 && (
+            <div className="pf-thumb-cell pf-thumb-more">
+              +{order.items.length - 4}
+            </div>
+          )}
+        </div>
+        <div style={{ paddingLeft: "4px" }}>
+          <div className="pf-mini-order-code">Đơn #{getOrderCode(order)}</div>
+          <div className="pf-mini-order-meta">
+            {order.items?.length || 0} sản phẩm · {formatDate(order.createdAt)}
+          </div>
         </div>
       </div>
       <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
