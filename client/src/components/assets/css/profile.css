@@ -3109,6 +3109,10 @@
   color: var(--gold);
   background: rgba(212, 168, 67, 0.14);
 }
+.pf-ar-status.is-none {
+  color: var(--text-muted);
+  background: rgba(0, 0, 0, 0.05);
+}
 
 /* Danh sách SÁCH AR - mỗi cuốn sách 1 thẻ (ảnh bìa + tên), các mã AR bên
    trong chỉ là chip phụ để chọn mô hình cụ thể */
@@ -3191,6 +3195,65 @@
 .pf-ar-code-chip.is-activated .pf-ar-code-dot {
   background: var(--forest);
   opacity: 1;
+}
+
+/* Mã QR AR hiển thị ngay trong thẻ sách */
+.pf-ar-qr-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 14px;
+}
+.pf-ar-qr-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 128px;
+  padding: 8px 8px 10px;
+  border-radius: var(--pf-radius-sm);
+  border: 0.5px solid var(--border);
+  background: var(--cream);
+  color: var(--forest);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+.pf-ar-qr-item:hover {
+  border-color: var(--border-gold);
+  background: var(--gold-pale);
+}
+.pf-ar-qr-box {
+  display: block;
+  line-height: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+}
+.pf-ar-qr-box canvas {
+  width: 112px !important;
+  height: 112px !important;
+  display: block;
+}
+.pf-ar-qr-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  font-size: 11.5px;
+  text-align: center;
+  word-break: break-word;
+}
+.pf-ar-qr-item.is-activated .pf-ar-code-dot {
+  background: var(--forest);
+  opacity: 1;
+}
+@media (max-width: 520px) {
+  .pf-ar-book-card {
+    flex-direction: column;
+  }
+  .pf-ar-qr-item {
+    width: calc(50% - 7px);
+  }
 }
 
 /*   EMPTY STATE   */

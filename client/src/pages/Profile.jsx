@@ -7,6 +7,7 @@ import {
 } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AlertCircle, FileText } from "lucide-react";
+import { QRCodeCanvas } from "qrcode.react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authService } from "../services/authService";
 import { isPasswordTooSimilar } from "../utils/passwordSimilarity";
@@ -1042,10 +1043,13 @@ export default function Profile() {
     enabled: !!selectedOrderId,
   });
 
-  const { data: arCodes = [], isLoading: arLoading } = useQuery({
+  const { data: arBooks = [], isLoading: arLoading } = useQuery({
     queryKey: ["my-ar-codes"],
     queryFn: () => arService.getMyArBooks().then((r) => r.data.data),
     enabled: activeTab === "ar",
+    // Luôn lấy dữ liệu mới mỗi khi mở tab: staleTime toàn cục là 5 phút nên nếu
+    // khách mở tab này lúc đơn chưa hoàn thành thì sẽ thấy danh sách rỗng cũ.
+    staleTime: 0,
   });
 
   const { data: loyaltyProfile } = useQuery({
@@ -1216,7 +1220,7 @@ export default function Profile() {
               <AddressesTab profile={profile} confirm={confirm} />
             )}
             {activeTab === "ar" && (
-              <ArTab arCodes={arCodes} loading={arLoading} />
+              <ArTab books={arBooks} loading={arLoading} />
             )}
             {activeTab === "settings" && <SettingsTab />}
           </div>
@@ -2371,6 +2375,7 @@ function OrderDetailTab({ order, loading, onBack, onSessionExpire }) {
       toast.success("Đã xác nhận nhận hàng, cảm ơn bạn!");
       qc.invalidateQueries({ queryKey: ["order", order.id] });
       qc.invalidateQueries({ queryKey: ["orders"] });
+      qc.invalidateQueries({ queryKey: ["my-ar-codes"] });
     },
     onError: (err) => {
       toast.error(err?.response?.data?.message || "Xác nhận thất bại");
@@ -4303,7 +4308,7 @@ function ParentDashboardBanner() {
   );
 }
 
-function ArTab({ arCodes, loading }) {
+function ArTab({ books, loading }) {
   if (loading) {
     return (
       <div>
@@ -4312,7 +4317,7 @@ function ArTab({ arCodes, loading }) {
           eyebrow="Trải Nghiệm AR"
           title="Sách"
           emphasis="AR Của Tôi"
-          sub="Toàn bộ mô hình 3D thuộc các cuốn sách bạn đã mua và nhận hàng"
+          sub="Các cuốn sách bạn đã mua và nhận hàng - mã QR AR hiển thị ngay trong từng sách"
           logo="/logo/logo-mau/lg-m-family-studio.png"
         />
         <ParentDashboardBanner />
@@ -4347,7 +4352,7 @@ function ArTab({ arCodes, loading }) {
     );
   }
 
-  if (!arCodes.length) {
+  if (!books.length) {
     return (
       <div>
         <SectionHeader
@@ -4355,27 +4360,18 @@ function ArTab({ arCodes, loading }) {
           eyebrow="Trải Nghiệm AR"
           title="Sách"
           emphasis="AR Của Tôi"
-          sub="Toàn bộ mô hình 3D thuộc các cuốn sách bạn đã mua và nhận hàng"
+          sub="Các cuốn sách bạn đã mua và nhận hàng - mã QR AR hiển thị ngay trong từng sách"
           logo="/logo/logo-mau/lg-m-family-studio.png"
         />
         <ParentDashboardBanner />
         <EmptyState
           icon={Icon.compass}
-          text="Chưa có sách AR nào"
-          sub="Mua sách có AR và chờ giao hàng thành công để mở khoá mô hình 3D tại đây"
+          text="Chưa có sách nào"
+          sub="Mua sách và chờ giao hàng thành công để sách xuất hiện tại đây"
         />
       </div>
     );
   }
-
-  // Gom các mã AR theo từng cuốn sách để hiển thị thành từng nhóm,
-  // tránh trộn lẫn khi khách sở hữu nhiều sách AR cùng lúc.
-  const grouped = arCodes.reduce((acc, item) => {
-    const key = item.book?.id || item.bookId;
-    if (!acc[key]) acc[key] = { book: item.book, items: [] };
-    acc[key].items.push(item);
-    return acc;
-  }, {});
 
   return (
     <div>
@@ -4384,27 +4380,26 @@ function ArTab({ arCodes, loading }) {
         eyebrow="Trải Nghiệm AR"
         title="Sách"
         emphasis="AR Của Tôi"
-        sub="Toàn bộ mô hình 3D thuộc các cuốn sách bạn đã mua và nhận hàng"
+        sub="Các cuốn sách bạn đã mua và nhận hàng - mã QR AR hiển thị ngay trong từng sách"
       />
       <ParentDashboardBanner />
 
       <div className="pf-ar-book-grid">
-        {Object.values(grouped).map((group) => {
-          const total = group.items.length;
-          const activatedCount = group.items.filter(
+        {books.map((book) => {
+          const codes = book.arCodes || [];
+          const total = codes.length;
+          const hasAr = total > 0;
+          const activatedCount = codes.filter(
             (it) => (it.scanCount || 0) > 0,
           ).length;
-          const allActivated = total > 0 && activatedCount === total;
+          const allActivated = hasAr && activatedCount === total;
           const noneActivated = activatedCount === 0;
 
           return (
-            <div key={group.book?.id} className="pf-ar-book-card">
+            <div key={book.id} className="pf-ar-book-card">
               <div className="pf-ar-book-cover">
-                {group.book?.coverImage ? (
-                  <img
-                    src={group.book.coverImage}
-                    alt={group.book?.title || ""}
-                  />
+                {book.coverImage ? (
+                  <img src={book.coverImage} alt={book.title || ""} />
                 ) : (
                   <span className="pf-ar-book-cover-fallback">
                     {Icon.compass}
@@ -4412,37 +4407,59 @@ function ArTab({ arCodes, loading }) {
                 )}
               </div>
               <div className="pf-ar-book-info">
-                <div className="pf-ar-book-title">{group.book?.title}</div>
-                <span
-                  className={`pf-ar-status ${allActivated ? "is-activated" : noneActivated ? "is-pending" : "is-partial"}`}
-                >
-                  {allActivated
-                    ? "Đã kích hoạt"
-                    : noneActivated
-                      ? "Chưa kích hoạt"
-                      : `Đã kích hoạt ${activatedCount}/${total}`}
-                </span>
+                <div className="pf-ar-book-title">{book.title}</div>
 
-                <div className="pf-ar-code-list">
-                  {group.items.map((item) => {
-                    const isActivated = (item.scanCount || 0) > 0;
-                    return (
-                      <Link
-                        key={item.id}
-                        to={`/ar/${group.book?.slug}/${item.code}`}
-                        className={`pf-ar-code-chip ${isActivated ? "is-activated" : ""}`}
-                        title={
-                          isActivated
-                            ? `Đã xem ${item.scanCount} lần · Bấm để xem lại`
-                            : "Bấm để kích hoạt & xem mô hình 3D"
-                        }
-                      >
-                        <span className="pf-ar-code-dot" />
-                        {item.label}
-                      </Link>
-                    );
-                  })}
-                </div>
+                {hasAr ? (
+                  <span
+                    className={`pf-ar-status ${allActivated ? "is-activated" : noneActivated ? "is-pending" : "is-partial"}`}
+                  >
+                    {allActivated
+                      ? "Đã kích hoạt"
+                      : noneActivated
+                        ? "Chưa kích hoạt"
+                        : `Đã kích hoạt ${activatedCount}/${total}`}
+                  </span>
+                ) : (
+                  <span className="pf-ar-status is-none">
+                    Chưa có mô hình AR
+                  </span>
+                )}
+
+                {hasAr && (
+                  <div className="pf-ar-qr-list">
+                    {codes.map((item) => {
+                      const isActivated = (item.scanCount || 0) > 0;
+                      const arPath = `/ar/${book.slug}/${item.code}`;
+                      return (
+                        <Link
+                          key={item.id}
+                          to={arPath}
+                          className={`pf-ar-qr-item ${isActivated ? "is-activated" : ""}`}
+                          title={
+                            isActivated
+                              ? `Đã xem ${item.scanCount} lần · Bấm để xem lại`
+                              : "Quét mã QR hoặc bấm để kích hoạt & xem mô hình 3D"
+                          }
+                        >
+                          <span className="pf-ar-qr-box">
+                            <QRCodeCanvas
+                              value={`${window.location.origin}${arPath}`}
+                              size={112}
+                              level="M"
+                              includeMargin
+                              bgColor="#ffffff"
+                              fgColor="#0D3330"
+                            />
+                          </span>
+                          <span className="pf-ar-qr-label">
+                            <span className="pf-ar-code-dot" />
+                            {item.label}
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           );
