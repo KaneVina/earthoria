@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { maintenanceService } from "../services/maintenanceService";
 
@@ -35,8 +35,70 @@ function useCountdown(target) {
   return time;
 }
 
+// Đom đóm bay lên ở panel trái - vị trí/độ trễ cố định để không nhảy khi re-render
+const FIREFLIES = Array.from({ length: 16 }, (_, i) => ({
+  left: (i * 37 + 11) % 96,
+  size: 2 + (i % 3),
+  delay: (i * 1.3) % 9,
+  dur: 10 + (i % 5) * 2.5,
+  drift: ((i % 2 ? 1 : -1) * (12 + (i % 4) * 8)),
+}));
+
 function pad(n) {
   return String(n).padStart(2, "0");
+}
+
+/* Một "tờ lịch": khi số đổi, nửa trên (số cũ) lật xuống rồi nửa dưới (số mới)
+   rơi vào chỗ - giống cuốn lịch lật / đồng hồ flip. */
+function FlipUnit({ value, label }) {
+  const text = pad(value);
+  const lastRef = useRef(text);
+  const [st, setSt] = useState({ cur: text, prev: text, k: 0, flipping: false });
+
+  useEffect(() => {
+    if (text === lastRef.current) return;
+    const prev = lastRef.current;
+    lastRef.current = text;
+    setSt((s) => ({ cur: text, prev, k: s.k + 1, flipping: true }));
+    const t = setTimeout(
+      () => setSt((s) => ({ ...s, flipping: false })),
+      620,
+    );
+    return () => clearTimeout(t);
+  }, [text]);
+
+  const { cur, prev, k, flipping } = st;
+  const bottomText = flipping ? prev : cur;
+
+  return (
+    <div style={styles.unit}>
+      <div className="em-flip" aria-label={`${cur} ${label}`}>
+        <span className="em-flip-ring em-flip-ring-l" />
+        <span className="em-flip-ring em-flip-ring-r" />
+        <div className="em-flip-card">
+          <div className="em-flip-half em-flip-top">
+            <span>{cur}</span>
+          </div>
+          <div className="em-flip-half em-flip-bottom">
+            <span>{bottomText}</span>
+          </div>
+          {flipping && (
+            <>
+              <div key={`t${k}`} className="em-flip-half em-flip-top em-flap-top">
+                <span>{prev}</span>
+              </div>
+              <div key={`b${k}`} className="em-flip-half em-flip-bottom em-flap-bottom">
+                <span>{cur}</span>
+              </div>
+            </>
+          )}
+          <span className="em-flip-notch em-flip-notch-l" />
+          <span className="em-flip-notch em-flip-notch-r" />
+        </div>
+      </div>
+      <span style={styles.unitLabel}>{label}</span>
+    </div>
+  );
 }
 
 export default function Maintenance({ until, message }) {
@@ -78,6 +140,20 @@ export default function Maintenance({ until, message }) {
       {/* ══ LEFT - Atmosphere panel (hidden < 980px) ══ */}
       <div className="em-visual-hide" style={styles.visual}>
         <div style={styles.vVignette} />
+        {FIREFLIES.map((f, i) => (
+          <span
+            key={i}
+            className="em-firefly"
+            style={{
+              left: `${f.left}%`,
+              width: f.size,
+              height: f.size,
+              animationDelay: `${f.delay}s`,
+              animationDuration: `${f.dur}s`,
+              "--drift": `${f.drift}px`,
+            }}
+          />
+        ))}
         <div style={styles.vWatermark}>
           <svg width="520" height="520" viewBox="0 0 520 520" fill="none">
             <path
@@ -191,13 +267,16 @@ export default function Maintenance({ until, message }) {
           {/* Title - level with the Eira mascot image */}
           <div className="em-title-row" style={styles.titleRow}>
             <h1 className="em-title" style={styles.title}>
-              Chúng tôi đang <em style={styles.titleEm}>nâng cấp</em>
+              Chúng tôi đang{" "}
+              <em className="em-title-shine" style={styles.titleEm}>
+                nâng cấp
+              </em>
               <br className="em-title-br" /> trải nghiệm của bạn
             </h1>
             <img
               src="/eira/eira-sorry.png"
               alt="Eira"
-              className="em-title-img"
+              className="em-title-img em-eira-float"
               style={styles.eiraSorryImg}
               onClick={() => {
                 window.location.href =
@@ -233,7 +312,7 @@ export default function Maintenance({ until, message }) {
           {/* Countdown - the ONE bold element: a dark plaque that echoes
               the left page, so the whole spread reads as one book */}
           <div className="em-countdown-card" style={styles.countdownCard}>
-            <span style={styles.countdownGlow} />
+            <span className="em-aurora" style={styles.countdownGlow} />
             <span style={styles.countdownCorner} />
             <div style={styles.countdownLabel}>
               Dự kiến hoạt động trở lại sau
@@ -251,23 +330,8 @@ export default function Maintenance({ until, message }) {
                   { v: h, l: "Giờ" },
                   { v: m, l: "Phút" },
                   { v: s, l: "Giây" },
-                ].map((u, i) => (
-                  <div
-                    key={u.l}
-                    style={{ display: "flex", alignItems: "flex-start" }}
-                  >
-                    <div style={styles.unit}>
-                      <span
-                        key={u.v}
-                        className="em-num-tick"
-                        style={styles.unitNum}
-                      >
-                        {pad(u.v)}
-                      </span>
-                      <span style={styles.unitLabel}>{u.l}</span>
-                    </div>
-                    {i < 3 && <span style={styles.colon}>:</span>}
-                  </div>
+                ].map((u) => (
+                  <FlipUnit key={u.l} value={u.v} label={u.l} />
                 ))}
               </div>
             )}
@@ -294,6 +358,12 @@ export default function Maintenance({ until, message }) {
                 >
                   <span className="em-progress-shimmer" />
                 </div>
+                {[25, 50, 75].map((p) => (
+                  <span
+                    key={p}
+                    style={{ ...styles.progressTick, left: `${p}%` }}
+                  />
+                ))}
               </div>
             </div>
 
@@ -420,7 +490,24 @@ export default function Maintenance({ until, message }) {
                       className="em-reason-index"
                       style={styles.reasonIndex}
                     >
-                      {pad(i + 1)}
+                      {t.isDone ? (
+                        <svg
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#4a9e3f"
+                          strokeWidth="1.6"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          style={{ display: "block", marginTop: 2 }}
+                        >
+                          <circle cx="12" cy="12" r="9" fill="rgba(74,158,63,0.1)" />
+                          <path d="M8 12.5l2.8 2.8L16 9.5" />
+                        </svg>
+                      ) : (
+                        pad(i + 1)
+                      )}
                     </span>
                     <div style={{ minWidth: 0 }}>
                       <div style={styles.reasonTitle}>
@@ -494,6 +581,161 @@ html, body, #root { height: 100%; margin: 0; }
 @keyframes badgePulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Nâng cấp thị giác ── */
+@keyframes fireflyRise {
+  0%   { transform: translate(0, 0) scale(0.6); opacity: 0; }
+  12%  { opacity: 0.9; }
+  50%  { transform: translate(var(--drift), -48vh) scale(1); opacity: 0.55; }
+  100% { transform: translate(calc(var(--drift) * -0.6), -104vh) scale(0.5); opacity: 0; }
+}
+.em-firefly {
+  position: absolute;
+  bottom: -12px;
+  border-radius: 50%;
+  background: #b9f0a8;
+  box-shadow: 0 0 8px 2px rgba(92,184,79,0.65), 0 0 18px 6px rgba(92,184,79,0.25);
+  animation: fireflyRise 12s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+}
+@keyframes eiraFloat {
+  0%,100% { transform: translateY(0) rotate(-1.2deg); }
+  50%     { transform: translateY(-8px) rotate(1.2deg); }
+}
+.em-eira-float { animation: eiraFloat 4.6s ease-in-out infinite; cursor: pointer; }
+@keyframes auroraDrift {
+  0%,100% { left: 30%; opacity: 0.85; }
+  50%     { left: 70%; opacity: 1; }
+}
+.em-aurora { animation: auroraDrift 9s ease-in-out infinite; }
+.em-progress-fill::after {
+  content: "";
+  position: absolute;
+  right: 0; top: 0;
+  width: 18px; height: 100%;
+  background: radial-gradient(ellipse at right, rgba(255,255,255,0.85) 0%, transparent 70%);
+  border-radius: 999px;
+}
+@keyframes textShine {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+.em-title-shine {
+  background-image: linear-gradient(90deg, #4a9e3f 0%, #8fdc7d 25%, #4a9e3f 50%, #8fdc7d 75%, #4a9e3f 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: textShine 6s linear infinite;
+  padding-right: 0.08em;
+}
+@media (prefers-reduced-motion: reduce) {
+  .em-firefly { display: none; }
+  .em-eira-float, .em-aurora, .em-title-shine { animation: none; }
+}
+
+/* ── Lịch lật (flip calendar) ── */
+.em-flip {
+  --h: clamp(68px, 8.6vw, 92px);
+  --w: calc(var(--h) * 0.8);
+  position: relative;
+  width: var(--w);
+  padding-top: 9px;
+}
+.em-flip-card {
+  position: relative;
+  width: var(--w);
+  height: var(--h);
+  perspective: 420px;
+  border-radius: 8px;
+  box-shadow: 0 10px 22px -8px rgba(0,0,0,0.6), 0 0 0 0.5px rgba(212,237,207,0.14);
+}
+.em-flip-half {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.em-flip-half span {
+  display: block;
+  width: 100%;
+  height: var(--h);
+  line-height: var(--h);
+  text-align: center;
+  font-family: 'Playfair Display', serif;
+  font-weight: 500;
+  font-size: calc(var(--h) * 0.6);
+  font-variant-numeric: tabular-nums;
+  color: #faf8f3;
+}
+.em-flip-top {
+  top: 0;
+  border-radius: 8px 8px 0 0;
+  background: linear-gradient(180deg, #17443f 0%, #0f3531 100%);
+  border-bottom: 0.5px solid rgba(0,0,0,0.55);
+  transform-origin: bottom;
+}
+.em-flip-bottom {
+  bottom: 0;
+  border-radius: 0 0 8px 8px;
+  background: linear-gradient(180deg, #0b2b28 0%, #0a2623 100%);
+  border-top: 0.5px solid rgba(255,255,255,0.07);
+  transform-origin: top;
+}
+.em-flip-bottom span { margin-top: calc(var(--h) / -2); }
+
+.em-flap-top { z-index: 3; animation: flipTop 0.3s ease-in both; }
+.em-flap-bottom { z-index: 2; animation: flipBottom 0.3s ease-out 0.3s both; transform: rotateX(90deg); }
+@keyframes flipTop { from { transform: rotateX(0deg); } to { transform: rotateX(-90deg); } }
+@keyframes flipBottom { from { transform: rotateX(90deg); } to { transform: rotateX(0deg); } }
+
+/* gáy còng của cuốn lịch */
+.em-flip-ring {
+  position: absolute;
+  top: 0;
+  width: 5px;
+  height: 17px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #8a9a8e 0%, #e7efe8 45%, #6f8074 100%);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  z-index: 6;
+}
+.em-flip-ring-l { left: 22%; }
+.em-flip-ring-r { right: 22%; }
+
+/* khe giữa trang + 2 chấm khuyết hai bên */
+.em-flip-card::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 50%;
+  height: 1px;
+  background: rgba(0,0,0,0.6);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.05);
+  z-index: 5;
+  pointer-events: none;
+}
+.em-flip-notch {
+  position: absolute;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: #0a2622;
+  z-index: 6;
+}
+.em-flip-notch-l { left: -3px; }
+.em-flip-notch-r { right: -3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .em-flap-top, .em-flap-bottom { animation: none; display: none; }
+}
 
 /* Nút theo dõi trạng thái */
 @keyframes statusPing {
@@ -614,7 +856,6 @@ html, body, #root { height: 100%; margin: 0; }
   .em-title-br { display: none; }
   .em-title-row { gap: 12px !important; }
   .em-title-img { width: 64px !important; height: 64px !important; }
-  .em-units { gap: 2px !important; }
   .em-contact-grid { grid-template-columns: 1fr !important; gap: 4px !important; }
   .em-logo-wrap { width: 60px !important; height: 60px !important; }
   .em-logo-wrap img { width: 48px !important; height: 48px !important; }
@@ -1018,7 +1259,7 @@ const styles = {
     display: "flex",
     alignItems: "flex-start",
     justifyContent: "center",
-    gap: 0,
+    gap: "clamp(8px, 1.6vw, 16px)",
     flexWrap: "wrap",
     position: "relative",
   },
@@ -1026,8 +1267,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    gap: 8,
-    minWidth: 58,
+    gap: 10,
   },
   unitNum: {
     fontFamily: "'Playfair Display', serif",
@@ -1101,6 +1341,14 @@ const styles = {
     background: "rgba(250,248,243,0.1)",
     boxShadow: "inset 0 1px 3px rgba(0,0,0,0.35)",
     overflow: "hidden",
+  },
+  progressTick: {
+    position: "absolute",
+    top: 0,
+    width: 1,
+    height: "100%",
+    background: "rgba(250,248,243,0.22)",
+    zIndex: 2,
   },
   progressFill: {
     position: "relative",
