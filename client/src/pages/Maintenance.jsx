@@ -206,21 +206,21 @@ export default function Maintenance({ until, message }) {
             />
           </div>
           <p style={styles.desc}>
-            {message || "Xin chào quý khách hàng và độc giả của Earthoria,"}
+            Kính gửi quý khách hàng và độc giả của Earthoria,
           </p>
           <p style={styles.desc}>
             {message ||
-              "Đội ngũ vận hành và phát triển Earthoria xin phép được thông báo tạm ngưng phục vụ trong khoản thời gian này để thực hiện các nâng cấp và bảo trì hệ thống nhằm mang đến trải nghiệm ổn định và tốt hơn cho người dùng."}
+              "Earthoria đang tạm ngưng phục vụ trong một khoảng thời gian ngắn để thực hiện nâng cấp và bảo trì hệ thống, nhằm mang đến trải nghiệm ổn định, nhanh chóng và an toàn hơn cho bạn."}
           </p>
           <p style={styles.desc}>
-            Trong thời gian bảo trì, bạn tạm thời không truy cập được các tính
+            Trong thời gian này, bạn sẽ tạm thời không thể truy cập các tính
             năng của hệ thống. Toàn bộ dữ liệu, đơn hàng và tủ sách của bạn vẫn
             được lưu trữ an toàn và không bị ảnh hưởng.
           </p>
           <p style={{ ...styles.desc, marginBottom: 0 }}>
-            Chúng tôi chân thành xin lỗi vì sự gián đoạn này và cảm ơn bạn đã
-            kiên nhẫn đồng hành cùng Earthoria. Chúng tôi hứa sẽ mang lại một
-            Earthoria mới không những là tủ sách mà còn là thế giới của bạn!
+            Earthoria chân thành xin lỗi vì sự gián đoạn này và trân trọng sự
+            kiên nhẫn của bạn. Chúng tôi cam kết trở lại với một Earthoria hoàn
+            thiện hơn - không chỉ là tủ sách, mà còn là thế giới của riêng bạn.
           </p>
 
           <div style={styles.noteRow}>
@@ -315,6 +315,33 @@ export default function Maintenance({ until, message }) {
                 <strong style={styles.timePillStrong}>{targetDateText}</strong>
               </span>
             </div>
+
+            {/* CTA theo dõi trạng thái - nằm cuối thẻ countdown, ngay sau
+                thông tin tiến độ/thời gian để người dùng muốn xem chi tiết
+                hơn thì bấm luôn. */}
+            <a
+              href="/status"
+              className="em-status-btn"
+              style={styles.statusBtn}
+            >
+              <span className="em-status-dot" style={styles.statusDot} />
+              <span>Theo dõi trạng thái hệ thống</span>
+              <svg
+                className="em-status-arrow"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ flexShrink: 0 }}
+              >
+                <path d="M5 12h14" />
+                <path d="M13 6l6 6-6 6" />
+              </svg>
+            </a>
           </div>
 
           {/* Contact - plain rows, hairline rhythm, no boxes */}
@@ -467,6 +494,31 @@ html, body, #root { height: 100%; margin: 0; }
 @keyframes badgePulse { 0%,100% { opacity: 0.5; } 50% { opacity: 1; } }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Nút theo dõi trạng thái */
+@keyframes statusPing {
+  0%   { box-shadow: 0 0 0 0 rgba(92,184,79,0.55); }
+  70%  { box-shadow: 0 0 0 7px rgba(92,184,79,0); }
+  100% { box-shadow: 0 0 0 0 rgba(92,184,79,0); }
+}
+.em-status-dot { animation: statusPing 2s ease-out infinite; }
+.em-status-btn {
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+.em-status-btn:hover {
+  background: rgba(92,184,79,0.2) !important;
+  border-color: rgba(92,184,79,0.7) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -8px rgba(92,184,79,0.45);
+}
+.em-status-btn:active { transform: translateY(0); }
+.em-status-btn:focus-visible { outline: 2px solid #5cb84f; outline-offset: 3px; }
+.em-status-arrow { transition: transform 0.25s ease; }
+.em-status-btn:hover .em-status-arrow { transform: translateX(3px); }
+@media (prefers-reduced-motion: reduce) {
+  .em-status-dot { animation: none; }
+  .em-status-btn, .em-status-arrow { transition: none; }
+}
 
 /* Thanh tiến độ bảo trì: fill mượt (width transition) + ánh sáng lướt
    qua liên tục (shimmer) để trông sinh động, không bị "đứng hình". */
@@ -1057,6 +1109,33 @@ const styles = {
     background: `linear-gradient(90deg, ${GOLD} 0%, ${GOLD_LIGHT} 100%)`,
     boxShadow: "0 0 12px rgba(92,184,79,0.55)",
     overflow: "hidden",
+  },
+
+  statusBtn: {
+    position: "relative",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    width: "100%",
+    marginTop: 20,
+    padding: "13px 20px",
+    borderRadius: 10,
+    border: "0.5px solid rgba(92,184,79,0.4)",
+    background: "rgba(92,184,79,0.1)",
+    color: IVORY,
+    fontSize: 13,
+    fontWeight: 500,
+    letterSpacing: "0.02em",
+    textDecoration: "none",
+    cursor: "pointer",
+  },
+  statusDot: {
+    width: 7,
+    height: 7,
+    borderRadius: "50%",
+    background: GOLD_LIGHT,
+    flexShrink: 0,
   },
 
   doneBox: {
